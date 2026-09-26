@@ -651,13 +651,6 @@ def _annotate_project(
             "stage_ms": stage_ms,
         })
 
-    matches: dict[str, dict[str, Any]] = {}
-    if prepared:
-        with ThreadPoolExecutor(max_workers=min(3, len(prepared)), thread_name_prefix="ai-mask-match") as executor:
-            futures = {executor.submit(match_slide, item): item["slide_id"] for item in prepared}
-            for future in as_completed(futures):
-                matches[futures[future]] = future.result()
-
     def match_slide(item: dict[str, Any]) -> dict[str, Any]:
         stage_ms: dict[str, float] = item["stage_ms"]
         vision_started = time.monotonic()
