@@ -56,6 +56,43 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
         f.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
 
 
+def _estimate_background(
+    image: np.ndarray,
+    band: int = 4,
+) -> dict[str, Any]:
+    """Estimate the slide background color from the outer border band.
+
+    Samples a thin frame just inside the image edges, takes the per-channel
+    median, drops outlier samples dominated by content that touches the border,
+    and reports the median absolute max-channel deviation as texture strength.
+    The estimate is only used by ``background_mode="auto"``; a band whose
+    median still satisfies the legacy white predicate keeps the legacy formula
+    bit-for-bit.
+    """
+    h, w = image.shape[:2]
+    frame = np.concatenate([
+        image[:band, :].reshape(-1, 3),
+        image[h - band:, :].reshape(-1, 3),
+        image[:, :band].reshape(-1, 3),
+        image[:, w - band:].reshape(-1, 3),
+    ])
+    if frame.shape[0] > 200_000:
+        frame = frame[:: frame.shape[0] // 200_000 + 1]
+    median = np.median(frame, axis=0).astype(np.int16)
+    distance = np.max(np.abs(frame.astype(np.int16) - median), axis=1)
+    mad = float(np.median(distance))
+    keep = distance <= max(8.0, 6.0 * mad)
+    if not keep.all() and keep.any():
+        median = np.median(frame[keep], axis=0).astype(np.int16)
+        distance = np.max(np.abs(frame.astype(np.int16) - median), axis=1)
+        mad = float(np.median(distance))
+    return {
+        "bg_color": [int(median[0]), int(median[1]), int(median[2])],
+        "band_mad": round(mad, 3),
+        "band_sample_count": int(frame.shape[0]),
+    }
+
+
 def _neighbors(connectivity: int) -> tuple[tuple[int, int], ...]:
     base = ((1, 0), (-1, 0), (0, 1), (0, -1))
     return base if connectivity == 4 else base + ((1, 1), (1, -1), (-1, 1), (-1, -1))
@@ -368,6 +405,8 @@ def _detect_fine_grained_components(
     ow: int,
     oh: int,
     settings: dict[str, Any],
+    exclude_background_from_pale: bool = False,
+    edge_ring_support: np.ndarray | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], np.ndarray, dict[str, Any]]:
     """P1 detection: original seed components + bounded two-threshold diffusion.
 
@@ -402,8 +441,21 @@ def _detect_fine_grained_components(
     timings["projection_split_sec"] = round(time.perf_counter() - stage, 3)
 
     stage = time.perf_counter()
-    pale = white & (lo < pale_threshold)
+    if exclude_background_from_pale:
+        # Adaptive non-white backgrounds: the background itself satisfies the
+        # pale predicate, so without this guard the whole canvas would become
+        # support and the waves would swallow every component boundary.
+        pale = white & ~bg & (lo < pale_threshold)
+    else:
+        pale = white & (lo < pale_threshold)
     enclosed = white & ~bg
+    if edge_ring_support is not None:
+        # Adaptive anti-alias ring: background-colored pixels that still differ
+        # from the estimated background and hug content directly.  Ground truth
+        # scores any difference as foreground, so without this ring every glyph
+        # edge loses its 1-2px blend shell.  The 1px dilation keeps the band
+        # out of the uniform background sea by construction.
+        enclosed = enclosed | edge_ring_support
     _enclosed_labels, enclosed_groups = _label_components_bfs(enclosed, nbrs)
     excluded = np.zeros((h, w), dtype=bool)
     review_regions: list[dict[str, Any]] = []
@@ -911,6 +963,7 @@ def detect_elements(
         for key in (
             "white_threshold",
             "color_tolerance",
+            "background_mode",
             "closing_radius",
             "add_border",
             "connectivity",
@@ -957,8 +1010,36 @@ def detect_elements(
     image = Image.open(image_path).convert("RGB")
     ow, oh = image.size
     border = int(settings["add_border"])
+    white_threshold = int(settings["white_threshold"])
+    color_tolerance = int(settings["color_tolerance"])
+    # ``background_mode="auto"`` estimates the slide background from the border
+    # band.  A band whose median still satisfies the legacy white predicate
+    # keeps the legacy formula bit-for-bit; anything else switches to a
+    # distance-from-estimated-background predicate so beige/gray/tinted decks
+    # stop collapsing into one giant component at the flood-fill step.
+    background_mode = str(settings.get("background_mode") or "white").strip().lower()
+    adaptive_background: dict[str, Any] | None = None
+    pad_color = (255, 255, 255)
+    if background_mode == "auto":
+        estimate = _estimate_background(np.asarray(image, dtype=np.uint8))
+        bg_color = estimate["bg_color"]
+        band_lo = int(min(bg_color))
+        band_spread = int(max(bg_color)) - band_lo
+        near_white = band_lo >= white_threshold and band_spread <= color_tolerance
+        if near_white:
+            adaptive_background = {**estimate, "mode": "auto", "path": "legacy_white"}
+        else:
+            tolerance = max(color_tolerance, int(np.ceil(2.0 * estimate["band_mad"])))
+            tolerance = min(tolerance, 60)
+            adaptive_background = {
+                **estimate,
+                "mode": "auto",
+                "path": "adaptive",
+                "tolerance": tolerance,
+            }
+            pad_color = tuple(int(channel) for channel in bg_color)
     if border:
-        padded = Image.new("RGB", (ow + border * 2, oh + border * 2), (255, 255, 255))
+        padded = Image.new("RGB", (ow + border * 2, oh + border * 2), pad_color)
         padded.paste(image, (border, border))
     else:
         padded = image
@@ -966,7 +1047,20 @@ def detect_elements(
     h, w = arr.shape[:2]
     hi = arr.max(axis=2).astype(np.int16)
     lo = arr.min(axis=2).astype(np.int16)
-    white = (lo >= int(settings["white_threshold"])) & ((hi - lo) <= int(settings["color_tolerance"]))
+    if adaptive_background is not None and adaptive_background["path"] == "adaptive":
+        reference = np.array(adaptive_background["bg_color"], dtype=np.int16)
+        tolerance = int(adaptive_background["tolerance"])
+        distance = np.max(np.abs(arr.astype(np.int16) - reference), axis=2)
+        white = distance <= tolerance
+        content = ~white
+        edge_ring = (
+            white
+            & (distance > 0)
+            & (_morph_dilate(content.astype(np.uint8) * 255, np.ones((3, 3), dtype=np.uint8)) > 0)
+        )
+    else:
+        white = (lo >= white_threshold) & ((hi - lo) <= color_tolerance)
+        edge_ring = None
     bg = np.zeros((h, w), dtype=bool)
     q: deque[tuple[int, int]] = deque()
 
@@ -1011,7 +1105,11 @@ def detect_elements(
         # at all here, so the grouping layer stays identical to the ink
         # evidence and separable islands are never fused.
         candidates, residual, source_foreground, fine_grained_meta = _detect_fine_grained_components(
-            white, lo, bg, nbrs, border, ow, oh, settings
+            white, lo, bg, nbrs, border, ow, oh, settings,
+            exclude_background_from_pale=(
+                adaptive_background is not None and adaptive_background["path"] == "adaptive"
+            ),
+            edge_ring_support=edge_ring,
         )
         stage_timing_ms["morphology"] = 0.0
         _assign_ids_and_crops(candidates, residual, image, crop_dir)
@@ -1188,6 +1286,8 @@ def detect_elements(
         ),
         "foreground_pixel_count": _rle_pixel_count(exact_foreground),
     }
+    if adaptive_background is not None:
+        payload["adaptive_background"] = adaptive_background
     if fine_grained_meta is not None:
         id_map = fine_grained_meta.pop("_component_id_map", {})
         for merge_groups in fine_grained_meta["fine_grained"]["merge_candidates"].values():

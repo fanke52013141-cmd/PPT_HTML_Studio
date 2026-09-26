@@ -1,0 +1,29 @@
+{
+  "case_id": "14_tint_pale",
+  "description": "淡蓝底上的浅色卡片",
+  "background": [
+    234,
+    241,
+    247
+  ],
+  "groups": [
+    {
+      "id": "group_001",
+      "narration": "标题与页面框架先出现"
+    },
+    {
+      "id": "group_002",
+      "narration": "步骤 1：采集数据"
+    },
+    {
+      "id": "group_003",
+      "narration": "步骤 2：清洗数据"
+    },
+    {
+      "id": "group_004",
+      "narration": "步骤 3：分析结果"
+    }
+  ],
+  "policy": "Visible pixels differing from the configured background only.",
+  "image_sha256": "a91c379096f26b57d0b4ad0b0fbb33f41fe337d042bb948e457b9f0906896cc9"
+}

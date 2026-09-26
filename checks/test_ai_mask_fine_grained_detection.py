@@ -279,7 +279,8 @@ def test_normalize_settings_and_prompt_migration_for_fine_grained():
     assert settings["fine_grained_detection"] is True
     assert settings["pale_support_threshold"] == 255
     assert settings["enclosed_support_max_area_px"] == 5000
-    assert ai_mask_engine.DEFAULT_SETTINGS["fine_grained_detection"] is False
+    # w7 A/B (outputs/ai_mask_w7_*): fine-grained 11/11 passed vs closing 0/11.
+    assert ai_mask_engine.DEFAULT_SETTINGS["fine_grained_detection"] is True
     assert "cluster_member_count" not in ai_mask_engine.DEFAULT_METHODOLOGY
 
 

@@ -435,6 +435,9 @@ def test_closing_bridge_pixels_never_enter_a_saved_mask() -> None:
     detection_settings = mask.normalize_settings({
         "min_element_area": 10,
         "component_padding_px": 0,
+        # Fine-grained detection is the default now; these tests pin the
+        # closing path, so they opt back into it explicitly.
+        "fine_grained_detection": False,
     })
     with tempfile.TemporaryDirectory() as temp_dir:
         slide_dir = Path(temp_dir) / "slide_001"
@@ -467,6 +470,7 @@ def test_rollback_switch_restores_the_closing_as_ink_behaviour() -> None:
     detection_settings = mask.normalize_settings({
         "min_element_area": 10,
         "component_padding_px": 0,
+        "fine_grained_detection": False,
         "pixel_evidence_separation": False,
     })
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -483,6 +487,9 @@ def test_layout_boxes_split_a_bridged_pair_without_reading_box_order() -> None:
     detection_settings = mask.normalize_settings({
         "min_element_area": 10,
         "component_padding_px": 0,
+        # Fine-grained detection is the default now; these tests pin the
+        # closing path, so they opt back into it explicitly.
+        "fine_grained_detection": False,
     })
     cards = [
         _layout_box(15, 25, 100, 100),
@@ -523,6 +530,9 @@ def test_one_layout_box_never_solidifies_the_white_gap_between_its_atoms() -> No
     detection_settings = mask.normalize_settings({
         "min_element_area": 10,
         "component_padding_px": 0,
+        # Fine-grained detection is the default now; these tests pin the
+        # closing path, so they opt back into it explicitly.
+        "fine_grained_detection": False,
     })
     with tempfile.TemporaryDirectory() as temp_dir:
         slide_dir = Path(temp_dir) / "slide_001"
@@ -563,6 +573,7 @@ def test_one_layout_box_never_solidifies_the_white_gap_between_its_atoms() -> No
         fused_settings = mask.normalize_settings({
             "min_element_area": 10,
             "component_padding_px": 0,
+            "fine_grained_detection": False,
             "layout_merge_bound_atoms": True,
         })
         fused = mask.detect_elements(
@@ -580,6 +591,9 @@ def test_connected_atoms_keep_sharing_one_mask_under_a_single_box() -> None:
     detection_settings = mask.normalize_settings({
         "min_element_area": 10,
         "component_padding_px": 0,
+        # Fine-grained detection is the default now; these tests pin the
+        # closing path, so they opt back into it explicitly.
+        "fine_grained_detection": False,
     })
     with tempfile.TemporaryDirectory() as temp_dir:
         slide_dir = Path(temp_dir) / "slide_001"
@@ -608,6 +622,9 @@ def test_detection_cache_follows_image_settings_and_algorithm_version() -> None:
     detection_settings = mask.normalize_settings({
         "min_element_area": 10,
         "component_padding_px": 0,
+        # Fine-grained detection is the default now; these tests pin the
+        # closing path, so they opt back into it explicitly.
+        "fine_grained_detection": False,
     })
     cards = [_layout_box(15, 25, 100, 100), _layout_box(110, 25, 95, 100)]
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -624,6 +641,7 @@ def test_detection_cache_follows_image_settings_and_algorithm_version() -> None:
         rolled_back = mask.normalize_settings({
             "min_element_area": 10,
             "component_padding_px": 0,
+            "fine_grained_detection": False,
             "layout_binding_v2": False,
         })
         stale_guard = mask.detect_elements(image_path, slide_dir, rolled_back)

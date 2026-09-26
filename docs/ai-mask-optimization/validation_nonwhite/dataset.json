@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "size": [
+    1920,
+    1080
+  ],
+  "cases": [
+    "12_beige_cards",
+    "13_gray_dense",
+    "14_tint_pale"
+  ],
+  "font": "Microsoft YaHei preferred; keep delivered PNGs fixed across machines"
+}
