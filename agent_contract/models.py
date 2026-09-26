@@ -273,6 +273,23 @@ class CheckpointResult(BaseModel):
     next_stage: str = ""
 
 
+class CheckpointInfo(BaseModel):
+    name: str
+    label: str = ""
+    description: str = ""
+
+
+class CheckpointListResult(BaseModel):
+    project_id: str
+    checkpoints: list[CheckpointInfo] = Field(default_factory=list)
+
+
+class ProjectDeleteResult(BaseModel):
+    project_id: str
+    deleted: bool
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
 # ---------------------------------------------------------------------------
 # Artifact models
 # ---------------------------------------------------------------------------

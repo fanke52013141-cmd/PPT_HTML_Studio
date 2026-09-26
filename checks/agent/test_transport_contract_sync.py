@@ -31,3 +31,39 @@ def test_meta_exposes_complete_machine_readable_capabilities():
         assert detail["mcp_enabled"] is cap.mcp_enabled
         assert detail["cli_command"] == cap.cli_command
         assert "input_schema" in detail and "output_schema" in detail
+
+
+def test_every_agent_route_is_a_registered_capability():
+    """反向断言：Agent 路由要么登记为能力，要么出现在显式豁免清单中。
+
+    历史缺陷：仅有的 capabilities→routes 单向断言放过了 6 条未登记的
+    业务路由（DELETE 项目、checkpoints 列表、slide 图片/音频、最新视频、
+    artifact 内容下载），它们因此缺席 OpenAPI 与 capability-matrix。
+    """
+    from agent_api.routes import router
+
+    # 显式豁免：传输/文档端点，不是对外承诺的业务能力。
+    excluded = {
+        ("GET", "/api/agent/v1/meta"),
+        ("GET", "/api/agent/v1/openapi.json"),
+        ("GET", "/api/agent/v1/docs"),
+    }
+    registered = {
+        (cap.agent_api_method, cap.agent_api_path)
+        for cap in CAPABILITIES
+        if cap.status != CapabilityStatus.removed
+    }
+    missing = []
+    for route in router.routes:
+        path = getattr(route, "path", "")
+        if not path.startswith("/api/agent/v1"):
+            continue
+        for method in getattr(route, "methods", None) or set():
+            if method in {"HEAD", "OPTIONS"}:
+                continue
+            if (method, path) not in registered and (method, path) not in excluded:
+                missing.append((method, path))
+    assert missing == [], (
+        "Agent routes missing from the capability registry "
+        f"(register them or extend the exclusion list with a reason): {missing}"
+    )

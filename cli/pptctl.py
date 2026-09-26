@@ -31,6 +31,7 @@ Examples:
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 import json
 import os
 import sys
@@ -343,6 +344,81 @@ def cmd_artifact_get(args: argparse.Namespace) -> None:
 # Diagnostics commands
 # ---------------------------------------------------------------------------
 
+def cmd_project_delete(args: argparse.Namespace) -> None:
+    if not args.confirm_delete:
+        _print_error("project delete is destructive; pass --confirm-delete to proceed")
+        sys.exit(1)
+    client = AgentClient(base_url=args.base_url, app_token=args.token)
+    try:
+        result = client.delete_project(args.project)
+        _print_json(result)
+    except AgentClientError as e:
+        _print_error(str(e))
+        sys.exit(1)
+
+
+def _save_agent_bytes(client: AgentClient, path: str, out: str) -> None:
+    try:
+        payload, content_type = client.get_bytes(path)
+    except AgentClientError as e:
+        _print_error(str(e))
+        sys.exit(1)
+    target = Path(out)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(payload)
+    _print_json({
+        "saved_to": str(target),
+        "bytes": len(payload),
+        "content_type": content_type,
+    })
+
+
+def cmd_checkpoint_list(args: argparse.Namespace) -> None:
+    client = AgentClient(base_url=args.base_url, app_token=args.token)
+    try:
+        result = client.list_checkpoints(args.project)
+        _print_json(result)
+    except AgentClientError as e:
+        _print_error(str(e))
+        sys.exit(1)
+
+
+def cmd_image_get(args: argparse.Namespace) -> None:
+    client = AgentClient(base_url=args.base_url, app_token=args.token)
+    _save_agent_bytes(
+        client,
+        f"/api/agent/v1/projects/{args.project}/slides/{args.slide}/image",
+        args.out,
+    )
+
+
+def cmd_audio_get(args: argparse.Namespace) -> None:
+    client = AgentClient(base_url=args.base_url, app_token=args.token)
+    _save_agent_bytes(
+        client,
+        f"/api/agent/v1/projects/{args.project}/slides/{args.slide}/audio",
+        args.out,
+    )
+
+
+def cmd_video_latest(args: argparse.Namespace) -> None:
+    client = AgentClient(base_url=args.base_url, app_token=args.token)
+    _save_agent_bytes(
+        client,
+        f"/api/agent/v1/projects/{args.project}/videos/latest",
+        args.out,
+    )
+
+
+def cmd_artifact_download(args: argparse.Namespace) -> None:
+    client = AgentClient(base_url=args.base_url, app_token=args.token)
+    _save_agent_bytes(
+        client,
+        f"/api/agent/v1/projects/{args.project}/artifacts/{args.artifact}/content",
+        args.out,
+    )
+
+
 def cmd_diagnostics(args: argparse.Namespace) -> None:
     client = AgentClient(base_url=args.base_url, app_token=args.token)
     try:
@@ -542,6 +618,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_update.add_argument("--idempotency-key", default=None, help="Idempotency key to prevent duplicate updates")
     p_update.set_defaults(func=cmd_project_update)
 
+    p_delete = proj_sub.add_parser("delete", help="Delete a project (destructive)")
+    p_delete.add_argument("--project", required=True)
+    p_delete.add_argument(
+        "--confirm-delete",
+        action="store_true",
+        help="Confirm the destructive deletion",
+    )
+    p_delete.set_defaults(func=cmd_project_delete)
+
     # source
     src_parser = subparsers.add_parser("source", help="Set project source")
     src_sub = src_parser.add_subparsers(dest="subcommand", required=True)
@@ -611,6 +696,12 @@ def build_parser() -> argparse.ArgumentParser:
     i_regen.add_argument("--idempotency-key", default=None, help="Idempotency key to prevent duplicate regeneration")
     i_regen.set_defaults(func=cmd_image_regenerate)
 
+    i_get = img_sub.add_parser("get", help="Download the current slide image")
+    i_get.add_argument("--project", required=True)
+    i_get.add_argument("--slide", required=True)
+    i_get.add_argument("--out", required=True, help="Output file path")
+    i_get.set_defaults(func=cmd_image_get)
+
     # narration
     nar_parser = subparsers.add_parser("narration", help="Narration operations")
     nar_sub = nar_parser.add_subparsers(dest="subcommand", required=True)
@@ -641,6 +732,29 @@ def build_parser() -> argparse.ArgumentParser:
     v_render.add_argument("--idempotency-key", default=None, help="Idempotency key to prevent duplicate renders")
     v_render.set_defaults(func=cmd_video_render)
 
+    v_latest = vid_sub.add_parser("latest", help="Download the latest final video")
+    v_latest.add_argument("--project", required=True)
+    v_latest.add_argument("--out", required=True, help="Output file path")
+    v_latest.set_defaults(func=cmd_video_latest)
+
+    # audio
+    audio_parser = subparsers.add_parser("audio", help="Audio operations")
+    audio_sub = audio_parser.add_subparsers(dest="subcommand", required=True)
+
+    a_get = audio_sub.add_parser("get", help="Download the current slide audio")
+    a_get.add_argument("--project", required=True)
+    a_get.add_argument("--slide", required=True)
+    a_get.add_argument("--out", required=True, help="Output file path")
+    a_get.set_defaults(func=cmd_audio_get)
+
+    # checkpoint
+    ckpt_parser = subparsers.add_parser("checkpoint", help="Checkpoint operations")
+    ckpt_sub = ckpt_parser.add_subparsers(dest="subcommand", required=True)
+
+    c_list = ckpt_sub.add_parser("list", help="List available checkpoints")
+    c_list.add_argument("--project", required=True)
+    c_list.set_defaults(func=cmd_checkpoint_list)
+
     # artifacts
     art_parser = subparsers.add_parser("artifacts", help="Artifact operations")
     art_sub = art_parser.add_subparsers(dest="subcommand", required=True)
@@ -657,6 +771,12 @@ def build_parser() -> argparse.ArgumentParser:
     a_get.add_argument("--project", required=True)
     a_get.add_argument("--artifact", required=True)
     a_get.set_defaults(func=cmd_artifact_get)
+
+    a_download = artifact_sub.add_parser("download", help="Download artifact binary content")
+    a_download.add_argument("--project", required=True)
+    a_download.add_argument("--artifact", required=True)
+    a_download.add_argument("--out", required=True, help="Output file path")
+    a_download.set_defaults(func=cmd_artifact_download)
 
     # diagnostics
     diag_parser = subparsers.add_parser("diagnostics", help="System diagnostics")

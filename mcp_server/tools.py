@@ -80,6 +80,14 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
             idempotency_key=args.get("idempotency_key"),
         )
 
+    elif cap_id == "project.delete":
+        pid = args.get("project_id", "")
+        return client.delete_project(pid)
+
+    elif cap_id == "checkpoint.list":
+        pid = args.get("project_id", "")
+        return client.list_checkpoints(pid)
+
     elif cap_id == "project.list":
         return client.list_projects(
             status=args.get("status"),

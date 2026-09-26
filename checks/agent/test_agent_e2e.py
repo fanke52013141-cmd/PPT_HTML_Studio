@@ -277,3 +277,63 @@ class TestOptimisticLocking:
             json={"description": "No lock check"},
         )
         assert update_resp.status_code == 200
+
+
+class TestArtifactDownloadRoundTrip:
+    """artifact.get 返回的 download_url 必须真实可下载（能力表欠账回归）。"""
+
+    def test_download_url_serves_recorded_artifact(self, api_client):
+        from database import ArtifactRecord, Project, SessionLocal
+
+        create_resp = api_client.post(
+            "/api/agent/v1/projects",
+            json={"name": "Artifact Download Test"},
+        )
+        assert create_resp.status_code == 200
+        project_id = create_resp.json()["project"]["project_id"]
+
+        db = SessionLocal()
+        try:
+            project = db.query(Project).filter(Project.id == project_id).first()
+            assert project is not None
+            run_dir = project.run_dir
+            relative_path = "planning/visual_contract.json"
+            artifact_bytes = b'{"artifact-roundtrip": true}'
+            target = os.path.join(run_dir, *relative_path.split("/"))
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            with open(target, "wb") as handle:
+                handle.write(artifact_bytes)
+            db.add(
+                ArtifactRecord(
+                    id=f"artifact-{uuid.uuid4().hex[:12]}",
+                    project_id=project_id,
+                    artifact_type="contract",
+                    filename="visual_contract.json",
+                    relative_path=relative_path,
+                    mime_type="application/json",
+                    size_bytes=len(artifact_bytes),
+                )
+            )
+            db.commit()
+        finally:
+            db.close()
+
+        list_resp = api_client.get(f"/api/agent/v1/projects/{project_id}/artifacts")
+        assert list_resp.status_code == 200
+        artifacts = list_resp.json().get("artifacts") or []
+        assert artifacts, "recorded artifact must be listed"
+        artifact_id = artifacts[0]["artifact_id"]
+
+        get_resp = api_client.get(
+            f"/api/agent/v1/projects/{project_id}/artifacts/{artifact_id}"
+        )
+        assert get_resp.status_code == 200
+        download_url = get_resp.json()["artifact"].get("download_url") or (
+            get_resp.json().get("download_url")
+        )
+        assert download_url, "artifact.get must expose a download_url"
+
+        content_resp = api_client.get(download_url)
+        assert content_resp.status_code == 200
+        assert content_resp.content == artifact_bytes
+        assert "application/json" in content_resp.headers.get("content-type", "")

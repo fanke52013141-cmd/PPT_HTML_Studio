@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.6.0
-- **Contract Hash**: `706f3681ea868dde`
-- **Total Capabilities**: 23
+- **Agent API Version**: 1.7.0
+- **Contract Hash**: `a12e6dd6c9c84d18`
+- **Total Capabilities**: 29
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -34,6 +34,12 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `digital_human.config.update` | 1.0 | stable | PATCH | `/api/agent/v1/projects/{project_id}/digital-human/config` | `ppt_digital_human_config_update` | Yes | `digital-human config --set` | `digital_human_routes.router` | No | No |
 | `digital_human.health` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/digital-human/health` | `ppt_digital_human_health` | Yes | `digital-human health` | `digital_human_client.get_digital_human_client` | No | No |
 | `digital_human.generate` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/digital-human/generate-full` | `ppt_digital_human_generate` | Yes | `digital-human generate` | `digital_human_client.get_digital_human_client` | No | No |
+| `project.delete` | 1.0 | stable | DELETE | `/api/agent/v1/projects/{project_id}` | `ppt_project_delete` | Yes | `project delete` | `project_service.ProjectService.delete` | No | Yes |
+| `checkpoint.list` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/checkpoints` | `ppt_checkpoint_list` | Yes | `checkpoint list` | `agent_api.routes.agent_list_checkpoints` | No | No |
+| `image.get` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/slides/{slide_id}/image` | `ppt_image_get` | No | `image get` | `image_workflow_service.get_slide_image_file` | No | No |
+| `audio.get` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/slides/{slide_id}/audio` | `ppt_audio_get` | No | `audio get` | `tts_service.get_slide_audio_file` | No | No |
+| `video.latest` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/videos/latest` | `ppt_video_latest` | No | `video latest` | `video_render_service final_video_download` | No | No |
+| `artifact.download` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/artifacts/{artifact_id}/content` | `ppt_artifact_download` | No | `artifact download` | `agent_api.routes.agent_download_artifact` | No | No |
 
 ## Pipeline Checkpoints
 
@@ -48,7 +54,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **22** stable tools:
+The MCP server exposes **24** stable tools:
 
 - `ppt_identity_get` — Return the creative account and scopes associated with this Agent connection.
 - `ppt_project_create` — Create a project with canvas, production/presentation mode, versioned creation configuration, and optional course/chapter ownership.
@@ -72,6 +78,8 @@ The MCP server exposes **22** stable tools:
 - `ppt_digital_human_config_update` — Update digital-human configuration for a project.
 - `ppt_digital_human_health` — Check digital-human service availability and model readiness.
 - `ppt_digital_human_generate` — Trigger full digital-human video generation for all slides.
+- `ppt_project_delete` — Delete a project and all of its derived artifacts. Destructive and irreversible.
+- `ppt_checkpoint_list` — List the pipeline checkpoints available for a project.
 
 ## Resource URIs
 

@@ -39,6 +39,7 @@ from agent_contract.models import (
     VideoRenderRequest, VideoRenderResult,
     CheckpointApproveRequest, CheckpointResult,
     ArtifactsListResult, ArtifactGetResult,
+    ArtifactInfo,
     DiagnosticsResult,
     IdentityResult,
 )
@@ -47,7 +48,7 @@ from agent_contract.operations import (
     operation_from_one_click, unwrap_one_click_status,
 )
 from agent_contract.artifacts import (
-    ArtifactInfo, build_resource_uri, mime_for_type,
+    build_resource_uri, mime_for_type,
 )
 from agent_contract.versions import get_meta, get_contract_hash, AGENT_API_VERSION
 from agent_api.errors import (
