@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from project_storage import UnsafeProjectPath, safe_identifier, slide_file
+from scripts.build_remotion_props import compute_slide_presentation_duration
 
 
 _TIMESTAMP_RE = re.compile(
@@ -110,33 +111,20 @@ def _read_timeline(path: Path, *, slide_id: str) -> dict[str, Any]:
     return payload
 
 
-def _timeline_total_duration(
+def _slide_presentation_duration(
     timeline: dict[str, Any],
-    cues: list[SubtitleCue],
+    animation_timeline: dict[str, Any],
     *,
-    audio_start_sec: float,
     slide_id: str,
 ) -> float:
-    candidates = [audio_start_sec + max(cue.end_ms for cue in cues) / 1_000]
-    for key in ("duration_sec",):
-        value = _positive_number(timeline.get(key))
-        if value is not None:
-            candidates.append(value)
-    content_duration = _positive_number(timeline.get("audio_content_duration_sec"))
-    if content_duration is not None:
-        candidates.append(audio_start_sec + content_duration)
-    segments = timeline.get("segments")
-    if isinstance(segments, list):
-        ends = [
-            value
-            for segment in segments
-            if isinstance(segment, dict)
-            for value in [_positive_number(segment.get("end"))]
-            if value is not None
-        ]
-        if ends:
-            candidates.append(audio_start_sec + max(ends))
-    duration = max(candidates)
+    """每页游标推进量 = Remotion 页构建的同一份最终页长。
+
+    历史缺陷：这里单独用"音频结尾（不含尾帧 padding）"推进游标，而视频
+    每页实际时长是 audio_end + 0.4s 尾帧（或更长的 reveal 动画），多页
+    合并字幕因此按页累计提前漂移。现在与 build_remotion_props 共用同一
+    纯函数，页内起始偏移仍来自该页音频时间线的 audio_start_sec。
+    """
+    duration = compute_slide_presentation_duration(timeline, animation_timeline)
     if not math.isfinite(duration) or duration <= 0:
         raise _fail(slide_id, "音频时间线没有有效时长，请重新生成该页音频。")
     return duration
@@ -174,6 +162,13 @@ def build_subtitle_export(run_dir: str | Path, slide_ids: list[str]) -> Subtitle
         except OSError as exc:
             raise _fail(slide_id, "字幕文件无法读取，请重新生成该页音频。") from exc
         timeline = _read_timeline(timeline_path, slide_id=slide_id)
+        # 静态页/历史页可能没有 animation_timeline.json：缺失等价于无动画扩展。
+        animation_path = slide_file(root, slide_id, "animation_timeline.json")
+        animation_timeline = (
+            _read_timeline(animation_path, slide_id=slide_id)
+            if animation_path.is_file()
+            else {}
+        )
         # Older/generic TTS timelines omit this optional field.  Remotion also
         # treats an omitted value as zero, so the download must use the same
         # compatibility behavior rather than rejecting otherwise valid audio.
@@ -190,10 +185,9 @@ def build_subtitle_export(run_dir: str | Path, slide_ids: list[str]) -> Subtitle
             )
             for cue in cues
         )
-        project_cursor_sec += _timeline_total_duration(
+        project_cursor_sec += _slide_presentation_duration(
             timeline,
-            cues,
-            audio_start_sec=audio_start_sec,
+            animation_timeline,
             slide_id=slide_id,
         )
 

@@ -453,8 +453,16 @@ def align_audio_timeline_to_voice(audio_timeline: dict[str, Any], voice_path: Pa
     return converted
 
 
-def slide_duration(audio_timeline: dict[str, Any], animation_timeline: dict[str, Any], slide_dir: Path) -> float:
-    """Resolve the rendered slide duration from audible content and real reveals.
+def compute_slide_presentation_duration(
+    audio_timeline: dict[str, Any],
+    animation_timeline: dict[str, Any],
+) -> float:
+    """每页最终呈现时长（秒）：音频结尾 + 尾帧 padding，与真实 reveal 动画取大。
+
+    这是页长的唯一规则来源：Remotion 页构建（slide_duration）与字幕导出
+    （subtitle_export_service）必须共用同一份计算，否则多页合并字幕的
+    游标会相对视频按页累计漂移（每页少 0.4s 尾帧）。输入是两张时间线
+    dict，不做任何 IO；缺失的 animation_timeline 视为无动画扩展。
 
     Static full-slide scenes intentionally retain a positive ``duration_sec`` in
     ``animation_timeline.json`` for artifact compatibility.  That value is a
@@ -476,11 +484,17 @@ def slide_duration(audio_timeline: dict[str, Any], animation_timeline: dict[str,
         animation_end,
         audio_end + DEFAULT_AUDIO_TAIL_PADDING_SEC if audio_end > 0 else 0.0,
     )
+    return round(duration, 3)
+
+
+def slide_duration(audio_timeline: dict[str, Any], animation_timeline: dict[str, Any], slide_dir: Path) -> float:
+    """Resolve the rendered slide duration from audible content and real reveals."""
+    duration = compute_slide_presentation_duration(audio_timeline, animation_timeline)
 
     if duration <= 0:
         raise BuildError(f"Could not determine positive duration_sec for {slide_dir}")
 
-    return round(duration, 3)
+    return duration
 
 
 def contract_slide_ids(run_dir: Path) -> list[str]:
