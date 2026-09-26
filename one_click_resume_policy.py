@@ -15,6 +15,7 @@ STAGE_IDS = (
     "storyboard",
     "images",
     "confirm_images",
+    "ai_mask",
     "narration",
     "tts",
     "render",
@@ -162,6 +163,25 @@ def _validate_narration(project: Any) -> list[str]:
     return [] if has_fresh_narration(project) else ["narration_stale_or_invalid"]
 
 
+def _validate_ai_mask(project: Any) -> list[str]:
+    manifest = read_json(run_dir(project) / "reveal_manifest.json", {})
+    slides = manifest.get("slides") if isinstance(manifest, dict) else None
+    actual = [
+        str(slide.get("slide_id") or "").strip()
+        for slide in slides or []
+        if isinstance(slide, dict) and str(slide.get("slide_id") or "").strip()
+    ]
+    if actual != slide_ids(project) or not actual:
+        return ["reveal_manifest_slide_set_mismatch"]
+    annotation = manifest.get("ai_mask_annotation")
+    if not isinstance(annotation, dict):
+        return ["ai_mask_annotation_missing"]
+    status = str(annotation.get("status") or "")
+    if status not in {"completed", "completed_needs_review"}:
+        return [f"ai_mask_annotation_status:{status or 'unknown'}"]
+    return []
+
+
 def _validate_tts(project: Any) -> list[str]:
     status = confirmation_status(run_dir(project), slide_ids(project))
     return [] if status.get("confirmed") else [f"audio_not_confirmed:{status.get('reason') or 'unknown'}"]
@@ -172,6 +192,7 @@ VALIDATORS: dict[str, Callable[[Any], list[str]]] = {
     "storyboard": _validate_storyboard,
     "images": _validate_images,
     "confirm_images": _validate_confirm_images,
+    "ai_mask": _validate_ai_mask,
     "narration": _validate_narration,
     "tts": _validate_tts,
 }
@@ -181,6 +202,7 @@ STAGE_INTERNAL_STEP = {
     "storyboard": 2,
     "images": 3,
     "confirm_images": 4,
+    "ai_mask": 5,
     "narration": 6,
     "tts": 7,
     "render": 8,

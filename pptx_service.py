@@ -618,7 +618,7 @@ class PptxExportService:
         except Exception as exc:
             self._remove_partial_output(output_path)
             logger.exception("PPTX export failed for job %s", job_id)
-            self.fail_job(db, job_id, str(exc))
+            self.fail_job_after_poisoned_session(db, job_id, str(exc))
         finally:
             db.close()
             if account_context_token is not None:
@@ -646,6 +646,37 @@ class PptxExportService:
             db.commit()
         finally:
             db.close()
+
+    def fail_job_after_poisoned_session(
+        self,
+        db: Session,
+        job_id: str,
+        message: str,
+    ) -> None:
+        """失败终态写入的兜底路径：主会话可能已处于 pending-rollback。
+
+        历史缺陷：run_job 的最终提交遇到 DB 级异常后，except 路径直接在
+        同一会话上 fail_job —— query 立即抛 PendingRollbackError，失败终态
+        写不进去，任务停留 running 直到重启（对照：tts 失败路径先 rollback，
+        video 用独立短会话写终态）。
+        """
+        try:
+            db.rollback()
+        except Exception:
+            logger.exception(
+                "PPTX rollback before fail_job failed for job %s", job_id
+            )
+            fresh = self.dependencies.session_factory()
+            try:
+                self.fail_job(fresh, job_id, message)
+            except Exception:
+                logger.exception(
+                    "PPTX fresh-session fail_job failed for job %s", job_id
+                )
+            finally:
+                fresh.close()
+            return
+        self.fail_job(db, job_id, message)
 
     @staticmethod
     def fail_job(
