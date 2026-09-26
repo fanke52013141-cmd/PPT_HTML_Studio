@@ -39,12 +39,19 @@ SETTING_PREFIX = "ai_mask_"
 DEFAULT_SETTINGS: dict[str, Any] = {
     "white_threshold": 245,
     "color_tolerance": 12,
+    # "auto" estimates the slide background from the border band; decks whose
+    # border band is still white keep the legacy formula bit-for-bit, so this
+    # only changes behavior for beige/gray/tinted canvases.
+    "background_mode": "auto",
     "closing_radius": 6,
     "add_border": 2,
     "connectivity": 8,
     "min_element_area": 120,
     "component_padding_px": 12,
-    "fine_grained_detection": False,
+    # The w7 benchmark A/B (outputs/ai_mask_w7_*) measured 11/11 passed with
+    # fine-grained detection versus 0/11 with whole-image closing, so P1 is
+    # the default detector; "false" restores the closing path.
+    "fine_grained_detection": True,
     "pale_support_threshold": 254,
     "enclosed_support_max_area_px": 20000,
     "pixel_evidence_separation": True,
@@ -408,12 +415,15 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
     return {
         "white_threshold": _int(raw.get("white_threshold"), 245, 220, 255),
         "color_tolerance": _int(raw.get("color_tolerance"), 12, 0, 40),
+        "background_mode": (
+            "auto" if str(raw.get("background_mode") or "").strip().lower() == "auto" else "white"
+        ),
         "closing_radius": _int(raw.get("closing_radius"), 6, 0, 20),
         "add_border": _int(raw.get("add_border"), 2, 0, 8),
         "connectivity": 4 if str(raw.get("connectivity")) == "4" else 8,
         "min_element_area": _int(raw.get("min_element_area"), 120, 10, 10000),
         "component_padding_px": _int(raw.get("component_padding_px"), 12, 0, 80),
-        "fine_grained_detection": _bool(raw.get("fine_grained_detection"), False),
+        "fine_grained_detection": _bool(raw.get("fine_grained_detection"), True),
         "pale_support_threshold": _int(raw.get("pale_support_threshold"), 254, 246, 255),
         "enclosed_support_max_area_px": _int(raw.get("enclosed_support_max_area_px"), 20000, 1000, 200000),
         # Both default to the fixed algorithm; setting either to false rolls the

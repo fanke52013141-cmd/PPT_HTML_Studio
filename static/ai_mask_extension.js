@@ -6,11 +6,21 @@
   const USER_SETTING_KEYS = new Set([
     'white_threshold',
     'color_tolerance',
+    'background_mode',
     'min_element_area',
     'component_padding_px'
   ]);
 
   const PARAMS = [
+    {
+      key: 'background_mode', label: '背景色模式', type: 'select', default: 'auto',
+      options: [
+        ['auto', '自动识别（支持米色/浅灰/淡彩底）'],
+        ['white', '纯白底（原始行为）']
+      ],
+      usual: '白底图两种模式结果一致',
+      help: '自动模式从图片四边估计背景色再拆分元素。底色不是纯白时必须用自动；边缘被内容铺满的图建议裁边或用纯白底。'
+    },
     {
       key: 'white_threshold', label: '白底识别阈值', type: 'number', default: 245, min: 220, max: 255, step: 1,
       usual: '235 - 252',
@@ -326,6 +336,12 @@
   function inputHtml(def, value) {
     if (def.type === 'boolean') {
       return `<label class="ai-mask-switch"><input class="ai-mask-setting-input" data-key="${def.key}" type="checkbox" ${value ? 'checked' : ''}> 开启</label>`;
+    }
+    if (def.type === 'select') {
+      const options = (def.options || []).map(([optionValue, optionLabel]) =>
+        `<option value="${escapeAttr(optionValue)}" ${optionValue === value ? 'selected' : ''}>${escapeAttr(optionLabel)}</option>`
+      ).join('');
+      return `<select class="ai-mask-setting-input" data-key="${def.key}">${options}</select>`;
     }
     return `<input class="ai-mask-setting-input" data-key="${def.key}" type="number" min="${def.min}" max="${def.max}" step="${def.step}" value="${escapeAttr(value)}">`;
   }

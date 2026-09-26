@@ -181,13 +181,15 @@ def score(root, prediction, report):
     return result
 
 
-def baseline(root, output, radius, fine_grained=False, pale_threshold=254, enclosed_cap=20000):
+def baseline(root, output, radius, fine_grained=False, pale_threshold=254, enclosed_cap=20000,
+             background_mode="white"):
     # Import only the side-effect-free detector. Ground truth is deliberately used
     # to choose the BEST owner per component: this is NOT an end-to-end AI score.
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from ai_mask_component_detection import detect_elements
     settings = dict(white_threshold=245, color_tolerance=12, closing_radius=radius,
-                    add_border=2, connectivity=8, min_element_area=120, component_padding_px=12)
+                    add_border=2, connectivity=8, min_element_area=120, component_padding_px=12,
+                    background_mode=background_mode)
     if fine_grained:
         settings.update(fine_grained_detection=True, pale_support_threshold=pale_threshold,
                         enclosed_support_max_area_px=enclosed_cap)
@@ -370,6 +372,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=Path)
     parser.add_argument("--radius", type=int, choices=range(21), default=6)
     parser.add_argument("--fine-grained", action="store_true", help="run detection with fine_grained_detection enabled")
+    parser.add_argument("--background-mode", choices=["white", "auto"], default="white")
     parser.add_argument("--pale-threshold", type=int, choices=range(246, 256), default=254)
     parser.add_argument("--enclosed-cap", type=int, default=20000)
     args = parser.parse_args()
@@ -386,7 +389,8 @@ if __name__ == "__main__":
             if args.output.exists():
                 parser.error("baseline output already exists; use a new directory")
             baseline(args.root, args.output, args.radius, fine_grained=args.fine_grained,
-                     pale_threshold=args.pale_threshold, enclosed_cap=args.enclosed_cap)
+                     pale_threshold=args.pale_threshold, enclosed_cap=args.enclosed_cap,
+                     background_mode=args.background_mode)
         else:
             result = score(args.root, args.output, args.output / "report.json")
             sys.exit(0 if result["passed"] else 1)

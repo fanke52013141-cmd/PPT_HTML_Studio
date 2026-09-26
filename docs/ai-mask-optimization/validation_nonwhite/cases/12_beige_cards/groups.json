@@ -1,0 +1,29 @@
+{
+  "case_id": "12_beige_cards",
+  "description": "米色底上的三张彩色卡片",
+  "background": [
+    242,
+    236,
+    227
+  ],
+  "groups": [
+    {
+      "id": "group_001",
+      "narration": "标题与页面框架先出现"
+    },
+    {
+      "id": "group_002",
+      "narration": "步骤 1：采集数据"
+    },
+    {
+      "id": "group_003",
+      "narration": "步骤 2：清洗数据"
+    },
+    {
+      "id": "group_004",
+      "narration": "步骤 3：分析结果"
+    }
+  ],
+  "policy": "Visible pixels differing from the configured background only.",
+  "image_sha256": "cb0c539bd672ea957304b5e73c10a64b5655a1bd169c76895d953192515f8667"
+}
