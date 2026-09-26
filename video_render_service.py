@@ -528,6 +528,19 @@ class VideoRenderService:
                         candidates,
                         key=lambda value: value["started_at"],
                     )
+        if task is not None and task.get("status") in {"queued", "rendering"}:
+            # 持久任务是最终状态来源：worker 崩溃、启动恢复或任何路径写
+            # 出终态后，内存里的活跃快照（queued/rendering）不得盖过
+            # 数据库的终态；反之持久 running 只补充细节，不回盖内存。
+            persistent_active = self.job_store.get(
+                task["task_id"],
+                project_id=project_id,
+            )
+            if (
+                persistent_active is not None
+                and persistent_active.status in {"succeeded", "failed", "interrupted", "cancelled"}
+            ):
+                task = self._persistent_job_to_task(persistent_active)
         if task is None:
             persistent = (
                 self.job_store.get(
@@ -606,6 +619,11 @@ class VideoRenderService:
         未传锁（历史调用方/测试直调）时沿用旧的按需读取 + locked() 守卫。
         """
         account_context_token = set_current_account_id(account_id)
+        # worker 已从队列取出任务：内存状态从 queued 翻转为 rendering，
+        # 持久层同步置 running。否则整个渲染期间 render_status 一直返回
+        # 创建时的 queued，前端始终显示"排队中"，且 _prune_tasks_locked
+        # 的活动任务保护集合恒为空。
+        self._set_task_status(task_id, "rendering")
         db = self.dependencies.session_factory()
         project_lock = (
             render_lock
@@ -1064,21 +1082,21 @@ class VideoRenderService:
         max_tasks = 50
         if len(self._tasks) <= max_tasks:
             return
-        running_ids = {
+        active_ids = {
             task_id
             for task_id, task in self._tasks.items()
-            if task.get("status") == "rendering"
+            if task.get("status") in {"queued", "rendering"}
         }
         finished = [
             (task_id, task)
             for task_id, task in self._tasks.items()
-            if task_id not in running_ids
+            if task_id not in active_ids
         ]
         finished.sort(
             key=lambda item: item[1].get("finished_at") or 0.0,
             reverse=True,
         )
-        for task_id, _task in finished[max_tasks - len(running_ids):]:
+        for task_id, _task in finished[max_tasks - len(active_ids):]:
             self._tasks.pop(task_id, None)
 
     def _set_task_status(
