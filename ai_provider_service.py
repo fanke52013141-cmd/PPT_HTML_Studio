@@ -36,7 +36,6 @@ from image_generation_errors import (
     PHASE_DOWNLOAD,
     PHASE_POLL,
     PHASE_SUBMIT,
-    RETRY_SCOPE_REQUEST,
     RETRY_SCOPE_RESUME_TASK,
 )
 
