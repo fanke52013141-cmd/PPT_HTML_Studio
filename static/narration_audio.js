@@ -4,11 +4,37 @@
 // ==================== 步骤 6: 演讲稿编辑 ====================
 
 let narrationData = null;
+// narrationData 的归属快照。旁白的每个异步操作（自动保存、初始化、AI 标注、
+// 音频状态刷新）都必须绑定启动时的项目快照；禁止中途重读 state.currentProject——
+// 那是切换项目后把 A 项目旁白 PUT 到 B 项目（并误清 B 音频确认）的根源。
+// 归属由 loadStep6Data/initStep6Narration 绑定，随 resetStep6ProjectState 清空。
+let narrationProjectScope = null;
+
+function bindStep6ProjectScope(projectId, sessionVersion) {
+  narrationProjectScope = { projectId, sessionVersion };
+  return narrationProjectScope;
+}
+
+function resetStep6ProjectState() {
+  if (state.step6AutoSaveTimer) {
+    clearTimeout(state.step6AutoSaveTimer);
+    state.step6AutoSaveTimer = null;
+  }
+  state.step6AutoSavePromise = null;
+  narrationData = null;
+  narrationProjectScope = null;
+}
+window.resetStep6ProjectState = resetStep6ProjectState;
 
 async function loadStep6Data() {
-  const res = await API.get(`/api/projects/${state.currentProject.id}/steps/6/result`);
+  const projectId = state.currentProject?.id;
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return;
+  const res = await API.get(`/api/projects/${projectId}/steps/6/result`);
+  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   if (res.success && res.beats) {
     narrationData = res.beats;
+    bindStep6ProjectScope(projectId, sessionVersion);
     normalizeStep6Data();
     renderStep6Workspace();
     void offerArtifactRepair(res, '演讲稿数据', loadStep6Data);
@@ -19,10 +45,15 @@ async function loadStep6Data() {
 }
 
 async function initStep6Narration() {
+  const projectId = state.currentProject?.id;
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return;
   showToast('📝 正在根据视觉合约自动初始化演讲稿旁白文本...');
-  const res = await API.post(`/api/projects/${state.currentProject.id}/steps/6/init`);
+  const res = await API.post(`/api/projects/${projectId}/steps/6/init`);
+  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   if (res.success) {
     narrationData = res.beats;
+    bindStep6ProjectScope(projectId, sessionVersion);
     normalizeStep6Data();
     updateStep6AutosaveStatus('已同步模板');
     renderStep6Workspace();
@@ -93,7 +124,9 @@ async function saveStep6AnnotationPrompts() {
 }
 
 async function annotateStep6Narration() {
-  if (!state.currentProject) return;
+  const projectId = state.currentProject?.id;
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return;
   if (!narrationData) {
     await initStep6Narration();
   }
@@ -109,6 +142,8 @@ async function annotateStep6Narration() {
       // The annotation request below contains the latest editor state.
     }
   }
+  // 等待初始化/保存期间可能已切换项目：归属不符就放弃本次标注。
+  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   saveStep6CurrentState();
   normalizeStep6Data();
   const btn = document.getElementById('step6-btn-ai-annotate');
@@ -118,12 +153,16 @@ async function annotateStep6Narration() {
     showToast('AI 正在标注停顿和语气...');
     // AI 标注逐句段调用 LLM，可能超过 2 分钟，给足前端超时。
     const res = await API.post(
-      `/api/projects/${state.currentProject.id}/steps/6/annotate`,
+      `/api/projects/${projectId}/steps/6/annotate`,
       narrationData,
       { timeoutMs: 300000 },
     );
+    // 标注请求最长 5 分钟：响应回来时必须重新核对归属，否则 A 项目的
+    // 标注结果会渲染进当前已切换到的 B 项目工作区。
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     if (res.success && res.beats) {
       narrationData = res.beats;
+      bindStep6ProjectScope(projectId, sessionVersion);
       normalizeStep6Data();
       renderStep6Workspace();
       updateStep6AutosaveStatus('AI 标注已保存');
@@ -131,7 +170,9 @@ async function annotateStep6Narration() {
       refreshCurrentProjectStatus(6).catch(() => {});
     }
   } catch (e) {
-    updateStep6AutosaveStatus('AI 标注失败');
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      updateStep6AutosaveStatus('AI 标注失败');
+    }
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -275,10 +316,18 @@ function updateStep6AutosaveStatus(text) {
 }
 
 function scheduleStep6Autosave() {
+  // 归属在调度时冻结：定时器迟到（切项目/切步骤）也只可能保存回原项目。
+  const scope = narrationProjectScope
+    || (state.currentProject
+      ? { projectId: state.currentProject.id, sessionVersion: workspaceNavigationVersion }
+      : null);
+  if (!scope?.projectId) return;
   if (state.step6AutoSaveTimer) clearTimeout(state.step6AutoSaveTimer);
   updateStep6AutosaveStatus('自动保存中...');
   state.step6AutoSaveTimer = setTimeout(() => {
-    saveStep6Narration({ silent: true });
+    state.step6AutoSaveTimer = null;
+    if (narrationProjectScope?.projectId !== scope.projectId) return;
+    saveStep6Narration({ silent: true, scope });
   }, 700);
 }
 
@@ -290,11 +339,11 @@ async function flushStep6Autosave(options = {}) {
   return saveStep6Narration({ silent: true, ...options });
 }
 
-async function putStep6NarrationWithRetry(payload) {
+async function putStep6NarrationWithRetry(projectId, payload) {
   let lastError = null;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const response = await fetch(`/api/projects/${state.currentProject.id}/steps/6/result`, {
+      const response = await fetch(`/api/projects/${projectId}/steps/6/result`, {
         method: 'PUT',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json', 'X-PPT-Studio-Request': '1' }
@@ -317,7 +366,9 @@ async function putStep6NarrationWithRetry(payload) {
 
 async function saveStep6Narration(options = {}) {
   const silent = !!options.silent;
+  const scope = options.scope || narrationProjectScope;
   if (!narrationData) return true;
+  if (!scope?.projectId) return true;
   // 只有用户显式点击保存的路径才弹窗；scheduleStep6Autosave / 普通 flush
   // 属于静默自动保存，绝不能打断输入。旁白写入会让后端清除音频确认。
   if (options.userInitiated === true && state.currentProject?.audio_confirmed === true) {
@@ -338,23 +389,33 @@ async function saveStep6Narration(options = {}) {
       // Retry below with the newest editor snapshot.
     }
   }
+  // 归属复查：等待前一个保存期间可能已切换项目并重置旁白状态（narrationData
+  // 已被 resetStep6ProjectState 清空或重绑到新项目），此时绝不能再按旧快照保存。
+  if (narrationProjectScope?.projectId !== scope.projectId) return false;
   saveStep6CurrentState();
   normalizeStep6Data();
   const payload = JSON.parse(JSON.stringify(narrationData));
   if (!silent) showToast('💾 正在保存并校验台词信息...');
-  const savePromise = putStep6NarrationWithRetry(payload);
+  // 请求目标固定为调度时的项目：即使保存等待期间切到 B，这次 PUT 仍指向
+  // 原 project（其自身的编辑写回其自身），绝不读 state.currentProject。
+  const savePromise = putStep6NarrationWithRetry(scope.projectId, payload);
   state.step6AutoSavePromise = savePromise;
   try {
     const res = await savePromise;
     if (res.success) {
-      updateStep6AutosaveStatus('已自动保存');
-      if (!silent) showToast('🎉 演讲稿修改保存成功！');
-      refreshCurrentProjectStatus(6).catch(() => {});
+      // 成功提示只影响当前仍在原项目工作区时的界面；切换后静默收敛。
+      if (isCurrentWorkspaceProject(scope.projectId, scope.sessionVersion)) {
+        updateStep6AutosaveStatus('已自动保存');
+        if (!silent) showToast('🎉 演讲稿修改保存成功！');
+        refreshCurrentProjectStatus(6).catch(() => {});
+      }
       return true;
     }
   } catch (e) {
-    updateStep6AutosaveStatus('保存失败，请重试');
-    showToast(`❌ 演讲稿保存失败：${e.message || '网络连接中断'}`);
+    if (isCurrentWorkspaceProject(scope.projectId, scope.sessionVersion)) {
+      updateStep6AutosaveStatus('保存失败，请重试');
+      showToast(`❌ 演讲稿保存失败：${e.message || '网络连接中断'}`);
+    }
     return false;
   } finally {
     if (state.step6AutoSavePromise === savePromise) {
@@ -367,6 +428,9 @@ async function saveStep6Narration(options = {}) {
 // ==================== 可见步骤 6 的音频阶段（内部步骤 7） ====================
 
 async function loadStep7Data() {
+  const projectId = state.currentProject?.id;
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return;
   const emptyState = document.getElementById('step7-empty-state');
   const confirmButton = document.getElementById('step6-btn-audio-confirm-next');
   const synthButton = document.getElementById('step7-btn-synthesize');
@@ -382,9 +446,12 @@ async function loadStep7Data() {
   });
 
   const [res, audioStatus] = await Promise.all([
-    API.get(`/api/projects/${state.currentProject.id}/steps/3/images`),
-    API.get(`/api/projects/${state.currentProject.id}/steps/7/audio-status`)
+    API.get(`/api/projects/${projectId}/steps/3/images`),
+    API.get(`/api/projects/${projectId}/steps/7/audio-status`)
   ]);
+  // 音频槽位按通用 slide_id 匹配（slide_001 等跨项目同名）：A 项目的音频状态
+  // 响应迟到时若不守卫，会渲染进当前项目（B）的槽位。
+  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   const hasExistingAudio = (audioStatus.slides || []).some(item => item?.audio_exists);
   const canLoadAudio = stepAllowsAudio || hasExistingAudio;
   synthButton.style.display = canLoadAudio ? 'inline-flex' : 'none';
@@ -401,7 +468,7 @@ async function loadStep7Data() {
       const audio = audioBySlide.get(img.slide_id);
       slot.classList.add('has-audio');
       if (audio?.audio_exists && !audio?.stale) {
-        const audioUrl = `/api/projects/${state.currentProject.id}/slides/${img.slide_id}/audio?t=${Date.now()}`;
+        const audioUrl = `/api/projects/${projectId}/slides/${img.slide_id}/audio?t=${Date.now()}`;
         slot.innerHTML = `<audio controls preload="metadata" src="${audioUrl}" class="step7-audio-player" aria-label="${escHtml(img.slide_id)} 音频"></audio>`;
       } else {
         const reason = audio?.stale ? '音频已过期，请重新生成' : '音频尚未生成';
@@ -436,6 +503,9 @@ async function loadStep7Data() {
 }
 
 async function runStep7TTS() {
+  const projectId = state.currentProject?.id;
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return false;
   const loading = document.getElementById('step7-loading');
   const synthButton = document.getElementById('step7-btn-synthesize');
   const saveAndTtsButton = document.getElementById('step6-btn-save-and-tts');
@@ -451,7 +521,7 @@ async function runStep7TTS() {
   let pollTimer = null;
   try {
     const submitted = await API.post(
-      `/api/projects/${state.currentProject.id}/steps/7/synthesize-async`,
+      `/api/projects/${projectId}/steps/7/synthesize-async`,
     );
     if (!submitted.success || !submitted.job) {
       throw new Error(submitted.message || '无法创建合成任务');
@@ -466,8 +536,10 @@ async function runStep7TTS() {
       const started = Date.now();
       const tick = async () => {
         try {
+          // 轮询目标固定为提交时的项目；切换项目后旧任务照常跟踪，
+          // 但其结果只回写到原项目（见终态守卫）。
           const res = await API.get(
-            `/api/projects/${state.currentProject.id}/steps/7/synthesize-jobs/${jobId}`,
+            `/api/projects/${projectId}/steps/7/synthesize-jobs/${jobId}`,
           );
           const job = res.job || {};
           if (['completed', 'failed', 'interrupted'].includes(job.status)) {
@@ -494,6 +566,11 @@ async function runStep7TTS() {
       };
       tick();
     });
+
+    // 轮询可达 30 分钟：终态只回写原项目的工作区；已切走时仅收敛按钮状态。
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      return finalJob.status === 'completed';
+    }
 
     if (finalJob.status === 'completed') {
       const result = finalJob.result || {};
@@ -534,17 +611,24 @@ async function saveNarrationAndRunTTS() {
 }
 
 async function confirmStep7Audio() {
+  const projectId = state.currentProject?.id;
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return false;
   const confirmButton = document.getElementById('step6-btn-audio-confirm-next');
   confirmButton.disabled = true;
   try {
-    const res = await API.post(`/api/projects/${state.currentProject.id}/steps/7/confirm`, {});
+    const res = await API.post(`/api/projects/${projectId}/steps/7/confirm`, {});
+    // 确认响应迟到时不得刷新/提示到切换后的项目上。
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
     if (res.success) {
       showToast('✅ 音频已确认，准备进入作品输出。');
       await refreshCurrentProjectStatus(6);
       return true;
     }
   } catch (e) {
-    showToast(`音频确认失败：${e.message}`, 7000);
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      showToast(`音频确认失败：${e.message}`, 7000);
+    }
     return false;
   } finally {
     confirmButton.disabled = false;

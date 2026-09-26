@@ -19,9 +19,12 @@ function isCurrentWorkspaceProject(projectId, sessionVersion = workspaceNavigati
 function resetProjectScopedAsyncUi() {
   clearTimeout(state.step2AutoSaveTimer);
   state.step2AutoSaveTimer = null;
+  clearTimeout(state.step6AutoSaveTimer);
+  state.step6AutoSaveTimer = null;
   if (typeof stopStep8RenderPolling === 'function') stopStep8RenderPolling();
   if (typeof stopStep8PptxPolling === 'function') stopStep8PptxPolling();
   if (typeof resetStep3ProjectState === 'function') resetStep3ProjectState();
+  if (typeof resetStep6ProjectState === 'function') resetStep6ProjectState();
   const generateButton = document.getElementById('step2-btn-generate');
   if (generateButton) generateButton.disabled = false;
 }

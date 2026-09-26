@@ -1,7 +1,11 @@
 // Step 1 article import, topic generation, editing, and prompt settings.
 
 async function loadStep1Data() {
-  const result = await API.get(`/api/projects/${state.currentProject.id}/steps/1/result`);
+  const projectId = state.currentProject?.id;
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return;
+  const result = await API.get(`/api/projects/${projectId}/steps/1/result`);
+  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   const articleInput = document.getElementById('step1-article-input');
   const statusHint = document.getElementById('step1-status-hint');
   const saveEditButton = document.getElementById('step1-btn-save-edit');
@@ -95,6 +99,9 @@ async function openArticleSystemContentModal() {
 }
 
 async function generateStep1Article() {
+  const projectId = state.currentProject?.id;
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return;
   const topic = document.getElementById('step1-topic-input')?.value.trim() || '';
   if (!topic) {
     showToast('请先输入一个话题');
@@ -106,9 +113,12 @@ async function generateStep1Article() {
   button.innerHTML = '<span class="button-spinner"></span> 生成中...';
   try {
     const result = await API.post(
-      `/api/projects/${state.currentProject.id}/steps/1/generate-article`,
+      `/api/projects/${projectId}/steps/1/generate-article`,
       { topic },
     );
+    // 文章生成可能等待数分钟：迟到响应不得把 A 项目生成的文章写进已切换
+    // 到的 B 项目编辑器。
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     const articleInput = document.getElementById('step1-article-input');
     articleInput.value = result.content || '';
     autoResizeTextarea(articleInput);

@@ -1040,8 +1040,11 @@ if (step2BatchDeleteSource.indexOf('removedCount === 0') > step2BatchDeleteSourc
 if (topLevelFunctionSource(narrationAudio, 'narration/audio', 'scheduleStep6Autosave').includes('userInitiated')) {
   throw new Error('Step 6 autosave must never open the narration confirmation dialog');
 }
-if (!topLevelFunctionSource(narrationAudio, 'narration/audio', 'scheduleStep6Autosave').includes("saveStep6Narration({ silent: true })")) {
+if (!topLevelFunctionSource(narrationAudio, 'narration/audio', 'scheduleStep6Autosave').includes("saveStep6Narration({ silent: true, scope })")) {
   throw new Error('Step 6 autosave lost its silent save path');
+}
+if (!topLevelFunctionSource(narrationAudio, 'narration/audio', 'scheduleStep6Autosave').includes('narrationProjectScope?.projectId !== scope.projectId')) {
+  throw new Error('Step 6 autosave must drop stale-project timers instead of saving into the switched project');
 }
 
 console.log('frontend quality checks passed');
