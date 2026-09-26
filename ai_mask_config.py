@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from config_store import get_setting, update_settings
@@ -79,10 +80,31 @@ def get_ai_mask_settings() -> dict[str, Any]:
     return normalize_settings(raw)
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 def save_ai_mask_settings(payload: dict[str, Any] | None) -> dict[str, Any]:
     source = payload if isinstance(payload, dict) else {}
     values = source.get("settings") if isinstance(source.get("settings"), dict) else source
-    settings = normalize_settings(values if isinstance(values, dict) else {})
+    submitted = values if isinstance(values, dict) else {}
+    # 局部更新语义：以当前已存储设置为基底，仅合并请求中出现的已知键。
+    # 直接对 payload 做 normalize（内部先合并出厂默认）再全键回写，会把
+    # UI 未暴露的隐藏高级设置（doclayout_model_path、vision_object_batch_size、
+    # provenance_review_routing 等）静默重置为出厂默认。未知键忽略并记录；
+    # "恢复出厂默认"应走单独的显式重置操作，不借普通保存实现。
+    unknown_keys = sorted(
+        str(key) for key in submitted if str(key) not in DEFAULT_SETTINGS
+    )
+    if unknown_keys:
+        LOGGER.warning(
+            "Ignoring unknown AI Mask setting keys in save request: %s",
+            ", ".join(unknown_keys),
+        )
+    merged = {
+        **get_ai_mask_settings(),
+        **{str(key): value for key, value in submitted.items() if str(key) in DEFAULT_SETTINGS},
+    }
+    settings = normalize_settings(merged)
     updates: dict[str, Any] = {
         SETTING_PREFIX + key: value for key, value in settings.items()
     }

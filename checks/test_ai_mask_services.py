@@ -324,3 +324,69 @@ def test_engine_rejects_unknown_or_empty_slide_scope() -> None:
             pass
         else:
             raise AssertionError(f"invalid AI Mask scope was accepted: {invalid!r}")
+
+
+def test_save_ai_mask_settings_is_a_partial_update(monkeypatch) -> None:
+    """UI 只提交可见字段时，未提交的隐藏高级设置必须保持原值。
+
+    历史缺陷：save_ai_mask_settings 直接对 payload 做 normalize（内部合并
+    28 键出厂默认）后全键回写，UI 保存 4 个可见字段会把 doclayout_model_path、
+    vision_object_batch_size、provenance_review_routing 等全部静默重置。
+    """
+    stored = {
+        "ai_mask_doclayout_model_path": "/models/custom/layout.onnx",
+        "ai_mask_vision_object_batch_size": "24",
+        "ai_mask_provenance_review_routing": "False",
+        "ai_mask_white_threshold": "230",
+    }
+    updates: dict = {}
+    monkeypatch.setattr(
+        ai_mask_config,
+        "get_setting",
+        lambda key, default="": stored.get(key, default),
+    )
+    monkeypatch.setattr(
+        ai_mask_config,
+        "update_settings",
+        lambda values: updates.update(values),
+    )
+
+    saved = ai_mask_config.save_ai_mask_settings(
+        {
+            "settings": {
+                "white_threshold": 233,
+                "not_a_real_key": "should-be-ignored",
+            },
+        }
+    )
+
+    assert saved["white_threshold"] == 233
+    assert updates["ai_mask_white_threshold"] == 233
+    # 未提交的隐藏设置保持存储值，而不是被出厂默认覆盖
+    assert updates["ai_mask_doclayout_model_path"] == "/models/custom/layout.onnx"
+    assert updates["ai_mask_vision_object_batch_size"] == 24
+    assert updates["ai_mask_provenance_review_routing"] is False
+    # 未知键被忽略，不落库
+    assert not any("not_a_real_key" in key for key in updates)
+
+
+def test_save_ai_mask_settings_empty_payload_keeps_prompts_and_values(monkeypatch) -> None:
+    stored = {"ai_mask_min_element_area": "77", ai_mask_engine.PROMPT_METHOD_KEY: "自定义方法论"}
+    updates: dict = {}
+    monkeypatch.setattr(
+        ai_mask_config,
+        "get_setting",
+        lambda key, default="": stored.get(key, default),
+    )
+    monkeypatch.setattr(
+        ai_mask_config,
+        "update_settings",
+        lambda values: updates.update(values),
+    )
+
+    saved = ai_mask_config.save_ai_mask_settings({"settings": {}})
+
+    assert saved["min_element_area"] == 77
+    # 空 settings 不触碰 Prompt，也不产生设置变更
+    assert ai_mask_engine.PROMPT_METHOD_KEY not in updates
+    assert updates["ai_mask_min_element_area"] == 77
