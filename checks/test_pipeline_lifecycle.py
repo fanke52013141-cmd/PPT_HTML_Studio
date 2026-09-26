@@ -103,3 +103,83 @@ if __name__ == "__main__":
     test_audio_confirmation_cleanup_is_idempotent()
     test_status_transitions_preserve_stale_distinction()
     print("pipeline lifecycle checks passed")
+
+
+# ---------------------------------------------------------------------------
+# write_json_atomic 原子性保证回归
+#
+# 历史缺陷：os.replace 连续失败四次后退化为对目标文件的原地直写兜底，
+# 截断窗口重新出现且调用方无从得知原子性已被放弃。契约：原子替换持续
+# 失败时保留原目标文件、清理临时文件并向上抛出带原因的异常。
+# ---------------------------------------------------------------------------
+
+import json as _json  # noqa: E402
+import threading as _threading  # noqa: E402
+
+import pytest  # noqa: E402
+
+from pipeline_lifecycle import write_json_atomic  # noqa: E402
+
+
+def test_write_json_atomic_normal_path_replaces_and_leaves_no_temp(tmp_path, monkeypatch) -> None:
+    target = tmp_path / "artifact.json"
+    monkeypatch.setattr("pipeline_lifecycle.time.sleep", lambda _s: None)
+
+    write_json_atomic(target, {"value": 1, "list": [1, 2, 3]})
+
+    assert _json.loads(target.read_text(encoding="utf-8")) == {"value": 1, "list": [1, 2, 3]}
+    assert list(tmp_path.glob("*.tmp")) == []
+
+
+def test_write_json_atomic_never_falls_back_to_direct_write(tmp_path, monkeypatch) -> None:
+    target = tmp_path / "artifact.json"
+    original = {"keeper": True}
+    target.write_text(_json.dumps(original), encoding="utf-8")
+
+    failures = {"count": 0}
+
+    def failing_replace(_src, _dst):
+        failures["count"] += 1
+        raise OSError(28, "simulated persistent replace failure")
+
+    monkeypatch.setattr("pipeline_lifecycle.os.replace", failing_replace)
+    monkeypatch.setattr("pipeline_lifecycle.time.sleep", lambda _s: None)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        write_json_atomic(target, {"new": "payload"})
+
+    assert "artifact.json" in str(excinfo.value), "error must name the target path"
+    assert excinfo.value.__cause__ is not None, "original OSError must be chained"
+    assert failures["count"] == 4, "must exhaust the four bounded attempts"
+    # 原目标文件字节级保留
+    assert _json.loads(target.read_text(encoding="utf-8")) == original
+    # 临时文件全部清理
+    assert list(tmp_path.glob("*.tmp")) == []
+
+
+def test_write_json_atomic_concurrent_writers_produce_one_complete_payload(tmp_path) -> None:
+    target = tmp_path / "artifact.json"
+    payloads = [
+        {"writer": index, "blob": [index] * 4000}
+        for index in range(6)
+    ]
+    start = _threading.Barrier(len(payloads))
+    errors: list[Exception] = []
+
+    def writer(payload) -> None:
+        try:
+            start.wait()
+            for _ in range(6):
+                write_json_atomic(target, payload)
+        except Exception as exc:  # noqa: BLE001 - 汇集线程失败
+            errors.append(exc)
+
+    threads = [_threading.Thread(target=writer, args=(payload,)) for payload in payloads]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert errors == []
+    final = _json.loads(target.read_text(encoding="utf-8"))
+    assert final in payloads, "final content must be exactly one complete write, never truncated or mixed"

@@ -74,7 +74,13 @@ def read_json_file(path: str | Path) -> Any:
 
 
 def write_json_atomic(path: str | Path, payload: Any) -> None:
-    """Write JSON through a same-directory temporary file and atomic replace."""
+    """Write JSON through a same-directory temporary file and atomic replace.
+
+    原子替换持续失败时保留原目标文件并向上抛出异常：退化为对目标文件
+    的原地直写会摧毁本函数的核心保证（读者要么看到旧的完整内容、要么
+    看到新的完整内容，绝不看到截断或混合内容），且调用方无从得知原子性
+    已被放弃。调用方按既有任务失败/暂停机制处理该异常。
+    """
     target = Path(path).resolve()
     key = str(target)
     with _JSON_WRITE_LOCKS_GUARD:
@@ -96,13 +102,9 @@ def write_json_atomic(path: str | Path, payload: Any) -> None:
                 last_error = exc
                 remove_file(temporary)
                 time.sleep(0.15 * (attempt + 1))
-        try:
-            with target.open("w", encoding="utf-8", newline="\n") as file:
-                file.write(content)
-                file.flush()
-                os.fsync(file.fileno())
-        except OSError as fallback_error:
-            raise fallback_error from last_error
+        raise RuntimeError(
+            f"原子写入失败，已保留原文件且未做直写兜底: {target}"
+        ) from last_error
 
 
 def clear_remotion_props(run_dir: str | Path) -> bool:
