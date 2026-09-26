@@ -69,33 +69,29 @@ def get_comfyui_url() -> str:
     return os.environ.get("PPT_COMFYUI_URL", "http://127.0.0.1:8188").rstrip("/")
 
 
-# 模块级连接池单例：避免每次操作都新建 TCP 连接
-_client_singleton: Optional[httpx.Client] = None
-_client_lock = threading.Lock()
+# 短生命周期客户端：每次调用新建（见 _make_client），不再使用模块级单例。
 
 
 def _make_client(timeout: float = 30.0) -> httpx.Client:
-    """获取 ComfyUI httpx 客户端（连接池单例，复用 TCP 连接）。
+    """创建一个短生命周期的 ComfyUI httpx 客户端，由调用方以 ``with`` 独占并关闭。
 
-    第一次调用时创建带连接池限制的 Client，后续调用复用同一实例。
-    trust_env=False 关键：不继承系统代理，避免 localhost 被 Clash 劫持。
+    历史实现是模块级单例 + 调用方 ``with``：任一操作退出时会把仍在使用中的
+    共享连接池 close 掉，并发任务/健康检查随即抛 "Cannot send a request on a
+    closed client"，还会并发改写共享 timeout（见 checks/test_comfyui_backend.py
+    的并发回归）。改为每次调用新建客户端：对象隔离、生命周期清晰；对本机
+    回环的数字人任务，建连成本可忽略。trust_env=False 关键：不继承系统代理，
+    避免 localhost 被 Clash 劫持。
     """
-    global _client_singleton
-    with _client_lock:
-        if _client_singleton is None or _client_singleton.is_closed:
-            _client_singleton = httpx.Client(
-                base_url=get_comfyui_url(),
-                timeout=httpx.Timeout(timeout, connect=10.0),
-                trust_env=False,
-                limits=httpx.Limits(
-                    max_connections=4,
-                    max_keepalive_connections=2,
-                    keepalive_expiry=30.0,
-                ),
-            )
-        # 动态调整超时（轮询需要更长超时）
-        _client_singleton.timeout = httpx.Timeout(timeout, connect=10.0)
-    return _client_singleton
+    return httpx.Client(
+        base_url=get_comfyui_url(),
+        timeout=httpx.Timeout(timeout, connect=10.0),
+        trust_env=False,
+        limits=httpx.Limits(
+            max_connections=4,
+            max_keepalive_connections=2,
+            keepalive_expiry=30.0,
+        ),
+    )
 
 
 def check_health() -> bool:
