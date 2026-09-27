@@ -27,10 +27,12 @@ const API = {
         if (response.ok) return response.blob();
         const rawText = await response.text();
         let detail = response.statusText || '请求失败';
+        let body = {};
         if (rawText) {
           try {
             const data = JSON.parse(rawText);
             detail = data.detail || data.message || detail;
+            body = data;
           } catch (_) {
             detail = `HTTP ${response.status} ${detail}`;
           }
@@ -38,7 +40,10 @@ const API = {
         const message = typeof detail === 'string'
           ? detail
           : (detail?.message || JSON.stringify(detail));
-        throw new Error(message);
+        const blobError = new Error(message);
+        blobError.status = response.status;
+        blobError.body = body;
+        throw blobError;
       }
       const contentType = response.headers.get('content-type') || '';
       const rawText = await response.text();
@@ -61,7 +66,12 @@ const API = {
         const message = typeof detail === 'string'
           ? detail
           : (detail?.message || JSON.stringify(detail));
-        throw new Error(message);
+        // 附加结构化上下文(状态码/响应体),供调用方做 409 等分支处理;
+        // 既有消费方只读 message,保持向后兼容。
+        const statusError = new Error(message);
+        statusError.status = response.status;
+        statusError.body = data;
+        throw statusError;
       }
       return data;
     } catch (error) {

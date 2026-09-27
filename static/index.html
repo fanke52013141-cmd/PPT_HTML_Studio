@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="style.css?v=20260917.2">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
   <link rel="stylesheet" href="stitch.css?v=20260917.2">
+  <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
+  <link rel="stylesheet" href="annotations.css?v=20260927.1">
 </head>
 <body>
 
@@ -119,6 +121,12 @@
             <div class="step-num">5</div>
             <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"></path></svg></div>
             <div class="step-label">旁白与音频</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+          <li class="step-item" data-step="10">
+            <div class="step-num">6</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 4.6-1L19.4 8.2a2.1 2.1 0 0 0-3-3L5.6 16 4 20z"></path><path d="m14.8 5.2 2.4 2.4"></path><circle cx="9" cy="13" r="2.2"></circle></svg></div>
+            <div class="step-label">勾画标注</div>
             <span class="step-complete" aria-hidden="true">✓</span>
           </li>
           <li class="step-item" data-step="9">
@@ -419,6 +427,63 @@
           </div>
 
           <div id="step6-beats-list" class="step6-slides-stack"></div>
+        </div>
+
+        <!-- ==================== 步骤 10: 勾画标注（可选） ==================== -->
+        <div id="step-panel-10" class="step-panel" style="display: none;">
+          <div class="annotation-workspace">
+            <div class="annotation-header workflow-header workflow-header--titlebar">
+              <h2 class="highlight-title workflow-title">勾画标注</h2>
+              <div class="annotation-header-actions workflow-toolbar">
+                <span class="annotation-optional-hint">视频是否携带勾画由右侧开关决定</span>
+                <label class="annotation-enable-toggle">
+                  <input type="checkbox" id="annotation-enabled-toggle">
+                  <span>视频中启用勾画</span>
+                </label>
+                <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
+                <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
+              </div>
+            </div>
+
+            <div id="annotation-missing-state" class="annotation-missing card" style="display:none;">
+              <div id="annotation-missing-reason"></div>
+              <div class="annotation-missing-actions">
+                <button id="annotation-btn-goto-images" class="secondary" type="button">去生成图片</button>
+                <button id="annotation-btn-goto-narration" class="secondary" type="button">去编辑旁白</button>
+              </div>
+            </div>
+
+            <div id="annotation-workspace-body" style="display:none;">
+              <div id="annotation-thumb-strip" class="annotation-thumb-strip"></div>
+              <div class="annotation-columns">
+                <div class="annotation-canvas-pane card">
+                  <div class="annotation-canvas-frame" id="annotation-canvas-frame">
+                    <img id="annotation-canvas-image" alt="页面图">
+                    <svg id="annotation-canvas-overlay" class="annotation-canvas-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+                    <div id="annotation-region-ghost" class="annotation-region-ghost" style="display:none;"></div>
+                  </div>
+                  <div class="annotation-canvas-toolbar">
+                    <button id="annotation-btn-region" class="secondary compact-action-btn" type="button">框选区域</button>
+                    <button id="annotation-btn-detect" class="secondary compact-action-btn" type="button">识别文字</button>
+                    <button id="annotation-btn-ai-plan" class="success compact-action-btn" type="button">AI 生成重点</button>
+                    <button id="annotation-btn-undo" class="secondary compact-action-btn" type="button">撤销</button>
+                    <button id="annotation-btn-redo" class="secondary compact-action-btn" type="button">重做</button>
+                  </div>
+                </div>
+                <div class="annotation-narration-pane card">
+                  <div class="annotation-pane-title">讲稿关联</div>
+                  <div id="annotation-narration-beats" class="annotation-narration-beats"></div>
+                  <div class="annotation-pane-title" style="margin-top:0.8rem;">文字候选</div>
+                  <div id="annotation-candidates" class="annotation-candidates"></div>
+                </div>
+                <div class="annotation-list-pane card">
+                  <div class="annotation-pane-title">标注列表</div>
+                  <div id="annotation-items" class="annotation-items"></div>
+                  <div id="annotation-item-editor" class="annotation-item-editor" style="display:none;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- ==================== 步骤 9: 数字人讲解（可选） ==================== -->
@@ -1646,7 +1711,7 @@
   <script src="flow.js?v=3.0.5"></script>
   <script src="workflow_state.js?v=20260820.1"></script>
   <script src="ui_foundation.js?v=20260914.1"></script>
-  <script src="api_client.js?v=20260914.1"></script>
+  <script src="api_client.js?v=20260927.1"></script>
   <script src="artifact_repair.js?v=20260801.1"></script>
   <script src="prompt_help.js?v=20260801.1"></script>
   <script src="settings.js?v=20260907.1"></script>
@@ -1665,10 +1730,13 @@
   <script src="mask_editor.js?v=20260809.4"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
   <script src="narration_audio.js?v=20260913.1"></script>
+  <script src="annotations_core.js?v=20260927.1"></script>
+  <script src="annotations_workspace.js?v=20260927.2"></script>
+  <script src="annotations_editor.js?v=20260927.2"></script>
   <script src="output_render.js?v=20260909.1"></script>
   <script src="account_management.js?v=20260916.1"></script>
-  <script src="workspace_navigation.js?v=20260917.3"></script>
-  <script src="event_bindings.js?v=20260917.3"></script>
+  <script src="workspace_navigation.js?v=20260927.1"></script>
+  <script src="event_bindings.js?v=20260927.1"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>
   <script src="storyboard_background_extension.js?v=20260916.1"></script>
   <script src="style_reference_manager_extension.js?v=3.1.0"></script>

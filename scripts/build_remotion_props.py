@@ -518,6 +518,108 @@ def contract_slide_ids(run_dir: Path) -> list[str]:
     return slide_ids
 
 
+ANNOTATION_TIMELINE_RESOLVER_VERSION = "annotation_timeline_v1"
+
+
+def _sha256_file(path: Path) -> str | None:
+    import hashlib
+
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _load_annotation_timeline_for_render(
+    slide_dir: Path,
+    slide_id: str,
+    asset_store: "RuntimeAssetStore | None" = None,
+    repo_root: Path | None = None,
+) -> dict[str, Any] | None:
+    timeline_path = slide_dir / "annotation_timeline.json"
+    # slide_dir = <run>/slides/<slide_id>;planning 位于 run 根(slide_dir 上两级)
+    settings_path = slide_dir.parent.parent / "planning" / "annotation_settings.json"
+    enabled = False
+    if settings_path.exists():
+        try:
+            raw = json.loads(settings_path.read_text(encoding="utf-8-sig"))
+            enabled = bool(raw.get("enabled")) if isinstance(raw, dict) else False
+        except ValueError:
+            enabled = False
+    if not enabled:
+        return None  # 功能关闭:旧 timeline 一律忽略
+    if not timeline_path.exists():
+        raise BuildError(
+            f"Slide {slide_id}: 勾画已启用但缺少 annotation_timeline.json;"
+            "请在勾画工作区完成确认后重新导出"
+        )
+    timeline = read_json(timeline_path)
+    if not isinstance(timeline, dict) or not timeline.get("events"):
+        raise BuildError(f"Slide {slide_id}: annotation_timeline.json 缺少 events,无法渲染勾画")
+    if timeline.get("resolver_version") != ANNOTATION_TIMELINE_RESOLVER_VERSION:
+        raise BuildError(
+            f"Slide {slide_id}: 勾画时间轴版本过期"
+            f"({timeline.get('resolver_version')} != {ANNOTATION_TIMELINE_RESOLVER_VERSION});请重新确认勾画"
+        )
+    inputs = timeline.get("inputs") or {}
+    image_hash = _sha256_file(slide_dir / "visual_draft.png")
+    if image_hash and inputs.get("image_hash") and inputs["image_hash"] != image_hash:
+        raise BuildError(f"Slide {slide_id}: 勾画时间轴基于旧图片,请重新确认勾画后导出")
+    narration_hash = _sha256_file(slide_dir / "narration_beats.json")
+    if narration_hash and inputs.get("narration_hash") and inputs["narration_hash"] != narration_hash:
+        raise BuildError(f"Slide {slide_id}: 勾画时间轴基于旧讲稿,请重新确认勾画后导出")
+    if asset_store is not None and repo_root is not None:
+        _attach_raster_assets(timeline, slide_dir, slide_id, asset_store, repo_root)
+    return timeline
+
+
+def _attach_raster_assets(
+    timeline: dict[str, Any],
+    slide_dir: Path,
+    slide_id: str,
+    asset_store: RuntimeAssetStore,
+    repo_root: Path,
+) -> None:
+    """把栅格墨迹帧复制进 runtime 资产,stroke.ink 替换为可访问 URL 列表。
+
+    视频呈现的是位图手写帧(非 SVG);缺帧按错误处理,避免视频里静默少笔迹。
+    """
+    for event in timeline.get("events", []) or []:
+        annotation_id = str(event.get("annotation_id") or "")
+        for stroke in event.get("strokes", []) or []:
+            ink = stroke.get("ink") if isinstance(stroke, dict) else None
+            if not isinstance(ink, dict) or ink.get("kind") != "raster":
+                continue
+            frame_count = int(ink.get("frame_count") or 0)
+            if frame_count <= 0:
+                raise BuildError(f"Slide {slide_id}: 勾画 {annotation_id} 墨迹帧数为 0,请重新确认勾画")
+            stroke_dir = str(ink.get("dir") or "")
+            ink_root = slide_dir / "annotation_ink" / annotation_id / stroke_dir
+            urls: list[str] = []
+            for index in range(frame_count):
+                src = ink_root / f"frame_{index:03d}.png"
+                if not src.exists():
+                    raise BuildError(
+                        f"Slide {slide_id}: 勾画 {annotation_id} 缺少墨迹帧 {src.name};请重新确认勾画"
+                    )
+                # 每笔独立子目录,避免所有帧都叫 frame_000.png 相互覆盖
+                urls.append(
+                    asset_store.copy(
+                        str(src),
+                        slide_dir,
+                        repo_root,
+                        subdir=f"annotation_ink/{annotation_id}/{stroke_dir}",
+                        required_suffix=".png",
+                    )
+                )
+            stroke["ink"] = {
+                "kind": "raster",
+                "frames": urls,
+                "fps": int(ink.get("fps") or 30),
+                "canvas": ink.get("canvas") or [1920, 1080],
+            }
+
+
 def build_slide(
     slide_dir: Path,
     repo_root: Path,
@@ -545,7 +647,15 @@ def build_slide(
     )
     duration_sec = slide_duration(audio_timeline, animation_timeline, slide_dir)
 
-    return {
+    # 勾画标注(模块六):正式导出门禁(R2 方案 6)。
+    # enabled=false → 忽略旧 timeline,绝不带入;
+    # enabled=true  → timeline 必须存在、resolver 未过期、输入哈希与当前
+    #                 文件一致;否则拒绝渲染并给出可操作错误。
+    annotation_timeline = _load_annotation_timeline_for_render(
+        slide_dir, slide_id, asset_store=asset_store, repo_root=repo_root
+    )
+
+    payload = {
         "slide_id": slide_id,
         "start_sec": round(start_sec, 3),
         "duration_sec": duration_sec,
@@ -555,6 +665,9 @@ def build_slide(
         "audio_timeline": converted_audio_timeline,
         "animation_timeline": animation_timeline,
     }
+    if annotation_timeline is not None:
+        payload["annotation_timeline"] = annotation_timeline
+    return payload
 
 
 def build_props(

@@ -37,6 +37,16 @@
       completionSteps: Object.freeze([6, 7]),
       requiresAudioConfirmation: true
     }),
+    // 勾画标注(显示编号 6):决策型模块。完成状态来自模块决策
+    // (confirmed / no_annotations),enabled 只决定输出是否携带笔迹。
+    // 内部 data-step=10 为兼容键,显示序号一律来自 displayFlow。
+    Object.freeze({
+      step: 10,
+      label: '勾画标注',
+      relevantSteps: Object.freeze([10]),
+      completionSteps: Object.freeze([10]),
+      isDecisionModule: true
+    }),
     Object.freeze({
       step: 9,
       label: '数字人讲解',
@@ -97,9 +107,23 @@
     const item = getFlowItem(step);
     if (!item) return 'pending';
 
-    // 可选步骤：数字人讲解启用即视为完成；否则始终 pending（不阻塞任何步骤）
+    // 数字人讲解:启用即完成;未启用始终 pending(不阻塞任何步骤)。
     if (item.optional) {
       return context.digitalHumanEnabled === true ? 'completed' : 'pending';
+    }
+    // 勾画标注(模块六):决策态驱动,与 enabled 解耦。
+    if (item.isDecisionModule) {
+      switch (context.annotationModuleState) {
+        case 'confirmed':
+        case 'no_annotations':
+          return 'completed';
+        case 'editing':
+          return 'in_progress';
+        case 'stale':
+          return 'pending_reconfirmation';
+        default:
+          return 'pending';
+      }
     }
 
     const relevantStates = item.relevantSteps.map(id => status[String(id)] || 'pending');
@@ -118,8 +142,31 @@
     return 'pending';
   }
 
+  // 显示序号唯一来源:数字人显示时 1-8 连续;隐藏时勾画=6、作品输出=7。
+  function displayFlow(context = {}) {
+    const ordered = VISIBLE_FLOW.filter(item => {
+      if (item.step === 9) return context.digitalHumanEnabled === true;
+      if (item.step === 10) return context.showAnnotationsModule !== false;
+      return true;
+    });
+    return Object.freeze(ordered.map((item, index) => Object.freeze({
+      step: item.step,
+      label: item.label,
+      displayNumber: index + 1,
+      item
+    })));
+  }
+
   function calculateVisibleProgress(status = {}, context = {}) {
-    const required = VISIBLE_FLOW.filter(item => !item.optional);
+    const required = VISIBLE_FLOW.filter(item => {
+      if (item.optional) return false;
+      if (item.isDecisionModule) {
+        // 未进入决策的项目不进分母(旧项目兼容);一旦编辑/启用即计入
+        const state = context.annotationModuleState;
+        return state === 'editing' || state === 'confirmed' || state === 'no_annotations' || state === 'stale';
+      }
+      return true;
+    });
     // 只统计必选步骤的完成数，可选步骤（数字人讲解）不得抬高总进度
     const completed = required.filter(
       item => getVisibleStepState(item.step, status, context) === 'completed'
@@ -151,7 +198,27 @@
       return status['7'] === 'completed' && context.audioConfirmed === true;
     }
 
-    const previousStep = getPreviousVisibleStep(normalized);
+    // 勾画标注:有当前页图片即可进入编辑(图片已确认),不要求 AI Mask
+    // 或音频;讲稿缺失在工作区内以缺失原因提示,不在导航层拦截。
+    if (normalized === 10) {
+      return status['4'] === 'completed' || status['4'] === 'pending_reconfirmation';
+    }
+
+    // 回退链跳过可选步骤:可选模块未启用时不得锁死其后的必选/可选步骤
+    // (否则数字人讲解会被未启用的勾画标注挡住)。
+    let previousStep = getPreviousVisibleStep(normalized);
+    let previousItem = getFlowItem(previousStep);
+    while (
+      previousItem
+      && (previousItem.optional
+        || (previousItem.isDecisionModule
+          && getVisibleStepState(previousStep, status, context) !== 'completed'
+          && getVisibleStepState(previousStep, status, context) !== 'pending_reconfirmation'))
+    ) {
+      previousStep = getPreviousVisibleStep(previousStep);
+      previousItem = getFlowItem(previousStep);
+    }
+    if (!previousItem) return true;
     const previousState = getVisibleStepState(previousStep, status, context);
     return previousState === 'completed' || previousState === 'pending_reconfirmation';
   }
@@ -188,6 +255,7 @@
     resolveProjectVisibleStep,
     visibleStepNumber,
     visibleStepLabel,
+    displayFlow,
     getVisibleStepState,
     calculateVisibleProgress,
     getPreviousVisibleStep,

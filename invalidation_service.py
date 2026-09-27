@@ -151,6 +151,18 @@ def clear_slide_visual_derivatives(project: Any, slide_id: str) -> tuple[Path, .
                 normalized_slide_id,
             )
         removed.extend(clear_slide_reveal_artifacts(project.run_dir, normalized_slide_id))
+        # 勾画标注(可选模块)随图片失效:文字布局/时间轴删除、条目 stale。
+        # 失败不阻塞既有失效流程;store 未配置(装配缺失)时静默跳过。
+        try:
+            from annotation_invalidation import invalidate_for_image_change
+
+            removed.extend(invalidate_for_image_change(project, normalized_slide_id))
+        except Exception as exc:  # noqa: BLE001 - 失效链路的兜底保护
+            LOGGER.warning(
+                "Annotation invalidation failed while clearing slide %s: %s",
+                normalized_slide_id,
+                exc,
+            )
     return tuple(removed)
 
 

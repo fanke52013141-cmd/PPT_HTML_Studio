@@ -1,4 +1,5 @@
 import React from 'react';
+import {AnnotationOverlay} from './AnnotationOverlay';
 import {
   AbsoluteFill,
   Audio,
@@ -110,6 +111,31 @@ export type Slide = {
   };
   animation_timeline?: {
     events: AnimationEvent[];
+  };
+  // 勾画标注(可选模块):已解析的事件层;旧 props 缺字段 → 空覆盖层
+  annotation_timeline?: {
+    schema_version?: number;
+    resolver_version?: string;
+    events?: {
+      annotation_id: string;
+      start_sec: number;
+      draw_end_sec: number;
+      hold_end_sec: number;
+      exit_end_sec: number;
+      style: {
+        type: string;
+        color: string;
+        opacity: number;
+        width: number;
+        padding: number;
+        seed: number;
+      };
+      strokes: Array<
+        | { kind: 'polyline'; points: [number, number][] }
+        | { kind: 'rect'; x: number; y: number; width: number; height: number }
+      >;
+    }[];
+    needs_review?: unknown;
   };
 };
 
@@ -780,6 +806,8 @@ const SlideView: React.FC<{slide: Slide; subtitleStyle?: SubtitleStyle}> = ({sli
         .map((layer) => (
           <LayerView key={layer.id} layer={layer} events={slide.animation_timeline?.events} />
         ))}
+      {/* 勾画标注层:背景与正文/Reveal 之上、数字人/字幕之下(交接 7.3) */}
+      <AnnotationOverlay timeline={slide.annotation_timeline} />
       {subtitlesEnabled && activePage ? (
         <SubtitleView
           page={activePage}

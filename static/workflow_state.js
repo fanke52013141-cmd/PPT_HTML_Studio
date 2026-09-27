@@ -107,6 +107,9 @@ function projectFlowContext(project = state.currentProject) {
   return {
     audioConfirmed: project?.audio_confirmed === true,
     digitalHumanEnabled: window.__dhEnabled === true,
+    // 勾画标注(模块六)决策态与输出开关;由 annotations 模块维护
+    annotationsEnabled: window.__annotationsEnabled === true,
+    annotationModuleState: window.__annotationModuleState || 'not_started',
   };
 }
 

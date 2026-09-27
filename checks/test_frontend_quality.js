@@ -1047,4 +1047,87 @@ if (!topLevelFunctionSource(narrationAudio, 'narration/audio', 'scheduleStep6Aut
   throw new Error('Step 6 autosave must drop stale-project timers instead of saving into the switched project');
 }
 
+
+// 共享传输必须为抛出的错误附加 status/body,勾画 409/422 分支依赖它
+if (!apiClient.includes('statusError.status = response.status') || !apiClient.includes('blobError.status = response.status')) {
+  throw new Error('API client must attach status/body to thrown errors');
+}
+
+// ==================== 勾画标注(可选步骤 10)模块归属 ====================
+const annotationsCore = fs.readFileSync(path.join(root, 'static', 'annotations_core.js'), 'utf8');
+const annotationsWorkspace = fs.readFileSync(path.join(root, 'static', 'annotations_workspace.js'), 'utf8');
+const annotationsEditor = fs.readFileSync(path.join(root, 'static', 'annotations_editor.js'), 'utf8');
+const annotationsCss = fs.readFileSync(path.join(root, 'static', 'annotations.css'), 'utf8');
+
+if (!html.includes('annotations_core.js')) throw new Error('annotation core module is not loaded explicitly');
+if (!html.includes('annotations_workspace.js')) throw new Error('annotation workspace module is not loaded explicitly');
+if (!html.includes('annotations_editor.js')) throw new Error('annotation editor module is not loaded explicitly');
+if (!html.includes('annotations.css')) throw new Error('annotation workspace stylesheet is not loaded explicitly');
+if (!(html.indexOf('narration_audio.js') < html.indexOf('annotations_core.js')
+  && html.indexOf('annotations_core.js') < html.indexOf('annotations_workspace.js')
+  && html.indexOf('annotations_workspace.js') < html.indexOf('annotations_editor.js')
+  && html.indexOf('annotations_editor.js') < html.indexOf('workspace_navigation.js'))) {
+  throw new Error('annotation modules must load after narration and before workspace navigation');
+}
+if (!(html.indexOf('stitch.css') < html.indexOf('annotations.css'))) {
+  throw new Error('annotation stylesheet must load after the Stitch parity layer');
+}
+if (!html.includes('data-step="10"') || !html.includes('step-panel-10')) {
+  throw new Error('annotation optional step navigation entry or panel is missing');
+}
+if (!html.includes('annotation-enabled-toggle') || !html.includes('annotation-save-status')) {
+  throw new Error('annotation header controls are missing');
+}
+// 独立 DOM ID:不得复用 Mask 工作区的 ID
+for (const annotationDomId of ['annotation-canvas-frame', 'annotation-canvas-overlay', 'annotation-items', 'annotation-narration-beats']) {
+  if (!html.includes(`id="${annotationDomId}"`)) throw new Error(`annotation workspace DOM node ${annotationDomId} is missing`);
+}
+// 纯逻辑归属:UMD 工厂只在 core;DOM/编辑实现不得回流到 core
+for (const coreOwner of ['utf16IndexToCodepointIndex', 'codepointIndexToUtf16Index', 'createPageHistory', 'classifyPatchFailure']) {
+  if (!annotationsCore.includes(coreOwner)) throw new Error(`annotation core is missing ${coreOwner}`);
+}
+if (annotationsCore.includes('document.')) throw new Error('annotation core must stay DOM-free');
+// 画布交互与属性编辑归属 editor;工作区模块只做生命周期/渲染/保存编排
+for (const editorOwner of ['handleAnnotationRegionPointerDown', 'renderAnnotationOverlay', 'renderAnnotationItemEditor', 'undoAnnotationEdit', 'redoAnnotationEdit']) {
+  if (!annotationsEditor.includes(`function ${editorOwner}(`)) throw new Error(`annotation editor is missing ${editorOwner}`);
+  if (annotationsWorkspace.includes(`function ${editorOwner}(`)) throw new Error(`annotation editor ownership leaked into workspace: ${editorOwner}`);
+}
+for (const workspaceOwner of ['loadStep10Data', 'resetAnnotationsProjectState', 'flushAnnotationsSave', 'queueAnnotationSave', 'renderAnnotationItems']) {
+  if (!annotationsWorkspace.includes(`function ${workspaceOwner}(`)) throw new Error(`annotation workspace is missing ${workspaceOwner}`);
+  if (annotationsEditor.includes(`function ${workspaceOwner}(`)) throw new Error(`annotation workspace ownership leaked into editor: ${workspaceOwner}`);
+}
+// workflow_state 只接只读标志,不得长出勾画业务状态
+if (app.includes('ANNOTATIONS_WS') || app.includes('pendingOps')) {
+  throw new Error('annotation business state must not live in workflow_state.js');
+}
+if (!app.includes('annotationsEnabled: window.__annotationsEnabled === true')) {
+  throw new Error('projectFlowContext must expose the read-only annotationsEnabled flag');
+}
+// 导航接入:复位、flush、数据路由
+if (!workspaceNavigation.includes('resetAnnotationsProjectState')) throw new Error('workspace navigation must reset annotation project state');
+if (!workspaceNavigation.includes('flushAnnotationsSave')) throw new Error('workspace navigation must flush annotation saves before leaving step 10');
+if (!workspaceNavigation.includes('case 10:')) throw new Error('workspace navigation must route step 10 data loading');
+// 事件绑定:唯一启动入口注册勾画事件
+if (!eventBindings.includes('initAnnotationWorkspaceEvents')) throw new Error('event bindings must register annotation workspace events');
+// 流程契约(R2):模块六决策态驱动;显示序号唯一来源 displayFlow;无"可选"徽标
+const flowSource = fs.readFileSync(path.join(root, 'static', 'flow.js'), 'utf8');
+if (!flowSource.includes('annotationModuleState')) {
+  throw new Error('visible flow must derive module six state from annotationModuleState');
+}
+if (!flowSource.includes('function displayFlow(')) {
+  throw new Error('visible flow must expose displayFlow as the display-number source');
+}
+if (flowSource.includes("step-item-optional") || html.includes('step-optional-badge')) {
+  throw new Error('module six must not carry the optional badge');
+}
+if (!html.includes('<div class="step-num">6</div>')) {
+  throw new Error('module six must show a real display number');
+}
+if (!annotationsWorkspace.includes('refreshAnnotationModuleState')) {
+  throw new Error('annotation workspace must publish module decision state');
+}
+if (!annotationsCss.includes('.annotation-')) {
+  throw new Error('annotation stylesheet must scope new panels');
+}
+
 console.log('frontend quality checks passed');

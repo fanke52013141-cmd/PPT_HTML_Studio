@@ -70,6 +70,18 @@ def quick_checks() -> None:
         "ai_mask_semantic_matcher.py",
         "ai_mask_service.py",
         "ai_provider_service.py",
+        "annotation_contracts.py",
+        "annotation_ocr_baidu.py",
+        "annotation_invalidation.py",
+        "annotation_job_store.py",
+        "annotation_jobs.py",
+        "annotation_planner.py",
+        "annotation_prompt_templates.py",
+        "annotation_routes.py",
+        "annotation_service.py",
+        "annotation_store.py",
+        "annotation_text_layout.py",
+        "annotation_timeline.py",
         "app_middleware.py",
         "app_security.py",
         "artifact_fingerprint.py",
@@ -148,6 +160,8 @@ def quick_checks() -> None:
     run(["node", "checks/test_frontend_quality.js"])
     run(["node", "checks/test_subtitle_paging.js"])
     run(["node", "checks/test_ai_mask_auto_state.js"])
+    run(["node", "checks/test_annotation_workspace.js"])
+    run(["node", "checks/test_annotation_playback.js"])
     run(["node", "checks/test_narration_project_scope.js"])
     python_check(ROOT / "scripts" / "check_source_registration_contract.py")
     python_check(ROOT / "scripts" / "check_static_extension_references.py")

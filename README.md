@@ -4,6 +4,7 @@
 
 ## 后续开发重点
 
+- [勾画标注模块开发与验收交接](docs/plans/勾画标注模块开发与验收交接.md)：独立模块的实施契约，包含导航与 UI、代码/数据边界、API、分阶段开发、验证和最终回归，可直接交给开发 Agent 使用。
 - [勾画优化方案](docs/plans/勾画优化方案.md)：规划 AI 自动重点标注、OCR 文字定位、讲稿与音频关联、可视化人工编辑及手写批注渲染。当前为方案阶段，作为后续开发与验收依据。
 
 ## 本地启动
@@ -43,7 +44,8 @@ accident.
 3. 配置最终视频背景与图片风格，生成或上传每页完整图片；图片风格支持参考图反推、System Content 生成参考图、手动上传参考图和命名模板。
 4. AI 自动拆解画面元素，并用多模态模型关联演讲稿语块、生成彩色 Mask。
 5. 编辑旁白、生成音频并试听确认。
-6. 在“作品输出”中生成、下载和删除 MP4 视频或图片型 PPTX。
+6. （可选）“勾画标注”工作区：框选区域或点选文字候选生成手写圈/横线/荧光笔标注，关联讲稿短语；确认后随视频渲染（需在页面顶部打开“视频中启用勾画”）。
+7. 在“作品输出”中生成、下载和删除 MP4 视频或图片型 PPTX。
 
 视频渲染和 PPTX 导出任务会写入本机 SQLite。刷新页面不会丢失任务状态；应用异常退出后，未完成的视频任务会显示为“已中断”，可以重新生成。新生成的 MP4、调速 MP4 和 PPTX 都会登记产物记录，并在删除文件时同步清理。
 
@@ -58,6 +60,7 @@ accident.
 | Step 3 图片生成/上传 | Step 3 images + Step 4 image confirmation | `slides/<slide_id>/visual_draft.png`, `reveal_manifest.json` |
 | Step 4 Mask | Step 5 reveal manifest / mask assets | `reveal_manifest.json`, reveal layer assets |
 | Step 5 旁白与音频 | Step 6 narration + Step 7 TTS/audio confirmation | `planning/narration_beats.json`, `voice.mp3`, subtitles/timelines |
+| 可选:勾画标注（编号不占位） | annotation settings / OCR jobs / planning / confirm | `planning/annotation_settings.json`、`slides/<id>/text_layout.json`、`slides/<id>/annotations.json`、`slides/<id>/annotation_timeline.json` |
 | Step 6 作品输出 | Step 8 Remotion render / PPTX export | `remotion_props.json`、视频与 `.render.json`、图片型 `.pptx` |
 
 文档、检查脚本和代码注释中如出现 Step 5/6/7/8，默认指内部 API 编号；面向用户的说明应优先使用 6 步流程。

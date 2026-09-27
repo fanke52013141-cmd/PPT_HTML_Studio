@@ -4,6 +4,7 @@
 // 首次加载初始化
 document.addEventListener('DOMContentLoaded', () => {
   initGlobalEvents();
+  initAnnotationWorkspaceEvents();
   initAccountManagement?.();
   loadAccounts?.();
   loadProjects();
@@ -250,3 +251,51 @@ function initGlobalEvents() {
   });
 }
 
+
+// 勾画标注工作区(可选步骤 10)页面级事件。功能实现位于
+// annotations_workspace.js / annotations_editor.js,此处只做绑定。
+function initAnnotationWorkspaceEvents() {
+  const enabledToggle = document.getElementById('annotation-enabled-toggle');
+  enabledToggle?.addEventListener('change', () => {
+    window.setAnnotationsEnabled?.(enabledToggle.checked);
+  });
+
+  document.getElementById('annotation-btn-goto-images')?.addEventListener('click', () => navigateToStep(3));
+  document.getElementById('annotation-btn-goto-narration')?.addEventListener('click', () => navigateToStep(6));
+
+  document.getElementById('annotation-btn-region')?.addEventListener('click', () => {
+    window.setAnnotationRegionMode?.(!document.getElementById('annotation-btn-region').classList.contains('active'));
+  });
+  document.getElementById('annotation-btn-detect')?.addEventListener('click', () => {
+    window.submitAnnotationJob?.('detect_text');
+  });
+  document.getElementById('annotation-btn-ai-plan')?.addEventListener('click', () => {
+    window.submitAnnotationJob?.('plan');
+  });
+  document.getElementById('annotation-btn-undo')?.addEventListener('click', () => window.undoAnnotationEdit?.());
+  document.getElementById('annotation-btn-redo')?.addEventListener('click', () => window.redoAnnotationEdit?.());
+
+  const canvasFrame = document.getElementById('annotation-canvas-frame');
+  canvasFrame?.addEventListener('pointerdown', event => {
+    if (typeof handleAnnotationRegionPointerDown === 'function') handleAnnotationRegionPointerDown(event);
+  });
+  canvasFrame?.addEventListener('pointermove', event => {
+    if (typeof handleAnnotationRegionPointerMove === 'function') handleAnnotationRegionPointerMove(event);
+  });
+  canvasFrame?.addEventListener('pointerup', event => {
+    if (typeof handleAnnotationRegionPointerUp === 'function') handleAnnotationRegionPointerUp(event);
+  });
+
+  document.addEventListener('keydown', event => {
+    window.annotationEditorKeyboardHandler?.(event);
+  });
+
+  // 关闭标签页前若有未保存编辑,同步给出提示;不依赖 beforeunload 异步写入。
+  window.addEventListener('beforeunload', event => {
+    const pending = window.ANNOTATIONS_WS?.pendingOps?.length;
+    if (pending && document.getElementById('step-panel-10')?.style.display !== 'none') {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
+}

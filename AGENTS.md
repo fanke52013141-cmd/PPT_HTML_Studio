@@ -46,6 +46,7 @@ scripts still use internal Step numbers.
 | Step 4 Mask | Step 5 reveal manifest / mask assets | `reveal_manifest.json`, reveal layer assets |
 | Step 5 Narration and audio | Step 6 narration + Step 7 TTS/audio confirmation | `planning/narration_beats.json`, audio, subtitles, timelines |
 | Optional Step 9 Digital human | digital-human config / jobs | `planning/digital_human.json`, `planning/digital_human/` |
+| Optional Step 10 勾画标注 (annotation) | annotation settings / OCR jobs / planning / confirm | `planning/annotation_settings.json`, `slides/<slide_id>/text_layout.json`, `slides/<slide_id>/annotations.json`, `slides/<slide_id>/annotation_timeline.json` |
 | Step 6 Output works | Step 8 Remotion render / PPTX export | `remotion_props.json`, rendered video, `.render.json` sidecar, image-only `.pptx` |
 
 When writing user-facing documentation, prefer the visible steps above. When changing API routes, validators, or runtime artifacts, use the internal step numbers and keep this mapping accurate.
@@ -133,6 +134,17 @@ appended strict-parity layers at the end of the file.
 - `static/workspace_navigation.js` owns project workspace entry/exit, AI-mode
   switching, stepper state refresh, visible-step navigation, and step data
   routing. It must load before extension scripts that wrap workspace navigation.
+- `static/annotations_core.js` owns the annotation module's pure logic:
+  UTF-16/codepoint index conversion, occurrence disambiguation, region
+  geometry helpers, page-isolated undo history, operation builders, and
+  conflict classification. It stays DOM-free (UMD, testable in Node).
+- `static/annotations_workspace.js` owns the visible Step 10 annotation
+  workspace shell: project/page lifecycle, three-pane rendering, autosave
+  with revision-conflict handling, candidates/AI-plan job polling, and the
+  project enable toggle. Canvas interaction and property editing live in
+  `static/annotations_editor.js`; shared frame sampling lives in
+  `static/annotation_playback.js` (UMD, also consumed by Remotion's
+  `AnnotationOverlay.tsx`).
 - `static/event_bindings.js` owns DOM startup and all page-level event binding.
   It must load after every core workflow module, while its DOMContentLoaded
   callback remains the only shared frontend boot entry.

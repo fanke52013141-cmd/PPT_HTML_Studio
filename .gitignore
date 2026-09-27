@@ -31,6 +31,11 @@ outputs/*
 !references/style_reference/**/*.jpeg
 !references/style_reference/**/*.webp
 !docs/ai-mask-optimization/**/*.png
+# 勾画标注:确定性评测夹具与验证证据图(报告/对比页引用)
+!checks/fixtures/**/*.png
+!docs/annotation-validation/**/*.png
+!docs/annotation-validation/**/*.html
+!docs/annotation-validation/**/*.json
 
 # Local caches and builds
 .cache/

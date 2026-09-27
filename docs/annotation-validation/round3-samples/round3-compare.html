@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>勾画精准度三轮对比</title>
+<style>body{font-family:"Microsoft YaHei";background:#f3f4f6;margin:0;padding:16px}
+h1{font-size:20px} h2{font-size:15px;margin:14px 0 6px}
+.row{display:flex;gap:10px;align-items:flex-start}
+.cell{flex:1;background:#fff;border-radius:10px;padding:8px}
+.cell img{width:100%;border-radius:6px;border:1px solid #e5e7eb}
+.tag{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:999px;font-size:12px}
+.old{background:#fee2e2;color:#991b1b} .new{background:#dcfce7;color:#166534}
+.m{font-size:12px;color:#374151;margin-top:4px;line-height:1.5}
+.note{background:#fff;border-radius:10px;padding:12px;font-size:13px;line-height:1.7}</style></head><body>
+<h1>勾画精准度三轮对比(冻结样本 · 真实百度 OCR 字框)</h1>
+<div class="note"><b>结论:</b>第一轮逐字符椭圆在"23.5%"上压字率 42.3%(圈直接盖在数字上),第三轮降至 0.0%–3.5%;
+第二轮曾出现的邻词误圈 8–11% 经邻词感知留白修正为 <b>0.0%</b>;包围率保持 ≥0.89(完整包住目标)。
+视频里的勾画已改为<b>栅格位图手写帧</b>(PNG 逐帧推进),不再是 SVG 路径。</div>
+<h2>日期圈注 — “9月30日”(5 个真实 OCR 字框)</h2><div class="row"><div class="cell"><img src="case1-V0.png"><div class="tag old">第一轮:逐字符规则椭圆(旧)</div><div class="m">包围 1.00 | 压字 10.9% | 误圈邻词 0.0% | 偏心 1.9px ❌</div></div><div class="cell"><img src="case1-V1.png"><div class="tag new">第二轮:短语手写轮廓(SVG 观感)</div><div class="m">包围 0.89 | 压字 0.2% | 误圈邻词 0.0% | 偏心 0.8px ✅</div></div><div class="cell"><img src="case1-V2.png"><div class="tag new">第三轮:栅格墨迹(压力+纹理)</div><div class="m">包围 0.90 | 压字 3.2% | 误圈邻词 0.0% | 偏心 0.9px ✅</div></div></div><h2>百分比圈注 — “23.5”(4 个真实 OCR 字框)</h2><div class="row"><div class="cell"><img src="case2-V0.png"><div class="tag old">第一轮:逐字符规则椭圆(旧)</div><div class="m">包围 1.00 | 压字 42.3% | 误圈邻词 0.0% | 偏心 0.6px ❌</div></div><div class="cell"><img src="case2-V1.png"><div class="tag new">第二轮:短语手写轮廓(SVG 观感)</div><div class="m">包围 0.91 | 压字 0.0% | 误圈邻词 0.0% | 偏心 0.5px ✅</div></div><div class="cell"><img src="case2-V2.png"><div class="tag new">第三轮:栅格墨迹(压力+纹理)</div><div class="m">包围 0.91 | 压字 3.5% | 误圈邻词 0.0% | 偏心 0.8px ✅</div></div></div><h2>英文横线 — “Online”(6 个真实 OCR 字框)</h2><div class="row"><div class="cell"><img src="case3-V0.png"><div class="tag old">第一轮:逐字符规则椭圆(旧)</div><div class="m">横向覆盖 1.00 | 贴基线 1.00 | 压字 0.0% ✅</div></div><div class="cell"><img src="case3-V1.png"><div class="tag new">第二轮:短语手写轮廓(SVG 观感)</div><div class="m">横向覆盖 1.00 | 贴基线 1.00 | 压字 0.0% ✅</div></div><div class="cell"><img src="case3-V2.png"><div class="tag new">第三轮:栅格墨迹(压力+纹理)</div><div class="m">横向覆盖 1.00 | 贴基线 1.00 | 压字 0.0% ✅</div></div></div>
+</body></html>

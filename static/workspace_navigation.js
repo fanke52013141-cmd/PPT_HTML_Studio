@@ -25,6 +25,11 @@ function resetProjectScopedAsyncUi() {
   if (typeof stopStep8PptxPolling === 'function') stopStep8PptxPolling();
   if (typeof resetStep3ProjectState === 'function') resetStep3ProjectState();
   if (typeof resetStep6ProjectState === 'function') resetStep6ProjectState();
+  // 勾画标注(可选步骤 10)的项目级状态复位;在途保存由 flush 兜底
+  if (typeof window.flushAnnotationsSave === 'function') {
+    window.flushAnnotationsSave().catch(() => {});
+  }
+  if (typeof window.resetAnnotationsProjectState === 'function') resetAnnotationsProjectState();
   const generateButton = document.getElementById('step2-btn-generate');
   if (generateButton) generateButton.disabled = false;
 }
@@ -246,6 +251,15 @@ async function refreshCurrentProjectStatus(activeStep = state.currentStep) {
 async function navigateToStep(step) {
   const navigationVersion = ++workspaceNavigationVersion;
   step = normalizeVisibleStep(step);
+  // 离开勾画标注(可选步骤 10)前等待自动保存落盘;失败保留本地编辑并提示
+  if (normalizeVisibleStep(state.currentStep) === 10 && step !== 10
+      && typeof window.flushAnnotationsSave === 'function') {
+    try {
+      await window.flushAnnotationsSave();
+    } catch (error) {
+      if (typeof showToast === 'function') showToast('勾画标注尚未保存成功,已保留本地编辑。');
+    }
+  }
   // 目标面板不存在时就近兜底：数字人未启用时没有 step-panel-9，回退到
   // 作品输出；其余异常目标保持当前面板，避免所有面板被隐藏后工作区空白。
   if (!document.getElementById(`step-panel-${step}`)) {
@@ -301,6 +315,11 @@ async function loadStepData(step) {
     case 9:
       if (typeof window.loadStep9Data === 'function') {
         await window.loadStep9Data();
+      }
+      break;
+    case 10:
+      if (typeof window.loadStep10Data === 'function') {
+        await window.loadStep10Data();
       }
       break;
   }

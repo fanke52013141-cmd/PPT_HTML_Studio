@@ -453,6 +453,18 @@ def persist_narration_beats(
             os.path.join(slide_dir, "narration_beats.json"),
             {"slide_id": slide_id, "beats": slide_beats},
         )
+        # 勾画标注(可选模块):讲稿变化使锚定条目的确认与时间失效。
+        # 失败不阻塞旁白持久化;store 未配置时静默跳过。
+        try:
+            from annotation_invalidation import invalidate_for_narration_change
+
+            invalidate_for_narration_change(project, slide_id)
+        except Exception:  # noqa: BLE001 - 失效链路的兜底保护
+            logger.debug(
+                "annotation narration invalidation skipped for %s/%s",
+                project.run_dir,
+                slide_id,
+            )
 
         narration_lines.append(f"=== {slide_id} ===")
         tts_text_lines.append(f"=== {slide_id} ===")
