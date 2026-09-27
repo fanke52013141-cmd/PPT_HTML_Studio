@@ -1,6 +1,8 @@
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 import comfyui_backend
 from scripts import generic_tts
 
@@ -97,3 +99,37 @@ def test_comfyui_tts_uses_connection_url_and_builtin_workflow(
     assert generic_tts.os.environ["PPT_COMFYUI_URL"] == "http://127.0.0.1:8199"
     assert captured["ref_audio_path"] == reference
     assert captured["workflow_template"]["1"]["class_type"] == "BSAI_IndexTTS2.5Loader"
+
+
+def test_seed_audio_without_reference_reports_upload_hint() -> None:
+    args = SimpleNamespace(api_key="secret", clone_voice_id="  ")
+    with pytest.raises(generic_tts.TtsError) as excinfo:
+        generic_tts.synthesize_volcengine_seed_audio(args, "测试旁白", "测试旁白")
+    assert "上传一条参考音频" in str(excinfo.value)
+
+
+def test_seed_audio_missing_reference_file_reports_path_and_fix(tmp_path) -> None:
+    missing = tmp_path / "relocated-reference.mp3"
+    args = SimpleNamespace(api_key="secret", clone_voice_id=str(missing))
+    with pytest.raises(generic_tts.TtsError) as excinfo:
+        generic_tts.synthesize_volcengine_seed_audio(args, "测试旁白", "测试旁白")
+    message = str(excinfo.value)
+    assert "参考音频文件不存在" in message
+    assert str(missing) in message
+    assert "重新上传并关联" in message
+
+
+def test_seed_audio_preflight_fails_fast_with_actionable_detail(tmp_path) -> None:
+    import tts_service
+    from fastapi import HTTPException
+
+    with pytest.raises(HTTPException) as excinfo:
+        tts_service._require_seed_audio_reference("  ")
+    assert "上传一条参考音频" in str(excinfo.value.detail)
+
+    missing = tmp_path / "relocated-reference.mp3"
+    with pytest.raises(HTTPException) as excinfo:
+        tts_service._require_seed_audio_reference(str(missing))
+    detail = str(excinfo.value.detail)
+    assert str(missing) in detail
+    assert "重新上传并关联" in detail

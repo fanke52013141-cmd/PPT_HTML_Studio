@@ -117,8 +117,11 @@
     if (!available.length) return '<option value="">暂无可用创作配置包</option>';
     const options = [];
     available.forEach(item => {
+      // 标注账号默认包：新建项目弹窗会按当前账号预选默认包，其语音/图片
+      // 模型会随之生效，不标注时用户容易在没注意的情况下建错项目。
+      const isDefault = item.id === defaultConfig?.packageId;
       options.push(
-        `<option value="${esc(item.id)}">${esc(item.name || '未命名配置包')}</option>`
+        `<option value="${esc(item.id)}">${esc(item.name || '未命名配置包')}${isDefault ? '（当前默认）' : ''}</option>`
       );
     });
     return options.join('');

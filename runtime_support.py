@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+import locale
 import logging
 import os
 import re
@@ -47,6 +48,30 @@ def kill_process_tree(process: Any, timeout_sec: float = 5.0) -> None:
                 os.kill(pid, signal.SIGKILL)
     except (subprocess.TimeoutExpired, ProcessLookupError, OSError):
         logger.debug("Failed to kill process tree for pid %s", pid, exc_info=True)
+
+
+def decode_process_output(value: Any) -> str:
+    """Decode captured child-process output: UTF-8 first, then the host ANSI
+    code page (GBK on zh-CN Windows), then lossy UTF-8.
+
+    Python children write pipes with the Windows ANSI code page unless
+    ``PYTHONIOENCODING`` forces UTF-8, so decoding everything as UTF-8 turns
+    Chinese diagnostics into mojibake in pipeline logs and error toasts.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    raw = bytes(value)
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+    fallback = locale.getpreferredencoding(False) or "gbk"
+    try:
+        return raw.decode(fallback)
+    except (UnicodeDecodeError, LookupError):
+        return raw.decode("utf-8", errors="replace")
 
 
 def run_subprocess_killable(
@@ -107,9 +132,7 @@ def run_subprocess_killable(
                                 pass
                 text_mode = bool(kwargs.get("text"))
                 def _text(value: Any) -> str:
-                    if isinstance(value, bytes):
-                        return value.decode("utf-8", errors="replace")
-                    return str(value or "")
+                    return decode_process_output(value)
                 return subprocess.CompletedProcess(
                     args=args,
                     returncode=124,
@@ -149,16 +172,8 @@ def run_subprocess_bounded(
     try:
         return subprocess.run(args, timeout=timeout_sec, **kwargs)
     except subprocess.TimeoutExpired as exc:
-        stdout = (
-            exc.stdout.decode("utf-8", errors="replace")
-            if isinstance(exc.stdout, bytes)
-            else str(exc.stdout or "")
-        )
-        stderr = (
-            exc.stderr.decode("utf-8", errors="replace")
-            if isinstance(exc.stderr, bytes)
-            else str(exc.stderr or "")
-        )
+        stdout = decode_process_output(exc.stdout)
+        stderr = decode_process_output(exc.stderr)
         return subprocess.CompletedProcess(
             args=args,
             returncode=124,

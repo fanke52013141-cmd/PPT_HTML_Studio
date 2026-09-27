@@ -163,3 +163,21 @@ def test_numeric_ranges_and_nested_timeouts_are_bounded() -> None:
     assert not runtime.is_timeout_exception(
         ValueError("ordinary failure")
     )
+
+
+def test_decode_process_output_prefers_utf8_and_recovers_host_codepage() -> None:
+    import locale
+
+    assert runtime.decode_process_output("plain") == "plain"
+    assert runtime.decode_process_output(None) == ""
+    utf8_bytes = "参考音频不存在".encode("utf-8")
+    assert runtime.decode_process_output(utf8_bytes) == "参考音频不存在"
+
+    preferred = locale.getpreferredencoding(False) or ""
+    if preferred.lower() not in ("utf-8", "utf8"):
+        ansi_bytes = "参考音频不存在".encode(preferred)
+        assert runtime.decode_process_output(ansi_bytes) == "参考音频不存在"
+
+    # 既不是 UTF-8 也不是本机代码页时兜底为替换字符，绝不能抛错。
+    lossy = runtime.decode_process_output(bytes([255, 255, 255, 255]))
+    assert lossy != ""

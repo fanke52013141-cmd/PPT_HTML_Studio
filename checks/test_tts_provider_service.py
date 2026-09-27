@@ -287,3 +287,11 @@ def test_timeout_is_returned_as_structured_failure() -> None:
     )
     assert result["attempts"] == 1
     assert len(logs) == 1
+
+
+def test_tts_environment_forces_utf8_stdio_and_secret_transport() -> None:
+    env = provider.provider_tts_environment("key-1", "key-2")
+    assert env[provider.TTS_API_KEY_ENV] == "key-1"
+    assert env[provider.TTS_SECRET_KEY_ENV] == "key-2"
+    # 子进程必须按 UTF-8 写管道，否则中文报错被父进程解码成乱码。
+    assert env["PYTHONIOENCODING"] == "utf-8"

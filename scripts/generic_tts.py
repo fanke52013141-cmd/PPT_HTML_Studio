@@ -484,9 +484,17 @@ def synthesize_volcengine_seed_audio(args: argparse.Namespace, tts_text: str, su
     api_key = args.api_key or os.getenv("VOLCENGINE_TTS_API_KEY", "")
     if not api_key:
         raise TtsError("Volcengine Seed Audio API key is required")
-    reference_path = Path(str(args.clone_voice_id or "").strip())
-    if not reference_path.is_file():
+    reference_raw = str(args.clone_voice_id or "").strip()
+    reference_path = Path(reference_raw)
+    if not reference_raw:
         raise TtsError("Seed Audio 需要先在语音模型中上传一条参考音频")
+    if not reference_path.is_file():
+        # 便携版迁移/换机后，配置里保存的绝对路径最容易失效。把路径写进
+        # 报错，用户才知道要去语音模型设置里重新上传并关联。
+        raise TtsError(
+            "Seed Audio 参考音频文件不存在："
+            f"{reference_raw}。请在语音模型设置中重新上传并关联参考音频。"
+        )
     if reference_path.stat().st_size > 10 * 1024 * 1024:
         raise TtsError("Seed Audio 参考音频不能超过 10MB")
     reference_duration = probe_audio_duration_sec(reference_path)

@@ -535,17 +535,6 @@
     updateSubtitleControls();
   }
 
-  function firstActiveConnectionReference(kind) {
-    const connection = state.connections.find(item => item.kind === kind && item.state === 'active');
-    return connection?.id ? { connection_id: connection.id } : null;
-  }
-
-  function applyDefaultModelBindings() {
-    setBindingValue('text', firstActiveConnectionReference('text'));
-    setBindingValue('image', firstActiveConnectionReference('image'));
-    setBindingValue('tts', firstActiveConnectionReference('tts'));
-  }
-
   function restorePromptModule(key, label) {
     const defaults = objectValue(objectValue(state.defaultPayload).prompts)[key];
     const module = objectValue(defaults);
@@ -733,16 +722,15 @@
     state.editingVersion = null;
     const name = element('creation-config-package-name');
     const payload = element('creation-config-package-payload');
-    if (name) { name.value = ''; name.readOnly = false; }
+    if (name) { name.value = '新建配置包'; name.readOnly = false; }
     const defaultPayload = clonePayload(state.defaultPayload);
     if (payload) payload.value = JSON.stringify(defaultPayload, null, 2);
     loadPayloadIntoStructured(defaultPayload);
-    // A fresh package is immediately runnable when reusable connections exist.
-    // Users can still switch any of these three bindings independently.
-    applyDefaultModelBindings();
+    // 新建配置包默认不绑定任何模型连接：自动预选“第一个启用连接”会让
+    // 用户在不知情时把错误的文本/图片/语音模型保存进包里，需要时必须显式选择。
     syncStructuredFieldsToJson();
     const submit = element('btn-create-creation-config');
-    if (submit) submit.textContent = '保存当前修改';
+    if (submit) submit.textContent = '创建配置包';
     const prepareSaveAs = element('btn-prepare-save-creation-config-as');
     if (prepareSaveAs) prepareSaveAs.hidden = false;
     const cancel = element('btn-cancel-creation-config-edit');
@@ -1010,10 +998,11 @@
       renderPackages();
       renderConnections();
       renderCredentials();
-      if (!state.editingPackageId && !element('creation-config-package-name')?.value.trim()) {
-        const defaultPackage = state.packages.find(item => item.id === state.defaultPackageId);
-        if (defaultPackage) await editPackage(defaultPackage);
-        else resetCreationConfigEditor();
+      if (!state.editingPackageId) {
+        // 管理页打开时始终进入“新建配置包”空白态；编辑已有包（包括账号
+        // 默认包）必须从列表显式点击“编辑”，避免把自动载入的默认包误当
+        // 成新建配置而直接保存覆盖。
+        resetCreationConfigEditor();
       }
       // The management screen communicates state through its lists and
       // controls; no redundant aggregate status banner is shown.

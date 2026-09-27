@@ -370,6 +370,10 @@ def _run_bind_reveal_timeline(project: Any) -> Any:
     bind_script = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "scripts", "bind_reveal_timeline.py")
     )
+    bind_env = os.environ.copy()
+    # 与 TTS 子进程同理：强制 Python 子进程按 UTF-8 写管道，避免中文
+    # 错误被父进程按 UTF-8 解码成乱码。
+    bind_env["PYTHONIOENCODING"] = "utf-8"
     return run_subprocess_bounded(
         [sys.executable, bind_script, "--run-dir", project.run_dir, "--lead-sec", str(REVEAL_VISUAL_LEAD_SEC)],
         timeout_sec=STEP7_BIND_TIMEOUT_SEC,
@@ -377,6 +381,7 @@ def _run_bind_reveal_timeline(project: Any) -> Any:
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=bind_env,
     )
 
 
@@ -696,6 +701,24 @@ def _confirmation_runtime_for_run_dir(run_dir: str | Path) -> Optional[Dict[str,
     return None
 
 
+def _require_seed_audio_reference(clone_voice_id: Any) -> None:
+    """Seed Audio 合成前校验参考音频，缺失时立即给出可操作的报错。"""
+    raw = str(clone_voice_id or "").strip()
+    if not raw:
+        raise HTTPException(
+            status_code=400,
+            detail="Seed Audio 需要先在语音模型中上传一条参考音频",
+        )
+    if not os.path.isfile(raw):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Seed Audio 参考音频文件不存在："
+                f"{raw}。请在语音模型设置中重新上传并关联参考音频后重试。"
+            ),
+        )
+
+
 def synthesize_tts_resumable(project_id: str, db: Session):
     project = project_or_404(db, project_id)
 
@@ -788,6 +811,11 @@ def synthesize_tts_resumable(project_id: str, db: Session):
                 "args": tts_args,
             }
         )
+
+    if pending_jobs and provider == "volcengine_seed_audio":
+        # Seed Audio 必须有参考音频；缺失时快速失败，而不是每页空跑满
+        # 额定重试次数后才在日志里留下报错。
+        _require_seed_audio_reference(tts_clone_voice_id)
 
     if pending_jobs:
         worker_count = min(tts_concurrency, len(pending_jobs))
