@@ -12,7 +12,7 @@ import time
 import urllib.parse
 from typing import Any, Callable, Dict, List, Optional
 
-from runtime_support import run_subprocess_killable
+from runtime_support import decode_process_output, run_subprocess_killable
 import generation_governor
 from generation_governor import RESOURCE_TTS
 
@@ -280,6 +280,9 @@ def provider_tts_environment(
     environment = os.environ.copy()
     environment[TTS_API_KEY_ENV] = str(api_key or "")
     environment[TTS_SECRET_KEY_ENV] = str(secret_key or "")
+    # 子进程按 Windows 代码页（GBK）写管道，父进程按 UTF-8 解码会把中文
+    # 报错变成乱码。只强制 stdio 编码，不影响子进程的文件读写行为。
+    environment["PYTHONIOENCODING"] = "utf-8"
     return environment
 
 
@@ -287,7 +290,7 @@ def _safe_process_text(value: Any) -> str:
     if value is None:
         return ""
     if isinstance(value, bytes):
-        return value.decode("utf-8", errors="replace")
+        return decode_process_output(value)
     return str(value)
 
 
