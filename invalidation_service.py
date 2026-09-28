@@ -273,7 +273,7 @@ def slide_images_changed(
     with project_artifact_lock(project.run_dir):
         for slide_id in normalized_ids:
             removed.extend(clear_slide_visual_derivatives(project, slide_id))
-        removed.extend(_existing_removals(project.run_dir, clear_audio=True, clear_props=True))
+        removed.extend(_existing_removals(project.run_dir, clear_audio=False, clear_props=True))
 
     statuses = project.get_step_status()
     statuses["3"] = "completed" if all_images_exist else "in_progress"

@@ -88,6 +88,51 @@ async function loadStep8Impacts(projectId, sessionVersion) {
       await loadStep8Impacts(projectId, sessionVersion);
     });
     row.append(title, details, jump, reviewed);
+    if (item.reason === 'storyboard_visual_changed' && (item.affected || []).includes('images') && item.image_sha256) {
+      const reuse = document.createElement('button');
+      reuse.type = 'button';
+      reuse.className = 'secondary';
+      reuse.textContent = '核对旧图并复用';
+      reuse.addEventListener('click', async () => {
+        const imageUrl = `/api/projects/${encodeURIComponent(projectId)}/slides/${encodeURIComponent(item.scope_id)}/image?v=${encodeURIComponent(item.image_sha256)}`;
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.cssText = 'display:flex;z-index:1200';
+        const content = document.createElement('div');
+        content.className = 'modal-content';
+        content.style.cssText = 'width:min(840px,calc(100vw - 32px));max-height:90vh;overflow:auto;padding:24px';
+        const heading = document.createElement('h3');
+        heading.textContent = `${item.scope_id} · 核对旧图`;
+        const note = document.createElement('p');
+        note.textContent = '请确认旧图仍符合当前分镜画面内容。此操作只结清图片待办，Mask 和勾画位置仍需分别核对。';
+        const image = document.createElement('img');
+        image.src = imageUrl;
+        image.alt = `${item.scope_id} 当前图片`;
+        image.style.cssText = 'display:block;width:100%;height:auto;max-height:65vh;object-fit:contain';
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.textContent = '取消';
+        cancel.addEventListener('click', () => modal.remove());
+        const apply = document.createElement('button');
+        apply.type = 'button';
+        apply.textContent = '确认沿用这张图';
+        apply.addEventListener('click', async () => {
+          try {
+            await API.put(`/api/projects/${projectId}/impacts/reuse-image`, {
+              slide_id: item.scope_id,
+              source_version: item.source_version,
+              image_sha256: item.image_sha256,
+            });
+            modal.remove();
+            await loadStep8Impacts(projectId, sessionVersion);
+          } catch (error) { showToast(error.message || '复用确认失败，请刷新后重试', 'error'); }
+        });
+        content.append(heading, note, image, cancel, apply);
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+      });
+      row.appendChild(reuse);
+    }
     list.appendChild(row);
   });
 }

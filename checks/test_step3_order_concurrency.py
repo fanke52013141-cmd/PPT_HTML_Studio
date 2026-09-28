@@ -122,7 +122,7 @@ def test_dragging_moves_images_without_reordering_storyboard() -> None:
         assert (run_dir / "slides" / "c" / "visual_draft.png").read_bytes() == b"image-b"
         assert all(visual_provenance_status(run_dir, slide_id)["valid"] for slide_id in slide_ids)
         assert not (run_dir / "remotion_props.json").exists()
-        assert not (planning / "audio_confirmed.json").exists()
+        assert (planning / "audio_confirmed.json").exists()
         assert project.get_step_status(4) == "pending_reconfirmation"
         assert project.get_step_status(8) == "pending_reconfirmation"
         assert db.commits == 1
@@ -172,7 +172,7 @@ def test_bulk_delete_images_clears_all_slide_derivatives() -> None:
             assert not (slide_dir / "visual_draft.png").exists()
             assert not (slide_dir / "visual_candidate.png").exists()
             assert not (slide_dir / "assets").exists()
-        assert not (planning / "audio_confirmed.json").exists()
+        assert (planning / "audio_confirmed.json").exists()
         assert not (run_dir / "remotion_props.json").exists()
         assert project.current_step == 3
         assert project.get_step_status(3) == "in_progress"
