@@ -13,6 +13,7 @@ RUNS_DIR = os.path.abspath(
     os.environ.get("PPT_STUDIO_RUNS_DIR") or os.path.join(REPO_ROOT, "runs")
 )
 DATA_DIR = os.path.join(REPO_ROOT, "data")
+MODEL_VOICE_REFERENCES_DIR = os.path.join(DATA_DIR, "model_voice_references")
 LOGS_DIR = os.path.join(REPO_ROOT, "logs")
 
 # Versioned, user-managed registries.  These are JSON persistence adapters for

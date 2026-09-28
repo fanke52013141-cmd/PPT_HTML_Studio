@@ -11,7 +11,9 @@ import hashlib
 import logging
 import os
 from pathlib import Path
+import shutil
 import sys
+import tempfile
 import threading
 import time
 import uuid
@@ -23,9 +25,11 @@ from sqlalchemy.orm import Session
 
 from database import LocalJob, Project
 from project_path_service import project_or_404
+from reference_audio_paths import resolve_reference_audio_path
+from artifact_fingerprint import sha256_file, sha256_json
 import invalidation_service
 from artifact_registry import record_artifact
-from pipeline_lifecycle import write_json_atomic
+from pipeline_lifecycle import project_artifact_lock, write_json_atomic
 from tts_artifacts import (
     artifact_paths as tts_artifact_paths,
     build_confirmation_payload as build_audio_confirmation_payload,
@@ -255,9 +259,70 @@ def _tts_artifact_matches_runtime(paths: Dict[str, str], expected: Dict[str, Any
     if not isinstance(request, dict):
         return False
     for key, expected_value in expected.items():
+        if (key == "clone_voice_id" and expected.get("reference_audio_signature")
+                and str(request.get("reference_audio_signature") or "")
+                == str(expected.get("reference_audio_signature") or "")):
+            # A moved portable package changes the absolute path, while the
+            # reference recording's bytes and resulting voice remain the same.
+            continue
         if str(request.get(key) or "").strip() != str(expected_value or "").strip():
             return False
     return True
+
+
+def _tts_job_input_version(
+    slide_id: str, text_file: str, beats: Any, cache_key: Dict[str, Any] | None,
+) -> str:
+    return sha256_json({
+        "slide_id": slide_id,
+        "text_sha256": sha256_file(text_file),
+        "beats": beats,
+        "tts_runtime": cache_key or {},
+    })
+
+
+def _tts_connection_hint(message: str) -> str:
+    lowered = str(message or "").lower()
+    if "winerror 10061" in lowered or (
+        "127.0.0.1" in lowered and "connection refused" in lowered
+    ):
+        return f"{message}。本机代理连接被拒绝，请检查代理程序是否正在运行，或关闭系统代理后重试。"
+    return message
+
+
+def _promote_staged_tts_outputs(job: dict[str, Any], project: Project, db: Session) -> bool:
+    """Return false for stale input; preserve live outputs on a failed promotion."""
+    slide_id = job["slide_id"]
+    with project_artifact_lock(project.run_dir):
+        if hasattr(db, "refresh"):
+            db.refresh(project)
+        fresh_beats = _load_beats_by_slide(project, [slide_id], "TTS completion")
+        current_version = _tts_job_input_version(
+            slide_id, job["paths"]["text"],
+            fresh_beats.get(slide_id, []), current_tts_cache_key(project),
+        )
+        if current_version != job["input_version"]:
+            return False
+        backup_dir = Path(project.run_dir) / "recovery" / "audio" / f"{slide_id}-{uuid.uuid4().hex}"
+        backup_dir.mkdir(parents=True, exist_ok=False)
+        keys = ("audio", "metadata", "srt", "timeline")
+        for key in keys:
+            target = Path(job["paths"][key])
+            if target.is_file():
+                shutil.copy2(target, backup_dir / target.name)
+        try:
+            for key in keys:
+                os.replace(job["stage_paths"][key], job["paths"][key])
+        except Exception:
+            for key in keys:
+                target = Path(job["paths"][key])
+                previous = backup_dir / target.name
+                if previous.is_file():
+                    shutil.copy2(previous, target)
+                elif target.exists():
+                    target.unlink()
+            raise
+        return True
 
 
 def _reference_audio_signature(path_value: str) -> str:
@@ -594,6 +659,8 @@ def _resolve_tts_voice_profile(project: Project) -> Dict[str, Any]:
         snapshot_value("tts.clone_voice_id", "") if project_runtime else "",
         get_setting("tts_clone_voice_id", "") if project_runtime is None else "",
     )
+    if provider in {"volcengine_seed_audio", "comfyui_tts"}:
+        tts_clone_voice_id = resolve_reference_audio_path(tts_clone_voice_id)
     tts_region = first_non_empty(
         snapshot_value("tts.region", "") if project_runtime else "",
         public_config.get("region") if project_runtime else "",
@@ -781,17 +848,23 @@ def synthesize_tts_resumable(project_id: str, db: Session):
         if artifact_status["complete"]:
             logger.info("Regenerating TTS for %s because the voice settings changed", slide_id)
 
-        if artifact_status["audio_exists"] or artifact_status["missing_artifacts"] or artifact_status["stale"]:
-            remove_tts_artifacts(paths)
-
         logger.info("Preparing TTS audio for slide %s via %s", slide_id, provider)
+        # A running provider process must never replace a previously confirmed
+        # MP3.  Promote the complete page only after its input snapshot still
+        # matches the current narration and voice configuration.
+        stage_dir = Path(tempfile.mkdtemp(prefix="tts-stage-", dir=Path(paths["audio"]).parent))
+        stage_paths = {
+            key: str(stage_dir / Path(paths[key]).name)
+            for key in ("text", "audio", "metadata", "srt", "timeline")
+        }
+        shutil.copy2(text_file, stage_paths["text"])
         tts_args = provider_tts_command(
             provider=provider,
-            text_file=text_file,
-            out_audio=paths["audio"],
-            out_meta=paths["metadata"],
-            out_srt=paths["srt"],
-            out_timeline=paths["timeline"],
+            text_file=stage_paths["text"],
+            out_audio=stage_paths["audio"],
+            out_meta=stage_paths["metadata"],
+            out_srt=stage_paths["srt"],
+            out_timeline=stage_paths["timeline"],
             slide_id=slide_id,
             endpoint=tts_endpoint,
             region=tts_region,
@@ -808,6 +881,11 @@ def synthesize_tts_resumable(project_id: str, db: Session):
             {
                 "slide_id": slide_id,
                 "paths": paths,
+                "stage_paths": stage_paths,
+                "stage_dir": str(stage_dir),
+                "input_version": _tts_job_input_version(
+                    slide_id, text_file, beats_by_slide.get(slide_id, []), tts_cache_key,
+                ),
                 "args": tts_args,
             }
         )
@@ -998,7 +1076,7 @@ def synthesize_tts_resumable(project_id: str, db: Session):
                         (tts_result["stderr"] or tts_result["stdout"] or "TTS synthesis failed").strip(),
                         runtime_secrets,
                     )
-                    error_text = error_text[-1200:]
+                    error_text = _tts_connection_hint(error_text)[-1200:]
                     logger.error("TTS synthesis failed for %s after %s attempts: %s", slide_id, tts_result["attempts"], error_text)
                     write_project_log(
                         project,
@@ -1016,15 +1094,19 @@ def synthesize_tts_resumable(project_id: str, db: Session):
                         "error": error_text,
                     })
                     continue
-                post_status = slide_tts_artifact_status(project, slide_id)
-                if not post_status["complete"]:
-                    error_text = "TTS command returned success but required audio artifacts are incomplete: " + ", ".join(post_status["missing_artifacts"])
+                missing_staged = [
+                    key for key in ("audio", "metadata", "srt", "timeline")
+                    if not Path(job["stage_paths"][key]).is_file()
+                    or Path(job["stage_paths"][key]).stat().st_size == 0
+                ]
+                if missing_staged:
+                    error_text = "TTS command returned success but required audio artifacts are incomplete: " + ", ".join(missing_staged)
                     logger.error("%s for %s", error_text, slide_id)
                     write_project_log(
                         project,
                         "step7_slide_tts_incomplete_artifacts",
                         slide_id=slide_id,
-                        status=post_status,
+                        missing_artifacts=missing_staged,
                     )
                     failed_slides.append({
                         "slide_id": slide_id,
@@ -1037,12 +1119,33 @@ def synthesize_tts_resumable(project_id: str, db: Session):
 
         for job in successful_jobs:
             slide_id = job["slide_id"]
-            rewrite_audio_timeline_by_beats(
-                job["paths"]["timeline"],
-                slide_id,
-                beats_by_slide.get(slide_id, []),
-            )
-            generated_slides.append(slide_id)
+            try:
+                rewrite_audio_timeline_by_beats(
+                    job["stage_paths"]["timeline"],
+                    slide_id,
+                    beats_by_slide.get(slide_id, []),
+                )
+                if not _promote_staged_tts_outputs(job, project, db):
+                    failed_slides.append({
+                        "slide_id": slide_id,
+                        "attempts": 1,
+                        "returncode": None,
+                        "error": "合成期间旁白或语音配置已变化，旧任务结果未应用，请重新合成该页",
+                        "recoverable": True,
+                    })
+                    continue
+                generated_slides.append(slide_id)
+            except Exception as exc:
+                logger.warning("TTS staged promotion failed for %s: %s", slide_id, exc)
+                failed_slides.append({
+                    "slide_id": slide_id,
+                    "attempts": 1,
+                    "returncode": None,
+                    "error": f"音频写入失败，旧音频已保留：{exc}",
+                    "recoverable": True,
+                })
+        for job in pending_jobs:
+            shutil.rmtree(job["stage_dir"], ignore_errors=True)
 
     generated_slides.sort(key=slide_ids.index)
     if generated_slides:

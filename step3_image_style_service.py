@@ -63,6 +63,9 @@ def _step3_style(project: Any) -> dict[str, Any]:
 
 def _save_step3_style(project: Any, style: dict[str, Any], source: str) -> dict[str, Any]:
     existing = _step3_style_state(project)
+    if (existing.get("source") == source
+            and existing.get("image_style_profile") == (style if isinstance(style, dict) else {})):
+        return existing
     state = {
         "version": "step3_image_style_v1",
         "source": source,

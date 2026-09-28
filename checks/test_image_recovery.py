@@ -42,6 +42,7 @@ def test_applying_identical_candidate_keeps_downstream_state(tmp_path: Path, mon
     monkeypatch.setattr(workflow, "rename_mask_source_pair", lambda *_: None)
     monkeypatch.setattr(workflow, "promote_candidate_provenance", lambda *_: None)
     monkeypatch.setattr(workflow, "mark_slide_image_changed", lambda *_: invalidations.append(True))
+    monkeypatch.setattr(workflow, "reveal_lock_for", lambda _project: workflow.invalidation_service.project_artifact_lock(tmp_path))
 
     result = workflow.apply_slide_candidate(
         "project", {"slide_id": "slide_001"}, object()
@@ -115,6 +116,7 @@ def _prepare_upload_test(
         "mark_slide_image_changed",
         lambda *_args: invalidations.append(True),
     )
+    monkeypatch.setattr(workflow, "reveal_lock_for", lambda _project: workflow.invalidation_service.project_artifact_lock(tmp_path))
     monkeypatch.setattr(
         workflow,
         "write_visual_provenance",

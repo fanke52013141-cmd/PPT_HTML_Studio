@@ -14,6 +14,7 @@ from typing import Any, Iterable
 import uuid
 
 from impact_registry import IMPACT_RULES
+from impact_source_version import impact_source_version
 from project_impact_service import record_impact
 
 from pipeline_lifecycle import (
@@ -33,6 +34,22 @@ from project_storage import planning_path, safe_child
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _record_content_impact(project: Any, reason: str, slide_ids: Iterable[str] = ()) -> None:
+    """Bind a real business edit to its current project/page input version."""
+    normalized = tuple(dict.fromkeys(str(value).strip() for value in slide_ids if str(value).strip()))
+    if IMPACT_RULES[reason].scope == "slide" and normalized:
+        for slide_id in normalized:
+            record_impact(
+                project.run_dir, reason=reason, slide_ids=(slide_id,),
+                source_version=impact_source_version(project.run_dir, reason, slide_id),
+            )
+    else:
+        record_impact(
+            project.run_dir, reason=reason,
+            source_version=impact_source_version(project.run_dir, reason, "project"),
+        )
 
 
 @dataclass(frozen=True)
@@ -112,7 +129,7 @@ def upstream_content_changed(project: Any, source_step: int) -> InvalidationRepo
         removed = _existing_removals(project.run_dir, clear_audio=False, clear_props=True)
     project.current_step = source_step
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="article_changed" if source_step == 1 else "storyboard_changed")
+    _record_content_impact(project, "article_changed" if source_step == 1 else "storyboard_changed")
     return InvalidationReport(
         reason="article_changed" if source_step == 1 else "storyboard_changed",
         affected_steps=affected,
@@ -143,15 +160,15 @@ def storyboard_contract_changed(
     if visual:
         mark_selected_stale(statuses, (3, 4, 5, 8))
         affected.update((3, 4, 5, 8))
-        record_impact(project.run_dir, reason="storyboard_visual_changed", slide_ids=visual)
+        _record_content_impact(project, "storyboard_visual_changed", visual)
     if narration:
         mark_selected_stale(statuses, (6, 7, 8))
         affected.update((6, 7, 8))
-        record_impact(project.run_dir, reason="storyboard_narration_changed", slide_ids=narration)
+        _record_content_impact(project, "storyboard_narration_changed", narration)
     if structure_changed:
         mark_selected_stale(statuses, (8,))
         affected.add(8)
-        record_impact(project.run_dir, reason="storyboard_structure_changed")
+        _record_content_impact(project, "storyboard_structure_changed")
     removed_paths = (
         _existing_removals(project.run_dir, clear_audio=False, clear_props=True)
         if affected else []
@@ -174,7 +191,7 @@ def empty_storyboard_changed(project: Any) -> InvalidationReport:
     removed = _existing_removals(project.run_dir, clear_audio=False, clear_props=True)
     project.current_step = 2
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="storyboard_empty")
+    _record_content_impact(project, "storyboard_empty")
     return InvalidationReport(
         reason="storyboard_empty",
         affected_steps=tuple(range(3, 9)),
@@ -256,14 +273,14 @@ def slide_images_changed(
     with project_artifact_lock(project.run_dir):
         for slide_id in normalized_ids:
             removed.extend(clear_slide_visual_derivatives(project, slide_id))
-        removed.extend(_existing_removals(project.run_dir, clear_audio=False, clear_props=True))
+        removed.extend(_existing_removals(project.run_dir, clear_audio=True, clear_props=True))
 
     statuses = project.get_step_status()
     statuses["3"] = "completed" if all_images_exist else "in_progress"
     mark_selected_stale(statuses, (4, 5, 8))
     project.current_step = 3
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="slide_image_changed", slide_ids=normalized_ids)
+    _record_content_impact(project, "slide_image_changed", normalized_ids)
     return InvalidationReport(
         reason="slide_image_changed",
         affected_steps=(4, 5, 8),
@@ -278,7 +295,7 @@ def subtitle_style_changed(project: Any) -> InvalidationReport:
     if statuses.get("8") == "completed":
         statuses["8"] = "pending_reconfirmation"
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="subtitle_style_changed")
+    _record_content_impact(project, "subtitle_style_changed")
     return InvalidationReport(
         reason="subtitle_style_changed",
         affected_steps=(8,),
@@ -292,7 +309,7 @@ def mask_content_changed(project: Any) -> InvalidationReport:
     statuses = project.get_step_status()
     mark_selected_stale(statuses, (8,))
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="mask_content_changed")
+    _record_content_impact(project, "mask_content_changed")
     return InvalidationReport(
         reason="mask_content_changed",
         affected_steps=(8,),
@@ -307,7 +324,7 @@ def annotation_content_changed(project: Any, slide_ids: Iterable[str]) -> Invali
     statuses = project.get_step_status()
     mark_selected_stale(statuses, (8,))
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="annotation_changed", slide_ids=normalized_ids)
+    _record_content_impact(project, "annotation_changed", normalized_ids)
     return InvalidationReport(
         reason="annotation_changed",
         affected_steps=(8,),
@@ -322,7 +339,7 @@ def digital_human_changed(project: Any) -> InvalidationReport:
     statuses = project.get_step_status()
     mark_selected_stale(statuses, (8,))
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="digital_human_changed")
+    _record_content_impact(project, "digital_human_changed")
     return InvalidationReport(
         reason="digital_human_changed",
         affected_steps=(8,),
@@ -342,7 +359,7 @@ def subtitle_visibility_changed(
     statuses = project.get_step_status()
     mark_selected_stale(statuses, (8,))
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="subtitle_visibility_changed")
+    _record_content_impact(project, "subtitle_visibility_changed")
     return InvalidationReport(
         reason="subtitle_visibility_changed",
         affected_steps=(8,),
@@ -362,7 +379,7 @@ def video_background_changed(
     mark_selected_stale(statuses, (5, 8))
     project.current_step = 3
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="video_background_changed")
+    _record_content_impact(project, "video_background_changed")
     return InvalidationReport(
         reason="video_background_changed",
         affected_steps=(5, 8),
@@ -399,7 +416,15 @@ def audio_artifacts_changed(project: Any, slide_ids: Iterable[str]) -> Invalidat
     statuses = project.get_step_status()
     mark_selected_stale(statuses, (7, 8))
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="audio_artifacts_changed", slide_ids=normalized_ids)
+    _record_content_impact(project, "audio_artifacts_changed", normalized_ids)
+    try:
+        from digital_human_impact import mark_presenter_audio_stale
+
+        stale_presenter_ids = mark_presenter_audio_stale(project.run_dir, normalized_ids)
+        if stale_presenter_ids:
+            _record_content_impact(project, "digital_human_audio_changed", stale_presenter_ids)
+    except Exception as exc:  # noqa: BLE001 - audio must remain usable
+        LOGGER.warning("Digital-human audio linkage failed: %s", exc)
     return InvalidationReport(
         reason="audio_artifacts_changed",
         affected_steps=(7, 8),
@@ -416,7 +441,7 @@ def narration_content_changed(project: Any) -> InvalidationReport:
     statuses = project.get_step_status()
     mark_selected_stale(statuses, (7, 8))
     project.set_step_status(statuses)
-    record_impact(project.run_dir, reason="narration_content_changed")
+    _record_content_impact(project, "narration_content_changed")
     return InvalidationReport(
         reason="narration_content_changed",
         affected_steps=(7, 8),

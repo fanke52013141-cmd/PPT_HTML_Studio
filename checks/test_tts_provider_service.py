@@ -83,9 +83,30 @@ def test_rate_limit_backoff_is_longer_and_process_output_is_redacted() -> None:
     assert provider._retry_delay_seconds(1, "HTTP 429 too many requests") == 15
     assert provider._retry_delay_seconds(2, "rate limit") == 30
     assert provider._retry_delay_seconds(9, "429") == 90
+    assert provider._retry_delay_seconds(3, "HTTP 503 Service Unavailable") == 16
     assert provider._redact_tts_process_output(
         "upstream echoed secret-token", {"PPT_STUDIO_TTS_API_KEY": "secret-token"}
     ) == "upstream echoed [REDACTED]"
+
+
+def test_server_5xx_uses_five_bounded_attempts(monkeypatch) -> None:
+    original = provider._deps()
+    delays: list[int] = []
+    provider.configure_tts_provider_dependencies(replace_dependencies(
+        run_subprocess=lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            ["tts"], 1, "", "HTTP 503 Service Unavailable",
+        ),
+        write_project_log=lambda *_args, **_kwargs: None,
+    ))
+    monkeypatch.setattr(provider.time, "sleep", delays.append)
+    try:
+        result = provider.run_tts_command_with_retries(
+            SimpleNamespace(id="project"), "slide_001", ["tts"], {},
+        )
+    finally:
+        provider.configure_tts_provider_dependencies(original)
+    assert result["attempts"] == 5
+    assert delays == [4, 8, 16, 32]
 
 
 def test_minimax_rate_limit_retry_and_safe_async_poll_default() -> None:

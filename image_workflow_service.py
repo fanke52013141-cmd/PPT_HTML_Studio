@@ -9,6 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -18,6 +19,7 @@ import time
 from typing import Any, Callable, Dict, List, Optional
 import uuid
 from zipfile import ZIP_DEFLATED, ZipFile
+from PIL import Image, ImageDraw
 
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse, Response
@@ -52,6 +54,7 @@ from image_generation_retry import (
 )
 from canvas_profile_service import get_canvas_profile, get_project_canvas
 from artifact_fingerprint import sha256_file, sha256_json
+from image_change_preview import preview_image_change
 from config_store import get_setting
 from database import ArtifactRecord, Project
 from project_path_service import project_or_404
@@ -64,7 +67,7 @@ from ai_provider_service import ImagePayloadTooLarge
 import invalidation_service
 import generation_governor
 from artifact_registry import record_artifact, remove_artifact_record
-from pipeline_lifecycle import write_json_atomic
+from pipeline_lifecycle import read_json_file as read_json_artifact, write_json_atomic
 from project_storage import slide_file as storage_slide_file
 from project_style_reference_service import (
     can_send_project_references,
@@ -123,7 +126,9 @@ except ImportError:
 logger = logging.getLogger("PPTStudio.ImageWorkflow")
 
 
-def archive_current_slide_image(project: Any, slide_id: str) -> Path | None:
+def archive_current_slide_image(
+    project: Any, slide_id: str, *, keep_derivatives: bool = True,
+) -> Path | None:
     """Keep the current source image recoverable before replacement or deletion."""
     image_path = Path(storage_slide_file(project.run_dir, slide_id, "visual_draft.png"))
     if not image_path.is_file():
@@ -141,7 +146,219 @@ def archive_current_slide_image(project: Any, slide_id: str) -> Path | None:
     ):
         if source.is_file():
             shutil.copy2(source, archive_dir / source.name)
+    manifest = read_json_artifact(Path(project.run_dir) / "reveal_manifest.json")
+    if isinstance(manifest, dict):
+        for entry in manifest.get("slides", []) or []:
+            if isinstance(entry, dict) and str(entry.get("slide_id") or "") == slide_id:
+                write_json_atomic(archive_dir / "mask_slide.json", entry)
+                break
+    if keep_derivatives:
+        slide_dir = image_path.parent
+        for name in (
+            "annotations.json", "text_layout.json", "annotation_timeline.json",
+            "scene.json", "animation_timeline.json", "reveal_report.json",
+            "mask_preview.png",
+        ):
+            source = slide_dir / name
+            if source.is_file():
+                shutil.copy2(source, archive_dir / name)
+        for name in ("assets", "auto_mask"):
+            source = slide_dir / name
+            if source.is_dir():
+                shutil.copytree(source, archive_dir / name)
+    write_json_atomic(archive_dir / "archive.json", {
+        "slide_id": slide_id,
+        "image_sha256": sha256_file(image_path),
+        "keep_derivatives": keep_derivatives,
+        "created_at": datetime.now().isoformat(),
+    })
     return archive_dir
+
+
+def get_slide_image_change_preview(project_id: str, slide_id: str, db: Session) -> dict[str, Any]:
+    project = project_or_404(db, project_id)
+    current_slide_file_or_404(project, slide_id, "visual_draft.png")
+    return {"success": True, **preview_image_change(project.run_dir, slide_id)}
+
+
+def _check_image_change_choice(
+    project: Any, slide_id: str, disposition: str, expected_version: str | None,
+) -> bool:
+    if disposition not in {"keep", "cleanup"}:
+        raise HTTPException(status_code=422, detail="图片变更处理方式无效")
+    if expected_version and preview_image_change(project.run_dir, slide_id)["version"] != expected_version:
+        raise HTTPException(status_code=409, detail="图片或关联素材已变化，请重新查看影响预览")
+    return disposition == "keep"
+
+
+def _image_recovery_dir(project: Any, slide_id: str, archive_id: str) -> Path:
+    if not re.fullmatch(rf"{re.escape(slide_id)}-[0-9a-f]{{32}}", archive_id):
+        raise HTTPException(status_code=400, detail="图片归档编号无效")
+    archive = Path(project.run_dir) / "recovery" / "images" / archive_id
+    if not archive.is_dir():
+        raise HTTPException(status_code=404, detail="图片归档不存在")
+    metadata = read_json_artifact(archive / "archive.json")
+    if not isinstance(metadata, dict) or metadata.get("slide_id") != slide_id:
+        raise HTTPException(status_code=409, detail="图片归档与当前页面不匹配")
+    return archive
+
+
+def list_slide_image_recovery(project_id: str, slide_id: str, db: Session) -> dict[str, Any]:
+    project = project_or_404(db, project_id)
+    image_path = Path(current_slide_file_or_404(project, slide_id, "visual_draft.png"))
+    root = Path(project.run_dir) / "recovery" / "images"
+    items = []
+    if root.is_dir():
+        for archive in sorted(root.glob(f"{slide_id}-*"), reverse=True):
+            if not archive.is_dir() or not re.fullmatch(rf"{re.escape(slide_id)}-[0-9a-f]{{32}}", archive.name):
+                continue
+            metadata = read_json_artifact(archive / "archive.json")
+            if not isinstance(metadata, dict) or metadata.get("slide_id") != slide_id:
+                continue
+            mask = read_json_artifact(archive / "mask_slide.json")
+            annotations = read_json_artifact(archive / "annotations.json")
+            items.append({
+                "archive_id": archive.name,
+                "created_at": metadata.get("created_at"),
+                "image_sha256": metadata.get("image_sha256"),
+                "mask_groups": len(mask.get("groups") or []) if isinstance(mask, dict) else 0,
+                "annotation_items": len(annotations.get("items") or []) if isinstance(annotations, dict) else 0,
+            })
+    return {
+        "success": True,
+        "slide_id": slide_id,
+        "current_image_sha256": sha256_file(image_path),
+        "version": preview_image_change(project.run_dir, slide_id)["version"],
+        "items": items,
+    }
+
+
+def image_recovery_overlay(project_id: str, slide_id: str, archive_id: str, db: Session) -> Response:
+    project = project_or_404(db, project_id)
+    archive = _image_recovery_dir(project, slide_id, archive_id)
+    image_path = Path(current_slide_file_or_404(project, slide_id, "visual_draft.png"))
+    if not image_path.is_file():
+        raise HTTPException(status_code=404, detail="当前图片不存在")
+    with Image.open(image_path) as source:
+        canvas = source.convert("RGBA")
+    overlay = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    mask = read_json_artifact(archive / "mask_slide.json")
+    if isinstance(mask, dict):
+        for group in mask.get("groups") or []:
+            if not isinstance(group, dict):
+                continue
+            rle = (group.get("manual_mask") or {}).get("rle") or {}
+            if rle.get("encoding") != "row_runs_v1" or (
+                int(rle.get("width", canvas.width)) != canvas.width
+                or int(rle.get("height", canvas.height)) != canvas.height
+            ):
+                continue
+            for run in rle.get("runs") or []:
+                if isinstance(run, list) and len(run) >= 3:
+                    y, x1, x2 = (int(run[0]), int(run[1]), int(run[2]))
+                    if 0 <= y < canvas.height and x2 > x1:
+                        draw.line((max(0, x1), y, min(canvas.width - 1, x2 - 1), y), fill=(244, 106, 56, 90))
+    annotations = read_json_artifact(archive / "annotations.json")
+    if isinstance(annotations, dict):
+        for item in annotations.get("items") or []:
+            target = item.get("target") if isinstance(item, dict) else None
+            if not isinstance(target, dict):
+                continue
+            for polygon in target.get("polygons") or []:
+                if isinstance(polygon, list) and len(polygon) >= 2:
+                    points = [tuple(point[:2]) for point in polygon if isinstance(point, list) and len(point) >= 2]
+                    if len(points) >= 2:
+                        draw.line(points + [points[0]], fill=(26, 91, 224, 220), width=5)
+    result = Image.alpha_composite(canvas, overlay).convert("RGB")
+    buffer = BytesIO()
+    result.save(buffer, format="PNG")
+    return Response(content=buffer.getvalue(), media_type="image/png")
+
+
+def reuse_slide_image_geometry(project_id: str, slide_id: str, payload: Dict[str, Any], db: Session) -> dict[str, Any]:
+    project = project_or_404(db, project_id)
+    archive = _image_recovery_dir(project, slide_id, str(payload.get("archive_id") or ""))
+    image_path = Path(current_slide_file_or_404(project, slide_id, "visual_draft.png"))
+    if not image_path.is_file():
+        raise HTTPException(status_code=404, detail="当前图片不存在")
+    expected_version = str(payload.get("expected_version") or "")
+    if not expected_version:
+        raise HTTPException(status_code=428, detail="请先查看当前图片上的复用预览")
+    reuse_mask = payload.get("reuse_mask") is True
+    reuse_annotations = payload.get("reuse_annotations") is True
+    if not (reuse_mask or reuse_annotations):
+        raise HTTPException(status_code=422, detail="请选择要复用的 Mask 或勾画")
+    archived_mask = read_json_artifact(archive / "mask_slide.json") if reuse_mask else None
+    archived_annotations = read_json_artifact(archive / "annotations.json") if reuse_annotations else None
+    if reuse_mask and not isinstance(archived_mask, dict):
+        raise HTTPException(status_code=404, detail="该归档没有 Mask 数据")
+    if reuse_annotations and not isinstance(archived_annotations, dict):
+        raise HTTPException(status_code=404, detail="该归档没有勾画数据")
+    with Image.open(image_path) as current_image, Image.open(archive / "visual_draft.png") as old_image:
+        current_size = current_image.size
+        if current_size != old_image.size:
+            raise HTTPException(status_code=409, detail="新旧图片尺寸不同，请重新绘制 Mask 和勾画")
+    if reuse_mask:
+        for group in archived_mask.get("groups") or []:
+            if not isinstance(group, dict):
+                raise HTTPException(status_code=422, detail="归档 Mask 数据无效")
+            rle = (group.get("manual_mask") or {}).get("rle") or {}
+            if rle.get("encoding") == "row_runs_v1" and (
+                int(rle.get("width", 0)) != current_size[0]
+                or int(rle.get("height", 0)) != current_size[1]
+            ):
+                raise HTTPException(status_code=409, detail="归档 Mask 尺寸与当前图片不匹配")
+    with reveal_lock_for(project):
+        if preview_image_change(project.run_dir, slide_id)["version"] != expected_version:
+            raise HTTPException(status_code=409, detail="图片或关联素材已变化，请重新查看复用预览")
+        annotation_path = image_path.parent / "annotations.json"
+        parsed_page = None
+        if reuse_annotations:
+            current_page = read_json_artifact(annotation_path)
+            restored = dict(archived_annotations)
+            restored["revision"] = max(
+                int(restored.get("revision") or 0),
+                int(current_page.get("revision") or 0) if isinstance(current_page, dict) else 0,
+            ) + 1
+            for item in restored.get("items") or []:
+                if not isinstance(item, dict):
+                    continue
+                item["confirmed_inputs"] = None
+                status = item.get("status") or {}
+                if status.get("content") != "disabled":
+                    status["content"] = "draft"
+                    status["spatial"] = "needs_review"
+                item["status"] = status
+                inputs = item.get("inputs") or {}
+                inputs["image_hash"] = sha256_file(image_path)
+                item["inputs"] = inputs
+            from annotation_contracts import AnnotationPage
+
+            issues: list[Any] = []
+            parsed_page = AnnotationPage.from_payload(restored, issues, canvas=current_size)
+            if issues or parsed_page is None:
+                raise HTTPException(status_code=422, detail="归档勾画数据与当前画布不兼容，请手动调整")
+        if reuse_mask:
+            manifest_path = Path(project.run_dir) / "reveal_manifest.json"
+            manifest = read_json_artifact(manifest_path)
+            if not isinstance(manifest, dict):
+                raise HTTPException(status_code=409, detail="当前 Mask 配置不存在，请先确认图片")
+            slide = next((item for item in manifest.get("slides", []) or []
+                          if isinstance(item, dict) and str(item.get("slide_id") or "") == slide_id), None)
+            if slide is None:
+                raise HTTPException(status_code=409, detail="当前 Mask 页面不存在")
+            slide["groups"] = archived_mask.get("groups") or []
+            slide["semantic_blocks"] = archived_mask.get("semantic_blocks") or []
+            slide["status"] = "pending"
+            write_json_atomic(manifest_path, manifest)
+            invalidation_service.mask_content_changed(project)
+        if parsed_page is not None:
+            write_json_atomic(annotation_path, parsed_page.to_dict())
+            invalidation_service.annotation_content_changed(project, (slide_id,))
+        db.commit()
+    return {"success": True, "slide_id": slide_id, "mask_draft_restored": reuse_mask,
+            "annotation_draft_restored": reuse_annotations}
 
 
 def _same_effective_slide_image(current_path: Path, candidate_path: Path) -> bool:
@@ -446,6 +663,8 @@ def read_step3_image_system_content(project: Project) -> str:
 
 
 def write_step3_image_system_content(project: Project, system_content: str) -> None:
+    if read_step3_image_system_content(project) == system_content:
+        return
     write_json_atomic(
         step3_image_prompts_path(project),
         {
@@ -910,6 +1129,8 @@ def generate_slide_image(
     db: Session,
     *,
     defer_invalidation: bool = False,
+    disposition: str = "keep",
+    expected_version: str | None = None,
 ):
     if not claim_slide_image_generation(project_id, slide_id):
         raise HTTPException(
@@ -917,14 +1138,18 @@ def generate_slide_image(
             detail=f"{slide_id} 正在生成图片，请等待当前任务完成后再触发。",
         )
     try:
-        return _generate_slide_image_impl(
-            project_id,
-            slide_id,
-            prompt,
-            preview,
-            db,
-            defer_invalidation=defer_invalidation,
-        )
+        project = project_or_404(db, project_id)
+        image_name = "visual_candidate.png" if preview else "visual_draft.png"
+        live_path = Path(current_slide_file_or_404(project, slide_id, image_name))
+        live_path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="step3-generation-", dir=live_path.parent) as staging_dir:
+            return _generate_slide_image_impl(
+                project_id, slide_id, prompt, preview, db,
+                defer_invalidation=defer_invalidation,
+                staging_dir=staging_dir,
+                disposition=disposition,
+                expected_version=expected_version,
+            )
     finally:
         release_slide_image_generation(project_id, slide_id)
 
@@ -937,6 +1162,9 @@ def _generate_slide_image_impl(
     db: Session,
     *,
     defer_invalidation: bool = False,
+    staging_dir: str,
+    disposition: str = "keep",
+    expected_version: str | None = None,
 ):
     project = project_or_404(db, project_id)
 
@@ -958,7 +1186,8 @@ def _generate_slide_image_impl(
         if not model:
             raise HTTPException(status_code=400, detail="项目图片模型连接缺少模型名称。")
     image_filename = "visual_candidate.png" if preview else "visual_draft.png"
-    save_path = current_slide_file_or_404(project, slide_id, image_filename)
+    live_path = Path(current_slide_file_or_404(project, slide_id, image_filename))
+    save_path = str(Path(staging_dir) / image_filename)
 
     if not api_key:
         raise HTTPException(
@@ -1043,6 +1272,23 @@ def _generate_slide_image_impl(
             "Skipping binary style reference images for %s: active references are not compatible with current model/style.",
             slide_id,
         )
+
+    def current_input_version() -> str:
+        current_prompt = enforce_white_generation_background(prompt, project)
+        current_ip = render_ip_character_prompt(project, slide_id)
+        if current_ip and IP_PROMPT_MARKER not in current_prompt:
+            current_prompt += "\n\n" + current_ip
+        runtime = _project_image_runtime(project)
+        return sha256_json({
+            "slide_contract": slide_contract_hash(project.run_dir, slide_id),
+            "image_state": preview_image_change(project.run_dir, slide_id)["version"],
+            "prompt": current_prompt,
+            "canvas": get_project_canvas(project),
+            "runtime": runtime,
+            "references": [sha256_file(path) for path in reference_paths],
+        })
+
+    input_version = current_input_version()
 
     # ── 有界自动重试：只针对单页的"提交/轮询/下载"短暂故障 ──
     # 成功写盘的图片立即保留；配置类错误（HTTPException）不重试；
@@ -1139,7 +1385,6 @@ def _generate_slide_image_impl(
             )
 
             canvas = get_project_canvas(project)
-            archive_current_slide_image(project, slide_id)
             process_and_save_image(
                 img_bytes,
                 save_path,
@@ -1168,22 +1413,42 @@ def _generate_slide_image_impl(
                     source="generated",
                 )
                 seal_mask_source_pair(Path(save_path))
-                write_visual_provenance(
-                    project.run_dir,
-                    slide_id,
-                    image_path=save_path,
-                    provider=image_provider,
-                    source_type="api_generation",
-                    model=model,
-                    prompt=effective_prompt,
-                    reference_paths=used_reference_paths,
-                    reference_policy=reference_policy["policy"],
-                    reference_status=reference_status,
-                    requested_reference_count=len(style_reference_paths),
-                    submitted_reference_count=len(used_reference_paths),
-                    source_bytes=img_bytes,
-                    candidate=preview,
-                )
+                with reveal_lock_for(project):
+                    if current_input_version() != input_version:
+                        raise HTTPException(
+                            status_code=409,
+                            detail="生图期间页面或模型输入已变化；旧任务结果未应用，请重新生成",
+                        )
+                    if not preview:
+                        keep_derivatives = _check_image_change_choice(
+                            project, slide_id, disposition, expected_version,
+                        )
+                    if not preview:
+                        archive_current_slide_image(
+                            project, slide_id, keep_derivatives=keep_derivatives,
+                        )
+                    os.replace(save_path, live_path)
+                    rename_mask_source_pair(Path(save_path), live_path)
+                    write_visual_provenance(
+                        project.run_dir,
+                        slide_id,
+                        image_path=str(live_path),
+                        provider=image_provider,
+                        source_type="api_generation",
+                        model=model,
+                        prompt=effective_prompt,
+                        reference_paths=used_reference_paths,
+                        reference_policy=reference_policy["policy"],
+                        reference_status=reference_status,
+                        requested_reference_count=len(style_reference_paths),
+                        submitted_reference_count=len(used_reference_paths),
+                        source_bytes=img_bytes,
+                        candidate=preview,
+                    )
+                    if not preview and not defer_invalidation:
+                        mark_slide_image_changed(project, slide_id, db)
+            except HTTPException:
+                raise
             except Exception as finalize_error:
                 failure = ImagePageFailure(
                     slide_id=str(slide_id),
@@ -1201,7 +1466,7 @@ def _generate_slide_image_impl(
                 )
                 break
             logger.info(
-                f"Image saved for {slide_id}: {save_path} (attempts={attempts})"
+                f"Image saved for {slide_id}: {live_path} (attempts={attempts})"
             )
             if preview:
                 return {
@@ -1211,9 +1476,6 @@ def _generate_slide_image_impl(
                     "generation_attempts": attempts,
                     "candidate_url": f"/api/projects/{project_id}/slides/{slide_id}/candidate?t={uuid.uuid4().hex[:6]}",
                 }
-            if not defer_invalidation:
-                mark_slide_image_changed(project, slide_id, db)
-
             return {
                 "success": True,
                 "reference_status": reference_status,
@@ -1322,6 +1584,8 @@ def upload_slide_image(
     slide_id: str,
     file: UploadFile,
     db: Session,
+    disposition: str = "keep",
+    expected_version: str | None = None,
 ):
     project = project_or_404(db, project_id)
     content_type = str(getattr(file, "content_type", "") or "").lower()
@@ -1365,38 +1629,41 @@ def upload_slide_image(
                 source="uploaded",
             )
             seal_mask_source_pair(candidate_path)
-            if _same_effective_slide_image(image_path, candidate_path):
-                return {
-                    "success": True,
-                    "unchanged": True,
-                    "image_url": f"/api/projects/{project_id}/slides/{slide_id}/image",
-                }
-
-            archive_current_slide_image(project, slide_id)
-            os.replace(save_path, image_path)
-            rename_mask_source_pair(Path(save_path), image_path)
-            save_path = target_save_path
-            # Re-seal at the live path after the atomic promotion.  The
-            # marker is content-bound, but this also repairs a missing marker
-            # without ever exposing an unsealed master to downstream readers.
-            seal_mask_source_pair(Path(save_path))
-
-        write_visual_provenance(
-            project.run_dir,
-            slide_id,
-            image_path=save_path,
-            provider="manual_upload",
-            source_type="local_upload",
-            source_bytes=content,
-            source_filename=str(file.filename or ""),
-        )
-        mark_slide_image_changed(project, slide_id, db)
+            with reveal_lock_for(project):
+                keep_derivatives = _check_image_change_choice(
+                    project, slide_id, disposition, expected_version,
+                )
+                if _same_effective_slide_image(image_path, candidate_path):
+                    return {
+                        "success": True,
+                        "unchanged": True,
+                        "image_url": f"/api/projects/{project_id}/slides/{slide_id}/image",
+                    }
+                archive_current_slide_image(project, slide_id, keep_derivatives=keep_derivatives)
+                os.replace(save_path, image_path)
+                rename_mask_source_pair(Path(save_path), image_path)
+                save_path = target_save_path
+                # Re-seal after promotion so readers never observe an
+                # unmatched raw pair.
+                seal_mask_source_pair(Path(save_path))
+                write_visual_provenance(
+                    project.run_dir,
+                    slide_id,
+                    image_path=save_path,
+                    provider="manual_upload",
+                    source_type="local_upload",
+                    source_bytes=content,
+                    source_filename=str(file.filename or ""),
+                )
+                mark_slide_image_changed(project, slide_id, db)
         return {
             "success": True,
             "image_url": f"/api/projects/{project_id}/slides/{slide_id}/image?t={uuid.uuid4().hex[:6]}",
         }
     except ImagePayloadTooLarge as e:
         raise HTTPException(status_code=413, detail=str(e)) from e
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
@@ -1483,30 +1750,43 @@ def apply_slide_candidate(project_id: str, payload: Dict[str, Any], db: Session)
         and sha256_file(mask_source_raw_path(Path(candidate_path)))
         == sha256_file(mask_source_raw_path(Path(image_path)))
     )
-    if not same_visual:
-        archive_current_slide_image(project, slide_id)
-    os.replace(candidate_path, image_path)
-    # The raw sidecar marker hashes content, not paths, so renaming the
-    # candidate pair onto the draft path keeps it valid. A candidate without a
-    # pair must also clear the replaced draft's stale pair.
-    rename_mask_source_pair(
-        Path(candidate_path),
-        Path(image_path),
-    )
-    promote_candidate_provenance(project.run_dir, slide_id)
-    if not same_visual:
-        mark_slide_image_changed(project, slide_id, db)
+    with reveal_lock_for(project):
+        keep_derivatives = _check_image_change_choice(
+            project, slide_id,
+            str(payload.get("disposition") or "keep"),
+            str(payload.get("expected_version") or "") or None,
+        )
+        if not same_visual:
+            archive_current_slide_image(project, slide_id, keep_derivatives=keep_derivatives)
+        os.replace(candidate_path, image_path)
+        # A candidate without a raw pair must clear the old draft pair.
+        rename_mask_source_pair(Path(candidate_path), Path(image_path))
+        promote_candidate_provenance(project.run_dir, slide_id)
+        if not same_visual:
+            mark_slide_image_changed(project, slide_id, db)
     return {
         "success": True,
         "image_url": f"/api/projects/{project_id}/slides/{slide_id}/image?t={uuid.uuid4().hex[:6]}",
     }
 
 
-def delete_all_slide_images(project_id: str, db: Session):
+def delete_all_slide_images(project_id: str, db: Session, payload: Dict[str, Any] | None = None):
     project = project_or_404(db, project_id)
     slide_ids = read_current_slide_ids_or_404(project)
     deleted_count = 0
     with reveal_lock_for(project):
+        choices = {
+            str(item.get("slide_id") or ""): item
+            for item in (payload or {}).get("changes", [])
+            if isinstance(item, dict)
+        } if isinstance((payload or {}).get("changes"), list) else {}
+        for slide_id in slide_ids:
+            item = choices.get(slide_id, {})
+            _check_image_change_choice(
+                project, slide_id,
+                str(item.get("disposition") or "keep"),
+                str(item.get("expected_version") or "") or None,
+            )
         for slide_id in slide_ids:
             image_path = Path(
                 storage_slide_file(project.run_dir, slide_id, "visual_draft.png")
@@ -1515,7 +1795,11 @@ def delete_all_slide_images(project_id: str, db: Session):
                 storage_slide_file(project.run_dir, slide_id, "visual_candidate.png")
             )
             if image_path.exists():
-                archive_current_slide_image(project, slide_id)
+                item = choices.get(slide_id, {})
+                archive_current_slide_image(
+                    project, slide_id,
+                    keep_derivatives=str(item.get("disposition") or "keep") == "keep",
+                )
                 image_path.unlink()
                 deleted_count += 1
             for path in (
@@ -1545,7 +1829,10 @@ def delete_all_slide_images(project_id: str, db: Session):
     return {"success": True, "deleted_count": deleted_count, "slide_ids": slide_ids}
 
 
-def delete_slide_image(project_id: str, slide_id: str, db: Session):
+def delete_slide_image(
+    project_id: str, slide_id: str, db: Session,
+    disposition: str = "keep", expected_version: str | None = None,
+):
     project = project_or_404(db, project_id)
     image_path = current_slide_file_or_404(project, slide_id, "visual_draft.png")
     candidate_path = current_slide_file_or_404(
@@ -1553,21 +1840,25 @@ def delete_slide_image(project_id: str, slide_id: str, db: Session):
     )
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail="图片不存在")
-    archive_current_slide_image(project, slide_id)
-    os.remove(image_path)
-    if os.path.exists(candidate_path):
-        os.remove(candidate_path)
-    remove_mask_source_pair(Path(image_path))
-    remove_mask_source_pair(Path(candidate_path))
-    for candidate in (
-        visual_provenance_path(project.run_dir, slide_id),
-        visual_provenance_path(project.run_dir, slide_id, candidate=True),
-    ):
-        try:
-            candidate.unlink()
-        except FileNotFoundError:
-            pass
-    mark_slide_image_changed(project, slide_id, db)
+    with reveal_lock_for(project):
+        keep_derivatives = _check_image_change_choice(
+            project, slide_id, disposition, expected_version,
+        )
+        archive_current_slide_image(project, slide_id, keep_derivatives=keep_derivatives)
+        os.remove(image_path)
+        if os.path.exists(candidate_path):
+            os.remove(candidate_path)
+        remove_mask_source_pair(Path(image_path))
+        remove_mask_source_pair(Path(candidate_path))
+        for candidate in (
+            visual_provenance_path(project.run_dir, slide_id),
+            visual_provenance_path(project.run_dir, slide_id, candidate=True),
+        ):
+            try:
+                candidate.unlink()
+            except FileNotFoundError:
+                pass
+        mark_slide_image_changed(project, slide_id, db)
     try:
         remove_artifact_record(
             db,
@@ -1741,6 +2032,24 @@ def update_step3_image_order(project_id: str, payload: Dict[str, Any], db: Sessi
             min(from_index, to_index), max(from_index, to_index) + 1
         )
         affected_slide_ids = [slide_ids[index] for index in affected_indexes]
+        choices = {
+            str(item.get("slide_id") or ""): item
+            for item in payload.get("changes", [])
+            if isinstance(item, dict)
+        } if isinstance(payload.get("changes"), list) else {}
+        for affected_id in affected_slide_ids:
+            item = choices.get(affected_id, {})
+            _check_image_change_choice(
+                project, affected_id,
+                str(item.get("disposition") or "keep"),
+                str(item.get("expected_version") or "") or None,
+            )
+        for affected_id in affected_slide_ids:
+            item = choices.get(affected_id, {})
+            archive_current_slide_image(
+                project, affected_id,
+                keep_derivatives=str(item.get("disposition") or "keep") == "keep",
+            )
 
         with tempfile.TemporaryDirectory(
             prefix="step3-image-move-", dir=root

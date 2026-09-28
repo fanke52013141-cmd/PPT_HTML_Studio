@@ -253,6 +253,9 @@ function renderStep3Grid() {
         </div>
         <div class="step3-card-actions">
           ${img.exists ? `
+            <button class="secondary step3-card-action step3-reuse-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>
+              复用旧标注
+            </button>
             <button class="danger step3-card-action step3-delete-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>
               删除
             </button>
@@ -286,6 +289,10 @@ function renderStep3Grid() {
     card.querySelector('.step3-delete-action')?.addEventListener('click', (event) => {
       event.stopPropagation();
       deleteStep3Image(img.slide_id);
+    });
+    card.querySelector('.step3-reuse-action')?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      openStep3GeometryReuse(img.slide_id);
     });
     dragHandle.addEventListener('click', (e) => e.stopPropagation());
     dragHandle.addEventListener('dragstart', (e) => {
@@ -332,6 +339,14 @@ async function reorderStep3Images(draggedIdx, targetIdx) {
     return;
   }
 
+  const affected = step3ImageOrder.slice(Math.min(draggedIdx, targetIdx), Math.max(draggedIdx, targetIdx) + 1);
+  const changes = [];
+  for (const image of affected) {
+    const choice = await confirmStep3ReplacementImpact(image.slide_id);
+    if (!choice) return;
+    changes.push({ slide_id: image.slide_id, ...choice });
+  }
+
   // slide_id 是固定分镜槽位，只对图片数据做插入式移动。
   step3ImageOrder = moveStep3ImageAssignment(step3ImageOrder, draggedIdx, targetIdx);
   step3ImageReassigning = true;
@@ -343,6 +358,7 @@ async function reorderStep3Images(draggedIdx, targetIdx) {
       from_index: draggedIdx,
       to_index: targetIdx,
       order_version: step3OrderVersion,
+      changes,
     });
     step3OrderVersion = String(res.order_version || step3OrderVersion);
     showToast('图片与 Slide 标题的对应关系已更新');
@@ -388,16 +404,65 @@ function closeStep3AIModal() {
 
 window.closeStep3AIModal = closeStep3AIModal;
 
-function confirmStep3ReplacementImpact(slideId) {
-  const hasCurrentImage = step3ImageOrder.some(item => item.slide_id === slideId && item.exists);
-  if (!hasCurrentImage) return Promise.resolve(true);
+async function confirmStep3ReplacementImpact(slideId) {
+  const preview = await API.get(
+    `/api/projects/${state.currentProject.id}/steps/3/images/${encodeURIComponent(slideId)}/change-preview`
+  );
+  if (!preview.has_image) return { disposition: 'keep', expected_version: preview.version || '' };
   return new Promise(resolve => {
-    showCustomConfirm(
-      '替换当前图片',
-      `${slideId} 的旧图和 Mask 会归档。新图应用后，该页揭示效果和勾画位置待核对；旁白、音频和已输出视频保留。现在应用新图吗？`,
-      () => resolve(true),
-      () => resolve(false),
-    );
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    modal.style.zIndex = '1200';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.cssText = 'width:min(680px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:28px';
+    const heading = document.createElement('h3');
+    heading.textContent = `${slideId} 图片变更影响`;
+    content.appendChild(heading);
+    const addGroup = (label, paths) => {
+      if (!paths.length) return;
+      const title = document.createElement('p');
+      title.textContent = `${label}（${paths.length}）`;
+      title.style.cssText = 'font-weight:700;margin:16px 0 6px';
+      content.appendChild(title);
+      const list = document.createElement('ul');
+      list.style.cssText = 'max-height:110px;overflow:auto;margin:0;padding-left:22px;font-size:13px';
+      paths.forEach(path => {
+        const row = document.createElement('li');
+        row.textContent = path;
+        list.appendChild(row);
+      });
+      content.appendChild(list);
+    };
+    addGroup('旧源图归档', preview.archive || []);
+    addGroup('Mask 与勾画待核对', preview.review || []);
+    addGroup('需要重建的揭示缓存', preview.rebuild || []);
+    addGroup('保留的已有成品', preview.retained_outputs || []);
+    const note = document.createElement('p');
+    note.textContent = '旁白和音频保留。保留待核对会连同旧缓存一起归档；清理旧缓存仍会归档旧图与 Mask。';
+    note.style.cssText = 'font-size:14px;margin:18px 0';
+    content.appendChild(note);
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap';
+    const finish = disposition => {
+      modal.remove();
+      resolve(disposition ? { disposition, expected_version: preview.version } : null);
+    };
+    [['取消', null], ['应用并保留待核对', 'keep'], ['应用并清理旧缓存', 'cleanup']].forEach(([label, value]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = value === 'cleanup' ? 'danger' : 'secondary';
+      button.textContent = label;
+      button.addEventListener('click', () => finish(value));
+      actions.appendChild(button);
+    });
+    content.appendChild(actions);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    actions.querySelector('button').focus();
   });
 }
 
@@ -411,13 +476,16 @@ async function uploadStep3ImageById(slideId, input) {
     input.value = '';
     return;
   }
-  if (!(await confirmStep3ReplacementImpact(slideId))) {
+  const impactChoice = await confirmStep3ReplacementImpact(slideId);
+  if (!impactChoice) {
     input.value = '';
     return;
   }
   const formData = new FormData();
   formData.append('slide_id', slideId);
   formData.append('file', file);
+  formData.append('disposition', impactChoice.disposition);
+  formData.append('expected_version', impactChoice.expected_version);
   step3UploadingSlides.add(slideId);
   step3CurrentUploading = slideId;
   renderStep3Grid();
@@ -438,24 +506,112 @@ async function uploadStep3ImageById(slideId, input) {
 
 window.uploadStep3ImageById = uploadStep3ImageById;
 
-function deleteStep3Image(slideId) {
-  showCustomConfirm(
-    '删除图片',
-    `确定从当前项目删除 ${slideId} 的图片吗？旧图和 Mask 数据会归档；该页切层需重建，音频保留。`,
-    async () => {
-      const res = await API.delete(`/api/projects/${state.currentProject.id}/steps/3/images/${encodeURIComponent(slideId)}`);
-      if (res.success) {
-        await refreshStep3Images();
-        await refreshCurrentProjectStatus(3);
-        showToast('图片已从当前页面移除；旧图和 Mask 数据已归档。');
-      }
-    }
+async function deleteStep3Image(slideId) {
+  const impactChoice = await confirmStep3ReplacementImpact(slideId);
+  if (!impactChoice) return;
+  const params = new URLSearchParams(impactChoice);
+  const res = await API.delete(
+    `/api/projects/${state.currentProject.id}/steps/3/images/${encodeURIComponent(slideId)}?${params}`
   );
+  if (res.success) {
+    await refreshStep3Images();
+    await refreshCurrentProjectStatus(3);
+    showToast('图片已从当前页面移除；旧图和 Mask 数据已归档。');
+  }
 }
 
 window.deleteStep3Image = deleteStep3Image;
 
-function deleteAllStep3Images() {
+async function openStep3GeometryReuse(slideId) {
+  const projectId = state.currentProject.id;
+  const base = `/api/projects/${projectId}/steps/3/images/${encodeURIComponent(slideId)}`;
+  const recovery = await API.get(`${base}/recovery`);
+  const available = (recovery.items || []).filter(item => item.mask_groups || item.annotation_items);
+  if (!available.length) {
+    showToast('该页没有可复用的 Mask 或勾画归档');
+    return;
+  }
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex;z-index:1200';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  const content = document.createElement('div');
+  content.className = 'modal-content';
+  content.style.cssText = 'width:min(800px,calc(100vw - 32px));max-height:90vh;overflow:auto;padding:28px';
+  const heading = document.createElement('h3');
+  heading.textContent = `${slideId} 复用旧 Mask／勾画`;
+  content.appendChild(heading);
+  const guidance = document.createElement('p');
+  guidance.textContent = '橙色是旧 Mask，蓝色是旧勾画区域。请检查它们在当前图片上的位置；恢复后仍需在相应步骤确认。';
+  content.appendChild(guidance);
+  const select = document.createElement('select');
+  available.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.archive_id;
+    option.textContent = `${item.created_at || item.archive_id} · Mask ${item.mask_groups} 组 · 勾画 ${item.annotation_items} 项`;
+    select.appendChild(option);
+  });
+  content.appendChild(select);
+  const overlay = document.createElement('img');
+  overlay.alt = '旧 Mask 与勾画叠加在当前图片上的预览';
+  overlay.style.cssText = 'display:block;max-width:100%;max-height:50vh;margin:16px auto;border:1px solid #ccc';
+  const refreshOverlay = () => {
+    overlay.src = `${base}/recovery/${encodeURIComponent(select.value)}/overlay`;
+    const selected = available.find(item => item.archive_id === select.value);
+    maskChoice.disabled = !selected?.mask_groups;
+    annotationChoice.disabled = !selected?.annotation_items;
+    maskChoice.checked = !!selected?.mask_groups;
+    annotationChoice.checked = !!selected?.annotation_items;
+  };
+  content.appendChild(overlay);
+  const maskLabel = document.createElement('label');
+  const maskChoice = document.createElement('input');
+  maskChoice.type = 'checkbox';
+  maskLabel.append(maskChoice, document.createTextNode(' 复用 Mask 草稿'));
+  const annotationLabel = document.createElement('label');
+  const annotationChoice = document.createElement('input');
+  annotationChoice.type = 'checkbox';
+  annotationLabel.append(annotationChoice, document.createTextNode(' 复用勾画草稿'));
+  const options = document.createElement('div');
+  options.style.cssText = 'display:flex;gap:24px;margin:12px 0';
+  options.append(maskLabel, annotationLabel);
+  content.appendChild(options);
+  const actions = document.createElement('div');
+  actions.style.cssText = 'display:flex;gap:12px;justify-content:flex-end';
+  const cancel = document.createElement('button');
+  cancel.className = 'secondary';
+  cancel.textContent = '取消';
+  cancel.addEventListener('click', () => modal.remove());
+  const apply = document.createElement('button');
+  apply.className = 'success';
+  apply.textContent = '恢复所选草稿';
+  apply.addEventListener('click', async () => {
+    apply.disabled = true;
+    try {
+      await API.post(`${base}/reuse-geometry`, {
+        archive_id: select.value,
+        expected_version: recovery.version,
+        reuse_mask: maskChoice.checked,
+        reuse_annotations: annotationChoice.checked,
+      });
+      modal.remove();
+      await refreshCurrentProjectStatus(3);
+      showToast('旧几何已恢复为草稿，请到 Mask／勾画步骤检查并确认。');
+    } finally {
+      apply.disabled = false;
+    }
+  });
+  actions.append(cancel, apply);
+  content.appendChild(actions);
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  select.addEventListener('change', refreshOverlay);
+  refreshOverlay();
+  select.focus();
+}
+
+async function deleteAllStep3Images() {
   if (step3UploadingSlides.size > 0 || step3GeneratingSlides.size > 0) {
     showToast('请等待当前图片生成或上传完成后再批量删除。');
     return;
@@ -465,18 +621,18 @@ function deleteAllStep3Images() {
     showToast('当前没有可删除的图片。');
     return;
   }
-  showCustomConfirm(
-    '批量删除图片',
-    `确定从当前项目删除全部 ${imageCount} 张图片吗？旧图和 Mask 数据会归档；切层需重建，音频保留。`,
-    async () => {
-      const res = await API.delete(`/api/projects/${state.currentProject.id}/steps/3/images`);
-      if (res.success) {
-        await refreshStep3Images();
-        await refreshCurrentProjectStatus(3);
-        showToast(`已移除 ${res.deleted_count || imageCount} 张图片；旧图和 Mask 数据已归档。`);
-      }
-    }
-  );
+  const changes = [];
+  for (const image of step3ImageOrder.filter(item => item.exists)) {
+    const choice = await confirmStep3ReplacementImpact(image.slide_id);
+    if (!choice) return;
+    changes.push({ slide_id: image.slide_id, ...choice });
+  }
+  const res = await API.delete(`/api/projects/${state.currentProject.id}/steps/3/images`, { changes });
+  if (res.success) {
+    await refreshStep3Images();
+    await refreshCurrentProjectStatus(3);
+    showToast(`已移除 ${res.deleted_count || imageCount} 张图片；旧图和 Mask 数据已归档。`);
+  }
 }
 
 window.deleteAllStep3Images = deleteAllStep3Images;
@@ -584,6 +740,10 @@ async function handleStep3BatchUpload(e) {
     formData.append('slide_id', slideId);
     formData.append('file', files[i]);
     try {
+      const impactChoice = await confirmStep3ReplacementImpact(slideId);
+      if (!impactChoice) continue;
+      formData.append('disposition', impactChoice.disposition);
+      formData.append('expected_version', impactChoice.expected_version);
       const res = await API.post(`/api/projects/${projectId}/steps/3/upload`, formData);
       if (!isCurrentWorkspaceProject(projectId, sessionVersion)) break;
       if (res && res.success) {
@@ -645,16 +805,24 @@ async function generateAllStep3Images() {
   let successCount = 0;
   const failedSlides = [];
   const busySlides = [];
+  const skippedSlides = [];
   try {
     for (const task of tasks) {
       if (!isCurrentWorkspaceProject(projectId, sessionVersion)) break;
       step3CurrentGenerating = task.slideId;  // 标记当前正在生成的卡片
       renderStep3Grid();
       try {
+        const impactChoice = await confirmStep3ReplacementImpact(task.slideId);
+        if (!impactChoice) {
+          skippedSlides.push(task.slideId);
+          continue;
+        }
         const formData = new FormData();
         formData.append('slide_id', task.slideId);
         formData.append('prompt', task.prompt);
         formData.append('preview', 'false');
+        formData.append('disposition', impactChoice.disposition);
+        formData.append('expected_version', impactChoice.expected_version);
         const res = await API.post(
           `/api/projects/${projectId}/steps/3/generate`,
           formData
@@ -703,8 +871,8 @@ async function generateAllStep3Images() {
         `失败分镜：${failedSlides.join('、')}；已成功 ${successCount} 张，可单独重试失败的分镜。`
       );
     }
-  } else if (busySlides.length > 0) {
-    showToast(`✅ 已生成 ${successCount} 张；${busySlides.join('、')} 正在生成中，已跳过。`, 5000);
+  } else if (busySlides.length > 0 || skippedSlides.length > 0) {
+    showToast(`已生成 ${successCount} 张；已跳过 ${[...busySlides, ...skippedSlides].join('、')}。`, 5000);
   } else {
     showToast(`✅ ${successCount} 张图片已全部生成完成！`);
   }
@@ -781,13 +949,14 @@ async function applyStep3Candidate() {
     showToast('请先生成一张候选图片。');
     return;
   }
-  if (!(await confirmStep3ReplacementImpact(slideId))) return;
+  const impactChoice = await confirmStep3ReplacementImpact(slideId);
+  if (!impactChoice) return;
   const applyButton = document.getElementById('step3-btn-apply-candidate');
   applyButton.disabled = true;
   try {
     const res = await API.post(
       `/api/projects/${state.currentProject.id}/steps/3/apply-candidate`,
-      { slide_id: slideId }
+      { slide_id: slideId, ...impactChoice }
     );
     if (res.success) {
       await refreshStep3Images();

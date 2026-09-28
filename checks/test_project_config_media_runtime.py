@@ -215,8 +215,18 @@ def test_tts_generation_uses_project_voice_settings_and_redacts_failed_output(
     monkeypatch.setattr(tts, "get_setting", lambda _key, default=None: "global-value" if default is None else default)
     monkeypatch.setattr(tts, "sync_narration_beats_to_contract", lambda *_args: None)
     monkeypatch.setattr(tts.invalidation_service, "narration_synthesis_started", lambda _project: None)
-    monkeypatch.setattr(tts, "slide_tts_artifact_paths", lambda *_args: {"audio": "a", "metadata": "m", "srt": "s", "timeline": "t"})
-    monkeypatch.setattr(tts, "ensure_slide_tts_text_file", lambda *_args: "input.txt")
+    slide_dir = Path(project.run_dir) / "slides" / "slide_001"
+    slide_dir.mkdir(parents=True, exist_ok=True)
+    text_path = slide_dir / "tts_text.txt"
+    text_path.write_text("test narration", encoding="utf-8")
+    monkeypatch.setattr(tts, "slide_tts_artifact_paths", lambda *_args: {
+        "text": str(text_path),
+        "audio": str(slide_dir / "voice.mp3"),
+        "metadata": str(slide_dir / "tts_metadata.json"),
+        "srt": str(slide_dir / "subtitles.srt"),
+        "timeline": str(slide_dir / "audio_timeline.json"),
+    })
+    monkeypatch.setattr(tts, "ensure_slide_tts_text_file", lambda *_args: str(text_path))
 
     def artifact_status(*_args):
         nonlocal status_calls

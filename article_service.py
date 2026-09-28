@@ -265,6 +265,8 @@ def update_article_generation_settings(
             status_code=400,
             detail="文章生成 System Content 不能超过 20000 个字符",
         )
+    if system_content == read_article_generation_system_content():
+        return {"success": True, "system_content": system_content}
     _deps().update_settings(
         {ARTICLE_GENERATION_SYSTEM_CONTENT_KEY: system_content}
     )

@@ -42,7 +42,9 @@ def is_minimax_async_endpoint(endpoint: Any) -> bool:
 STEP7_TTS_TIMEOUT_SEC = 900
 STEP7_TTS_PROCESS_TIMEOUT_SEC = STEP7_TTS_TIMEOUT_SEC + 90
 STEP7_TTS_RETRY_ATTEMPTS = 3
+STEP7_TTS_SERVER_ERROR_ATTEMPTS = 5
 STEP7_TTS_RETRY_BASE_DELAY_SEC = 4
+STEP7_TTS_SERVER_ERROR_MAX_DELAY_SEC = 60
 STEP7_TTS_RATE_LIMIT_BASE_DELAY_SEC = 15
 STEP7_TTS_RATE_LIMIT_MAX_DELAY_SEC = 90
 _RATE_LIMIT_MARKERS = (
@@ -51,6 +53,13 @@ _RATE_LIMIT_MARKERS = (
     "rate_limit",
     "too many requests",
     "quota exceeded",
+)
+_SERVER_ERROR_MARKERS = (
+    "internal server error", "bad gateway", "service unavailable",
+    "gateway timeout", "server error", "http 500", "http 502",
+    "http 503", "http 504", "status 500", "status 502",
+    "status 503", "status 504", "status_code=500", "status_code=502",
+    "status_code=503", "status_code=504",
 )
 
 TTS_PROVIDER_ALIASES = {
@@ -299,6 +308,11 @@ def _is_rate_limited(value: Any) -> bool:
     return any(marker in text for marker in _RATE_LIMIT_MARKERS)
 
 
+def _is_server_error(value: Any) -> bool:
+    text = _safe_process_text(value).lower()
+    return any(marker in text for marker in _SERVER_ERROR_MARKERS)
+
+
 def _retry_delay_seconds(attempt: int, output: Any) -> int:
     """Use longer bounded backoff when the provider explicitly rate limits."""
     safe_attempt = max(1, int(attempt))
@@ -306,6 +320,11 @@ def _retry_delay_seconds(attempt: int, output: Any) -> int:
         return min(
             STEP7_TTS_RATE_LIMIT_BASE_DELAY_SEC * (2 ** (safe_attempt - 1)),
             STEP7_TTS_RATE_LIMIT_MAX_DELAY_SEC,
+        )
+    if _is_server_error(output):
+        return min(
+            STEP7_TTS_RETRY_BASE_DELAY_SEC * (2 ** (safe_attempt - 1)),
+            STEP7_TTS_SERVER_ERROR_MAX_DELAY_SEC,
         )
     return STEP7_TTS_RETRY_BASE_DELAY_SEC * safe_attempt
 
@@ -347,7 +366,7 @@ def run_tts_command_with_retries(
         "stderr": "",
         "attempts": 0,
     }
-    for attempt in range(1, STEP7_TTS_RETRY_ATTEMPTS + 1):
+    for attempt in range(1, STEP7_TTS_SERVER_ERROR_ATTEMPTS + 1):
         last_result["attempts"] = attempt
         try:
             lease = reservation() if reservation is not None else nullcontext()
@@ -399,20 +418,24 @@ def run_tts_command_with_retries(
         last_result["stderr"] = _redact_tts_process_output(
             last_result["stderr"], tts_env
         )
+        combined_output = f"{last_result['stderr']}\n{last_result['stdout']}"
+        max_attempts = (
+            STEP7_TTS_SERVER_ERROR_ATTEMPTS
+            if _is_server_error(combined_output) else STEP7_TTS_RETRY_ATTEMPTS
+        )
         _deps().write_project_log(
             project,
             "step7_slide_tts_attempt_failed",
             slide_id=slide_id,
             attempt=attempt,
-            max_attempts=STEP7_TTS_RETRY_ATTEMPTS,
+            max_attempts=max_attempts,
             returncode=last_result["returncode"],
             stdout=last_result["stdout"],
             stderr=last_result["stderr"],
         )
-        if attempt < STEP7_TTS_RETRY_ATTEMPTS:
-            combined_output = (
-                f"{last_result['stderr']}\n{last_result['stdout']}"
-            )
+        if attempt >= max_attempts:
+            break
+        if attempt < max_attempts:
             delay = _retry_delay_seconds(attempt, combined_output)
             if _is_rate_limited(combined_output):
                 # 把上游限流反馈给全局治理器：减半该网关的并发上限（AIMD），
@@ -431,7 +454,7 @@ def run_tts_command_with_retries(
                 reason,
                 slide_id,
                 attempt,
-                STEP7_TTS_RETRY_ATTEMPTS,
+                max_attempts,
                 delay,
             )
             time.sleep(delay)

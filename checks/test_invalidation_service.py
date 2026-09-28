@@ -130,7 +130,7 @@ def test_slide_image_invalidation_is_scoped_and_preserves_sources() -> None:
         assert not (run_dir / "slides" / "slide_001" / "assets").exists()
         assert (run_dir / "slides" / "slide_001" / "visual_draft.png").exists()
         assert (run_dir / "slides" / "slide_002" / "scene.json").exists()
-        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert not (run_dir / "planning" / "audio_confirmed.json").exists()
         assert not (run_dir / "remotion_props.json").exists()
         assert project.current_step == 3
         assert project._statuses["3"] == "completed"

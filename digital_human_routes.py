@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import subprocess
+import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -23,7 +24,8 @@ from sqlalchemy.orm import Session
 
 from database import get_db, Project
 from artifact_fingerprint import sha256_bytes, sha256_file
-from pipeline_lifecycle import read_json_file, write_json_atomic
+from pipeline_lifecycle import project_artifact_lock, read_json_file, write_json_atomic
+from project_impact_service import resolve_impacts, snapshot_impacts
 
 REPO_ROOT = Path(__file__).resolve().parent
 from digital_human_client import (
@@ -346,8 +348,9 @@ def get_dh_config(project_id: str, db: Session = Depends(get_db)) -> Dict[str, A
             "video_exists": video_exists,
             "audio_ready": audio_ok,
             "video_stale": bool(
-                video_exists and stored_hash
-                and stored_hash != _digi_audio_hash(project, slide_id)
+                item.get("status") == "stale_audio"
+                or (video_exists and stored_hash
+                    and stored_hash != _digi_audio_hash(project, slide_id))
             ),
         }
     audio_ready_count = sum(1 for s in slides_info.values() if s["audio_ready"])
@@ -362,8 +365,9 @@ def get_dh_config(project_id: str, db: Session = Depends(get_db)) -> Dict[str, A
             "video_exists": full_exists,
             "audio_ready": _full_audio_path(project).exists(),
             "video_stale": bool(
-                full_exists and full_stored
-                and full_stored != _digi_audio_hash(project, "full")
+                full_item.get("status") == "stale_audio"
+                or (full_exists and full_stored
+                    and full_stored != _digi_audio_hash(project, "full"))
             ),
         }
     return {
@@ -639,6 +643,9 @@ def generate_dh(
         slides[slide_id]["job_id"] = job_id
         slides[slide_id]["status"] = result.get("status")
         slides[slide_id]["audio_sha256"] = _digi_audio_hash(project, slide_id)
+        slides[slide_id]["impact_snapshot"] = snapshot_impacts(
+            project.run_dir, affected=("digital human media",), slide_ids=(slide_id,),
+        )
         _save_config(project, cfg)
     return {"success": True, "job_id": job_id, "status": result.get("status")}
 
@@ -694,6 +701,9 @@ def generate_dh_full(
             "job_id": job_id,
             "status": result.get("status"),
             "audio_sha256": _digi_audio_hash(project, "full"),
+            "impact_snapshot": snapshot_impacts(
+                project.run_dir, affected=("digital human media",), slide_ids=("full",),
+            ),
         }
         _save_config(project, cfg)
     return {"success": True, "job_id": job_id, "status": result.get("status")}
@@ -714,22 +724,55 @@ def get_dh_job(
     except Exception as exc:
         raise HTTPException(status_code=404, detail=f"任务不存在: {exc}")
 
-    # 任务完成时拉取数字人视频到项目目录（始终覆盖旧文件）
+    # A completed old job cannot overwrite a newer presenter or audio edit.
     job_status = job.get("status")
     if job_status in ("done", "failed"):
         project = _project_or_404(db, project_id)
         slide_id = job.get("slide_id")
         if slide_id:
             cfg = _load_config(project)
-            cfg.setdefault("slides", {}).setdefault(slide_id, {})["status"] = job_status
+            item = cfg.setdefault("slides", {}).setdefault(slide_id, {})
+            if str(item.get("job_id") or "") != job_id:
+                return {"success": True, "job": {**job, "stale": True}}
+            if str(item.get("audio_sha256") or "") != _digi_audio_hash(project, slide_id):
+                item["status"] = "stale_audio"
+                _save_config(project, cfg)
+                return {"success": True, "job": {**job, "stale": True, "video_exists": False}}
+            item["status"] = job_status
             if job_status == "done":
                 dest = _slide_digi_path(project, slide_id)
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                temporary = dest.with_name(f".{dest.stem}-{uuid.uuid4().hex}.tmp.mp4")
                 try:
-                    client.download_result(job_id, dest)
+                    client.download_result(job_id, temporary)
+                    with project_artifact_lock(project.run_dir):
+                        latest = _load_config(project)
+                        latest_item = (latest.get("slides") or {}).get(slide_id) or {}
+                        if (str(latest_item.get("job_id") or "") != job_id
+                                or str(latest_item.get("audio_sha256") or "") != _digi_audio_hash(project, slide_id)):
+                            job = {**job, "stale": True}
+                        else:
+                            os.replace(temporary, dest)
+                            latest_item["status"] = "done"
+                            _save_config(project, latest)
+                            resolve_impacts(
+                                project.run_dir,
+                                affected=("digital human media",),
+                                slide_ids=(slide_id,),
+                                snapshot=latest_item.get("impact_snapshot") or [],
+                            )
+                            if slide_id == "full" and latest.get("enabled"):
+                                _mark_digital_human_output_changed(project, db)
                 except Exception as exc:  # noqa: BLE001
                     logger.warning("download digi failed: %s", exc)
+                finally:
+                    try:
+                        temporary.unlink()
+                    except FileNotFoundError:
+                        pass
                 job = {**job, "video_exists": dest.exists()}
-            _save_config(project, cfg)
+            else:
+                _save_config(project, cfg)
     return {"success": True, "job": job}
 
 

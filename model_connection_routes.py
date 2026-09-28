@@ -19,10 +19,11 @@ from model_connection_models import (
     ModelConnectionStateUpdate,
     ModelConnectionUpdate,
 )
+from repository_paths import MODEL_VOICE_REFERENCES_DIR
 
 
 router = APIRouter(prefix="/api/model-connections", tags=["Model connections"])
-_VOICE_REFERENCE_ROOT = Path(__file__).resolve().parent / "data" / "model_voice_references"
+_VOICE_REFERENCE_ROOT = Path(MODEL_VOICE_REFERENCES_DIR)
 # 参考音频上限。读取必须**带上限**，否则 2GB 上传会先整块进内存再被拒绝
 # （这正是 checks/test_upload_bounded_reads.py 守护的 M-01 回归）。
 MAX_REFERENCE_AUDIO_BYTES = 10 * 1024 * 1024
@@ -118,7 +119,7 @@ async def upload_model_reference_audio(
                 existing.unlink(missing_ok=True)
         pending.replace(target)
         public_config = dict(revision.get("public_config") or {})
-        public_config["clone_voice_id"] = str(target)
+        public_config["clone_voice_id"] = f"data/model_voice_references/{target.name}"
         updated = service.update_model_connection(
             connection_id,
             ModelConnectionUpdate(public_config=public_config),

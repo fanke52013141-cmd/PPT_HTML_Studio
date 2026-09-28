@@ -736,6 +736,12 @@ class AnnotationService:
         accepted_review_ids = {str(v) for v in accepted_review}
 
         run_dir = self._run_dir(project)
+        from project_impact_service import resolve_impacts, snapshot_impacts
+
+        impact_snapshot = snapshot_impacts(
+            run_dir, affected=("annotation geometry", "annotation timing"),
+            slide_ids=(slide_id,),
+        )
         canvas = self._canvas_for(project)
         image_hash = self._image_hash(project, slide_id)
         narration_hash = self._narration_hash(project, slide_id)
@@ -819,6 +825,13 @@ class AnnotationService:
                 timeline_result = {"timeline_built": False, "timeline_error": str(exc)[:300]}
         if page_changed or timeline_result.get("timeline_changed"):
             self._annotation_content_changed(project, (slide_id,))
+        resolved_effects = ["annotation geometry"]
+        if timeline_result.get("timeline_built"):
+            resolved_effects.append("annotation timing")
+        resolve_impacts(
+            run_dir, affected=resolved_effects, slide_ids=(slide_id,),
+            snapshot=impact_snapshot,
+        )
         return {
             "slide_id": slide_id,
             "revision": updated_page.revision,

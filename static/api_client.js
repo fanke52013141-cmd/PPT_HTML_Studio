@@ -141,8 +141,10 @@ const API = {
     });
   },
 
-  async delete(url) {
-    return this.fetch(url, { method: 'DELETE' });
+  async delete(url, body = null) {
+    return this.fetch(url, body === null
+      ? { method: 'DELETE' }
+      : { method: 'DELETE', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
   }
 };
 

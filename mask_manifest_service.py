@@ -793,8 +793,10 @@ def update_step5_result(
         if build_assets:
             build_current_reveal_assets(project)
             built_assets = True
-
-    if changed:
-        invalidation_service.mask_content_changed(project)
-    dependencies.handle_step_navigation(project, 5, db)
+        if changed:
+            invalidation_service.mask_content_changed(project)
+        if built_assets:
+            dependencies.handle_step_navigation(project, 5, db)
+        else:
+            db.commit()
     return {"success": True, "built_assets": built_assets, "changed": changed}

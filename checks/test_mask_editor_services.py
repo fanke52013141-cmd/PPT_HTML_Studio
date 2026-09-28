@@ -136,11 +136,12 @@ def test_draft_never_builds_or_navigates_and_final_is_explicit(
         assert builds == []
         assert navigations == []
 
+        commits: list[str] = []
         without_build = manifest_service.update_step5_result(
             project,
             {"slides": [{"slide_id": "slide_001", "groups": []}]},
             build_assets=False,
-            db=object(),
+            db=SimpleNamespace(commit=lambda: commits.append("draft")),
         )
         assert without_build == {
             "success": True,
@@ -148,7 +149,8 @@ def test_draft_never_builds_or_navigates_and_final_is_explicit(
             "changed": False,
         }
         assert builds == []
-        assert navigations == [5]
+        assert navigations == []
+        assert commits == ["draft"]
 
         with_build = manifest_service.update_step5_result(
             project,
@@ -162,7 +164,7 @@ def test_draft_never_builds_or_navigates_and_final_is_explicit(
             "changed": False,
         }
         assert builds == ["build"]
-        assert navigations == [5, 5]
+        assert navigations == [5]
     finally:
         manifest_service._dependencies = original_dependencies
 

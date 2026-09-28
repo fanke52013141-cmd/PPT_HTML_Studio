@@ -15,6 +15,7 @@ from typing import Any, Callable
 from sqlalchemy.orm import Session
 
 from artifact_fingerprint import presentation_input_fingerprint
+from project_impact_service import snapshot_impacts
 from database import ArtifactRecord, LocalJob, Project
 from account_context import get_current_account_id, reset_current_account_id, set_current_account_id
 import invalidation_service
@@ -234,6 +235,8 @@ class PptxExportService:
                 project.id,
                 mode=mode,
                 account_id=getattr(project, "account_id", None) or get_current_account_id(),
+                input_digest=presentation_input_fingerprint(self.project_run_dir(project))["digest"],
+                impact_snapshot=snapshot_impacts(self.project_run_dir(project), affected=("output",)),
             )
             db.add(job)
             db.commit()
@@ -522,6 +525,9 @@ class PptxExportService:
 
             payload = job.get_payload() or {}
             filename = str(payload.get("filename") or "")
+            queued_digest = str(payload.get("input_digest") or "")
+            if queued_digest and presentation_input_fingerprint(self.project_run_dir(project))["digest"] != queued_digest:
+                raise RuntimeError("导出排队期间输入已变化，请重新提交 PPTX 导出")
             mode = str(payload.get("mode") or "") or self._resolve_export_mode(
                 self.project_run_dir(project)
             )[0]
@@ -555,6 +561,8 @@ class PptxExportService:
                     ),
                 )
             output_path = Path(result["path"])
+            if queued_digest and presentation_input_fingerprint(self.project_run_dir(project))["digest"] != queued_digest:
+                raise RuntimeError("PPTX 生成期间输入已变化，请重新提交导出")
             artifact = ArtifactRecord(
                 id=uuid.uuid4().hex,
                 project_id=project.id,
@@ -735,6 +743,8 @@ class PptxExportService:
         project_id: str,
         mode: str = "image_only",
         account_id: str = "default",
+        input_digest: str = "",
+        impact_snapshot: list[dict[str, Any]] | None = None,
     ) -> LocalJob:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = (
@@ -748,7 +758,8 @@ class PptxExportService:
             progress=0,
             stage="queued",
             payload_json=json.dumps(
-                {"filename": filename, "mode": mode, "account_id": account_id},
+                {"filename": filename, "mode": mode, "account_id": account_id,
+                 "input_digest": input_digest, "impact_snapshot": impact_snapshot or []},
                 ensure_ascii=False,
             ),
         )
