@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import uuid
 from typing import Any, Callable
 
 from sqlalchemy.orm import Session, object_session
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session, object_session
 from runtime_support import kill_process_tree
 
 from account_context import get_current_account_id
-from artifact_fingerprint import render_input_fingerprint
+from artifact_fingerprint import render_input_fingerprint, sha256_file
 from artifact_registry import record_artifact, remove_artifact_record
 from database import Account, Project
 from error_log_service import log_pipeline_error
@@ -492,6 +493,7 @@ class VideoArtifactService:
         if not source_path.exists():
             source_name = filename
             source_path = requested_path
+        source_hash = sha256_file(source_path)
         if abs(speed - 1.0) <= 0.001:
             return {
                 "success": True,
@@ -510,9 +512,10 @@ class VideoArtifactService:
         )
         output_name = f"{source_path.stem}_speed_{speed_tag}x.mp4"
         output_path = self.project_video_file(project, output_name)
-        temporary = Path(f"{output_path}.tmp.mp4")
-        if temporary.exists():
-            temporary.unlink()
+        if output_path.exists():
+            output_name = f"{source_path.stem}_speed_{speed_tag}x_{uuid.uuid4().hex[:8]}.mp4"
+            output_path = self.project_video_file(project, output_name)
+        temporary = Path(f"{output_path}.{uuid.uuid4().hex}.tmp.mp4")
         # Use multiplication instead of division to avoid Windows path
         # conversion issues where FFmpeg's MSYS2 layer interprets the '/'
         # in "PTS/1.25" as a path separator (e.g. "setpts=PTS*0.8" == "PTS/1.25").
@@ -598,6 +601,9 @@ class VideoArtifactService:
                 500,
                 "生成调速视频失败：" + error_text,
             )
+        if sha256_file(source_path) != source_hash:
+            temporary.unlink(missing_ok=True)
+            raise VideoRenderError(409, "源视频在调速期间已变化，请重试")
         os.replace(temporary, output_path)
         source_metadata = self.read_video_metadata(source_path)
         source_metadata.update(

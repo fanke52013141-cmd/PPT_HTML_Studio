@@ -88,6 +88,58 @@ async function loadStep8Impacts(projectId, sessionVersion) {
       await loadStep8Impacts(projectId, sessionVersion);
     });
     row.append(title, details, jump, reviewed);
+    if (item.reason === 'article_changed' && (item.affected || []).includes('storyboard') && item.contract_sha256) {
+      const reusePlan = document.createElement('button');
+      reusePlan.type = 'button';
+      reusePlan.className = 'secondary';
+      reusePlan.textContent = '核对并沿用分镜';
+      reusePlan.addEventListener('click', async () => {
+        try {
+          const preview = await API.get(`/api/projects/${projectId}/impacts/storyboard-reuse-preview`);
+          const modal = document.createElement('div');
+          modal.className = 'modal-overlay';
+          modal.style.cssText = 'display:flex;z-index:1200';
+          const content = document.createElement('div');
+          content.className = 'modal-content';
+          content.style.cssText = 'width:min(900px,calc(100vw - 32px));max-height:90vh;overflow:auto;padding:24px';
+          const heading = document.createElement('h3');
+          heading.textContent = '核对文章与现有分镜';
+          const note = document.createElement('p');
+          note.textContent = '请通读当前文章并核对下列分镜是否仍适用。确认后仅结清分镜待办，不会重新生成素材。';
+          const article = document.createElement('pre');
+          article.textContent = preview.article || '';
+          article.style.cssText = 'white-space:pre-wrap;max-height:32vh;overflow:auto;background:#f7f7f7;padding:12px';
+          const slides = document.createElement('ol');
+          (preview.slides || []).forEach(slide => {
+            const line = document.createElement('li');
+            line.textContent = `${slide.slide_id} · ${slide.title}`;
+            slides.appendChild(line);
+          });
+          const cancel = document.createElement('button');
+          cancel.type = 'button';
+          cancel.textContent = '稍后处理';
+          cancel.addEventListener('click', () => modal.remove());
+          const apply = document.createElement('button');
+          apply.type = 'button';
+          apply.textContent = '确认沿用现有分镜';
+          apply.addEventListener('click', async () => {
+            try {
+              await API.put(`/api/projects/${projectId}/impacts/reuse-storyboard`, {
+                source_version: item.source_version,
+                article_sha256: preview.article_sha256,
+                contract_sha256: preview.contract_sha256,
+              });
+              modal.remove();
+              await loadStep8Impacts(projectId, sessionVersion);
+            } catch (error) { showToast(error.message || '复用确认失败，请刷新后重试', 'error'); }
+          });
+          content.append(heading, note, article, slides, cancel, apply);
+          modal.appendChild(content);
+          document.body.appendChild(modal);
+        } catch (error) { showToast(error.message || '无法读取文章与分镜', 'error'); }
+      });
+      row.appendChild(reusePlan);
+    }
     if (item.reason === 'storyboard_visual_changed' && (item.affected || []).includes('images') && item.image_sha256) {
       const reuse = document.createElement('button');
       reuse.type = 'button';

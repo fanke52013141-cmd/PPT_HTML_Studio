@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -13,6 +14,7 @@ from project_impact_service import list_impacts, set_decision
 from project_impact_service import resolve_impacts
 from impact_source_version import impact_source_version
 from artifact_fingerprint import sha256_file
+from pipeline_lifecycle import read_json_file
 from project_service import (
     AiModeUpdate,
     ProjectCreate,
@@ -35,7 +37,56 @@ def get_project_impacts(project_id: str, db: Session = Depends(get_db)) -> dict[
         if item.get("reason") == "storyboard_visual_changed" and "images" in item.get("affected", ()):
             slide_id = str(item.get("scope_id") or "")
             item["image_sha256"] = sha256_file(slide_dir(project.run_dir, slide_id) / "visual_draft.png")
+        if item.get("reason") == "article_changed" and "storyboard" in item.get("affected", ()):
+            root = Path(project.run_dir)
+            item["article_sha256"] = sha256_file(root / "inputs" / "article.md")
+            item["contract_sha256"] = sha256_file(root / "planning" / "visual_contract.json")
     return {"success": True, "items": items}
+
+
+@router.get("/api/projects/{project_id}/impacts/storyboard-reuse-preview")
+def preview_storyboard_reuse(project_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
+    project = project_or_404(db, project_id)
+    root = Path(project.run_dir)
+    article = root / "inputs" / "article.md"
+    contract = root / "planning" / "visual_contract.json"
+    if not article.is_file() or not contract.is_file():
+        raise HTTPException(status_code=409, detail="文章或分镜不存在")
+    from project_storage import safe_child
+
+    payload = read_json_file(safe_child(project.run_dir, "planning", "visual_contract.json"))
+    slides = payload.get("slides") if isinstance(payload, dict) else None
+    return {
+        "article": article.read_text(encoding="utf-8-sig"),
+        "slides": [{"slide_id": str(slide.get("slide_id") or ""),
+                    "title": str(slide.get("main_title") or "")}
+                   for slide in slides if isinstance(slide, dict)] if isinstance(slides, list) else [],
+        "article_sha256": sha256_file(article),
+        "contract_sha256": sha256_file(contract),
+    }
+
+
+@router.put("/api/projects/{project_id}/impacts/reuse-storyboard")
+def confirm_storyboard_reuse(
+    project_id: str, payload: dict[str, Any], db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Record a human decision that the existing storyboard still serves the article."""
+    project = project_or_404(db, project_id)
+    from pipeline_lifecycle import project_artifact_lock
+
+    with project_artifact_lock(project.run_dir):
+        root = Path(project.run_dir)
+        version = str(payload.get("source_version") or "")
+        current = next((item for item in list_impacts(project.run_dir)
+                        if item.get("id") == "article_changed:project"), None)
+        if (current is None or "storyboard" not in current.get("affected", ())
+                or current.get("source_version") != version
+                or impact_source_version(project.run_dir, "article_changed", "project") != version
+                or sha256_file(root / "inputs" / "article.md") != payload.get("article_sha256")
+                or sha256_file(root / "planning" / "visual_contract.json") != payload.get("contract_sha256")):
+            raise HTTPException(status_code=409, detail="文章或分镜已变化，请刷新后重新核对")
+        settled = resolve_impacts(project.run_dir, affected=("storyboard",), source_version=version)
+    return {"success": True, "resolved": bool(settled)}
 
 
 @router.put("/api/projects/{project_id}/impacts/decision")

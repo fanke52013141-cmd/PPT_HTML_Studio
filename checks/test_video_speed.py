@@ -86,6 +86,36 @@ with tempfile.TemporaryDirectory() as temp_dir:
     assert result["video"]["is_speed_variant"] is True
     assert result["video"]["playback_rate"] == 1.25
 
+    with patch("video_artifact_service.subprocess.run", side_effect=fake_run), patch(
+        "video_artifact_service.record_artifact"
+    ):
+        repeated = service.create_speed_adjusted_video(
+            FakeDb(project), "project_test", "render_test.mp4", {"speed": 1.25},
+        )
+    assert adjusted.read_bytes() == b"speed-video"
+    assert repeated["video"]["filename"] != adjusted.name
+    assert (videos_dir / repeated["video"]["filename"]).exists()
+
+    def changed_source_run(command, **_kwargs):
+        Path(command[-1]).write_bytes(b"new speed video")
+        source.write_bytes(b"source changed during render")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    from video_contracts import VideoRenderError
+
+    with patch("video_artifact_service.subprocess.run", side_effect=changed_source_run), patch(
+        "video_artifact_service.record_artifact"
+    ):
+        try:
+            service.create_speed_adjusted_video(
+                FakeDb(project), "project_test", "render_test.mp4", {"speed": 1.4},
+            )
+        except VideoRenderError as exc:
+            assert exc.status_code == 409
+        else:
+            raise AssertionError("stale source video was accepted")
+    assert not list(videos_dir.glob("render_test_speed_1_4x*.mp4"))
+
 output_render_js = (ROOT / "static" / "output_render.js").read_text(encoding="utf-8")
 assert "应用语速并生成 MP4" in output_render_js
 assert "generateStep8SpeedVideo" in output_render_js
