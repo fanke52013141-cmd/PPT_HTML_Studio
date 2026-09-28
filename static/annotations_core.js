@@ -197,8 +197,17 @@
 
   // ------------------------------------------------------------ 操作构造
 
+  let clientOpSeq = 0;
+
   function buildAddOperation(item) {
-    return { op: 'add', item };
+    const operation = { op: 'add', item };
+    // 幂等键:同一逻辑操作重试(网络响应丢失后重发)时保持不变,
+    // 服务端忽略未知字段;本地条目额外携带 __local_id 供保存前合并。
+    clientOpSeq += 1;
+    operation.client_op_id = `op_${Date.now().toString(36)}_${clientOpSeq}_${Math.random().toString(36).slice(2, 8)}`;
+    const localId = item && typeof item.annotation_id === 'string' ? item.annotation_id : '';
+    if (localId.startsWith('local_')) operation.__local_id = localId;
+    return operation;
   }
 
   function buildUpdateOperation(annotationId, patch) {
@@ -268,6 +277,85 @@
     return { kind: 'error', message: '保存失败,请重试。' };
   }
 
+  // ------------------------------------------------------------ 幂等与本地操作合并
+
+  function stableJson(value) {
+    return JSON.stringify(value === undefined ? null : value);
+  }
+
+  // 判断一条操作在服务端条目列表里是否已经生效(用于网络响应丢失后的
+  // 重发去重)。add/restore 按目标内容匹配;delete/update 按条目是否存在判断。
+  function operationAlreadyApplied(operation, items) {
+    if (!operation || typeof operation !== 'object') return false;
+    const list = Array.isArray(items) ? items : [];
+    if (operation.op === 'delete' || operation.op === 'update') {
+      const id = operation.annotation_id;
+      return !list.some(item => item && item.annotation_id === id);
+    }
+    if (operation.op === 'add' || operation.op === 'restore') {
+      const target = operation.item && operation.item.target;
+      if (!target) return false;
+      return list.some(item => {
+        const other = (item && item.target) || {};
+        if ((other.kind || '') !== (target.kind || '')) return false;
+        if ((other.granularity || '') !== (target.granularity || '')) return false;
+        if (stableJson(other.polygons ?? null) !== stableJson(target.polygons ?? null)) return false;
+        if (stableJson(other.token_ids ?? null) !== stableJson(target.token_ids ?? null)) return false;
+        if (stableJson(other.quote ?? null) !== stableJson(target.quote ?? null)) return false;
+        return true;
+      });
+    }
+    return false;
+  }
+
+  function dedupeOperationsAgainstPage(operations, items) {
+    const applied = [];
+    const remaining = [];
+    (Array.isArray(operations) ? operations : []).forEach(operation => {
+      if (operationAlreadyApplied(operation, items)) applied.push(operation);
+      else remaining.push(operation);
+    });
+    return { applied, remaining };
+  }
+
+  // 保存前合并本地(未保存)条目的操作:update/delete 引用 local_ 前缀 id 时,
+  // 服务端并不认识该 id;把 patch 就地合并进同批(或失败暂存区)的 add 操作,
+  // delete 则撤下对应 add。避免整批 422(unknown_id)。
+  function coalesceLocalOperations(operations, failedOps, localItemsById, onLocalDelete) {
+    const mergedFailed = Array.isArray(failedOps) ? failedOps.map(op => ({ ...op })) : [];
+    const result = [];
+    (Array.isArray(operations) ? operations : []).forEach(op => {
+      if (!op || typeof op !== 'object') return;
+      const localId = typeof op.annotation_id === 'string' && op.annotation_id.startsWith('local_')
+        ? op.annotation_id : '';
+      if (!localId) {
+        result.push(op);
+        return;
+      }
+      if (op.op === 'update') {
+        const host = result.find(candidate => candidate.op === 'add' && candidate.__local_id === localId)
+          || mergedFailed.find(candidate => candidate.op === 'add' && candidate.__local_id === localId);
+        if (host) {
+          host.item = { ...(host.item || {}), ...(op.patch || {}) };
+        }
+        return;
+      }
+      if (op.op === 'delete') {
+        const batchIndex = result.findIndex(candidate => candidate.op === 'add' && candidate.__local_id === localId);
+        if (batchIndex >= 0) {
+          result.splice(batchIndex, 1);
+        } else {
+          const failedIndex = mergedFailed.findIndex(candidate => candidate.op === 'add' && candidate.__local_id === localId);
+          if (failedIndex >= 0) mergedFailed.splice(failedIndex, 1);
+        }
+        if (typeof onLocalDelete === 'function') onLocalDelete(localId);
+        return;
+      }
+      result.push(op);
+    });
+    return { operations: result, failedOps: mergedFailed };
+  }
+
   return Object.freeze({
     utf16LengthToCodepointCount,
     utf16IndexToCodepointIndex,
@@ -289,5 +377,8 @@
     buildTextTarget,
     buildAnchor,
     classifyPatchFailure,
+    operationAlreadyApplied,
+    dedupeOperationsAgainstPage,
+    coalesceLocalOperations,
   });
 });

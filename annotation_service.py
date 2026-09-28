@@ -980,17 +980,6 @@ class AnnotationService:
             attached.append({**stroke, "ink": meta})
         return attached
 
-
-class _ItemWithStrokesView:
-    """时间轴构建器用的只读包装:附加 strokes 字段。"""
-
-    def __init__(self, item, strokes):
-        self._item = item
-        self.strokes = tuple(strokes)
-
-    def __getattr__(self, name):
-        return getattr(self._item, name)
-
     def _op_restore(
         self,
         operation: Dict[str, Any],
@@ -1295,6 +1284,17 @@ class _ItemWithStrokesView:
         if job is None or job.project_id != project_id or not str(job.job_type).startswith("annotation_"):
             raise HTTPException(status_code=404, detail="任务不存在")
         return job
+
+
+class _ItemWithStrokesView:
+    """时间轴构建器用的只读包装:附加 strokes 字段。"""
+
+    def __init__(self, item, strokes):
+        self._item = item
+        self.strokes = tuple(strokes)
+
+    def __getattr__(self, name):
+        return getattr(self._item, name)
 
 
 _SERVICE: Optional[AnnotationService] = None

@@ -1101,10 +1101,12 @@ const annotationsEditor = fs.readFileSync(path.join(root, 'static', 'annotations
 const annotationsCss = fs.readFileSync(path.join(root, 'static', 'annotations.css'), 'utf8');
 
 if (!html.includes('annotations_core.js')) throw new Error('annotation core module is not loaded explicitly');
+if (!html.includes('annotation_playback.js')) throw new Error('annotation playback module is not loaded explicitly');
 if (!html.includes('annotations_workspace.js')) throw new Error('annotation workspace module is not loaded explicitly');
 if (!html.includes('annotations_editor.js')) throw new Error('annotation editor module is not loaded explicitly');
 if (!html.includes('annotations.css')) throw new Error('annotation workspace stylesheet is not loaded explicitly');
-if (!(html.indexOf('narration_audio.js') < html.indexOf('annotations_core.js')
+if (!(html.indexOf('narration_audio.js') < html.indexOf('annotation_playback.js')
+  && html.indexOf('annotation_playback.js') < html.indexOf('annotations_core.js')
   && html.indexOf('annotations_core.js') < html.indexOf('annotations_workspace.js')
   && html.indexOf('annotations_workspace.js') < html.indexOf('annotations_editor.js')
   && html.indexOf('annotations_editor.js') < html.indexOf('workspace_navigation.js'))) {

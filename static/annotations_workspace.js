@@ -13,9 +13,17 @@ const ANNOTATIONS_WS = {
   saveTimer: null,
   saveInFlight: false,
   saveGeneration: 0,
+  pageGeneration: 0,
   histories: {},
   selectedAnnotationId: null,
   loading: false,
+  // 422 被拒绝的操作:与待存队列隔离,由用户显式重试或丢弃
+  failedOps: [],
+  failedOpsMessage: '',
+  // 409 冲突:保留被拒批次与服务端当前 revision,等待用户恢复
+  conflict: null,
+  // 跨项目/跨页暂存:`${projectId}::${slideId}` -> 未保存操作
+  draftOps: {},
 };
 
 function annotationsApiBase(projectId = ANNOTATIONS_WS.projectId) {
@@ -26,10 +34,15 @@ function annotationsApiBase(projectId = ANNOTATIONS_WS.projectId) {
 
 function resetAnnotationsProjectState() {
   ++ANNOTATIONS_WS.saveGeneration;
+  ++ANNOTATIONS_WS.pageGeneration;
   clearTimeout(ANNOTATIONS_WS.saveTimer);
   ANNOTATIONS_WS.saveTimer = null;
   ANNOTATIONS_WS.pendingOps = [];
   ANNOTATIONS_WS.saveInFlight = false;
+  ANNOTATIONS_WS.failedOps = [];
+  ANNOTATIONS_WS.failedOpsMessage = '';
+  ANNOTATIONS_WS.conflict = null;
+  // draftOps 按 project+slide 键控,跨项目保留用户未保存工作
   ANNOTATIONS_WS.histories = {};
   ANNOTATIONS_WS.projectId = '';
   ANNOTATIONS_WS.slideIds = [];
@@ -40,6 +53,24 @@ function resetAnnotationsProjectState() {
   renderAnnotationSaveStatus('idle');
 }
 
+function annotationDraftKey(projectId, slideId) {
+  return `${projectId || ''}::${slideId || ''}`;
+}
+
+function stashAnnotationDraft(projectId, slideId, operations) {
+  const ops = (operations || []).filter(Boolean);
+  if (!projectId || !slideId || !ops.length) return;
+  const key = annotationDraftKey(projectId, slideId);
+  ANNOTATIONS_WS.draftOps[key] = [...(ANNOTATIONS_WS.draftOps[key] || []), ...ops];
+}
+
+// 保存期间的上下文三重守卫:请求代次、项目、页面任一变化即视为过期。
+function annotationContextChanged(generation, projectId, slideId) {
+  return generation !== ANNOTATIONS_WS.saveGeneration
+    || ANNOTATIONS_WS.projectId !== projectId
+    || ANNOTATIONS_WS.page.slide_id !== slideId;
+}
+
 async function flushAnnotationsSave() {
   if (!ANNOTATIONS_WS.projectId || !ANNOTATIONS_WS.page.slide_id) return;
   if (ANNOTATIONS_WS.saveInFlight || !ANNOTATIONS_WS.pendingOps.length) {
@@ -48,59 +79,180 @@ async function flushAnnotationsSave() {
   clearTimeout(ANNOTATIONS_WS.saveTimer);
   ANNOTATIONS_WS.saveTimer = null;
   const generation = ++ANNOTATIONS_WS.saveGeneration;
-  const operations = ANNOTATIONS_WS.pendingOps;
-  ANNOTATIONS_WS.pendingOps = [];
+  const projectId = ANNOTATIONS_WS.projectId;
   const slideId = ANNOTATIONS_WS.page.slide_id;
+  // 本地条目的 update/delete 合并进对应 add,避免服务端 unknown_id 整批拒绝
+  const coalesced = AnnotationsCore.coalesceLocalOperations(
+    ANNOTATIONS_WS.pendingOps,
+    ANNOTATIONS_WS.failedOps,
+    null,
+    localId => {
+      const itemIndex = (ANNOTATIONS_WS.page.items || []).findIndex(item => item.annotation_id === localId);
+      if (itemIndex >= 0) ANNOTATIONS_WS.page.items.splice(itemIndex, 1);
+    }
+  );
+  const operations = coalesced.operations;
+  ANNOTATIONS_WS.failedOps = coalesced.failedOps;
+  ANNOTATIONS_WS.pendingOps = [];
   const expectedRevision = ANNOTATIONS_WS.page.revision;
+  if (!operations.length) {
+    renderAnnotationSaveStatus(ANNOTATIONS_WS.failedOps.length ? 'invalid' : 'idle');
+    return;
+  }
   ANNOTATIONS_WS.saveInFlight = true;
   renderAnnotationSaveStatus('saving');
+  let res = null;
+  let error = null;
   try {
-    const res = await API.patch(
-      `${annotationsApiBase()}/slides/${encodeURIComponent(slideId)}`,
+    res = await API.patch(
+      `${annotationsApiBase(projectId)}/slides/${encodeURIComponent(slideId)}`,
       { expected_revision: expectedRevision, operations },
       { silent: true }
     );
-    if (generation !== ANNOTATIONS_WS.saveGeneration || ANNOTATIONS_WS.page.slide_id !== slideId) return;
+  } catch (err) {
+    error = err;
+  }
+
+  // ---- 过期响应:绝不触碰当前(可能已属于其他项目/页面)的状态 ----
+  if (annotationContextChanged(generation, projectId, slideId)) {
+    if (error !== null) {
+      // 旧上下文的失败批次:归属原页草稿,等待用户回到该页时恢复
+      stashAnnotationDraft(projectId, slideId, operations);
+    }
+    // 旧上下文的成功响应:成果已在服务端,无需暂存(回页时重新加载即可)
+    return;
+  }
+
+  // ---- 当前上下文:成功路径(状态更新与渲染分离,R4-002) ----
+  if (error === null) {
     ANNOTATIONS_WS.page.revision = res.revision;
     ANNOTATIONS_WS.page.items = res.items;
     ANNOTATIONS_WS.saveInFlight = false;
-    renderAnnotationSaveStatus('saved');
-    // 服务端条目已替换本地临时 id;选中态失效时就近改选最后一项,
-    // 并同步刷新属性编辑器与讲稿高亮
+    ANNOTATIONS_WS.conflict = null;
+    delete ANNOTATIONS_WS.draftOps[annotationDraftKey(projectId, slideId)];
+    // 服务端条目已替换本地临时 id;选中态失效时就近改选最后一项
     const selectionMissing = !(res.items || []).some(entry => entry.annotation_id === ANNOTATIONS_WS.selectedAnnotationId);
     if (selectionMissing) {
       ANNOTATIONS_WS.selectedAnnotationId = (res.items || []).length
         ? res.items[res.items.length - 1].annotation_id
         : null;
     }
-    renderAnnotationItems();
-    renderAnnotationOverlay();
-    renderAnnotationNarrationHighlights();
-    if (typeof renderAnnotationItemEditor === 'function') renderAnnotationItemEditor();
-    refreshAnnotationsStepFlag();
-    return;
-  } catch (error) {
-    ANNOTATIONS_WS.saveInFlight = false;
-    // 失败保留本地编辑并把操作放回队首,供重试或重载后合并
-    ANNOTATIONS_WS.pendingOps = [...operations, ...ANNOTATIONS_WS.pendingOps];
-    const failure = AnnotationsCore.classifyPatchFailure(error.status, error.body);
-    if (failure.kind === 'revision_conflict') {
-      renderAnnotationSaveStatus('conflict', failure.message);
-      showToast(failure.message);
-    } else if (failure.kind === 'validation_failed') {
-      renderAnnotationSaveStatus('invalid');
-      const first = failure.issues?.[0];
-      showToast(first ? `保存被拒绝:${first.path} ${first.message}` : failure.message);
-    } else {
-      renderAnnotationSaveStatus('error', failure.message);
-      showToast(failure.message);
+    renderAnnotationSaveStatus(ANNOTATIONS_WS.pendingOps.length || ANNOTATIONS_WS.failedOps.length ? 'pending' : 'saved');
+    // UI 渲染故障绝不影响保存结果,也绝不触发操作重发(R4-002)
+    try {
+      renderAnnotationItems();
+      renderAnnotationOverlay();
+      renderAnnotationNarrationHighlights();
+      if (typeof renderAnnotationItemEditor === 'function') renderAnnotationItemEditor();
+      refreshAnnotationsStepFlag();
+    } catch (renderError) {
+      console.error('annotation render failed after save:', renderError);
     }
-    throw error;
-  } finally {
-    if (generation === ANNOTATIONS_WS.saveGeneration) {
+    return;
+  }
+
+  // ---- 当前上下文:失败路径(R4-003/R4-006) ----
+  ANNOTATIONS_WS.saveInFlight = false;
+  const failure = AnnotationsCore.classifyPatchFailure(error.status, error.body);
+  if (failure.kind === 'revision_conflict') {
+    ANNOTATIONS_WS.conflict = {
+      projectId,
+      slideId,
+      operations,
+      currentRevision: failure.currentRevision,
+    };
+    renderAnnotationSaveStatus('conflict', failure.message);
+    showToast(`${failure.message} 点击状态条可载入服务端版本并重放。`);
+  } else if (failure.kind === 'validation_failed') {
+    // 422:被拒操作隔离到失败草稿,不自动重试也不静默丢弃
+    ANNOTATIONS_WS.failedOps = [...ANNOTATIONS_WS.failedOps, ...operations];
+    const first = failure.issues?.[0];
+    ANNOTATIONS_WS.failedOpsMessage = first ? `${first.path} ${first.message}` : failure.message;
+    renderAnnotationSaveStatus('invalid', `${ANNOTATIONS_WS.failedOpsMessage}(点击状态条可重试)`);
+    showToast(`保存被拒绝:${ANNOTATIONS_WS.failedOpsMessage}`);
+  } else {
+    // 网络/5xx:结果未知。重取服务端页面做内容去重:已生效的操作直接落账,
+    // 未生效的放回队列等待显式重试(点击状态条或下一次编辑)。
+    let remaining = operations;
+    let appliedOnServer = false;
+    try {
+      const page = await API.get(`${annotationsApiBase(projectId)}/slides/${encodeURIComponent(slideId)}`, { silent: true });
+      if (!annotationContextChanged(generation, projectId, slideId)) {
+        const deduped = AnnotationsCore.dedupeOperationsAgainstPage(operations, page.items || []);
+        remaining = deduped.remaining;
+        appliedOnServer = deduped.applied.length > 0;
+        if (!remaining.length) {
+          ANNOTATIONS_WS.page.revision = page.revision || ANNOTATIONS_WS.page.revision;
+          ANNOTATIONS_WS.page.items = page.items || [];
+          appliedOnServer = true;
+        }
+      }
+    } catch (refetchError) {
+      /* 服务端不可达:全部操作按未生效处理 */
+    }
+    if (remaining.length) {
+      ANNOTATIONS_WS.pendingOps = [...remaining, ...ANNOTATIONS_WS.pendingOps];
+      renderAnnotationSaveStatus(appliedOnServer ? 'pending' : 'error', failure.message);
+      showToast(`${failure.message} 保存内容已保留,点击状态条重试。`);
+    } else {
       ANNOTATIONS_WS.saveInFlight = false;
+      renderAnnotationSaveStatus('saved');
+      try {
+        renderAnnotationItems();
+        renderAnnotationOverlay();
+        renderAnnotationNarrationHighlights();
+        if (typeof renderAnnotationItemEditor === 'function') renderAnnotationItemEditor();
+      } catch (renderError) {
+        console.error('annotation render failed after dedupe:', renderError);
+      }
     }
   }
+  throw error;
+}
+
+// 409 恢复:载入服务端版本,重放被拒批次;重放仍被拒的部分走 422 隔离。
+async function resolveAnnotationConflict() {
+  const conflict = ANNOTATIONS_WS.conflict;
+  if (!conflict) return;
+  const projectId = ANNOTATIONS_WS.projectId;
+  const slideId = ANNOTATIONS_WS.page.slide_id;
+  if (conflict.projectId !== projectId || conflict.slideId !== slideId) {
+    ANNOTATIONS_WS.conflict = null;
+    return;
+  }
+  let page;
+  try {
+    page = await API.get(`${annotationsApiBase(projectId)}/slides/${encodeURIComponent(slideId)}`);
+  } catch (error) {
+    showToast('载入服务端版本失败,请稍后重试。');
+    return;
+  }
+  if (ANNOTATIONS_WS.conflict !== conflict
+    || ANNOTATIONS_WS.projectId !== projectId
+    || ANNOTATIONS_WS.page.slide_id !== slideId) {
+    return;
+  }
+  ANNOTATIONS_WS.page.revision = page.revision || 0;
+  ANNOTATIONS_WS.page.items = page.items || [];
+  ANNOTATIONS_WS.conflict = null;
+  ANNOTATIONS_WS.pendingOps = [...(conflict.operations || []), ...ANNOTATIONS_WS.pendingOps];
+  renderAnnotationSaveStatus('pending');
+  try {
+    renderAnnotationItems();
+    renderAnnotationOverlay();
+  } catch (renderError) {
+    console.error('annotation render failed after conflict reload:', renderError);
+  }
+  await flushAnnotationsSave().catch(() => {});
+}
+
+// 422 隔离区重试:由用户显式触发(点击状态条),单次有界。
+async function retryAnnotationFailedOps() {
+  if (!ANNOTATIONS_WS.failedOps.length) return;
+  ANNOTATIONS_WS.pendingOps = [...ANNOTATIONS_WS.failedOps, ...ANNOTATIONS_WS.pendingOps];
+  ANNOTATIONS_WS.failedOps = [];
+  ANNOTATIONS_WS.failedOpsMessage = '';
+  await flushAnnotationsSave().catch(() => {});
 }
 
 function queueAnnotationSave(operationOrList) {
@@ -133,7 +285,10 @@ async function loadStep10Data() {
 }
 
 async function reloadAnnotationsSummary() {
-  const summary = await API.get(annotationsApiBase());
+  const projectId = ANNOTATIONS_WS.projectId;
+  const summary = await API.get(annotationsApiBase(projectId));
+  // 响应返回时项目已切换:丢弃过期 summary,不污染新项目状态(R4-005)
+  if (!projectId || ANNOTATIONS_WS.projectId !== projectId) return;
   ANNOTATIONS_WS.summary = summary;
   ANNOTATIONS_WS.settingsRevision = summary?.settings?.revision || 0;
   ANNOTATIONS_WS.slideIds = (summary?.slides || []).map(item => item.slide_id);
@@ -168,6 +323,7 @@ async function setAnnotationDecision(decision) {
       enabled: ANNOTATIONS_WS.summary?.settings?.enabled === true,
       decision,
     }, { silent: true });
+    if (ANNOTATIONS_WS.projectId !== projectId) return;
     ANNOTATIONS_WS.settingsRevision = res.revision;
     if (ANNOTATIONS_WS.summary?.settings) {
       ANNOTATIONS_WS.summary.settings.decision = res.decision;
@@ -181,12 +337,33 @@ async function setAnnotationDecision(decision) {
 }
 
 async function selectAnnotationPage(index) {
+  const projectId = ANNOTATIONS_WS.projectId;
+  const previousSlideId = ANNOTATIONS_WS.page.slide_id;
+  // 离开当前页:flush 尽力而为;残留的未保存操作(含冲突/被拒批次)归属原页草稿,
+  // 冲突未处理不得静默丢弃本地工作(R4-005)
   await flushAnnotationsSave().catch(() => {});
+  const leftovers = [...ANNOTATIONS_WS.pendingOps, ...ANNOTATIONS_WS.failedOps];
+  if (ANNOTATIONS_WS.conflict && ANNOTATIONS_WS.conflict.projectId === projectId
+    && ANNOTATIONS_WS.conflict.slideId === previousSlideId) {
+    leftovers.push(...ANNOTATIONS_WS.conflict.operations);
+  }
+  stashAnnotationDraft(projectId, previousSlideId, leftovers);
+  ANNOTATIONS_WS.pendingOps = [];
+  ANNOTATIONS_WS.failedOps = [];
+  ANNOTATIONS_WS.failedOpsMessage = '';
+  ANNOTATIONS_WS.conflict = null;
   const slideId = ANNOTATIONS_WS.slideIds[index];
-  if (!slideId) return;
+  if (!slideId || ANNOTATIONS_WS.projectId !== projectId) return;
+  const generation = ++ANNOTATIONS_WS.pageGeneration;
   ANNOTATIONS_WS.activeIndex = index;
   ANNOTATIONS_WS.selectedAnnotationId = null;
-  const page = await API.get(`${annotationsApiBase()}/slides/${encodeURIComponent(slideId)}`);
+  const page = await API.get(`${annotationsApiBase(projectId)}/slides/${encodeURIComponent(slideId)}`);
+  // 过期页面响应丢弃:仅当项目与页面代次都未变化才落账(R4-005)
+  if (ANNOTATIONS_WS.projectId !== projectId
+    || generation !== ANNOTATIONS_WS.pageGeneration
+    || ANNOTATIONS_WS.slideIds[index] !== slideId) {
+    return;
+  }
   ANNOTATIONS_WS.page = {
     slide_id: slideId,
     revision: page.revision || 0,
@@ -199,6 +376,13 @@ async function selectAnnotationPage(index) {
     ANNOTATIONS_WS.histories[slideId] = AnnotationsCore.createPageHistory();
   }
   renderAnnotationWorkspace();
+  // 恢复该页此前暂存的未保存操作,等待下次 flush
+  const draftKey = annotationDraftKey(projectId, slideId);
+  if (ANNOTATIONS_WS.draftOps[draftKey]?.length) {
+    ANNOTATIONS_WS.pendingOps.push(...ANNOTATIONS_WS.draftOps[draftKey]);
+    delete ANNOTATIONS_WS.draftOps[draftKey];
+    renderAnnotationSaveStatus('pending');
+  }
   await loadAnnotationCandidates();
 }
 
@@ -419,6 +603,20 @@ function renderAnnotationSaveStatus(mode, message = '') {
   node.dataset.state = mode;
   node.textContent = message || map[mode] || '';
   node.style.display = mode === 'idle' ? 'none' : 'inline-block';
+  // 状态条可点击恢复:冲突→载入服务端并重放;422→重试被拒操作;网络失败→立即重试
+  if (mode === 'conflict') {
+    node.title = '点击载入服务端版本并重放保存';
+    node.onclick = () => { resolveAnnotationConflict().catch(() => {}); };
+  } else if (mode === 'invalid') {
+    node.title = '点击重试被拒绝的操作';
+    node.onclick = () => { retryAnnotationFailedOps().catch(() => {}); };
+  } else if (mode === 'error') {
+    node.title = '点击立即重试保存';
+    node.onclick = () => { flushAnnotationsSave().catch(() => {}); };
+  } else {
+    node.title = '';
+    node.onclick = null;
+  }
 }
 
 // ------------------------------------------------------------ 设置开关
@@ -427,10 +625,11 @@ async function setAnnotationsEnabled(enabled) {
   const projectId = ANNOTATIONS_WS.projectId;
   if (!projectId) return;
   try {
-    const res = await API.put(`${annotationsApiBase()}/settings`, {
+    const res = await API.put(`${annotationsApiBase(projectId)}/settings`, {
       expected_revision: ANNOTATIONS_WS.settingsRevision,
       enabled: enabled === true,
     }, { silent: true });
+    if (ANNOTATIONS_WS.projectId !== projectId) return;
     ANNOTATIONS_WS.settingsRevision = res.revision;
     if (ANNOTATIONS_WS.summary?.settings) {
       ANNOTATIONS_WS.summary.settings.enabled = res.enabled;
@@ -456,11 +655,12 @@ async function setAnnotationEmphasis(emphasis) {
   const settings = ANNOTATIONS_WS.summary?.settings || {};
   const defaults = { ...(settings.defaults || {}), emphasis };
   try {
-    const res = await API.put(`${annotationsApiBase()}/settings`, {
+    const res = await API.put(`${annotationsApiBase(projectId)}/settings`, {
       expected_revision: ANNOTATIONS_WS.settingsRevision,
       enabled: settings.enabled === true,
       defaults,
     }, { silent: true });
+    if (ANNOTATIONS_WS.projectId !== projectId) return;
     ANNOTATIONS_WS.settingsRevision = res.revision;
     ANNOTATIONS_WS.summary.settings = {
       ...settings,
@@ -487,6 +687,8 @@ window.selectAnnotationPage = selectAnnotationPage;
 window.selectAnnotationItem = selectAnnotationItem;
 window.refreshAnnotationModuleState = refreshAnnotationModuleState;
 window.setAnnotationDecision = setAnnotationDecision;
+window.resolveAnnotationConflict = resolveAnnotationConflict;
+window.retryAnnotationFailedOps = retryAnnotationFailedOps;
 window.ANNOTATIONS_WS = ANNOTATIONS_WS;
 
 // ------------------------------------------------------------ W3: 文字候选与 AI 规划
@@ -510,41 +712,54 @@ resetAnnotationsProjectState = function () {
 async function submitAnnotationJob(operation) {
   const projectId = ANNOTATIONS_WS.projectId;
   if (!projectId) return;
-  const requestKey = `${operation}-${projectId}-${ANNOTATIONS_WS.page.slide_id}-${Date.now()}`;
+  const slideId = ANNOTATIONS_WS.page.slide_id;
+  const requestKey = `${operation}-${projectId}-${slideId}-${Date.now()}`;
   const body = {
     operation,
-    slide_ids: ANNOTATIONS_WS.page.slide_id ? [ANNOTATIONS_WS.page.slide_id] : undefined,
+    slide_ids: slideId ? [slideId] : undefined,
     request_key: requestKey,
   };
   let res;
   try {
-    res = await API.post(`${annotationsApiBase()}/jobs`, body, { silent: true });
+    res = await API.post(`${annotationsApiBase(projectId)}/jobs`, body, { silent: true });
   } catch (error) {
     showToast(error.message || '任务提交失败');
     return;
   }
+  if (ANNOTATIONS_WS.projectId !== projectId) return;
   renderAnnotationJobProgress(operation, res.job_id, 'queued', 0);
-  pollAnnotationJob(res.job_id, operation);
+  pollAnnotationJob(res.job_id, operation, projectId, slideId);
 }
 
-function pollAnnotationJob(jobId, operation) {
+function pollAnnotationJob(jobId, operation, projectId, slideId) {
   stopAnnotationJobPolling();
   const tick = async () => {
+    // 项目已切换:轮询结果与当前工作区无关,直接终止(R4-005)
+    if (ANNOTATIONS_WS.projectId !== projectId) return;
     let job;
     try {
-      job = await API.get(`${annotationsApiBase()}/jobs/${encodeURIComponent(jobId)}`, { silent: true });
+      job = await API.get(`${annotationsApiBase(projectId)}/jobs/${encodeURIComponent(jobId)}`, { silent: true });
     } catch (error) {
+      if (ANNOTATIONS_WS.projectId !== projectId) return;
       renderAnnotationJobProgress(operation, jobId, 'error', 0, error.message);
       return;
     }
+    if (ANNOTATIONS_WS.projectId !== projectId) return;
     renderAnnotationJobProgress(operation, jobId, job.status, job.progress, job.error);
     if (job.status === 'succeeded') {
       if (operation === 'detect_text') {
         await loadAnnotationCandidates();
-        showToast('文字识别完成;可点选候选生成文字标注。');
+        if (ANNOTATIONS_WS.projectId === projectId) {
+          showToast('文字识别完成;可点选候选生成文字标注。');
+        }
       } else if (operation === 'plan') {
-        await selectAnnotationPage(ANNOTATIONS_WS.activeIndex); // 重载页面拿到 AI 条目
-        showToast('AI 重点已生成,均为待确认草稿。');
+        // 仅当用户仍停留在发起页才重载,避免把 AI 条目刷进别的页面(R4-005)
+        if (ANNOTATIONS_WS.page.slide_id === slideId) {
+          await selectAnnotationPage(ANNOTATIONS_WS.activeIndex);
+        }
+        if (ANNOTATIONS_WS.projectId === projectId) {
+          showToast('AI 重点已生成,均为待确认草稿。');
+        }
       }
       return;
     }
@@ -575,13 +790,26 @@ function renderAnnotationJobProgress(operation, jobId, status, progress, error) 
 }
 
 async function loadAnnotationCandidates() {
+  const projectId = ANNOTATIONS_WS.projectId;
   const slideId = ANNOTATIONS_WS.page.slide_id;
-  if (!slideId) return;
+  const generation = ANNOTATIONS_WS.pageGeneration;
+  if (!projectId || !slideId) return;
   try {
-    const res = await API.get(`${annotationsApiBase()}/slides/${encodeURIComponent(slideId)}/text-layout`, { silent: true });
+    const res = await API.get(`${annotationsApiBase(projectId)}/slides/${encodeURIComponent(slideId)}/text-layout`, { silent: true });
+    // 响应返回时已切页/切项目:丢弃过期候选,防止 A 页几何落进 B 页(R4-005)
+    if (ANNOTATIONS_WS.projectId !== projectId
+      || generation !== ANNOTATIONS_WS.pageGeneration
+      || ANNOTATIONS_WS.page.slide_id !== slideId) {
+      return;
+    }
     ANNOTATIONS_WS.candidates = res.candidates || [];
     ANNOTATIONS_WS.layoutRevision = res.layout_revision || 0;
   } catch (error) {
+    if (ANNOTATIONS_WS.projectId !== projectId
+      || generation !== ANNOTATIONS_WS.pageGeneration
+      || ANNOTATIONS_WS.page.slide_id !== slideId) {
+      return;
+    }
     ANNOTATIONS_WS.candidates = [];
   }
   renderAnnotationCandidates();
