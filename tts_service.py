@@ -1235,6 +1235,11 @@ def get_slide_audio_file(project_id: str, slide_id: str, db: Session):
 
 def confirm_tts_audio(project_id: str, db: Session, payload: Optional[Dict[str, Any]] = None):
     project = project_or_404(db, project_id)
+    from project_impact_service import resolve_impacts, snapshot_impacts
+
+    impact_snapshot = snapshot_impacts(
+        project.run_dir, affected=("audio", "audio confirmation"),
+    )
     slide_ids = read_current_slide_ids_or_404(project)
     missing = [
         slide_id for slide_id in slide_ids
@@ -1265,6 +1270,9 @@ def confirm_tts_audio(project_id: str, db: Session, payload: Optional[Dict[str, 
         ),
     )
     handle_step_navigation(project, 7, db)
+    resolve_impacts(
+        project.run_dir, affected=("audio", "audio confirmation"), snapshot=impact_snapshot,
+    )
 
     # Register audio artifacts as queryable for the Agent API.
     for slide_id in slide_ids:

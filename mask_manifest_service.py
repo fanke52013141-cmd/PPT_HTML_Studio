@@ -779,6 +779,9 @@ def update_step5_result(
     db: Any,
 ) -> Dict[str, Any]:
     dependencies = _deps()
+    from project_impact_service import resolve_impacts, snapshot_impacts
+
+    impact_snapshot = snapshot_impacts(project.run_dir, affected=("Mask", "reveal layers"))
     with dependencies.reveal_lock_for(project):
         prepared = _prepare_manifest_for_save(project, payload)
         manifest_path = Path(project.run_dir) / "reveal_manifest.json"
@@ -797,6 +800,9 @@ def update_step5_result(
             invalidation_service.mask_content_changed(project)
         if built_assets:
             dependencies.handle_step_navigation(project, 5, db)
+            resolve_impacts(
+                project.run_dir, affected=("Mask", "reveal layers"), snapshot=impact_snapshot,
+            )
         else:
             db.commit()
     return {"success": True, "built_assets": built_assets, "changed": changed}

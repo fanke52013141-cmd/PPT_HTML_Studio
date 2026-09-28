@@ -1164,6 +1164,9 @@ def finish_step2_contract_validation(
     source: str,
 ) -> Dict[str, Any]:
     """Apply the quality gate only after any bounded targeted repair has run."""
+    from project_impact_service import resolve_impacts, snapshot_impacts
+
+    impact_snapshot = snapshot_impacts(project.run_dir, affected=("storyboard",))
     if not validation["valid"] and storyboard_validation_gate_enabled(project):
         mark_step_retry_needed(project, 2, db)
         raise HTTPException(
@@ -1171,6 +1174,7 @@ def finish_step2_contract_validation(
             detail="分镜合同校验失败，质量门已暂停流程：" + (validation["stderr"] or "请检查分镜结构"),
         )
     handle_step_navigation(project, 2, db)
+    resolve_impacts(project.run_dir, affected=("storyboard",), snapshot=impact_snapshot)
     write_project_log(project, "step2_execute_completed", trace_id=trace_id, source=source)
     return contract
 

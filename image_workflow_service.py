@@ -2187,6 +2187,9 @@ def update_step3_image_order(project_id: str, payload: Dict[str, Any], db: Sessi
 
 def confirm_images(project_id: str, db: Session):
     project = project_or_404(db, project_id)
+    from project_impact_service import resolve_impacts, snapshot_impacts
+
+    impact_snapshot = snapshot_impacts(project.run_dir, affected=("images",))
     slide_ids = read_current_slide_ids_or_404(project)
     missing_images = [
         slide_id
@@ -2263,4 +2266,5 @@ def confirm_images(project_id: str, db: Session):
                 logger.warning("Failed to register image artifact for slide %s", slide_id, exc_info=True)
 
     handle_step_navigation(project, 4, db)
+    resolve_impacts(project.run_dir, affected=("images",), snapshot=impact_snapshot)
     return {"success": True}
