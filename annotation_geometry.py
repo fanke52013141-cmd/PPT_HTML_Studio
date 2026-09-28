@@ -25,6 +25,7 @@ __all__ = [
     "GeometryInputV2",
     "FragmentInput",
     "build_strokes_v2",
+    "build_manual_path_stroke",
 ]
 
 STROKES_VERSION_V2 = "annotation_strokes_v2"
@@ -401,3 +402,24 @@ def build_strokes_v2(geometry: GeometryInputV2) -> Tuple[Dict[str, Any], ...]:
                 }
             )
     return tuple(strokes)
+
+
+def build_manual_path_stroke(
+    points: Sequence[Tuple[int, int]], *, style_type: str = "ellipse", width: float = 5.0
+) -> Dict[str, Any]:
+    """Keep a user-drawn path intact while adapting it to the shared renderer."""
+    normalized = [(int(x), int(y)) for x, y in points]
+    if len(normalized) < 2:
+        raise ValueError("manual path requires at least two points")
+    stroke = {
+        "kind": "path",
+        "points": normalized,
+        "width_profile": [1.0] * len(normalized),
+        "speed_profile": [round(i / (len(normalized) - 1), 4) for i in range(len(normalized))],
+        "closed": False,
+        "polygon_index": 0,
+        "start_offset_sec": 0.0,
+    }
+    if style_type == "highlighter":
+        stroke["brush_height"] = max(16.0, float(width) * 4.0)
+    return stroke

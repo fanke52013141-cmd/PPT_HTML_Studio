@@ -13,6 +13,7 @@ def test_new_creation_config_payload_contains_canonical_prompts() -> None:
         "image_generation",
         "ai_mask",
         "narration_annotation",
+        "annotation_planning",
     }
     assert prompts["article_generation"]["system_content"]
     assert prompts["storyboard"]["system_content"]
@@ -22,6 +23,10 @@ def test_new_creation_config_payload_contains_canonical_prompts() -> None:
     assert prompts["ai_mask"]["system_content"]
     assert prompts["narration_annotation"]["system_content"]
     assert prompts["narration_annotation"]["output_example"]
+    assert prompts["annotation_planning"]["system_content"]
+    assert '"schema_version":"annotation_plan_v2"' in prompts["annotation_planning"]["output_example"]
+    assert '"category"' in prompts["annotation_planning"]["output_example"]
+    assert '"priority"' in prompts["annotation_planning"]["output_example"]
     assert payload["model_bindings"] == {}
     assert payload["automation"]["ai_mask_annotation"] is False
     assert payload["tts"]["seed_audio_concurrency"] == 5

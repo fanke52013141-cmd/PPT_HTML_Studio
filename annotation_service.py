@@ -83,6 +83,18 @@ class AnnotationService:
         self._ocr_ready = dependencies.ocr_ready
         self._prompt_store = dependencies.prompt_store
 
+    def _annotation_content_changed(self, project: Project, slide_ids: Sequence[str]) -> None:
+        """Register the output-only consequence of a persisted annotation edit.
+
+        The invalidation service owns the status transition and impact ledger.
+        Keeping this call outside the annotation write lock avoids nesting the
+        project artifact lock while still ensuring only successful writes can
+        make an existing output stale.
+        """
+        from invalidation_service import annotation_content_changed
+
+        annotation_content_changed(project, slide_ids)
+
     # ------------------------------------------------------------ 校验
 
     def _project_or_404(self, db: Session, project_id: str) -> Project:
@@ -97,6 +109,15 @@ class AnnotationService:
 
     def _run_dir(self, project: Project) -> str:
         return str(validated_project_run_dir(RUNS_DIR, project.run_dir, project.id))
+
+    def _canvas_for(self, project: Project) -> Tuple[int, int]:
+        profile_id = getattr(project, "canvas_profile", None)
+        if not profile_id:
+            return tuple(self._canvas)
+        from canvas_profile_service import get_project_canvas
+
+        canvas = get_project_canvas(project)
+        return int(canvas["width"]), int(canvas["height"])
 
     def _slide_ids_or_404(self, project: Project) -> List[str]:
         slide_ids = read_contract_slide_ids(self._run_dir(project))
@@ -162,11 +183,12 @@ class AnnotationService:
                 updated_at="",
             )
         slide_ids = self._slide_ids_or_404(project)
+        canvas = self._canvas_for(project)
         slides: List[Dict[str, Any]] = []
         pages: List[Any] = []
         for slide_id in slide_ids:
             try:
-                page = self._store.read_page(run_dir, slide_id, canvas=self._canvas)
+                page = self._store.read_page(run_dir, slide_id, canvas=canvas)
             except AnnotationStoreError as exc:
                 raise self._store_error_to_http(exc) from exc
             pages.append(page)
@@ -175,7 +197,7 @@ class AnnotationService:
             "settings": settings.to_dict(),
             "slides": slides,
             "module_state": self._module_state(settings, pages),
-            "readiness": self._readiness(settings, run_dir, slide_ids),
+            "readiness": self._readiness(settings, run_dir, slide_ids, canvas),
         }
 
     def _module_state(self, settings: AnnotationSettings, pages: List[Any]) -> str:
@@ -202,11 +224,11 @@ class AnnotationService:
             return "confirmed"
         return "editing"
 
-    def _readiness(self, settings: AnnotationSettings, run_dir: str, slide_ids: List[str]) -> Dict[str, Any]:
+    def _readiness(self, settings: AnnotationSettings, run_dir: str, slide_ids: List[str], canvas: Tuple[int, int]) -> Dict[str, Any]:
         if not settings.enabled:
             return {"can_render": True, "reason": "", "blocking": []}
         try:
-            pages = {sid: self._store.read_page(run_dir, sid, canvas=self._canvas) for sid in slide_ids}
+            pages = {sid: self._store.read_page(run_dir, sid, canvas=canvas) for sid in slide_ids}
         except AnnotationStoreError as exc:
             raise self._store_error_to_http(exc) from exc
         if all(page_item_counts(page)["total"] == 0 for page in pages.values()):
@@ -256,6 +278,18 @@ class AnnotationService:
                 if raw_decision not in ("none", "no_annotations"):
                     raise HTTPException(status_code=422, detail="decision 必须是 none/no_annotations")
                 decision = raw_decision
+            baseline = current or default_annotation_settings()
+            if (
+                enabled == baseline.enabled
+                and defaults == baseline.defaults
+                and decision == baseline.decision
+            ):
+                return {
+                    "revision": current_revision,
+                    "enabled": baseline.enabled,
+                    "defaults": baseline.defaults,
+                    "decision": baseline.decision,
+                }
             updated = AnnotationSettings(
                 revision=current_revision + 1,
                 enabled=enabled,
@@ -267,6 +301,7 @@ class AnnotationService:
                 self._store.write_settings(run_dir, updated)
             except AnnotationStoreError as exc:
                 raise self._store_error_to_http(exc) from exc
+        self._annotation_content_changed(project, self._slide_ids_or_404(project))
         return {
             "revision": updated.revision,
             "enabled": updated.enabled,
@@ -286,10 +321,16 @@ class AnnotationService:
         - 区域目标:每个多边形一个片段。
         生成失败返回空列表;调用方据此把 spatial 标记为 needs_review。
         """
-        from annotation_geometry import FragmentInput, GeometryInputV2, build_strokes_v2
+        from annotation_geometry import FragmentInput, GeometryInputV2, build_manual_path_stroke, build_strokes_v2
         from annotation_target_resolver import TargetResolutionError, resolve_phrase_target
 
         try:
+            if item.target.path_points:
+                return [build_manual_path_stroke(
+                    item.target.path_points,
+                    style_type=item.style.type,
+                    width=item.style.width,
+                )]
             if item.target.kind == "text" and item.target.token_ids:
                 if layout is None:
                     return []
@@ -350,8 +391,9 @@ class AnnotationService:
         if slide_id not in slide_ids:
             raise HTTPException(status_code=404, detail="Slide 不存在")
         run_dir = self._run_dir(project)
+        canvas = self._canvas_for(project)
         try:
-            page = self._store.read_page(run_dir, slide_id, canvas=self._canvas)
+            page = self._store.read_page(run_dir, slide_id, canvas=canvas)
             settings = self._store.read_settings(run_dir) or default_annotation_settings()
         except AnnotationStoreError as exc:
             raise self._store_error_to_http(exc) from exc
@@ -390,6 +432,7 @@ class AnnotationService:
             raise HTTPException(status_code=413, detail=f"单次操作数超过 {LIMITS['max_ops_per_request']}")
 
         run_dir = self._run_dir(project)
+        canvas = self._canvas_for(project)
         image_hash = self._image_hash(project, slide_id)
         narration_hash = self._narration_hash(project, slide_id)
         if image_hash is None:
@@ -400,7 +443,7 @@ class AnnotationService:
 
         with self._lock_for(project):
             try:
-                page = self._store.read_page(run_dir, slide_id, canvas=self._canvas)
+                page = self._store.read_page(run_dir, slide_id, canvas=canvas)
             except AnnotationStoreError as exc:
                 raise self._store_error_to_http(exc) from exc
             current_revision = page.revision if page else 0
@@ -414,24 +457,30 @@ class AnnotationService:
             snapshot = page.ai_suggestion_snapshot if page else None
             issues: List[Issue] = []
             for index, operation in enumerate(operations):
-                self._apply_operation(operation, items, beats, image_hash, narration_hash, issues, path=f"operations[{index}]")
+                self._apply_operation(operation, items, beats, image_hash, narration_hash, issues, path=f"operations[{index}]", canvas=canvas)
                 if len(items) > LIMITS["max_items_per_slide"]:
                     issues.append(Issue(f"operations[{index}]", "too_many", f"每页条目超过 {LIMITS['max_items_per_slide']}"))
 
             if issues:
                 raise HTTPException(status_code=422, detail={"code": "validation_failed", "issues": collect_issues(issues)})
 
-            updated_page = AnnotationPage(
-                slide_id=slide_id,
-                revision=current_revision + 1,
-                items=tuple(items),
-                ai_suggestion_snapshot=snapshot,
-                updated_at=self._now_iso(),
-            )
-            try:
-                self._store.write_page(run_dir, slide_id, updated_page)
-            except AnnotationStoreError as exc:
-                raise self._store_error_to_http(exc) from exc
+            page_changed = page is None or tuple(items) != page.items
+            if page_changed:
+                updated_page = AnnotationPage(
+                    slide_id=slide_id,
+                    revision=current_revision + 1,
+                    items=tuple(items),
+                    ai_suggestion_snapshot=snapshot,
+                    updated_at=self._now_iso(),
+                )
+                try:
+                    self._store.write_page(run_dir, slide_id, updated_page)
+                except AnnotationStoreError as exc:
+                    raise self._store_error_to_http(exc) from exc
+            else:
+                updated_page = page
+        if page_changed:
+            self._annotation_content_changed(project, (slide_id,))
         return {
             "slide_id": slide_id,
             "revision": updated_page.revision,
@@ -448,19 +497,20 @@ class AnnotationService:
         issues: List[Issue],
         *,
         path: str,
+        canvas: Tuple[int, int],
     ) -> None:
         if not isinstance(operation, dict):
             issues.append(Issue(path, "not_object", "操作必须是对象"))
             return
         op = operation.get("op")
         if op == "add":
-            self._op_add(operation, items, beats, image_hash, narration_hash, issues, path=path)
+            self._op_add(operation, items, beats, image_hash, narration_hash, issues, path=path, canvas=canvas)
         elif op == "update":
-            self._op_update(operation, items, beats, issues, path=path)
+            self._op_update(operation, items, beats, issues, path=path, canvas=canvas)
         elif op == "delete":
             self._op_delete(operation, items, issues, path=path)
         elif op == "restore":
-            self._op_restore(operation, items, beats, image_hash, narration_hash, issues, path=path)
+            self._op_restore(operation, items, beats, image_hash, narration_hash, issues, path=path, canvas=canvas)
         else:
             issues.append(Issue(f"{path}.op", "bad_enum", "op 必须是 add/update/delete/restore 之一"))
 
@@ -500,6 +550,7 @@ class AnnotationService:
         issues: List[Issue],
         *,
         path: str,
+        canvas: Tuple[int, int],
     ) -> None:
         from annotation_contracts import AnnotationInputs, AnnotationProtection, AnnotationStyle, AnnotationTarget, AnnotationTiming
 
@@ -508,9 +559,10 @@ class AnnotationService:
             {"target": (item_payload or {}).get("target") if isinstance(item_payload, dict) else None,
              "anchor": (item_payload or {}).get("anchor") if isinstance(item_payload, dict) else None,
              "style": (item_payload or {}).get("style") if isinstance(item_payload, dict) else None,
-             "timing": (item_payload or {}).get("timing") if isinstance(item_payload, dict) else None},
+             "timing": (item_payload or {}).get("timing") if isinstance(item_payload, dict) else None,
+             "recommendation": (item_payload or {}).get("recommendation") if isinstance(item_payload, dict) else None},
             issues,
-            canvas=self._canvas,
+            canvas=canvas,
             path=f"{path}.item",
             require_id=False,
         )
@@ -535,6 +587,7 @@ class AnnotationService:
                 narration_hash=narration_hash,
                 audio_hash=None,
             ),
+            recommendation=draft.recommendation,
         )
         items.append(item)
 
@@ -546,6 +599,7 @@ class AnnotationService:
         issues: List[Issue],
         *,
         path: str,
+        canvas: Tuple[int, int],
     ) -> None:
         from annotation_contracts import AnnotationAnchor, AnnotationProtection, AnnotationStatus, AnnotationTarget, AnnotationStyle, AnnotationTiming
         from dataclasses import replace
@@ -567,7 +621,7 @@ class AnnotationService:
         replacements: Dict[str, Any] = {}
         modified: List[str] = []
         if "target" in patch:
-            new_target = AnnotationTarget.from_payload(patch["target"], issues, canvas=self._canvas, path=f"{path}.patch.target")
+            new_target = AnnotationTarget.from_payload(patch["target"], issues, canvas=canvas, path=f"{path}.patch.target")
             if new_target is not None:
                 if new_target.to_dict() != target_item.target.to_dict():
                     modified.append("target")
@@ -682,11 +736,12 @@ class AnnotationService:
         accepted_review_ids = {str(v) for v in accepted_review}
 
         run_dir = self._run_dir(project)
+        canvas = self._canvas_for(project)
         image_hash = self._image_hash(project, slide_id)
         narration_hash = self._narration_hash(project, slide_id)
         with self._lock_for(project):
             try:
-                page = self._store.read_page(run_dir, slide_id, canvas=self._canvas)
+                page = self._store.read_page(run_dir, slide_id, canvas=canvas)
             except AnnotationStoreError as exc:
                 raise self._store_error_to_http(exc) from exc
             current_revision = page.revision if page else 0
@@ -701,8 +756,12 @@ class AnnotationService:
 
             updated_items = []
             blocked: List[Dict[str, str]] = []
+            page_changed = False
             for item in page.items:
                 if item.status.content == "disabled":
+                    updated_items.append(item)
+                    continue
+                if item.status.content == "confirmed":
                     updated_items.append(item)
                     continue
                 needs_acceptance = item.status.spatial == "needs_review" or bool(item.review_issues)
@@ -728,18 +787,22 @@ class AnnotationService:
                         },
                     )
                 )
+                page_changed = True
             if blocked:
                 raise HTTPException(status_code=422, detail={"code": "review_required", "items": blocked})
-            updated_page = replace(
-                page,
-                revision=current_revision + 1,
-                items=tuple(updated_items),
-                updated_at=self._now_iso(),
-            )
-            try:
-                self._store.write_page(run_dir, slide_id, updated_page)
-            except AnnotationStoreError as exc:
-                raise self._store_error_to_http(exc) from exc
+            if page_changed:
+                updated_page = replace(
+                    page,
+                    revision=current_revision + 1,
+                    items=tuple(updated_items),
+                    updated_at=self._now_iso(),
+                )
+                try:
+                    self._store.write_page(run_dir, slide_id, updated_page)
+                except AnnotationStoreError as exc:
+                    raise self._store_error_to_http(exc) from exc
+            else:
+                updated_page = page
         try:
             settings = self._store.read_settings(run_dir)
         except AnnotationStoreError as exc:
@@ -754,12 +817,14 @@ class AnnotationService:
                 timeline_result = self._build_timeline_for_slide(project, run_dir, slide_id)
             except Exception as exc:  # noqa: BLE001 - 构建失败不回滚确认
                 timeline_result = {"timeline_built": False, "timeline_error": str(exc)[:300]}
+        if page_changed or timeline_result.get("timeline_changed"):
+            self._annotation_content_changed(project, (slide_id,))
         return {
             "slide_id": slide_id,
             "revision": updated_page.revision,
             "confirmed": sum(1 for i in updated_items if i.status.content == "confirmed"),
             **timeline_result,
-            "readiness": self._readiness(settings or default_annotation_settings(), run_dir, slide_ids)
+            "readiness": self._readiness(settings or default_annotation_settings(), run_dir, slide_ids, canvas)
             if enabled else {"can_render": True, "reason": "", "blocking": []},
         }
 
@@ -768,12 +833,13 @@ class AnnotationService:
         import json as _json
 
         from annotation_alignment import read_beat_spans
-        from annotation_geometry import FragmentInput, GeometryInputV2, build_strokes_v2
+        from annotation_geometry import FragmentInput, GeometryInputV2, build_manual_path_stroke, build_strokes_v2
         from annotation_target_resolver import resolve_phrase_target
         from annotation_timeline import ANNOTATION_TIMELINE_FILE, build_annotation_timeline
         from project_storage import slide_file
 
-        page = self._store.read_page(run_dir, slide_id, canvas=self._canvas)
+        canvas = self._canvas_for(project)
+        page = self._store.read_page(run_dir, slide_id, canvas=canvas)
         if page is None or not page.items:
             return {"timeline_built": False, "timeline_error": "no_annotations"}
         unconfirmed = [i.annotation_id for i in page.items if i.status.content not in ("confirmed", "disabled")]
@@ -799,7 +865,14 @@ class AnnotationService:
             if item.status.content == "disabled":
                 continue
             try:
-                if item.target.kind == "text" and item.target.token_ids:
+                if item.target.path_points:
+                    strokes = [build_manual_path_stroke(
+                        item.target.path_points,
+                        style_type=item.style.type,
+                        width=item.style.width,
+                    )]
+                    fragments = None
+                elif item.target.kind == "text" and item.target.token_ids:
                     if layout is None:
                         return {"timeline_built": False, "timeline_error": "text_layout_missing"}
                     resolution = resolve_phrase_target(
@@ -828,11 +901,12 @@ class AnnotationService:
                         )
                         for poly in item.target.polygons
                     )
-                strokes = [dict(s) for s in build_strokes_v2(GeometryInputV2(fragments=fragments))]
+                if fragments is not None:
+                    strokes = [dict(s) for s in build_strokes_v2(GeometryInputV2(fragments=fragments))]
             except Exception as exc:  # noqa: BLE001
                 return {"timeline_built": False, "timeline_error": f"strokes: {exc}"}
             try:
-                strokes = self._attach_ink(run_dir, slide_id, item, strokes)
+                strokes = self._attach_ink(run_dir, slide_id, item, strokes, canvas=canvas)
             except Exception as exc:  # noqa: BLE001 - 墨迹失败退回矢量,不阻塞确认
                 logger.warning("ink render failed for %s/%s: %s", slide_id, item.annotation_id, exc)
             from dataclasses import replace
@@ -843,6 +917,7 @@ class AnnotationService:
         payload, issues = build_annotation_timeline(
             slide_id=slide_id,
             items=events_items,
+            canvas=canvas,
             beat_times=beat_times,
             slide_duration=float(duration or 0.0),
             image_hash=self._image_hash(project, slide_id),
@@ -855,11 +930,17 @@ class AnnotationService:
         out_path = Path(slide_file(run_dir, slide_id, ANNOTATION_TIMELINE_FILE))
         from pipeline_lifecycle import write_json_atomic
 
+        try:
+            existing = json.loads(out_path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            existing = None
+        if existing == payload:
+            return {"timeline_built": True, "timeline_changed": False, "events": len(payload["events"])}
         write_json_atomic(out_path, payload)
-        return {"timeline_built": True, "events": len(payload["events"])}
+        return {"timeline_built": True, "timeline_changed": True, "events": len(payload["events"])}
 
 
-    def _attach_ink(self, run_dir: str, slide_id: str, item, strokes):
+    def _attach_ink(self, run_dir: str, slide_id: str, item, strokes, *, canvas: Tuple[int, int]):
         """确认后为每笔渲染栅格墨迹帧(视频呈现位图手写,而非 SVG)。"""
         from annotation_ink import InkRequest, render_and_write
         from project_storage import slide_dir as storage_slide_dir
@@ -871,9 +952,9 @@ class AnnotationService:
             request = InkRequest(
                 points=tuple(map(tuple, stroke["points"])),
                 width_profile=tuple(stroke["width_profile"]),
-                canvas=tuple(self._canvas),
-                color=(196, 62, 28),
-                base_width=float(brush) if brush else 5.0,
+                canvas=canvas,
+                color=tuple(int(item.style.color[index:index + 2], 16) for index in (1, 3, 5)),
+                base_width=float(brush) if brush else float(item.style.width),
                 opacity=item.style.opacity,
                 seed=item.style.seed + index * 733,
                 closed=stroke.get("closed", False),
@@ -907,6 +988,7 @@ class _ItemWithStrokesView:
         issues: List[Issue],
         *,
         path: str,
+        canvas: Tuple[int, int],
     ) -> None:
         from annotation_contracts import AnnotationInputs, AnnotationProtection, AnnotationStatus
 
@@ -919,7 +1001,7 @@ class _ItemWithStrokesView:
             return
         for snapshot_index, raw in enumerate(snapshot_items):
             draft = AnnotationItem.from_payload(
-                raw, issues, canvas=self._canvas, path=f"{path}.items[{snapshot_index}]", require_id=False
+                raw, issues, canvas=canvas, path=f"{path}.items[{snapshot_index}]", require_id=False
             )
             if draft is None:
                 continue
@@ -1042,6 +1124,7 @@ class _ItemWithStrokesView:
         request_key = payload.get("request_key")
         if operation == "detect_text":
             run_dir = self._run_dir(project)
+            canvas = self._canvas_for(project)
             from project_storage import slide_file
 
             targets: List[Tuple[str, str, Tuple[int, int], bytes]] = []
@@ -1052,7 +1135,7 @@ class _ItemWithStrokesView:
                 except OSError as exc:
                     raise HTTPException(status_code=422, detail=f"页面 {slide_id} 缺少图片,请先在第三步生成") from exc
                 targets.append(
-                    (str(slide_id), hashlib.sha256(image_bytes).hexdigest(), self._canvas, image_bytes)
+                    (str(slide_id), hashlib.sha256(image_bytes).hexdigest(), canvas, image_bytes)
                 )
             job, _created = self._job_manager.submit_detect(
                 project.id,
@@ -1114,24 +1197,33 @@ class _ItemWithStrokesView:
         layout = self._layout_builder.load(run_dir, slide_id) if self._layout_builder else None
         candidates = candidate_tokens(layout) if layout else []
         beats = self._read_beats(project, slide_id)
+        canvas = self._canvas_for(project)
         try:
-            page = self._store.read_page(run_dir, slide_id, canvas=self._canvas)
+            page = self._store.read_page(run_dir, slide_id, canvas=canvas)
         except AnnotationStoreError:
             page = None
         protected = []
         for item in page.items if page else ():
-            if item.protection.locked or item.protection.modified_fields:
+            if item.protection.source == "manual" or item.protection.locked or item.protection.modified_fields:
                 protected.append({
                     "quote": item.anchor.quote if item.anchor else (item.target.quote or ""),
+                    "beat_id": item.anchor.beat_id if item.anchor else None,
                     "style": item.style.type,
                     "locked": item.protection.locked,
+                    "source": item.protection.source,
+                    "target_kind": item.target.kind,
+                    "target_candidate_ids": list(item.target.token_ids),
                 })
+        settings = self._store.read_settings(run_dir) or default_annotation_settings()
+        emphasis = settings.defaults.get("emphasis", "moderate")
+        if emphasis not in ("weak", "moderate", "strong"):
+            emphasis = "moderate"
         prompts = compose_plan_prompts(
             system_prompt=system_prompt,
             beats=beats,
             candidates=candidates,
             protected_items=protected,
-            emphasis="moderate",
+            emphasis=emphasis,
         )
         return {
             "slide_id": slide_id,

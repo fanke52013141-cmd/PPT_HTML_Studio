@@ -15,6 +15,7 @@ from annotation_geometry import (  # noqa: E402
     FragmentInput,
     GeometryInputV2,
     build_strokes_v2,
+    build_manual_path_stroke,
     _deform_ellipse,
     _pick_template,
 )
@@ -127,3 +128,12 @@ def test_long_phrase_sampling_cap_keeps_closure():
 
 def test_strokes_version_tag():
     assert STROKES_VERSION_V2 == "annotation_strokes_v2"
+
+
+def test_manual_path_stroke_preserves_user_points_and_style():
+    points = [(100, 100), (130, 120), (180, 110)]
+    stroke = build_manual_path_stroke(points, style_type="highlighter", width=6)
+    assert stroke["points"] == points
+    assert stroke["closed"] is False
+    assert stroke["speed_profile"] == [0.0, 0.5, 1.0]
+    assert stroke["brush_height"] == 24.0

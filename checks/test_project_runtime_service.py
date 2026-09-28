@@ -257,3 +257,20 @@ def test_article_import_completes_step1_and_begins_step2_once(
         for step in range(3, 9)
     )
     assert db.commits == 1
+
+
+def test_stage_completion_settles_only_its_affected_artifact(tmp_path: Path) -> None:
+    from project_impact_service import list_impacts, record_impact
+
+    statuses = {str(step): "completed" for step in range(1, 9)}
+    statuses["4"] = "pending_reconfirmation"
+    project = SimpleNamespace(run_dir=str(tmp_path), current_step=4)
+    project.get_step_status = lambda: dict(statuses)
+    project.set_step_status = lambda value: statuses.update(value)
+    db = SimpleNamespace(commit=lambda: None)
+    record_impact(tmp_path, reason="storyboard_changed")
+
+    runtime.handle_step_navigation(project, 4, db)
+
+    assert statuses["4"] == "completed"
+    assert list_impacts(tmp_path)[0]["affected"] == ["Mask", "audio", "output"]

@@ -2670,3 +2670,9 @@ body:not(.workspace-open) #page-home .stitch-chapter-header .tree-overflow {
   margin: 0 !important;
   justify-self: stretch;
 }
+
+/* Keep the navigation scrollable vertically without a horizontal bar below
+   the standalone video list. `visible` computes to `auto` beside overflow-y. */
+body:not(.workspace-open) #page-home .stitch-sidebar-body {
+  overflow-x: clip !important;
+}

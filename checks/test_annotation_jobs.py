@@ -226,10 +226,10 @@ def test_plan_job_merges_suggestions_and_snapshots(store, manager, clean_jobs, t
     manager._deps.text_layout_builder.save(str(run_dir), "slide_001", layout_payload)
 
     def stub_llm_generate(**kwargs):
-        return {"suggestions": [{
+        return {"schema_version": "annotation_plan_v2", "suggestions": [{
             "beat_id": "slide_001_beat_001", "range": [7, 12], "quote": "9月30日",
             "target_candidate_ids": ["tok_001_0000"], "style": "ellipse",
-            "reason": "关键日期", "ambiguous": False,
+            "category": "evidence", "priority": 1, "reason": "关键日期", "ambiguous": False,
         }]}
 
     class _IO2:

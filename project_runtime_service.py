@@ -243,6 +243,16 @@ def handle_step_navigation(
     db: Any,
 ) -> None:
     invalidation_service.complete_stage(project, target_step)
+    from project_impact_service import resolve_impacts
+
+    completed_effects = {
+        2: ("storyboard",),
+        4: ("images",),
+        5: ("Mask", "reveal layers"),
+        7: ("audio", "audio confirmation"),
+    }.get(target_step)
+    if completed_effects:
+        resolve_impacts(project.run_dir, affected=completed_effects)
     db.commit()
 
 

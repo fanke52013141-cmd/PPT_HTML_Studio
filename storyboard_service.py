@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 import hashlib
@@ -1060,6 +1061,154 @@ def validation_has_repairable_atomicity_failure(validation: Dict[str, Any]) -> b
     return "describes multiple independent visual islands" in str(validation.get("stderr") or "")
 
 
+@dataclass(frozen=True)
+class StoryboardContractImpact:
+    """The smallest reusable downstream scope for one Step 2 edit.
+
+    The contract is the source for both the Step 3 image prompt and the Step 5
+    narration source.  Comparing the whole JSON document made a title edit on
+    one slide look like an instruction to recreate every asset.  This compact
+    diff deliberately separates those independent inputs and preserves slide
+    identity so that order-only changes keep their existing assets.
+    """
+
+    visual_slide_ids: tuple[str, ...] = ()
+    narration_slide_ids: tuple[str, ...] = ()
+    added_slide_ids: tuple[str, ...] = ()
+    removed_slide_ids: tuple[str, ...] = ()
+    reordered: bool = False
+
+    @property
+    def has_effect(self) -> bool:
+        return bool(
+            self.visual_slide_ids
+            or self.narration_slide_ids
+            or self.added_slide_ids
+            or self.removed_slide_ids
+            or self.reordered
+        )
+
+
+def _normalized_slide_id(slide: Any) -> str:
+    return str(slide.get("slide_id") or "").strip() if isinstance(slide, dict) else ""
+
+
+def _contract_slides_by_id(contract: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    slides = contract.get("slides") if isinstance(contract, dict) else None
+    if not isinstance(slides, list):
+        return {}
+    return {
+        slide_id: slide
+        for slide in slides
+        if isinstance(slide, dict)
+        and (slide_id := _normalized_slide_id(slide))
+    }
+
+
+def _canonical_contract_value(value: Any) -> str:
+    """Stable comparison without changing the payload that will be persisted."""
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _visual_slide_input(slide: Dict[str, Any]) -> Dict[str, Any]:
+    """Return only fields which change the image or Mask semantic mapping."""
+    visual = {
+        key: value
+        for key, value in slide.items()
+        if key not in {"slide_id", "narration_beats"}
+    }
+    beats = slide.get("narration_beats")
+    if isinstance(beats, list):
+        # Beat text feeds TTS; its group/anchor mapping feeds visual reveal
+        # ownership and must therefore remain in the visual comparison.
+        visual["narration_anchors"] = [
+            {
+                key: value
+                for key, value in beat.items()
+                if key not in {"spoken_text", "tts_text", "source_text"}
+            }
+            for beat in beats
+            if isinstance(beat, dict)
+        ]
+    return visual
+
+
+def _narration_slide_input(slide: Dict[str, Any]) -> list[str]:
+    """Return the ordered words sent to TTS, excluding visual-only metadata."""
+    beats = slide.get("narration_beats")
+    if not isinstance(beats, list):
+        return []
+    return [
+        str(
+            beat.get("spoken_text")
+            or beat.get("tts_text")
+            or beat.get("source_text")
+            or ""
+        ).strip()
+        for beat in beats
+        if isinstance(beat, dict)
+    ]
+
+
+def diff_storyboard_contracts(
+    previous_contract: Dict[str, Any],
+    current_contract: Dict[str, Any],
+) -> StoryboardContractImpact:
+    """Classify a normalized Step 2 edit without touching project artifacts."""
+    previous_by_id = _contract_slides_by_id(previous_contract)
+    current_by_id = _contract_slides_by_id(current_contract)
+    previous_ids = tuple(previous_by_id)
+    current_ids = tuple(current_by_id)
+    added = tuple(slide_id for slide_id in current_ids if slide_id not in previous_by_id)
+    removed = tuple(slide_id for slide_id in previous_ids if slide_id not in current_by_id)
+    shared = tuple(slide_id for slide_id in current_ids if slide_id in previous_by_id)
+    visual = tuple(
+        slide_id
+        for slide_id in shared
+        if _canonical_contract_value(_visual_slide_input(previous_by_id[slide_id]))
+        != _canonical_contract_value(_visual_slide_input(current_by_id[slide_id]))
+    )
+    narration = tuple(
+        slide_id
+        for slide_id in shared
+        if _canonical_contract_value(_narration_slide_input(previous_by_id[slide_id]))
+        != _canonical_contract_value(_narration_slide_input(current_by_id[slide_id]))
+    )
+    previous_shared_order = tuple(slide_id for slide_id in previous_ids if slide_id in current_by_id)
+    current_shared_order = tuple(slide_id for slide_id in current_ids if slide_id in previous_by_id)
+    return StoryboardContractImpact(
+        visual_slide_ids=visual,
+        narration_slide_ids=narration,
+        added_slide_ids=added,
+        removed_slide_ids=removed,
+        reordered=previous_shared_order != current_shared_order,
+    )
+
+
+def apply_storyboard_contract_impact(
+    project: Project,
+    previous_contract: Dict[str, Any],
+    current_contract: Dict[str, Any],
+    *,
+    empty: bool = False,
+) -> StoryboardContractImpact:
+    """Register only the material Step 2 effects after a contract write."""
+    impact = diff_storyboard_contracts(previous_contract, current_contract)
+    # A project's first contract has no older generated work to review.  Its
+    # normal Step 2 completion remains the only state transition in that case.
+    if empty or (impact.has_effect and _contract_slides_by_id(previous_contract)):
+        invalidation_service.storyboard_contract_changed(
+            project,
+            visual_slide_ids=impact.visual_slide_ids,
+            narration_slide_ids=impact.narration_slide_ids,
+            added_slide_ids=impact.added_slide_ids,
+            removed_slide_ids=impact.removed_slide_ids,
+            reordered=impact.reordered,
+            empty=empty,
+        )
+    return impact
+
+
 def persist_and_validate_step2_contract(
     *,
     project: Project,
@@ -1087,7 +1236,12 @@ def persist_and_validate_step2_contract(
         "topic_name": project_title,
         "topic_summary": article_summary,
     }
+    previous_contract = normalize_visual_contract(
+        deepcopy(read_json_file(contract_path, {})),
+        read_project_pipeline_profile(project),
+    )
     write_json_atomic(contract_path, contract)
+    apply_storyboard_contract_impact(project, previous_contract, contract)
     write_project_log(
         project,
         "step2_contract_written",
@@ -1233,6 +1387,10 @@ def repair_step2_result(project_id: str, db: Session):
     if not os.path.exists(contract_path):
         raise HTTPException(status_code=400, detail="尚未生成分镜规划")
     stored_contract = read_json_file(contract_path, {})
+    comparison_contract = normalize_visual_contract(
+        deepcopy(stored_contract),
+        read_project_pipeline_profile(project),
+    )
     contract = normalize_visual_contract(stored_contract, read_project_pipeline_profile(project))
     changed = json.dumps(contract, ensure_ascii=False, sort_keys=True) != json.dumps(
         stored_contract,
@@ -1245,7 +1403,8 @@ def repair_step2_result(project_id: str, db: Session):
         sync_reveal_manifest_to_contract(project, current_slide_ids)
         sync_narration_beats_to_contract(project, current_slide_ids)
         validate_visual_contract_file(project, contract_path, source="explicit_schema_repair")
-        invalidate_after_upstream_edit(project, 2, db)
+        apply_storyboard_contract_impact(project, comparison_contract, contract)
+        db.commit()
     return {"success": True, "changed": changed, "contract": contract}
 
 def update_step2_result(project_id: str, payload: Dict[str, Any], db: Session):
@@ -1253,9 +1412,13 @@ def update_step2_result(project_id: str, payload: Dict[str, Any], db: Session):
         
     payload = normalize_visual_contract(payload, read_project_pipeline_profile(project))
     contract_path = os.path.join(project.run_dir, "planning", "visual_contract.json")
-    existing_contract = read_json_file(contract_path, {})
+    stored_contract = read_json_file(contract_path, {})
+    existing_contract = normalize_visual_contract(
+        deepcopy(stored_contract),
+        read_project_pipeline_profile(project),
+    )
     previous_slide_ids = contract_slide_ids_from_payload(existing_contract)
-    changed = json.dumps(existing_contract, ensure_ascii=False, sort_keys=True) != json.dumps(
+    changed = json.dumps(stored_contract, ensure_ascii=False, sort_keys=True) != json.dumps(
         payload,
         ensure_ascii=False,
         sort_keys=True,
@@ -1267,13 +1430,18 @@ def update_step2_result(project_id: str, payload: Dict[str, Any], db: Session):
             "validation": read_json_file(visual_contract_validation_path(project), {}),
             "changed": False,
         }
+    contract_impact = diff_storyboard_contracts(existing_contract, payload)
     write_json_atomic(contract_path, payload)
     current_slide_ids = contract_slide_ids_from_payload(payload)
     removed_slide_ids = [slide_id for slide_id in previous_slide_ids if slide_id not in current_slide_ids]
     for slide_id in removed_slide_ids:
         slide_path = Path(storage_slide_file(project.run_dir, slide_id, "visual_draft.png")).parent
         if slide_path.exists():
-            shutil.rmtree(slide_path)
+            archive_root = Path(project.run_dir) / "archived_slides"
+            archive_root.mkdir(parents=True, exist_ok=True)
+            # Keep user-generated images, Mask corrections and audio recoverable.
+            # A future slide may reuse the same ID, so each archive has a unique path.
+            shutil.move(str(slide_path), str(archive_root / f"{slide_id}-{uuid.uuid4().hex}"))
 
     if not current_slide_ids:
         validation = {
@@ -1291,7 +1459,12 @@ def update_step2_result(project_id: str, payload: Dict[str, Any], db: Session):
         sync_reveal_manifest_to_contract(project, [])
         sync_narration_beats_to_contract(project, [])
         sync_narration_sources_from_contract(project, existing_contract, payload)
-        invalidation_service.empty_storyboard_changed(project)
+        apply_storyboard_contract_impact(
+            project,
+            existing_contract,
+            payload,
+            empty=True,
+        )
         db.commit()
         payload = read_json_file(contract_path, payload)
         return {"success": True, "contract": payload, "validation": validation, "changed": True}
@@ -1302,7 +1475,16 @@ def update_step2_result(project_id: str, payload: Dict[str, Any], db: Session):
         sync_narration_beats_to_contract(project, current_slide_ids)
         sync_narration_sources_from_contract(project, existing_contract, payload)
         payload = read_json_file(contract_path, payload)
-    invalidate_after_upstream_edit(project, 2, db)
+    if contract_impact.has_effect and _contract_slides_by_id(existing_contract):
+        invalidation_service.storyboard_contract_changed(
+            project,
+            visual_slide_ids=contract_impact.visual_slide_ids,
+            narration_slide_ids=contract_impact.narration_slide_ids,
+            added_slide_ids=contract_impact.added_slide_ids,
+            removed_slide_ids=contract_impact.removed_slide_ids,
+            reordered=contract_impact.reordered,
+        )
+    db.commit()
 
     return {"success": True, "contract": payload, "validation": validation, "changed": True}
 

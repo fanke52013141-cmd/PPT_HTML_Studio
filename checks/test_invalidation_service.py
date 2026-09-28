@@ -65,28 +65,25 @@ def test_upstream_and_empty_storyboard_invalidation_matrix() -> None:
         assert report.reason == "article_changed"
         assert project.current_step == 1
         assert project._statuses["1"] == "completed"
-        assert all(
-            project._statuses[str(step)] == "pending_reconfirmation"
-            for step in range(2, 9)
-        )
-        assert not (run_dir / "planning" / "audio_confirmed.json").exists()
-        assert not (run_dir / "remotion_props.json").exists()
+        assert project._statuses["2"] == "pending_reconfirmation"
+        assert all(project._statuses[str(step)] == "completed" for step in range(3, 9))
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert (run_dir / "remotion_props.json").exists()
 
         seed_common_derivatives(run_dir)
+        seed_slide_derivatives(run_dir, "slide_001", "slide_002")
         project = FakeProject(run_dir)
         visibility_report = invalidation_service.subtitle_visibility_changed(
             project,
             ["slide_001", "slide_002"],
         )
-        assert visibility_report.affected_steps == tuple(range(3, 9))
-        assert project.current_step == 3
-        assert all(
-            project._statuses[str(step)] == "pending_reconfirmation"
-            for step in range(3, 9)
-        )
-        assert not (run_dir / "slides" / "slide_001" / "scene.json").exists()
-        assert not (run_dir / "slides" / "slide_001" / "visual_provenance.json").exists()
-        assert not (run_dir / "slides" / "slide_001" / "visual_candidate.provenance.json").exists()
+        assert visibility_report.affected_steps == (8,)
+        assert project.current_step == 8
+        assert all(project._statuses[str(step)] == "completed" for step in range(1, 8))
+        assert project._statuses["8"] == "pending_reconfirmation"
+        assert (run_dir / "slides" / "slide_001" / "scene.json").exists()
+        assert (run_dir / "slides" / "slide_001" / "visual_provenance.json").exists()
+        assert (run_dir / "slides" / "slide_001" / "visual_candidate.provenance.json").exists()
         assert not (run_dir / "remotion_props.json").exists()
 
         seed_common_derivatives(run_dir)
@@ -122,20 +119,23 @@ def test_slide_image_invalidation_is_scoped_and_preserves_sources() -> None:
         assert report.slide_ids == ("slide_001",)
         assert first["groups"] == []
         assert first["semantic_blocks"] == []
+        archived_masks = list((run_dir / "recovery" / "masks").glob("slide_001-*.json"))
+        assert len(archived_masks) == 1
+        assert json.loads(archived_masks[0].read_text(encoding="utf-8"))["groups"] == [
+            {"id": "slide_001_group"}
+        ]
         assert first["status"] == "pending"
         assert second["groups"] == [{"id": "slide_002_group"}]
         assert not (run_dir / "slides" / "slide_001" / "scene.json").exists()
         assert not (run_dir / "slides" / "slide_001" / "assets").exists()
         assert (run_dir / "slides" / "slide_001" / "visual_draft.png").exists()
         assert (run_dir / "slides" / "slide_002" / "scene.json").exists()
-        assert not (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
         assert not (run_dir / "remotion_props.json").exists()
         assert project.current_step == 3
         assert project._statuses["3"] == "completed"
-        assert all(
-            project._statuses[str(step)] == "pending_reconfirmation"
-            for step in range(4, 9)
-        )
+        assert all(project._statuses[str(step)] == "pending_reconfirmation" for step in (4, 5, 8))
+        assert all(project._statuses[str(step)] == "completed" for step in (6, 7))
 
 
 def test_style_background_and_narration_invalidation_matrix() -> None:
@@ -166,15 +166,21 @@ def test_style_background_and_narration_invalidation_matrix() -> None:
         assert not (run_dir / "slides" / "slide_002" / "scene.json").exists()
 
         project = FakeProject(run_dir)
+        project._statuses["7"] = "pending"
         narration_report = invalidation_service.narration_synthesis_started(project)
-        assert narration_report.affected_steps == (7, 8)
+        assert narration_report.affected_steps == ()
         assert project.current_step == 7
         assert project._statuses["7"] == "in_progress"
+        assert project._statuses["8"] == "completed"
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+
+        changed_report = invalidation_service.audio_artifacts_changed(project, ["slide_001"])
+        assert changed_report.slide_ids == ("slide_001",)
         assert project._statuses["8"] == "pending_reconfirmation"
-        assert not (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
 
 
-def test_stage_completion_uses_same_invalidation_rules() -> None:
+def test_reconfirming_completed_stage_preserves_downstream_work() -> None:
     with tempfile.TemporaryDirectory() as value:
         run_dir = Path(value)
         seed_common_derivatives(run_dir)
@@ -182,10 +188,111 @@ def test_stage_completion_uses_same_invalidation_rules() -> None:
 
         report = invalidation_service.complete_stage(project, 6)
 
-        assert report.reason == "stage_completed"
+        assert report.reason == "stage_already_completed"
         assert project.current_step == 8
         assert project._statuses["6"] == "completed"
+        assert project._statuses["7"] == "completed"
+        assert project._statuses["8"] == "completed"
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert (run_dir / "remotion_props.json").exists()
+
+
+def test_real_narration_change_only_marks_audio_and_output_stale() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        run_dir = Path(value)
+        seed_common_derivatives(run_dir)
+        project = FakeProject(run_dir)
+
+        report = invalidation_service.narration_content_changed(project)
+
+        assert report.affected_steps == (7, 8)
+        assert all(project._statuses[str(step)] == "completed" for step in range(1, 7))
         assert project._statuses["7"] == "pending_reconfirmation"
         assert project._statuses["8"] == "pending_reconfirmation"
-        assert not (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+
+
+def test_first_completion_does_not_invalidate_unrelated_saved_artifacts() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        run_dir = Path(value)
+        seed_common_derivatives(run_dir)
+        project = FakeProject(run_dir)
+        project._statuses["5"] = "in_progress"
+
+        report = invalidation_service.complete_stage(project, 5)
+
+        assert report.affected_steps == ()
+        assert all(status == "completed" for status in project._statuses.values())
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert (run_dir / "remotion_props.json").exists()
+
+
+def test_mask_edit_only_marks_output_stale() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        run_dir = Path(value)
+        seed_common_derivatives(run_dir)
+        project = FakeProject(run_dir)
+
+        report = invalidation_service.mask_content_changed(project)
+
+        assert report.affected_steps == (8,)
+        assert project._statuses["5"] == "completed"
+        assert project._statuses["7"] == "completed"
+        assert project._statuses["8"] == "pending_reconfirmation"
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
         assert not (run_dir / "remotion_props.json").exists()
+
+
+def test_annotation_and_digital_human_edits_only_stale_output() -> None:
+    from project_impact_service import list_impacts
+
+    with tempfile.TemporaryDirectory() as value:
+        run_dir = Path(value)
+        seed_common_derivatives(run_dir)
+        project = FakeProject(run_dir)
+        annotation = invalidation_service.annotation_content_changed(project, ["slide_001"])
+        assert annotation.affected_steps == (8,)
+        assert project._statuses["7"] == "completed"
+        assert project._statuses["8"] == "pending_reconfirmation"
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert {item["id"] for item in list_impacts(run_dir)} == {"annotation_changed:slide_001"}
+
+        seed_common_derivatives(run_dir)
+        project = FakeProject(run_dir)
+        digital_human = invalidation_service.digital_human_changed(project)
+        assert digital_human.affected_steps == (8,)
+        assert project._statuses["7"] == "completed"
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert {item["id"] for item in list_impacts(run_dir)} == {
+            "annotation_changed:slide_001", "digital_human_changed:project"
+        }
+
+
+def test_storyboard_narration_only_change_keeps_images_and_masks_completed() -> None:
+    from project_impact_service import list_impacts
+
+    with tempfile.TemporaryDirectory() as value:
+        run_dir = Path(value)
+        seed_common_derivatives(run_dir)
+        project = FakeProject(run_dir)
+        report = invalidation_service.storyboard_contract_changed(
+            project, narration_slide_ids=["slide_001"]
+        )
+        assert report.affected_steps == (6, 7, 8)
+        assert all(project._statuses[str(step)] == "completed" for step in (3, 4, 5))
+        assert all(project._statuses[str(step)] == "pending_reconfirmation" for step in (6, 7, 8))
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert {item["id"] for item in list_impacts(run_dir)} == {
+            "storyboard_narration_changed:slide_001"
+        }
+
+
+def test_storyboard_order_change_only_requires_new_output() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        run_dir = Path(value)
+        seed_common_derivatives(run_dir)
+        project = FakeProject(run_dir)
+        report = invalidation_service.storyboard_contract_changed(project, reordered=True)
+        assert report.affected_steps == (8,)
+        assert all(project._statuses[str(step)] == "completed" for step in range(1, 8))
+        assert project._statuses["8"] == "pending_reconfirmation"

@@ -84,7 +84,9 @@ def confirmation_status(
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return {"confirmed": False, "reason": "invalid_confirmation"}
-    if not isinstance(payload, dict) or payload.get("schema_version") != CONFIRMATION_SCHEMA_VERSION:
+    # Schema 2 already recorded hashes for every artifact. Validate those
+    # hashes below instead of making users re-confirm unchanged audio.
+    if not isinstance(payload, dict) or payload.get("schema_version") not in (2, CONFIRMATION_SCHEMA_VERSION):
         return {"confirmed": False, "reason": "legacy_confirmation"}
     if payload.get("confirmed") is not True:
         return {"confirmed": False, "reason": "not_confirmed"}
@@ -137,7 +139,7 @@ def confirmation_status(
     return {
         "confirmed": True,
         "reason": "confirmed",
-        "schema_version": CONFIRMATION_SCHEMA_VERSION,
+        "schema_version": payload["schema_version"],
         "slide_ids": current_ids,
     }
 

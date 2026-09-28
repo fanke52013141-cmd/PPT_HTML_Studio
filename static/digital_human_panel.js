@@ -27,6 +27,10 @@
     comfyuiWorkflowExists: false,
     avatarUploaded: false,
   };
+  // 所有配置写入串行执行。切换到作品输出或提交渲染前可等待这条队列，
+  // 防止刚上传的视频还未把 enabled/mode 持久化就开始渲染。
+  var dhPendingConfigSave = Promise.resolve();
+  var dhUploadInFlight = Promise.resolve();
 
   function projectId() {
     return (state && state.currentProject && state.currentProject.id) || null;
@@ -62,6 +66,7 @@
       updateAudioStatus();
       applyConfigToUI();
       checkComfyuiWorkflow();
+      loadHealth();
       loadPreview();
       // 恢复未完成 job 的轮询（页面刷新后），静默处理已结束的旧任务
       if (dhState.config.slides) {
@@ -142,31 +147,44 @@
   function switchMode(mode) {
     dhState.config.mode = mode;
     updateModeTabs();
-    saveConfig();
+    loadHealth();
+    return saveConfig();
   }
 
-  async function saveConfig() {
+  function saveConfig() {
     var pid = projectId();
-    if (!pid) return;
+    if (!pid) return Promise.resolve();
     var enabledEl = document.getElementById("dh-enabled");
     dhState.config.enabled = enabledEl ? enabledEl.checked : false;
     dhState.config.mode = dhState.config.mode || "comfyui";
-    try {
-      await API.put(base() + "/config", {
+    // 保存调用可能来自滑块、开关和上传完成回调。复制当前值后再排队，
+    // 避免较早的请求在网络较慢时覆盖后一次用户修改。
+    var payload = {
         enabled: dhState.config.enabled,
         mode: dhState.config.mode,
         shape: dhState.config.shape || "circle",
         avatar_id: dhState.config.avatar_id,
-        circle: dhState.config.circle,
-        video: dhState.config.video,
-      });
+        circle: Object.assign({}, dhState.config.circle),
+        video: Object.assign({}, dhState.config.video),
+      };
+    dhPendingConfigSave = dhPendingConfigSave.catch(function () {}).then(async function () {
+      await API.put(PROJECT_PREFIX + "/" + encodeURIComponent(pid) + "/digital-human/config", payload);
       showToast("数字人讲解设置已保存");
       if (typeof window.__dhMarkEnabled === "function") {
-        window.__dhMarkEnabled(!!dhState.config.enabled);
+        window.__dhMarkEnabled(!!payload.enabled);
       }
-    } catch (e) {
+    }).catch(function (e) {
       console.error("[DH] saveConfig failed:", e);
-    }
+      throw e;
+    });
+    // 多数滑块/开关事件不直接 await；注册旁路处理器避免浏览器把已记录的
+    // 保存失败再报为未处理 Promise，同时仍让显式 await 的上传和渲染入口失败。
+    dhPendingConfigSave.catch(function () {});
+    return dhPendingConfigSave;
+  }
+
+  function waitForPendingPersistence() {
+    return Promise.all([dhUploadInFlight, dhPendingConfigSave]);
   }
 
   // ---------------- 服务状态 ----------------
@@ -175,6 +193,11 @@
     var el = document.getElementById("dh-service-status");
     if (!el) return;
     if (!projectId()) return;  // 首页无选中项目时跳过，避免 404 "项目不存在"
+    if (dhState.config.enabled && dhState.config.mode === "upload") {
+      el.textContent = "导入视频模式：本地合成";
+      el.className = "dh-service-status dh-ok";
+      return;
+    }
     try {
       // This is a passive status probe.  Its result is shown inline in the
       // panel, so a temporarily stopped local service must not create a new
@@ -206,22 +229,41 @@
     if (!pid) return;
     var fd = new FormData();
     fd.append("file", file);
+    var uploadStatus = document.getElementById("dh-upload-video-status");
+    if (uploadStatus) {
+      uploadStatus.textContent = "上传并保存中...";
+      uploadStatus.style.color = "";
+    }
     try {
       var res = await API.post(base() + "/upload", fd);
-      if (res && res.success) {
-        dhState.uploadVideoExists = true;
-        dhState.config.mode = "upload";
-        dhState.config.enabled = true;
-        var enabledEl = document.getElementById("dh-enabled");
-        if (enabledEl) enabledEl.checked = true;
-        applyConfigToUI();
-        showToast("数字人讲解视频已上传");
-        loadPreview();
-        saveConfig();
+      if (!res || !res.success) {
+        throw new Error((res && (res.detail || res.error)) || "服务器未确认数字人视频上传成功。");
       }
+      dhState.uploadVideoExists = true;
+      dhState.config.mode = "upload";
+      dhState.config.enabled = true;
+      var enabledEl = document.getElementById("dh-enabled");
+      if (enabledEl) enabledEl.checked = true;
+      applyConfigToUI();
+      await saveConfig();
+      if (uploadStatus) {
+        uploadStatus.textContent = "已上传，生成 MP4 时将包含数字人";
+        uploadStatus.style.color = "#4CAF50";
+      }
+      showToast("数字人讲解视频已上传并保存。请到作品输出重新生成 MP4。");
+      loadHealth();
+      loadPreview();
     } catch (e) {
       console.error("[DH] uploadDigiVideo failed:", e);
-      showToast("上传失败：" + ((e && e.message) || "未知错误"));
+      var message = "上传失败：" + ((e && e.message) || "未知错误");
+      if (uploadStatus) {
+        uploadStatus.textContent = message;
+        uploadStatus.style.color = "#d73333";
+      }
+      showToast(message);
+      // 让进入作品输出和 MP4 提交感知本次失败，避免继续使用旧素材却
+      // 显示为“刚上传的视频”。下一次上传成功会替换 dhUploadInFlight。
+      throw e;
     }
   }
 
@@ -849,9 +891,29 @@
     var uploadVideoFile = document.getElementById("dh-upload-video-file");
     if (uploadVideoFile) {
       uploadVideoFile.addEventListener("change", function () {
-        uploadDigiVideo(uploadVideoFile.files && uploadVideoFile.files[0]);
+        dhUploadInFlight = uploadDigiVideo(uploadVideoFile.files && uploadVideoFile.files[0]);
+        // change 事件本身不会 await；旁路处理避免未处理 Promise，同时保留
+        // dhUploadInFlight 的拒绝态供输出入口阻止继续操作。
+        dhUploadInFlight.catch(function () {});
         uploadVideoFile.value = "";
       });
+    }
+
+    // event_bindings.js 在此扩展模块之前注册了原有的点击处理器。用捕获
+    // 阶段等待未完成上传/配置保存后再导航，确保“进入作品输出”不会抢在
+    // enabled 与 mode 写入项目配置之前执行。
+    var enterOutputBtn = document.getElementById("step9-btn-skip");
+    if (enterOutputBtn) {
+      enterOutputBtn.addEventListener("click", async function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        try {
+          await waitForPendingPersistence();
+          await window.navigateToStep(8);
+        } catch (e) {
+          showToast("数字人设置保存失败，请重试后再进入作品输出。", 7000);
+        }
+      }, true);
     }
 
     // ComfyUI 工作流上传
@@ -943,9 +1005,8 @@
   // 所有公开接口通过 window.DigitalHumanPanel 暴露，
   // 同时保留原有 window.loadStep9Data 等别名确保向后兼容
   var dhPanel = {
-    loadStep9Data: function () {
-      loadHealth();
-      loadConfig();
+    loadStep9Data: async function () {
+      await Promise.all([loadHealth(), loadConfig()]);
     },
     navigateToStep: null,  // 下方赋值（需要先保存 originalNavigate）
     markEnabled: function (enabled) {
@@ -955,6 +1016,40 @@
     // 调试用：受控地暴露内部状态快照（只读）
     getStateSnapshot: function () {
       return JSON.parse(JSON.stringify(dhState));
+    },
+    waitForPendingPersistence: waitForPendingPersistence,
+    getOutputStatus: async function () {
+      await waitForPendingPersistence();
+      var pid = projectId();
+      if (!pid) return { enabled: false, canRender: true, message: "未选择项目。" };
+      var res = await API.get(
+        PROJECT_PREFIX + "/" + encodeURIComponent(pid) + "/digital-human/config",
+        { silent: true },
+      );
+      var config = (res && res.config) || {};
+      var enabled = config.enabled === true;
+      var mode = config.mode || "comfyui";
+      var full = res && res.slides && res.slides.full;
+      var sourceReady = mode === "upload"
+        ? !!(res && res.upload_video_exists)
+        : !!(full && full.video_exists && !full.video_stale);
+      var sourceLabel = mode === "upload" ? "已上传的数字人视频" : "已生成的整段数字人视频";
+      if (!enabled) {
+        return { enabled: false, canRender: true, message: "数字人未启用；本次生成 MP4 不包含数字人。" };
+      }
+      if (!sourceReady) {
+        return {
+          enabled: true,
+          canRender: false,
+          message: "数字人已启用，但" + sourceLabel + "未就绪；请先完成数字人视频准备。",
+        };
+      }
+      // 已有整段视频后由主进程本地 FFmpeg 合成，两种模式均无需 :9001。
+      return {
+        enabled: true,
+        canRender: true,
+        message: "数字人已启用，" + sourceLabel + "已就绪；本次生成 MP4 将包含数字人。",
+      };
     },
   };
 

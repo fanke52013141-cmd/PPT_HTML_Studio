@@ -53,21 +53,31 @@ def _store(tmp_path=None):
     return store, io
 
 
-def _planner(store, llm_payload):
+def _planner(store, llm_payload, *, add_schema_version=True):
     calls = []
 
     def llm_generate(**kwargs):
         calls.append(kwargs)
         if isinstance(llm_payload, Exception):
             raise llm_payload
+        if add_schema_version and isinstance(llm_payload, dict):
+            response = {"schema_version": "annotation_plan_v2", **llm_payload}
+            for suggestion in response.get("suggestions", []):
+                if isinstance(suggestion, dict):
+                    suggestion.setdefault("category", "concept")
+                    suggestion.setdefault("priority", 3)
+                    suggestion.setdefault("reason", "")
+                    suggestion.setdefault("ambiguous", False)
+            return response
         return llm_payload
 
     return AnnotationPlanner(AnnotationPlannerDependencies(prompt_store=store, llm_generate=llm_generate)), calls
 
 
 def _run(planner, tmp_path, **kwargs):
+    page = kwargs.pop("page", None)
     return planner.plan_slide(
-        str(tmp_path), "slide_001", BEATS, CANDIDATES, None,
+        str(tmp_path), "slide_001", BEATS, CANDIDATES, page,
         emphasis=kwargs.pop("emphasis", "moderate"),
         image_hash="a" * 64, narration_hash="b" * 64,
         now_iso="t0", **kwargs,
@@ -100,6 +110,7 @@ def test_valid_suggestion_becomes_ai_item(tmp_path):
     assert item.anchor.range_start == 7 and item.anchor.range_end == 12
     # 系统生成字段不在模型输出中,种子/颜色由程序填充
     assert item.style.color == "#F46A38"
+    assert item.recommendation == {"category": "concept", "priority": 3, "reason": "关键截止日期"}
     # 快照保留原始建议
     assert snapshot["suggestions"][0]["quote"] == "9月30日"
     # user payload 不含坐标
@@ -161,6 +172,22 @@ def test_duplicate_suggestion_deduped(tmp_path):
     assert len(items) == 1  # 同语块同短语只保留一条
 
 
+def test_plan_sorts_by_priority_and_applies_density_limit(tmp_path):
+    store, _ = _store()
+    suggestions = [
+        {"beat_id": "slide_001_beat_001", "range": [7, 12], "quote": "9月30日",
+         "target_candidate_ids": [f"tok_001_000{i}" for i in range(5)], "style": "ellipse", "priority": 2},
+        {"beat_id": "slide_001_beat_001", "range": [9, 12], "quote": "30日",
+         "target_candidate_ids": ["tok_001_0002", "tok_001_0003", "tok_001_0004"], "style": "underline", "priority": 1},
+        {"beat_id": "slide_001_beat_001", "range": [7, 9], "quote": "9月",
+         "target_candidate_ids": ["tok_001_0000", "tok_001_0001"], "style": "highlighter", "priority": 3},
+    ]
+    planner, _ = _planner(store, {"suggestions": suggestions})
+    items, _snapshot, issues = _run(planner, tmp_path, emphasis="moderate")
+    assert [item.anchor.quote for item in items] == ["30日", "9月30日"]
+    assert any(issue.code == "limit_exceeded" for issue in issues)
+
+
 def test_llm_failure_raises_planning_error(tmp_path):
     store, _ = _store()
     planner, _ = _planner(store, RuntimeError("upstream down"))
@@ -175,6 +202,22 @@ def test_malformed_structure_reports_not_crashes(tmp_path):
     assert items == []
     assert any(issue.code == "bad_structure" for issue in issues)
     assert snapshot["suggestions"] is None
+
+
+def test_plan_rejects_missing_or_unknown_schema_version(tmp_path):
+    store, _ = _store()
+    planner, _ = _planner(store, {"suggestions": []}, add_schema_version=False)
+    items, _snapshot, issues = _run(planner, tmp_path)
+    assert items == []
+    assert any(issue.path == "schema_version" and issue.code == "bad_version" for issue in issues)
+
+
+def test_plan_rejects_undefined_output_fields(tmp_path):
+    store, _ = _store()
+    planner, _ = _planner(store, {"suggestions": [], "debug": "unexpected"})
+    items, _snapshot, issues = _run(planner, tmp_path)
+    assert items == []
+    assert any(issue.code == "unexpected_fields" for issue in issues)
 
 
 def test_line_granularity_marks_needs_review(tmp_path):
@@ -232,8 +275,50 @@ def test_protected_items_reflect_locked_page(tmp_path):
         emphasis="weak", image_hash="a" * 64, narration_hash="b" * 64, now_iso="t0",
     )
     sent = json.loads(calls[0]["user_prompt"])
-    assert sent["protected_items"] == [{"quote": "", "style": "ellipse", "locked": True}]
+    assert sent["protected_items"] == [{
+        "quote": "", "beat_id": None, "style": "ellipse", "locked": True, "source": "manual",
+        "target_kind": "region", "target_candidate_ids": [],
+    }]
     assert sent["emphasis"] == "weak"
+
+
+def test_plan_does_not_duplicate_an_existing_ai_target(tmp_path):
+    from annotation_contracts import AnnotationItem
+
+    store, _ = _store()
+    target_ids = [f"tok_001_000{i}" for i in range(5)]
+    existing_payload = {
+        "annotation_id": "ann_001",
+        "target": {
+            "kind": "text", "layout_revision": None, "token_ids": target_ids,
+            "polygons": [candidate["polygon"] for candidate in CANDIDATES],
+            "quote": "9月30日", "granularity": "char", "mask_group_ids": [],
+        },
+        "anchor": {
+            "beat_id": "slide_001_beat_001", "offset_unit": "unicode_codepoint",
+            "range": [7, 12], "quote": "9月30日", "occurrence": 1,
+            "context_before": "", "context_after": "",
+        },
+        "style": {"type": "ellipse", "color": "#F46A38", "opacity": 0.85, "width": 5, "padding": 8, "seed": 1},
+        "timing": {"trigger_mode": "anchor_start", "offset_sec": 0, "draw_duration_sec": 0.6,
+                   "hold_mode": "beat_end", "exit_duration_sec": 0.15},
+        "status": {"content": "draft", "spatial": "valid", "temporal": "awaiting_audio"},
+        "protection": {"source": "ai", "modified_fields": [], "locked": False},
+        "inputs": {"image_hash": "a" * 64, "narration_hash": "b" * 64, "audio_hash": None},
+    }
+    parse_issues = []
+    existing = AnnotationItem.from_payload(existing_payload, parse_issues, canvas=(1920, 1080))
+    assert existing is not None and not parse_issues
+    page = AnnotationPage(slide_id="slide_001", revision=1, items=(existing,))
+    suggestion = {
+        "beat_id": "slide_001_beat_001", "range": [7, 12], "quote": "9月30日",
+        "target_candidate_ids": target_ids, "style": "ellipse", "priority": 1,
+    }
+    planner, calls = _planner(store, {"suggestions": [suggestion]})
+    items, _snapshot, issues = _run(planner, tmp_path, page=page)
+    assert items == [] and issues == []
+    sent = json.loads(calls[0]["user_prompt"])
+    assert sent["protected_items"] == []
 
 
 def test_prompt_store_builtin_and_override_roundtrip(tmp_path):
@@ -269,6 +354,24 @@ def test_compose_payload_minimal_fields():
     )
     payload = json.loads(prompts["user"])
     # 最小必要:无坐标、无多边形、无哈希、无时间字段
-    assert set(payload.keys()) == {"beats", "candidates", "protected_items", "emphasis"}
+    assert set(payload.keys()) == {"schema_version", "beats", "candidates", "protected_items", "emphasis", "max_suggestions"}
+    assert payload["schema_version"] == "annotation_plan_v2"
+    assert payload["max_suggestions"] == 2
     assert set(payload["beats"][0].keys()) == {"beat_id", "spoken_text"}
     assert set(payload["candidates"][0].keys()) == {"token_id", "text", "granularity"}
+
+
+def test_prompt_store_uses_creation_package_prompt_before_builtin_and_project_override_last():
+    store, io = _store()
+    package_path = "run1/planning/project_config.json"
+    store = AnnotationPromptStore(
+        read_json_file=io.read,
+        write_json_atomic=io.write,
+        prompts_path_for=lambda run_dir: f"{run_dir}/planning/annotation_prompts.json",
+        project_config_path_for=lambda run_dir: f"{run_dir}/planning/project_config.json",
+    )
+    io.files[package_path] = {"payload": {"prompts": {"annotation_planning": {"system_content": "创作包重点识别规则"}}}}
+    prompt, source = store.effective_system_prompt("run1")
+    assert (prompt, source) == ("创作包重点识别规则", "creation_package")
+    store.save_override("run1", "项目单独覆盖", expected_revision=None, now_iso="t1")
+    assert store.effective_system_prompt("run1") == ("项目单独覆盖", "project")

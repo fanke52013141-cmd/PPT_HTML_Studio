@@ -90,6 +90,8 @@ def _run_subprocess_safe(
         timeout_sec=float(timeout),
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         cwd=cwd,
     )
     if result.returncode == 124:
@@ -566,11 +568,15 @@ def composite_circle(
         )
 
     if base_video is not None:
-        # 以主视频时长为基准：去掉 overlay 的 shortest 与输出级 -shortest，
-        # 避免上传的数字人视频比整课短时把整段课程截断
+        # Keep the lesson's full duration when the presenter is shorter, while
+        # preventing a longer uploaded presenter from extending the lesson.
+        base_duration = _probe_duration_sec(base_video)
+        if base_duration <= 0:
+            raise RuntimeError("无法读取课程视频时长，数字人合成已停止。")
         fc = f"{digi_filter};[1:v][digi]overlay={x}:{y}[v]"
         cmd = ["ffmpeg", "-y", "-i", str(digi_video), "-i", str(base_video),
                "-filter_complex", fc, "-map", "[v]", "-map", "1:a?",
+               "-t", f"{base_duration:.6f}",
                "-c:v", "libx264", "-preset", "medium", "-crf", "20",
                "-c:a", "aac", "-movflags", "+faststart", str(output)]
     else:

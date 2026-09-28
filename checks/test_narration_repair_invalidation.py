@@ -66,7 +66,13 @@ def _make_project(tmp_path: Path) -> SimpleNamespace:
     (tmp_path / "planning" / "narration_beats.json").write_text(
         '{"beats": []}', encoding="utf-8"
     )
-    return SimpleNamespace(id="repair-test", run_dir=str(tmp_path))
+    statuses = {str(step): "completed" for step in range(1, 9)}
+    return SimpleNamespace(
+        id="repair-test",
+        run_dir=str(tmp_path),
+        get_step_status=lambda: dict(statuses),
+        set_step_status=lambda value: statuses.update(value),
+    )
 
 
 _INJECTED_NAMES = (

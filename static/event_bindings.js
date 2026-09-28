@@ -1,6 +1,10 @@
 // DOM startup and page-level event registration.
 // Load this after every core workflow module so all handlers exist before DOMContentLoaded.
 
+function navigateToStepForReview(step) {
+  return navigateToStep(step);
+}
+
 // 首次加载初始化
 document.addEventListener('DOMContentLoaded', () => {
   initGlobalEvents();
@@ -81,19 +85,7 @@ function initGlobalEvents() {
   stepItems.forEach(item => {
     item.addEventListener('click', () => {
       const step = parseInt(item.dataset.step);
-      const stepStatus = state.currentProject.step_status;
-      const currentStep = state.currentProject.current_step;
-      const isUnlocked = isVisibleStepUnlocked(
-        step,
-        stepStatus,
-        currentStep,
-        projectFlowContext()
-      );
-      if (isUnlocked) {
-        navigateToStep(step);
-      } else {
-        showToast(`⚠️ 请先完成前序步骤再进入“${visibleStepLabel(step)}”`);
-      }
+      if (state.currentProject) navigateToStepForReview(step);
     });
   });
 
@@ -192,9 +184,9 @@ function initGlobalEvents() {
   document.getElementById('step6-btn-save-and-tts')?.addEventListener('click', () => saveNarrationAndRunTTS());
   document.getElementById('step6-btn-audio-confirm-next')?.addEventListener('click', async () => {
     const confirmed = await confirmStep7Audio();
-    // 数字人功能未启用时不存在 step-panel-9，确认后应直接进入作品输出（可见步骤 8）。
-    if (confirmed) navigateToStep(window.__dhEnabled === true ? 9 : 8);
+    if (confirmed) navigateToStep(10);
   });
+  document.getElementById('step10-btn-next')?.addEventListener('click', () => navigateToStep(9));
   document.getElementById('step9-btn-skip')?.addEventListener('click', () => navigateToStep(8));
 
   // 步骤 7 后端能力已合并到可见步骤 6
@@ -260,11 +252,17 @@ function initAnnotationWorkspaceEvents() {
     window.setAnnotationsEnabled?.(enabledToggle.checked);
   });
 
-  document.getElementById('annotation-btn-goto-images')?.addEventListener('click', () => navigateToStep(3));
-  document.getElementById('annotation-btn-goto-narration')?.addEventListener('click', () => navigateToStep(6));
+  document.getElementById('annotation-btn-goto-images')?.addEventListener('click', () => navigateToStepForReview(3));
+  document.getElementById('annotation-btn-goto-narration')?.addEventListener('click', () => navigateToStepForReview(6));
 
   document.getElementById('annotation-btn-region')?.addEventListener('click', () => {
-    window.setAnnotationRegionMode?.(!document.getElementById('annotation-btn-region').classList.contains('active'));
+    const active = document.getElementById('annotation-btn-region').classList.contains('active');
+    window.setAnnotationDrawMode?.(active ? null : 'region');
+  });
+  document.getElementById('annotation-btn-select')?.addEventListener('click', () => window.setAnnotationDrawMode?.(null));
+  document.getElementById('annotation-btn-freehand')?.addEventListener('click', () => {
+    const active = document.getElementById('annotation-btn-freehand').classList.contains('active');
+    window.setAnnotationDrawMode?.(active ? null : 'freehand');
   });
   document.getElementById('annotation-btn-detect')?.addEventListener('click', () => {
     window.submitAnnotationJob?.('detect_text');
@@ -272,18 +270,24 @@ function initAnnotationWorkspaceEvents() {
   document.getElementById('annotation-btn-ai-plan')?.addEventListener('click', () => {
     window.submitAnnotationJob?.('plan');
   });
+  document.getElementById('annotation-ai-emphasis')?.addEventListener('change', event => {
+    window.setAnnotationEmphasis?.(event.target.value);
+  });
   document.getElementById('annotation-btn-undo')?.addEventListener('click', () => window.undoAnnotationEdit?.());
   document.getElementById('annotation-btn-redo')?.addEventListener('click', () => window.redoAnnotationEdit?.());
 
   const canvasFrame = document.getElementById('annotation-canvas-frame');
   canvasFrame?.addEventListener('pointerdown', event => {
-    if (typeof handleAnnotationRegionPointerDown === 'function') handleAnnotationRegionPointerDown(event);
+    if (typeof handleAnnotationDrawPointerDown === 'function') handleAnnotationDrawPointerDown(event);
   });
   canvasFrame?.addEventListener('pointermove', event => {
-    if (typeof handleAnnotationRegionPointerMove === 'function') handleAnnotationRegionPointerMove(event);
+    if (typeof handleAnnotationDrawPointerMove === 'function') handleAnnotationDrawPointerMove(event);
   });
   canvasFrame?.addEventListener('pointerup', event => {
-    if (typeof handleAnnotationRegionPointerUp === 'function') handleAnnotationRegionPointerUp(event);
+    if (typeof handleAnnotationDrawPointerUp === 'function') handleAnnotationDrawPointerUp(event);
+  });
+  canvasFrame?.addEventListener('pointercancel', event => {
+    if (typeof handleAnnotationDrawPointerCancel === 'function') handleAnnotationDrawPointerCancel(event);
   });
 
   document.addEventListener('keydown', event => {

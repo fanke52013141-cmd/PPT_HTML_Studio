@@ -166,6 +166,11 @@
   cursor: crosshair;
 }
 
+.annotation-canvas-frame.freehand-mode {
+  cursor: crosshair;
+  touch-action: none;
+}
+
 .annotation-canvas-overlay {
   position: absolute;
   inset: 0;
@@ -193,12 +198,30 @@
 .annotation-canvas-toolbar {
   margin-top: 0.6rem;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .annotation-canvas-toolbar .active {
   background: #f46a38;
   color: #fff;
+}
+
+.annotation-tool-style {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #4b5563;
+  font-size: 0.82rem;
+}
+
+.annotation-tool-style select {
+  min-height: 2.2rem;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  padding: 0.25rem 0.45rem;
+  background: #fff;
 }
 
 .annotation-narration-beats {
@@ -279,6 +302,13 @@
   color: #4b5563;
   font-size: 0.85rem;
   margin: 0.25rem 0;
+}
+
+.annotation-recommendation {
+  margin-top: 0.25rem;
+  color: #8a431e;
+  font-size: 0.8rem;
+  line-height: 1.45;
 }
 
 .annotation-card-status {

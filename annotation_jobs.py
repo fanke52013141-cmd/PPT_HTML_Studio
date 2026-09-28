@@ -71,6 +71,15 @@ class AnnotationJobManager:
         self._cancel_flags: Dict[str, threading.Event] = {}
         self._lock = threading.Lock()
 
+    def _canvas_for(self, project: Any) -> Tuple[int, int]:
+        profile_id = getattr(project, "canvas_profile", None)
+        if not profile_id:
+            return tuple(self._deps.canvas)
+        from canvas_profile_service import get_project_canvas
+
+        canvas = get_project_canvas(project)
+        return int(canvas["width"]), int(canvas["height"])
+
     # ------------------------------------------------------------ 提交
 
     def submit_detect(
@@ -236,8 +245,9 @@ class AnnotationJobManager:
                 return
             # ---- 短锁 1:读取输入快照(页面 revision、图像/讲稿哈希) ----
             project = self._project(project_id)
+            canvas = self._canvas_for(project)
             with self._deps.lock_for(project):
-                page = annotation_store.read_page(run_dir, slide_id, canvas=self._deps.canvas)
+                page = annotation_store.read_page(run_dir, slide_id, canvas=canvas)
                 page_revision = page.revision if page else 0
                 image_bytes = self._read_image(run_dir, slide_id)
                 image_hash = hashlib.sha256(image_bytes).hexdigest() if image_bytes else None
@@ -255,7 +265,9 @@ class AnnotationJobManager:
             ]
             from annotation_text_layout import candidate_tokens
 
-            emphasis = "moderate"
+            settings = annotation_store.read_settings(run_dir)
+            configured_emphasis = settings.defaults.get("emphasis") if settings else None
+            emphasis = configured_emphasis if configured_emphasis in ("weak", "moderate", "strong") else "moderate"
             try:
                 items, snapshot, issues = planner.plan_slide(
                     run_dir,
@@ -277,7 +289,7 @@ class AnnotationJobManager:
 
             # ---- 短锁 2:发布前复核输入版本与页面 revision ----
             with self._deps.lock_for(project):
-                current_page = annotation_store.read_page(run_dir, slide_id, canvas=self._deps.canvas)
+                current_page = annotation_store.read_page(run_dir, slide_id, canvas=canvas)
                 current_revision = current_page.revision if current_page else 0
                 current_image = self._read_image(run_dir, slide_id)
                 current_image_hash = hashlib.sha256(current_image).hexdigest() if current_image else None

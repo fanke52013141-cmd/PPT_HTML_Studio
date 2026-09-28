@@ -21,8 +21,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from annotation_alignment import read_beat_spans  # noqa: E402
-from annotation_contracts import AnnotationPage  # noqa: E402
-from annotation_geometry import FragmentInput, GeometryInputV2, build_strokes_v2  # noqa: E402
+from annotation_contracts import DEFAULT_CANVAS, AnnotationPage  # noqa: E402
+from annotation_geometry import FragmentInput, GeometryInputV2, build_manual_path_stroke, build_strokes_v2  # noqa: E402
 from annotation_store import AnnotationStore, AnnotationStoreDependencies  # noqa: E402
 from annotation_target_resolver import resolve_phrase_target  # noqa: E402
 from annotation_text_layout import TextLayoutBuilder, TextLayoutDependencies  # noqa: E402
@@ -42,6 +42,18 @@ def _sha256(path: Path) -> str | None:
         return None
 
 
+def _read_canvas(run_dir: Path) -> tuple[int, int]:
+    profile_path = run_dir / "planning" / "canvas_profile.json"
+    try:
+        profile = _read_json(profile_path)
+        width, height = int(profile["width"]), int(profile["height"])
+        if width > 0 and height > 0:
+            return width, height
+    except (KeyError, TypeError, ValueError, OSError, json.JSONDecodeError):
+        pass
+    return DEFAULT_CANVAS
+
+
 def _read_layout(run_dir: Path, slide_id: str) -> dict | None:
     deps = TextLayoutDependencies(
         write_json_atomic=write_json_atomic,
@@ -55,14 +67,21 @@ def _read_layout(run_dir: Path, slide_id: str) -> dict | None:
         return None
 
 
-def _fragment_items(run_dir: Path, slide_id: str, page: AnnotationPage) -> list:
+def _fragment_items(run_dir: Path, slide_id: str, page: AnnotationPage, canvas=DEFAULT_CANVAS) -> list:
     """按条目解析片段(R2 短语合并/跨行拆分)并生成 v2 手写笔迹。"""
     layout = _read_layout(run_dir, slide_id)
     items: list = []
     for item in page.items:
         if item.status.content == "disabled":
             continue
-        if item.target.kind == "text" and item.target.token_ids:
+        strokes = None
+        if item.target.path_points:
+            strokes = [build_manual_path_stroke(
+                item.target.path_points,
+                style_type=item.style.type,
+                width=item.style.width,
+            )]
+        elif item.target.kind == "text" and item.target.token_ids:
             if layout is None:
                 raise SystemExit(f"页面 {slide_id} 缺少 text_layout.json;先运行文字识别")
             resolution = resolve_phrase_target(
@@ -91,14 +110,15 @@ def _fragment_items(run_dir: Path, slide_id: str, page: AnnotationPage) -> list:
                 )
                 for poly in item.target.polygons
             ]
-        strokes = build_strokes_v2(GeometryInputV2(fragments=tuple(fragments)))
+        if strokes is None:
+            strokes = build_strokes_v2(GeometryInputV2(fragments=tuple(fragments)))
         ink_dir_root = Path(slide_dir_fn(str(run_dir), slide_id)) / "annotation_ink" / item.annotation_id
-        strokes = _attach_ink(strokes, ink_dir_root, item, annotation_id=item.annotation_id)
+        strokes = _attach_ink(strokes, ink_dir_root, item, annotation_id=item.annotation_id, canvas=canvas)
         items.append(_ItemWithStrokes(item, strokes))
     return items
 
 
-def _attach_ink(strokes, ink_dir_root, item, *, annotation_id):
+def _attach_ink(strokes, ink_dir_root, item, *, annotation_id, canvas=DEFAULT_CANVAS):
     """为每笔渲染栅格墨迹帧(位图,视频不再走 SVG 路径)。"""
     from annotation_ink import InkRequest, render_and_write
 
@@ -108,9 +128,9 @@ def _attach_ink(strokes, ink_dir_root, item, *, annotation_id):
         request = InkRequest(
             points=tuple(map(tuple, stroke["points"])),
             width_profile=tuple(stroke["width_profile"]),
-            canvas=(1920, 1080),
-            color=(196, 62, 28),
-            base_width=float(brush) if brush else 5.0,
+            canvas=canvas,
+            color=tuple(int(item.style.color[index:index + 2], 16) for index in (1, 3, 5)),
+            base_width=float(brush) if brush else float(item.style.width),
             opacity=item.style.opacity,
             seed=item.style.seed + index * 733,
             closed=stroke.get("closed", False),
@@ -126,7 +146,8 @@ def _attach_ink(strokes, ink_dir_root, item, *, annotation_id):
 
 def build_slide_timeline(run_dir: Path, slide_id: str) -> tuple[dict, list]:
     store = AnnotationStore(AnnotationStoreDependencies(write_json_atomic=write_json_atomic))
-    page = store.read_page(str(run_dir), slide_id, canvas=(1920, 1080))
+    canvas = _read_canvas(run_dir)
+    page = store.read_page(str(run_dir), slide_id, canvas=canvas)
     if page is None or not page.items:
         raise SystemExit(f"页面 {slide_id} 没有勾画条目;时间轴未构建")
 
@@ -144,11 +165,12 @@ def build_slide_timeline(run_dir: Path, slide_id: str) -> tuple[dict, list]:
     beat_times = {span.beat_id: (span.start_sec, span.end_sec) for span in spans}
     slide_duration = float(audio_timeline.get("audio_content_duration_sec") or audio_timeline.get("duration_sec") or 0.0)
 
-    events_items = _fragment_items(run_dir, slide_id, page)
+    events_items = _fragment_items(run_dir, slide_id, page, canvas=canvas)
 
     payload, issues = build_annotation_timeline(
         slide_id=slide_id,
         items=events_items,
+        canvas=canvas,
         beat_times=beat_times,
         slide_duration=slide_duration,
         image_hash=_sha256(slide_dir / "visual_draft.png"),

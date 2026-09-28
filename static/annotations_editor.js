@@ -3,9 +3,11 @@
 // 服务端操作协议见 annotation_routes(PATCH operations)。
 
 const ANNOTATIONS_ED = {
-  regionMode: false,
+  drawMode: null,
   regionStart: null,
   regionGhost: null,
+  freehandPoints: [],
+  freehandGhost: null,
   editorTimer: null,
 };
 
@@ -13,6 +15,10 @@ const ANNOTATIONS_ED = {
 
 function fallbackStrokeFor(item) {
   // 服务端笔迹缺位时的兜底(仅编辑可见性;导出仍以服务端为准)
+  const manualPath = item.target?.path_points;
+  if (Array.isArray(manualPath) && manualPath.length >= 2) {
+    return [{ kind: 'polyline', points: manualPath }];
+  }
   const polygons = item.target?.polygons || [];
   const bounds = AnnotationsCore.polygonBounds(polygons);
   if (!bounds) return [];
@@ -95,58 +101,119 @@ function renderAnnotationOverlay() {
   });
 }
 
-// ------------------------------------------------------------ 区域框选
+// ------------------------------------------------------------ 手工绘制
 
-function setAnnotationRegionMode(enabled) {
-  ANNOTATIONS_ED.regionMode = enabled === true;
+function setAnnotationDrawMode(mode) {
+  ANNOTATIONS_ED.drawMode = mode === 'region' || mode === 'freehand' ? mode : null;
   const frame = document.getElementById('annotation-canvas-frame');
-  const button = document.getElementById('annotation-btn-region');
-  if (frame) frame.classList.toggle('region-mode', ANNOTATIONS_ED.regionMode);
-  if (button) button.classList.toggle('active', ANNOTATIONS_ED.regionMode);
+  const regionButton = document.getElementById('annotation-btn-region');
+  const freehandButton = document.getElementById('annotation-btn-freehand');
+  if (frame) {
+    frame.classList.toggle('region-mode', ANNOTATIONS_ED.drawMode === 'region');
+    frame.classList.toggle('freehand-mode', ANNOTATIONS_ED.drawMode === 'freehand');
+  }
+  if (regionButton) regionButton.classList.toggle('active', ANNOTATIONS_ED.drawMode === 'region');
+  if (freehandButton) freehandButton.classList.toggle('active', ANNOTATIONS_ED.drawMode === 'freehand');
 }
 
-function handleAnnotationRegionPointerDown(event) {
-  if (!ANNOTATIONS_ED.regionMode || event.button !== 0) return;
+function annotationCanvasPoint(event) {
+  const image = document.getElementById('annotation-canvas-image');
+  if (!image) return null;
+  const geometry = getProjectCanvasGeometry();
+  return PPTFlow.mapClientPointToCanvas(
+    event.clientX, event.clientY, image.getBoundingClientRect(), geometry.width, geometry.height,
+  );
+}
+
+function limitAnnotationPathPoints(points, limit = 512) {
+  if (points.length <= limit) return points;
+  const stride = (points.length - 1) / (limit - 1);
+  return Array.from({ length: limit }, (_value, index) => points[Math.round(index * stride)]);
+}
+
+function handleAnnotationDrawPointerDown(event) {
+  if (!ANNOTATIONS_ED.drawMode || event.button !== 0) return;
   event.preventDefault();
   const frame = document.getElementById('annotation-canvas-frame');
   const image = document.getElementById('annotation-canvas-image');
   if (!frame || !image) return;
-  const geometry = getProjectCanvasGeometry();
-  const point = PPTFlow.mapClientPointToCanvas(event.clientX, event.clientY, image.getBoundingClientRect(), geometry.width, geometry.height);
-  ANNOTATIONS_ED.regionStart = point;
+  const point = annotationCanvasPoint(event);
+  if (!point) return;
+  if (ANNOTATIONS_ED.drawMode === 'freehand') {
+    ANNOTATIONS_ED.freehandPoints = [[Math.round(point.x), Math.round(point.y)]];
+    ANNOTATIONS_ED.freehandGhost = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    ANNOTATIONS_ED.freehandGhost.setAttribute('fill', 'none');
+    ANNOTATIONS_ED.freehandGhost.setAttribute('stroke', '#f46a38');
+    ANNOTATIONS_ED.freehandGhost.setAttribute('stroke-width', '8');
+    ANNOTATIONS_ED.freehandGhost.setAttribute('stroke-linecap', 'round');
+    ANNOTATIONS_ED.freehandGhost.setAttribute('stroke-linejoin', 'round');
+    ANNOTATIONS_ED.freehandGhost.setAttribute('opacity', '0.9');
+    document.getElementById('annotation-canvas-overlay')?.append(ANNOTATIONS_ED.freehandGhost);
+  } else {
+    ANNOTATIONS_ED.regionStart = point;
+  }
+  frame.setPointerCapture?.(event.pointerId);
   const ghost = document.getElementById('annotation-region-ghost');
-  if (ghost) {
+  if (ghost && ANNOTATIONS_ED.drawMode === 'region') {
     ghost.style.display = 'block';
     ghost.style.left = '0px';
     ghost.style.top = '0px';
     ghost.style.width = '0px';
     ghost.style.height = '0px';
   }
-  ANNOTATIONS_ED.regionGhost = ghost;
-  frame.setPointerCapture?.(event.pointerId);
+  ANNOTATIONS_ED.regionGhost = ANNOTATIONS_ED.drawMode === 'region' ? ghost : null;
 }
 
-function handleAnnotationRegionPointerMove(event) {
-  if (!ANNOTATIONS_ED.regionMode || !ANNOTATIONS_ED.regionStart) return;
+function handleAnnotationDrawPointerMove(event) {
+  if (!ANNOTATIONS_ED.drawMode) return;
   const image = document.getElementById('annotation-canvas-image');
+  if (!image) return;
+  const point = annotationCanvasPoint(event);
+  if (!point) return;
+  if (ANNOTATIONS_ED.drawMode === 'freehand' && ANNOTATIONS_ED.freehandGhost) {
+    const points = ANNOTATIONS_ED.freehandPoints;
+    const previous = points[points.length - 1];
+    if (!previous || Math.hypot(point.x - previous[0], point.y - previous[1]) >= 4) {
+      points.push([Math.round(point.x), Math.round(point.y)]);
+      if (points.length > 512) {
+        ANNOTATIONS_ED.freehandPoints = limitAnnotationPathPoints(points);
+      }
+    }
+    ANNOTATIONS_ED.freehandGhost.setAttribute('points', ANNOTATIONS_ED.freehandPoints.map(p => p.join(',')).join(' '));
+    return;
+  }
   const ghost = ANNOTATIONS_ED.regionGhost;
-  if (!image || !ghost) return;
+  if (ANNOTATIONS_ED.drawMode !== 'region' || !ANNOTATIONS_ED.regionStart || !ghost) return;
   const geometry = getProjectCanvasGeometry();
-  const point = PPTFlow.mapClientPointToCanvas(event.clientX, event.clientY, image.getBoundingClientRect(), geometry.width, geometry.height);
   const rect = image.getBoundingClientRect();
   const scaleX = rect.width / geometry.width;
   const scaleY = rect.height / geometry.height;
-  const left = Math.min(ANNOTATIONS_ED.regionStart.x, point.x) * scaleX;
-  const top = Math.min(ANNOTATIONS_ED.regionStart.y, point.y) * scaleY;
-  ghost.style.left = `${left}px`;
-  ghost.style.top = `${top}px`;
+  const boxLeft = Math.min(ANNOTATIONS_ED.regionStart.x, point.x) * scaleX;
+  const boxTop = Math.min(ANNOTATIONS_ED.regionStart.y, point.y) * scaleY;
+  ghost.style.left = `${boxLeft}px`;
+  ghost.style.top = `${boxTop}px`;
   ghost.style.width = `${Math.abs(point.x - ANNOTATIONS_ED.regionStart.x) * scaleX}px`;
   ghost.style.height = `${Math.abs(point.y - ANNOTATIONS_ED.regionStart.y) * scaleY}px`;
 }
 
-function handleAnnotationRegionPointerUp(event) {
-  if (!ANNOTATIONS_ED.regionMode || !ANNOTATIONS_ED.regionStart) return;
+function handleAnnotationDrawPointerUp(event) {
+  if (!ANNOTATIONS_ED.drawMode) return;
   const image = document.getElementById('annotation-canvas-image');
+  if (ANNOTATIONS_ED.drawMode === 'freehand') {
+    if (ANNOTATIONS_ED.freehandGhost) ANNOTATIONS_ED.freehandGhost.remove();
+    ANNOTATIONS_ED.freehandGhost = null;
+    const points = ANNOTATIONS_ED.freehandPoints;
+    ANNOTATIONS_ED.freehandPoints = [];
+    const finalPoint = annotationCanvasPoint(event);
+    if (finalPoint) points.push([Math.round(finalPoint.x), Math.round(finalPoint.y)]);
+    if (points.length < 2 || new Set(points.map(point => point.join(','))).size < 2) {
+      showToast('笔迹太短，请再画一次。');
+      return;
+    }
+    addAnnotationFreehand(limitAnnotationPathPoints(points));
+    return;
+  }
+  if (!ANNOTATIONS_ED.regionStart) return;
   const ghost = ANNOTATIONS_ED.regionGhost;
   if (ghost) ghost.style.display = 'none';
   ANNOTATIONS_ED.regionGhost = null;
@@ -154,7 +221,8 @@ function handleAnnotationRegionPointerUp(event) {
   ANNOTATIONS_ED.regionStart = null;
   if (!image) return;
   const geometry = getProjectCanvasGeometry();
-  const point = PPTFlow.mapClientPointToCanvas(event.clientX, event.clientY, image.getBoundingClientRect(), geometry.width, geometry.height);
+  const point = annotationCanvasPoint(event);
+  if (!point) return;
   const polygon = AnnotationsCore.rectangleToPolygon(start, point, geometry);
   if (!polygon) {
     showToast('选区太小,请拖出更大的区域。');
@@ -163,13 +231,22 @@ function handleAnnotationRegionPointerUp(event) {
   addAnnotationRegion(polygon);
 }
 
+function handleAnnotationDrawPointerCancel() {
+  ANNOTATIONS_ED.freehandGhost?.remove();
+  ANNOTATIONS_ED.freehandGhost = null;
+  ANNOTATIONS_ED.freehandPoints = [];
+  ANNOTATIONS_ED.regionStart = null;
+  if (ANNOTATIONS_ED.regionGhost) ANNOTATIONS_ED.regionGhost.style.display = 'none';
+  ANNOTATIONS_ED.regionGhost = null;
+}
+
 function addAnnotationRegion(polygon) {
   const defaults = ANNOTATIONS_WS.summary?.settings?.defaults || {};
   const item = {
     target: AnnotationsCore.buildRegionTarget(polygon),
     anchor: null,
     style: {
-      type: defaults.type || 'ellipse',
+      type: document.getElementById('annotation-new-style')?.value || defaults.type || 'ellipse',
       color: defaults.color || '#F46A38',
       opacity: Number(defaults.opacity ?? 0.85),
       width: Number(defaults.width || 5),
@@ -177,10 +254,11 @@ function addAnnotationRegion(polygon) {
       seed: Math.floor(Math.random() * 2147483647),
     },
     timing: {
-      trigger_mode: 'anchor_start',
+      trigger_mode: 'manual',
       offset_sec: 0,
+      manual_start_sec: 0,
       draw_duration_sec: Number(defaults.draw_duration_sec || 0.6),
-      hold_mode: 'beat_end',
+      hold_mode: 'slide_end',
       exit_duration_sec: Number(defaults.exit_duration_sec || 0.15),
     },
   };
@@ -192,7 +270,67 @@ function addAnnotationRegion(polygon) {
   renderAnnotationOverlay();
   // 选中新条目(本地临时 id 在保存成功后被服务端 id 替换,此处选最后一项)
   selectAnnotationItem(ANNOTATIONS_WS.page.items[lastIndex].annotation_id);
-  showToast('已添加区域标注;可在右侧调整样式,并到讲稿中选中短语关联。');
+  setAnnotationDrawMode(null);
+  showToast('已添加区域标注，默认从本页开始显示；可在右侧调整样式和出现时间。');
+}
+
+function addAnnotationFreehand(points) {
+  const xs = points.map(point => point[0]);
+  const ys = points.map(point => point[1]);
+  let left = Math.min(...xs);
+  let top = Math.min(...ys);
+  let right = Math.max(...xs);
+  let bottom = Math.max(...ys);
+  if (right - left < 1 && bottom - top < 1) {
+    showToast('笔迹范围太小，请画出更明显的轨迹。');
+    return;
+  }
+  const geometry = getProjectCanvasGeometry();
+  if (right - left < 1) {
+    if (right >= geometry.width) left = right - 1;
+    else right = left + 1;
+  }
+  if (bottom - top < 1) {
+    if (bottom >= geometry.height) top = bottom - 1;
+    else bottom = top + 1;
+  }
+  const item = buildManualRegionItem([
+    [left, top], [right, top], [right, bottom], [left, bottom],
+  ]);
+  item.target.path_points = points.slice(-512);
+  pushAnnotationHistory();
+  ANNOTATIONS_WS.page.items.push({ ...item, annotation_id: `local_${Date.now()}` });
+  queueAnnotationSave(AnnotationsCore.buildAddOperation(item));
+  renderAnnotationItems();
+  renderAnnotationOverlay();
+  const lastItem = ANNOTATIONS_WS.page.items[ANNOTATIONS_WS.page.items.length - 1];
+  selectAnnotationItem(lastItem.annotation_id);
+  setAnnotationDrawMode(null);
+  showToast('自由笔迹已保存，默认从本页开始显示。');
+}
+
+function buildManualRegionItem(polygon) {
+  const defaults = ANNOTATIONS_WS.summary?.settings?.defaults || {};
+  return {
+    target: { ...AnnotationsCore.buildRegionTarget(polygon), path_points: [] },
+    anchor: null,
+    style: {
+      type: document.getElementById('annotation-new-style')?.value || defaults.type || 'ellipse',
+      color: defaults.color || '#F46A38',
+      opacity: Number(defaults.opacity ?? 0.85),
+      width: Number(defaults.width || 5),
+      padding: Number(defaults.padding || 8),
+      seed: Math.floor(Math.random() * 2147483647),
+    },
+    timing: {
+      trigger_mode: 'manual',
+      offset_sec: 0,
+      manual_start_sec: 0,
+      draw_duration_sec: Number(defaults.draw_duration_sec || 0.6),
+      hold_mode: 'slide_end',
+      exit_duration_sec: Number(defaults.exit_duration_sec || 0.15),
+    },
+  };
 }
 
 // ------------------------------------------------------------ 讲稿关联
@@ -210,8 +348,11 @@ function annotationNarrationAnchorPicked(anchor) {
   }
   pushAnnotationHistory();
   const index = ANNOTATIONS_WS.page.items.indexOf(item);
-  ANNOTATIONS_WS.page.items[index] = { ...item, anchor };
-  queueAnnotationSave(AnnotationsCore.buildUpdateOperation(item.annotation_id, { anchor }));
+  const timing = { ...item.timing, trigger_mode: 'anchor_start' };
+  delete timing.manual_start_sec;
+  if (timing.hold_mode === 'slide_end') timing.hold_mode = 'beat_end';
+  ANNOTATIONS_WS.page.items[index] = { ...item, anchor, timing };
+  queueAnnotationSave(AnnotationsCore.buildUpdateOperation(item.annotation_id, { anchor, timing }));
   renderAnnotationItems();
   renderAnnotationNarrationHighlights();
   showToast(`已关联讲稿:"${anchor.quote}"`);
@@ -241,6 +382,16 @@ function renderAnnotationItemEditor() {
   editor.style.display = 'block';
   editor.innerHTML = `
     <div class="annotation-editor-title">属性 · ${escHtml(item.annotation_id)}</div>
+    <label class="annotation-field">出现方式
+      <select id="annotation-edit-trigger-mode">
+        <option value="manual"${timing.trigger_mode === 'manual' ? ' selected' : ''}>本页指定时间</option>
+        <option value="anchor_start"${timing.trigger_mode === 'anchor_start' ? ' selected' : ''}${item.anchor ? '' : ' disabled'}>跟随讲稿关联</option>
+      </select>
+    </label>
+    <label class="annotation-field annotation-manual-start${timing.trigger_mode === 'manual' ? '' : ' hidden'}">出现时间(秒)
+      <input type="number" id="annotation-edit-timing-start" min="0" max="3600" step="0.1" value="${Number(timing.manual_start_sec || 0)}">
+      <small>从本页音频开始计时；0 表示本页开始。</small>
+    </label>
     <label class="annotation-field">样式
       <select id="annotation-edit-style-type">
         <option value="ellipse"${style.type === 'ellipse' ? ' selected' : ''}>手写圈</option>
@@ -366,6 +517,33 @@ function bindAnnotationEditorEvents(annotationId) {
         return { timing };
       });
     });
+  });
+
+  const triggerMode = editor.querySelector('#annotation-edit-trigger-mode');
+  triggerMode?.addEventListener('change', () => {
+    const item = annotationSelectedItem();
+    if (!item) return;
+    if (triggerMode.value === 'anchor_start' && !item.anchor) {
+      showToast('请先在“讲稿关联”中选中要关联的短语。');
+      triggerMode.value = 'manual';
+      return;
+    }
+    pushAnnotationHistory();
+    const timing = { ...item.timing, trigger_mode: triggerMode.value };
+    if (triggerMode.value === 'manual') {
+      timing.manual_start_sec = Number(item.timing.manual_start_sec || 0);
+      if (!item.anchor && timing.hold_mode === 'beat_end') timing.hold_mode = 'slide_end';
+    } else {
+      delete timing.manual_start_sec;
+      if (timing.hold_mode === 'slide_end') timing.hold_mode = 'beat_end';
+    }
+    queueAnnotationItemPatch(annotationId, { timing });
+    renderAnnotationItemEditor();
+  });
+  editor.querySelector('#annotation-edit-timing-start')?.addEventListener('change', event => {
+    scheduleAnnotationStyleCommit(annotationId, item => ({
+      timing: { ...item.timing, manual_start_sec: Math.max(0, Number(event.target.value) || 0) },
+    }));
   });
 
   const hold = editor.querySelector('#annotation-edit-timing-hold');
@@ -503,9 +681,13 @@ function annotationEditorKeyboardHandler(event) {
 
 window.renderAnnotationOverlay = renderAnnotationOverlay;
 window.renderAnnotationItemEditor = renderAnnotationItemEditor;
-window.setAnnotationRegionMode = setAnnotationRegionMode;
+window.setAnnotationDrawMode = setAnnotationDrawMode;
+window.setAnnotationRegionMode = enabled => setAnnotationDrawMode(enabled ? 'region' : null);
 window.annotationNarrationAnchorPicked = annotationNarrationAnchorPicked;
 window.undoAnnotationEdit = undoAnnotationEdit;
 window.redoAnnotationEdit = redoAnnotationEdit;
 window.annotationEditorKeyboardHandler = annotationEditorKeyboardHandler;
 window.addAnnotationRegion = addAnnotationRegion;
+window.handleAnnotationDrawPointerDown = handleAnnotationDrawPointerDown;
+window.handleAnnotationDrawPointerMove = handleAnnotationDrawPointerMove;
+window.handleAnnotationDrawPointerUp = handleAnnotationDrawPointerUp;

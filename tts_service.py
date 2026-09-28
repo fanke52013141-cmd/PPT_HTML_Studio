@@ -1045,6 +1045,9 @@ def synthesize_tts_resumable(project_id: str, db: Session):
             generated_slides.append(slide_id)
 
     generated_slides.sort(key=slide_ids.index)
+    if generated_slides:
+        invalidation_service.audio_artifacts_changed(project, generated_slides)
+        db.commit()
 
     if failed_slides:
         mark_step_retry_needed(project, 7, db)

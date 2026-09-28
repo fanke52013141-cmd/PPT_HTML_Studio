@@ -19,23 +19,24 @@ fallback, response cleanup/repair, timeout translation, logging, and client
 closure. `storyboard_service.py` owns only the configured wrapper and vendor
 selection; keep direct model-client calls out of it.
 
-The application has six mandatory user-visible steps plus one optional step:
+The workspace shows eight numbered steps; digital human is optional, and
+annotation completion follows its saved decision state:
 
 1. Import an article or generate one from a topic.
 2. Plan article-to-slide and slide-to-visualization output.
-3. Configure image style/background and generate or upload one 1920×1080 image per slide.
+3. Configure image style/background and generate or upload images in the project's selected canvas ratio.
 4. Run automatic multimodal AI Mask annotation.
 5. Edit narration, generate audio, and confirm audio.
-6. Export and manage videos or image-only PPTX presentations.
+6. Review and decide whether to use handwritten annotations.
+7. Optionally configure a digital-human presenter.
+8. Export and manage videos or image-only PPTX presentations.
 
-The UI additionally shows an optional Step 9 "数字人讲解" (digital-human
-presenter) between Step 5 and Step 6 when the digital-human feature is
-enabled; it never blocks Step 6 and does not count toward required progress.
+The optional digital-human step keeps its visible Step 7 position even when
+disabled and never blocks Step 8 or counts toward required progress.
 
 ### User-visible steps vs internal step numbers
 
-The UI is intentionally compressed to six mandatory user-visible steps plus an
-optional digital-human step, while the backend and historical validation
+The UI uses eight stable visible positions, while the backend and historical validation
 scripts still use internal Step numbers.
 
 | User-visible step | Internal API / artifact stage | Main artifacts |
@@ -45,9 +46,9 @@ scripts still use internal Step numbers.
 | Step 3 Images | Step 3 images + Step 4 confirmation | `slides/<slide_id>/visual_draft.png`, `reveal_manifest.json` |
 | Step 4 Mask | Step 5 reveal manifest / mask assets | `reveal_manifest.json`, reveal layer assets |
 | Step 5 Narration and audio | Step 6 narration + Step 7 TTS/audio confirmation | `planning/narration_beats.json`, audio, subtitles, timelines |
-| Optional Step 9 Digital human | digital-human config / jobs | `planning/digital_human.json`, `planning/digital_human/` |
-| Optional Step 10 勾画标注 (annotation) | annotation settings / OCR jobs / planning / confirm | `planning/annotation_settings.json`, `slides/<slide_id>/text_layout.json`, `slides/<slide_id>/annotations.json`, `slides/<slide_id>/annotation_timeline.json` |
-| Step 6 Output works | Step 8 Remotion render / PPTX export | `remotion_props.json`, rendered video, `.render.json` sidecar, image-only `.pptx` |
+| Step 6 勾画标注 (annotation) | internal Step 10 annotation settings / OCR jobs / planning / confirm | `planning/annotation_settings.json`, `slides/<slide_id>/text_layout.json`, `slides/<slide_id>/annotations.json`, `slides/<slide_id>/annotation_timeline.json` |
+| Optional Step 7 Digital human | internal Step 9 digital-human config / jobs | `planning/digital_human.json`, `planning/digital_human/` |
+| Step 8 Output works | internal Step 8 Remotion render / PPTX export | `remotion_props.json`, rendered video, `.render.json` sidecar, image-only `.pptx` |
 
 When writing user-facing documentation, prefer the visible steps above. When changing API routes, validators, or runtime artifacts, use the internal step numbers and keep this mapping accurate.
 
@@ -56,7 +57,7 @@ When writing user-facing documentation, prefer the visible steps above. When cha
 The UI is a 1:1 implementation of the supplied Stitch design code
 (`references/ui_extract/stitch_extract/stitch_web_ui_style_extractor/*/code.html`):
 orange `#f46a38` brand, white rounded cards, dark primary buttons, the
-7-step workspace rail, and the course-library home. The former global
+8-step workspace rail, and the course-library home. The former global
 "Soft Pastel Studio" mandate is retired; do not restore it. The early
 `Flat Outline UI` and `Soft Pastel Studio` blocks in `static/style.css` are
 legacy compatibility foundations only — visible surfaces are styled by the
@@ -233,7 +234,7 @@ that pass compares frozen anchor envelopes exclusively.
 ## Image Rules
 
 - The PPT body comes from an approved bitmap image.
-- Use 1920×1080, 16:9.
+- Use the project canvas: 1920×1080 (16:9) or 1080×1920 (9:16).
 - Generate a pure-white (`#FFFFFF`) outer background.
 - The final video canvas color is configurable; the default is `#FEFDF9`.
 - Keep independent visual groups separated.
@@ -257,9 +258,12 @@ that pass compares frozen anchor envelopes exclusively.
 - Business-level downstream invalidation belongs in
   `invalidation_service.py`. The service updates files and project state but
   never commits; API callers own one database commit.
-- Replacing or deleting a slide image clears that slide's Masks, reveal assets,
-  Remotion props, audio confirmation, and downstream completion state.
-- Editing narration clears audio confirmation.
+- Replacing or deleting a slide image invalidates that slide's Masks and reveal
+  assets plus Remotion props. Audio confirmation is retained and validated by
+  its artifact hashes; unrelated audio steps remain completed.
+- A semantic narration change retains the confirmation record for recovery;
+  artifact hash validation rejects a changed TTS input. An identical save is a
+  no-op and must preserve downstream work.
 - Rendering is blocked until all slide audio has been generated and confirmed.
 - Rendered videos carry a `.render.json` sidecar with the reveal pipeline
   version.
@@ -421,7 +425,7 @@ The Python startup monkey patch has been retired. AI Mask is now source-owned:
   diagnostics and route-contract tests must not infer public routes from a
   direct `app.routes` scan.
 - `ai_provider_service.py` owns the shared OpenAI-compatible client,
-  bounded image decoding, 1920x1080 white-canvas normalization, image
+  bounded image decoding, project-canvas white-background normalization, image
   response extraction, and provider-specific image-generation fallbacks.
   It must not import the application module or own FastAPI/database wiring.
 - `tts_provider_service.py` owns provider aliases/defaults, credential
@@ -523,7 +527,7 @@ python scripts/validate_reveal_scene.py --run-dir runs/<run_id> --repo-root .
 python scripts/validate_run_assets.py --run-dir runs/<run_id> --repo-root . --require-layered
 ```
 
-Also verify the visible steps in the local browser (including optional Step 9
+Also verify the visible steps in the local browser (including optional visible Step 7
 when the digital-human feature is enabled), including the exact
 Mask preview and a rendered MP4.
 
@@ -583,3 +587,16 @@ API keys or other credentials
 ```
 
 Merged temporary branches with `ahead_by=0` relative to `main` should be deleted after confirming no follow-up work depends on them.
+
+## Downstream impact registration
+
+Every business edit that changes a generated input must declare its downstream
+impact in `impact_registry.py` before adding an invalidation reason. Describe
+the source, scope (project or slide), affected artifacts, and reuse policy.
+Actual project changes are recorded by `project_impact_service.py`; acknowledging
+an item does not override artifact freshness or generation gates.
+Keep the user-facing impact inventory in `docs/downstream-impact.md` aligned
+with that registration. Read-only navigation and no-op saves must not invalidate
+artifacts or confirmations. New write paths need a regression check for no-op
+behavior and for the smallest affected scope. Preserve recoverable user work;
+generated caches may be rebuilt, while explicit deletion needs a separate action.

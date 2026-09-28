@@ -74,10 +74,11 @@ def _mk(annotation_id, target, anchor, style, timing, content):
     )
 
 
-def _build(items, beat_times=None, slide_duration=SLIDE_DURATION):
+def _build(items, beat_times=None, slide_duration=SLIDE_DURATION, canvas=(1920, 1080)):
     return build_annotation_timeline(
         slide_id="slide_001",
         items=items,
+        canvas=canvas,
         beat_times=beat_times if beat_times is not None else BEAT_TIMES,
         slide_duration=slide_duration,
         image_hash="a" * 64,
@@ -98,6 +99,48 @@ def test_basic_event_bounds_and_offset_once():
     assert event["exit_end_sec"] == 3.15
     assert 0 <= event["start_sec"] < event["draw_end_sec"] <= event["hold_end_sec"] <= event["exit_end_sec"] <= SLIDE_DURATION
     assert event["timing_source"] == "anchor"
+
+
+def test_manual_event_retains_user_path_in_timeline():
+    from dataclasses import replace
+
+    item = _item(trigger="manual", beat_id=None, manual_start=0.0, hold="slide_end")
+    path = [(100, 100), (140, 120), (180, 110)]
+    target = replace(item.target, path_points=tuple(path))
+    item = replace(item, target=target)
+    from annotation_geometry import build_manual_path_stroke
+
+    strokes = [build_manual_path_stroke(path)]
+    payload, issues = _build([_with_strokes(item, strokes)])
+    assert issues == []
+    assert tuple(map(tuple, payload["events"][0]["strokes"][0]["points"])) == tuple(path)
+
+
+def test_offline_builder_uses_project_canvas_snapshot(tmp_path):
+    import json
+    from scripts.build_annotation_timeline import _read_canvas
+
+    profile_dir = tmp_path / "planning"
+    profile_dir.mkdir()
+    (profile_dir / "canvas_profile.json").write_text(
+        json.dumps({"width": 1080, "height": 1920}), encoding="utf-8",
+    )
+    assert _read_canvas(tmp_path) == (1080, 1920)
+
+
+def test_timeline_preserves_portrait_canvas_dimensions():
+    payload, issues = _build([], canvas=(1080, 1920))
+    assert issues == []
+    assert payload["canvas"] == [1080, 1920]
+
+
+def _with_strokes(item, strokes):
+    class ItemWithStrokes:
+        def __init__(self):
+            self.__dict__.update(item.__dict__)
+            self.strokes = strokes
+
+    return ItemWithStrokes()
 
 
 def test_audio_start_added_exactly_once():

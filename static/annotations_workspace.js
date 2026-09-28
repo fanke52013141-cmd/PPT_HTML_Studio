@@ -139,6 +139,8 @@ async function reloadAnnotationsSummary() {
   ANNOTATIONS_WS.slideIds = (summary?.slides || []).map(item => item.slide_id);
   const enabledToggle = document.getElementById('annotation-enabled-toggle');
   if (enabledToggle) enabledToggle.checked = summary?.settings?.enabled === true;
+  const emphasis = document.getElementById('annotation-ai-emphasis');
+  if (emphasis) emphasis.value = summary?.settings?.defaults?.emphasis || 'moderate';
   refreshAnnotationsStepFlag();
 }
 
@@ -361,7 +363,7 @@ function renderAnnotationItems() {
   if (!container) return;
   const items = ANNOTATIONS_WS.page.items || [];
   if (!items.length) {
-    container.innerHTML = '<div class="annotation-items-empty">暂无标注。在画布上框选区域,或在讲稿中选中短语后点击"关联讲稿"。</div>';
+    container.innerHTML = '<div class="annotation-items-empty">暂无标注。可用框选或自由画笔手动添加，也可让 AI 推荐重点。</div>';
     return;
   }
   container.innerHTML = items.map((item, index) => {
@@ -369,10 +371,14 @@ function renderAnnotationItems() {
     const quote = item.anchor?.quote || '(未关联讲稿)';
     const lockBadge = item.protection?.locked ? '<span class="annotation-chip locked">🔒 已锁定</span>' : '';
     const disabledBadge = item.status?.content === 'disabled' ? '<span class="annotation-chip disabled-chip">已禁用</span>' : '';
+    const reason = item.recommendation?.reason
+      ? `<div class="annotation-recommendation">AI 建议：${escHtml(item.recommendation.reason)}</div>`
+      : '';
     return `<div class="annotation-card${selected ? ' selected' : ''}${item.status?.content === 'disabled' ? ' is-disabled' : ''}"
         data-annotation-id="${escHtml(item.annotation_id)}" tabindex="0" role="button">
       <div class="annotation-card-title">${escHtml(AnnotationsCore.annotationCardLabel(item, index))}${lockBadge}${disabledBadge}</div>
       <div class="annotation-card-quote">"${escHtml(quote)}"</div>
+      ${reason}
       <div class="annotation-card-status">${annotationStatusChips(item)}</div>
     </div>`;
   }).join('');
@@ -445,6 +451,29 @@ async function setAnnotationsEnabled(enabled) {
   }
 }
 
+async function setAnnotationEmphasis(emphasis) {
+  if (!['weak', 'moderate', 'strong'].includes(emphasis)) return;
+  const settings = ANNOTATIONS_WS.summary?.settings || {};
+  const defaults = { ...(settings.defaults || {}), emphasis };
+  try {
+    const res = await API.put(`${annotationsApiBase()}/settings`, {
+      expected_revision: ANNOTATIONS_WS.settingsRevision,
+      enabled: settings.enabled === true,
+      defaults,
+    }, { silent: true });
+    ANNOTATIONS_WS.settingsRevision = res.revision;
+    ANNOTATIONS_WS.summary.settings = {
+      ...settings,
+      revision: res.revision,
+      defaults: res.defaults || defaults,
+    };
+    showToast(`AI 重点密度已设为${{ weak: '少量', moderate: '标准', strong: '较多' }[emphasis]}。`);
+  } catch (error) {
+    showToast(error.message || 'AI 重点密度保存失败');
+    await reloadAnnotationsSummary();
+  }
+}
+
 // ------------------------------------------------------------ 显式桥接
 
 window.loadStep10Data = loadStep10Data;
@@ -453,6 +482,7 @@ window.flushAnnotationsSave = flushAnnotationsSave;
 window.queueAnnotationSave = queueAnnotationSave;
 window.reloadAnnotationsSummary = reloadAnnotationsSummary;
 window.setAnnotationsEnabled = setAnnotationsEnabled;
+window.setAnnotationEmphasis = setAnnotationEmphasis;
 window.selectAnnotationPage = selectAnnotationPage;
 window.selectAnnotationItem = selectAnnotationItem;
 window.refreshAnnotationModuleState = refreshAnnotationModuleState;

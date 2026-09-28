@@ -52,7 +52,7 @@ class FakeDb:
         self.commits += 1
 
 
-def test_step1_edit_invalidates_every_dependent_stage() -> None:
+def test_step1_edit_only_requires_storyboard_review() -> None:
     with tempfile.TemporaryDirectory() as value:
         run_dir = Path(value)
         (run_dir / "planning").mkdir(parents=True)
@@ -71,9 +71,10 @@ def test_step1_edit_invalidates_every_dependent_stage() -> None:
         assert response["success"] is True
         assert project.current_step == 1
         assert project.get_step_status(1) == "completed"
-        assert all(project.get_step_status(step) == "pending_reconfirmation" for step in range(2, 9))
-        assert not (run_dir / "planning" / "audio_confirmed.json").exists()
-        assert not (run_dir / "remotion_props.json").exists()
+        assert project.get_step_status(2) == "pending_reconfirmation"
+        assert all(project.get_step_status(step) == "completed" for step in range(3, 9))
+        assert (run_dir / "planning" / "audio_confirmed.json").exists()
+        assert (run_dir / "remotion_props.json").exists()
         assert (run_dir / "inputs" / "article.md").read_text(encoding="utf-8") == "updated article"
         assert response["brief"]["title"] == project.name
         assert response["brief"]["summary"] == "updated article"
@@ -132,7 +133,8 @@ def test_step2_autosave_only_invalidates_when_contract_changes() -> None:
         assert first["validation"]["valid"] is False
         assert project.current_step == 2
         assert project.get_step_status(2) == "in_progress"
-        assert all(project.get_step_status(step) == "pending_reconfirmation" for step in range(3, 9))
+        assert all(project.get_step_status(step) == "completed" for step in range(3, 8))
+        assert project.get_step_status(8) == "pending_reconfirmation"
         assert db.commits == 1
 
         project.current_step = 8

@@ -207,6 +207,48 @@ def test_render_coordinator_delegates_and_publishes(
     assert recorded_metadata["project_total_elapsed_sec"] >= 3723
 
 
+def test_render_does_not_publish_when_source_changes_during_job(tmp_path: Path) -> None:
+    from project_impact_service import list_impacts, record_impact
+
+    project = SimpleNamespace(id="project-test", run_dir=str(tmp_path))
+    record_impact(tmp_path, reason="mask_content_changed")
+
+    class FakeDb:
+        def query(self, *_args): return self
+        def filter(self, *_args): return self
+        def first(self): return project
+        def close(self): pass
+
+    class FakeRunner:
+        def run(self, *_args, **_kwargs):
+            return RemotionRenderResult(
+                output_path=tmp_path / "unfinished.mp4",
+                output_filename="unfinished.mp4",
+                color_validation={"ok": True},
+            )
+
+    service = VideoRenderService(VideoRenderDependencies(
+        session_factory=FakeDb,
+        artifact_service=SimpleNamespace(project_video_dir=lambda _project: tmp_path),
+        remotion_runner=FakeRunner(),
+        config=_config(tmp_path),
+    ))
+    service.job_store = SimpleNamespace(update=lambda *_args, **_kwargs: None)
+    service._tasks["task-test"] = {
+        "task_id": "task-test", "project_id": project.id,
+        "status": "rendering", "stage": "validating", "started_at": 0.0,
+    }
+    keys = iter(("before", "after"))
+    service._submission_key = lambda _project: next(keys)
+    service._apply_digital_human_composite = lambda _project, result, _task_id: (result, False)
+
+    service.run_render_job(project.id, "task-test")
+
+    assert service._tasks["task-test"]["status"] == "error"
+    assert "输入已变化" in service._tasks["task-test"]["error"]
+    assert list_impacts(tmp_path)[0]["affected"] == ["output"]
+
+
 def test_start_render_ends_caller_transaction_before_creating_job(
     tmp_path: Path,
     monkeypatch,
@@ -272,6 +314,35 @@ def test_start_render_ends_caller_transaction_before_creating_job(
 
     assert response["success"] is True
     assert events == ["caller_commit", "job_create", "thread_start"]
+
+
+def test_legacy_audio_confirmation_explains_reconfirmation_without_resynthesis(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    project = SimpleNamespace(id="project-test", run_dir=str(tmp_path))
+    service = VideoRenderService(
+        VideoRenderDependencies(
+            session_factory=lambda: None,
+            artifact_service=SimpleNamespace(),
+            remotion_runner=SimpleNamespace(),
+            config=_config(tmp_path),
+        )
+    )
+    service.get_project = lambda _db, _project_id: project
+    service._read_contract_slide_ids = lambda _run_dir: ["slide_001"]
+    monkeypatch.setattr("video_render_service.validate_visual_provenance_set", lambda *_args: [])
+    monkeypatch.setattr(
+        "video_render_service.tts_confirmation_status",
+        lambda *_args: {"confirmed": False, "reason": "legacy_confirmation"},
+    )
+
+    with pytest.raises(VideoRenderError) as exc_info:
+        service.start_render(object(), project.id)
+
+    assert exc_info.value.status_code == 400
+    assert "重新确认" in exc_info.value.detail
+    assert "无需重新合成音频" in exc_info.value.detail
 
 
 def test_start_render_reports_sanitized_persistence_diagnostic(

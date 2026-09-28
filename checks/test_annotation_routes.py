@@ -226,6 +226,72 @@ def test_add_region_and_text_items_assign_ids_and_server_inputs(client, project)
     assert items[1]["anchor"]["quote"] == "9月30日"
 
 
+def test_manual_freehand_is_persisted_and_returned_as_renderable_stroke(client, project):
+    project_id, _run_root = project
+    manual = json.loads(json.dumps(REGION_ITEM))
+    manual["target"]["path_points"] = [[120, 210], [170, 230], [240, 220], [330, 250]]
+    manual["timing"] = {
+        "trigger_mode": "manual", "manual_start_sec": 0, "offset_sec": 0,
+        "draw_duration_sec": 0.6, "hold_mode": "slide_end", "exit_duration_sec": 0.15,
+    }
+    response = client.patch(
+        f"/api/projects/{project_id}/annotations/slides/slide_001",
+        json={"expected_revision": 0, "operations": [{"op": "add", "item": manual}]},
+    )
+    assert response.status_code == 200, response.text
+    item = response.json()["items"][0]
+    assert item["target"]["path_points"] == manual["target"]["path_points"]
+    assert item["strokes"][0]["points"] == manual["target"]["path_points"]
+    assert item["strokes"][0]["closed"] is False
+
+
+def test_manual_freehand_uses_portrait_project_canvas(client, project):
+    project_id, run_root = project
+    db = SessionLocal()
+    db.query(Project).filter(Project.id == project_id).update({"canvas_profile": "portrait_9_16"})
+    db.commit()
+    db.close()
+
+    manual = json.loads(json.dumps(REGION_ITEM))
+    manual["target"]["polygons"] = [[[460, 1660], [620, 1660], [620, 1810], [460, 1810]]]
+    manual["target"]["path_points"] = [[480, 1680], [530, 1740], [600, 1790]]
+    manual["timing"] = {
+        "trigger_mode": "manual", "manual_start_sec": 0, "offset_sec": 0,
+        "draw_duration_sec": 0.6, "hold_mode": "slide_end", "exit_duration_sec": 0.15,
+    }
+    response = client.patch(
+        f"/api/projects/{project_id}/annotations/slides/slide_001",
+        json={"expected_revision": 0, "operations": [{"op": "add", "item": manual}]},
+    )
+    assert response.status_code == 200, response.text
+    item = response.json()["items"][0]
+    assert item["target"]["path_points"] == manual["target"]["path_points"]
+
+    slide_root = run_root / "slides" / "slide_001"
+    (slide_root / "audio_timeline.json").write_text(json.dumps({
+        "duration_sec": 1.0,
+        "audio_content_duration_sec": 1.0,
+        "segments": [{"beat_id": "slide_001_beat_001", "start": 0.0, "end": 0.9}],
+    }), encoding="utf-8")
+    settings = client.put(
+        f"/api/projects/{project_id}/annotations/settings",
+        json={"expected_revision": 0, "enabled": True},
+    )
+    assert settings.status_code == 200, settings.text
+    confirmation = client.post(
+        f"/api/projects/{project_id}/annotations/slides/slide_001/confirm",
+        json={"expected_revision": 1},
+    )
+    assert confirmation.status_code == 200, confirmation.text
+    assert confirmation.json()["timeline_built"] is True
+
+    timeline = json.loads((slide_root / "annotation_timeline.json").read_text(encoding="utf-8"))
+    event = timeline["events"][0]
+    assert timeline["canvas"] == [1080, 1920]
+    assert event["strokes"][0]["points"] == manual["target"]["path_points"]
+    assert event["strokes"][0]["ink"]["canvas"] == [1080, 1920]
+
+
 def test_add_text_with_bad_quote_rejected(client, project):
     project_id, _ = project
     bad = json.loads(json.dumps(TEXT_ITEM, ensure_ascii=False))

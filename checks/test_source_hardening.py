@@ -188,7 +188,7 @@ def main() -> None:
     step5_source = mask_manifest_service[step5_start:]
     assert "built_assets = False" in step5_source
     assert "if build_assets:" in step5_source
-    assert 'return {"success": True, "built_assets": built_assets}' in step5_source
+    assert 'return {"success": True, "built_assets": built_assets, "changed": changed}' in step5_source
     assert "def update_step5_result(" not in server
 
     assert 'def synthesize_tts(project_id: str' not in server

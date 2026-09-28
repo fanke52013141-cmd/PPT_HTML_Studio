@@ -15,6 +15,7 @@ def default_creation_config_payload() -> dict[str, Any]:
     """Return a fresh, editable payload populated from current built-ins."""
     from ai_mask_engine import DEFAULT_METHODOLOGY, DEFAULT_OUTPUT_STRUCTURE
     from article_service import DEFAULT_ARTICLE_GENERATION_SYSTEM_CONTENT
+    from annotation_prompt_templates import BUILTIN_ANNOTATION_PLAN_SYSTEM_PROMPT
     from narration_service import (
         DEFAULT_NARRATION_ANNOTATION_OUTPUT_EXAMPLE,
         DEFAULT_NARRATION_ANNOTATION_SYSTEM_CONTENT,
@@ -53,6 +54,10 @@ def default_creation_config_payload() -> dict[str, Any]:
             "narration_annotation": {
                 "system_content": DEFAULT_NARRATION_ANNOTATION_SYSTEM_CONTENT.strip(),
                 "output_example": DEFAULT_NARRATION_ANNOTATION_OUTPUT_EXAMPLE.strip(),
+            },
+            "annotation_planning": {
+                "system_content": BUILTIN_ANNOTATION_PLAN_SYSTEM_PROMPT.strip(),
+                "output_example": '{"schema_version":"annotation_plan_v2","suggestions":[{"beat_id":"slide_001_beat_001","range":[0,4],"quote":"关键结论","target_candidate_ids":["tok_001_0001","tok_001_0002"],"category":"conclusion","priority":1,"style":"ellipse","reason":"本页希望观众记住的核心判断","ambiguous":false}]}',
             },
         },
         "model_bindings": {},

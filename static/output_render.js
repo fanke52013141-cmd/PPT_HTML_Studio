@@ -11,6 +11,87 @@ let _step8RenderTaskId = null;
 let _step8RenderProjectId = null;
 let _step8RenderSessionVersion = null;
 
+const STEP8_IMPACT_STEP = Object.freeze({
+  article_changed: 1,
+  storyboard_changed: 2,
+  storyboard_empty: 2,
+  storyboard_visual_changed: 2,
+  storyboard_narration_changed: 2,
+  storyboard_structure_changed: 2,
+  slide_image_changed: 3,
+  mask_content_changed: 5,
+  narration_content_changed: 6,
+  audio_artifacts_changed: 6,
+  subtitle_style_changed: 6,
+  subtitle_visibility_changed: 6,
+  video_background_changed: 3,
+  annotation_changed: 10,
+  digital_human_changed: 9,
+});
+const STEP8_IMPACT_LABEL = Object.freeze({
+  article_changed: '文章已修改',
+  storyboard_changed: '分镜已修改',
+  storyboard_empty: '分镜已清空',
+  storyboard_visual_changed: '分镜画面内容已修改',
+  storyboard_narration_changed: '分镜讲稿已修改',
+  storyboard_structure_changed: '分镜顺序或页面集合已修改',
+  slide_image_changed: '图片已变化',
+  mask_content_changed: 'Mask 已修改',
+  narration_content_changed: '旁白已修改',
+  audio_artifacts_changed: '音频已更新',
+  subtitle_style_changed: '字幕样式已修改',
+  subtitle_visibility_changed: '字幕显示设置已修改',
+  video_background_changed: '视频背景已修改',
+  annotation_changed: '勾画标注已修改',
+  digital_human_changed: '数字人讲解已修改',
+});
+const STEP8_IMPACT_AFFECTED = Object.freeze({
+  storyboard: '分镜', images: '图片', Mask: 'Mask', audio: '音频',
+  output: '新版输出', 'reveal layers': '揭示图层',
+  'annotation geometry': '勾画位置', 'annotation timing': '勾画时间',
+  'audio confirmation': '音频确认',
+});
+
+async function loadStep8Impacts(projectId, sessionVersion) {
+  const panel = document.getElementById('step8-impact-panel');
+  const list = document.getElementById('step8-impact-list');
+  if (!panel || !list) return;
+  const result = await API.get(`/api/projects/${projectId}/impacts`);
+  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+  const items = Array.isArray(result.items) ? result.items : [];
+  panel.style.display = items.length ? 'block' : 'none';
+  list.replaceChildren();
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'step8-impact-row';
+    row.style.cssText = 'padding:0.8rem 0; border-top:1px solid #eee;';
+    const title = document.createElement('strong');
+    const scope = item.scope_id === 'project' ? '本项目' : item.scope_id;
+    title.textContent = `${scope} · ${STEP8_IMPACT_LABEL[item.reason] || item.reason}`;
+    const details = document.createElement('p');
+    const affected = (item.affected || []).map(value => STEP8_IMPACT_AFFECTED[value] || value);
+    details.textContent = `待核对：${affected.join('、')}。${item.decision === 'reviewed' ? '已查看，仍需按实际内容更新。' : '已暂缓处理。'}`;
+    const jump = document.createElement('button');
+    jump.type = 'button';
+    jump.className = 'secondary';
+    jump.textContent = '前往检查';
+    jump.addEventListener('click', () => navigateToStep(STEP8_IMPACT_STEP[item.reason] || 8));
+    const reviewed = document.createElement('button');
+    reviewed.type = 'button';
+    reviewed.className = 'secondary';
+    reviewed.textContent = item.decision === 'reviewed' ? '稍后处理' : '标记已查看';
+    reviewed.addEventListener('click', async () => {
+      await API.put(`/api/projects/${projectId}/impacts/decision`, {
+        impact_id: item.id,
+        decision: item.decision === 'reviewed' ? 'defer' : 'reviewed',
+      });
+      await loadStep8Impacts(projectId, sessionVersion);
+    });
+    row.append(title, details, jump, reviewed);
+    list.appendChild(row);
+  });
+}
+
 function updateStep8LoadingText(stageLabel, elapsedSec, queueAhead) {
   const text = document.getElementById('step8-loading-text');
   if (!text) return;
@@ -25,6 +106,32 @@ function updateStep8LoadingText(stageLabel, elapsedSec, queueAhead) {
     ? `（已用 ${Math.round(elapsedSec)} 秒）`
     : '';
   text.innerText = `${stage}${elapsed}...`;
+}
+
+async function refreshStep8DigitalHumanStatus(
+  projectId = state.currentProject?.id,
+  sessionVersion = workspaceNavigationVersion,
+) {
+  const box = document.getElementById('step8-digital-human-status');
+  const message = document.getElementById('step8-digital-human-message');
+  if (!projectId || !box || !message || !isCurrentWorkspaceProject(projectId, sessionVersion)) return null;
+  try {
+    const panel = window.DigitalHumanPanel;
+    if (!panel || typeof panel.getOutputStatus !== 'function') {
+      throw new Error('数字人状态模块尚未就绪');
+    }
+    const status = await panel.getOutputStatus();
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return null;
+    message.innerText = status.message;
+    box.style.borderColor = status.canRender ? '' : '#d73333';
+    return status;
+  } catch (error) {
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return null;
+    const failureMessage = '数字人状态读取失败，无法确认本次 MP4 是否包含数字人；请刷新后重试。';
+    message.innerText = failureMessage;
+    box.style.borderColor = '#d73333';
+    return { enabled: true, canRender: false, unknown: true, message: failureMessage };
+  }
 }
 
 function formatProjectTotalElapsed(totalSeconds) {
@@ -96,6 +203,7 @@ function startStep8RenderPolling(
       if (res.status === 'success') {
         showToast('🎉 视频渲染成功！');
         showStep8VideoResult(res.videos || (res.video ? [res.video] : []));
+        loadStep8Impacts(projectId, sessionVersion).catch(() => {});
         refreshCurrentProjectStatus(8).catch(() => {});
       } else if (res.status === 'error') {
         const message = res.error || '视频渲染失败，请查看 logs/pipeline.log。';
@@ -130,6 +238,12 @@ async function loadStep8Data() {
   await Promise.all([
     loadStep8PptxData(projectId, sessionVersion),
     refreshStep8SubtitleExport(projectId, sessionVersion),
+    refreshStep8DigitalHumanStatus(projectId, sessionVersion),
+    loadStep8Impacts(projectId, sessionVersion).catch(error => {
+      console.error('Load project impacts failed:', error);
+      const panel = document.getElementById('step8-impact-panel');
+      if (panel) panel.style.display = 'none';
+    }),
   ]);
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   try {
@@ -236,10 +350,37 @@ async function runStep8Render() {
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
   const renderBtn = document.getElementById('step8-btn-render');
+  if (renderBtn?.disabled) return;
+  if (renderBtn) renderBtn.disabled = true;
+  let keepRenderButtonDisabled = false;
+  try {
+    const panel = window.DigitalHumanPanel;
+    if (panel?.waitForPendingPersistence) {
+      await panel.waitForPendingPersistence();
+    }
+    const digitalHumanStatus = await refreshStep8DigitalHumanStatus(projectId, sessionVersion);
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+    if (digitalHumanStatus?.enabled && !digitalHumanStatus.canRender) {
+      setStep8OutputError('数字人素材未就绪', digitalHumanStatus.message);
+      showToast(`❌ ${digitalHumanStatus.message}`, 7000);
+      return;
+    }
+    keepRenderButtonDisabled = true;
+  } catch (error) {
+    const message = error?.message || '数字人设置保存失败，请重试。';
+    setStep8OutputError('数字人设置未保存', message);
+    showToast(`❌ ${message}`, 7000);
+    return;
+  } finally {
+    if (!keepRenderButtonDisabled
+      && isCurrentWorkspaceProject(projectId, sessionVersion)
+      && document.getElementById('step8-loading').style.display !== 'inline-flex') {
+      if (renderBtn) renderBtn.disabled = false;
+    }
+  }
   document.getElementById('step8-loading').style.display = 'inline-flex';
   document.getElementById('step8-loading-text').innerText = '视频渲染中...';
   document.getElementById('step8-error-box').style.display = 'none';
-  if (renderBtn) renderBtn.disabled = true;
   showToast('🎬 Remotion 渲染进程已启动，请稍候片刻...');
 
   try {
@@ -254,6 +395,8 @@ async function runStep8Render() {
       showStep8VideoResult(res.videos);
       document.getElementById('step8-loading').style.display = 'none';
       if (renderBtn) renderBtn.disabled = false;
+    } else {
+      throw new Error(res?.error || res?.detail || '服务器没有返回视频渲染任务编号。');
     }
   } catch(e) {
     console.error('Step 8 render start failed:', e);
@@ -360,6 +503,7 @@ function startStep8PptxPolling(
       if (job.status === 'succeeded') {
         showToast('PPTX 已生成，可以下载。');
         await loadStep8PptxData(projectId, sessionVersion);
+        loadStep8Impacts(projectId, sessionVersion).catch(() => {});
         refreshCurrentProjectStatus(8).catch(() => {});
       } else {
         setStep8OutputError(

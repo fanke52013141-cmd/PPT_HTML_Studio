@@ -35,7 +35,9 @@ def update_annotation_settings(
     db: Session = Depends(get_db),
     service: AnnotationService = Depends(get_annotation_service),
 ) -> dict[str, Any]:
-    return service.update_settings(db, project_id, payload)
+    result = service.update_settings(db, project_id, payload)
+    db.commit()
+    return result
 
 
 @router.get("/api/projects/{project_id}/annotations/slides/{slide_id}")
@@ -56,7 +58,9 @@ def patch_annotation_slide(
     db: Session = Depends(get_db),
     service: AnnotationService = Depends(get_annotation_service),
 ) -> dict[str, Any]:
-    return service.patch_slide(db, project_id, slide_id, payload)
+    result = service.patch_slide(db, project_id, slide_id, payload)
+    db.commit()
+    return result
 
 
 # ------------------------------------------------------------ W3: 文字布局
@@ -117,7 +121,9 @@ def confirm_annotation_slide(
     db: Session = Depends(get_db),
     service: AnnotationService = Depends(get_annotation_service),
 ) -> dict[str, Any]:
-    return service.confirm_slide(db, project_id, slide_id, payload)
+    result = service.confirm_slide(db, project_id, slide_id, payload)
+    db.commit()
+    return result
 
 
 # ------------------------------------------------------------ W3: 任务

@@ -12,6 +12,7 @@ from dataclasses import dataclass, replace as dataclass_replace
 from datetime import datetime
 import json
 import logging
+import os
 from pathlib import Path
 import threading
 import time
@@ -24,6 +25,7 @@ from artifact_fingerprint import sha256_json
 from database import LocalJob, Project, utc_now_naive
 import invalidation_service
 from remotion_runner import RemotionRunner
+from scripts.media_tools import resolve_media_tool
 from tts_artifacts import confirmation_status as tts_confirmation_status
 from video_artifact_service import VideoArtifactService
 from video_contracts import VideoRenderConfig, VideoRenderError
@@ -65,6 +67,10 @@ RENDER_STAGE_PROGRESS = {
 RENDER_SUBMISSION_SCHEMA_VERSION = 1
 RENDER_OUTPUT_FPS = 30
 RENDER_OUTPUT_CODEC = "h264"
+
+
+class DigitalHumanCompositeError(RuntimeError):
+    """A presenter was requested, but the MP4 could not be composited."""
 
 
 @dataclass(frozen=True)
@@ -188,6 +194,11 @@ class VideoRenderService:
             slide_ids,
         )
         if not audio_confirmation.get("confirmed"):
+            if audio_confirmation.get("reason") == "legacy_confirmation":
+                raise VideoRenderError(
+                    400,
+                    "音频文件仍在，但旧版确认记录已失效。请回到“旁白与音频”试听并重新确认；无需重新合成音频。",
+                )
             if audio_confirmation.get("reason") == "config_changed":
                 raise VideoRenderError(
                     400,
@@ -644,6 +655,15 @@ class VideoRenderService:
                 )
                 return
             try:
+                # Source inputs may be edited while the long-running render
+                # proceeds. Never publish the result as the current version
+                # when that happens.
+                submission_at_start = self._submission_key(project)
+                from project_impact_service import snapshot_impacts
+
+                output_impacts_at_start = snapshot_impacts(
+                    project.run_dir, affected=("output",)
+                )
                 render_started = time.time()
                 result = self.runner.run(
                     project,
@@ -665,6 +685,10 @@ class VideoRenderService:
                     result,
                     task_id,
                 )
+                if self._submission_key(project) != submission_at_start:
+                    raise RuntimeError(
+                        "渲染期间项目输入已变化；旧成品保留，请检查修改后重新生成。"
+                    )
                 composite_elapsed = round(time.time() - composite_started, 1)
                 if composite_elapsed > 0.5:
                     logger.info(
@@ -717,6 +741,15 @@ class VideoRenderService:
                     render_fingerprint=render_fingerprint,
                 )
                 invalidation_service.complete_stage(project, 8)
+                from project_impact_service import resolve_impacts
+
+                # The render that was just published covers the current
+                # project-wide output. Keep unrelated page review items.
+                resolve_impacts(
+                    project.run_dir,
+                    affected=("output",),
+                    snapshot=output_impacts_at_start,
+                )
                 db.commit()
                 video = self.video_item(project, result.output_path)
                 videos = self.list_video_items(project)
@@ -762,7 +795,10 @@ class VideoRenderService:
         支持两种数字人源视频：
           - 上传模式（mode=upload）：使用已上传的整段讲解视频 digi_upload.mp4；
           - 生成模式（mode=comfyui/generate）：使用已生成的整段数字人视频 digi_full.mp4。
-        两者均未就绪时跳过合成，不阻断渲染。
+
+        上传模式直接调用本机 FFmpeg 合成，不依赖 9001 推理服务。只要数字人
+        已启用，源视频、FFmpeg 或合成结果任一不可用都必须使任务失败；绝不能把
+        未合成的普通 MP4 伪装成数字人成片。
 
         返回 (result, composited)：composited=True 时 result.color_validation
         已经是合成后成片的重新校验结果（审查 M-07）。
@@ -772,34 +808,52 @@ class VideoRenderService:
         )
         if not cfg_path.exists():
             return result, False
+        composite_out = result.output_path.with_name(
+            result.output_filename.rsplit(".", 1)[0] + "_dh.mp4"
+        )
         try:
             cfg = json.loads(
                 cfg_path.read_text(encoding="utf-8-sig")
             )
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError) as exc:
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解配置无法读取，请返回“数字人讲解”重新保存后再生成。"
+            ) from exc
+        if not isinstance(cfg, dict):
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解配置格式错误，请返回“数字人讲解”重新保存后再生成。"
+            )
+        if not cfg.get("enabled"):
             return result, False
-        if not isinstance(cfg, dict) or not cfg.get("enabled"):
-            return result, False
-        mode = str(cfg.get("mode") or "upload")
+        mode = str(cfg.get("mode") or "upload").strip().lower()
         digi_dir = Path(project.run_dir) / "planning" / "digital_human"
-        # 数字人源视频优先级：
-        #   1) 上传模式：使用已上传的整段讲解视频 digi_upload.mp4
-        #   2) 生成模式（comfyui/generate）：若已通过生成整段数字人视频，
-        #      则用 digi_full.mp4 合成到成片（整段导出同样支持）
-        #   3) 均未就绪：跳过合成，不阻断渲染
         upload_video = digi_dir / "digi_upload.mp4"
         full_video = digi_dir / "digi_full.mp4"
-        digi = None
-        if mode == "upload" and upload_video.exists():
-            digi = upload_video
-        elif full_video.exists():
-            digi = full_video
-        if digi is None:
-            logger.info(
-                "[digital-human] 数字人视频未就绪，跳过合成 for %s",
-                project.id,
+        digi = upload_video if mode == "upload" else full_video
+        if not digi.is_file() or digi.stat().st_size <= 0:
+            if mode == "upload":
+                message = (
+                    "已启用数字人讲解，但未找到上传的视频；"
+                    "请返回“数字人讲解”重新上传后再生成。"
+                )
+            else:
+                message = (
+                    "已启用数字人讲解，但生成的数字人视频尚未就绪；"
+                    "请先完成生成，并确认数字人服务（9001）可用后再生成 MP4。"
+                )
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
             )
-            return result, False
+            raise DigitalHumanCompositeError(message)
 
         self._set_task_stage(task_id, "digital_human")
         circle = (
@@ -824,23 +878,24 @@ class VideoRenderService:
             else None
         )
 
-        composite_out = result.output_path.with_name(
-            result.output_filename.rsplit(".", 1)[0]
-            + "_dh.mp4"
-        )
         if composite_out.exists():
             try:
                 composite_out.unlink()
-            except OSError:
-                pass
+            except OSError as exc:
+                self._discard_unpublished_digital_human_outputs(
+                    result.output_path,
+                    composite_out,
+                )
+                raise DigitalHumanCompositeError(
+                    "无法准备数字人讲解合成文件，请关闭占用该视频的程序后重试。"
+                ) from exc
         try:
-            from digital_human_client import (
-                DigitalHumanUnavailable,
-                get_digital_human_client,
-            )
+            self._ensure_local_digital_human_ffmpeg()
+            # digital_human_service 的合成函数本身不启动 9001，也不会加载推理
+            # 模型；它只复用成熟的 FFmpeg 合成实现。
+            from digital_human_service import composite_circle
 
-            client = get_digital_human_client()
-            client.composite(
+            composite_circle(
                 digi_video=digi,
                 base_video=result.output_path,
                 output=composite_out,
@@ -850,39 +905,43 @@ class VideoRenderService:
                 border=border,
                 position=position,
             )
-        except DigitalHumanUnavailable as exc:
-            # 服务未启动：不阻断渲染，但记录原因
-            logger.warning(
-                "[digital-human] service unavailable, skip composite for %s: %s",
-                project.id,
-                exc,
-            )
-            return result, False
-        except Exception:
-            # 合成失败不应拖垮已成功的渲染：记录原因并回退到原渲染产物。
+        except Exception as exc:
             logger.exception(
-                "[digital-human] composite failed for %s, falling back to base render",
+                "[digital-human] composite failed for %s",
                 project.id,
             )
-            return result, False
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解合成失败，请检查上传视频格式和 FFmpeg 组件后重试。"
+            ) from exc
 
-        if not composite_out.exists():
-            logger.warning(
-                "[digital-human] composite produced no output for %s, keeping base render",
-                project.id,
+        if not composite_out.is_file() or composite_out.stat().st_size <= 0:
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
             )
-            return result, False
+            raise DigitalHumanCompositeError(
+                "数字人讲解合成未生成有效视频，请检查上传视频后重试。"
+            )
         # 用合成视频替换原渲染视频，保持文件名不变（下游产物逻辑无需改动）
         try:
-            import os
             os.replace(composite_out, result.output_path)
         except OSError as exc:
             logger.warning(
-                "[digital-human] composite file replace failed for %s, keeping base render: %s",
+                "[digital-human] composite file replace failed for %s: %s",
                 project.id,
                 exc,
             )
-            return result, False
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解合成文件无法写入，请关闭占用该视频的程序后重试。"
+            ) from exc
         # 合成后的成片必须重新过 bt709 颜色门禁（审查 M-07）：
         # sidecar 的颜色声明必须描述最终交付文件，而非被替换前的渲染产物。
         # 校验失败会删除成片并抛错 → 整个渲染任务按失败处理，绝不输出颜色失实文件。
@@ -897,6 +956,49 @@ class VideoRenderService:
             result.output_path,
         )
         return dataclass_replace(result, color_validation=fresh_validation), True
+
+    def _ensure_local_digital_human_ffmpeg(self) -> None:
+        """Expose the application's resolved FFmpeg binary to the local compositor."""
+        ffmpeg = resolve_media_tool(
+            "ffmpeg",
+            repo_root=self.config.repo_root,
+        )
+        ffprobe = resolve_media_tool(
+            "ffprobe",
+            repo_root=self.config.repo_root,
+        )
+        if not ffmpeg or not ffprobe:
+            raise RuntimeError("FFmpeg 或 FFprobe 不可用")
+        current_path = os.environ.get("PATH", "")
+        existing_dirs = current_path.split(os.pathsep)
+        required_dirs = [
+            str(Path(ffmpeg).parent),
+            str(Path(ffprobe).parent),
+        ]
+        new_dirs = [
+            directory
+            for directory in required_dirs
+            if directory not in existing_dirs
+        ]
+        if new_dirs:
+            os.environ["PATH"] = os.pathsep.join(new_dirs + existing_dirs)
+
+    @staticmethod
+    def _discard_unpublished_digital_human_outputs(
+        base_output: Path,
+        composite_output: Path,
+    ) -> None:
+        """Remove a failed render before it can appear as a normal MP4 artifact."""
+        for path in (composite_output, base_output):
+            try:
+                if path.is_file():
+                    path.unlink()
+            except OSError:
+                logger.warning(
+                    "Could not remove failed digital-human render output %s",
+                    path,
+                    exc_info=True,
+                )
 
     def list_videos(
         self,

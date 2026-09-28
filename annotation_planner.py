@@ -20,6 +20,7 @@ from annotation_contracts import (
     AnnotationItem,
     AnnotationPage,
     Issue,
+    RECOMMENDATION_CATEGORIES,
     anchor_quote_matches,
     next_annotation_id,
 )
@@ -86,20 +87,33 @@ class AnnotationPlanner:
                 user_prompt=prompts["user"],
                 run_dir=run_dir,
                 artifact_prefix=f"annotation_plan_{slide_id}",
-                schema_hint='{"suggestions": [{"beat_id","range","quote","target_candidate_ids","style","reason","ambiguous"}]}',
+                schema_hint='{"schema_version":"annotation_plan_v2","suggestions":[{"beat_id":"...","range":[0,1],"quote":"...","target_candidate_ids":["..."],"category":"conclusion|contrast|condition|action|evidence|concept","priority":1,"style":"ellipse|underline|highlighter","reason":"...","ambiguous":false}]}',
             )
         except Exception as exc:
             raise AnnotationPlanningError("llm_failed", str(exc)) from exc
 
         snapshot = {
             "version": 1,
+            "schema_version": "annotation_plan_v2",
             "prompt_source": source,
             "emphasis": emphasis,
             "created_at": now_iso,
             "suggestions": raw.get("suggestions") if isinstance(raw, dict) else None,
         }
         issues: List[Issue] = []
-        suggestions = self._normalize_suggestions(raw, beats, candidates, issues)
+        suggestions = self._normalize_suggestions(
+            raw,
+            beats,
+            candidates,
+            issues,
+            max_suggestions=MAX_SUGGESTIONS.get(emphasis, MAX_SUGGESTIONS["moderate"]),
+            protected_items=protected,
+            existing_targets=[
+                tuple(item.target.token_ids)
+                for item in (page.items if page else ())
+                if item.target.token_ids
+            ],
+        )
         return suggestions, snapshot, issues
 
     # ------------------------------------------------------------ 校验
@@ -107,14 +121,19 @@ class AnnotationPlanner:
     def _protected_summaries(self, page: Optional[AnnotationPage]) -> List[Dict[str, Any]]:
         protected: List[Dict[str, Any]] = []
         for item in page.items if page else ():
-            if item.protection.locked or item.protection.modified_fields:
-                protected.append(
-                    {
-                        "quote": item.anchor.quote if item.anchor else (item.target.quote or ""),
-                        "style": item.style.type,
-                        "locked": item.protection.locked,
-                    }
-                )
+            if item.protection.source != "manual" and not item.protection.locked and not item.protection.modified_fields:
+                continue
+            protected.append(
+                {
+                    "quote": item.anchor.quote if item.anchor else (item.target.quote or ""),
+                    "beat_id": item.anchor.beat_id if item.anchor else None,
+                    "style": item.style.type,
+                    "locked": item.protection.locked,
+                    "source": item.protection.source,
+                    "target_kind": item.target.kind,
+                    "target_candidate_ids": list(item.target.token_ids),
+                }
+            )
         return protected
 
     def _normalize_suggestions(
@@ -123,6 +142,10 @@ class AnnotationPlanner:
         beats: List[Dict[str, Any]],
         candidates: List[Dict[str, Any]],
         issues: List[Issue],
+        *,
+        max_suggestions: int,
+        protected_items: List[Dict[str, Any]],
+        existing_targets: List[Tuple[str, ...]],
     ) -> List[AnnotationItem]:
         from annotation_contracts import (
             AnnotationAnchor,
@@ -137,16 +160,38 @@ class AnnotationPlanner:
         if not isinstance(raw, dict) or not isinstance(raw.get("suggestions"), list):
             issues.append(Issue("suggestions", "bad_structure", "模型输出缺少 suggestions 数组"))
             return []
+        if raw.get("schema_version") != "annotation_plan_v2":
+            issues.append(Issue("schema_version", "bad_version", "模型输出 schema_version 必须为 annotation_plan_v2"))
+            return []
+        unexpected = set(raw) - {"schema_version", "suggestions"}
+        if unexpected:
+            issues.append(Issue("output", "unexpected_fields", f"模型输出包含未定义字段: {', '.join(sorted(unexpected))}"))
+            return []
         beat_map = {str(b.get("beat_id")): str(b.get("spoken_text") or "") for b in beats}
         candidate_map = {str(c.get("token_id")): c for c in candidates}
         token_order = {str(c.get("token_id")): index for index, c in enumerate(candidates)}
+        existing_target_sets = {frozenset(ids) for ids in existing_targets if ids}
+        protected_beat_quotes = {
+            (str(p.get("beat_id")), str(p.get("quote") or ""))
+            for p in protected_items
+            if p.get("beat_id") and p.get("quote")
+        }
 
         items: List[AnnotationItem] = []
         seen_quotes: set[tuple[str, str]] = set()
+        seen_targets: set[tuple[str, tuple[str, ...]]] = set()
         for index, suggestion in enumerate(raw["suggestions"]):
             path = f"suggestions[{index}]"
             if not isinstance(suggestion, dict):
                 issues.append(Issue(path, "bad_structure", "建议必须是对象"))
+                continue
+            required_fields = {
+                "beat_id", "range", "quote", "target_candidate_ids", "category", "priority",
+                "style", "reason", "ambiguous",
+            }
+            missing_fields = required_fields - set(suggestion)
+            if missing_fields:
+                issues.append(Issue(path, "missing_fields", f"建议缺少必需字段: {', '.join(sorted(missing_fields))}"))
                 continue
             beat_id = suggestion.get("beat_id")
             spoken = beat_map.get(str(beat_id))
@@ -156,6 +201,32 @@ class AnnotationPlanner:
             style_type = suggestion.get("style")
             if style_type not in VALID_STYLES:
                 issues.append(Issue(f"{path}.style", "bad_enum", f"style 必须是 {VALID_STYLES} 之一"))
+            category = suggestion.get("category")
+            if category not in RECOMMENDATION_CATEGORIES:
+                issues.append(Issue(f"{path}.category", "bad_enum", "category 必须是定义的重点类型之一"))
+                continue
+            priority = suggestion.get("priority")
+            if isinstance(priority, bool) or not isinstance(priority, int) or priority not in (1, 2, 3):
+                issues.append(Issue(f"{path}.priority", "bad_range", "priority 必须是 1、2 或 3"))
+                continue
+            ambiguous = suggestion.get("ambiguous")
+            reason = suggestion.get("reason")
+            if not isinstance(ambiguous, bool):
+                issues.append(Issue(f"{path}.ambiguous", "bad_type", "ambiguous 必须是布尔值"))
+                continue
+            if not isinstance(reason, str) or len(reason) > 40:
+                issues.append(Issue(f"{path}.reason", "bad_string", "reason 必须是 40 字以内的字符串"))
+                continue
+            if ambiguous and not reason.strip():
+                issues.append(Issue(f"{path}.reason", "required", "ambiguous=true 时必须说明分歧点"))
+                continue
+            unexpected = set(suggestion) - {
+                "beat_id", "range", "quote", "target_candidate_ids", "category", "priority",
+                "style", "reason", "ambiguous",
+            }
+            if unexpected:
+                issues.append(Issue(path, "unexpected_fields", f"建议包含未定义字段: {', '.join(sorted(unexpected))}"))
+                continue
             range_value = suggestion.get("range")
             quote = suggestion.get("quote")
             if (
@@ -180,11 +251,10 @@ class AnnotationPlanner:
                 continue
 
             token_ids_raw = suggestion.get("target_candidate_ids")
-            if not isinstance(token_ids_raw, list) or not token_ids_raw:
+            if not isinstance(token_ids_raw, list) or not token_ids_raw or not all(isinstance(token_id, str) and token_id for token_id in token_ids_raw):
                 issues.append(Issue(f"{path}.target_candidate_ids", "required", "必须给出画面候选"))
                 continue
             token_ids: List[str] = []
-            polygons: List[List[List[int]]] = []
             unknown_tokens = False
             for token_id in token_ids_raw:
                 candidate = candidate_map.get(str(token_id))
@@ -193,18 +263,22 @@ class AnnotationPlanner:
                     unknown_tokens = True
                     break
                 token_ids.append(str(token_id))
-                polygons.append(candidate.get("polygon") or [])
             if unknown_tokens:
+                continue
+            token_ids = sorted(set(token_ids), key=lambda token_id: token_order[token_id])
+            polygons = [candidate_map[token_id].get("polygon") or [] for token_id in token_ids]
+            canonical_target = frozenset(token_ids)
+            if canonical_target in existing_target_sets or (str(beat_id), quote) in protected_beat_quotes:
                 continue
             if style_type not in VALID_STYLES:
                 continue
             granularity = "line" if any(candidate_map[t].get("granularity") == "line" for t in token_ids) else "char"
             quote_key = (str(beat_id), quote)
-            if quote_key in seen_quotes:
+            target_key = (str(beat_id), tuple(token_ids))
+            if quote_key in seen_quotes or target_key in seen_targets:
                 continue  # 重复建议静默剔除(同语块同短语只保留一条)
             seen_quotes.add(quote_key)
-            reason = str(suggestion.get("reason") or "")[:200]
-            ambiguous = bool(suggestion.get("ambiguous"))
+            seen_targets.add(target_key)
             items.append(
                 AnnotationItem(
                     annotation_id="",  # 由调用方分配
@@ -239,6 +313,15 @@ class AnnotationPlanner:
                     protection=AnnotationProtection(source="ai", modified_fields=(), locked=False),
                     inputs=AnnotationInputs(image_hash=None, narration_hash=None, audio_hash=None),
                     review_issues=({"code": "ambiguous", "message": reason},) if ambiguous else (),
+                    recommendation={
+                        "category": category,
+                        "priority": priority,
+                        "reason": reason,
+                    },
                 )
             )
+        items.sort(key=lambda item: item.recommendation["priority"] if item.recommendation else 3)
+        if len(items) > max_suggestions:
+            issues.append(Issue("suggestions", "limit_exceeded", f"建议超过当前密度上限 {max_suggestions} 条，已截取优先项"))
+            items = items[:max_suggestions]
         return items

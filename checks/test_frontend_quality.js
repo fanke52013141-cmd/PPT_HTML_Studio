@@ -20,11 +20,18 @@ const maskEditor = fs.readFileSync(path.join(root, 'static', 'mask_editor.js'), 
 const subtitleSettings = fs.readFileSync(path.join(root, 'static', 'subtitle_settings.js'), 'utf8');
 const narrationAudio = fs.readFileSync(path.join(root, 'static', 'narration_audio.js'), 'utf8');
 const outputRender = fs.readFileSync(path.join(root, 'static', 'output_render.js'), 'utf8');
+const digitalHumanPanel = fs.readFileSync(path.join(root, 'static', 'digital_human_panel.js'), 'utf8');
 const promptHelp = fs.readFileSync(path.join(root, 'static', 'prompt_help.js'), 'utf8');
 const workspaceNavigation = fs.readFileSync(path.join(root, 'static', 'workspace_navigation.js'), 'utf8');
 const eventBindings = fs.readFileSync(path.join(root, 'static', 'event_bindings.js'), 'utf8');
+if (eventBindings.includes('getDownstreamEditImpact(')) {
+  throw new Error('Step navigation must not prompt about edits before an edit occurs');
+}
 const step2Logic = `${app}\n${storyboard}\n${storyboardPrompts}`;
 const html = fs.readFileSync(path.join(root, 'static', 'index.html'), 'utf8');
+if (!outputRender.includes('loadStep8Impacts(') || !html.includes('id="step8-impact-list"')) {
+  throw new Error('Output workspace must expose the project impact list');
+}
 const css = fs.readFileSync(path.join(root, 'static', 'style.css'), 'utf8');
 const aiMask = fs.readFileSync(path.join(root, 'static', 'ai_mask_extension.js'), 'utf8');
 const projectProfile = fs.readFileSync(path.join(root, 'static', 'project_profile_extension.js'), 'utf8');
@@ -559,6 +566,7 @@ for (const outputFunction of [
   'startStep8RenderPolling',
   'loadStep8Data',
   'runStep8Render',
+  'refreshStep8DigitalHumanStatus',
   'stopStep8PptxPolling',
   'setStep8OutputError',
   'updateStep8PptxLoading',
@@ -578,6 +586,39 @@ for (const outputFunction of [
   if (app.includes(`function ${outputFunction}(`)) {
     throw new Error(`output/render implementation returned to app.js: ${outputFunction}`);
   }
+}
+for (const token of [
+  'waitForPendingPersistence',
+  'await saveConfig()',
+  '进入作品输出',
+  'getOutputStatus: async function',
+  'mode === "upload"',
+  'dhUploadInFlight.catch(function () {})',
+  'throw e;',
+  '服务器未确认数字人视频上传成功',
+]) {
+  if (!digitalHumanPanel.includes(token)) {
+    throw new Error(`digital-human upload/output persistence contract missing: ${token}`);
+  }
+}
+for (const token of [
+  'refreshStep8DigitalHumanStatus(projectId, sessionVersion)',
+  '数字人素材未就绪',
+  '无法确认本次 MP4 是否包含数字人',
+  'keepRenderButtonDisabled',
+  '服务器没有返回视频渲染任务编号',
+]) {
+  if (!outputRender.includes(token)) {
+    throw new Error(`Step 8 digital-human readiness presentation is missing: ${token}`);
+  }
+}
+if (!digitalHumanPanel.includes('本次生成 MP4 将包含数字人')) {
+  throw new Error('digital-human ready state does not confirm MP4 composition');
+}
+if (!html.includes('id="step8-digital-human-status"')
+  || !html.includes('title="保留当前数字人设置并进入作品输出"')
+  || html.includes('跳过，进入作品输出')) {
+  throw new Error('digital-human to output navigation remains misleading');
 }
 for (const bridge of ['window.deleteStep8Video', 'window.deleteStep8Pptx']) {
   if (!outputRender.includes(bridge)) throw new Error(`output/render bridge is missing: ${bridge}`);
@@ -1082,13 +1123,23 @@ if (!html.includes('annotation-enabled-toggle') || !html.includes('annotation-sa
 for (const annotationDomId of ['annotation-canvas-frame', 'annotation-canvas-overlay', 'annotation-items', 'annotation-narration-beats']) {
   if (!html.includes(`id="${annotationDomId}"`)) throw new Error(`annotation workspace DOM node ${annotationDomId} is missing`);
 }
+for (const manualAnnotationToken of [
+  'annotation-btn-freehand', 'annotation-new-style', 'annotation-ai-emphasis',
+  'function addAnnotationFreehand(', 'function limitAnnotationPathPoints(', 'item.target?.path_points',
+  'function handleAnnotationDrawPointerCancel(', 'annotation-btn-freehand',
+]) {
+  if (!html.includes(manualAnnotationToken) && !annotationsEditor.includes(manualAnnotationToken)) {
+    throw new Error(`manual annotation interaction is missing ${manualAnnotationToken}`);
+  }
+}
+if (!eventBindings.includes("'freehand'")) throw new Error('freehand pointer interaction is not bound');
 // 纯逻辑归属:UMD 工厂只在 core;DOM/编辑实现不得回流到 core
 for (const coreOwner of ['utf16IndexToCodepointIndex', 'codepointIndexToUtf16Index', 'createPageHistory', 'classifyPatchFailure']) {
   if (!annotationsCore.includes(coreOwner)) throw new Error(`annotation core is missing ${coreOwner}`);
 }
 if (annotationsCore.includes('document.')) throw new Error('annotation core must stay DOM-free');
 // 画布交互与属性编辑归属 editor;工作区模块只做生命周期/渲染/保存编排
-for (const editorOwner of ['handleAnnotationRegionPointerDown', 'renderAnnotationOverlay', 'renderAnnotationItemEditor', 'undoAnnotationEdit', 'redoAnnotationEdit']) {
+for (const editorOwner of ['handleAnnotationDrawPointerDown', 'renderAnnotationOverlay', 'renderAnnotationItemEditor', 'undoAnnotationEdit', 'redoAnnotationEdit']) {
   if (!annotationsEditor.includes(`function ${editorOwner}(`)) throw new Error(`annotation editor is missing ${editorOwner}`);
   if (annotationsWorkspace.includes(`function ${editorOwner}(`)) throw new Error(`annotation editor ownership leaked into workspace: ${editorOwner}`);
 }

@@ -107,6 +107,7 @@ def test_compose_retries_atomicity_failure_once_with_the_repaired_plan(monkeypat
     monkeypatch.setattr(service, "read_project_pipeline_profile", lambda _project: {})
     monkeypatch.setattr(service, "write_project_log", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(service, "handle_step_navigation", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(service.invalidation_service, "storyboard_contract_changed", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(service, "validate_visual_contract_file", lambda *_args, **_kwargs: next(validation_results))
 
     def fake_repair(_project, _script_plan, **kwargs):

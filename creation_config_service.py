@@ -56,6 +56,7 @@ _PROMPT_MODULE_KEYS = frozenset(
         "image_generation",
         "ai_mask",
         "narration_annotation",
+        "annotation_planning",
     }
 )
 _MODEL_BINDING_KEYS = frozenset(
@@ -66,6 +67,7 @@ _MODEL_BINDING_KEYS = frozenset(
         "image_generation",
         "ai_mask",
         "narration_annotation",
+        "annotation_planning",
         "tts",
     }
 )

@@ -369,13 +369,12 @@ async function saveStep6Narration(options = {}) {
   const scope = options.scope || narrationProjectScope;
   if (!narrationData) return true;
   if (!scope?.projectId) return true;
-  // 只有用户显式点击保存的路径才弹窗；scheduleStep6Autosave / 普通 flush
-  // 属于静默自动保存，绝不能打断输入。旁白写入会让后端清除音频确认。
+  // 显式保存时解释影响；自动保存后用状态提示，避免打断连续输入。
   if (options.userInitiated === true && state.currentProject?.audio_confirmed === true) {
     const confirmed = await new Promise(resolve => {
       showCustomConfirm(
-        '保存旁白会清除已确认音频',
-        '保存旁白修改将清除全部音频确认状态，需要重新生成并确认音频后才能渲染视频。',
+        '旁白修改会影响音频',
+        '保存后的旁白若与旧音频不匹配，新视频需要更新音频。旧音频和已输出视频会保留。',
         () => resolve(true),
         () => resolve(false),
       );
@@ -405,6 +404,9 @@ async function saveStep6Narration(options = {}) {
     if (res.success) {
       // 成功提示只影响当前仍在原项目工作区时的界面；切换后静默收敛。
       if (isCurrentWorkspaceProject(scope.projectId, scope.sessionVersion)) {
+        if (res.changed && state.currentProject?.audio_confirmed === true) {
+          showToast('旁白已修改，音频待核对；已输出视频仍保留。');
+        }
         updateStep6AutosaveStatus('已自动保存');
         if (!silent) showToast('🎉 演讲稿修改保存成功！');
         refreshCurrentProjectStatus(6).catch(() => {});
@@ -494,10 +496,9 @@ async function loadStep7Data() {
       emptyState.style.display = 'none';
       confirmButton.disabled = false;
       // 文案跟随数字人启用状态：未启用时下一步是作品输出，而不是数字人讲解。
-      const dhTarget = window.__dhEnabled === true ? '数字人讲解' : '作品输出';
       document.getElementById('step6-audio-confirm-label').innerText = state.currentProject.audio_confirmed
-        ? `进入${dhTarget}`
-        : `确认并进入${dhTarget}`;
+        ? '进入勾画标注'
+        : '确认并进入勾画标注';
     }
   }
 }

@@ -347,7 +347,7 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="digital_human.config.update",
-        version="1.0",
+        version="1.1",
         status=CapabilityStatus.stable,
         description="Update digital-human configuration for a project.",
         request_model=DigitalHumanConfigUpdateRequest,

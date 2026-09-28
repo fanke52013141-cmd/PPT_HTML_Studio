@@ -83,7 +83,7 @@
   function resolveProjectVisibleStep(project = {}) {
     const internalStep = Number(project.current_step || 1);
     if (internalStep === 7 && project.audio_confirmed === true) {
-      return 8;
+      return 10;
     }
     return normalizeVisibleStep(internalStep);
   }
@@ -142,13 +142,9 @@
     return 'pending';
   }
 
-  // 显示序号唯一来源:数字人显示时 1-8 连续;隐藏时勾画=6、作品输出=7。
+  // 数字人虽为可选步骤，仍保留固定的第 7 步编号。
   function displayFlow(context = {}) {
-    const ordered = VISIBLE_FLOW.filter(item => {
-      if (item.step === 9) return context.digitalHumanEnabled === true;
-      if (item.step === 10) return context.showAnnotationsModule !== false;
-      return true;
-    });
+    const ordered = VISIBLE_FLOW;
     return Object.freeze(ordered.map((item, index) => Object.freeze({
       step: item.step,
       label: item.label,
@@ -223,6 +219,27 @@
     return previousState === 'completed' || previousState === 'pending_reconfirmation';
   }
 
+  const DOWNSTREAM_EDIT_IMPACT = Object.freeze({
+    1: '修改文章后，分镜、图片、Mask、旁白与音频、勾画标注和已输出视频可能需要重做。',
+    2: '修改分镜后，图片、Mask、旁白与音频、勾画标注和已输出视频可能需要重做。',
+    3: '替换图片后，对应页面的 Mask、文字定位与勾画会失效，音频确认及已输出视频可能需要重做。',
+    5: '修改 Mask 后，对应页面的揭示效果和已输出视频需要重新生成。',
+    6: '修改旁白或重新生成音频后，需要重新确认音频；勾画时间轴、数字人讲解素材和已输出视频可能需要更新。',
+    10: '修改勾画标注后，已输出的视频需要重新生成；图片和音频不会被改动。',
+    9: '修改数字人视频或布局后，已输出的视频需要重新生成；图片和音频不会被改动。'
+  });
+
+  function getDownstreamEditImpact(targetStep, currentStep, status = {}, context = {}) {
+    const target = normalizeVisibleStep(targetStep);
+    const currentIndex = VISIBLE_FLOW_STEPS.indexOf(normalizeVisibleStep(currentStep));
+    const targetIndex = VISIBLE_FLOW_STEPS.indexOf(target);
+    if (targetIndex < 0 || currentIndex <= targetIndex) return null;
+    const hasDownstreamWork = VISIBLE_FLOW.slice(targetIndex + 1).some(item =>
+      getVisibleStepState(item.step, status, context) !== 'pending'
+    );
+    return hasDownstreamWork ? DOWNSTREAM_EDIT_IMPACT[target] || null : null;
+  }
+
   function moveStep3ImageAssignment(slots = [], fromIndex, toIndex) {
     const fixedSlots = slots.map(slot => ({ ...slot }));
     if (
@@ -260,6 +277,7 @@
     calculateVisibleProgress,
     getPreviousVisibleStep,
     isVisibleStepUnlocked,
+    getDownstreamEditImpact,
     moveStep3ImageAssignment
   });
 });

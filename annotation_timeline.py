@@ -20,6 +20,8 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
+from annotation_contracts import DEFAULT_CANVAS
+
 __all__ = [
     "TIMELINE_SCHEMA_VERSION",
     "ANNOTATION_TIMELINE_FILE",
@@ -119,6 +121,7 @@ def build_annotation_timeline(
     *,
     slide_id: str,
     items: List[Any],
+    canvas: Tuple[int, int] = DEFAULT_CANVAS,
     beat_times: Dict[str, Tuple[float, float]],
     slide_duration: float,
     image_hash: Optional[str],
@@ -214,7 +217,7 @@ def build_annotation_timeline(
         "schema_version": TIMELINE_SCHEMA_VERSION,
         "resolver_version": RESOLVER_VERSION,
         "slide_id": slide_id,
-        "canvas": [1920, 1080],
+        "canvas": [int(canvas[0]), int(canvas[1])],
         "inputs": {
             "image_hash": image_hash,
             "narration_hash": narration_hash,

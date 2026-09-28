@@ -128,7 +128,11 @@ def test_draft_never_builds_or_navigates_and_final_is_explicit(
         assert manifest_service.update_step5_draft(
             project,
             payload,
-        ) == {"success": True}
+        ) == {"success": True, "changed": True}
+        assert manifest_service.update_step5_draft(
+            project,
+            {"slides": [{"slide_id": "slide_001", "groups": []}]},
+        ) == {"success": True, "changed": False}
         assert builds == []
         assert navigations == []
 
@@ -141,6 +145,7 @@ def test_draft_never_builds_or_navigates_and_final_is_explicit(
         assert without_build == {
             "success": True,
             "built_assets": False,
+            "changed": False,
         }
         assert builds == []
         assert navigations == [5]
@@ -154,6 +159,7 @@ def test_draft_never_builds_or_navigates_and_final_is_explicit(
         assert with_build == {
             "success": True,
             "built_assets": True,
+            "changed": False,
         }
         assert builds == ["build"]
         assert navigations == [5, 5]

@@ -9,6 +9,8 @@ from pathlib import Path
 import time
 from typing import Any, Callable, Dict, List, Optional
 
+import invalidation_service
+
 from ai_mask_contracts import AI_MASK_STAGE_REVEAL, elapsed_ms
 from canvas_profile_service import get_project_canvas
 from project_config_runtime import project_subtitles_enabled
@@ -659,8 +661,14 @@ def update_step5_draft(
     with _deps().reveal_lock_for(project):
         prepared = _prepare_manifest_for_save(project, payload)
         manifest_path = Path(project.run_dir) / "reveal_manifest.json"
-        _deps().write_json_atomic(manifest_path, prepared)
-    return {"success": True}
+        try:
+            previous = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            previous = None
+        changed = previous != prepared
+        if changed:
+            _deps().write_json_atomic(manifest_path, prepared)
+    return {"success": True, "changed": changed}
 
 
 def validate_current_reveal_assets(project: Any) -> None:
@@ -774,11 +782,19 @@ def update_step5_result(
     with dependencies.reveal_lock_for(project):
         prepared = _prepare_manifest_for_save(project, payload)
         manifest_path = Path(project.run_dir) / "reveal_manifest.json"
-        dependencies.write_json_atomic(manifest_path, prepared)
+        try:
+            previous = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            previous = None
+        changed = previous != prepared
+        if changed:
+            dependencies.write_json_atomic(manifest_path, prepared)
         built_assets = False
         if build_assets:
             build_current_reveal_assets(project)
             built_assets = True
 
+    if changed:
+        invalidation_service.mask_content_changed(project)
     dependencies.handle_step_navigation(project, 5, db)
-    return {"success": True, "built_assets": built_assets}
+    return {"success": True, "built_assets": built_assets, "changed": changed}

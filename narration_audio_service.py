@@ -397,6 +397,12 @@ def persist_narration_beats(
         planning_dir,
         "narration_beats.json",
     )
+    previous = dependencies.read_json_file(beats_path, {})
+    previous_slides = {
+        str(slide.get("slide_id")): slide.get("beats")
+        for slide in previous.get("slides", [])
+        if isinstance(slide, dict) and slide.get("slide_id")
+    } if isinstance(previous, dict) else {}
     os.makedirs(os.path.dirname(beats_path), exist_ok=True)
     # planning/narration_beats.json 保持无条件写入：其 mtime 是
     # has_fresh_narration 判定演讲稿新鲜的依据，重写可让下一轮恢复直接
@@ -455,16 +461,17 @@ def persist_narration_beats(
         )
         # 勾画标注(可选模块):讲稿变化使锚定条目的确认与时间失效。
         # 失败不阻塞旁白持久化;store 未配置时静默跳过。
-        try:
-            from annotation_invalidation import invalidate_for_narration_change
+        if previous_slides.get(slide_id) != slide_beats:
+            try:
+                from annotation_invalidation import invalidate_for_narration_change
 
-            invalidate_for_narration_change(project, slide_id)
-        except Exception:  # noqa: BLE001 - 失效链路的兜底保护
-            logger.debug(
-                "annotation narration invalidation skipped for %s/%s",
-                project.run_dir,
-                slide_id,
-            )
+                invalidate_for_narration_change(project, slide_id)
+            except Exception:  # noqa: BLE001 - 失效链路的兜底保护
+                logger.debug(
+                    "annotation narration invalidation skipped for %s/%s",
+                    project.run_dir,
+                    slide_id,
+                )
 
         narration_lines.append(f"=== {slide_id} ===")
         tts_text_lines.append(f"=== {slide_id} ===")

@@ -1257,9 +1257,10 @@ def agent_update_digital_human_config(
 ) -> DigitalHumanConfigResult:
     """Update the digital-human configuration."""
     project = _resolve_project(db, project_id)
-    from digital_human_routes import update_digital_human_config
+    from digital_human_routes import update_digital_human_config_with_impact
 
-    config = update_digital_human_config(project, payload.config)
+    config = update_digital_human_config_with_impact(project, payload.config, db)
+    db.commit()
     return DigitalHumanConfigResult(config=config)
 
 

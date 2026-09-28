@@ -229,7 +229,7 @@ function updateStepperUI(currentStep, stepStatus) {
       item.classList.add('pending_reconfirmation');
       const badge = document.createElement('span');
       badge.className = 'step-status-tag';
-      badge.innerText = '需重做';
+      badge.innerText = '待核对';
       item.appendChild(badge);
     }
   });

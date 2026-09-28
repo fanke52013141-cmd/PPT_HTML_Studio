@@ -9,6 +9,7 @@ const {
   getVisibleStepState,
   calculateVisibleProgress,
   isVisibleStepUnlocked,
+  getDownstreamEditImpact,
   moveStep3ImageAssignment
 } = PPTFlow;
 
@@ -126,6 +127,7 @@ const PPTStudioRuntime = Object.freeze({
     getVisibleStepState,
     calculateVisibleProgress,
     isVisibleStepUnlocked,
+    getDownstreamEditImpact,
     moveStep3ImageAssignment,
   }),
 });

@@ -388,6 +388,19 @@ function closeStep3AIModal() {
 
 window.closeStep3AIModal = closeStep3AIModal;
 
+function confirmStep3ReplacementImpact(slideId) {
+  const hasCurrentImage = step3ImageOrder.some(item => item.slide_id === slideId && item.exists);
+  if (!hasCurrentImage) return Promise.resolve(true);
+  return new Promise(resolve => {
+    showCustomConfirm(
+      '替换当前图片',
+      `${slideId} 的旧图和 Mask 会归档。新图应用后，该页揭示效果和勾画位置待核对；旁白、音频和已输出视频保留。现在应用新图吗？`,
+      () => resolve(true),
+      () => resolve(false),
+    );
+  });
+}
+
 async function uploadStep3ImageById(slideId, input) {
   const file = input.files[0];
   if (!file) return;
@@ -395,6 +408,10 @@ async function uploadStep3ImageById(slideId, input) {
   const MAX_IMAGE_UPLOAD_BYTES = 20 * 1024 * 1024;
   if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
     showToast(`❌ 图片超过 20MB 限制，请压缩后重试`);
+    input.value = '';
+    return;
+  }
+  if (!(await confirmStep3ReplacementImpact(slideId))) {
     input.value = '';
     return;
   }
@@ -424,13 +441,13 @@ window.uploadStep3ImageById = uploadStep3ImageById;
 function deleteStep3Image(slideId) {
   showCustomConfirm(
     '删除图片',
-    `确定删除 ${slideId} 的本地图片吗？该页已有的全部 Mask 和切层素材也会一起清除。`,
+    `确定从当前项目删除 ${slideId} 的图片吗？旧图和 Mask 数据会归档；该页切层需重建，音频保留。`,
     async () => {
       const res = await API.delete(`/api/projects/${state.currentProject.id}/steps/3/images/${encodeURIComponent(slideId)}`);
       if (res.success) {
         await refreshStep3Images();
         await refreshCurrentProjectStatus(3);
-        showToast('图片及该页 Mask 已删除。');
+        showToast('图片已从当前页面移除；旧图和 Mask 数据已归档。');
       }
     }
   );
@@ -450,13 +467,13 @@ function deleteAllStep3Images() {
   }
   showCustomConfirm(
     '批量删除图片',
-    `确定删除全部 ${imageCount} 张图片吗？所有相关 Mask、切层和下游素材也会一起清除。此操作不可撤销。`,
+    `确定从当前项目删除全部 ${imageCount} 张图片吗？旧图和 Mask 数据会归档；切层需重建，音频保留。`,
     async () => {
       const res = await API.delete(`/api/projects/${state.currentProject.id}/steps/3/images`);
       if (res.success) {
         await refreshStep3Images();
         await refreshCurrentProjectStatus(3);
-        showToast(`已删除 ${res.deleted_count || imageCount} 张图片及相关素材。`);
+        showToast(`已移除 ${res.deleted_count || imageCount} 张图片；旧图和 Mask 数据已归档。`);
       }
     }
   );
@@ -714,7 +731,8 @@ async function generateStep3Image() {
   document.getElementById('step3-btn-apply-candidate').style.display = 'none';
   document.getElementById('step3-preview-box').innerHTML = step3GeneratingPreviewHtml();
   const imageModel = state.settings?.image_model || 'gpt-image-1';
-  const imageSize = state.settings?.image_size || '1024x1024';
+  const canvas = state.currentProject?.canvas || { width: 1920, height: 1080 };
+  const imageSize = `${canvas.width}x${canvas.height}`;
   showToast(`🎨 正在调用 ${imageModel} 合成 ${imageSize} 候选图...`);
 
   let generated = false;
@@ -763,6 +781,7 @@ async function applyStep3Candidate() {
     showToast('请先生成一张候选图片。');
     return;
   }
+  if (!(await confirmStep3ReplacementImpact(slideId))) return;
   const applyButton = document.getElementById('step3-btn-apply-candidate');
   applyButton.disabled = true;
   try {
@@ -774,7 +793,7 @@ async function applyStep3Candidate() {
       await refreshStep3Images();
       await refreshCurrentProjectStatus(3);
       closeStep3AIModal();
-      showToast('候选图片已替换原图，该页旧 Mask 已清除。');
+      showToast('候选图片已应用；旧图和 Mask 已归档，该页揭示效果待核对。');
     }
   } finally {
     applyButton.disabled = false;

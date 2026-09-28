@@ -102,6 +102,45 @@ def test_region_target_without_anchor_allowed():
     assert item.anchor is None
 
 
+def test_manual_path_target_and_recommendation_round_trip():
+    target = _target_payload(
+        kind="region",
+        token_ids=[],
+        polygons=[[[90, 90], [190, 90], [190, 130], [90, 130]]],
+        quote=None,
+        granularity="region",
+        path_points=[[100, 100], [130, 120], [180, 110]],
+    )
+    item, issues = _parse_item(_item_payload(
+        target=target,
+        anchor=None,
+        recommendation={"category": "conclusion", "priority": 1, "reason": "核心结论"},
+    ))
+    assert item is not None and issues == []
+    restored, restore_issues = _parse_item(item.to_dict())
+    assert restored is not None and restore_issues == []
+    assert restored.target.path_points == ((100, 100), (130, 120), (180, 110))
+    assert restored.recommendation == {"category": "conclusion", "priority": 1, "reason": "核心结论"}
+
+
+@pytest.mark.parametrize(
+    "path_points,code",
+    [
+        ([[100, 100], [100, 100]], "degenerate"),
+        ([[100, 100], [2000, 100]], "out_of_canvas"),
+        ([[100, 100]], "bad_path"),
+        ([[100, 100], [1000, 100]], "outside_target"),
+    ],
+)
+def test_invalid_manual_paths_report_structured_issues(path_points, code):
+    target = _target_payload(
+        kind="region", token_ids=[], quote=None, granularity="region", path_points=path_points,
+    )
+    item, issues = _parse_item(_item_payload(target=target, anchor=None))
+    assert item is not None
+    assert any(issue.code == code for issue in issues)
+
+
 @pytest.mark.parametrize(
     "overrides,path_fragment",
     [

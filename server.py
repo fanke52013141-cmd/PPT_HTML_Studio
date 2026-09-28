@@ -718,12 +718,34 @@ try:
         read_json_file=lambda path: read_json_file(path, None),
         write_json_atomic=write_json_atomic,
         prompts_path_for=lambda run_dir: Path(run_dir) / "planning" / "annotation_prompts.json",
+        project_config_path_for=lambda run_dir: Path(run_dir) / "planning" / "project_config.json",
     )
 
     def _annotation_llm_generate(**kwargs):
-        # 窄 LLM 桥:json_llm_service 读取全局模型配置并自带 governor 治理
-        # 与一次 JSON 修复;规划器保持纯净。
-        return _annotation_llm_call(**kwargs)
+        # Prefer the text model connection selected in the project's creation
+        # package. Legacy projects without a binding retain the global model.
+        binding = None
+        db = DatabaseSessionLocal()
+        try:
+            from account_context import account_scope
+            from credential_store import get_credential
+            from database import Project
+            from model_connection_service import resolve_model_connection
+            from project_config_runtime import resolve_project_model_binding
+
+            project = db.query(Project).filter(Project.run_dir == str(kwargs.get("run_dir") or "")).first()
+            if project is not None:
+                with account_scope(project.account_id):
+                    binding = resolve_project_model_binding(
+                        project,
+                        "annotation_planning",
+                        expected_kind="text",
+                        resolve_model_connection=resolve_model_connection,
+                        get_credential=get_credential,
+                    )
+        finally:
+            db.close()
+        return _annotation_llm_call(**kwargs, model_binding=binding)
 
     _annotation_planner = AnnotationPlanner(
         AnnotationPlannerDependencies(

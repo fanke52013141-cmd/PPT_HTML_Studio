@@ -22,7 +22,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from database import get_db, Project
-from artifact_fingerprint import sha256_file
+from artifact_fingerprint import sha256_bytes, sha256_file
 from pipeline_lifecycle import read_json_file, write_json_atomic
 
 REPO_ROOT = Path(__file__).resolve().parent
@@ -175,12 +175,52 @@ def _save_config(project: Project, cfg: Dict[str, Any]) -> None:
     write_json_atomic(_config_path(project), cfg)
 
 
+_RENDER_CONFIG_KEYS = (
+    "enabled",
+    "mode",
+    "shape",
+    "circle",
+    "video",
+    "position",
+    "border",
+)
+
+
+def digital_human_render_config(cfg: Dict[str, Any]) -> Dict[str, Any]:
+    """Return the persisted settings consumed by final MP4 composition.
+
+    Avatar selection, lip-sync mode, and per-slide generation-job metadata
+    only influence future presenter generation.  They must not mark an
+    already rendered MP4 as needing a new composition.
+    """
+    if not cfg.get("enabled"):
+        return {"enabled": False}
+    return {key: cfg.get(key) for key in _RENDER_CONFIG_KEYS}
+
+
+def digital_human_render_config_changed(
+    previous: Dict[str, Any],
+    current: Dict[str, Any],
+) -> bool:
+    """Whether a config save changes the inputs of the final MP4."""
+    return digital_human_render_config(previous) != digital_human_render_config(current)
+
+
+def _mark_digital_human_output_changed(project: Project, db: Session) -> None:
+    """Record a recoverable output-only impact and persist its step state."""
+    from invalidation_service import digital_human_changed
+
+    digital_human_changed(project)
+    db.commit()
+
+
 def update_digital_human_config(project: Project, payload: Dict[str, Any]) -> Dict[str, Any]:
     """Apply the supported digital-human config patch and persist it atomically.
 
     Shared by the web UI and Agent API so both use identical defaults,
     field whitelisting, nested-field normalization, and file writes.
     """
+    previous = _load_config(project)
     cfg = _load_config(project)
     for key in ("enabled", "mode", "shape", "avatar_id", "sync_mode", "position", "border"):
         if key in payload:
@@ -195,7 +235,21 @@ def update_digital_human_config(project: Project, payload: Dict[str, Any]) -> Di
         video = dict(cfg.get("video") or {"ox": 0.5, "oy": 0.5, "zoom": 1.0})
         video.update({k: v for k, v in payload["video"].items() if k in ("ox", "oy", "zoom")})
         cfg["video"] = video
-    _save_config(project, cfg)
+    # Repeating an identical save must not rewrite the artifact.  Callers use
+    # the pre/post configs to decide whether the final MP4 needs review.
+    if cfg != previous:
+        _save_config(project, cfg)
+    return cfg
+
+
+def update_digital_human_config_with_impact(
+    project: Project, payload: Dict[str, Any], db: Session,
+) -> Dict[str, Any]:
+    """Use the same impact decision for web and Agent configuration writes."""
+    previous = _load_config(project)
+    cfg = update_digital_human_config(project, payload)
+    if digital_human_render_config_changed(previous, cfg):
+        _mark_digital_human_output_changed(project, db)
     return cfg
 
 
@@ -343,7 +397,7 @@ def put_dh_config(
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
     project = _project_or_404(db, project_id)
-    cfg = update_digital_human_config(project, payload)
+    cfg = update_digital_human_config_with_impact(project, payload, db)
     return {"success": True, "config": cfg}
 
 
@@ -361,15 +415,22 @@ async def upload_dh_video(
     content = await file.read(MAX_UPLOAD_VIDEO_BYTES + 1)
     _validate_upload(content, file, MAX_UPLOAD_VIDEO_BYTES, ALLOWED_VIDEO_MIMES)
     _validate_video_extension(file.filename)
-    _digi_dir(project).mkdir(parents=True, exist_ok=True)
     dest = _upload_digi_path(project)
-    tmp = dest.with_suffix(".mp4.tmp")
-    tmp.write_bytes(content)
-    tmp.replace(dest)
+    source_changed = sha256_file(dest) != sha256_bytes(content)
+    previous = _load_config(project)
     cfg = _load_config(project)
     cfg["mode"] = "upload"
     cfg["enabled"] = True
-    _save_config(project, cfg)
+    config_changed = cfg != previous
+    if source_changed:
+        _digi_dir(project).mkdir(parents=True, exist_ok=True)
+        tmp = dest.with_suffix(".mp4.tmp")
+        tmp.write_bytes(content)
+        tmp.replace(dest)
+    if config_changed:
+        _save_config(project, cfg)
+    if source_changed or digital_human_render_config_changed(previous, cfg):
+        _mark_digital_human_output_changed(project, db)
     return {
         "success": True,
         "mode": "upload",
@@ -477,12 +538,21 @@ async def upload_comfyui_workflow(
             status_code=400,
             detail=f"工作流节点数过多：{len(wf)}（上限 {MAX_WORKFLOW_NODES}）",
         )
-    _digi_dir(project).mkdir(parents=True, exist_ok=True)
     wf_path = _digi_dir(project) / "comfyui_workflow.json"
-    wf_path.write_bytes(content)
+    workflow_changed = sha256_file(wf_path) != sha256_bytes(content)
+    previous = _load_config(project)
     cfg = _load_config(project)
     cfg["mode"] = "comfyui"
-    _save_config(project, cfg)
+    config_changed = cfg != previous
+    if workflow_changed:
+        _digi_dir(project).mkdir(parents=True, exist_ok=True)
+        wf_path.write_bytes(content)
+    if config_changed:
+        _save_config(project, cfg)
+    # A workflow controls future presenter generation.  Only switching the
+    # active source mode changes an MP4 that is ready to compose today.
+    if digital_human_render_config_changed(previous, cfg):
+        _mark_digital_human_output_changed(project, db)
     node_count = len(wf)
     return {"success": True, "nodes": node_count, "saved": str(wf_path)}
 

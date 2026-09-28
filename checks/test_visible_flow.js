@@ -4,10 +4,14 @@ const flow = require('../static/flow.js');
 assert.equal(flow.normalizeVisibleStep(4), 5);
 assert.equal(flow.normalizeVisibleStep(7), 6);
 assert.equal(flow.resolveProjectVisibleStep({ current_step: 7, audio_confirmed: false }), 6);
-assert.equal(flow.resolveProjectVisibleStep({ current_step: 7, audio_confirmed: true }), 8);
+assert.equal(flow.resolveProjectVisibleStep({ current_step: 7, audio_confirmed: true }), 10);
 assert.deepEqual(flow.VISIBLE_FLOW_STEPS, [1, 2, 3, 5, 6, 10, 9, 8]);
 assert.equal(flow.normalizeVisibleStep(9), 9);
 assert.equal(flow.normalizeVisibleStep(10), 10);
+assert.equal(flow.getDownstreamEditImpact(9, 8, { 8: 'completed' })?.includes('重新生成'), true);
+assert.equal(flow.getDownstreamEditImpact(3, 8, { 5: 'completed' })?.includes('Mask'), true);
+assert.equal(flow.getDownstreamEditImpact(8, 9, { 8: 'completed' }), null);
+assert.equal(flow.getDownstreamEditImpact(3, 8, {}), null);
 
 // 可选步骤 9（数字人讲解）：启用即完成，未启用始终 pending
 assert.equal(flow.getVisibleStepState(9, {}, { digitalHumanEnabled: true }), 'completed');
@@ -25,10 +29,10 @@ assert.equal(flow.getVisibleStepState(10, {}, {}), 'pending');
 assert.equal(flow.getVisibleStepState(10, {}, { annotationsEnabled: true, annotationModuleState: 'not_started' }), 'pending');
 assert.equal(flow.getVisibleStepState(9, {}, { annotationsEnabled: true, digitalHumanEnabled: false }), 'pending');
 
-// displayFlow:显示序号唯一来源;数字人隐藏时勾画=6、作品输出=7
+// 可选数字人未启用时也保留第 7 步，作品输出始终为第 8 步。
 let display = flow.displayFlow({ digitalHumanEnabled: false });
 assert.deepEqual(display.map(item => [item.displayNumber, item.step]),
-  [[1, 1], [2, 2], [3, 3], [4, 5], [5, 6], [6, 10], [7, 8]]);
+  [[1, 1], [2, 2], [3, 3], [4, 5], [5, 6], [6, 10], [7, 9], [8, 8]]);
 display = flow.displayFlow({ digitalHumanEnabled: true });
 assert.deepEqual(display.map(item => [item.displayNumber, item.step]),
   [[1, 1], [2, 2], [3, 3], [4, 5], [5, 6], [6, 10], [7, 9], [8, 8]]);

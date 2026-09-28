@@ -17,6 +17,7 @@ from tts_artifacts import (
     artifact_paths,
     build_confirmation_payload,
 )
+from invalidation_service import narration_content_changed
 
 
 class DummyDb:
@@ -54,14 +55,10 @@ with tempfile.TemporaryDirectory() as run_dir:
 
     paths["text"].write_text("changed narration", encoding="utf-8")
     assert not project_audio_confirmed(project)
-    with open(audio_confirmation_path(project), "w", encoding="utf-8") as f:
-        json.dump(
-            build_confirmation_payload(run_dir, ["slide_001"], confirmation_mode="user_reviewed"),
-            f,
-        )
-
+    narration_content_changed(project)
     handle_step_navigation(project, 6, db)
     assert not project_audio_confirmed(project)
+    assert Path(audio_confirmation_path(project)).exists()
     assert project.get_step_status()["7"] == "pending"
 
 
@@ -117,7 +114,7 @@ with tempfile.TemporaryDirectory() as runtime_dir:
     assert status["changed_keys"] == ["voice_id"]
     tts_artifacts.set_confirmation_runtime_resolver(None)
 
-# Pre-v2 confirmation files without a stored fingerprint are rejected as legacy.
+# Schema 2 confirmations remain valid when all stored artifact hashes match.
 with tempfile.TemporaryDirectory() as legacy_dir:
     os.makedirs(os.path.join(legacy_dir, "planning"), exist_ok=True)
     legacy_paths = artifact_paths(legacy_dir, "slide_001")
@@ -128,6 +125,14 @@ with tempfile.TemporaryDirectory() as legacy_dir:
         legacy_dir, ["slide_001"], confirmation_mode="user_reviewed", tts_runtime=VOICE_RUNTIME
     )
     payload["schema_version"] = 2
+    with open(os.path.join(legacy_dir, "planning", "audio_confirmed.json"), "w", encoding="utf-8") as f:
+        json.dump(payload, f)
+    status = confirmation_status(legacy_dir, ["slide_001"])
+    assert status["confirmed"] and status["schema_version"] == 2
+    legacy_paths["audio"].write_text("changed audio", encoding="utf-8")
+    assert confirmation_status(legacy_dir, ["slide_001"])["reason"] == "artifacts_changed"
+    legacy_paths["audio"].write_text("content", encoding="utf-8")
+    payload["schema_version"] = 1
     with open(os.path.join(legacy_dir, "planning", "audio_confirmed.json"), "w", encoding="utf-8") as f:
         json.dump(payload, f)
     assert confirmation_status(legacy_dir, ["slide_001"])["reason"] == "legacy_confirmation"

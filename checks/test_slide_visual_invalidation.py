@@ -81,7 +81,7 @@ with tempfile.TemporaryDirectory() as temp_value:
     assert (slides_root / "slide_002" / "auto_mask" / "elements" / "el.png").exists()
     assert (slides_root / "slide_002" / "pptx_reveal_base.png").exists()
     assert not (run_dir / "remotion_props.json").exists()
-    assert not (planning / "audio_confirmed.json").exists()
+    assert (planning / "audio_confirmed.json").exists()
     assert project.get_step_status()["3"] == "completed"
     assert project.get_step_status()["5"] == "pending_reconfirmation"
     assert project.current_step == 3

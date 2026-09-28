@@ -59,10 +59,12 @@ def _tts_connection(_connection_id: str, _revision: int) -> dict:
     }
 
 
+@pytest.mark.parametrize("canvas_size", [(1920, 1080), (1080, 1920)])
 def test_image_generation_uses_project_connection_and_redacts_credential_errors(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     caplog: pytest.LogCaptureFixture,
+    canvas_size: tuple[int, int],
 ) -> None:
     project = _project(
         tmp_path,
@@ -86,7 +88,7 @@ def test_image_generation_uses_project_connection_and_redacts_credential_errors(
         "get_openai_client",
         lambda **kwargs: captured.setdefault("client", kwargs) or SimpleNamespace(),
     )
-    monkeypatch.setattr(images, "generate_image_response", lambda **_kwargs: object())
+    monkeypatch.setattr(images, "generate_image_response", lambda **kwargs: captured.setdefault("request", kwargs) or object())
     monkeypatch.setattr(images, "extract_image_bytes_from_response", lambda _response: b"image")
     monkeypatch.setattr(images, "process_and_save_image", lambda _data, path, **_kwargs: Path(path).write_bytes(b"image"))
     monkeypatch.setattr(
@@ -94,11 +96,12 @@ def test_image_generation_uses_project_connection_and_redacts_credential_errors(
         "enforce_white_image_region",
         lambda *_args, **_kwargs: {"nonwhite_ratio": 0.0, "cleared": False},
     )
-    monkeypatch.setattr(images, "get_project_canvas", lambda _project: {"width": 1920, "height": 1080})
+    monkeypatch.setattr(images, "get_project_canvas", lambda _project: {"width": canvas_size[0], "height": canvas_size[1]})
     monkeypatch.setattr(images, "project_reference_paths", lambda _project: [])
     monkeypatch.setattr(images, "active_style_reference_paths", lambda: [])
     monkeypatch.setattr(images, "ip_character_reference_paths", lambda *_args: [])
     monkeypatch.setattr(images, "render_ip_character_prompt", lambda *_args: "")
+    monkeypatch.setattr(images, "read_style_tokens_data", lambda: {})
     monkeypatch.setattr(images, "write_visual_provenance", lambda *_args, **kwargs: captured.setdefault("provenance", kwargs))
     monkeypatch.setattr(images, "mark_slide_image_changed", lambda *_args: None)
 
@@ -110,6 +113,7 @@ def test_image_generation_uses_project_connection_and_redacts_credential_errors(
         "base_url": "https://image.snapshot.test/v1",
     }
     assert captured["provenance"]["model"] == "snapshot-image-model"
+    assert captured["request"]["size"] == f"{canvas_size[0]}x{canvas_size[1]}"
 
     monkeypatch.setattr(
         images,

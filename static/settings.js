@@ -133,7 +133,6 @@ async function loadSettings() {
   document.getElementById('setting-image-base-url').value = state.settings.image_base_url || '';
   document.getElementById('setting-image-api-key').value = state.settings.image_api_key || '';
   document.getElementById('setting-image-model').value = state.settings.image_model || 'gpt-image-1';
-  document.getElementById('setting-image-size').value = state.settings.image_size || '1024x1024';
 
   document.getElementById('setting-tts-provider').value = state.settings.tts_provider || 'minimax';
   updateTtsProviderHint();
@@ -183,7 +182,6 @@ function readSettingsForm() {
     image_base_url: document.getElementById('setting-image-base-url').value.trim(),
     image_api_key: document.getElementById('setting-image-api-key').value.trim(),
     image_model: document.getElementById('setting-image-model').value.trim(),
-    image_size: document.getElementById('setting-image-size').value.trim(),
     tts_provider: document.getElementById('setting-tts-provider').value,
     tts_endpoint: document.getElementById('setting-tts-endpoint').value.trim(),
     tts_api_key: document.getElementById('setting-tts-api-key').value.trim(),
@@ -300,7 +298,7 @@ async function testImageConnection() {
     base_url: document.getElementById('setting-image-base-url').value.trim() || null,
     api_key: document.getElementById('setting-image-api-key').value.trim(),
     model: document.getElementById('setting-image-model').value.trim(),
-    size: document.getElementById('setting-image-size').value.trim() || '1024x1024'
+    size: '1920x1080'
   };
   if (!payload.api_key) {
     showToast('请填写生图接口密钥 (API Key)');

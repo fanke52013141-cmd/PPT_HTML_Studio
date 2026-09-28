@@ -28,6 +28,7 @@ from ai_mask_contracts import (
     mask_source_raw_path,
     remove_mask_source_pair,
     rename_mask_source_pair,
+    resolve_mask_source_master,
     seal_mask_source_pair,
 )
 from ai_provider_service import (
@@ -120,6 +121,46 @@ except ImportError:
 
 
 logger = logging.getLogger("PPTStudio.ImageWorkflow")
+
+
+def archive_current_slide_image(project: Any, slide_id: str) -> Path | None:
+    """Keep the current source image recoverable before replacement or deletion."""
+    image_path = Path(storage_slide_file(project.run_dir, slide_id, "visual_draft.png"))
+    if not image_path.is_file():
+        return None
+    archive_dir = (
+        Path(project.run_dir) / "recovery" / "images" /
+        f"{slide_id}-{uuid.uuid4().hex}"
+    )
+    archive_dir.mkdir(parents=True, exist_ok=False)
+    for source in (
+        image_path,
+        mask_source_raw_path(image_path),
+        mask_source_marker_path(image_path),
+        visual_provenance_path(project.run_dir, slide_id),
+    ):
+        if source.is_file():
+            shutil.copy2(source, archive_dir / source.name)
+    return archive_dir
+
+
+def _same_effective_slide_image(current_path: Path, candidate_path: Path) -> bool:
+    """Compare the image bytes consumed by the static and Mask pipelines.
+
+    A Step 3 upload is normalized to the project canvas before it becomes the
+    static slide image.  The Mask pipeline may additionally consume the sealed
+    raw sidecar, so a byte match of the PNG master alone is insufficient: a
+    newly active (or changed) raw pair can alter the reveal result.
+    """
+    if sha256_file(current_path) != sha256_file(candidate_path):
+        return False
+    current_raw = resolve_mask_source_master(current_path)
+    candidate_raw = resolve_mask_source_master(candidate_path)
+    if (current_raw is None) != (candidate_raw is None):
+        return False
+    if current_raw is None:
+        return True
+    return sha256_file(current_raw) == sha256_file(candidate_raw)
 STEP3_IMAGE_PROMPTS_FILE = "step3_image_prompts.json"
 MAX_IMAGE_UPLOAD_BYTES = int(
     os.environ.get(
@@ -904,7 +945,6 @@ def _generate_slide_image_impl(
         api_key = get_setting("image_api_key")
         base_url = get_setting("image_base_url")
         model = get_setting("image_model", "gpt-image-1")
-        image_size_setting = get_setting("image_size", "1920x1080")
         image_provider = "openai_compatible"
         runtime_secrets: Dict[str, Any] = {}
         image_public_config: Dict[str, Any] = {}
@@ -912,9 +952,6 @@ def _generate_slide_image_impl(
         api_key = project_runtime["api_key"]
         base_url = project_runtime["base_url"]
         model = project_runtime["model"]
-        image_size_setting = project_runtime["image_size"] or get_setting(
-            "image_size", "1920x1080"
-        )
         image_provider = project_runtime["provider"]
         runtime_secrets = project_runtime["secrets"]
         image_public_config = project_runtime["public_config"]
@@ -931,7 +968,8 @@ def _generate_slide_image_impl(
 
     is_toapis = is_toapis_image_provider(image_provider, base_url)
     client = None if is_toapis else get_openai_client(api_key=api_key, base_url=base_url)
-    image_size = normalize_image_size(image_size_setting)
+    canvas = get_project_canvas(project)
+    image_size = normalize_image_size(f"{canvas['width']}x{canvas['height']}")
     effective_prompt = enforce_white_generation_background(prompt, project)
     ip_prompt_segment = render_ip_character_prompt(project, slide_id)
     if ip_prompt_segment and IP_PROMPT_MARKER not in effective_prompt:
@@ -1101,6 +1139,7 @@ def _generate_slide_image_impl(
             )
 
             canvas = get_project_canvas(project)
+            archive_current_slide_image(project, slide_id)
             process_and_save_image(
                 img_bytes,
                 save_path,
@@ -1300,20 +1339,48 @@ def upload_slide_image(
                 f"图片文件超过 {MAX_IMAGE_UPLOAD_BYTES // (1024 * 1024)} MB 限制"
             )
         canvas = get_project_canvas(project)
-        process_and_save_image(
-            content,
-            save_path,
-            target_width=canvas["width"],
-            target_height=canvas["height"],
-            raw_save_path=str(mask_source_raw_path(Path(save_path))),
-        )
-        _enforce_project_subtitle_safe_zone(
-            project,
-            slide_id,
-            save_path,
-            source="uploaded",
-        )
-        seal_mask_source_pair(Path(save_path))
+        target_save_path = save_path
+        image_path = Path(target_save_path)
+        image_path.parent.mkdir(parents=True, exist_ok=True)
+        # Normalize into an isolated candidate first.  Upload bytes often vary
+        # by PNG metadata or compression despite producing the same project
+        # canvas, and replacing the live master before comparison used to
+        # discard Mask work for those no-op saves.
+        with tempfile.TemporaryDirectory(
+            prefix="step3-upload-", dir=image_path.parent
+        ) as temporary_value:
+            candidate_path = Path(temporary_value) / image_path.name
+            save_path = str(candidate_path)
+            process_and_save_image(
+                content,
+                save_path,
+                target_width=canvas["width"],
+                target_height=canvas["height"],
+                raw_save_path=str(mask_source_raw_path(Path(save_path))),
+            )
+            _enforce_project_subtitle_safe_zone(
+                project,
+                slide_id,
+                save_path,
+                source="uploaded",
+            )
+            seal_mask_source_pair(candidate_path)
+            if _same_effective_slide_image(image_path, candidate_path):
+                return {
+                    "success": True,
+                    "unchanged": True,
+                    "image_url": f"/api/projects/{project_id}/slides/{slide_id}/image",
+                }
+
+            archive_current_slide_image(project, slide_id)
+            os.replace(save_path, image_path)
+            rename_mask_source_pair(Path(save_path), image_path)
+            save_path = target_save_path
+            # Re-seal at the live path after the atomic promotion.  The
+            # marker is content-bound, but this also repairs a missing marker
+            # without ever exposing an unsealed master to downstream readers.
+            seal_mask_source_pair(Path(save_path))
+
         write_visual_provenance(
             project.run_dir,
             slide_id,
@@ -1410,6 +1477,14 @@ def apply_slide_candidate(project_id: str, payload: Dict[str, Any], db: Session)
     if not os.path.exists(candidate_path):
         raise HTTPException(status_code=404, detail="候选图片不存在，请先生成")
 
+    same_visual = (
+        os.path.exists(image_path)
+        and sha256_file(candidate_path) == sha256_file(image_path)
+        and sha256_file(mask_source_raw_path(Path(candidate_path)))
+        == sha256_file(mask_source_raw_path(Path(image_path)))
+    )
+    if not same_visual:
+        archive_current_slide_image(project, slide_id)
     os.replace(candidate_path, image_path)
     # The raw sidecar marker hashes content, not paths, so renaming the
     # candidate pair onto the draft path keeps it valid. A candidate without a
@@ -1419,7 +1494,8 @@ def apply_slide_candidate(project_id: str, payload: Dict[str, Any], db: Session)
         Path(image_path),
     )
     promote_candidate_provenance(project.run_dir, slide_id)
-    mark_slide_image_changed(project, slide_id, db)
+    if not same_visual:
+        mark_slide_image_changed(project, slide_id, db)
     return {
         "success": True,
         "image_url": f"/api/projects/{project_id}/slides/{slide_id}/image?t={uuid.uuid4().hex[:6]}",
@@ -1439,6 +1515,7 @@ def delete_all_slide_images(project_id: str, db: Session):
                 storage_slide_file(project.run_dir, slide_id, "visual_candidate.png")
             )
             if image_path.exists():
+                archive_current_slide_image(project, slide_id)
                 image_path.unlink()
                 deleted_count += 1
             for path in (
@@ -1476,6 +1553,7 @@ def delete_slide_image(project_id: str, slide_id: str, db: Session):
     )
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail="图片不存在")
+    archive_current_slide_image(project, slide_id)
     os.remove(image_path)
     if os.path.exists(candidate_path):
         os.remove(candidate_path)

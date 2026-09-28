@@ -26,7 +26,9 @@ def test_agent_config_update_reuses_canonical_config_writer(tmp_path):
     from agent_api.routes import agent_update_digital_human_config
     from agent_contract.models import DigitalHumanConfigUpdateRequest
 
-    project = SimpleNamespace(id="p1", run_dir=str(tmp_path))
+    project = SimpleNamespace(id="p1", run_dir=str(tmp_path), _status={"8": "completed"})
+    project.get_step_status = lambda: dict(project._status)
+    project.set_step_status = lambda value: setattr(project, "_status", dict(value))
     with patch("agent_api.routes._resolve_project", return_value=project):
         result = agent_update_digital_human_config(
             "p1", DigitalHumanConfigUpdateRequest(config={"enabled": True, "shape": "invalid"}), MagicMock(),
@@ -34,6 +36,7 @@ def test_agent_config_update_reuses_canonical_config_writer(tmp_path):
 
     assert result.config["enabled"] is True
     assert result.config["shape"] == "circle"
+    assert project._status["8"] == "pending_reconfirmation"
     written = json.loads((tmp_path / "planning" / "digital_human.json").read_text(encoding="utf-8"))
     assert written == result.config
 

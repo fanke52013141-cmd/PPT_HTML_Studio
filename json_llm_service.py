@@ -141,10 +141,11 @@ def generate_json_with_configured_llm(
     schema_hint: str,
     temperature: float = 0.35,
     max_tokens_default: int = 12000,
+    model_binding: Any = None,
 ) -> Dict[str, Any]:
-    llm_api_key = get_setting("llm_api_key")
-    llm_base_url = get_setting("llm_base_url")
-    llm_model = get_setting("llm_model")
+    llm_api_key = getattr(model_binding, "api_key", None) or get_setting("llm_api_key")
+    llm_base_url = getattr(model_binding, "endpoint", None) if model_binding is not None else get_setting("llm_base_url")
+    llm_model = getattr(model_binding, "model", None) or get_setting("llm_model")
     if not llm_api_key:
         raise HTTPException(status_code=400, detail="未配置大模型 API 密钥，请在系统设置中配置后再试。")
     if not llm_model:

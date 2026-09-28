@@ -15,6 +15,11 @@ import ai_provider_service as provider  # noqa: E402
 from PIL import Image  # noqa: E402
 
 
+def test_toapis_size_mapping_uses_project_orientation() -> None:
+    assert provider._toapis_ratio("1920x1080") == "16:9"
+    assert provider._toapis_ratio("1080x1920") == "9:16"
+
+
 class FailingImageApi:
     def __init__(self, failures: int) -> None:
         self.failures = failures

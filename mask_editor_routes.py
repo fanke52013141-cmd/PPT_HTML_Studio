@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from database import get_db
+import invalidation_service
 import mask_manifest_service as manifest_service
 import mask_preview_service as preview_service
 
@@ -75,10 +76,12 @@ def update_step5_draft(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    return manifest_service.update_step5_draft(
-        _project_or_404(db, project_id),
-        payload,
-    )
+    project = _project_or_404(db, project_id)
+    result = manifest_service.update_step5_draft(project, payload)
+    if result.get("changed"):
+        invalidation_service.mask_content_changed(project)
+        db.commit()
+    return result
 
 
 @router.post(

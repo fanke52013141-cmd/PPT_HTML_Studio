@@ -29,14 +29,15 @@
     ['image_generation', '图片生成'],
     ['ai_mask', 'AI Mask'],
     ['narration_annotation', '旁白'],
+    ['annotation_planning', '勾画重点识别'],
   ];
   const MODEL_BINDING_GROUPS = [
-    ['text', '文本模型', '文章、分镜、可视化、旁白和 AI Mask', 'text'],
+    ['text', '文本模型', '文章、分镜、可视化、旁白、AI Mask 和勾画重点识别', 'text'],
     ['image', '图片模型', '图片生成及需要图片理解的阶段', 'image'],
     ['tts', '语音模型', '旁白语音合成', 'tts'],
   ];
   const TEXT_BINDING_KEYS = [
-    'article_generation', 'storyboard', 'visualization', 'ai_mask', 'narration_annotation',
+    'article_generation', 'storyboard', 'visualization', 'ai_mask', 'narration_annotation', 'annotation_planning',
   ];
   const DEFAULT_SUBTITLE = {
     enabled: false,
@@ -914,7 +915,6 @@
     setHidden('model-form-text-context-window-row', kind !== 'text');
     setHidden('model-form-text-max-tokens-row', kind !== 'text');
     setHidden('model-form-text-temperature-row', kind !== 'text');
-    setHidden('model-form-image-size-row', kind !== 'image');
     setHidden('model-form-image-reference-row', kind !== 'image');
     setHidden('model-form-image-reference-count-row', kind !== 'image');
     setHidden('model-form-tts-provider-row', !isTts);
@@ -947,7 +947,6 @@
     if (endpoint && preset.endpoint) endpoint.value = preset.endpoint;
     if (model && preset.model) model.value = preset.model;
     if (protocol === 'toapis') {
-      setStringField('model-form-image-size', '16:9');
       setStringField('model-form-toapis-resolution', '1k');
       setStringField('model-form-toapis-quality', 'low');
     }
@@ -1263,10 +1262,9 @@
   }
 
   function clearModelForm() {
-    ['model-form-name', 'model-form-endpoint', 'model-form-api-key', 'model-form-model', 'model-form-image-size', 'model-form-minimax-token', 'model-form-minimax-voice-id', 'model-form-text-context-window', 'model-form-text-max-tokens', 'model-form-text-temperature']
+    ['model-form-name', 'model-form-endpoint', 'model-form-api-key', 'model-form-model', 'model-form-minimax-token', 'model-form-minimax-voice-id', 'model-form-text-context-window', 'model-form-text-max-tokens', 'model-form-text-temperature']
       .forEach(id => { const field = element(id); if (field) field.value = ''; });
     setStringField('model-form-protocol', 'custom');
-    setStringField('model-form-image-size', '1920x1080');
     const supportsReferences = element('model-form-image-supports-references');
     if (supportsReferences) supportsReferences.checked = true;
     const maxReferences = element('model-form-image-max-references');
@@ -1321,7 +1319,6 @@
     setNumberField('model-form-text-context-window', publicConfig.context_window_tokens);
     setNumberField('model-form-text-max-tokens', publicConfig.max_tokens);
     setNumberField('model-form-text-temperature', publicConfig.temperature);
-    setStringField('model-form-image-size', publicConfig.image_size);
     const supportsReferences = element('model-form-image-supports-references');
     if (supportsReferences) supportsReferences.checked = publicConfig.supports_reference_images !== false;
     setNumberField('model-form-image-max-references', publicConfig.max_reference_images || 3);
@@ -1458,8 +1455,7 @@
         if (temperature !== undefined) publicConfig.temperature = temperature;
       }
       if (kind === 'image') {
-        const size = element('model-form-image-size')?.value.trim() || '';
-        if (size) publicConfig.image_size = size;
+        delete publicConfig.image_size;
         publicConfig.supports_reference_images = !!element('model-form-image-supports-references')?.checked;
         publicConfig.max_reference_images = Math.max(
           1,

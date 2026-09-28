@@ -15,6 +15,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from config_store import get_setting, update_settings
+import invalidation_service
 from llm_concurrency import governed_llm_request, is_llm_format_incompatibility
 from project_path_service import project_or_404
 from project_config_runtime import (
@@ -257,6 +258,7 @@ def repair_step6_result(project_id: str, db: Session):
     changed = sync_narration_beats_to_contract(project)
     if changed:
         # 旁白被修复重写 → 与手动编辑同口径走导航失效，清除音频确认（审查 M-03）
+        invalidation_service.narration_content_changed(project)
         handle_step_navigation(project, 6, db)
     beats = read_json_file(beats_path, {})
     return {"success": True, "changed": changed, "beats": beats}
@@ -612,13 +614,18 @@ def annotate_step6_narration(project_id: str, db: Session, payload: Optional[Dic
         raise HTTPException(status_code=500, detail="AI returned no usable narration annotations.")
 
     incoming = persist_narration_beats(project, incoming)
+    invalidation_service.narration_content_changed(project)
     handle_step_navigation(project, 6, db)
     return {"success": True, "beats": incoming, "annotated_count": changed}
 
 def update_step6_result(project_id: str, payload: Dict[str, Any], db: Session):
     project = project_or_404(db, project_id)
-        
-    persist_narration_beats(project, payload)
+    beats_path = os.path.join(project.run_dir, "planning", "narration_beats.json")
+    prepared = prepare_narration_payload(project, payload)
+    if read_json_file(beats_path, {}) == prepared:
+        return {"success": True, "changed": False}
+
+    persist_narration_beats(project, prepared)
         
     # 运行校验，确保 narration 符合规范
     validate_script = os.path.abspath(os.path.join(os.path.dirname(__file__), "scripts", "validate_narration_grounding.py"))
@@ -631,8 +638,9 @@ def update_step6_result(project_id: str, payload: Dict[str, Any], db: Session):
     except subprocess.TimeoutExpired:
         logger.warning("Narration grounding validation timed out")
         
+    invalidation_service.narration_content_changed(project)
     handle_step_navigation(project, 6, db)
-    return {"success": True}
+    return {"success": True, "changed": True}
 
 # ==================== 步骤 7: 语音合成 ====================
 

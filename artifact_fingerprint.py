@@ -60,6 +60,33 @@ def _component_hashes(run_dir: Path, relative_paths: Iterable[Path]) -> dict[str
     }
 
 
+def _digital_human_component_paths(run_dir: Path) -> list[Path]:
+    """Return only digital-human inputs that affect the final MP4.
+
+    A disabled presenter must remain invisible to the render fingerprint.  This
+    keeps existing ordinary MP4 artifacts current, while changing the enabled
+    flag, layout, mode, or active source video creates a different fingerprint.
+    """
+    config_path = run_dir / "planning" / "digital_human.json"
+    try:
+        config = json.loads(config_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        # A corrupted saved config must make prior MP4s stale. Rendering will
+        # then surface the actionable configuration error instead of reusing a
+        # pre-digital-human artifact.
+        return [Path("planning/digital_human.json")] if config_path.exists() else []
+    if not isinstance(config, dict):
+        return [Path("planning/digital_human.json")]
+    if not config.get("enabled"):
+        return []
+
+    paths = [Path("planning/digital_human.json")]
+    mode = str(config.get("mode") or "upload").strip().lower()
+    source_name = "digi_upload.mp4" if mode == "upload" else "digi_full.mp4"
+    paths.append(Path("planning") / "digital_human" / source_name)
+    return paths
+
+
 def render_input_fingerprint(
     run_dir: str | Path,
     *,
@@ -74,7 +101,9 @@ def render_input_fingerprint(
         Path("planning/narration_beats.json"),
         Path("reveal_manifest.json"),
         Path("remotion_props.json"),
+        Path("planning/annotation_settings.json"),
     ]
+    relative_paths.extend(_digital_human_component_paths(root))
     for slide_id in slide_ids:
         base = Path("slides") / slide_id
         relative_paths.extend(
@@ -89,15 +118,30 @@ def render_input_fingerprint(
                 "tts_metadata.json",
                 "subtitles.srt",
                 "audio_timeline.json",
+                "annotation_timeline.json",
             )
         )
+
+    components = _component_hashes(root, relative_paths)
+    digital_config_path = root / "planning" / "digital_human.json"
+    digital_config_key = "planning/digital_human.json"
+    if digital_config_key in components:
+        try:
+            digital_config = json.loads(digital_config_path.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError):
+            digital_config = None
+        if isinstance(digital_config, dict) and digital_config.get("enabled"):
+            render_keys = ("enabled", "mode", "shape", "circle", "video", "position", "border")
+            components[digital_config_key] = sha256_json({
+                key: digital_config.get(key) for key in render_keys
+            })
 
     payload: dict[str, Any] = {
         "schema_version": FINGERPRINT_SCHEMA_VERSION,
         "pipeline_version": str(pipeline_version or ""),
         "slide_ids": slide_ids,
         "visual_settings": dict(visual_settings or {}),
-        "components": _component_hashes(root, relative_paths),
+        "components": components,
     }
     payload["digest"] = sha256_json(payload)
     return payload

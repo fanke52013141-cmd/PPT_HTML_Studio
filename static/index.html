@@ -11,9 +11,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20260917.2">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20260917.2">
+  <link rel="stylesheet" href="stitch.css?v=20260928.1">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
-  <link rel="stylesheet" href="annotations.css?v=20260927.1">
+  <link rel="stylesheet" href="annotations.css?v=20260928.1">
 </head>
 <body>
 
@@ -130,13 +130,13 @@
             <span class="step-complete" aria-hidden="true">✓</span>
           </li>
           <li class="step-item" data-step="9">
-            <div class="step-num">6</div>
+            <div class="step-num">7</div>
             <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg></div>
             <div class="step-label">数字人讲解</div>
             <span class="step-complete" aria-hidden="true">✓</span>
           </li>
           <li class="step-item" data-step="8">
-            <div class="step-num">7</div>
+            <div class="step-num">8</div>
             <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="15" height="14" rx="3"></rect><path d="m10 9 4 3-4 3zM18 10l3-2v8l-3-2"></path></svg></div>
             <div class="step-label">作品输出</div>
             <span class="step-complete" aria-hidden="true">✓</span>
@@ -416,7 +416,7 @@
               </button>
               <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
               <button id="step6-btn-audio-confirm-next" class="success" disabled>
-                <span id="step6-audio-confirm-label">确认并进入作品输出</span>
+                <span id="step6-audio-confirm-label">确认并进入勾画标注</span>
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
@@ -442,6 +442,7 @@
                 </label>
                 <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
                 <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
+                <button id="step10-btn-next" class="success compact-action-btn" type="button">继续下一步</button>
               </div>
             </div>
 
@@ -463,9 +464,25 @@
                     <div id="annotation-region-ghost" class="annotation-region-ghost" style="display:none;"></div>
                   </div>
                   <div class="annotation-canvas-toolbar">
+                    <button id="annotation-btn-select" class="secondary compact-action-btn" type="button">选择/编辑</button>
                     <button id="annotation-btn-region" class="secondary compact-action-btn" type="button">框选区域</button>
+                    <button id="annotation-btn-freehand" class="secondary compact-action-btn" type="button">自由画笔</button>
+                    <label class="annotation-tool-style">新标注样式
+                      <select id="annotation-new-style">
+                        <option value="ellipse">手写圈</option>
+                        <option value="underline">横线</option>
+                        <option value="highlighter">荧光笔</option>
+                      </select>
+                    </label>
+                    <label class="annotation-tool-style">AI 重点密度
+                      <select id="annotation-ai-emphasis">
+                        <option value="weak">少量</option>
+                        <option value="moderate" selected>标准</option>
+                        <option value="strong">较多</option>
+                      </select>
+                    </label>
                     <button id="annotation-btn-detect" class="secondary compact-action-btn" type="button">识别文字</button>
-                    <button id="annotation-btn-ai-plan" class="success compact-action-btn" type="button">AI 生成重点</button>
+                    <button id="annotation-btn-ai-plan" class="success compact-action-btn" type="button">AI 推荐重点</button>
                     <button id="annotation-btn-undo" class="secondary compact-action-btn" type="button">撤销</button>
                     <button id="annotation-btn-redo" class="secondary compact-action-btn" type="button">重做</button>
                   </div>
@@ -492,7 +509,7 @@
             <h2 class="highlight-title workflow-title">数字人讲解</h2>
             <div class="step9-header-actions workflow-toolbar">
               <span class="step9-optional-hint">可选步骤 · 不设置也能正常出片</span>
-              <button id="step9-btn-skip" class="secondary compact-action-btn" type="button" title="跳过数字人讲解，直接进入作品输出">跳过，进入作品输出</button>
+              <button id="step9-btn-skip" class="secondary compact-action-btn" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出</button>
             </div>
           </div>
                     <!-- ==================== 数字人讲解 ==================== -->
@@ -621,6 +638,11 @@
 
         <!-- ==================== 步骤 8: 作品输出 ==================== -->
         <div id="step-panel-8" class="step-panel" style="display: none;">
+          <section id="step8-impact-panel" class="card soft-outline" style="display:none; margin-bottom:1rem;" aria-live="polite">
+            <h3>修改后的待核对内容</h3>
+            <p>旧作品仍可查看。以下记录帮助你决定何时更新新版。</p>
+            <div id="step8-impact-list"></div>
+          </section>
           <div class="step8-header workflow-header workflow-header--titlebar">
             <div class="step8-output-title">
               <h2 class="highlight-title workflow-title">作品输出</h2>
@@ -652,6 +674,11 @@
           <div id="step8-loading" class="step-inline-loading" style="display: none;">
             <div class="loading-spinner"></div>
             <span id="step8-loading-text">视频渲染中...</span>
+          </div>
+
+          <div id="step8-digital-human-status" class="card soft-outline" style="margin: 1rem 0; padding: 0.9rem 1rem;" aria-live="polite">
+            <strong>数字人讲解</strong>
+            <p id="step8-digital-human-message" class="config-editor-note" style="margin: 0.35rem 0 0;">正在读取数字人状态...</p>
           </div>
 
           <div id="step8-pptx-loading" class="step-inline-loading" style="display: none;">
@@ -847,18 +874,12 @@
             <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">接口密钥 (API Key):</label>
             <input type="password" id="setting-image-api-key" placeholder="sk-...">
           </div>
-          <div style="display: flex; gap: 1rem; margin-bottom: 0.8rem;">
-            <div style="flex: 1;">
-              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">生图模型 (Model):</label>
-              <input type="text" id="setting-image-model" placeholder="gpt-image-1 / doubao-seedream-3-0-t2i">
-            </div>
-            <div style="flex: 1;">
-              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">图片尺寸 (Size):</label>
-              <input type="text" id="setting-image-size" placeholder="1024x1024">
-            </div>
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">生图模型 (Model):</label>
+            <input type="text" id="setting-image-model" placeholder="gpt-image-1 / doubao-seedream-3-0-t2i">
           </div>
           <p style="font-size: 0.78rem; color: #888; margin-top: 0.2rem;">
-            常用尺寸：<code>1024x1024</code>、<code>1536x1024</code>、<code>1792x1024</code>。火山/豆包 Seedream 可填写方舟模型 ID，接口地址通常为方舟兼容地址。
+            图片比例由新建项目时的画面比例决定。火山/豆包 Seedream 可填写方舟模型 ID，接口地址通常为方舟兼容地址。
           </p>
           <div style="margin-top: 1.2rem; display: flex; justify-content: flex-start;">
             <button type="button" class="secondary" id="btn-test-image" style="padding: 0.4rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
@@ -1246,7 +1267,6 @@
             <label id="model-form-text-context-window-row">上下文窗口（Token，可选）<input id="model-form-text-context-window" type="number" min="1024" max="2000000" step="1024" placeholder="例如：128000"></label>
             <label id="model-form-text-max-tokens-row">单次最大输出（Token，可选）<input id="model-form-text-max-tokens" type="number" min="256" max="64000" step="256" placeholder="例如：24000"></label>
             <label id="model-form-text-temperature-row">温度（可选）<input id="model-form-text-temperature" type="number" min="0" max="2" step="0.05" placeholder="例如：0.35"></label>
-            <label id="model-form-image-size-row" hidden>图片尺寸（默认 16:9）<input id="model-form-image-size" type="text" maxlength="80" value="1920x1080" placeholder="1920x1080（16:9）"></label>
             <label id="model-form-image-reference-row" hidden>参考图能力
               <span class="model-inline-check"><input id="model-form-image-supports-references" type="checkbox" checked> 支持上传参考图生成</span>
             </label>
@@ -1708,40 +1728,40 @@
   <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
   <!-- 主业务 JavaScript 脚本 -->
-  <script src="flow.js?v=3.0.5"></script>
-  <script src="workflow_state.js?v=20260820.1"></script>
+  <script src="flow.js?v=20260928.1"></script>
+  <script src="workflow_state.js?v=20260928.1"></script>
   <script src="ui_foundation.js?v=20260914.1"></script>
   <script src="api_client.js?v=20260927.1"></script>
   <script src="artifact_repair.js?v=20260801.1"></script>
   <script src="prompt_help.js?v=20260801.1"></script>
-  <script src="settings.js?v=20260907.1"></script>
+  <script src="settings.js?v=20260928.1"></script>
   <script src="projects.js?v=20260916.1"></script>
-  <script src="creation_config_management.js?v=20260917.1"></script>
+  <script src="creation_config_management.js?v=20260928.2"></script>
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20260913.2"></script>
   <script src="article.js?v=20260801.1"></script>
   <script src="storyboard.js?v=20260902.2"></script>
   <script src="storyboard_prompts.js?v=20260801.1"></script>
-  <script src="images.js?v=20260912.1"></script>
+  <script src="images.js?v=20260928.1"></script>
   <script src="image_prompts.js?v=20260801.1"></script>
   <script src="ip_character_manager.js?v=20260818.6"></script>
   <script src="mask_reveal.js?v=20260801.1"></script>
   <script src="mask_workspace.js?v=20260809.4"></script>
   <script src="mask_editor.js?v=20260809.4"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
-  <script src="narration_audio.js?v=20260913.1"></script>
+  <script src="narration_audio.js?v=20260928.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
-  <script src="annotations_workspace.js?v=20260927.2"></script>
-  <script src="annotations_editor.js?v=20260927.2"></script>
-  <script src="output_render.js?v=20260909.1"></script>
+  <script src="annotations_workspace.js?v=20260928.1"></script>
+  <script src="annotations_editor.js?v=20260928.1"></script>
+  <script src="output_render.js?v=20260928.1"></script>
   <script src="account_management.js?v=20260916.1"></script>
   <script src="workspace_navigation.js?v=20260927.1"></script>
-  <script src="event_bindings.js?v=20260927.1"></script>
+  <script src="event_bindings.js?v=20260928.2"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>
   <script src="storyboard_background_extension.js?v=20260916.1"></script>
   <script src="style_reference_manager_extension.js?v=3.1.0"></script>
   <script src="ai_mask_auto_state.js?v=20260809.1"></script>
-  <script src="digital_human_panel.js?v=20260914.1"></script>
+  <script src="digital_human_panel.js?v=20260928.1"></script>
   <script src="ai_mask_extension.js?v=20260912.3"></script>
   <script src="one_click_extension.js?v=20260912.1"></script>
 </body>

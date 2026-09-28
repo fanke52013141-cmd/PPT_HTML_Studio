@@ -78,6 +78,7 @@ TARGET_KINDS = ("text", "region")
 PROTECTION_SOURCES = ("ai", "manual")
 # 强调程度
 EMPHASIS_LEVELS = ("weak", "moderate", "strong")
+RECOMMENDATION_CATEGORIES = ("conclusion", "contrast", "condition", "action", "evidence", "concept")
 # 降级类型
 DEGRADATION_KINDS = ("sentence_fallback", "manual", "none")
 
@@ -94,6 +95,7 @@ MODIFIABLE_FIELDS = (
 LIMITS = {
     "max_items_per_slide": 40,
     "max_polygons_per_target": 12,
+    "max_path_points_per_target": 512,
     "max_ops_per_request": 80,
     "quote_max_chars": 200,
     "context_max_chars": 120,
@@ -258,6 +260,7 @@ class AnnotationTarget:
     quote: Optional[str]
     granularity: str
     mask_group_ids: Tuple[str, ...]
+    path_points: Tuple[Tuple[int, int], ...] = ()
 
     @staticmethod
     def from_payload(
@@ -284,6 +287,41 @@ class AnnotationTarget:
                     for i, v in enumerate(raw_token_ids)
                 )
         polygons = _check_points(issues, f"{path}.polygons", data.get("polygons"), canvas)
+        raw_path = data.get("path_points", [])
+        path_points: Tuple[Tuple[int, int], ...] = ()
+        if raw_path:
+            if kind != "region":
+                issues.append(Issue(f"{path}.path_points", "bad_kind", "自由笔迹只能用于区域目标"))
+            elif not isinstance(raw_path, list) or len(raw_path) < 2:
+                issues.append(Issue(f"{path}.path_points", "bad_path", "自由笔迹至少需要 2 个点"))
+            elif len(raw_path) > LIMITS["max_path_points_per_target"]:
+                issues.append(Issue(f"{path}.path_points", "too_many", f"自由笔迹点数不能超过 {LIMITS['max_path_points_per_target']}"))
+            else:
+                checked_path: List[Tuple[int, int]] = []
+                for index, point in enumerate(raw_path):
+                    if not isinstance(point, list) or len(point) != 2 or not all(_is_int(v) for v in point):
+                        issues.append(Issue(f"{path}.path_points[{index}]", "bad_point", "笔迹点必须是 [x, y] 整数"))
+                        checked_path = []
+                        break
+                    x, y = point
+                    if not (0 <= x <= canvas[0] and 0 <= y <= canvas[1]):
+                        issues.append(Issue(f"{path}.path_points[{index}]", "out_of_canvas", f"笔迹点超出画布 {list(canvas)}"))
+                        checked_path = []
+                        break
+                    checked_path.append((x, y))
+                if checked_path and len(set(checked_path)) >= 2:
+                    if polygons:
+                        target_xs = [point[0] for polygon in polygons for point in polygon]
+                        target_ys = [point[1] for polygon in polygons for point in polygon]
+                        bounds = (min(target_xs), min(target_ys), max(target_xs), max(target_ys))
+                        if any(not (bounds[0] <= x <= bounds[2] and bounds[1] <= y <= bounds[3]) for x, y in checked_path):
+                            issues.append(Issue(f"{path}.path_points", "outside_target", "自由笔迹必须位于区域目标范围内"))
+                        else:
+                            path_points = tuple(checked_path)
+                    else:
+                        path_points = tuple(checked_path)
+                elif checked_path:
+                    issues.append(Issue(f"{path}.path_points", "degenerate", "自由笔迹至少要包含 2 个不同的点"))
         quote = data.get("quote")
         if kind == "text":
             quote = _check_str(
@@ -312,10 +350,11 @@ class AnnotationTarget:
             quote=quote,
             granularity=granularity or "region",
             mask_group_ids=mask_group_ids,
+            path_points=path_points,
         )
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        payload = {
             "kind": self.kind,
             "layout_revision": self.layout_revision,
             "token_ids": list(self.token_ids),
@@ -324,6 +363,9 @@ class AnnotationTarget:
             "granularity": self.granularity,
             "mask_group_ids": list(self.mask_group_ids),
         }
+        if self.path_points:
+            payload["path_points"] = [list(point) for point in self.path_points]
+        return payload
 
 
 @dataclass(frozen=True)
@@ -608,6 +650,7 @@ class AnnotationItem:
     accepted_degradation: Optional[Dict[str, Any]] = None
     review_issues: Tuple[Dict[str, Any], ...] = ()
     confirmed_inputs: Optional[Dict[str, Any]] = None
+    recommendation: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         payload: Dict[str, Any] = {
@@ -624,6 +667,8 @@ class AnnotationItem:
             "review_issues": [dict(issue) for issue in self.review_issues],
             "confirmed_inputs": self.confirmed_inputs,
         }
+        if self.recommendation:
+            payload["recommendation"] = dict(self.recommendation)
         return payload
 
     @staticmethod
@@ -675,6 +720,26 @@ class AnnotationItem:
                     review_tuple += (dict(review_entry),)
         else:
             issues.append(Issue(f"{path}.review_issues", "not_list", "review_issues 必须是数组"))
+        recommendation = data.get("recommendation")
+        if recommendation is not None:
+            if not isinstance(recommendation, dict):
+                issues.append(Issue(f"{path}.recommendation", "not_object", "recommendation 必须是对象或 null"))
+                recommendation = None
+            else:
+                category = recommendation.get("category")
+                priority = recommendation.get("priority")
+                reason = recommendation.get("reason", "")
+                if category not in RECOMMENDATION_CATEGORIES:
+                    issues.append(Issue(f"{path}.recommendation.category", "bad_enum", "重点类型无效"))
+                if not _is_int(priority) or not 1 <= priority <= 3:
+                    issues.append(Issue(f"{path}.recommendation.priority", "bad_range", "priority 必须为 1 至 3"))
+                if not isinstance(reason, str) or len(reason) > 200:
+                    issues.append(Issue(f"{path}.recommendation.reason", "bad_string", "reason 最多 200 个字符"))
+                recommendation = {
+                    "category": category,
+                    "priority": priority,
+                    "reason": reason,
+                }
         return AnnotationItem(
             annotation_id=annotation_id or "",
             target=target,  # type: ignore[arg-type]
@@ -687,6 +752,7 @@ class AnnotationItem:
             accepted_degradation=accepted,
             review_issues=review_tuple,
             confirmed_inputs=confirmed_inputs,
+            recommendation=recommendation,
         )
 
 
