@@ -4359,3 +4359,590 @@ body.workspace-open .sidebar {
   box-shadow: 0 1px 3px rgba(0, 0, 0, .04) !important;
   overflow: hidden;
 }
+
+/* Shared workspace chrome from the supplied storyboard HTML.  All visible
+   steps use one 56px global header, one 256px three-state rail and one 59px
+   title/action bar.  Keep these values together when refreshing a step. */
+body.workspace-open {
+  --workspace-chrome-orange: #ee5d36;
+  --workspace-chrome-orange-soft: #fff5f0;
+  --workspace-chrome-line: #e2e8f0;
+  --workspace-titlebar-height: 59px;
+}
+body.workspace-open header.app-header {
+  height: 56px !important;
+  min-height: 56px !important;
+  padding-inline: 20px !important;
+}
+body.workspace-open header.app-header .logo { font-size: 16px !important; }
+body.workspace-open .sidebar {
+  width: 256px !important;
+  min-width: 256px !important;
+  flex-basis: 256px !important;
+  background: #fff !important;
+  border-right: 1px solid rgba(226, 232, 240, .8) !important;
+}
+body.workspace-open .sidebar .step-item.active {
+  background: var(--workspace-chrome-orange-soft) !important;
+  border-color: rgba(238, 93, 54, .2) !important;
+}
+body.workspace-open .sidebar .step-item.active .step-num,
+body.workspace-open .sidebar .step-item.active::after,
+body.workspace-open .step-state-legend .legend-current {
+  background: var(--workspace-chrome-orange) !important;
+}
+body.workspace-open .sidebar .step-item.active .step-label {
+  color: var(--workspace-chrome-orange) !important;
+}
+body.workspace-open .sidebar .step-label {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+body.workspace-open .sidebar .step-item.active .step-label { font-weight: 600 !important; }
+body.workspace-open .sidebar .step-item.completed:not(.active) .step-num {
+  color: #006c49 !important;
+  background: #ecfdf5 !important;
+}
+body.workspace-open .sidebar .step-item.completed:not(.active)::after {
+  background-color: rgba(0, 108, 73, .1) !important;
+}
+body.workspace-open .sidebar .step-item:not(.completed):not(.active) .step-num {
+  background: #f1f5f9 !important;
+  color: #94a3b8 !important;
+}
+body.workspace-open .sidebar .step-state-legend {
+  margin: 0 0 10px !important;
+  padding: 8px 6px 10px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+
+/* The workspace itself has no side gutter: each panel supplies the 32px
+   content inset, while its title bar reaches both edges of the right pane. */
+body.workspace-open #workspace-main { padding-inline: 0 !important; }
+
+/* Steps 1–6 share the reference's full-width, 14px padded title row. */
+body.workspace-open #workspace-main > #step-panel-1 > .workflow-header,
+body.workspace-open #workspace-main > #step-panel-2 > .step2-sticky-header,
+body.workspace-open #workspace-main > #step-panel-3 > .workflow-header,
+body.workspace-open #workspace-main > #step-panel-5 > .workflow-header,
+body.workspace-open #workspace-main > #step-panel-6 > .workflow-header,
+body.workspace-open #workspace-main > #step-panel-10 .annotation-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  box-sizing: border-box !important;
+  min-height: var(--workspace-titlebar-height) !important;
+  margin: 0 -32px 12px !important;
+  padding: 14px 32px !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(226, 232, 240, .8) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, .95) !important;
+  background-image: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .04) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+body.workspace-open #step-panel-2 .step2-sticky-header { display: block !important; }
+body.workspace-open #step-panel-2 .workflow-titlebar {
+  position: static !important;
+  min-height: 30px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+body.workspace-open #step-panel-1 .step1-heading-row,
+body.workspace-open #step-panel-3 .step3-toolbar-row,
+body.workspace-open #step-panel-5 .step5-mask-header,
+body.workspace-open #step-panel-6 .step6-compact-header,
+body.workspace-open #step-panel-10 .annotation-header {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+}
+body.workspace-open #step-panel-3 .step3-toolbar-row > .workflow-title {
+  flex: 0 0 auto !important;
+}
+body.workspace-open #step-panel-5 .step5-mask-header {
+  flex-direction: row !important;
+}
+body.workspace-open #step-panel-5 .step5-toolbar {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 !important;
+  scrollbar-width: none;
+}
+body.workspace-open #step-panel-5 .step5-toolbar::-webkit-scrollbar { display: none; }
+body.workspace-open #step-panel-5 .ai-mask-preview-modes {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+}
+body.workspace-open #step-panel-5 .step5-toolbar,
+body.workspace-open #step-panel-6 .step6-header-actions,
+body.workspace-open #step-panel-6 .step6-toolbar,
+body.workspace-open #step-panel-10 .annotation-header-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  min-width: 0;
+}
+body.workspace-open #step-panel-5 .step5-toolbar,
+body.workspace-open #step-panel-6 .step6-header-actions,
+body.workspace-open #step-panel-10 .annotation-header-actions { margin-left: auto; }
+body.workspace-open #step-panel-6 .step6-toolbar { margin-left: 0; }
+body.workspace-open #step-panel-1 .workflow-title,
+body.workspace-open #step-panel-2 .workflow-title,
+body.workspace-open #step-panel-3 .workflow-title,
+body.workspace-open #step-panel-5 .workflow-title,
+body.workspace-open #step-panel-6 .workflow-title,
+body.workspace-open #step-panel-10 .workflow-title {
+  flex: 0 0 auto !important;
+  min-height: 30px !important;
+  color: #0f172a !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  letter-spacing: -.01em !important;
+  white-space: nowrap;
+}
+body.workspace-open #step-panel-1 .workflow-title::before,
+body.workspace-open #step-panel-2 .workflow-title::before,
+body.workspace-open #step-panel-3 .workflow-title::before,
+body.workspace-open #step-panel-5 .workflow-title::before,
+body.workspace-open #step-panel-6 .workflow-title::before,
+body.workspace-open #step-panel-10 .workflow-title::before {
+  width: 6px !important;
+  height: 20px !important;
+  margin-right: 10px !important;
+  background: var(--workspace-chrome-orange) !important;
+}
+body.workspace-open #workspace-main > :is(#step-panel-1, #step-panel-2, #step-panel-3, #step-panel-5, #step-panel-6, #step-panel-10) .workflow-header button,
+body.workspace-open #workspace-main > :is(#step-panel-1, #step-panel-2, #step-panel-3, #step-panel-5, #step-panel-6, #step-panel-10) .workflow-header label.btn {
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+body.workspace-open #step-panel-3 .step3-toolbar-row > #step3-btn-confirm,
+body.workspace-open #step-panel-6 .step6-toolbar > .success,
+body.workspace-open #step-panel-10 .annotation-header-actions > .success {
+  margin-left: auto !important;
+  padding-inline: 16px !important;
+}
+@media (max-width: 1180px) {
+  body.workspace-open #workspace-main > #step-panel-1 > .workflow-header,
+  body.workspace-open #workspace-main > #step-panel-2 > .step2-sticky-header,
+  body.workspace-open #workspace-main > #step-panel-3 > .workflow-header,
+  body.workspace-open #workspace-main > #step-panel-5 > .workflow-header,
+  body.workspace-open #workspace-main > #step-panel-6 > .workflow-header,
+  body.workspace-open #workspace-main > #step-panel-10 .annotation-header {
+    margin-inline: -20px !important;
+    padding-inline: 20px !important;
+  }
+  body.workspace-open #workspace-main > #step-panel-1 > .workflow-header,
+  body.workspace-open #workspace-main > #step-panel-2 > .step2-sticky-header,
+  body.workspace-open #workspace-main > #step-panel-3 > .workflow-header,
+  body.workspace-open #workspace-main > #step-panel-5 > .workflow-header,
+  body.workspace-open #workspace-main > #step-panel-6 > .workflow-header,
+  body.workspace-open #workspace-main > #step-panel-10 .annotation-header {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none;
+  }
+}
+
+/* Supplied Prepare Article reference: only the two content views below the
+   Import Article / Topic switch.  The workspace rail and title stay shared. */
+header.app-header .logo > span {
+  color: #ee5d36 !important;
+}
+header.app-header .logo:hover > span { color: #ce4621 !important; }
+@keyframes spec-logo-float {
+  0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 6px rgba(14, 165, 233, .25)); }
+  50% { transform: translateY(-3px) scale(1.03); filter: drop-shadow(0 6px 14px rgba(14, 165, 233, .4)); }
+}
+body.workspace-open #step-panel-1 .step1-content-card,
+body.workspace-open #step-panel-1 .step1-content-card.is-topic {
+  height: calc(100vh - 193px) !important;
+  min-height: 520px !important;
+  overflow: hidden !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+}
+body.workspace-open #step-panel-1 .step1-import-view,
+body.workspace-open #step-panel-1 .step1-topic-view {
+  padding: 24px !important;
+}
+body.workspace-open #step-panel-1 .step1-import-view .step1-editor-shell {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-1 .step1-import-view .step1-markdown-editor {
+  padding: 0 !important;
+}
+body.workspace-open #step-panel-1 .step1-md-block { max-width: none !important; }
+body.workspace-open #step-panel-1 .step1-editor-footer {
+  border-top: 0 !important;
+  background: #fff !important;
+}
+body.workspace-open #step-panel-1 .is-topic .step1-topic-view {
+  height: 100% !important;
+  flex: 1 1 auto !important;
+  gap: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-view > * {
+  width: 100%;
+  max-width: none !important;
+  margin-inline: 0 !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-panel {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-result-header {
+  min-height: 26px !important;
+  margin: 18px 0 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-result-title {
+  color: #1e293b !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-result-accent {
+  width: 8px !important;
+  height: 8px !important;
+  background: #ee5d36 !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot {
+  min-height: 0 !important;
+  margin-top: 0 !important;
+  flex: 0 0 auto !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-editor-shell {
+  height: auto !important;
+  min-height: 460px !important;
+  flex: 0 0 auto !important;
+  overflow: visible !important;
+  border: 1px solid #f1f5f9 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04) !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-markdown-editor {
+  min-height: 420px !important;
+  padding: 24px !important;
+  flex: 0 0 auto !important;
+  overflow: visible !important;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important;
+  font-size: 12px !important;
+}
+body.workspace-open #step-panel-1 .is-topic .step1-md-block { margin-bottom: 12px; }
+body.workspace-open #step-panel-6 .step6-header-actions,
+body.workspace-open #step-panel-6 .step6-toolbar {
+  height: 30px !important;
+  min-height: 30px !important;
+  flex: 0 0 auto !important;
+}
+@media (max-width: 760px) {
+  body.workspace-open #step-panel-1 .step1-content-card,
+  body.workspace-open #step-panel-1 .step1-content-card.is-topic { min-height: 390px !important; }
+  body.workspace-open #step-panel-1 .step1-import-view,
+  body.workspace-open #step-panel-1 .step1-topic-view { padding: 16px !important; }
+}
+
+/* Annotation refinements: calm shell, wider transient notices, compact page tabs. */
+.home-library-navigation-footer.stitch-sidebar-footer {
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+header.app-header .logo .logo-icon,
+header.app-header .logo .logo-mark,
+.sidebar .step-item.active::after,
+.step-state-legend .legend-current {
+  animation: none !important;
+  transform: none !important;
+}
+header.app-header .logo:hover .logo-mark {
+  transform: none !important;
+  filter: none !important;
+}
+#toast-container { width: min(630px, calc(100vw - 24px)) !important; }
+#toast-container .toast {
+  width: min(630px, calc(100vw - 24px)) !important;
+  max-width: 100% !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  grid-template-columns: 10px minmax(0, 1fr) !important;
+}
+#toast-container .toast-close { display: none !important; }
+body.workspace-open #step-panel-1 .step1-content-card:focus-within {
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .06) !important;
+}
+body.workspace-open #step-panel-1 #step1-topic-input { padding-right: 12px !important; }
+body.workspace-open #step-panel-1 #step1-topic-input:focus {
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-editor-shell {
+  overflow: hidden !important;
+  border-color: #e2e8f0 !important;
+  background: #fff !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-markdown-editor {
+  box-sizing: border-box;
+  background: transparent !important;
+}
+body.workspace-open #step-panel-1 .step1-editor-footer { display: none !important; }
+body.workspace-open #step-panel-1 #step1-status-hint { display: none !important; }
+#step2-btn-generate-script,
+#step2-btn-generate-visual,
+#step2-btn-generate-script:hover,
+#step2-btn-generate-visual:hover { box-shadow: none !important; }
+
+/* Keep the article surface quiet and let the workspace page own scrolling. */
+body.workspace-open #step-panel-1 .step1-content-card.is-topic {
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+body.workspace-open #step-panel-1 .is-topic .step1-topic-view {
+  height: auto !important;
+  overflow: visible !important;
+  flex: none !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-input-wrap,
+body.workspace-open #step-panel-1 #step1-topic-input,
+body.workspace-open #step-panel-1 #step1-topic-input:focus {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-editor-shell,
+body.workspace-open #step-panel-1 .step1-import-view .step1-editor-shell {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-editor-shell,
+body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-markdown-editor {
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+body.workspace-open #step-panel-1 .step1-markdown-editor {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+#toast-container { display: flex; flex-direction: column; align-items: center; }
+#toast-container .toast {
+  box-sizing: border-box;
+  width: max-content !important;
+  max-width: min(630px, calc(100vw - 24px)) !important;
+}
+
+#step-panel-2 .step2-thumb-delete {
+  top: -4px;
+  right: -4px;
+  width: 13px !important;
+  height: 13px !important;
+  min-width: 13px !important;
+  min-height: 13px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+#step-panel-2 .vn-group-body textarea {
+  height: var(--step2-field-height, auto) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  resize: none !important;
+}
+
+body.workspace-open #step-panel-5 .workspace-right {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+body.workspace-open #step-panel-5 #step5-boxes-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+body.workspace-open #step-panel-5 .ai-mask-preview-modes { display: none !important; }
+
+/* Match only the supplied image-card treatment; keep the current workflow. */
+body.workspace-open #step-panel-3 .step3-image-card {
+  padding: 18px !important;
+  border: 1px solid rgba(226, 232, 240, .8) !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .06) !important;
+  transition: box-shadow .16s ease !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card:hover {
+  box-shadow: 0 8px 20px rgba(15, 23, 42, .08) !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .img-preview-container {
+  border: 1px solid rgba(241, 245, 249, .9) !important;
+  border-radius: 12px !important;
+  background: #fff8f4 !important;
+}
+#step2-thumbs .slide-thumbnail-card.step2-slide-thumb {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: 0 0 auto !important;
+  padding-inline: 12px !important;
+}
+
+/* Topic stays an obvious editable field without restoring the old heavy ring. */
+body.workspace-open #step-panel-1 #step1-topic-input {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 9px !important;
+  background: #f8fafc !important;
+}
+body.workspace-open #step-panel-1 #step1-topic-input:focus {
+  border-color: #f46a38 !important;
+  box-shadow: 0 0 0 2px rgba(244, 106, 56, .12) !important;
+}
+
+#step-panel-2 .step2-thumb-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 22px;
+  user-select: none;
+  touch-action: none;
+}
+#step-panel-2 .step2-thumb-delete {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  line-height: 0 !important;
+}
+#step-panel-2 .step2-thumb-delete svg {
+  display: block;
+  width: 9px;
+  height: 9px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* The supplied card has two primary actions on top; secondary tools fit below. */
+body.workspace-open #step3-images-grid.step3-grid-four {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+@media (max-width: 1100px) {
+  body.workspace-open #step3-images-grid.step3-grid-four {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 700px) {
+  body.workspace-open #step3-images-grid.step3-grid-four {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  min-height: 32px !important;
+  margin-bottom: 12px !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  min-height: 32px !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-actions > .step3-card-action {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-ai-action,
+body.workspace-open #step-panel-3 .step3-image-card .step3-ai-action:hover {
+  border-color: #111827 !important;
+  background: #111827 !important;
+  color: #fff !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-heading {
+  min-height: 0 !important;
+  margin-bottom: 12px !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-utilities {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-utilities > .step3-card-action {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 9px !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+}

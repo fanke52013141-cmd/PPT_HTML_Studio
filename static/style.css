@@ -6279,7 +6279,6 @@ body.mode-manual #step2-generation-status,
 body.mode-manual #step2-autosave-status{display:none !important}
 
 /* 手动模式第二步：隐藏强 AI 入口（已在上面），自动模式第二步隐藏手动独有按钮 */
-body.mode-auto #step2-btn-add-slide,
 body.mode-auto #step2-btn-batch-import{display:none !important}
 
 /* 手动模式 Step 6：隐藏"同步"按钮（避免覆盖用户已编辑的演讲稿）。

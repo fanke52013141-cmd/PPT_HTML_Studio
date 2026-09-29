@@ -92,6 +92,16 @@ const API = {
     return this.fetch(url, extra);
   },
 
+  async getOptional(url) {
+    try {
+      return await this.fetch(url, { silent: true });
+    } catch (error) {
+      if (error?.status === 404) return { success: false };
+      showToast(`❌ 错误: ${error.message}`);
+      throw error;
+    }
+  },
+
   // [配置包压缩包 20260908] 下载二进制资源（如 ZIP 配置包），返回 Blob。
   async getBinary(url) {
     return this.fetch(url, { responseType: 'blob' });

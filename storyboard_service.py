@@ -389,11 +389,49 @@ def _mark_step2_visual_plan_stale(project: Project, previous_plan: Dict[str, Any
         logger.warning("Could not mark the existing visual plan stale after script edit")
 
 
+def _sync_visual_plan_for_script_reorder(project: Project, previous_plan: Dict[str, Any], current_plan: Dict[str, Any]) -> bool:
+    """Keep existing visuals when only the order of unchanged script pages moves."""
+    previous_slides = previous_plan.get("slides") or []
+    current_slides = current_plan.get("slides") or []
+    if (not previous_slides or len(previous_slides) != len(current_slides)
+            or previous_plan.get("title") != current_plan.get("title")):
+        return False
+    old_by_id = {slide.get("slide_id"): slide for slide in previous_slides if isinstance(slide, dict)}
+    new_by_id = {slide.get("slide_id"): slide for slide in current_slides if isinstance(slide, dict)}
+    if (len(old_by_id) != len(previous_slides) or old_by_id != new_by_id
+            or [slide.get("slide_id") for slide in previous_slides]
+            == [slide.get("slide_id") for slide in current_slides]):
+        return False
+    visual_path = step2_visual_plan_path(project)
+    if not os.path.isfile(visual_path):
+        return False
+    try:
+        with open(visual_path, "r", encoding="utf-8-sig") as file:
+            visual_plan = json.load(file)
+        visual_slides = visual_plan.get("slides") if isinstance(visual_plan, dict) else None
+        if not isinstance(visual_slides, list):
+            return False
+        visual_by_id = {slide.get("slide_id"): slide for slide in visual_slides if isinstance(slide, dict)}
+        if len(visual_by_id) != len(current_slides) or set(visual_by_id) != set(new_by_id):
+            return False
+        old_hash = _step2_script_plan_fingerprint(previous_plan)
+        if visual_plan.get("source_script_hash") not in (None, "", old_hash):
+            return False
+        visual_plan["slides"] = [visual_by_id[slide["slide_id"]] for slide in current_slides]
+        visual_plan["source_script_hash"] = _step2_script_plan_fingerprint(current_plan)
+        write_json_atomic(visual_path, visual_plan)
+        return True
+    except (OSError, json.JSONDecodeError):
+        logger.warning("Could not retain visual plan after script reorder")
+        return False
+
+
 def _persist_step2_script_plan(
     project: Project,
     plan: Dict[str, Any],
     previous_plan: Dict[str, Any],
 ) -> tuple[bool, bool, bool, bool]:
+    _sync_visual_plan_for_script_reorder(project, previous_plan, plan)
     write_json_atomic(step2_script_plan_path(project), plan)
     _mark_step2_visual_plan_stale(project, previous_plan, plan)
     visual_plan_exists, visual_stale = _step2_visual_plan_status(project, plan)
@@ -916,10 +954,13 @@ def _execute_step2_visual_plan(
             else build_step2_visual_user_prompt(script_plan)
         )
         if attempt > 1:
+            retry_issue = str(last_error or "")
             user_prompt += (
-                f"\n\n⚠️ 上一次返回不完整，缺少部分幻灯片。"
-                f"请务必为以下所有 slide_id 生成完整的 visual_elements："
-                f"{', '.join(script_slide_ids)}。不要遗漏任何一张。"
+                "\n\n上一次可视化规划未通过校验："
+                f"{retry_issue}。请重新输出全部页面，每页都要有且仅有一个开头的 title 元素，"
+                "并至少有一个 role 为 body、visual_description 非空的正文视觉元素。"
+                "每个元素都要对应非空演讲片段，所有片段按顺序拼接须覆盖该页原演讲稿。"
+                f"必须包含这些 slide_id：{', '.join(script_slide_ids)}。"
             )
             write_project_log(
                 project,

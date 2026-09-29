@@ -122,7 +122,7 @@ function applyProjectAiMode(aiMode) {
   document.body.classList.add(mode === 'manual' ? 'mode-manual' : 'mode-auto');
   const toggleBtn = document.getElementById('btn-toggle-ai-mode');
   if (toggleBtn) {
-    toggleBtn.style.display = Number(state.currentStep) === 1 ? 'none' : 'inline-block';
+    toggleBtn.style.display = Number(state.currentStep) === 2 ? 'inline-block' : 'none';
     toggleBtn.textContent = `分镜方式：${mode === 'manual' ? '手动编排' : 'AI 辅助'}`;
     toggleBtn.classList.remove('ai-mode-auto', 'ai-mode-manual');
     toggleBtn.classList.add(mode === 'manual' ? 'ai-mode-manual' : 'ai-mode-auto');
@@ -136,10 +136,9 @@ async function toggleProjectAiMode() {
   if (!state.currentProject) return;
   const current = (state.currentProject.ai_mode || 'auto').toLowerCase();
   const next = current === 'manual' ? 'auto' : 'manual';
-  const confirmMsg = next === 'manual'
-    ? '切换到手动编排后：\n- 第二步将只填写标题和演讲稿，不再调用 AI 生成可视化\n- 元素动画仍需在第 5 步由你主动启用\n- 已有的分镜数据不会被清除\n\n确认切换吗？'
-    : '切换到 AI 辅助后：\n- 第二步将恢复调用 AI 生成完整分镜\n- 元素动画仍只会在第 5 步由你主动启用\n- 已有的手动数据不会被清除\n\n确认切换吗？';
-  showCustomConfirm('切换 AI 模式', confirmMsg, async () => {
+  const toggleBtn = document.getElementById('btn-toggle-ai-mode');
+  if (toggleBtn) toggleBtn.disabled = true;
+  try {
     const res = await API.put(`/api/projects/${state.currentProject.id}/ai-mode`, { ai_mode: next });
     if (res && res.success) {
       applyProjectAiMode(res.ai_mode);
@@ -154,7 +153,9 @@ async function toggleProjectAiMode() {
         await navigateToStep(visibleStep);
       }
     }
-  });
+  } finally {
+    if (toggleBtn) toggleBtn.disabled = false;
+  }
 }
 
 function renderProductionModeSummary(project = state.currentProject) {
@@ -276,7 +277,7 @@ async function navigateToStep(step) {
   }
   state.currentStep = step;
   const modeButton = document.getElementById('btn-toggle-ai-mode');
-  if (modeButton) modeButton.style.display = step === 1 ? 'none' : 'inline-block';
+  if (modeButton) modeButton.style.display = step === 2 ? 'inline-block' : 'none';
   
   // 隐藏所有面板
   document.querySelectorAll('.step-panel').forEach(panel => panel.style.display = 'none');

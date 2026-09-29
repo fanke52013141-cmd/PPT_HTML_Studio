@@ -572,14 +572,14 @@ async function loadStep5Data() {
   if (!projectId) return;
   await loadStep3VisualSettings();
   try {
-    const contractRes = await API.get(`/api/projects/${projectId}/steps/2/result`);
+    const contractRes = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
     if (state.currentProject?.id !== projectId) return;
     if (contractRes.success && contractRes.contract) {
       step2Contract = contractRes.contract;
     }
   } catch (e) {}
 
-  const res = await API.get(`/api/projects/${projectId}/steps/5/result`);
+  const res = await API.getOptional(`/api/projects/${projectId}/steps/5/result`);
   if (state.currentProject?.id !== projectId) return;
   if (res.success && res.manifest) {
     manifestData = res.manifest;

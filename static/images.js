@@ -87,7 +87,7 @@ async function loadStep3Data() {
   if (!projectId) return;
   // 优先加载分镜数据，保证即使无图片也能渲染占位卡
   if (!state.slides || state.slides.length === 0) {
-    const contractRes = await API.get(`/api/projects/${projectId}/steps/2/result`);
+    const contractRes = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     if (contractRes.success && contractRes.contract) {
       state.slides = contractRes.contract.slides || [];
@@ -99,7 +99,7 @@ async function loadStep3Data() {
 
   // 获取每个 slide 拼接的 Prompt
   try {
-    const promptRes = await API.get(`/api/projects/${projectId}/steps/3/prompts`);
+    const promptRes = await API.getOptional(`/api/projects/${projectId}/steps/3/prompts`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     if (promptRes.success) {
       slidePrompts = promptRes.prompts || [];
@@ -180,8 +180,8 @@ function renderStep3Grid() {
 
   step3ImageOrder.forEach((img, idx) => {
     const card = document.createElement('div');
-    card.className = 'card soft-elevation slide-card-draggable';
-    card.style.cssText = 'padding: 0.5rem 0.8rem 0.8rem; position: relative; background: var(--bg-color); margin-bottom: 0;';
+    card.className = 'card soft-elevation slide-card-draggable step3-image-card';
+    card.style.cssText = 'position: relative; margin-bottom: 0;';
 
     card.addEventListener('dragover', (e) => {
       if (step3DraggedIndex < 0 || step3DraggedIndex === idx) return;
@@ -252,14 +252,6 @@ function renderStep3Grid() {
           </span>
         </div>
         <div class="step3-card-actions">
-          ${img.exists ? `
-            <button class="secondary step3-card-action step3-reuse-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>
-              复用旧标注
-            </button>
-            <button class="danger step3-card-action step3-delete-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>
-              删除
-            </button>
-          ` : '<button class="step3-card-action step3-action-placeholder" type="button" disabled aria-hidden="true" tabindex="-1">删除</button>'}
           <label class="btn secondary step3-card-action step3-upload-action ${isBusy ? 'is-disabled' : ''}">
             ${isUploading ? '上传中' : '上传'}
             <input class="step3-upload-input" data-slide-id="${escHtml(img.slide_id)}" type="file" accept="image/*" ${isBusy ? 'disabled' : ''} style="display: none;">
@@ -277,6 +269,10 @@ function renderStep3Grid() {
       <div class="img-preview-container" style="width: 100%; aspect-ratio: ${(typeof getProjectCanvasGeometry === 'function' ? getProjectCanvasGeometry().aspectRatio : '16 / 9')}; position: relative; border: 2px solid var(--ink-color); border-radius: 6px; overflow: hidden; background: #fffdf5;">
         ${previewHtml}
       </div>
+      ${img.exists ? `<div class="step3-card-utilities">
+        <button class="secondary step3-card-action step3-reuse-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>复用旧标注</button>
+        <button class="danger step3-card-action step3-delete-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>删除</button>
+      </div>` : ''}
     `;
     const dragHandle = card.querySelector('.slide-drag-handle');
     card.querySelector('.step3-ai-action')?.addEventListener('click', (event) => {

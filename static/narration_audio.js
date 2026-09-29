@@ -39,8 +39,9 @@ async function loadStep6Data() {
     renderStep6Workspace();
     void offerArtifactRepair(res, '演讲稿数据', loadStep6Data);
   } else {
-    // 首次进入没有演讲稿，提示同步初始化
-    await initStep6Narration();
+    // 浏览未开始的步骤不触发写入或缺失依赖错误；用户可主动点击同步。
+    narrationData = { slides: [] };
+    renderStep6Workspace();
   }
 }
 
@@ -452,6 +453,11 @@ async function loadStep7Data() {
     slot.innerHTML = '';
     slot.classList.remove('has-audio');
   });
+
+  if (!narrationData?.slides?.length) {
+    emptyState.innerText = '尚未生成音频。先准备旁白，再点击“生成音频”。';
+    return;
+  }
 
   const [res, audioStatus] = await Promise.all([
     API.get(`/api/projects/${projectId}/steps/3/images`),

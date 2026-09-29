@@ -17,6 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 初始化全局页面级事件监听
 function initGlobalEvents() {
+  // Buttons keep their visible label or aria-label, without native hover explanations.
+  document.addEventListener('pointerover', event => {
+    const button = event.target.closest?.('button, [role="button"]');
+    if (button?.hasAttribute('title')) {
+      if (!button.getAttribute('aria-label') && !button.textContent.trim()) {
+        button.setAttribute('aria-label', button.getAttribute('title'));
+      }
+      button.removeAttribute('title');
+    }
+  }, true);
   document.addEventListener('click', event => {
     const helpButton = event.target.closest('[data-prompt-help]');
     if (helpButton) openPromptIOHelp(helpButton.dataset.promptHelp);
@@ -123,15 +133,6 @@ function initGlobalEvents() {
   document.getElementById('step1-btn-generate-article')?.addEventListener('click', () => generateStep1Article());
   document.getElementById('step1-btn-system-content')?.addEventListener('click', () => openArticleSystemContentModal());
   document.getElementById('step1-copy-article')?.addEventListener('click', () => copyStep1Article());
-  document.getElementById('step1-topic-input')?.addEventListener('input', () => updateStep1TopicCharCount());
-  document.getElementById('step1-clear-topic')?.addEventListener('click', () => {
-    const input = document.getElementById('step1-topic-input');
-    if (input) {
-      input.value = '';
-      updateStep1TopicCharCount();
-      input.focus();
-    }
-  });
   document.getElementById('step1-article-input')?.addEventListener('input', event => autoResizeTextarea(event.currentTarget));
   document.getElementById('step1-markdown-editor')?.addEventListener('input', () => syncStep1MarkdownToSource());
   document.getElementById('step1-markdown-editor')?.addEventListener('paste', event => pasteStep1PlainText(event));
@@ -139,8 +140,6 @@ function initGlobalEvents() {
   // ================= 步骤 2 事件 =================
   document.getElementById('step2-btn-generate-script')?.addEventListener('click', () => openStep2ScriptStage());
   document.getElementById('step2-btn-generate-visual')?.addEventListener('click', () => generateStep2VisualPlan());
-  document.getElementById('step2-btn-save-visual')?.addEventListener('click', () => saveStep2Contract());
-  document.getElementById('step2-btn-save-script')?.addEventListener('click', () => saveStep2ScriptPlan());
   document.getElementById('step2-btn-regenerate-script')?.addEventListener('click', () => openStep2GenerationModal());
   document.getElementById('btn-step2-generation-cancel')?.addEventListener('click', () => closeStep2GenerationModal());
   document.getElementById('btn-step2-generation-confirm')?.addEventListener('click', () => confirmStep2Generation());
@@ -149,7 +148,7 @@ function initGlobalEvents() {
   document.getElementById('step2-btn-save')?.addEventListener('click', () => handleStep2BatchDeleteButton());
   document.getElementById('step2-btn-cancel-delete')?.addEventListener('click', () => cancelStep2BatchDelete());
   // 手动模式：添加幻灯片 + 批量导入
-  document.getElementById('step2-btn-add-slide')?.addEventListener('click', () => addManualSlide());
+  document.getElementById('step2-btn-add-slide')?.addEventListener('click', () => addStep2Slide());
   document.getElementById('step2-btn-batch-import')?.addEventListener('click', () => openStep2BatchImportModal());
   document.getElementById('step2-batch-import-download')?.addEventListener('click', () => downloadStep2BatchTemplate());
   document.getElementById('step2-batch-import-file')?.addEventListener('change', e => handleStep2BatchImportFile(e));
@@ -226,6 +225,7 @@ function initGlobalEvents() {
     updateStep2PromptTemplateDeleteButton();
   });
   document.getElementById('step2-visual-narration-map')?.addEventListener('input', event => handleStep2MapEditorInput(event));
+  document.getElementById('step2-script-visuals')?.addEventListener('input', event => handleStep2MapEditorInput(event));
   document.getElementById('step2-visual-narration-map')?.addEventListener('change', event => handleStep2MapEditorChange(event));
   document.getElementById('step2-script-slides')?.addEventListener('input', event => handleStep2MapEditorInput(event));
   document.getElementById('step2-script-slides')?.addEventListener('change', event => handleStep2MapEditorChange(event));

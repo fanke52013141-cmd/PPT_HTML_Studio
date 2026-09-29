@@ -62,6 +62,13 @@ orange `#f46a38` brand, white rounded cards, dark primary buttons, the
 `Flat Outline UI` and `Soft Pastel Studio` blocks in `static/style.css` are
 legacy compatibility foundations only — visible surfaces are styled by the
 appended strict-parity layers at the end of the file.
+For the shared workspace chrome in visible Steps 1–6, the user-supplied
+storyboard HTML is the exact reference: its header, three-state sidebar, and
+59px right title bar use `#ee5d36` / `#fff5f0` as documented in
+`docs/ui-spec.md`. Keep these four regions uniform across the six steps.
+The current header uses a blue Möbius logo and orange `PPT Studio` wordmark.
+The two Step 1 content views follow the supplied Prepare Article reference;
+its sidebar, global header, and `准备文章` heading are outside that reference scope.
 
 ### Workspace shell spec (docs/ui-spec.md)
 

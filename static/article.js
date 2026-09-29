@@ -113,12 +113,6 @@ function updateStep1TopicArticleMeta(markdown = document.getElementById('step1-a
   if (copyButton) copyButton.disabled = !content;
 }
 
-function updateStep1TopicCharCount() {
-  const topic = document.getElementById('step1-topic-input');
-  const count = document.getElementById('step1-topic-char-count');
-  if (topic && count) count.textContent = `${topic.value.length} 字`;
-}
-
 async function copyStep1Article() {
   const content = syncStep1MarkdownToSource().trim();
   if (!content) return;
@@ -200,7 +194,6 @@ function setStep1Mode(mode) {
   }
   if (importView) importView.style.display = normalized === 'article' ? 'flex' : 'none';
   if (topicView) topicView.style.display = normalized === 'topic' ? 'flex' : 'none';
-  updateStep1TopicCharCount();
   updateStep1TopicArticleMeta();
 }
 
@@ -218,7 +211,6 @@ function ensureArticleSystemContentModal() {
           <h3 class="highlight-title">话题生成文章 · System Content</h3>
           <button class="prompt-help-button" type="button" data-prompt-help="article" aria-label="查看话题生成文章的输入输出示例">?</button>
         </div>
-        <p class="config-editor-note">这里的 System Content 可直接修改；问号中展示系统实际追加的 User Content 和输出格式示例。</p>
         <textarea id="article-generation-system-content" rows="18" spellcheck="false"></textarea>
       </div>
       <div class="config-editor-actions">

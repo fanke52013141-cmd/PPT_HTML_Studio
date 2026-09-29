@@ -332,6 +332,22 @@ async function loadStep8Data() {
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
+  const contract = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
+  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+  if (!contract.success || !contract.contract?.slides?.length) {
+    const pptxLabel = document.getElementById('step8-pptx-readiness');
+    const pptxButton = document.getElementById('step8-btn-pptx');
+    const renderButton = document.getElementById('step8-btn-render');
+    if (pptxLabel) pptxLabel.textContent = '尚未生成分镜与图片';
+    if (pptxButton) pptxButton.disabled = true;
+    if (renderButton) renderButton.disabled = true;
+    document.getElementById('step8-result-box').style.display = 'none';
+    const impactPanel = document.getElementById('step8-impact-panel');
+    if (impactPanel) impactPanel.style.display = 'none';
+    const digitalHumanMessage = document.getElementById('step8-digital-human-message');
+    if (digitalHumanMessage) digitalHumanMessage.textContent = '尚未生成可用于输出的分镜。';
+    return;
+  }
   await Promise.all([
     loadStep8PptxData(projectId, sessionVersion),
     refreshStep8SubtitleExport(projectId, sessionVersion),

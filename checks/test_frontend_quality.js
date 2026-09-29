@@ -80,11 +80,12 @@ if (!stitchCss.includes('left: 50% !important') || !stitchCss.includes('transfor
   throw new Error('global notices must be centered');
 }
 if (/\.toast\s*\{[^}]*position:\s*fixed/s.test(css)) throw new Error('individual toasts still overlap at a fixed position');
-if (!/\.step3-card-header\s*\{[^}]*min-height:\s*42px/s.test(css)) throw new Error('image card header height is not stable');
-if (!/\.step3-card-actions\s*\{[^}]*grid-template-columns:\s*44px 36px 48px/s.test(css)) throw new Error('image card action columns are not stable');
-if (!/\.step3-card-action[\s\S]*?white-space:\s*nowrap\s*!important/s.test(css)) throw new Error('image card actions can still wrap and jitter');
-if (!images.includes('step3-action-placeholder')) throw new Error('image card delete action does not reserve a stable slot');
-if (images.indexOf('step3-delete-action') > images.indexOf('step3-upload-action')) throw new Error('image card delete action must sit between AI generation and upload');
+if (!images.includes('step3-card-utilities') || !stitchCss.includes('.step3-image-card .step3-card-actions')) {
+  throw new Error('image card actions must separate primary and secondary controls');
+}
+if (!/\.step3-image-card \.step3-card-actions\s*\{[^}]*display:\s*flex\s*!important/s.test(stitchCss)) {
+  throw new Error('image card primary actions must stay on one row');
+}
 if (!images.includes('step3UploadingSlides') || !images.includes("step3GeneratingPreviewHtml('上传中'")) throw new Error('per-card upload progress is missing');
 if (!background.includes('step3-btn-delete-all-images') || !images.includes('deleteAllStep3Images')) throw new Error('bulk image deletion control is missing');
 if (html.includes('step3-image-order-hint')) throw new Error('obsolete fixed-position image hint is still visible');

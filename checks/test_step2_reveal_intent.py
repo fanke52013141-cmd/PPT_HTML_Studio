@@ -40,6 +40,32 @@ def test_old_visual_plan_defaults_to_sequential_reveal() -> None:
     assert plan["slides"][0]["visual_elements"][1]["reveal_mode"] == "sequential"
 
 
+def test_reordering_script_pages_keeps_existing_visuals(monkeypatch, tmp_path: Path) -> None:
+    import storyboard_service as service
+
+    old = {"title": "主题", "slides": [
+        {"slide_id": "slide_001", "slide_title": "一", "narration": "第一段"},
+        {"slide_id": "slide_002", "slide_title": "二", "narration": "第二段"},
+    ]}
+    reordered = {"title": "主题", "slides": list(reversed(old["slides"]))}
+    visual_path = tmp_path / "slide_visual_plan.json"
+    visual_path.write_text(json.dumps({"slides": [
+        {"slide_id": "slide_001", "visual_elements": [{"element_id": "one"}]},
+        {"slide_id": "slide_002", "visual_elements": [{"element_id": "two"}]},
+    ]}), encoding="utf-8")
+    monkeypatch.setattr(service, "step2_visual_plan_path", lambda _project: str(visual_path))
+
+    assert service._sync_visual_plan_for_script_reorder(SimpleNamespace(), old, reordered)
+    saved = json.loads(visual_path.read_text(encoding="utf-8"))
+    assert [slide["slide_id"] for slide in saved["slides"]] == ["slide_002", "slide_001"]
+    assert saved["source_script_hash"] == service._step2_script_plan_fingerprint(reordered)
+    assert service._step2_visual_plan_status(SimpleNamespace(), reordered) == (True, False)
+
+    changed = json.loads(json.dumps(reordered))
+    changed["slides"][0]["narration"] = "改过的第二段"
+    assert not service._sync_visual_plan_for_script_reorder(SimpleNamespace(), reordered, changed)
+
+
 def test_together_intent_is_preserved_in_the_contract_and_manual_normalization() -> None:
     visual_plan = normalize_slide_visual_plan({
         "slides": [{
@@ -135,3 +161,36 @@ def test_project_mask_setting_owns_reveal_mode() -> None:
     )
     assert {item["reveal_mode"] for item in without_mask["slides"][0]["visual_elements"]} == {"together"}
     assert {item["reveal_mode"] for item in with_mask["slides"][0]["visual_elements"]} == {"sequential"}
+
+
+def test_visual_retry_names_missing_body_instead_of_missing_slide(monkeypatch, tmp_path: Path) -> None:
+    import server  # Configure service dependencies under the isolated test runtime.
+    import storyboard_service as service
+
+    del server
+    prompts = []
+    responses = iter([
+        {"slides": [{"slide_id": "slide_001", "visual_elements": [
+            {"role": "title", "visual_type": "text", "visual_description": "三个阶段", "narration": SCRIPT_PLAN["slides"][0]["narration"]},
+        ]}]},
+        {"slides": [{"slide_id": "slide_001", "visual_elements": [
+            {"role": "title", "visual_type": "text", "visual_description": "三个阶段", "narration": "先看三个阶段。"},
+            {"role": "body", "visual_type": "picture", "visual_description": "三个阶段并排展示", "narration": "它们在这一段说明中同时展示。"},
+        ]}]},
+    ])
+    monkeypatch.setattr(service, "read_step2_prompts_for_project", lambda *_args, **_kwargs: {
+        "visual_system": "test", "visual_output_example": "{}",
+    })
+    monkeypatch.setattr(service, "step2_visual_prompt_uses_legacy_contract", lambda _prompt: False)
+    monkeypatch.setattr(service, "run_step2_json_llm", lambda **kwargs: (prompts.append(kwargs["user_prompt"]), next(responses))[1])
+    monkeypatch.setattr(service, "step2_visual_plan_path", lambda _project: str(tmp_path / "visual.json"))
+    monkeypatch.setattr(service, "write_project_log", lambda *_args, **_kwargs: None)
+
+    result = service._execute_step2_visual_plan(
+        SimpleNamespace(mask_enabled=1), SCRIPT_PLAN,
+    )
+
+    assert result["success"] is True
+    assert len(prompts) == 2
+    assert "slide_001 至少需要一个 body 视觉元素" in prompts[1]
+    assert "role 为 body" in prompts[1]

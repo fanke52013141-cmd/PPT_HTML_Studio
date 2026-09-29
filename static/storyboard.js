@@ -18,7 +18,8 @@ function setStep2ButtonLabel(button, text) {
 
 // 「内容可视化」只有全部页面演讲稿生成完毕后才可点击。
 function step2VisualButtonReady() {
-  return Boolean(state.step2ScriptPlan?.slides?.length);
+  return Boolean(state.step2ScriptPlan?.slides?.length)
+    && state.step2ScriptPlan.slides.every(slide => String(slide.narration || '').trim());
 }
 
 function resetStep2ScriptState() {
@@ -41,17 +42,17 @@ async function loadStep2Data() {
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     state.storyboardRoles = configRes.roles || state.storyboardRoles;
   } catch (e) {}
-  const res = await API.get(`/api/projects/${projectId}/steps/2/result`);
+  const res = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   try {
-    const scriptRes = await API.get(`/api/projects/${projectId}/steps/2/script/result`);
+    const scriptRes = await API.getOptional(`/api/projects/${projectId}/steps/2/script/result`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     state.step2ScriptPlan = scriptRes.success ? scriptRes.script_plan : null;
   } catch (e) {
     state.step2ScriptPlan = null;
   }
   try {
-    const visualPlanRes = await API.get(`/api/projects/${projectId}/steps/2/visual/result`);
+    const visualPlanRes = await API.getOptional(`/api/projects/${projectId}/steps/2/visual/result`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     state.step2VisualExists = visualPlanRes.success === true;
     const step2Status = state.currentProject?.step_status?.['2'];
@@ -76,6 +77,7 @@ async function loadStep2Data() {
     state.step2BatchOriginalSlides = null;
     state.step2Stage = state.step2VisualStale ? 'script' : 'visual';
     renderStep2Workspace();
+    if (!isManualMode() && state.step2ScriptPlan?.slides?.length) updateStep2AutosaveStatus('演讲稿已保存');
     void offerArtifactRepair(res, '分镜数据', loadStep2Data);
   } else {
     state.slides = [];
@@ -85,31 +87,8 @@ async function loadStep2Data() {
     state.step2BatchOriginalSlides = null;
     state.step2Stage = 'script';
     state.step2WorkflowPending = true;
-    document.getElementById('step2-editor-area').style.display = 'none';
-    document.getElementById('step2-thumbs').style.display = 'none';
-    if (!isManualMode()) {
-      document.getElementById('step2-btn-generate-script').style.display = 'inline-flex';
-      document.getElementById('step2-btn-generate-visual').style.display = 'inline-flex';
-      setStep2ButtonLabel(
-        document.getElementById('step2-btn-generate-script'),
-        state.step2ScriptPlan?.slides?.length ? '查看/编辑演讲稿' : '生成演讲稿',
-      );
-      document.getElementById('step2-btn-generate-visual').disabled = !step2VisualButtonReady();
-      document.getElementById('step2-btn-script-prompt').style.display = 'inline-flex';
-      document.getElementById('step2-btn-visual-prompt').style.display = 'inline-flex';
-    } else {
-      document.getElementById('step2-btn-generate-script').style.display = 'none';
-      document.getElementById('step2-btn-generate-visual').style.display = 'none';
-      document.getElementById('step2-btn-script-prompt').style.display = 'none';
-      document.getElementById('step2-btn-visual-prompt').style.display = 'none';
-      // 手动模式新建项目：必须显示"添加幻灯片"和"批量导入"，否则用户无法开始
-      document.getElementById('step2-btn-add-slide').style.display = 'inline-flex';
-      document.getElementById('step2-btn-batch-import').style.display = 'inline-flex';
-    }
-    document.getElementById('step2-btn-save').style.display = 'none';
-    document.getElementById('step2-btn-next').style.display = 'none';
-    renderStep2ScriptReview();
-    updateStep2AutosaveStatus('');
+    renderStep2Workspace();
+    updateStep2AutosaveStatus(!isManualMode() && state.step2ScriptPlan?.slides?.length ? '演讲稿已保存' : '');
   }
 }
 
@@ -166,7 +145,7 @@ async function generateStep2ScriptPlan(requirement = '') {
     state.step2Stage = 'script';
     renderStep2Workspace();
     if (response.workflow_changed) refreshCurrentProjectStatus(2).catch(() => {});
-    showToast('演讲稿已生成。请先检查并保存，再生成可视化。');
+    showToast('演讲稿已生成');
     return true;
   } catch (error) {
     if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
@@ -186,6 +165,13 @@ async function generateStep2ScriptPlan(requirement = '') {
 
 // 二级菜单 Tab 数据源：合约分镜优先；仅有演讲稿时由演讲稿页面充当分页。
 function step2TabSourceSlides() {
+  if (!isManualMode() && state.step2ScriptPlan?.slides?.length) {
+    return state.step2ScriptPlan.slides.map((slide, index) => ({
+      slide_id: slide.slide_id || `slide_${String(index + 1).padStart(3, '0')}`,
+      main_title: slide.slide_title || '',
+      narration_text: slide.narration || '',
+    }));
+  }
   if ((state.slides || []).length) return state.slides;
   const planSlides = state.step2ScriptPlan?.slides || [];
   return planSlides.map((slide, index) => ({
@@ -208,6 +194,12 @@ function step2ActivePlanSlide() {
 function renderStep2ScriptVisualStage(planSlide) {
   const container = document.getElementById('step2-script-visuals');
   if (!container) return;
+  const stage = container.closest('.step2-stage--visual');
+  if (stage) stage.style.display = state.step2VisualExists ? '' : 'none';
+  if (!state.step2VisualExists) {
+    container.replaceChildren();
+    return;
+  }
   const visualById = new Map((state.slides || []).map(slide => [String(slide.slide_id || ''), slide]));
   const visual = visualById.get(String(planSlide?.slide_id || ''));
   if (visual && !state.step2VisualStale && !state.step2WorkflowPending) {
@@ -224,10 +216,6 @@ function renderStep2ScriptReview() {
   const list = document.getElementById('step2-script-slides');
   if (!section || !list) return;
   const plan = state.step2ScriptPlan;
-  const statusText = document.getElementById('step2-script-review-status');
-  if (statusText) statusText.textContent = state.step2VisualStale
-    ? '演讲稿有变更，已有可视化映射已过期。保存后点击工具栏“重新生成可视化”。'
-    : '可直接编辑本页标题和旁白，修改会自动保存。';
   const visible = !isManualMode() && !!plan?.slides?.length;
   section.style.display = visible ? 'block' : 'none';
   if (!visible) return;
@@ -255,28 +243,22 @@ function renderStep2ScriptReview() {
   renderStep2ScriptVisualStage(planSlide);
   const visualButton = document.getElementById('step2-btn-generate-visual');
   if (visualButton) {
-    visualButton.disabled = !plan.slides.length;
+    visualButton.disabled = !step2VisualButtonReady();
     setStep2ButtonLabel(visualButton, state.step2VisualStale ? '重新生成可视化' : '内容可视化');
   }
-  const saveVisualButton = document.getElementById('step2-btn-save-visual');
-  if (saveVisualButton) saveVisualButton.style.display = state.step2VisualExists && !state.step2VisualStale ? 'inline-flex' : 'none';
   list.querySelectorAll('[data-script-field]').forEach(input => {
     input.addEventListener('input', () => {
       const card = input.closest('[data-script-slide-index]');
       const slide = plan.slides[Number(card?.dataset.scriptSlideIndex)];
       if (!slide) return;
       slide[input.dataset.scriptField] = input.value;
+      if (visualButton) visualButton.disabled = !step2VisualButtonReady();
       state.step2VisualStale = state.step2VisualExists;
       if (state.step2VisualStale) {
         renderStep2ScriptVisualStage(slide);
         const nextButton = document.getElementById('step2-btn-next');
         if (nextButton) nextButton.disabled = true;
-        const saveVisualButton = document.getElementById('step2-btn-save-visual');
-        if (saveVisualButton) saveVisualButton.style.display = 'none';
       }
-      if (statusText) statusText.textContent = state.step2VisualStale
-        ? '演讲稿有变更，已有可视化映射已过期。保存后点击工具栏“重新生成可视化”。'
-        : '演讲稿有未保存修改。保存后，点击工具栏“内容可视化”生成对应映射。';
       if (input.dataset.scriptField === 'narration') {
         autoResizeNarrationTextarea(input);
         const count = card?.querySelector('[data-step2-word-count]');
@@ -294,6 +276,10 @@ async function saveStep2ScriptPlan(options = {}) {
   const projectId = step2CurrentProjectId();
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId || !state.step2ScriptPlan) return false;
+  if (!step2VisualButtonReady()) {
+    updateStep2AutosaveStatus('请填写新幻灯片的演讲稿');
+    return false;
+  }
   if (step2ScriptSaveTimer) {
     clearTimeout(step2ScriptSaveTimer);
     step2ScriptSaveTimer = null;
@@ -340,15 +326,9 @@ async function saveStep2ScriptPlan(options = {}) {
       renderStep2ScriptVisualStage(step2ActivePlanSlide());
       const nextButton = document.getElementById('step2-btn-next');
       if (nextButton) nextButton.disabled = false;
-      const saveVisualButton = document.getElementById('step2-btn-save-visual');
-      if (saveVisualButton) saveVisualButton.style.display = 'inline-flex';
     }
     const visualButton = document.getElementById('step2-btn-generate-visual');
     if (visualButton) setStep2ButtonLabel(visualButton, state.step2VisualStale ? '重新生成可视化' : '内容可视化');
-    const statusText = document.getElementById('step2-script-review-status');
-    if (statusText) statusText.textContent = state.step2VisualStale
-      ? '演讲稿有变更，已有可视化映射已过期。保存后点击工具栏“重新生成可视化”。'
-      : '可直接编辑本页标题和旁白，修改会自动保存。';
     updateStep2AutosaveStatus('演讲稿已保存');
     if (response.workflow_changed) refreshCurrentProjectStatus(2).catch(() => {});
     if (!options.silent) showToast('演讲稿已保存。');
@@ -361,7 +341,7 @@ async function generateStep2VisualPlan() {
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return false;
   if (!state.step2ScriptPlan?.slides?.length) {
-    showToast('请先生成并保存演讲稿，再执行内容可视化。');
+    showToast('请先生成演讲稿，再执行内容可视化。');
     return false;
   }
   if (!(await saveStep2ScriptPlan({ silent: true }))) return false;
@@ -425,7 +405,10 @@ function addManualSlide() {
   if (!state.slides) state.slides = [];
   saveCurrentSlideInputToState();
   const newIndex = state.slides.length;
-  const newSlideId = `slide_${String(newIndex + 1).padStart(3, '0')}`;
+  const usedIds = new Set(state.slides.map(slide => String(slide.slide_id || '')));
+  let number = 1;
+  while (usedIds.has(`slide_${String(number).padStart(3, '0')}`)) number += 1;
+  const newSlideId = `slide_${String(number).padStart(3, '0')}`;
   state.slides.push({
     slide_id: newSlideId,
     main_title: '',
@@ -447,6 +430,24 @@ function addManualSlide() {
   requestAnimationFrame(() => {
     document.getElementById('step2-slide-title-input')?.focus();
   });
+}
+
+function addStep2Slide() {
+  if (isManualMode()) return addManualSlide();
+  const plan = state.step2ScriptPlan ||= {
+    title: state.currentProject?.name || '演讲稿',
+    slides: [],
+  };
+  const usedIds = new Set([...plan.slides, ...(state.slides || [])].map(slide => String(slide.slide_id || '')));
+  let number = 1;
+  while (usedIds.has(`slide_${String(number).padStart(3, '0')}`)) number += 1;
+  plan.slides.push({ slide_id: `slide_${String(number).padStart(3, '0')}`, slide_title: `第 ${plan.slides.length + 1} 页`, narration: '' });
+  state.activeSlideIndex = plan.slides.length - 1;
+  state.step2VisualStale = state.step2VisualExists;
+  state.step2WorkflowPending = state.step2VisualExists;
+  renderStep2Workspace();
+  updateStep2AutosaveStatus('请填写新幻灯片的演讲稿');
+  document.querySelector('#step2-script-slides textarea[data-script-field="narration"]')?.focus();
 }
 
 // 提交手动分镜到后端（手动模式下点击"进入图片生成"时调用）
@@ -666,8 +667,8 @@ async function confirmStep2Generation() {
 }
 
 function renderStep2Workspace() {
-  if (state.activeSlideIndex >= state.slides.length) {
-    state.activeSlideIndex = Math.max(0, state.slides.length - 1);
+  if (state.activeSlideIndex >= step2TabSourceSlides().length) {
+    state.activeSlideIndex = Math.max(0, step2TabSourceSlides().length - 1);
   }
   const manual = isManualMode();
   const hasSlides = state.slides.length > 0;
@@ -699,29 +700,22 @@ function renderStep2Workspace() {
       visualGenerateBtn.disabled = !step2VisualButtonReady();
       visualGenerateBtn.classList.toggle('is-active', state.step2VisualExists && !state.step2VisualStale);
       setStep2ButtonLabel(visualGenerateBtn, state.step2VisualStale ? '重新生成可视化' : '内容可视化');
-      visualGenerateBtn.title = step2VisualButtonReady()
-        ? (state.step2VisualStale
-            ? '演讲稿已修改，重新生成第二步画面与演讲片段'
-            : '根据已保存的演讲稿生成第二步画面与演讲片段')
-        : '请先生成演讲稿；全部页面生成完毕后即可执行内容可视化';
+      visualGenerateBtn.removeAttribute('title');
     }
     if (scriptPromptBtn) scriptPromptBtn.style.display = 'inline-flex';
     if (visualPromptBtn) visualPromptBtn.style.display = 'inline-flex';
-    if (addSlideBtn) addSlideBtn.style.display = 'none';
+    if (addSlideBtn) addSlideBtn.style.display = 'inline-flex';
     if (batchImportBtn) batchImportBtn.style.display = 'none';
   }
+  if (addSlideBtn) addSlideBtn.disabled = state.step2BatchDeleteMode;
   renderStep2ScriptReview();
   // 批量删除/保存按钮在工具栏中（批量导入右侧）常显，方便随时进入删除模式
-  document.getElementById('step2-btn-save').style.display = showInlinePlan ? 'none' : 'inline-flex';
+  document.getElementById('step2-btn-save').style.display = step2TabSourceSlides().length ? 'inline-flex' : 'none';
   const step2NextButton = document.getElementById('step2-btn-next');
   step2NextButton.style.display = hasSlides ? 'inline-flex' : 'none';
   const visualizationNeedsRefresh = !manual && (state.step2WorkflowPending || state.step2VisualStale);
   step2NextButton.disabled = !hasSlides || visualizationNeedsRefresh;
-  step2NextButton.title = !hasSlides
-    ? '请先添加至少一个分镜'
-    : visualizationNeedsRefresh
-      ? '请先保存演讲稿并根据它重新生成可视化'
-      : '';
+  step2NextButton.removeAttribute('title');
   updateStep2BatchDeleteButton();
 
   // 渲染二级菜单 Tab（分页）：自动模式与手动模式共用同一数据源。
@@ -750,12 +744,11 @@ function renderStep2Workspace() {
     // 二级菜单 Tab（UI 规范 §5）：胶囊样式与动效由样式层接管；
     // 页码常显，主标题放悬停提示。
     const pageLabel = `第 ${idx + 1} 页`;
-    const tooltipTitle = (slide.main_title || slide.narration_text || '').trim() || pageLabel;
     thumb.innerHTML = `
       <span class="step2-thumb-handle" aria-hidden="true">⠿</span>
-      <span class="step2-thumb-label" title="${escHtml(tooltipTitle)}">${escHtml(pageLabel)}</span>
+      <span class="step2-thumb-label">${escHtml(pageLabel)}</span>
       ${state.step2BatchDeleteMode ? `
-        <button class="step2-thumb-delete" type="button" title="删除此分镜" aria-label="删除此分镜">✕</button>
+        <button class="step2-thumb-delete" type="button" aria-label="删除此分镜"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9"/></svg></button>
       ` : ''}
     `;
     thumb.addEventListener('click', () => {
@@ -803,7 +796,7 @@ function renderStep2Workspace() {
     }
     const narrationHint = document.getElementById('step2-narration-source-hint');
     if (narrationHint) narrationHint.textContent = narrationInput?.readOnly
-      ? '演讲稿以第一步保存的版本为准。需要修改时请返回该阶段编辑并重新执行内容可视化。'
+      ? '演讲稿以第一步生成的版本为准。需要修改时请返回该阶段编辑并重新执行内容可视化。'
       : '手动模式：直接在此输入本页要朗读的演讲稿，可多行。';
     [titleInput, narrationInput].forEach(input => {
       if (!input || input.dataset.boundStep2SimpleEditor === '1') return;
@@ -842,73 +835,99 @@ function renderStep2Workspace() {
   }
 }
 
-// 二级菜单 Tab 拖拽排序（UI 规范 §5）：拖动重排分镜顺序并自动保存合约。
-let step2DraggingThumb = null;
+// Only the handle starts sorting. Pointer capture supports mouse dragging and touch hold.
+function moveStep2Thumb(from, to) {
+  if (from < 0 || to < 0 || from === to || state.step2BatchDeleteMode) return;
+  saveCurrentSlideInputToState();
+  if (!isManualMode() && Array.isArray(state.step2ScriptPlan?.slides)) {
+    const plan = state.step2ScriptPlan.slides;
+    const activeId = String(plan[state.activeSlideIndex]?.slide_id || '');
+    const [moved] = plan.splice(from, 1);
+    plan.splice(to, 0, moved);
+    const order = new Map(plan.map((slide, index) => [String(slide.slide_id || ''), index]));
+    state.slides.sort((a, b) => (order.get(String(a.slide_id || '')) ?? Infinity)
+      - (order.get(String(b.slide_id || '')) ?? Infinity));
+    state.activeSlideIndex = Math.max(0, plan.findIndex(slide => String(slide.slide_id || '') === activeId));
+    state.step2VisualStale = state.step2VisualExists;
+    renderStep2Workspace();
+    updateStep2AutosaveStatus('排序保存中…');
+    if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
+    step2ScriptSaveTimer = setTimeout(async () => {
+      if (await saveStep2ScriptPlan({ silent: true }) && state.slides.length) {
+        const result = await saveStep2Contract({ silent: true, skipCurrentSlideSync: true });
+        updateStep2AutosaveStatus(result.success ? '演讲稿已保存' : '排序保存失败，请重试');
+      }
+    }, 700);
+  } else if (state.slides?.length) {
+    const activeId = String(state.slides[state.activeSlideIndex]?.slide_id || '');
+    const [moved] = state.slides.splice(from, 1);
+    state.slides.splice(to, 0, moved);
+    state.activeSlideIndex = Math.max(0, state.slides.findIndex(slide => String(slide.slide_id || '') === activeId));
+    renderStep2Workspace();
+    scheduleStep2AutoSave();
+  }
+}
 
 function bindStep2ThumbDrag(thumb) {
-  thumb.draggable = true;
-  thumb.addEventListener('dragstart', event => {
-    if (state.step2BatchDeleteMode) {
-      event.preventDefault();
-      return;
-    }
-    step2DraggingThumb = thumb;
-    thumb.classList.add('dragging');
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', 'step2-slide-thumb');
-  });
-  thumb.addEventListener('dragend', () => {
+  const handle = thumb.querySelector('.step2-thumb-handle');
+  if (!handle) return;
+  let pointerId = null;
+  let startX = 0;
+  let startY = 0;
+  let active = false;
+  let holdTimer = null;
+  const container = document.getElementById('step2-thumbs');
+  const clearHighlight = () => {
+    if (holdTimer) clearTimeout(holdTimer);
+    holdTimer = null;
     thumb.classList.remove('dragging');
-    document.querySelectorAll('#step2-thumbs .step2-slide-thumb').forEach(el => el.classList.remove('drag-over'));
-    step2DraggingThumb = null;
-  });
-  thumb.addEventListener('dragover', event => {
-    if (!step2DraggingThumb || step2DraggingThumb === thumb) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-    thumb.classList.add('drag-over');
-  });
-  thumb.addEventListener('dragleave', () => thumb.classList.remove('drag-over'));
-  thumb.addEventListener('drop', event => {
-    event.preventDefault();
-    thumb.classList.remove('drag-over');
-    if (!step2DraggingThumb || step2DraggingThumb === thumb) return;
-    const container = document.getElementById('step2-thumbs');
-    const items = [...container.querySelectorAll('.step2-slide-thumb')];
-    const from = items.indexOf(step2DraggingThumb);
-    const to = items.indexOf(thumb);
-    if (from < 0 || to < 0 || from === to) return;
-    if (state.slides.length) {
-      const moved = state.slides.splice(from, 1)[0];
-      state.slides.splice(to, 0, moved);
-      // 演讲稿列表与分镜共用 slide_id：同步排序，避免两处列表顺序漂移。
-      if (Array.isArray(state.step2ScriptPlan?.slides)) {
-        const orderById = new Map(state.slides.map((item, index) => [String(item.slide_id || ''), index]));
-        const mapped = state.step2ScriptPlan.slides.filter(item => orderById.has(String(item.slide_id || '')))
-          .sort((a, b) => orderById.get(String(a.slide_id || '')) - orderById.get(String(b.slide_id || '')));
-        const unmapped = state.step2ScriptPlan.slides.filter(item => !orderById.has(String(item.slide_id || '')));
-        state.step2ScriptPlan.slides = [...mapped, ...unmapped];
-      }
-      const activeId = String(state.slides[state.activeSlideIndex]?.slide_id || '');
-      const nextActive = state.slides.findIndex(item => String(item.slide_id || '') === activeId);
-      state.activeSlideIndex = nextActive >= 0 ? nextActive : Math.max(0, to);
-      renderStep2Workspace();
-      scheduleStep2AutoSave();
-    } else if (Array.isArray(state.step2ScriptPlan?.slides)) {
-      // 仅演讲稿阶段：直接重排演讲稿页面并保存演讲稿。
-      const movedPlan = state.step2ScriptPlan.slides.splice(from, 1)[0];
-      state.step2ScriptPlan.slides.splice(to, 0, movedPlan);
-      const activeId = String((step2TabSourceSlides()[state.activeSlideIndex] || {}).slide_id || '');
-      const nextActive = state.step2ScriptPlan.slides.findIndex(item => String(item.slide_id || '') === activeId);
-      state.activeSlideIndex = nextActive >= 0 ? nextActive : Math.max(0, to);
-      renderStep2Workspace();
-      if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
-      step2ScriptSaveTimer = setTimeout(() => saveStep2ScriptPlan({ silent: true }), 700);
+    container.querySelectorAll('.drag-over').forEach(item => item.classList.remove('drag-over'));
+    active = false;
+    pointerId = null;
+  };
+  handle.addEventListener('click', event => event.stopPropagation());
+  handle.addEventListener('pointerdown', event => {
+    if (state.step2BatchDeleteMode || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    pointerId = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    handle.setPointerCapture(event.pointerId);
+    if (event.pointerType === 'touch') {
+      holdTimer = setTimeout(() => {
+        active = true;
+        thumb.classList.add('dragging');
+      }, 250);
     } else {
+      active = true;
+      thumb.classList.add('dragging');
+    }
+  });
+  handle.addEventListener('pointermove', event => {
+    if (event.pointerId !== pointerId) return;
+    if (!active && Math.hypot(event.clientX - startX, event.clientY - startY) > 8) {
+      clearHighlight();
       return;
     }
-    showToast('已调整幻灯片顺序');
+    if (!active) return;
+    event.preventDefault();
+    container.querySelectorAll('.drag-over').forEach(item => item.classList.remove('drag-over'));
+    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.step2-slide-thumb');
+    if (target && target !== thumb && container.contains(target)) target.classList.add('drag-over');
+    const bounds = container.getBoundingClientRect();
+    if (event.clientX > bounds.right - 24) container.scrollLeft += 14;
+    else if (event.clientX < bounds.left + 24) container.scrollLeft -= 14;
   });
+  handle.addEventListener('pointerup', event => {
+    if (event.pointerId !== pointerId) return;
+    const target = active ? document.elementFromPoint(event.clientX, event.clientY)?.closest('.step2-slide-thumb') : null;
+    const items = [...container.querySelectorAll('.step2-slide-thumb')];
+    const from = items.indexOf(thumb);
+    const to = target && container.contains(target) ? items.indexOf(target) : -1;
+    clearHighlight();
+    if (to >= 0) moveStep2Thumb(from, to);
+  });
+  handle.addEventListener('pointercancel', clearHighlight);
+  handle.addEventListener('lostpointercapture', clearHighlight);
 }
 
 // 手动模式下：把演讲稿输入写回当前 slide 的 narration_beats[0].spoken_text
@@ -988,11 +1007,18 @@ function updateStep2BatchDeleteButton() {
 async function handleStep2BatchDeleteButton() {
   if (!state.step2BatchDeleteMode) {
     // 只有“进入批量删除模式”需要至少一页；批量删除模式下 slides 可能被全部移除为空
-    if (!state.slides || state.slides.length === 0) return;
-    saveCurrentSlideInputToState();
+    if (!step2TabSourceSlides().length) return;
+    if (state.slides?.length) saveCurrentSlideInputToState();
     clearTimeout(state.step2AutoSaveTimer);
-    await saveStep2Contract({ silent: true });
+    if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
+    if (!isManualMode() && state.step2ScriptPlan?.slides?.length
+      && step2VisualButtonReady() && !(await saveStep2ScriptPlan({ silent: true }))) return;
+    if (isManualMode() && state.slides?.length && !(await saveStep2Contract({ silent: true })).success) return;
     state.step2BatchOriginalSlides = JSON.parse(JSON.stringify(state.slides));
+    state.step2BatchOriginalScriptPlan = state.step2ScriptPlan
+      ? JSON.parse(JSON.stringify(state.step2ScriptPlan)) : null;
+    state.step2BatchOriginalVisualStale = state.step2VisualStale;
+    state.step2BatchOriginalWorkflowPending = state.step2WorkflowPending;
     state.step2BatchOriginalActiveIndex = state.activeSlideIndex;
     state.step2BatchDeleteMode = true;
     state.step2DeleteSelection = new Set();
@@ -1005,6 +1031,20 @@ async function handleStep2BatchDeleteButton() {
 
 function removeStep2DraftSlide(slideId) {
   if (!state.step2BatchDeleteMode) return;
+  if (!isManualMode() && state.step2ScriptPlan?.slides?.length) {
+    if (state.step2ScriptPlan.slides.length <= 1) {
+      showToast('至少保留一页演讲稿');
+      return;
+    }
+    const removedIndex = state.step2ScriptPlan.slides.findIndex(slide => slide.slide_id === slideId);
+    if (removedIndex < 0) return;
+    state.step2ScriptPlan.slides.splice(removedIndex, 1);
+    state.step2VisualStale = state.step2VisualExists;
+    state.step2WorkflowPending = state.step2VisualExists;
+    state.activeSlideIndex = Math.min(state.activeSlideIndex, state.step2ScriptPlan.slides.length - 1);
+    renderStep2Workspace();
+    return;
+  }
   const removedIndex = state.slides.findIndex(slide => slide.slide_id === slideId);
   if (removedIndex < 0) return;
   state.slides.splice(removedIndex, 1);
@@ -1017,13 +1057,20 @@ function removeStep2DraftSlide(slideId) {
 }
 
 async function saveStep2BatchDelete() {
-  saveCurrentSlideInputToState();
+  if (state.slides?.length) saveCurrentSlideInputToState();
   clearTimeout(state.step2AutoSaveTimer);
-  const originalCount = state.step2BatchOriginalSlides?.length || state.slides.length;
-  const removedCount = Math.max(0, originalCount - state.slides.length);
+  const scriptOnly = !isManualMode() && !!state.step2BatchOriginalScriptPlan?.slides?.length;
+  const originalCount = scriptOnly
+    ? state.step2BatchOriginalScriptPlan?.slides?.length || 0
+    : state.step2BatchOriginalSlides.length;
+  const currentCount = scriptOnly ? state.step2ScriptPlan?.slides?.length || 0 : state.slides.length;
+  const removedCount = Math.max(0, originalCount - currentCount);
   if (removedCount === 0) {
     state.step2BatchDeleteMode = false;
     state.step2BatchOriginalSlides = null;
+    state.step2BatchOriginalScriptPlan = null;
+    state.step2VisualStale = state.step2BatchOriginalVisualStale;
+    state.step2WorkflowPending = state.step2BatchOriginalWorkflowPending;
     renderStep2Workspace();
     showToast('已退出批量删除模式。');
     return;
@@ -1033,7 +1080,9 @@ async function saveStep2BatchDelete() {
   const confirmed = await new Promise(resolve => {
     showCustomConfirm(
       '确认删除分镜',
-      `将删除 ${removedCount} 个分镜页。这些页的图片、Mask、切层素材和音频将被彻底删除且不可恢复。`,
+      scriptOnly
+        ? `将从演讲稿中删除 ${removedCount} 页，确认保存吗？`
+        : `将删除 ${removedCount} 个分镜页。这些页的图片、Mask、切层素材和音频将被彻底删除且不可恢复。`,
       () => resolve(true),
       () => resolve(false),
     );
@@ -1042,10 +1091,14 @@ async function saveStep2BatchDelete() {
     showToast('已取消删除，仍停留在批量删除模式。', 3000);
     return;
   }
+  const saved = scriptOnly
+    ? await saveStep2ScriptPlan({ silent: true })
+    : (await saveStep2Contract({ silent: true })).success;
+  if (!saved) return;
   state.step2BatchDeleteMode = false;
   state.step2DeleteSelection = new Set();
   state.step2BatchOriginalSlides = null;
-  await saveStep2Contract({ silent: true });
+  state.step2BatchOriginalScriptPlan = null;
   renderStep2Workspace();
   showToast(`已删除 ${removedCount} 个分镜，并保存当前规划。`);
 }
@@ -1056,9 +1109,15 @@ function cancelStep2BatchDelete() {
     state.slides = JSON.parse(JSON.stringify(state.step2BatchOriginalSlides));
     state.activeSlideIndex = Math.min(state.step2BatchOriginalActiveIndex || 0, Math.max(0, state.slides.length - 1));
   }
+  if (state.step2BatchOriginalScriptPlan) {
+    state.step2ScriptPlan = state.step2BatchOriginalScriptPlan;
+  }
+  state.step2VisualStale = state.step2BatchOriginalVisualStale;
+  state.step2WorkflowPending = state.step2BatchOriginalWorkflowPending;
   state.step2BatchDeleteMode = false;
   state.step2DeleteSelection = new Set();
   state.step2BatchOriginalSlides = null;
+  state.step2BatchOriginalScriptPlan = null;
   renderStep2Workspace();
   showToast('已取消批量删除，分镜列表已恢复。');
 }
@@ -1237,7 +1296,7 @@ function renderStep2VisualNarrationMap(slide, container = document.getElementByI
         <div class="vn-group-head">
           <span class="vn-group-num">${idx + 1}</span>
           <span class="vn-type-tag">${typeLabel}</span>
-          <span class="vn-beat-count${mappingReady ? '' : ' is-error'}">${mappingReady ? '已对应' : '需要检查'}</span>
+          ${mappingReady ? '' : '<span class="vn-beat-count is-error">需要检查</span>'}
         </div>
         <div class="vn-group-body">
           <div class="vn-visual">
@@ -1279,7 +1338,9 @@ function renderStep2EditableBeat(beat, index = 0, total = 1) {
 }
 
 function currentStep2EditorSlide() {
-  return state.slides?.[state.activeSlideIndex] || null;
+  const planSlide = !isManualMode() ? step2ActivePlanSlide() : null;
+  return (planSlide && state.slides?.find(slide => slide.slide_id === planSlide.slide_id))
+    || state.slides?.[state.activeSlideIndex] || null;
 }
 
 function autoResizeStep2Textarea(el) {
@@ -1304,16 +1365,14 @@ function bindStep2TextareaAutoResize() {
 function resizeStep2MapRows(root) {
   if (!root) return;
   root.querySelectorAll('.vn-group-body').forEach(row => {
-    const visual = row.querySelector('.vn-visual textarea');
-    const narration = row.querySelector('.vn-narration textarea');
-    if (!visual || !narration) return;
-    visual.style.removeProperty('--step2-field-height');
-    narration.style.removeProperty('--step2-field-height');
-    visual.style.height = 'auto';
-    narration.style.height = 'auto';
-    const height = Math.max(visual.scrollHeight, narration.scrollHeight);
-    visual.style.setProperty('--step2-field-height', `${height}px`);
-    narration.style.setProperty('--step2-field-height', `${height}px`);
+    const fields = Array.from(row.querySelectorAll('textarea'));
+    if (!fields.length) return;
+    fields.forEach(field => {
+      field.style.removeProperty('--step2-field-height');
+      field.style.height = 'auto';
+    });
+    const height = Math.max(...fields.map(field => field.scrollHeight));
+    fields.forEach(field => field.style.setProperty('--step2-field-height', `${height}px`));
   });
 }
 
@@ -1393,7 +1452,7 @@ function syncStep2SummaryInputs(slide) {
     const hint = document.getElementById('step2-narration-source-hint');
     if (hint) hint.textContent = isManualMode()
       ? '手动模式：直接在此输入本页要朗读的演讲稿，可多行。'
-      : '标题和演讲稿以第一步保存的版本为准。请返回该阶段修改并保存，再执行内容可视化。';
+      : '标题和演讲稿以第一步生成的版本为准。请返回该阶段修改，自动保存后再执行内容可视化。';
   }
   if (narrationInput && document.activeElement !== narrationInput) {
     narrationInput.value = step2NarrationText(slide);

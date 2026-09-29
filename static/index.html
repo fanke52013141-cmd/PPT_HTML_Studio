@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PPT Visualization Studio - 内容可视化</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=20260929.1">
+  <link rel="apple-touch-icon" href="favicon.svg?v=20260929.1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260917.2">
+  <link rel="stylesheet" href="style.css?v=20260929.1">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20260929.13">
+  <link rel="stylesheet" href="stitch.css?v=20260929.19">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
 </head>
@@ -21,7 +21,7 @@
   <header class="app-header">
     <div class="logo">
       <div class="logo-icon">
-        <img src="assets/logo.svg" alt="PPT Studio Logo" class="logo-mark">
+        <img src="assets/logo.svg?v=20260929.1" alt="PPT Studio Logo" class="logo-mark">
       </div>
       <span>PPT Studio</span>
     </div>
@@ -157,6 +157,7 @@
             <h2 class="highlight-title workflow-title">准备文章</h2>
             <div class="step1-heading-actions">
               <button id="step1-btn-system-content" class="secondary" type="button">内容创作prompt</button>
+              <button id="step1-btn-save-edit" class="secondary" style="display:none;" type="button">保存修改</button>
               <button id="step1-btn-submit" class="success" type="button">
                 分镜规划
                 <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0-7 7m7-7H3"></path></svg>
@@ -180,13 +181,7 @@
               <div id="step1-editor-shell" class="step1-editor-shell">
                 <div id="step1-markdown-editor" class="step1-markdown-editor markdown-editor" contenteditable="true" role="textbox" aria-label="文章 Markdown 编辑器" aria-multiline="true" data-placeholder="# 在这里粘贴您的文章..."></div>
                 <textarea id="step1-article-input" class="step1-source-textarea" rows="1" placeholder="# 在这里粘贴您的文章..." aria-hidden="true" tabindex="-1"></textarea>
-                <div class="step1-editor-footer">
-                  <span id="step1-status-hint" class="step1-status-hint" aria-live="polite"></span>
-                  <button id="step1-btn-save-edit" class="secondary" style="display:none;" type="button">
-                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                    保存修改
-                  </button>
-                </div>
+                <span id="step1-status-hint" class="step1-status-hint" aria-live="polite" hidden></span>
               </div>
             </div>
             <div id="step1-topic-view" class="step1-content-view step1-topic-view" style="display:none;">
@@ -194,13 +189,7 @@
               <label for="step1-topic-input" class="step1-topic-visually-hidden">话题</label>
               <div class="step1-topic-input-row">
                 <div class="step1-topic-input-wrap">
-                  <textarea id="step1-topic-input" rows="1" maxlength="500" placeholder="例如：为什么大模型需要 Token？/ 深度解析 Agent 架构原理..."></textarea>
-                  <div class="step1-topic-input-tools">
-                    <span id="step1-topic-char-count">0 字</span>
-                    <button id="step1-clear-topic" type="button" title="清空输入" aria-label="清空输入">
-                      <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                  </div>
+                  <textarea id="step1-topic-input" rows="1" maxlength="500"></textarea>
                 </div>
                 <button id="step1-btn-generate-article" class="success" type="button">
                   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z"></path></svg>
@@ -241,11 +230,11 @@
                   可视化 Prompt
                 </button>
                 <span class="workflow-titlebar-divider" aria-hidden="true"></span>
-                <button id="step2-btn-generate-script" class="secondary" type="button" title="根据文章生成每页标题与演讲稿；生成期间“内容可视化”暂不可用">
+                <button id="step2-btn-generate-script" class="secondary" type="button">
                   <svg class="icon step2-action-icon step2-action-icon--refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"></path></svg>
                   <span class="btn-label">生成演讲稿</span>
                 </button>
-                <button id="step2-btn-generate-visual" class="secondary" type="button" disabled title="请先生成演讲稿；全部页面生成完毕后即可执行内容可视化">
+                <button id="step2-btn-generate-visual" class="secondary" type="button" disabled>
                   <svg class="icon step2-action-icon step2-action-icon--zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                   <span class="btn-label">内容可视化</span>
                 </button>
@@ -272,9 +261,10 @@
               </button>
             </div>
 
-            <!-- 缩略图横排展示 -->
-            <div id="step2-thumbs" class="slides-thumbnail-container workflow-tabs" style="display: none;"></div>
           </div>
+
+          <!-- 页签随内容滚动，标题栏单独吸顶。 -->
+          <div id="step2-thumbs" class="slides-thumbnail-container workflow-tabs" style="display: none;"></div>
 
           <div id="step2-loading" class="card" style="display: none; text-align: center; padding: 3rem;">
             <div class="loading-spinner"></div>
@@ -287,9 +277,7 @@
               <div class="step2-stage-head">
                 <span class="step-stage-badge step-stage-badge--one" aria-hidden="true">1</span>
                 <h3 class="step2-stage-title">第一步：演讲稿</h3>
-                <span id="step2-script-review-status" class="step2-stage-status">可直接编辑本页标题和旁白，修改会自动保存。</span>
                 <div class="step2-script-review-actions">
-                  <button id="step2-btn-save-script" class="secondary" type="button">保存演讲稿</button>
                   <button id="step2-btn-regenerate-script" class="secondary" type="button">重新生成演讲稿</button>
                 </div>
               </div>
@@ -299,7 +287,6 @@
               <div class="step2-stage-head">
                 <span class="step-stage-badge step-stage-badge--two" aria-hidden="true">2</span>
                 <h3 class="step2-stage-title">第二步：画面与演讲片段（可视化）</h3>
-                <button id="step2-btn-save-visual" class="secondary" type="button" style="display:none;">保存可视化修改</button>
               </div>
               <div id="step2-script-visuals" class="step2-script-visuals"></div>
             </div>
@@ -317,7 +304,7 @@
                 <label class="step2-full-narration-field">
                   <span>完整演讲稿</span>
                   <textarea id="step2-slide-narration-input" class="step2-soft-input" rows="5" aria-describedby="step2-narration-source-hint"></textarea>
-                  <small id="step2-narration-source-hint">演讲稿以第一步保存的版本为准。需要修改时请返回该阶段编辑并重新生成可视化。</small>
+                  <small id="step2-narration-source-hint">演讲稿以第一步生成的版本为准。需要修改时请返回该阶段编辑并重新生成可视化。</small>
                 </label>
               </div>
               <div id="step2-visual-narration-map" class="step2-vn-map" aria-live="polite"></div>
@@ -1549,7 +1536,6 @@
   <div id="modal-step2-generate" class="modal-overlay" style="display: none;">
     <div class="modal-content ai-generation-modal">
       <h3 class="highlight-title">生成演讲稿</h3>
-      <p class="config-editor-note">可选补充只影响本次演讲稿生成。生成期间“内容可视化”暂不可用；全部页面演讲稿生成完毕后会自动恢复，届时再点击它生成第二步画面与演讲片段。</p>
       <label class="ai-requirement-field">
         <span>本次补充需求（可选）</span>
         <textarea id="step2-generation-requirement" rows="8" placeholder="例如：控制在 6 页以内；先解释概念，再讲工作机制和实际应用；每页只讲一个重点，多用流程图和对比结构；旁白简洁，避免重复。"></textarea>
@@ -1796,34 +1782,34 @@
   <!-- 主业务 JavaScript 脚本 -->
   <script src="flow.js?v=20260928.1"></script>
   <script src="workflow_state.js?v=20260928.1"></script>
-  <script src="ui_foundation.js?v=20260929.1"></script>
-  <script src="api_client.js?v=20260927.1"></script>
+  <script src="ui_foundation.js?v=20260929.3"></script>
+  <script src="api_client.js?v=20260929.1"></script>
   <script src="artifact_repair.js?v=20260801.1"></script>
-  <script src="prompt_help.js?v=20260801.1"></script>
+  <script src="prompt_help.js?v=20260929.1"></script>
   <script src="settings.js?v=20260928.1"></script>
   <script src="projects.js?v=20260916.1"></script>
   <script src="creation_config_management.js?v=20260928.2"></script>
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20260913.2"></script>
-  <script src="article.js?v=20260929.4"></script>
-  <script src="storyboard.js?v=20260929.2"></script>
+  <script src="article.js?v=20260929.6"></script>
+  <script src="storyboard.js?v=20260929.10"></script>
   <script src="storyboard_prompts.js?v=20260801.1"></script>
-  <script src="images.js?v=20260928.1"></script>
+  <script src="images.js?v=20260929.3"></script>
   <script src="image_prompts.js?v=20260801.1"></script>
   <script src="ip_character_manager.js?v=20260818.6"></script>
   <script src="mask_reveal.js?v=20260801.1"></script>
-  <script src="mask_workspace.js?v=20260809.4"></script>
+  <script src="mask_workspace.js?v=20260929.1"></script>
   <script src="mask_editor.js?v=20260809.4"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
-  <script src="narration_audio.js?v=20260928.1"></script>
+  <script src="narration_audio.js?v=20260929.1"></script>
   <script src="annotation_playback.js?v=20260929.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
   <script src="annotations_workspace.js?v=20260928.1"></script>
   <script src="annotations_editor.js?v=20260928.1"></script>
-  <script src="output_render.js?v=20260928.1"></script>
+  <script src="output_render.js?v=20260929.2"></script>
   <script src="account_management.js?v=20260916.1"></script>
-  <script src="workspace_navigation.js?v=20260929.3"></script>
-  <script src="event_bindings.js?v=20260929.2"></script>
+  <script src="workspace_navigation.js?v=20260929.4"></script>
+  <script src="event_bindings.js?v=20260929.7"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>
   <script src="storyboard_background_extension.js?v=20260916.1"></script>
   <script src="style_reference_manager_extension.js?v=3.1.0"></script>

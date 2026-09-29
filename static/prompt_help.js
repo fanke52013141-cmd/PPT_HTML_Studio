@@ -86,7 +86,7 @@ function ensurePromptIOHelpModal() {
   modal.innerHTML = `
     <div class="modal-content prompt-io-help-modal" role="dialog" aria-modal="true" aria-labelledby="prompt-io-help-title">
       <header class="prompt-io-help-header">
-        <div><span class="prompt-io-help-kicker">INPUT / OUTPUT</span><h3 id="prompt-io-help-title">Prompt 输入输出</h3></div>
+        <div><h3 id="prompt-io-help-title">Prompt 输入输出</h3></div>
         <button id="btn-prompt-io-help-close" class="secondary" type="button">关闭</button>
       </header>
       <div class="prompt-io-help-grid">
