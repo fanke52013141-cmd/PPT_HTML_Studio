@@ -7,8 +7,11 @@ function getToastPresentation(message) {
     .trim();
 
   let tone = 'info';
+  // 只有真实失败/报错才允许进入通知容器：请求错误、保存/生成/渲染失败、
+  // 超时中断、服务端拒绝等。输入引导与校验提示（请先/请填写/不能为空等）
+  // 属于预期交互，就地呈现即可，全局弹出会让用户误以为不断出错。
   if (/^(?:❌|⛔|🚫)/u.test(rawMessage)
-      || /(失败|错误|异常|被拒绝|中断|超时|无法|未能|未通过|不可用|无效|缺少|不能为空|请先|请填写|请至少|超过.{0,12}限制|HTTP\s*[45]\d\d)/i.test(rawMessage)) {
+      || /(失败|错误|异常|被拒绝|中断|超时|无法|未能|不可用|无效|HTTP\s*[45]\d\d)/i.test(rawMessage)) {
     tone = 'error';
   } else if (/^(?:⚠️?|❗)/u.test(rawMessage)) {
     tone = 'warning';
