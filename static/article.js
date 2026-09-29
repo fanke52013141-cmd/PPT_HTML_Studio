@@ -1,5 +1,154 @@
 // Step 1 article import, topic generation, editing, and prompt settings.
 
+function appendStep1InlineMarkdown(target, text) {
+  const parts = String(text ?? '').split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  parts.forEach(part => {
+    if (!part) return;
+    if (part.startsWith('**') && part.endsWith('**')) {
+      const strong = document.createElement('strong');
+      strong.textContent = part.slice(2, -2);
+      target.appendChild(strong);
+    } else if (part.startsWith('`') && part.endsWith('`')) {
+      const code = document.createElement('code');
+      code.textContent = part.slice(1, -1);
+      target.appendChild(code);
+    } else {
+      target.appendChild(document.createTextNode(part));
+    }
+  });
+}
+
+function renderStep1MarkdownEditor(markdown) {
+  const editor = document.getElementById('step1-markdown-editor');
+  if (!editor) return;
+  editor.replaceChildren();
+  const lines = String(markdown ?? '').replace(/\r\n?/g, '\n').split('\n');
+  let previousWasBlank = false;
+  lines.forEach(line => {
+    if (!line.trim()) {
+      if (previousWasBlank || (editor.childNodes.length === 0 && lines.length === 1)) return;
+      const spacer = document.createElement('div');
+      spacer.className = 'step1-md-spacer';
+      spacer.dataset.markdownBlock = 'spacer';
+      spacer.appendChild(document.createElement('br'));
+      editor.appendChild(spacer);
+      previousWasBlank = true;
+      return;
+    }
+    previousWasBlank = false;
+
+    const block = document.createElement('div');
+    let prefix = '';
+    let body = line;
+    let type = 'paragraph';
+    const heading = line.match(/^(#{1,2})\s+(.*)$/);
+    const list = line.match(/^\s*[-*+]\s+(.*)$/);
+    if (heading) {
+      type = heading[1].length === 1 ? 'h1' : 'h2';
+      prefix = `${heading[1]} `;
+      body = heading[2];
+    } else if (list) {
+      type = 'list';
+      prefix = '- ';
+      body = list[1];
+    }
+    block.className = `step1-md-block step1-md-${type}`;
+    block.dataset.markdownBlock = type;
+    if (prefix) {
+      const marker = document.createElement('span');
+      marker.className = 'step1-markdown-marker';
+      marker.dataset.markdownPrefix = prefix;
+      marker.setAttribute('contenteditable', 'false');
+      marker.setAttribute('aria-hidden', 'true');
+      if (type !== 'list') marker.textContent = prefix.trim();
+      block.appendChild(marker);
+    }
+    const content = document.createElement('span');
+    content.className = 'step1-md-content';
+    appendStep1InlineMarkdown(content, body);
+    block.appendChild(content);
+    editor.appendChild(block);
+  });
+  if (!String(markdown ?? '').trim()) editor.replaceChildren();
+  updateStep1TopicArticleMeta(markdown);
+}
+
+function serializeStep1InlineMarkdown(node) {
+  if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || '';
+  if (node.nodeType !== Node.ELEMENT_NODE) return '';
+  if (node.classList?.contains('step1-markdown-marker')) return '';
+  if (node.tagName === 'BR') return '\n';
+  const children = Array.from(node.childNodes).map(serializeStep1InlineMarkdown).join('');
+  if (node.tagName === 'STRONG' || node.tagName === 'B') return `**${children}**`;
+  if (node.tagName === 'CODE') return `\`${children}\``;
+  if (node.tagName === 'DIV' || node.tagName === 'P' || node.tagName === 'LI') return `${children}\n`;
+  return children;
+}
+
+function syncStep1MarkdownToSource() {
+  const editor = document.getElementById('step1-markdown-editor');
+  const source = document.getElementById('step1-article-input');
+  if (!source) return '';
+  if (!editor) return source.value || '';
+  const markdown = Array.from(editor.childNodes).map(node => {
+    if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || '';
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+    if (node.classList.contains('step1-md-spacer')) return '';
+    const marker = node.querySelector('.step1-markdown-marker');
+    const clone = node.cloneNode(true);
+    clone.querySelectorAll('.step1-markdown-marker').forEach(element => element.remove());
+    const body = serializeStep1InlineMarkdown(clone).replace(/\n+$/g, '');
+    return `${marker?.dataset.markdownPrefix || ''}${body}`;
+  }).join('\n').replace(/[\t ]+\n/g, '\n');
+  source.value = markdown;
+  updateStep1TopicArticleMeta(markdown);
+  return markdown;
+}
+
+function updateStep1TopicArticleMeta(markdown = document.getElementById('step1-article-input')?.value || '') {
+  const count = document.getElementById('step1-article-count');
+  const copyButton = document.getElementById('step1-copy-article');
+  const content = String(markdown).trim();
+  if (count) count.textContent = content ? `已生成 • ${content.length} 字符` : '待生成';
+  if (copyButton) copyButton.disabled = !content;
+}
+
+function updateStep1TopicCharCount() {
+  const topic = document.getElementById('step1-topic-input');
+  const count = document.getElementById('step1-topic-char-count');
+  if (topic && count) count.textContent = `${topic.value.length} 字`;
+}
+
+async function copyStep1Article() {
+  const content = syncStep1MarkdownToSource().trim();
+  if (!content) return;
+  try {
+    await navigator.clipboard.writeText(content);
+    showToast('文章已复制');
+  } catch (error) {
+    showToast('复制失败，请检查浏览器剪贴板权限');
+  }
+}
+
+function pasteStep1PlainText(event) {
+  const text = event.clipboardData?.getData('text/plain');
+  if (text == null) return;
+  event.preventDefault();
+  if (document.queryCommandSupported?.('insertText')) {
+    document.execCommand('insertText', false, text);
+  } else {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text));
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+  syncStep1MarkdownToSource();
+}
+
 async function loadStep1Data() {
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
@@ -25,6 +174,7 @@ async function loadStep1Data() {
   }
 
   document.getElementById('step1-result-box').style.display = 'none';
+  renderStep1MarkdownEditor(articleInput.value);
   setStep1Mode('article');
   requestAnimationFrame(() => autoResizeTextarea(articleInput));
 }
@@ -37,8 +187,20 @@ function setStep1Mode(mode) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-selected', active ? 'true' : 'false');
   });
-  const topicPanel = document.getElementById('step1-topic-panel');
-  if (topicPanel) topicPanel.style.display = normalized === 'topic' ? 'block' : 'none';
+  const modeSwitch = document.querySelector('#step-panel-1 .step1-mode-switch');
+  if (modeSwitch) modeSwitch.dataset.activeMode = normalized;
+  const importView = document.getElementById('step1-import-view');
+  const topicView = document.getElementById('step1-topic-view');
+  const editorShell = document.getElementById('step1-editor-shell');
+  const topicEditorSlot = document.getElementById('step1-topic-editor-slot');
+  const editorTarget = normalized === 'topic' ? topicEditorSlot : importView;
+  if (editorShell && editorTarget && editorShell.parentElement !== editorTarget) {
+    editorTarget.appendChild(editorShell);
+  }
+  if (importView) importView.style.display = normalized === 'article' ? 'flex' : 'none';
+  if (topicView) topicView.style.display = normalized === 'topic' ? 'flex' : 'none';
+  updateStep1TopicCharCount();
+  updateStep1TopicArticleMeta();
 }
 
 function ensureArticleSystemContentModal() {
@@ -108,7 +270,7 @@ async function generateStep1Article() {
     return;
   }
   const button = document.getElementById('step1-btn-generate-article');
-  const originalText = button.textContent;
+  const originalHtml = button.innerHTML;
   button.disabled = true;
   button.innerHTML = '<span class="button-spinner"></span> 生成中...';
   try {
@@ -121,17 +283,18 @@ async function generateStep1Article() {
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     const articleInput = document.getElementById('step1-article-input');
     articleInput.value = result.content || '';
+    renderStep1MarkdownEditor(articleInput.value);
     autoResizeTextarea(articleInput);
     document.getElementById('step1-status-hint').innerText = '文章已生成，可编辑后保存';
     showToast('AI 文章已生成');
   } finally {
     button.disabled = false;
-    button.textContent = originalText;
+    button.innerHTML = originalHtml;
   }
 }
 
 async function submitStep1() {
-  const content = document.getElementById('step1-article-input').value.trim();
+  const content = syncStep1MarkdownToSource().trim();
   if (!content) {
     showToast('请输入 Markdown 文章内容');
     return;
@@ -166,7 +329,7 @@ async function submitStep1() {
 }
 
 async function saveStep1Edit() {
-  const content = document.getElementById('step1-article-input').value.trim();
+  const content = syncStep1MarkdownToSource().trim();
   if (!content) {
     showToast('文章内容不能为空');
     return;

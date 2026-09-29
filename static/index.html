@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20260917.2">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20260929.3">
+  <link rel="stylesheet" href="stitch.css?v=20260929.6">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
 </head>
@@ -157,34 +157,70 @@
         <div id="step-panel-1" class="step-panel" style="display: none;">
           <div class="step1-heading-row workflow-header workflow-header--titlebar">
             <h2 class="highlight-title workflow-title">准备文章</h2>
-            <button id="step1-btn-system-content" class="secondary" type="button">System Content</button>
+            <div class="step1-heading-actions">
+              <button id="step1-btn-system-content" class="secondary" type="button">内容创作prompt</button>
+              <button id="step1-btn-submit" class="success" type="button">
+                分镜规划
+                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0-7 7m7-7H3"></path></svg>
+              </button>
+            </div>
+          </div>
+          <div class="step1-workflow-tabs">
+            <div class="step1-mode-switch" data-active-mode="article" role="tablist" aria-label="文章来源">
+              <button id="step1-mode-article" class="step1-mode-button active" type="button" data-step1-mode="article" role="tab" aria-selected="true">
+                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z"></path></svg>
+                导入文章
+              </button>
+              <button id="step1-mode-topic" class="step1-mode-button" type="button" data-step1-mode="topic" role="tab" aria-selected="false">
+                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586Z"></path></svg>
+                输入话题
+              </button>
+            </div>
           </div>
           <div class="card step1-content-card">
-            <div class="step1-card-toolbar">
-              <div class="step1-mode-switch" role="tablist" aria-label="文章来源">
-                <button id="step1-mode-article" class="step1-mode-button active" type="button" data-step1-mode="article" role="tab" aria-selected="true">导入文章</button>
-                <button id="step1-mode-topic" class="step1-mode-button" type="button" data-step1-mode="topic" role="tab" aria-selected="false">输入话题</button>
-              </div>
-              <div class="step1-save-actions">
-                <button id="step1-btn-save-edit" class="secondary" style="display:none;">
-                  <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                  保存修改
-                </button>
-                <button id="step1-btn-submit" class="success">
-                  <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"></path></svg>
-                  保存文章
-                </button>
+            <div id="step1-import-view" class="step1-content-view">
+              <div id="step1-editor-shell" class="step1-editor-shell">
+                <div id="step1-markdown-editor" class="step1-markdown-editor markdown-editor" contenteditable="true" role="textbox" aria-label="文章 Markdown 编辑器" aria-multiline="true" data-placeholder="# 在这里粘贴您的文章..."></div>
+                <textarea id="step1-article-input" class="step1-source-textarea" rows="1" placeholder="# 在这里粘贴您的文章..." aria-hidden="true" tabindex="-1"></textarea>
+                <div class="step1-editor-footer">
+                  <span id="step1-status-hint" class="step1-status-hint" aria-live="polite"></span>
+                  <button id="step1-btn-save-edit" class="secondary" style="display:none;" type="button">
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    保存修改
+                  </button>
+                </div>
               </div>
             </div>
-            <div id="step1-topic-panel" class="step1-topic-panel" style="display:none;">
-              <label for="step1-topic-input">话题</label>
-              <div class="step1-topic-row">
-                <input id="step1-topic-input" type="text" maxlength="500" placeholder="例如：为什么大模型需要 Token？">
-                <button id="step1-btn-generate-article" class="success" type="button">AI 生成文章</button>
+            <div id="step1-topic-view" class="step1-content-view step1-topic-view" style="display:none;">
+              <div id="step1-topic-panel" class="step1-topic-panel">
+                <label for="step1-topic-input">话题</label>
+                <div class="step1-topic-input-wrap">
+                  <textarea id="step1-topic-input" rows="3" maxlength="500" placeholder="输入想要生成的 PPT 演示文稿主题或大纲要求，例如：深度拆解 Agent 智能体架构的前沿演进与工业落地..."></textarea>
+                  <div class="step1-topic-input-tools">
+                    <span id="step1-topic-char-count">0 字</span>
+                    <button id="step1-clear-topic" type="button" title="清空输入">
+                      <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"></path></svg>
+                      <span>清空</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="step1-topic-actions">
+                  <span></span>
+                  <button id="step1-btn-generate-article" class="success" type="button">
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z"></path></svg>
+                    AI 立即生成文章
+                  </button>
+                </div>
               </div>
+              <div id="step1-topic-result-header" class="step1-topic-result-header">
+                <div class="step1-topic-result-title"><span class="step1-topic-result-accent"></span><span>文章内容</span><span id="step1-article-count" class="step1-article-count">待生成</span></div>
+                <button id="step1-copy-article" class="step1-copy-article" type="button" disabled>
+                  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1M8 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M8 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 0h2a2 2 0 0 1 2 2v3m2 4H10m0 0 3-3m-3 3 3 3"></path></svg>
+                  复制全文
+                </button>
+              </div>
+              <div id="step1-topic-editor-slot" class="step1-topic-editor-slot"></div>
             </div>
-            <textarea id="step1-article-input" rows="1" placeholder="# 在这里粘贴您的文章..."></textarea>
-            <span id="step1-status-hint" class="step1-status-hint"></span>
           </div>
 
           <!-- 保存结果展示区（隐藏不展示，保留 DOM 兼容 JS 逻辑） -->
@@ -1763,7 +1799,7 @@
   <script src="creation_config_management.js?v=20260928.2"></script>
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20260913.2"></script>
-  <script src="article.js?v=20260801.1"></script>
+  <script src="article.js?v=20260929.3"></script>
   <script src="storyboard.js?v=20260902.2"></script>
   <script src="storyboard_prompts.js?v=20260801.1"></script>
   <script src="images.js?v=20260928.1"></script>
@@ -1781,7 +1817,7 @@
   <script src="output_render.js?v=20260928.1"></script>
   <script src="account_management.js?v=20260916.1"></script>
   <script src="workspace_navigation.js?v=20260929.2"></script>
-  <script src="event_bindings.js?v=20260928.2"></script>
+  <script src="event_bindings.js?v=20260929.2"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>
   <script src="storyboard_background_extension.js?v=20260916.1"></script>
   <script src="style_reference_manager_extension.js?v=3.1.0"></script>

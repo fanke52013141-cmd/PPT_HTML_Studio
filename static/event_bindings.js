@@ -122,7 +122,19 @@ function initGlobalEvents() {
   });
   document.getElementById('step1-btn-generate-article')?.addEventListener('click', () => generateStep1Article());
   document.getElementById('step1-btn-system-content')?.addEventListener('click', () => openArticleSystemContentModal());
+  document.getElementById('step1-copy-article')?.addEventListener('click', () => copyStep1Article());
+  document.getElementById('step1-topic-input')?.addEventListener('input', () => updateStep1TopicCharCount());
+  document.getElementById('step1-clear-topic')?.addEventListener('click', () => {
+    const input = document.getElementById('step1-topic-input');
+    if (input) {
+      input.value = '';
+      updateStep1TopicCharCount();
+      input.focus();
+    }
+  });
   document.getElementById('step1-article-input')?.addEventListener('input', event => autoResizeTextarea(event.currentTarget));
+  document.getElementById('step1-markdown-editor')?.addEventListener('input', () => syncStep1MarkdownToSource());
+  document.getElementById('step1-markdown-editor')?.addEventListener('paste', event => pasteStep1PlainText(event));
 
   // ================= 步骤 2 事件 =================
   document.getElementById('step2-btn-generate-script')?.addEventListener('click', () => openStep2ScriptStage());
