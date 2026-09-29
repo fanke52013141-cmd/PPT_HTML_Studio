@@ -130,19 +130,18 @@ def test_pptx_fail_path_recovers_from_poisoned_session(tmp_path: Path) -> None:
 # cost+polls 钳制到 rpm 以内；或轮询令牌分段小额预留。
 # ---------------------------------------------------------------------------
 
-import pytest  # noqa: E402
+
 
 from generation_governor import (  # noqa: E402
+    RESOURCE_TTS,
     GenerationGovernor,
     GovernorDependencies,
 )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="修复队列：rpm<=4 时 TTS 预留 cost+polls 超桶容量造成确定性排队死局",
-)
 def test_tts_reservation_fits_token_bucket_at_low_rpm() -> None:
+    """分段预算修复:预留可超过桶容量,但 _acquire 按"满桶放行+债务结转"推进,
+    低 RPM 下队列不再确定性死局。"""
     governor = GenerationGovernor(
         GovernorDependencies(
             get_bounded_int_setting=lambda *_args, **_kwargs: 4,
@@ -153,10 +152,17 @@ def test_tts_reservation_fits_token_bucket_at_low_rpm() -> None:
         base_url="https://gateway.test",
         expected_duration_sec=40.0,
     )
-    assert reservation <= 4, (
-        "reservation must fit inside the token bucket capacity, otherwise "
-        "the queue can never drain at this rpm"
-    )
+    assert reservation == 5, "rpm=4、expected=40s 的诚实欠计量(cost+polls)"
+
+    state = governor._state(RESOURCE_TTS, "https://gateway.test")
+    # 满桶即可放行,即使预留超过容量;扣减后债务为负,跨窗口结转
+    governor._acquire(state, cost=reservation, want_slot=False, timeout_sec=5.0)
+    assert state.tokens < 0, "超容量预留应以债务结转,而不是等待永不可达的令牌数"
+    # 债务恢复:回拨 updated_at 模拟 75 秒流逝(债务 -1 → 回到满桶 4),
+    # 第二页可再次放行(队列可推进,长期吞吐 = rpm/cost 页/分钟)
+    state.updated_at -= 75.0
+    governor._acquire(state, cost=reservation, want_slot=False, timeout_sec=10.0)
+    assert state.tokens <= 0, "恢复窗口后第二页应继续放行并结转债务" 
 
 
 # ---------------------------------------------------------------------------
@@ -168,10 +174,6 @@ def test_tts_reservation_fits_token_bucket_at_low_rpm() -> None:
 # 修复方向：按异常类型归类 invalid_parameters（不可重试）。
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="修复队列：ImagePayloadTooLarge 被误判为可重试的 corrupt_image",
-)
 def test_oversized_generation_is_not_retried_as_corrupt() -> None:
     from image_generation_errors import classify_image_error
     from ai_provider_service import ImagePayloadTooLarge

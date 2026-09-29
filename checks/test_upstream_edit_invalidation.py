@@ -149,7 +149,7 @@ def test_step2_autosave_only_invalidates_when_contract_changes() -> None:
 
 
 if __name__ == "__main__":
-    test_step1_edit_invalidates_every_dependent_stage()
+    test_step1_edit_only_requires_storyboard_review()
     test_legacy_article_brief_is_migrated_once()
     test_step2_autosave_only_invalidates_when_contract_changes()
     print("upstream edit invalidation checks passed")

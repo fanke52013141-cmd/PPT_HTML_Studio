@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 __all__ = [
     "STROKES_VERSION_V2",
@@ -340,9 +340,7 @@ class GeometryInputV2:
 def build_strokes_v2(geometry: GeometryInputV2) -> Tuple[Dict[str, Any], ...]:
     """按片段生成 v2 笔迹;每笔独立 timing 分配(方案 4.5)。"""
     strokes: List[Dict[str, Any]] = []
-    fragment_count = len(geometry.fragments)
     for frag_index, fragment in enumerate(geometry.fragments):
-        rand = _seeded(fragment.seed)
         if not fragment.polygons:
             continue
         # 片段框 = 各 token 四边形的并集外接框(保留原始四边形由调用方持有)

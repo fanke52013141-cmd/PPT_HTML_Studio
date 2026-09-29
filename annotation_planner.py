@@ -22,7 +22,6 @@ from annotation_contracts import (
     Issue,
     RECOMMENDATION_CATEGORIES,
     anchor_quote_matches,
-    next_annotation_id,
 )
 from annotation_prompt_templates import AnnotationPromptStore, compose_plan_prompts
 

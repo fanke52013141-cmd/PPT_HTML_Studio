@@ -97,7 +97,6 @@ class AnnotationPromptStore:
         revision = 0
         if isinstance(payload, dict) and isinstance(payload.get("revision"), int):
             revision = payload["revision"]
-            stored = payload.get("overrides", {}).get("plan_system_prompt")
             if expected_revision is not None and expected_revision != revision:
                 from fastapi import HTTPException
 

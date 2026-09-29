@@ -26,7 +26,6 @@ from pipeline_lifecycle import (
     mark_selected_stale,
     project_artifact_lock,
     read_json_file,
-    remove_file,
     write_json_atomic,
 )
 from pipeline_state import current_step_after_completion

@@ -23,7 +23,7 @@ from artifact_fingerprint import render_input_fingerprint, sha256_file
 from artifact_registry import record_artifact, remove_artifact_record
 from database import Account, Project
 from error_log_service import log_pipeline_error
-from pipeline_lifecycle import write_json_atomic
+from pipeline_lifecycle import project_artifact_lock, write_json_atomic
 from project_storage import (
     UnsafeProjectPath,
     legacy_video_file,
@@ -464,6 +464,18 @@ class VideoArtifactService:
         return self.build_download_filename(project, path)
 
     def create_speed_adjusted_video(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        # R2-012: 同倍率并发调速的"检查-生成-校验-发布"必须落在同一互斥范围,
+        # 否则两个请求都可能通过 exists() 检查并注册指向同一路径的两条记录。
+        with project_artifact_lock(self.get_project(db, project_id).run_dir):
+            return self._create_speed_adjusted_video_locked(db, project_id, filename, payload)
+
+    def _create_speed_adjusted_video_locked(
         self,
         db: Session,
         project_id: str,

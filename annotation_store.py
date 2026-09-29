@@ -18,7 +18,7 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 from annotation_contracts import (
     ANNOTATION_PAGE_FILE,

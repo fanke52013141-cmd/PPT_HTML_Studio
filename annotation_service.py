@@ -560,7 +560,7 @@ class AnnotationService:
         path: str,
         canvas: Tuple[int, int],
     ) -> None:
-        from annotation_contracts import AnnotationInputs, AnnotationProtection, AnnotationStyle, AnnotationTarget, AnnotationTiming
+        from annotation_contracts import AnnotationInputs, AnnotationProtection
 
         item_payload = operation.get("item")
         draft = AnnotationItem.from_payload(
@@ -610,7 +610,7 @@ class AnnotationService:
         canvas: Tuple[int, int],
         events: Optional[Dict[str, Any]] = None,
     ) -> None:
-        from annotation_contracts import AnnotationAnchor, AnnotationProtection, AnnotationStatus, AnnotationTarget, AnnotationStyle, AnnotationTiming
+        from annotation_contracts import AnnotationProtection, AnnotationStatus, AnnotationTarget, AnnotationStyle, AnnotationTiming
         from dataclasses import replace
 
         annotation_id = operation.get("annotation_id")
@@ -1215,7 +1215,7 @@ class AnnotationService:
         return response
 
     def _prompt_store_version(self) -> str:
-        from annotation_prompt_templates import ANNOTATION_PLAN_PROMPT_VERSION, BUILTIN_ANNOTATION_PLAN_SYSTEM_PROMPT  # noqa: F811
+        from annotation_prompt_templates import ANNOTATION_PLAN_PROMPT_VERSION  # noqa: F811
 
         return ANNOTATION_PLAN_PROMPT_VERSION
 

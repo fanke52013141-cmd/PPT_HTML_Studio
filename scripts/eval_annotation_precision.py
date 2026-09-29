@@ -201,7 +201,7 @@ def _metrics_for_style(case: dict, image: Image.Image) -> dict:
     if total:
         nbm = numpy.zeros_like(mask)
         for bx0, by0, bx1, by1 in case["neighbors"]:
-            nbm[int(by0):int(by1), int(bx0):int(bx2 if False else bx1)] = True
+            nbm[int(by0):int(by1), int(bx0):int(bx1)] = True
         nb = int((mask & nbm).sum()) / total
     return {
         "coverage_x": round(coverage_x, 3),

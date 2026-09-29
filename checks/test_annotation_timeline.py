@@ -17,7 +17,6 @@ from annotation_contracts import (  # noqa: E402
     AnnotationTiming,
 )
 from annotation_timeline import (  # noqa: E402
-    CONFLICT_TOLERANCE_SEC,
     build_annotation_timeline,
     timeline_hash,
 )

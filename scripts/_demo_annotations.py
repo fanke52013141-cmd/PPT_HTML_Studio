@@ -12,7 +12,6 @@ sys.path.insert(0, str(REPO / "scripts"))
 
 RUN = Path(sys.argv[1])
 
-from annotation_contracts import DEFAULT_CANVAS  # noqa: E402
 from annotation_service import (  # noqa: E402
     AnnotationService,
     AnnotationServiceDependencies,

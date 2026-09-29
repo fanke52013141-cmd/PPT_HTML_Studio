@@ -2,7 +2,6 @@
 """构建演示 props 并渲染 MP4(走生产 props 构建器 + 生产 Remotion 组合)。"""
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 

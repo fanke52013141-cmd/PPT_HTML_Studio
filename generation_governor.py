@@ -328,6 +328,11 @@ class GenerationGovernor:
         if not self.enabled:
             return
         safe_cost = max(1, int(cost))
+        # 分段预算(R2-002 修复):预留超过桶容量时按"满桶放行+债务结转"推进,
+        # 而不是等待一个永远到不了的 tokens >= cost——那是确定性死局。
+        # 债务为负会让后续窗口先偿还欠账,长期吞吐仍是 cost/分钟的诚实计量。
+        capacity = float(budget.requests_per_minute) if not budget.unlimited else 0.0
+        required = safe_cost if budget.unlimited else max(1.0, min(float(safe_cost), capacity))
         limit_sec = budget.max_wait_sec if timeout_sec is None else float(timeout_sec)
         deadline = time.monotonic() + max(0.01, limit_sec)
         started_at = time.monotonic()
@@ -348,7 +353,7 @@ class GenerationGovernor:
                             f"{limit_sec:.0f} 秒仍未获得额度"
                         )
                     slots_ok = (not want_slot) or state.active < state.limit_current
-                    tokens_ok = budget.unlimited or state.tokens >= safe_cost
+                    tokens_ok = budget.unlimited or state.tokens >= required
                     if state.at_head(ticket) and slots_ok and tokens_ok:
                         state.tickets.popleft()
                         if not budget.unlimited:
@@ -358,7 +363,7 @@ class GenerationGovernor:
                         state.waited_sec_total += now - started_at
                         return
                     if not tokens_ok and state.refill_rate > 0:
-                        need = (safe_cost - state.tokens) / state.refill_rate
+                        need = (required - state.tokens) / state.refill_rate
                         wait_sec = min(remaining, max(0.01, need))
                     else:
                         # 只在等并发许可/FIFO 号牌：靠 notify_all 唤醒，
@@ -516,6 +521,9 @@ class GenerationGovernor:
         即 10/min 额度下约 1.3 页/分钟，而不是当前代码假定的 10 页/分钟。
 
         同步端点没有轮询，调用方应直接用 :meth:`request` 逐页计 1 个令牌。
+
+        预留允许超过桶容量（如 rpm=4、长音频时 cost+polls > 4）：_acquire 按
+        "满桶放行 + 债务跨窗口结转"推进队列,不会出现确定性死局。
         """
         state = self._state(RESOURCE_TTS, base_url)
         rpm = state.budget.requests_per_minute

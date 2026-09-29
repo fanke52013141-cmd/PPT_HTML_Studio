@@ -15,12 +15,11 @@
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 from PIL import Image, ImageDraw, ImageFilter
 

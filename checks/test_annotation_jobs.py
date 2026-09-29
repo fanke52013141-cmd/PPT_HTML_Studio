@@ -204,7 +204,6 @@ def test_engine_failure_marks_failed_with_sanitized_error(store, manager, clean_
 
 def test_plan_job_merges_suggestions_and_snapshots(store, manager, clean_jobs, tmp_path):
     """plan 任务:短锁读→stub LLM→发布合并,AI 条目入页且快照可恢复。"""
-    import hashlib
     import json as _json
 
     from annotation_planner import AnnotationPlanner, AnnotationPlannerDependencies
@@ -220,7 +219,6 @@ def test_plan_job_merges_suggestions_and_snapshots(store, manager, clean_jobs, t
         "slide_id": "slide_001",
         "beats": [{"id": "slide_001_beat_001", "spoken_text": "报名截止时间到9月30日18点"}],
     }, ensure_ascii=False), encoding="utf-8")
-    from annotation_ocr_baidu import BaiduOcrChar, BaiduOcrLine, BaiduOcrResult
 
     layout_payload = build_real_layout(image)
     manager._deps.text_layout_builder.save(str(run_dir), "slide_001", layout_payload)
@@ -276,8 +274,7 @@ def test_plan_job_merges_suggestions_and_snapshots(store, manager, clean_jobs, t
 
 
 def build_real_layout(image):
-    from annotation_ocr_baidu import BaiduOcrEngineConfig
-    from annotation_text_layout import TextLayoutBuilder, TextLayoutDependencies, build_layout_payload_from_ocr
+    from annotation_text_layout import build_layout_payload_from_ocr
 
     result = BaiduOcrResult(
         lines=(BaiduOcrLine("9", 100, 300, 30, 40, (BaiduOcrChar("9", 100, 300, 30, 40),)),),

@@ -385,6 +385,19 @@ def classify_image_error(
             )
 
     if isinstance(error, ValueError):
+        # 确定性超大结果(20MB 上限)按异常类型归类为不可重试,不再烧配额重试
+        # (历史缺陷:被误判为可重试的 corrupt_image)。延迟导入避免循环依赖。
+        try:
+            from ai_provider_service import ImagePayloadTooLarge
+        except ImportError:  # pragma: no cover - 独立使用分类器时的容错
+            ImagePayloadTooLarge = None
+        if ImagePayloadTooLarge is not None and isinstance(error, ImagePayloadTooLarge):
+            return _info(
+                CODE_INVALID_PARAMETERS,
+                phase,
+                retryable=False,
+                message=str(error),
+            )
         text = str(error).lower()
         if "空" in text or "empty" in text or "no image" in text:
             return _info(

@@ -50,7 +50,6 @@ def _layout():
 
 
 def _with_candidates(layout):
-    from annotation_text_layout import candidate_tokens
 
     class _Layout(dict):
         pass

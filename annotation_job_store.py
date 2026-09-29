@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 from sqlalchemy.orm import Session
 

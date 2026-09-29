@@ -72,7 +72,6 @@ def test_helper_scopes_project_to_current_account() -> None:
 
 
 def test_reuse_storyboard_endpoint_is_account_scoped(tmp_path) -> None:
-    from types import SimpleNamespace
 
     import project_routes
 

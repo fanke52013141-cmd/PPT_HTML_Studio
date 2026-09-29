@@ -133,7 +133,7 @@ class AnnotationJobManager:
             self._cancel_flags[job_id] = cancel_event
 
         def run() -> None:
-            acquired = _JOB_SEMAPHORE.acquire()
+            _JOB_SEMAPHORE.acquire()
             token = set_current_account_id(self._resolve_worker_account(project_id, account_id))
             try:
                 self._run_detect(job_id, project_id, slide_targets, cancel_event)
@@ -235,7 +235,7 @@ class AnnotationJobManager:
                 self._cancel_flags[job.id] = cancel_event
 
             def run() -> None:
-                acquired = _JOB_SEMAPHORE.acquire()
+                _JOB_SEMAPHORE.acquire()
                 token = set_current_account_id(self._resolve_worker_account(project_id, account_id))
                 try:
                     self._run_plan(job.id, project_id, slide_ids, cancel_event)
@@ -263,7 +263,6 @@ class AnnotationJobManager:
             return
         store.mark_running(job_id, "plan")
         run_dir = self._run_dir(project_id)
-        from database import Project
 
         results: List[Dict[str, Any]] = []
         total = len(slide_ids)

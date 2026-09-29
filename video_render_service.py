@@ -636,11 +636,6 @@ class VideoRenderService:
         # 的活动任务保护集合恒为空。
         self._set_task_status(task_id, "rendering")
         db = self.dependencies.session_factory()
-        project_lock = (
-            render_lock
-            if render_lock is not None
-            else self._project_lock(project_id)
-        )
         try:
             project = (
                 db.query(Project)
@@ -776,12 +771,12 @@ class VideoRenderService:
                 )
         finally:
             db.close()
-            if render_lock is not None:
-                # 显式移交的锁：本 worker 是唯一释放者，无需 locked() 探测
-                render_lock.release()
-            elif project_lock.locked():
-                project_lock.release()
-            reset_current_account_id(account_context_token)
+            # R2-006: 只释放显式移交的锁;locked() 探测可能误释放他人持有的锁。
+            try:
+                if render_lock is not None:
+                    render_lock.release()
+            finally:
+                reset_current_account_id(account_context_token)
 
     def _apply_digital_human_composite(
         self,
