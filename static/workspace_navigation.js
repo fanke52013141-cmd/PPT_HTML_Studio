@@ -21,6 +21,7 @@ function resetProjectScopedAsyncUi() {
   state.step2AutoSaveTimer = null;
   clearTimeout(state.step6AutoSaveTimer);
   state.step6AutoSaveTimer = null;
+  if (typeof resetStep2ScriptState === 'function') resetStep2ScriptState();
   if (typeof stopStep8RenderPolling === 'function') stopStep8RenderPolling();
   if (typeof stopStep8PptxPolling === 'function') stopStep8PptxPolling();
   if (typeof resetStep3ProjectState === 'function') resetStep3ProjectState();
@@ -30,8 +31,10 @@ function resetProjectScopedAsyncUi() {
     window.flushAnnotationsSave().catch(() => {});
   }
   if (typeof window.resetAnnotationsProjectState === 'function') resetAnnotationsProjectState();
-  const generateButton = document.getElementById('step2-btn-generate');
-  if (generateButton) generateButton.disabled = false;
+  const scriptButton = document.getElementById('step2-btn-generate-script');
+  if (scriptButton) scriptButton.disabled = false;
+  const visualButton = document.getElementById('step2-btn-generate-visual');
+  if (visualButton) visualButton.disabled = false;
 }
 
 // 画布比例以 CSS 变量下发到根节点，供 style.css 中所有跟随项目画布的

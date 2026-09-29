@@ -676,7 +676,12 @@ async function downloadAllStep3Images() {
     const objectUrl = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = objectUrl;
-    anchor.download = 'PPTStudio-图片.zip';
+    const projectName = String(state.currentProject?.name || '项目')
+      .replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_')
+      .replace(/[ .]+$/g, '')
+      .slice(0, 120)
+      .replace(/[ .]+$/g, '') || '项目';
+    anchor.download = `${projectName}.zip`;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();

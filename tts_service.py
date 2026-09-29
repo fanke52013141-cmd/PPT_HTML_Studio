@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 import hashlib
+import inspect
 import logging
 import os
 from pathlib import Path
@@ -262,10 +263,16 @@ def _tts_artifact_matches_runtime(paths: Dict[str, str], expected: Dict[str, Any
         if (key == "clone_voice_id" and expected.get("reference_audio_signature")
                 and str(request.get("reference_audio_signature") or "")
                 == str(expected.get("reference_audio_signature") or "")):
-            # A moved portable package changes the absolute path, while the
-            # reference recording's bytes and resulting voice remain the same.
             continue
-        if str(request.get(key) or "").strip() != str(expected_value or "").strip():
+        if key == "region" and key not in request:
+            continue
+        if key == "provider":
+            actual_value = metadata.get("provider")
+            if not actual_value and "base_resp" in metadata and "trace_id" in metadata:
+                actual_value = "minimax"
+        else:
+            actual_value = request.get(key)
+        if str(actual_value or "").strip() != str(expected_value or "").strip():
             return False
     return True
 
@@ -698,6 +705,7 @@ def _resolve_tts_voice_profile(project: Project) -> Dict[str, Any]:
         snapshot_value("tts.requests_per_minute", "") if project_runtime else "",
     )
     tts_cache_key = {
+        "provider": provider,
         "endpoint": tts_endpoint,
         "model": tts_model,
         "voice_id": tts_voice_id,
@@ -706,6 +714,8 @@ def _resolve_tts_voice_profile(project: Project) -> Dict[str, Any]:
         "volume": _normalize_tts_number(tts_volume),
         "pitch": _normalize_tts_number(tts_pitch),
     }
+    if provider != "minimax":
+        tts_cache_key["region"] = tts_region
     if provider == "volcengine_seed_audio":
         tts_cache_key["reference_audio_signature"] = _reference_audio_signature(tts_clone_voice_id)
         tts_cache_key["provider_extra"] = tts_provider_extra
@@ -786,7 +796,13 @@ def _require_seed_audio_reference(clone_voice_id: Any) -> None:
         )
 
 
-def synthesize_tts_resumable(project_id: str, db: Session):
+def synthesize_tts_resumable(
+    project_id: str,
+    db: Session,
+    *,
+    only_slide_id: Optional[str] = None,
+    force: bool = False,
+):
     project = project_or_404(db, project_id)
 
     profile = _resolve_tts_voice_profile(project)
@@ -823,6 +839,11 @@ def synthesize_tts_resumable(project_id: str, db: Session):
     ]
     if not slide_ids:
         raise HTTPException(status_code=400, detail="分镜规划中没有可生成音频的页面。")
+    if only_slide_id:
+        target_slide_id = str(only_slide_id).strip()
+        if target_slide_id not in slide_ids:
+            raise HTTPException(status_code=404, detail="指定的 Slide 不存在于当前分镜中。")
+        slide_ids = [target_slide_id]
 
     beats_by_slide = _load_beats_by_slide(project, slide_ids, "TTS synthesis")
 
@@ -835,26 +856,33 @@ def synthesize_tts_resumable(project_id: str, db: Session):
 
     pending_jobs: list[dict[str, Any]] = []
     for slide_id in slide_ids:
-        paths = slide_tts_artifact_paths(project, slide_id)
+        final_paths = slide_tts_artifact_paths(project, slide_id)
         text_file = ensure_slide_tts_text_file(project, slide_id, contract)
         artifact_status = slide_tts_artifact_status(project, slide_id)
 
-        if artifact_status["complete"] and _tts_artifact_matches_runtime(paths, tts_cache_key):
+        if (
+            not force
+            and artifact_status["complete"]
+            and _tts_artifact_matches_runtime(final_paths, tts_cache_key)
+        ):
             logger.info("Skipping TTS for %s because audio artifacts are already complete and fresh", slide_id)
-            rewrite_audio_timeline_by_beats(paths["timeline"], slide_id, beats_by_slide.get(slide_id, []))
+            rewrite_audio_timeline_by_beats(final_paths["timeline"], slide_id, beats_by_slide.get(slide_id, []))
             skipped_slides.append(slide_id)
             continue
 
         if artifact_status["complete"]:
-            logger.info("Regenerating TTS for %s because the voice settings changed", slide_id)
+            logger.info(
+                "Regenerating TTS for %s because it was forced or its voice settings changed",
+                slide_id,
+            )
 
         logger.info("Preparing TTS audio for slide %s via %s", slide_id, provider)
         # A running provider process must never replace a previously confirmed
         # MP3.  Promote the complete page only after its input snapshot still
         # matches the current narration and voice configuration.
-        stage_dir = Path(tempfile.mkdtemp(prefix="tts-stage-", dir=Path(paths["audio"]).parent))
+        stage_dir = Path(tempfile.mkdtemp(prefix="tts-stage-", dir=Path(final_paths["audio"]).parent))
         stage_paths = {
-            key: str(stage_dir / Path(paths[key]).name)
+            key: str(stage_dir / Path(final_paths[key]).name)
             for key in ("text", "audio", "metadata", "srt", "timeline")
         }
         shutil.copy2(text_file, stage_paths["text"])
@@ -880,7 +908,7 @@ def synthesize_tts_resumable(project_id: str, db: Session):
         pending_jobs.append(
             {
                 "slide_id": slide_id,
-                "paths": paths,
+                "paths": final_paths,
                 "stage_paths": stage_paths,
                 "stage_dir": str(stage_dir),
                 "input_version": _tts_job_input_version(
@@ -893,7 +921,12 @@ def synthesize_tts_resumable(project_id: str, db: Session):
     if pending_jobs and provider == "volcengine_seed_audio":
         # Seed Audio 必须有参考音频；缺失时快速失败，而不是每页空跑满
         # 额定重试次数后才在日志里留下报错。
-        _require_seed_audio_reference(tts_clone_voice_id)
+        try:
+            _require_seed_audio_reference(tts_clone_voice_id)
+        except Exception:
+            for job in pending_jobs:
+                shutil.rmtree(job["stage_dir"], ignore_errors=True)
+            raise
 
     if pending_jobs:
         worker_count = min(tts_concurrency, len(pending_jobs))
@@ -1208,6 +1241,18 @@ def get_tts_audio_status(project_id: str, db: Session):
     project = project_or_404(db, project_id)
     slide_ids = read_current_slide_ids_or_404(project)
     slides = [slide_tts_artifact_status(project, slide_id) for slide_id in slide_ids]
+    live_tts_config = current_tts_cache_key(project)
+    if live_tts_config:
+        for item in slides:
+            if item.get("complete") and not _tts_artifact_matches_runtime(
+                slide_tts_artifact_paths(project, item["slide_id"]),
+                live_tts_config,
+            ):
+                item["complete"] = False
+                item["stale"] = True
+                item["voice_config_stale"] = True
+                item["missing_artifacts"] = list(item.get("missing_artifacts") or [])
+                item["missing_artifacts"].append("voice_config")
     missing = [item["slide_id"] for item in slides if not item["complete"]]
     confirmation = audio_confirmation_status(project.run_dir, slide_ids)
     return {
@@ -1218,6 +1263,7 @@ def get_tts_audio_status(project_id: str, db: Session):
         "audio_confirmed": bool(confirmation.get("confirmed")),
         "audio_confirmation_reason": confirmation.get("reason"),
         "config_stale": confirmation.get("reason") == "config_changed",
+        "voice_config_stale": any(item.get("voice_config_stale") for item in slides),
     }
 
 def get_slide_audio_file(project_id: str, slide_id: str, db: Session):
@@ -1305,7 +1351,7 @@ class TtsAsyncDependencies:
     """后台合成任务的最小依赖：会话工厂 + 同步合成入口。"""
 
     session_factory: Callable[[], Session]
-    synthesize: Callable[[str, Session], dict[str, Any]]
+    synthesize: Callable[..., dict[str, Any]]
     # 进程级合成并发（多账号/多项目同时生成音频时的全局上限）。
     # 注意与项目级 slide 扇出（tts.concurrency）区分：这里限制的是
     # 同时合成几个项目，而不是一个项目里同时合成几页。
@@ -1382,16 +1428,32 @@ class TtsAsyncService:
             .first()
         )
 
-    def create_job(self, db: Session, project_id: str) -> dict[str, Any]:
+    def create_job(
+        self,
+        db: Session,
+        project_id: str,
+        request_payload: Optional[Dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         project = project_or_404(db, project_id)
+        request_payload = request_payload if isinstance(request_payload, dict) else {}
+        requested_slide_id = str(request_payload.get("slide_id") or "").strip()
+        force = request_payload.get("force") is True
         with self._create_lock:
             active = self._active_job(db, project.id)
             if active:
-                return {
-                    "success": True,
-                    "reused": True,
-                    "job": self.job_item(active),
-                }
+                active_payload = active.get_payload() or {}
+                active_slide_id = str(active_payload.get("slide_id") or "").strip()
+                active_force = active_payload.get("force") is True
+                if active_slide_id == requested_slide_id and active_force == force:
+                    return {
+                        "success": True,
+                        "reused": True,
+                        "job": self.job_item(active),
+                    }
+                raise HTTPException(
+                    status_code=409,
+                    detail="该项目已有不同范围的音频生成任务，请完成后再提交。",
+                )
             job = LocalJob(
                 id=uuid.uuid4().hex,
                 project_id=project.id,
@@ -1399,7 +1461,14 @@ class TtsAsyncService:
                 status="queued",
                 progress=0,
                 stage="queued",
-                payload_json=json.dumps({"account_id": getattr(project, "account_id", None) or get_current_account_id()}, ensure_ascii=False),
+                payload_json=json.dumps(
+                    {
+                        "account_id": getattr(project, "account_id", None) or get_current_account_id(),
+                        "slide_id": requested_slide_id or None,
+                        "force": force,
+                    },
+                    ensure_ascii=False,
+                ),
             )
             db.add(job)
             db.commit()
@@ -1522,7 +1591,31 @@ class TtsAsyncService:
             job.started_at = datetime.now()
             db.commit()
 
-            result = self.dependencies.synthesize(job.project_id, db)
+            only_slide_id = str(payload.get("slide_id") or "").strip() or None
+            force = payload.get("force") is True
+            synthesize = self.dependencies.synthesize
+            try:
+                signature = inspect.signature(synthesize)
+                parameters = signature.parameters
+                supports_options = any(
+                    parameter.kind == inspect.Parameter.VAR_KEYWORD
+                    for parameter in parameters.values()
+                ) or {"only_slide_id", "force"}.issubset(parameters)
+            except (TypeError, ValueError):
+                supports_options = False
+            if supports_options:
+                result = synthesize(
+                    job.project_id,
+                    db,
+                    only_slide_id=only_slide_id,
+                    force=force,
+                )
+            elif only_slide_id or force:
+                raise TypeError("Configured TTS synthesizer does not support scoped generation")
+            else:
+                # Keep existing injected two-argument adapters compatible for
+                # ordinary incremental batch jobs.
+                result = synthesize(job.project_id, db)
             summary = {
                 "generated": len(result.get("generated") or []),
                 "skipped": len(result.get("skipped") or []),

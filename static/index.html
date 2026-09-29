@@ -197,15 +197,17 @@
             <div class="workflow-titlebar">
               <div class="workflow-titlebar-actions">
                 <h2 class="highlight-title workflow-title">分镜规划</h2>
-                <button id="step2-btn-generate" class="success">
-                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                  AI 生成分镜
+                <button id="step2-btn-generate-script" class="success">
+                  文章 → Slides
+                </button>
+                <button id="step2-btn-generate-visual" class="success">
+                  Slides → 可视化
                 </button>
                 <button id="step2-btn-script-prompt" class="secondary">
-                  文章➡️slides
+                  演讲稿 Prompt
                 </button>
                 <button id="step2-btn-visual-prompt" class="secondary">
-                  slides➡️可视化
+                  可视化 Prompt
                 </button>
                 <button id="step2-btn-add-slide" class="secondary" style="display: none;">
                   <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -240,6 +242,20 @@
           </div>
           <div id="step2-generation-status" class="step2-generation-status" role="status" aria-live="polite" style="display:none;"></div>
 
+          <section id="step2-script-review" class="card step2-script-review" style="display:none;">
+            <div class="step2-script-review-head">
+              <div>
+                <h3>第一步：检查并修改演讲稿</h3>
+                <p id="step2-script-review-status">可直接编辑每页标题和旁白。保存后，第二步会严格使用这里的最新文案生成可视化。</p>
+              </div>
+              <div class="step2-script-review-actions">
+                <button id="step2-btn-save-script" class="secondary" type="button">保存演讲稿</button>
+                <button id="step2-btn-regenerate-script" class="secondary" type="button">重新生成演讲稿</button>
+              </div>
+            </div>
+            <div id="step2-script-slides" class="step2-script-slides"></div>
+          </section>
+
           <!-- 分镜列表编辑区（自动模式和手动模式共用） -->
           <div id="step2-editor-area" style="display: none;">
             <!-- 当前编辑的分镜内容 -->
@@ -252,7 +268,7 @@
                 <label class="step2-full-narration-field">
                   <span>完整演讲稿</span>
                   <textarea id="step2-slide-narration-input" class="step2-soft-input" rows="5" aria-describedby="step2-narration-source-hint"></textarea>
-                  <small id="step2-narration-source-hint">自动模式：由下方每个画面的演讲片段按顺序自动组成；请直接在对应画面卡片中修改片段。手动模式：直接在此输入本页要朗读的演讲稿，可多行。</small>
+                  <small id="step2-narration-source-hint">演讲稿以“文章 → Slides”阶段保存的版本为准。需要修改时请返回该阶段编辑并重新生成可视化。</small>
                 </label>
               </div>
               <div id="step2-visual-narration-map" class="step2-vn-map" aria-live="polite"></div>
@@ -401,19 +417,20 @@
                 <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                 同步
               </button>
-              <button id="step6-btn-ai-annotate" class="success compact-action-btn">AI 标注</button>
+              <button id="step6-btn-ai-annotate" class="success compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
               <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button">AI 标注 Prompt</button>
               <span id="step6-autosave-status" class="step6-autosave-status"></span>
             </div>
             <div class="step6-toolbar workflow-toolbar">
-              <button id="step6-btn-save-and-tts" class="success step6-next-btn">
+              <button id="step6-btn-save-and-tts" class="success step6-next-btn" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
                 生成音频
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
-              <button id="step7-btn-synthesize" class="secondary compact-action-btn">
+              <button id="step7-btn-synthesize" class="secondary compact-action-btn" title="检查所有页面，只补生成旁白或语音配置发生变化的音频">
                 <svg class="icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                重新生成
+                检查并补齐音频
               </button>
+              <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="忽略缓存，重新生成所有页面音频">强制重生成全部</button>
               <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
               <button id="step6-btn-audio-confirm-next" class="success" disabled>
                 <span id="step6-audio-confirm-label">确认并进入勾画标注</span>
@@ -1482,15 +1499,15 @@
 
   <div id="modal-step2-generate" class="modal-overlay" style="display: none;">
     <div class="modal-content ai-generation-modal">
-      <h3 class="highlight-title">AI 生成分镜</h3>
-      <p class="config-editor-note">这里是可选补充。留空时会直接按当前已保存的分镜规则和文章内容生成；填写后只影响本次生成，不会覆盖模板。</p>
+      <h3 class="highlight-title">文章 → Slides：生成演讲稿</h3>
+      <p class="config-editor-note">可选补充只影响本次演讲稿生成。生成后会先进入演讲稿编辑，保存后再单独生成可视化。</p>
       <label class="ai-requirement-field">
         <span>本次补充需求（可选）</span>
         <textarea id="step2-generation-requirement" rows="8" placeholder="例如：控制在 6 页以内；先解释概念，再讲工作机制和实际应用；每页只讲一个重点，多用流程图和对比结构；旁白简洁，避免重复。"></textarea>
       </label>
       <div class="config-editor-actions">
         <button id="btn-step2-generation-cancel" class="secondary" type="button">取消</button>
-        <button id="btn-step2-generation-confirm" class="success" type="button">生成分镜</button>
+        <button id="btn-step2-generation-confirm" class="success" type="button">生成演讲稿</button>
       </div>
     </div>
   </div>

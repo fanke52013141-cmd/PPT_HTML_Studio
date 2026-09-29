@@ -209,6 +209,7 @@ def write_common_outputs(
             "provider": provider,
             "request": {
                 "endpoint": args.endpoint,
+                "region": getattr(args, "region", ""),
                 "model": args.model,
                 "voice_id": args.voice_id,
                 "clone_voice_id": args.clone_voice_id,
@@ -248,6 +249,8 @@ def run_minimax(args: argparse.Namespace) -> int:
         args.slide_id,
         "--endpoint",
         args.endpoint,
+        "--region",
+        args.region,
         "--model",
         args.model,
         "--voice-id",

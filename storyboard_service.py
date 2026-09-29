@@ -338,6 +338,87 @@ def read_plan_json(path: str, missing_message: str) -> Dict[str, Any]:
     return value
 
 
+def _step2_script_plan_fingerprint(plan: Dict[str, Any]) -> str:
+    source = {
+        "title": str(plan.get("title") or ""),
+        "slides": [
+            {
+                "slide_id": str(slide.get("slide_id") or ""),
+                "slide_title": str(slide.get("slide_title") or ""),
+                "narration": str(slide.get("narration") or ""),
+            }
+            for slide in (plan.get("slides") or [])
+            if isinstance(slide, dict)
+        ],
+    }
+    encoded = json.dumps(source, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _step2_visual_plan_status(project: Project, script_plan: Dict[str, Any]) -> tuple[bool, bool]:
+    visual_path = step2_visual_plan_path(project)
+    if not os.path.isfile(visual_path):
+        return False, False
+    try:
+        with open(visual_path, "r", encoding="utf-8-sig") as file:
+            visual_plan = json.load(file)
+    except (OSError, json.JSONDecodeError):
+        return True, True
+    if not isinstance(visual_plan, dict):
+        return True, True
+    stored_hash = str(visual_plan.get("source_script_hash") or "")
+    return True, bool(stored_hash and stored_hash != _step2_script_plan_fingerprint(script_plan))
+
+
+def _mark_step2_visual_plan_stale(project: Project, previous_plan: Dict[str, Any], current_plan: Dict[str, Any]) -> None:
+    if previous_plan == current_plan:
+        return
+    visual_path = step2_visual_plan_path(project)
+    if not os.path.isfile(visual_path):
+        return
+    try:
+        with open(visual_path, "r", encoding="utf-8-sig") as file:
+            visual_plan = json.load(file)
+        if isinstance(visual_plan, dict) and visual_plan.get("slides"):
+            current_hash = _step2_script_plan_fingerprint(current_plan)
+            existing_hash = str(visual_plan.get("source_script_hash") or "")
+            if existing_hash and existing_hash == current_hash:
+                return
+            # Preserve a real old fingerprint; legacy plans get a sentinel.
+            visual_plan.setdefault("source_script_hash", "legacy-stale")
+            write_json_atomic(visual_path, visual_plan)
+    except (OSError, json.JSONDecodeError):
+        logger.warning("Could not mark the existing visual plan stale after script edit")
+
+
+def _persist_step2_script_plan(
+    project: Project,
+    plan: Dict[str, Any],
+    previous_plan: Dict[str, Any],
+) -> tuple[bool, bool, bool, bool]:
+    write_json_atomic(step2_script_plan_path(project), plan)
+    _mark_step2_visual_plan_stale(project, previous_plan, plan)
+    visual_plan_exists, visual_stale = _step2_visual_plan_status(project, plan)
+    existing_contract = os.path.isfile(
+        os.path.join(project.run_dir, "planning", "visual_contract.json")
+    )
+    if existing_contract and not visual_plan_exists and previous_plan != plan:
+        visual_stale = True
+    visual_exists = visual_plan_exists or existing_contract
+    statuses = project.get_step_status()
+    visual_work_stale = visual_stale
+    workflow_changed = (
+        previous_plan != plan
+        and visual_work_stale
+        and statuses.get("2") != "in_progress"
+    )
+    if workflow_changed:
+        invalidation_service.storyboard_script_changed(project)
+    step2_status = project.get_step_status().get("2")
+    workflow_pending = step2_status is not None and step2_status != "completed"
+    return visual_exists, visual_stale, workflow_changed, workflow_pending
+
+
 def configured_step2_llm() -> tuple[str, Optional[str], str, float, int]:
     llm_api_key = get_setting("llm_api_key")
     llm_base_url = get_setting("llm_base_url")
@@ -733,11 +814,25 @@ def execute_step2_script_plan(
         plan = normalize_slide_script_plan(raw_plan, project_title)
     except PlanningError as exc:
         raise _planning_http_error(exc, 502)
-    write_json_atomic(step2_script_plan_path(project), plan)
+    script_path = step2_script_plan_path(project)
+    previous_plan: Dict[str, Any] = {}
+    if os.path.isfile(script_path):
+        try:
+            with open(script_path, "r", encoding="utf-8-sig") as file:
+                previous_plan = json.load(file)
+        except (OSError, json.JSONDecodeError):
+            previous_plan = {}
+    visual_exists, visual_stale, workflow_changed, workflow_pending = _persist_step2_script_plan(
+        project, plan, previous_plan
+    )
     write_project_log(project, "step2_script_plan_written", trace_id=trace_id, slide_count=len(plan.get("slides", [])))
     return {
         "success": True,
         "script_plan": plan,
+        "visual_exists": visual_exists,
+        "visual_stale": visual_stale,
+        "workflow_changed": workflow_changed,
+        "workflow_pending": workflow_pending,
         "target_duration": target_duration_response(project.target_duration_sec, plan),
     }
 
@@ -760,10 +855,24 @@ def update_step2_script_plan(project_id: str, payload: Dict[str, Any], db: Sessi
         plan = normalize_slide_script_plan(payload, project_title)
     except PlanningError as exc:
         raise _planning_http_error(exc, 400)
-    write_json_atomic(step2_script_plan_path(project), plan)
+    script_path = step2_script_plan_path(project)
+    previous_plan: Dict[str, Any] = {}
+    if os.path.isfile(script_path):
+        try:
+            with open(script_path, "r", encoding="utf-8-sig") as file:
+                previous_plan = json.load(file)
+        except (OSError, json.JSONDecodeError):
+            previous_plan = {}
+    visual_exists, visual_stale, workflow_changed, workflow_pending = _persist_step2_script_plan(
+        project, plan, previous_plan
+    )
     return {
         "success": True,
         "script_plan": plan,
+        "visual_exists": visual_exists,
+        "visual_stale": visual_stale,
+        "workflow_changed": workflow_changed,
+        "workflow_pending": workflow_pending,
         "target_duration": target_duration_response(project.target_duration_sec, plan),
     }
 
@@ -840,6 +949,7 @@ def _execute_step2_visual_plan(
                 )
                 continue
             raise _planning_http_error(exc, 502)
+        plan["source_script_hash"] = _step2_script_plan_fingerprint(script_plan)
         write_json_atomic(step2_visual_plan_path(project), plan)
         write_project_log(
             project,
@@ -860,7 +970,13 @@ def execute_step2_visual_plan(project_id: str, db: Session):
 def get_step2_visual_plan(project_id: str, db: Session):
     project = project_or_404(db, project_id)
     plan = read_plan_json(step2_visual_plan_path(project), "尚未生成视觉规划")
-    return {"success": True, "visual_plan": plan}
+    script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
+    _, stale = _step2_visual_plan_status(project, script_plan)
+    return {
+        "success": True,
+        "visual_plan": plan,
+        "stale": stale,
+    }
 
 
 def update_step2_visual_plan(project_id: str, payload: Dict[str, Any], db: Session):
@@ -870,6 +986,7 @@ def update_step2_visual_plan(project_id: str, payload: Dict[str, Any], db: Sessi
         plan = normalize_slide_visual_plan(payload, script_plan)
     except PlanningError as exc:
         raise _planning_http_error(exc, 400)
+    plan["source_script_hash"] = _step2_script_plan_fingerprint(script_plan)
     write_json_atomic(step2_visual_plan_path(project), plan)
     return {"success": True, "visual_plan": plan}
 
@@ -881,10 +998,11 @@ def compose_step2_visual_contract(project_id: str, db: Session):
     article_summary = article_source["summary"]
     script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
     try:
-        visual_plan = normalize_slide_visual_plan(
-            read_plan_json(step2_visual_plan_path(project), "请先生成视觉规划"),
-            script_plan,
-        )
+        stored_visual_plan = read_plan_json(step2_visual_plan_path(project), "请先生成视觉规划")
+        stored_script_hash = str(stored_visual_plan.get("source_script_hash") or "")
+        if stored_script_hash and stored_script_hash != _step2_script_plan_fingerprint(script_plan):
+            raise HTTPException(status_code=409, detail="演讲稿已修改，可视化映射已过期，请重新生成可视化。")
+        visual_plan = normalize_slide_visual_plan(stored_visual_plan, script_plan)
         contract = compose_visual_contract_from_plans(script_plan, visual_plan, project_id, project_title)
     except PlanningError as exc:
         raise _planning_http_error(exc, 400)

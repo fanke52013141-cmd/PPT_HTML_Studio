@@ -182,6 +182,19 @@ def storyboard_contract_changed(
     )
 
 
+def storyboard_script_changed(project: Any) -> InvalidationReport:
+    """Require visual planning again while retaining existing artifacts for recovery."""
+    statuses = project.get_step_status()
+    statuses["2"] = "in_progress"
+    project.current_step = 2
+    project.set_step_status(statuses)
+    record_impact(project.run_dir, reason="storyboard_script_changed")
+    return InvalidationReport(
+        reason="storyboard_script_changed",
+        affected_steps=(2,),
+    )
+
+
 def empty_storyboard_changed(project: Any) -> InvalidationReport:
     """Keep an editable empty storyboard while invalidating all dependants."""
     statuses = project.get_step_status()

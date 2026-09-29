@@ -1,10 +1,28 @@
 // Step 2 storyboard data, generation, editing, batch import, and persistence.
 // Shared helpers and globals are provided by ui_foundation.js / workflow_state.js / api_client.js; public functions remain global for classic-script compatibility.
 
+let step2ScriptSaveTimer = null;
+let step2ScriptSavePromise = null;
+
+function step2CurrentProjectId() {
+  return String(state.currentProject?.id || '');
+}
+
+function resetStep2ScriptState() {
+  if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
+  step2ScriptSaveTimer = null;
+  state.step2ScriptPlan = null;
+  state.step2VisualStale = false;
+  state.step2VisualExists = false;
+  state.step2WorkflowPending = false;
+  state.step2Stage = 'script';
+}
+
 async function loadStep2Data() {
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
+  state.step2ScriptPlan = null;
   try {
     const configRes = await API.get(`/api/projects/${projectId}/steps/2/rules`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
@@ -12,13 +30,38 @@ async function loadStep2Data() {
   } catch (e) {}
   const res = await API.get(`/api/projects/${projectId}/steps/2/result`);
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+  try {
+    const scriptRes = await API.get(`/api/projects/${projectId}/steps/2/script/result`);
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+    state.step2ScriptPlan = scriptRes.success ? scriptRes.script_plan : null;
+  } catch (e) {
+    state.step2ScriptPlan = null;
+  }
+  try {
+    const visualPlanRes = await API.get(`/api/projects/${projectId}/steps/2/visual/result`);
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+    state.step2VisualExists = visualPlanRes.success === true;
+    const step2Status = state.currentProject?.step_status?.['2'];
+    state.step2WorkflowPending = Boolean(step2Status && step2Status !== 'completed');
+    state.step2VisualStale = visualPlanRes.stale === true
+      || (state.step2WorkflowPending && state.step2VisualExists);
+  } catch (e) {
+    state.step2VisualExists = false;
+    state.step2VisualStale = false;
+    const step2Status = state.currentProject?.step_status?.['2'];
+    state.step2WorkflowPending = Boolean(step2Status && step2Status !== 'completed');
+  }
   if (res.success && res.contract) {
     state.slides = res.contract.slides || [];
+    state.step2VisualExists = state.step2VisualExists || state.slides.length > 0;
+    state.step2VisualStale = state.step2VisualStale
+      || (state.step2WorkflowPending && state.step2VisualExists && !!state.step2ScriptPlan?.slides?.length);
     state.step2PresentationPolicy = res.contract.presentation_policy || {};
     state.step2ContractSha256 = res.contract_sha256 || null;
     state.step2BatchDeleteMode = false;
     state.step2DeleteSelection = new Set();
     state.step2BatchOriginalSlides = null;
+    state.step2Stage = state.step2VisualStale ? 'script' : 'visual';
     renderStep2Workspace();
     void offerArtifactRepair(res, '分镜数据', loadStep2Data);
   } else {
@@ -27,18 +70,30 @@ async function loadStep2Data() {
     state.step2BatchDeleteMode = false;
     state.step2DeleteSelection = new Set();
     state.step2BatchOriginalSlides = null;
+    state.step2Stage = 'script';
+    state.step2WorkflowPending = true;
     document.getElementById('step2-editor-area').style.display = 'none';
     document.getElementById('step2-thumbs').style.display = 'none';
     if (!isManualMode()) {
-      document.getElementById('step2-btn-generate').style.display = 'inline-flex';
-      document.getElementById('step2-btn-generate').innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> AI 生成分镜`;
+      document.getElementById('step2-btn-generate-script').style.display = 'inline-flex';
+      document.getElementById('step2-btn-generate-visual').style.display = 'inline-flex';
+      document.getElementById('step2-btn-generate-script').textContent = state.step2ScriptPlan?.slides?.length
+        ? '文章 → Slides（查看/编辑）' : '文章 → Slides';
+      document.getElementById('step2-btn-generate-visual').disabled = !state.step2ScriptPlan?.slides?.length;
+      document.getElementById('step2-btn-script-prompt').style.display = 'inline-flex';
+      document.getElementById('step2-btn-visual-prompt').style.display = 'inline-flex';
     } else {
+      document.getElementById('step2-btn-generate-script').style.display = 'none';
+      document.getElementById('step2-btn-generate-visual').style.display = 'none';
+      document.getElementById('step2-btn-script-prompt').style.display = 'none';
+      document.getElementById('step2-btn-visual-prompt').style.display = 'none';
       // 手动模式新建项目：必须显示"添加幻灯片"和"批量导入"，否则用户无法开始
       document.getElementById('step2-btn-add-slide').style.display = 'inline-flex';
       document.getElementById('step2-btn-batch-import').style.display = 'inline-flex';
     }
     document.getElementById('step2-btn-save').style.display = 'none';
     document.getElementById('step2-btn-next').style.display = 'none';
+    renderStep2ScriptReview();
     updateStep2AutosaveStatus('');
   }
 }
@@ -50,6 +105,206 @@ function isManualMode() {
 
 function step2SlideHasStructuredVisuals(slide) {
   return Array.isArray(slide?.visual_groups) && slide.visual_groups.length > 0;
+}
+
+function openStep2ScriptStage() {
+  if (!state.step2ScriptPlan) {
+    openStep2GenerationModal();
+    return;
+  }
+  state.step2Stage = 'script';
+  renderStep2Workspace();
+}
+
+async function generateStep2ScriptPlan(requirement = '') {
+  const projectId = step2CurrentProjectId();
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return false;
+  const scriptButton = document.getElementById('step2-btn-generate-script');
+  const loading = document.getElementById('step2-loading');
+  const loadingText = document.querySelector('#step2-loading p');
+  const oldLoadingText = loadingText?.textContent || '';
+  if (scriptButton) scriptButton.disabled = true;
+  if (loading) loading.style.display = 'block';
+  if (loadingText) loadingText.textContent = '第一步：AI 正在根据文章生成每页标题和演讲稿…';
+  setStep2GenerationStatus('');
+  try {
+    if (state.step2ScriptPlan && !(await saveStep2ScriptPlan({ silent: true }))) {
+      throw new Error('当前演讲稿未能保存，请检查后重试');
+    }
+    const payload = String(requirement || '').trim() ? { requirement: String(requirement).trim() } : {};
+    const response = await API.post(
+      `/api/projects/${projectId}/steps/2/script/execute`,
+      payload,
+      { timeoutMs: 900000 },
+    );
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
+    if (!response.success || !response.script_plan) throw new Error(response.message || '演讲稿生成失败');
+    state.step2ScriptPlan = response.script_plan;
+    if (typeof response.visual_exists === 'boolean') state.step2VisualExists = response.visual_exists;
+    if (typeof response.workflow_pending === 'boolean') state.step2WorkflowPending = response.workflow_pending;
+    state.step2VisualStale = response.visual_stale === true
+      || (state.step2WorkflowPending && state.step2VisualExists);
+    state.step2Stage = 'script';
+    renderStep2Workspace();
+    if (response.workflow_changed) refreshCurrentProjectStatus(2).catch(() => {});
+    showToast('演讲稿已生成。请先检查并保存，再生成可视化。');
+    return true;
+  } catch (error) {
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      setStep2GenerationStatus(`演讲稿生成失败：${error?.message || error}`, 'error');
+    }
+    return false;
+  } finally {
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      if (loadingText) loadingText.textContent = oldLoadingText;
+      if (loading) loading.style.display = 'none';
+      if (scriptButton) scriptButton.disabled = false;
+    }
+  }
+}
+
+function renderStep2ScriptReview() {
+  const section = document.getElementById('step2-script-review');
+  const list = document.getElementById('step2-script-slides');
+  if (!section || !list) return;
+  const plan = state.step2ScriptPlan;
+  const statusText = document.getElementById('step2-script-review-status');
+  if (statusText) statusText.textContent = state.step2VisualStale
+    ? '演讲稿有变更，已有可视化映射已过期。保存后点击上方“重新生成可视化”。'
+    : '可直接编辑每页标题和旁白。保存后，第二步会严格使用这里的最新文案生成可视化。';
+  const visible = !isManualMode() && state.step2Stage === 'script' && !!plan?.slides?.length;
+  section.style.display = visible ? 'block' : 'none';
+  if (!visible) return;
+  list.innerHTML = (plan.slides || []).map((slide, index) => `
+    <article class="step2-script-slide" data-script-slide-index="${index}">
+      <div class="step2-script-slide-title"><strong>${escHtml(slide.slide_id || `Slide ${index + 1}`)}</strong>
+        <input type="text" data-script-field="slide_title" aria-label="${escHtml(slide.slide_id || `Slide ${index + 1}`)} 标题" value="${escHtml(slide.slide_title || '')}">
+      </div>
+      <label><span>演讲稿</span><textarea rows="4" data-script-field="narration" aria-label="${escHtml(slide.slide_id || `Slide ${index + 1}`)} 演讲稿">${escHtml(slide.narration || '')}</textarea></label>
+    </article>
+  `).join('');
+  list.querySelectorAll('[data-script-field]').forEach(input => {
+    input.addEventListener('input', () => {
+      const card = input.closest('[data-script-slide-index]');
+      const slide = plan.slides[Number(card?.dataset.scriptSlideIndex)];
+      if (!slide) return;
+      slide[input.dataset.scriptField] = input.value;
+      state.step2VisualStale = state.step2VisualExists;
+      if (statusText) statusText.textContent = state.step2VisualStale
+        ? '演讲稿有变更，已有可视化映射已过期。保存后点击上方“重新生成可视化”。'
+        : '演讲稿有未保存修改。保存后，点击“Slides → 可视化”生成对应映射。';
+      if (input.dataset.scriptField === 'narration') autoResizeNarrationTextarea(input);
+      updateStep2AutosaveStatus('演讲稿有未保存修改');
+      if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
+      step2ScriptSaveTimer = setTimeout(() => saveStep2ScriptPlan({ silent: true }), 700);
+    });
+    if (input.tagName === 'TEXTAREA') autoResizeNarrationTextarea(input);
+  });
+}
+
+async function saveStep2ScriptPlan(options = {}) {
+  const projectId = step2CurrentProjectId();
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId || !state.step2ScriptPlan) return false;
+  if (step2ScriptSaveTimer) {
+    clearTimeout(step2ScriptSaveTimer);
+    step2ScriptSaveTimer = null;
+  }
+  while (true) {
+    if (step2ScriptSavePromise) {
+      try { await step2ScriptSavePromise; } catch (error) { /* retry with the newest snapshot */ }
+    }
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion) || !state.step2ScriptPlan) return false;
+    const snapshot = JSON.parse(JSON.stringify(state.step2ScriptPlan));
+    const savePromise = API.put(`/api/projects/${projectId}/steps/2/script/result`, snapshot);
+    step2ScriptSavePromise = savePromise;
+    let response;
+    try {
+      response = await savePromise;
+    } catch (error) {
+      if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+        updateStep2AutosaveStatus('演讲稿保存失败，请重试');
+        if (!options.silent) showToast(`演讲稿保存失败：${error?.message || error}`);
+      }
+      return false;
+    } finally {
+      if (step2ScriptSavePromise === savePromise) step2ScriptSavePromise = null;
+    }
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
+    if (!response.success) {
+      updateStep2AutosaveStatus('演讲稿保存失败，请重试');
+      return false;
+    }
+    if (JSON.stringify(state.step2ScriptPlan) !== JSON.stringify(snapshot)) {
+      updateStep2AutosaveStatus('继续保存最新修改…');
+      if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
+      step2ScriptSaveTimer = null;
+      continue;
+    }
+    state.step2ScriptPlan = response.script_plan || state.step2ScriptPlan;
+    if (typeof response.visual_exists === 'boolean') state.step2VisualExists = response.visual_exists;
+    if (typeof response.workflow_pending === 'boolean') state.step2WorkflowPending = response.workflow_pending;
+    if (typeof response.visual_stale === 'boolean') {
+      state.step2VisualStale = response.visual_stale
+        || (state.step2WorkflowPending && state.step2VisualExists);
+    }
+    const statusText = document.getElementById('step2-script-review-status');
+    if (statusText) statusText.textContent = state.step2VisualStale
+      ? '演讲稿有变更，已有可视化映射已过期。保存后点击上方“重新生成可视化”。'
+      : '可直接编辑每页标题和旁白。保存后，第二步会严格使用这里的最新文案生成可视化。';
+    updateStep2AutosaveStatus('演讲稿已保存');
+    if (response.workflow_changed) refreshCurrentProjectStatus(2).catch(() => {});
+    if (!options.silent) showToast('演讲稿已保存。');
+    return true;
+  }
+}
+
+async function generateStep2VisualPlan() {
+  const projectId = step2CurrentProjectId();
+  const sessionVersion = workspaceNavigationVersion;
+  if (!projectId) return false;
+  if (!state.step2ScriptPlan?.slides?.length) {
+    showToast('请先生成并保存文章 → Slides 演讲稿。');
+    return false;
+  }
+  if (!(await saveStep2ScriptPlan({ silent: true }))) return false;
+  const button = document.getElementById('step2-btn-generate-visual');
+  const loading = document.getElementById('step2-loading');
+  const loadingText = document.querySelector('#step2-loading p');
+  const oldLoadingText = loadingText?.textContent || '';
+  if (button) button.disabled = true;
+  if (loading) loading.style.display = 'block';
+  try {
+    if (loadingText) loadingText.textContent = '第二步：AI 正在根据已保存的演讲稿规划可视化…';
+    const visual = await API.post(`/api/projects/${projectId}/steps/2/visual/execute`, undefined, { timeoutMs: 900000 });
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
+    if (!visual.success) throw new Error(visual.message || '可视化生成失败');
+    const composed = await API.post(`/api/projects/${projectId}/steps/2/compose`);
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
+    if (!composed.success || !composed.contract) throw new Error(composed.message || '分镜合成失败');
+    state.slides = composed.contract.slides || [];
+    state.step2PresentationPolicy = composed.contract.presentation_policy || {};
+    state.step2Stage = 'visual';
+    state.step2VisualStale = false;
+    state.step2VisualExists = true;
+    state.step2WorkflowPending = false;
+    renderStep2Workspace();
+    refreshCurrentProjectStatus(2).catch(() => {});
+    showToast('可视化已根据当前演讲稿生成。');
+    return true;
+  } catch (error) {
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      setStep2GenerationStatus(`可视化生成失败：${error?.message || error}`, 'error');
+    }
+    return false;
+  } finally {
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      if (loadingText) loadingText.textContent = oldLoadingText;
+      if (loading) loading.style.display = 'none';
+      if (button) button.disabled = false;
+    }
+  }
 }
 
 // ==================== 手动模式：添加幻灯片 + 批量导入 ====================
@@ -288,6 +543,17 @@ function closeStep2GenerationModal() {
   document.getElementById('modal-step2-generate').style.display = 'none';
 }
 
+function openStep2GenerationModal() {
+  const modal = document.getElementById('modal-step2-generate');
+  const title = modal?.querySelector('h3');
+  const confirm = document.getElementById('btn-step2-generation-confirm');
+  const requirement = document.getElementById('step2-generation-requirement');
+  if (title) title.textContent = '文章 → Slides：生成演讲稿';
+  if (confirm) confirm.textContent = '生成演讲稿';
+  if (requirement) requirement.value = '';
+  if (modal) modal.style.display = 'flex';
+}
+
 function setStep2GenerationStatus(message = '', type = '') {
   const status = document.getElementById('step2-generation-status');
   if (!status) return;
@@ -300,66 +566,7 @@ async function confirmStep2Generation() {
   const userRequirement = document.getElementById('step2-generation-requirement').value.trim();
   state.step2GenerationRequirement = userRequirement;
   closeStep2GenerationModal();
-  await generateStep2Contract(userRequirement);
-}
-
-async function generateStep2Contract(requirement = '') {
-  const projectId = state.currentProject?.id;
-  const sessionVersion = workspaceNavigationVersion;
-  if (!projectId) return;
-  const normalizedRequirement = String(requirement || '').trim();
-  setStep2GenerationStatus('');
-  document.getElementById('step2-loading').style.display = 'block';
-  document.getElementById('step2-btn-generate').disabled = true;
-  const loadingText = document.querySelector('#step2-loading p');
-  const originalLoadingText = loadingText?.innerText || '';
-  
-  try {
-    if (loadingText) loadingText.innerText = 'Step 2A：AI 正在规划每页标题、正文要点和演讲稿...';
-    const scriptPayload = normalizedRequirement ? { requirement: normalizedRequirement } : {};
-    // LLM 规划可能超过 5 分钟，且后端在网络错误时会自动重试。前端超时设为 15 分钟以容纳重试。
-    const scriptRes = await API.post(
-      `/api/projects/${projectId}/steps/2/script/execute`,
-      scriptPayload,
-      { timeoutMs: 900000 },
-    );
-    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
-    if (!scriptRes.success) {
-      showToast(`❌ 错误: ${scriptRes.message || 'Step 2A 生成失败'}`);
-      return;
-    }
-    if (loadingText) loadingText.innerText = 'Step 2B：AI 正在根据演讲稿规划画面语义块...';
-    const visualRes = await API.post(
-      `/api/projects/${projectId}/steps/2/visual/execute`,
-      undefined,
-      { timeoutMs: 900000 },
-    );
-    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
-    if (!visualRes.success) {
-      showToast(`❌ 错误: ${visualRes.message || 'Step 2B 生成失败'}`);
-      return;
-    }
-    if (loadingText) loadingText.innerText = 'Step 2C：正在合成可用于生图、Mask 和旁白绑定的 visual_contract...';
-    const res = await API.post(`/api/projects/${projectId}/steps/2/compose`);
-    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
-    if (!res.success) {
-      showToast(`❌ 错误: ${res.message || 'Step 2 合成失败'}`);
-      return;
-    }
-    showToast('🎉 Narration-first 分镜规划已生成！');
-    setStep2GenerationStatus('');
-    state.slides = res.contract?.slides || [];
-    renderStep2Workspace();
-  } catch(e) {
-    const message = e?.message || '分镜生成失败，请稍后重试。';
-    console.error('Step 2 generation failed:', e);
-    setStep2GenerationStatus(`分镜生成失败：${message}`, 'error');
-  } finally {
-    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
-    if (loadingText) loadingText.innerText = originalLoadingText;
-    document.getElementById('step2-loading').style.display = 'none';
-    document.getElementById('step2-btn-generate').disabled = false;
-  }
+  await generateStep2ScriptPlan(userRequirement);
 }
 
 function renderStep2Workspace() {
@@ -368,40 +575,56 @@ function renderStep2Workspace() {
   }
   const manual = isManualMode();
   const hasSlides = state.slides.length > 0;
-  document.getElementById('step2-editor-area').style.display = hasSlides ? 'block' : 'none';
-  // 按钮显隐：自动模式显示 AI 生成分镜/文章slides/可视化；手动模式显示 添加幻灯片/批量导入
-  const generateBtn = document.getElementById('step2-btn-generate');
+  const showScript = !manual && state.step2Stage === 'script' && !!state.step2ScriptPlan?.slides?.length;
+  document.getElementById('step2-editor-area').style.display = hasSlides && !showScript ? 'block' : 'none';
+  // 自动模式明确分开文章到演讲稿与演讲稿到可视化两个阶段。
+  const scriptGenerateBtn = document.getElementById('step2-btn-generate-script');
+  const visualGenerateBtn = document.getElementById('step2-btn-generate-visual');
   const scriptPromptBtn = document.getElementById('step2-btn-script-prompt');
   const visualPromptBtn = document.getElementById('step2-btn-visual-prompt');
   const addSlideBtn = document.getElementById('step2-btn-add-slide');
   const batchImportBtn = document.getElementById('step2-btn-batch-import');
   if (manual) {
-    if (generateBtn) generateBtn.style.display = 'none';
+    if (scriptGenerateBtn) scriptGenerateBtn.style.display = 'none';
+    if (visualGenerateBtn) visualGenerateBtn.style.display = 'none';
     if (scriptPromptBtn) scriptPromptBtn.style.display = 'none';
     if (visualPromptBtn) visualPromptBtn.style.display = 'none';
     if (addSlideBtn) addSlideBtn.style.display = 'inline-flex';
     if (batchImportBtn) batchImportBtn.style.display = 'inline-flex';
   } else {
-    if (generateBtn) {
-      generateBtn.style.display = 'inline-flex';
-      generateBtn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> AI 生成分镜`;
+    if (scriptGenerateBtn) {
+      scriptGenerateBtn.style.display = 'inline-flex';
+      scriptGenerateBtn.classList.toggle('is-active', state.step2Stage === 'script');
+      scriptGenerateBtn.textContent = state.step2ScriptPlan?.slides?.length ? '文章 → Slides（查看/编辑）' : '文章 → Slides';
+    }
+    if (visualGenerateBtn) {
+      visualGenerateBtn.style.display = 'inline-flex';
+      visualGenerateBtn.disabled = !state.step2ScriptPlan?.slides?.length;
+      visualGenerateBtn.classList.toggle('is-active', state.step2Stage === 'visual');
+      visualGenerateBtn.textContent = state.step2VisualStale ? '重新生成可视化' : 'Slides → 可视化';
     }
     if (scriptPromptBtn) scriptPromptBtn.style.display = 'inline-flex';
     if (visualPromptBtn) visualPromptBtn.style.display = 'inline-flex';
     if (addSlideBtn) addSlideBtn.style.display = 'none';
     if (batchImportBtn) batchImportBtn.style.display = 'none';
   }
+  renderStep2ScriptReview();
   // 批量删除/保存按钮在工具栏中（批量导入右侧）常显，方便随时进入删除模式
-  document.getElementById('step2-btn-save').style.display = 'inline-flex';
+  document.getElementById('step2-btn-save').style.display = showScript ? 'none' : 'inline-flex';
   const step2NextButton = document.getElementById('step2-btn-next');
-  step2NextButton.style.display = 'inline-flex';
-  step2NextButton.disabled = !hasSlides;
-  step2NextButton.title = hasSlides ? '' : '请先添加至少一个分镜';
+  step2NextButton.style.display = showScript ? 'none' : 'inline-flex';
+  const visualizationNeedsRefresh = !manual && (state.step2WorkflowPending || state.step2VisualStale);
+  step2NextButton.disabled = !hasSlides || visualizationNeedsRefresh;
+  step2NextButton.title = !hasSlides
+    ? '请先添加至少一个分镜'
+    : visualizationNeedsRefresh
+      ? '请先保存演讲稿并根据它重新生成可视化'
+      : '';
   updateStep2BatchDeleteButton();
 
   // 渲染精简版横向缩略图（只显示 Slide 序号）
   const thumbsContainer = document.getElementById('step2-thumbs');
-  thumbsContainer.style.display = 'flex'; // 显式呈现
+  thumbsContainer.style.display = showScript ? 'none' : 'flex'; // 脚本阶段聚焦演讲稿编辑
   if (!thumbsContainer.dataset.horizontalWheelBound) {
     thumbsContainer.dataset.horizontalWheelBound = 'true';
     thumbsContainer.addEventListener('wheel', event => {
@@ -414,7 +637,7 @@ function renderStep2Workspace() {
   thumbsContainer.innerHTML = '';
 
   if (!hasSlides) {
-    thumbsContainer.innerHTML = '<div class="step2-empty-storyboard" role="status">当前没有分镜，可添加幻灯片、批量导入或重新生成。</div>';
+    thumbsContainer.innerHTML = '<div class="step2-empty-storyboard" role="status">当前还没有可视化分镜。请先完成文章 → Slides，再生成可视化。</div>';
   }
 
   state.slides.forEach((slide, idx) => {
@@ -464,12 +687,21 @@ function renderStep2Workspace() {
 
     const titleInput = document.getElementById('step2-slide-title-input');
     const narrationInput = document.getElementById('step2-slide-narration-input');
-    if (titleInput) titleInput.value = slide.main_title || '';
+    if (titleInput) {
+      titleInput.readOnly = !manual;
+      titleInput.setAttribute('aria-readonly', titleInput.readOnly ? 'true' : 'false');
+      titleInput.value = slide.main_title || '';
+    }
     if (narrationInput) {
-      // 纯手动分镜可直接编辑整页演讲稿；已有视觉映射时按语块编辑，避免覆盖其余语块。
+      // 只有纯手动分镜可直接编辑该字段；AI 映射中的旁白是演讲稿的只读引用。
       narrationInput.readOnly = !manual || structuredManualSlide;
+      narrationInput.setAttribute('aria-readonly', narrationInput.readOnly ? 'true' : 'false');
       narrationInput.value = step2NarrationText(slide);
     }
+    const narrationHint = document.getElementById('step2-narration-source-hint');
+    if (narrationHint) narrationHint.textContent = narrationInput?.readOnly
+      ? '演讲稿以文章 → Slides 阶段保存的版本为准。需要修改时请返回该阶段编辑并重新生成可视化。'
+      : '手动模式：直接在此输入本页要朗读的演讲稿，可多行。';
     [titleInput, narrationInput].forEach(input => {
       if (!input || input.dataset.boundStep2SimpleEditor === '1') return;
       input.dataset.boundStep2SimpleEditor = '1';
@@ -814,13 +1046,16 @@ function renderStep2VisualNarrationMap(slide) {
       ? String(group?.display_text || group?.visible_text || group?.visual_anchor || '')
       : String(group?.visual_anchor || group?.mask_target || '');
     const typeLabel = visualType === 'text' ? '画面文字' : '画面元素';
+    const sourceTextLock = role === 'title' && !isManualMode()
+      ? 'readonly aria-readonly="true" title="标题请回到文章 → Slides 阶段修改"'
+      : '';
     const mappingReady = matched.length === 1 && String(matched[0]?.spoken_text || '').trim();
     const beatsHtml = matched.length
       ? matched.map((beat, beatIndex) => renderStep2EditableBeat(beat, beatIndex, matched.length)).join('')
       : '<div class="vn-beat vn-beat-empty">缺少对应演讲片段，请重新生成 Slides → 可视化。</div>';
     const visualField = visualType === 'text'
       ? `<label class="vn-edit-field" aria-label="画面文字">
-          <input type="text" value="${escHtml(visualContent)}" data-step2-group-id="${escHtml(gid)}" data-step2-group-field="visual_content">
+          <input type="text" ${sourceTextLock} value="${escHtml(visualContent)}" data-step2-group-id="${escHtml(gid)}" data-step2-group-field="visual_content">
         </label>`
       : `<label class="vn-edit-field" aria-label="画面元素描述">
           <textarea data-step2-group-id="${escHtml(gid)}" data-step2-group-field="visual_content">${escHtml(visualContent)}</textarea>
@@ -879,7 +1114,7 @@ function renderStep2EditableBeat(beat, index = 0, total = 1) {
   const beatId = String(beat?.id || '');
   return `<div class="vn-beat" data-beat-id="${escHtml(beatId)}">
     <label class="vn-edit-field" aria-label="演讲片段"${total > 1 ? ` title="演讲片段 ${index + 1}（应合并为一段）"` : ''}>
-      <textarea data-step2-beat-id="${escHtml(beatId)}" data-step2-beat-field="spoken_text">${escHtml(beat?.spoken_text || '')}</textarea>
+      <textarea readonly aria-readonly="true" title="演讲稿请回到文章 → Slides 阶段编辑" data-step2-beat-id="${escHtml(beatId)}" data-step2-beat-field="spoken_text">${escHtml(beat?.spoken_text || '')}</textarea>
     </label>
   </div>`;
 }
@@ -920,6 +1155,7 @@ function handleStep2MapEditorInput(event) {
 
   if (groupId && groupField === 'visual_content') {
     const group = slide.visual_groups?.find(item => item?.id === groupId);
+    if (group?.role === 'title' && !isManualMode()) return;
     if (group) {
       const value = target.value;
       if (group.visual_type === 'text') {
@@ -950,14 +1186,6 @@ function handleStep2MapEditorInput(event) {
     }
   }
 
-  if (beatId && beatField === 'spoken_text') {
-    const beat = slide.narration_beats?.find(item => item?.id === beatId);
-    if (beat) {
-      beat.spoken_text = target.value;
-      changed = true;
-    }
-  }
-
   if (!changed) return;
   syncStep2SummaryInputs(slide);
   scheduleStep2AutoSave();
@@ -982,6 +1210,14 @@ function syncStep2SummaryInputs(slide) {
   const heading = document.getElementById('step2-current-slide-title');
   if (titleInput && document.activeElement !== titleInput) titleInput.value = slide.main_title || '';
   if (heading) heading.textContent = slide.main_title || '未命名 Slide';
+  if (narrationInput) {
+    narrationInput.readOnly = !isManualMode();
+    narrationInput.setAttribute('aria-readonly', narrationInput.readOnly ? 'true' : 'false');
+    const hint = document.getElementById('step2-narration-source-hint');
+    if (hint) hint.textContent = isManualMode()
+      ? '手动模式：直接在此输入本页要朗读的演讲稿，可多行。'
+      : '标题和演讲稿以“文章 → Slides”阶段保存的版本为准。请返回该阶段修改并保存，再生成可视化。';
+  }
   if (narrationInput && document.activeElement !== narrationInput) {
     narrationInput.value = step2NarrationText(slide);
     autoResizeTextarea(narrationInput);

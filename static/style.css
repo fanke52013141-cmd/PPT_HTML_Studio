@@ -14,6 +14,7 @@
   flex-shrink: 0;
 }
 
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -3095,6 +3096,8 @@ button.success:hover,
 }
 
 #step2-btn-generate,
+#step2-btn-generate-script,
+#step2-btn-generate-visual,
 #btn-step2-generation-confirm,
 #step3-btn-generate,
 .step3-ai-action,
@@ -6267,6 +6270,8 @@ body.step5-fullscreen-mode #step-panel-5 .workspace-left{align-items:center;just
 /* 手动模式：隐藏第二步"运行 AI 分镜规划"按钮、第五步"自动触发 Mask"等强 AI 入口。
    保留"运行 AI 标注"等按需触发的按钮，让用户在手动模式下仍能调用 AI。 */
 body.mode-manual #step2-btn-generate,
+body.mode-manual #step2-btn-generate-script,
+body.mode-manual #step2-btn-generate-visual,
 body.mode-manual #step2-btn-script-prompt,
 body.mode-manual #step2-btn-visual-prompt,
 body.mode-manual #step2-loading,
@@ -10291,7 +10296,9 @@ button.success:hover,
   display: none !important;
 }
 #step-panel-2 .workflow-titlebar { min-height: 40px !important; }
-#step2-btn-generate { border-color: #4f46e5 !important; background: #4f46e5 !important; color: #fff !important; }
+#step2-btn-generate,
+#step2-btn-generate-script,
+#step2-btn-generate-visual { border-color: #4f46e5 !important; background: #4f46e5 !important; color: #fff !important; }
 #step-panel-2 .slides-thumbnail-container { gap: .5rem !important; padding-top: .2rem !important; }
 #step-panel-2 .slide-thumbnail-card.step2-slide-thumb { height: 36px !important; min-width: 92px; padding: .3rem .75rem !important; border-color: #e2e8f0 !important; border-radius: 8px !important; background: #fff !important; box-shadow: none !important; }
 #step-panel-2 .slide-thumbnail-card.step2-slide-thumb.active { border-color: #fdba74 !important; background: #fff7ed !important; color: #c2410c !important; box-shadow: inset 0 0 0 1px #fdba74 !important; }
@@ -12632,4 +12639,32 @@ body.workspace-open #step-panel-5 .workspace-split {
   #modal-creation-config-management .creation-config-subtitle-grid label:first-child {
     flex: 1 1 150px;
   }
+}
+
+/* Step 2 narration-first editing and per-slide audio actions. */
+.step2-script-review { margin: 1rem 0; padding: 1.25rem; }
+.step2-script-review-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.step2-script-review-head h3 { margin: 0 0 .35rem; }
+.step2-script-review-head p { margin: 0; color: #64748b; }
+.step2-script-review-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.step2-script-slides { display: grid; gap: .75rem; }
+.step2-script-slide { padding: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; }
+.step2-script-slide-title { display: grid; grid-template-columns: minmax(72px, 110px) 1fr; align-items: center; gap: .65rem; margin-bottom: .75rem; }
+.step2-script-slide label { display: grid; gap: .4rem; }
+.step2-script-slide input, .step2-script-slide textarea { width: 100%; box-sizing: border-box; }
+.step2-vn-map textarea[readonly], .step2-vn-map input[readonly], #step2-slide-narration-input[readonly], #step2-slide-title-input[readonly] { background: #f8fafc; color: #475569; cursor: default; }
+.step6-slide-row-head { display: flex; align-items: center; gap: .65rem; }
+.step6-slide-row-head h3 { margin-right: auto; }
+@media (max-width: 700px) {
+  .step2-script-review-head { flex-direction: column; }
+  .step2-script-slide-title { grid-template-columns: 1fr; }
+}
+#step2-btn-generate-script, #step2-btn-generate-visual {
+  border-color: #f46a38 !important;
+  background: #f46a38 !important;
+  color: #fff !important;
+}
+#step2-btn-generate-script:hover, #step2-btn-generate-visual:hover {
+  border-color: #df5526 !important;
+  background: #df5526 !important;
 }

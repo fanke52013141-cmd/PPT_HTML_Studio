@@ -24,6 +24,7 @@ IMPACT_RULES: dict[str, ImpactRule] = {
     "stage_started": ImpactRule("stage execution", "stage", (), "reuse"),
     "article_changed": ImpactRule("article content", "project", ("storyboard",), "review"),
     "storyboard_changed": ImpactRule("visual contract", "project", ("images", "Mask", "audio", "output"), "review"),
+    "storyboard_script_changed": ImpactRule("storyboard speech script", "project", ("storyboard",), "review"),
     "storyboard_visual_changed": ImpactRule("slide visual plan", "slide", ("images", "Mask", "annotation geometry", "output"), "review"),
     "storyboard_narration_changed": ImpactRule("slide narration plan", "slide", ("audio confirmation", "annotation timing", "output"), "review"),
     "storyboard_structure_changed": ImpactRule("slide order or removal", "project", ("output",), "recompose"),

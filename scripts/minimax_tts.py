@@ -724,6 +724,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-subtitle-chars", type=int, default=DEFAULT_MAX_SUBTITLE_CHARS, help="Maximum CJK characters per subtitle segment.")
     parser.add_argument("--endpoint", default=os.getenv("MINIMAX_TTS_ENDPOINT", DEFAULT_ENDPOINT))
     parser.add_argument("--api-key", default=os.getenv("MINIMAX_API_KEY"))
+    parser.add_argument("--region", default="")
     parser.add_argument("--model", default=os.getenv("MINIMAX_TTS_MODEL", DEFAULT_MODEL))
     parser.add_argument("--voice-id", default=os.getenv("MINIMAX_TTS_VOICE_ID", DEFAULT_VOICE_ID))
     parser.add_argument("--clone-voice-id", default="", help="Cloned voice id; takes precedence over --voice-id when set.")
@@ -819,8 +820,10 @@ def main() -> int:
             "trace_id": response_json.get("trace_id"),
             "base_resp": response_json.get("base_resp"),
             "extra_info": response_json.get("extra_info"),
+            "provider": "minimax",
             "request": {
                 "endpoint": args.endpoint,
+                "region": args.region,
                 "model": args.model,
                 "voice_id": args.voice_id,
                 # 服务端音频缓存键包含 clone_voice_id/speed/volume/pitch；

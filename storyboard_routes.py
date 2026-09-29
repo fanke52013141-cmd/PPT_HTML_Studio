@@ -97,11 +97,14 @@ def execute_step2_script_plan(
     payload: Optional[Dict[str, Any]] = None,
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    return service.execute_step2_script_plan(
+    result = service.execute_step2_script_plan(
         project_id,
         db=db,
         payload=payload,
     )
+    if result.get("workflow_changed"):
+        db.commit()
+    return result
 
 
 @router.get("/api/projects/{project_id}/steps/2/script/result")
@@ -118,11 +121,14 @@ def update_step2_script_plan(
     payload: Dict[str, Any],
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    return service.update_step2_script_plan(
+    result = service.update_step2_script_plan(
         project_id,
         payload,
         db,
     )
+    if result.get("workflow_changed"):
+        db.commit()
+    return result
 
 
 @router.post("/api/projects/{project_id}/steps/2/visual/execute")

@@ -443,6 +443,8 @@ button.success:hover,
 
 /* Coral is reserved for generation/creation actions, as in the Stitch set. */
 #step2-btn-generate,
+#step2-btn-generate-script,
+#step2-btn-generate-visual,
 #step3-btn-batch-generate,
 #step3-btn-generate,
 #step8-btn-render,
@@ -455,6 +457,8 @@ button.success:hover,
   color: #fff !important;
 }
 #step2-btn-generate:hover,
+#step2-btn-generate-script:hover,
+#step2-btn-generate-visual:hover,
 #step3-btn-batch-generate:hover,
 #step3-btn-generate:hover,
 #step8-btn-render:hover,

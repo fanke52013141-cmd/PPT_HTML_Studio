@@ -125,7 +125,10 @@ function initGlobalEvents() {
   document.getElementById('step1-article-input')?.addEventListener('input', event => autoResizeTextarea(event.currentTarget));
 
   // ================= 步骤 2 事件 =================
-  document.getElementById('step2-btn-generate')?.addEventListener('click', () => generateStep2Contract());
+  document.getElementById('step2-btn-generate-script')?.addEventListener('click', () => openStep2ScriptStage());
+  document.getElementById('step2-btn-generate-visual')?.addEventListener('click', () => generateStep2VisualPlan());
+  document.getElementById('step2-btn-save-script')?.addEventListener('click', () => saveStep2ScriptPlan());
+  document.getElementById('step2-btn-regenerate-script')?.addEventListener('click', () => openStep2GenerationModal());
   document.getElementById('btn-step2-generation-cancel')?.addEventListener('click', () => closeStep2GenerationModal());
   document.getElementById('btn-step2-generation-confirm')?.addEventListener('click', () => confirmStep2Generation());
   document.getElementById('step2-btn-script-prompt')?.addEventListener('click', () => openStoryboardRulesModal('script'));
@@ -191,6 +194,7 @@ function initGlobalEvents() {
 
   // 步骤 7 后端能力已合并到可见步骤 6
   document.getElementById('step7-btn-synthesize')?.addEventListener('click', () => runStep7TTS());
+  document.getElementById('step7-btn-force-all')?.addEventListener('click', () => confirmForceRegenerateAllTTS());
 
   // ================= 步骤 8 事件 =================
   document.getElementById('step8-btn-render')?.addEventListener('click', () => runStep8Render());

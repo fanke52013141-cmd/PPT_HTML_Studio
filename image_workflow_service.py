@@ -17,6 +17,7 @@ import tempfile
 import threading
 import time
 from typing import Any, Callable, Dict, List, Optional
+from urllib.parse import quote
 import uuid
 from zipfile import ZIP_DEFLATED, ZipFile
 from PIL import Image, ImageDraw
@@ -1715,11 +1716,18 @@ def download_all_slide_images(project_id: str, db: Session) -> Response:
             entry_name = f"{page_number:03d}_{_zip_entry_slide_id(slide_id)}.png"
             zip_file.write(image_path, arcname=entry_name)
 
-    filename = f"pptstudio-images-{project.id}.zip"
+    project_name = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "_", str(project.name or "项目")).strip(" .")
+    project_name = project_name[:120].strip(" .") or "项目"
+    encoded_filename = quote(f"{project_name}.zip", safe="")
     return Response(
         content=archive.getvalue(),
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={
+            "Content-Disposition": (
+                'attachment; filename="project-images.zip"; '
+                f"filename*=UTF-8''{encoded_filename}"
+            )
+        },
     )
 
 

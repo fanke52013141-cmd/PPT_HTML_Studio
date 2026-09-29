@@ -247,10 +247,14 @@ function renderStep6Workspace() {
       <div class="step6-slide-row-head">
         <h3>${escHtml(slide.slide_id)}</h3>
         <span class="step6-slide-status">${slide.beats.length ? `${slide.beats.length} 条旁白` : '暂无旁白'}</span>
+        <button class="secondary compact-action-btn step6-generate-slide" type="button" data-slide-id="${escHtml(slide.slide_id)}" title="只重新生成当前 Slide 的旁白音频" ${slide.beats.length ? '' : 'disabled'}>单独生成</button>
       </div>
       <div class="step6-slide-beats"></div>
       <div class="step6-slide-audio" data-audio-slide-id="${escHtml(slide.slide_id)}"></div>
     `;
+    slideRow.querySelector('.step6-generate-slide')?.addEventListener('click', () => {
+      runStep7TTS({ slideId: slide.slide_id, force: true });
+    });
     const beatsContainer = slideRow.querySelector('.step6-slide-beats');
     if (!slide.beats.length) {
       beatsContainer.innerHTML = '<div class="step6-empty-state">当前 Slide 暂无旁白。可返回元素动画页建立语块，或重新同步旁白。</div>';
@@ -436,11 +440,13 @@ async function loadStep7Data() {
   const emptyState = document.getElementById('step7-empty-state');
   const confirmButton = document.getElementById('step6-btn-audio-confirm-next');
   const synthButton = document.getElementById('step7-btn-synthesize');
+  const forceAllButton = document.getElementById('step7-btn-force-all');
   const step7Status = state.currentProject?.step_status?.['7'] || 'pending';
   const stepAllowsAudio = ['in_progress', 'completed', 'pending_reconfirmation'].includes(step7Status);
 
   confirmButton.disabled = true;
   synthButton.style.display = stepAllowsAudio ? 'inline-flex' : 'none';
+  if (forceAllButton) forceAllButton.style.display = stepAllowsAudio ? 'inline-flex' : 'none';
   emptyState.style.display = 'block';
   document.querySelectorAll('.step6-slide-audio').forEach(slot => {
     slot.innerHTML = '';
@@ -457,6 +463,7 @@ async function loadStep7Data() {
   const hasExistingAudio = (audioStatus.slides || []).some(item => item?.audio_exists);
   const canLoadAudio = stepAllowsAudio || hasExistingAudio;
   synthButton.style.display = canLoadAudio ? 'inline-flex' : 'none';
+  if (forceAllButton) forceAllButton.style.display = canLoadAudio ? 'inline-flex' : 'none';
   if (!canLoadAudio) {
     emptyState.innerText = '尚未生成音频。确认旁白后，点击“生成音频”。';
     return;
@@ -473,7 +480,9 @@ async function loadStep7Data() {
         const audioUrl = `/api/projects/${projectId}/slides/${img.slide_id}/audio?t=${Date.now()}`;
         slot.innerHTML = `<audio controls preload="metadata" src="${audioUrl}" class="step7-audio-player" aria-label="${escHtml(img.slide_id)} 音频"></audio>`;
       } else {
-        const reason = audio?.stale ? '音频已过期，请重新生成' : '音频尚未生成';
+        const reason = audio?.voice_config_stale
+          ? '语音配置已变更，请重新生成'
+          : audio?.stale ? '旁白已修改，请重新生成' : '音频尚未生成';
         slot.innerHTML = `<div class="step7-audio-missing">${escHtml(reason)}</div>`;
       }
     });
@@ -503,19 +512,29 @@ async function loadStep7Data() {
   }
 }
 
-async function runStep7TTS() {
+async function runStep7TTS(options = {}) {
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return false;
+  const targetSlideId = String(options.slideId || '').trim();
+  if (!options.alreadySaved) {
+    const saved = await flushStep6Autosave({ userInitiated: false });
+    if (!saved || !isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
+  }
   const loading = document.getElementById('step7-loading');
   const synthButton = document.getElementById('step7-btn-synthesize');
   const saveAndTtsButton = document.getElementById('step6-btn-save-and-tts');
+  const forceAllButton = document.getElementById('step7-btn-force-all');
   const confirmButton = document.getElementById('step6-btn-audio-confirm-next');
   loading.style.display = 'inline-flex';
   synthButton.disabled = true;
   saveAndTtsButton.disabled = true;
+  if (forceAllButton) forceAllButton.disabled = true;
   confirmButton.disabled = true;
-  showToast('🔊 已提交音频生成任务；已有且未过期的页面会自动跳过，只补缺失页面...');
+  document.querySelectorAll('.step6-generate-slide').forEach(button => { button.disabled = true; });
+  showToast(targetSlideId
+    ? `🔊 已提交 ${targetSlideId} 的单独音频任务…`
+    : '🔊 已提交音频检查任务；有效音频会跳过，只补生成缺失或已变更的页面…');
 
   // TTS 后台任务（M-09 第二步）：提交即返回 job_id，前端轮询直至终态。
   // 客户端断连/代理超时不再中断合成，状态经 local_jobs 持久化。
@@ -523,6 +542,10 @@ async function runStep7TTS() {
   try {
     const submitted = await API.post(
       `/api/projects/${projectId}/steps/7/synthesize-async`,
+      {
+        ...(targetSlideId ? { slide_id: targetSlideId } : {}),
+        ...(options.force ? { force: true } : {}),
+      },
     );
     if (!submitted.success || !submitted.job) {
       throw new Error(submitted.message || '无法创建合成任务');
@@ -577,7 +600,9 @@ async function runStep7TTS() {
       const result = finalJob.result || {};
       const skipped = Number(result.skipped || 0);
       const generated = Number(result.generated || 0);
-      const suffix = skipped ? `（新生成 ${generated} 页，跳过已有 ${skipped} 页）` : '';
+      const suffix = targetSlideId
+        ? `（${targetSlideId}：${generated ? '已生成' : skipped ? '已是最新' : '未更新'}）`
+        : skipped ? `（新生成 ${generated} 页，跳过已有 ${skipped} 页）` : '';
       showToast(`🎀 音频生成完成${suffix}，请逐页试听并确认。`);
       await refreshCurrentProjectStatus(6);
       await loadStep7Data();
@@ -600,7 +625,22 @@ async function runStep7TTS() {
     loading.style.display = 'none';
     synthButton.disabled = false;
     saveAndTtsButton.disabled = false;
+    if (forceAllButton) forceAllButton.disabled = false;
+    document.querySelectorAll('.step6-generate-slide').forEach(button => { button.disabled = false; });
   }
+}
+
+async function confirmForceRegenerateAllTTS() {
+  const confirmed = await new Promise(resolve => {
+    showCustomConfirm(
+      '强制重生成全部音频',
+      '将忽略现有音频缓存，重新合成所有页面。新音频生成成功后才会替换旧文件，合成失败时仍保留旧文件。',
+      () => resolve(true),
+      () => resolve(false),
+    );
+  });
+  if (!confirmed) return false;
+  return runStep7TTS({ force: true });
 }
 
 async function saveNarrationAndRunTTS() {
@@ -608,7 +648,7 @@ async function saveNarrationAndRunTTS() {
   const saved = await flushStep6Autosave({ userInitiated: true });
   if (!saved) return false;
   showToast('旁白已保存，开始生成音频...');
-  return runStep7TTS();
+  return runStep7TTS({ alreadySaved: true });
 }
 
 async function confirmStep7Audio() {
