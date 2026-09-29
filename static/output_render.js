@@ -93,7 +93,7 @@ function startStep8RenderPolling(
         return;
       }
       const url = `/api/projects/${projectId}/steps/8/render-status?task_id=${encodeURIComponent(taskId)}`;
-      const res = await API.get(url);
+      const res = await API.get(url, { silent: true });
       if (!isCurrentWorkspaceProject(projectId, sessionVersion)
         || _step8RenderProjectId !== projectId
         || _step8RenderSessionVersion !== sessionVersion) return;
@@ -416,6 +416,7 @@ function startStep8PptxPolling(
     try {
       const res = await API.get(
         `/api/projects/${projectId}/jobs/${encodeURIComponent(jobId)}`,
+        { silent: true },
       );
       if (!isCurrentWorkspaceProject(projectId, sessionVersion)
         || _step8PptxProjectId !== projectId

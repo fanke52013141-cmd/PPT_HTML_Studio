@@ -46,9 +46,10 @@ if ([html, images, storyboard, narrationAudio, aiMask, maskWorkspace, outputRend
 if ([uiFoundation, images, oneClick].some(source => source.includes('showFailureBadge'))) {
   throw new Error('Persistent failure badges duplicate in-context job errors');
 }
-if (!uiFoundation.includes('container.children.length >= 2')
+if (!uiFoundation.includes("presentation.tone !== 'error'")
+    || !uiFoundation.includes('container.children.length >= 1')
     || !images.includes('async function getStep3ReplacementVersion(')) {
-  throw new Error('Notification cap or quiet image replacement policy regressed');
+  throw new Error('Error-only notification policy or quiet image replacement regressed');
 }
 const creationConfigManagement = fs.readFileSync(path.join(root, 'static', 'creation_config_management.js'), 'utf8');
 const selectMenus = fs.readFileSync(path.join(root, 'static', 'select_menus.js'), 'utf8');

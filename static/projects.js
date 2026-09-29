@@ -85,7 +85,7 @@ function _badgeFromStatus(rawStatus) {
 /** Poll batch one-click status and update card badges. */
 async function pollAutomationStatus() {
   try {
-    const data = await API.get('/api/one-click-statuses');
+    const data = await API.get('/api/one-click-statuses', { silent: true });
     if (!data || !data.items) return;
     const map = {};
     data.items.forEach(item => { map[item.project_id] = item; });

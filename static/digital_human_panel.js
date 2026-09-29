@@ -703,7 +703,7 @@
     try {
       for (var i = 0; i < 3600; i++) {
         await sleep(2000);
-        var res = await API.get(base() + "/jobs/" + encodeURIComponent(jobId), { silent: !!silent });
+        var res = await API.get(base() + "/jobs/" + encodeURIComponent(jobId), { silent: true });
         var job = res && res.job ? res.job : res;
         var status = job && job.status;
         if (status === "done") {

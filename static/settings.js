@@ -282,7 +282,7 @@ async function testLlmConnection() {
   button.innerHTML = '测试中...';
   try {
     const result = await API.post('/api/settings/test-llm', payload);
-    showToast(result.message || (result.success ? '文本模型连接成功' : '文本模型连接失败'));
+    if (!result.success) showToast(`文本模型连接失败：${result.message || '未知错误'}`);
   } catch (error) {
     showToast(`测试请求发送失败: ${error.message}`);
   } finally {
@@ -312,7 +312,7 @@ async function testImageConnection() {
   button.innerHTML = '测试中...';
   try {
     const result = await API.post('/api/settings/test-image', payload);
-    showToast(result.message || (result.success ? '图片模型连接成功' : '图片模型连接失败'));
+    if (!result.success) showToast(`图片模型连接失败：${result.message || '未知错误'}`);
   } catch (error) {
     showToast(`测试请求发送失败: ${error.message}`);
   } finally {
@@ -347,7 +347,7 @@ async function testTtsConnection() {
   button.innerHTML = '测试中...';
   try {
     const result = await API.post('/api/settings/test-tts', payload);
-    showToast(result.message || (result.success ? '语音模型连接成功' : '语音模型连接失败'));
+    if (!result.success) showToast(`语音模型连接失败：${result.message || '未知错误'}`);
   } catch (error) {
     showToast(`测试请求发送失败: ${error.message}`);
   } finally {

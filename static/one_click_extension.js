@@ -73,8 +73,8 @@
     });
   }
 
-  function apiGet(url) {
-    return window.API?.get ? window.API.get(url) : fetch(url).then(parseJsonResponse);
+  function apiGet(url, options = {}) {
+    return window.API?.get ? window.API.get(url, options) : fetch(url).then(parseJsonResponse);
   }
 
   function apiPost(url, body) {
@@ -334,7 +334,7 @@
   async function refreshStatus() {
     const projectId = activeProjectId();
     if (!projectId) throw new Error('当前没有可识别的项目，请先进入项目工作区。');
-    const result = await apiGet(`/api/projects/${encodeURIComponent(projectId)}/one-click-generate/status`);
+    const result = await apiGet(`/api/projects/${encodeURIComponent(projectId)}/one-click-generate/status`, { silent: true });
     // [一键进度同步 20260912] 切换项目后重置阶段跟随去重，让新项目的
     // 运行阶段在首次轮询时就能把左侧步骤带到正确位置，而不是停留在
     // 上一个项目遗留的最后跟随阶段。

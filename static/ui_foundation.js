@@ -7,9 +7,10 @@ function getToastPresentation(message) {
     .trim();
 
   let tone = 'info';
-  if (/^(?:❌|⛔|🚫)/u.test(rawMessage) || /(失败|错误|异常)/.test(rawMessage)) {
+  if (/^(?:❌|⛔|🚫)/u.test(rawMessage)
+      || /(失败|错误|异常|被拒绝|中断|超时|无法|未能|未通过|不可用|无效|缺少|不能为空|请先|请填写|请至少|超过.{0,12}限制|HTTP\s*[45]\d\d)/i.test(rawMessage)) {
     tone = 'error';
-  } else if (/^(?:⚠️?|❗)/u.test(rawMessage) || /(请先|请填写|不能为空|缺少|无法|暂无)/.test(rawMessage)) {
+  } else if (/^(?:⚠️?|❗)/u.test(rawMessage)) {
     tone = 'warning';
   } else if (/^(?:✅|🎉|✨)/u.test(rawMessage) || /(成功|已生成|已保存|已确认|已完成|已删除|已应用|已启动)/.test(rawMessage)) {
     tone = 'success';
@@ -18,36 +19,40 @@ function getToastPresentation(message) {
   return { text: text || '操作已完成', tone };
 }
 
+const TOAST_ERROR_COOLDOWN_MS = 60_000;
+const recentErrorToasts = new Map();
+
 function showToast(message, duration = 1800) {
-  const container = document.getElementById('toast-container');
   const presentation = getToastPresentation(message);
-  if (presentation.tone === 'success' || presentation.tone === 'info') return null;
-  const toastKey = `${presentation.tone}:${presentation.text}`;
+  if (presentation.tone !== 'error') return null;
+  const container = document.getElementById('toast-container');
+  if (!container) return null;
+  const toastKey = presentation.text;
+  const now = Date.now();
+  for (const [key, shownAt] of recentErrorToasts) {
+    if (now - shownAt >= TOAST_ERROR_COOLDOWN_MS) recentErrorToasts.delete(key);
+  }
+  if (recentErrorToasts.has(toastKey)) return null;
   const duplicate = Array.from(container.children).find(item => item.dataset.toastKey === toastKey);
   if (duplicate) return duplicate;
-  while (container.children.length >= 2) {
+  recentErrorToasts.set(toastKey, now);
+  while (container.children.length >= 1) {
     container.firstElementChild?.remove();
   }
   const toast = document.createElement('div');
   toast.className = `toast toast-${presentation.tone}`;
   toast.dataset.toastKey = toastKey;
-  toast.setAttribute('role', ['error', 'warning'].includes(presentation.tone) ? 'alert' : 'status');
+  toast.setAttribute('role', 'alert');
   const content = document.createElement('div');
   content.className = 'toast-content';
   content.textContent = presentation.text;
   toast.appendChild(content);
   container.appendChild(toast);
-  // 所有通知自动消失；异常信息停留稍久，正文仍可点击复制完整内容。
-  if (presentation.tone === 'error') {
-    toast.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(String(message ?? '')); } catch (_) {}
-    });
-  }
-  const visibleDuration = presentation.tone === 'error'
-    ? Math.max(4500, Number(duration) || 4500)
-    : presentation.tone === 'warning'
-      ? Math.max(3000, Number(duration) || 3000)
-      : Math.max(1000, Math.min(2500, Number(duration) || 1800));
+  // 失败通知短暂显示；点击可复制完整报错。
+  toast.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(String(message ?? '')); } catch (_) {}
+  });
+  const visibleDuration = Math.max(4500, Number(duration) || 4500);
   setTimeout(() => {
     toast.style.animation = 'slideUp 0.3s ease-in reverse';
     setTimeout(() => toast.remove(), 300);

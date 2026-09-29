@@ -567,6 +567,7 @@ async function runStep7TTS(options = {}) {
           // 但其结果只回写到原项目（见终态守卫）。
           const res = await API.get(
             `/api/projects/${projectId}/steps/7/synthesize-jobs/${jobId}`,
+            { silent: true },
           );
           const job = res.job || {};
           if (['completed', 'failed', 'interrupted'].includes(job.status)) {
@@ -616,7 +617,7 @@ async function runStep7TTS(options = {}) {
       ? finalJob.result.failed_ids.filter(Boolean)
       : [];
     const fallback = failedIds.length ? `音频部分生成失败：${failedIds.join('、')}` : '音频生成未完成，请重试。';
-    showToast(`⚠️ ${finalJob.error || fallback}`, 7000);
+    showToast(`音频生成失败：${finalJob.error || fallback}`, 7000);
     await refreshCurrentProjectStatus(6);
     await loadStep7Data();
     return false;

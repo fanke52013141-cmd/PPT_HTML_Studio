@@ -167,7 +167,7 @@ async function flushAnnotationsSave() {
       currentRevision: failure.currentRevision,
     };
     renderAnnotationSaveStatus('conflict', failure.message);
-    showToast(`${failure.message} 点击状态条可载入服务端版本并重放。`);
+    showToast(`保存失败：${failure.message} 点击状态条可载入服务端版本并重放。`);
   } else if (failure.kind === 'validation_failed') {
     // 422:被拒操作隔离到失败草稿,不自动重试也不静默丢弃
     ANNOTATIONS_WS.failedOps = [...ANNOTATIONS_WS.failedOps, ...operations];
@@ -199,7 +199,7 @@ async function flushAnnotationsSave() {
     if (remaining.length) {
       ANNOTATIONS_WS.pendingOps = [...remaining, ...ANNOTATIONS_WS.pendingOps];
       renderAnnotationSaveStatus(appliedOnServer ? 'pending' : 'error', failure.message);
-      showToast(`${failure.message} 保存内容已保留,点击状态条重试。`);
+      showToast(`保存失败：${failure.message} 保存内容已保留,点击状态条重试。`);
     } else {
       ANNOTATIONS_WS.saveInFlight = false;
       renderAnnotationSaveStatus('saved');
@@ -338,7 +338,7 @@ async function setAnnotationDecision(decision) {
     refreshAnnotationModuleState();
     showToast(decision === 'no_annotations' ? '已记录:本项目不添加勾画。' : '已恢复勾画决策。');
   } catch (error) {
-    showToast(error.message || '决策保存失败');
+    showToast(`决策保存失败：${error.message || '未知错误'}`);
   }
 }
 
@@ -654,7 +654,7 @@ async function setAnnotationsEnabled(enabled) {
       showToast('设置已被其他窗口修改,正在重新加载。');
       await reloadAnnotationsSummary();
     } else {
-      showToast(failure.message);
+      showToast(`设置保存失败：${failure.message}`);
     }
     const enabledToggle = document.getElementById('annotation-enabled-toggle');
     if (enabledToggle) enabledToggle.checked = ANNOTATIONS_WS.summary?.settings?.enabled === true;
@@ -680,7 +680,7 @@ async function setAnnotationEmphasis(emphasis) {
     };
     showToast(`AI 重点密度已设为${{ weak: '少量', moderate: '标准', strong: '较多' }[emphasis]}。`);
   } catch (error) {
-    showToast(error.message || 'AI 重点密度保存失败');
+    showToast(`AI 重点密度保存失败：${error.message || '未知错误'}`);
     await reloadAnnotationsSummary();
   }
 }
@@ -734,7 +734,7 @@ async function submitAnnotationJob(operation) {
   try {
     res = await API.post(`${annotationsApiBase(projectId)}/jobs`, body, { silent: true });
   } catch (error) {
-    showToast(error.message || '任务提交失败');
+    showToast(`任务提交失败：${error.message || '未知错误'}`);
     return;
   }
   if (ANNOTATIONS_WS.projectId !== projectId) return;

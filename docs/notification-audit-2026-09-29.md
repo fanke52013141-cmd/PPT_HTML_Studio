@@ -12,7 +12,7 @@
 | 自动保存 | 不再弹出分镜、旁白修改后的笼统核对提示；保存失败和并发冲突仍提示。 |
 | 图片生成与一键生成 | 移除重复的常驻失败红点；图片失败页可直接重试，短暂错误提示列出失败页，一键进度面板显示阶段错误。 |
 | 项目库 | 后台的 `waiting_for_review` 状态显示为“已暂停”，避免把普通用户引向无操作价值的审查任务。 |
-| 全局提示 | 成功与普通信息继续静默；警告和错误去重、自动消失，并列最多两条。 |
+| 全局提示 | 仅操作失败或校验阻断时弹出；成功、进度和普通警告静默。同一错误 60 秒内不重复弹出，屏幕上最多一条。 |
 
 ## 保留原则
 
@@ -20,8 +20,11 @@
 - 用户明确执行删除等会移除当前内容的操作时，确认影响范围。
 - `planning/pending_impacts.json` 和产物哈希校验继续供后台判断新旧素材；隐藏通知不代表将旧产物认定为当前版本。
 
+此前通知频繁有两个直接原因：全局 `showToast` 仍允许 warning，且同一提示只在显示期间去重；后台任务每 1.2–3 秒轮询一次，HTTP 失败时通用 API 层自动弹窗，部分调用方还会再弹一次。现在只有失败或操作被输入校验阻断才进入通知容器，同一错误 60 秒内不重弹。视频、PPTX、音频、一键生成、项目库和数字人任务的状态轮询使用静默请求；任务失败继续显示在对应步骤，必要时给出一次失败提示。
+
 ## 验证
 
 - `node checks/test_frontend_quality.js`
+- `node checks/test_toast_policy.js`
 - `node checks/test_visible_flow.js`
 - `python -m pytest checks/test_image_change_workflow.py checks/test_project_impact_service.py checks/test_invalidation_service.py -q`（25 项通过）
