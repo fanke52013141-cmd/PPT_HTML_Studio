@@ -1510,9 +1510,6 @@ async function saveStep2Contract(options = {}) {
     if (res.success) {
       state.step2ContractSha256 = res.contract_sha256 || state.step2ContractSha256;
       state.step2PresentationPolicy = res.contract?.presentation_policy || payload.presentation_policy;
-      if (res.changed && state.currentProject?.step_status?.['3'] === 'completed') {
-        showToast('分镜已修改：后续画面待核对；旧素材和已输出视频保留。');
-      }
       if (res.changed) refreshCurrentProjectStatus(2).catch(() => {});
       updateStep2AutosaveStatus(options.autosave ? '已自动保存' : '');
       if (!options.silent) {

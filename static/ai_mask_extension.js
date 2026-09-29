@@ -273,7 +273,9 @@
   }
 
   function setReviewIssues(issues, qualityStatus = '') {
-    reviewIssues = Array.isArray(issues) ? issues.filter(issue => issue && typeof issue === 'object') : [];
+    reviewIssues = Array.isArray(issues)
+      ? issues.filter(issue => issue && typeof issue === 'object' && issue.severity === 'blocking')
+      : [];
     reviewIndex = Math.min(reviewIndex, Math.max(0, reviewIssues.length - 1));
     reviewQualityStatus = String(qualityStatus || (reviewIssues.length ? 'needs_review' : 'passed'));
     window.__aiMaskReviewIssues = reviewIssues;
@@ -289,20 +291,18 @@
     if (!panel) return;
     const summary = panel.querySelector('.ai-mask-review-summary');
     const position = panel.querySelector('#ai-mask-review-position');
-    const hasResult = !!reviewQualityStatus;
+    const hasResult = reviewQualityStatus === 'failed' || reviewIssues.length > 0;
     panel.classList.toggle('visible', hasResult);
     panel.classList.toggle('passed', reviewQualityStatus === 'passed');
-    panel.classList.toggle('needs-review', reviewQualityStatus === 'needs_review');
+    panel.classList.toggle('needs-review', reviewIssues.length > 0);
     panel.classList.toggle('failed', reviewQualityStatus === 'failed');
     if (!hasResult) return;
     const current = reviewIssues[reviewIndex];
     const blockingCount = reviewIssues.filter(issue => issue.severity === 'blocking').length;
-    if (reviewQualityStatus === 'passed') {
-      summary.innerHTML = '<strong>AI 标注质量通过</strong><span>前景覆盖、组件归属与像素互斥检查均已通过。</span>';
-    } else if (reviewQualityStatus === 'failed') {
+    if (reviewQualityStatus === 'failed') {
       summary.innerHTML = `<strong>AI 标注未生成有效结果</strong><span>${escapeAttr(current?.message || '请检查设置后重新运行。')}</span>`;
     } else {
-      summary.innerHTML = `<strong>AI 标注已生成，${reviewIssues.length} 处需要检查${blockingCount ? `（${blockingCount} 处重要）` : ''}</strong><span>${escapeAttr(current?.message || '请逐项复核 Mask 归属。')}</span>`;
+      summary.innerHTML = `<strong>${blockingCount} 处 Mask 问题需修正</strong><span>${escapeAttr(current?.message || '请修正后重新运行 AI 标注。')}</span>`;
     }
     if (position) position.textContent = reviewIssues.length ? `${reviewIndex + 1} / ${reviewIssues.length}` : '0 / 0';
     panel.querySelector('#ai-mask-review-prev').disabled = reviewIssues.length < 2;
@@ -513,17 +513,11 @@
         throw error;
       }
       setInlineStatus('', false, false);
-      const reviewCount = Number(result.review_issue_count || 0);
-      const qualityStatus = String(result.quality_status || (reviewCount ? 'needs_review' : 'passed'));
-      if (reviewCount > 0) {
-        toast(`AI 标注已完成，有 ${reviewCount} 个位置建议检查。`, 6500);
-      } else {
-        toast(options.automatic ? 'AI 标注已自动完成。' : 'AI 标注已重新完成。', 4500);
-      }
+      const qualityStatus = String(result.quality_status || 'passed');
       if (typeof window.loadStep5Data === 'function') await window.loadStep5Data();
       else if (typeof loadStep5Data === 'function') await loadStep5Data();
       setReviewIssues(result.review_issues || [], qualityStatus);
-      if (reviewCount > 0) {
+      if (reviewIssues.length > 0) {
         focusReviewIssue(0);
       } else if (typeof window.focusFirstAiMaskResult === 'function') {
         window.focusFirstAiMaskResult();

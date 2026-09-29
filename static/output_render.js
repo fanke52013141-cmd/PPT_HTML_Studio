@@ -11,184 +11,6 @@ let _step8RenderTaskId = null;
 let _step8RenderProjectId = null;
 let _step8RenderSessionVersion = null;
 
-const STEP8_IMPACT_STEP = Object.freeze({
-  article_changed: 1,
-  storyboard_changed: 2,
-  storyboard_empty: 2,
-  storyboard_visual_changed: 2,
-  storyboard_narration_changed: 2,
-  storyboard_structure_changed: 2,
-  slide_image_changed: 3,
-  mask_content_changed: 5,
-  narration_content_changed: 6,
-  audio_artifacts_changed: 6,
-  subtitle_style_changed: 6,
-  subtitle_visibility_changed: 6,
-  video_background_changed: 3,
-  annotation_changed: 10,
-  digital_human_changed: 9,
-});
-const STEP8_IMPACT_LABEL = Object.freeze({
-  article_changed: '文章已修改',
-  storyboard_changed: '分镜已修改',
-  storyboard_empty: '分镜已清空',
-  storyboard_visual_changed: '分镜画面内容已修改',
-  storyboard_narration_changed: '分镜讲稿已修改',
-  storyboard_structure_changed: '分镜顺序或页面集合已修改',
-  slide_image_changed: '图片已变化',
-  mask_content_changed: 'Mask 已修改',
-  narration_content_changed: '旁白已修改',
-  audio_artifacts_changed: '音频已更新',
-  subtitle_style_changed: '字幕样式已修改',
-  subtitle_visibility_changed: '字幕显示设置已修改',
-  video_background_changed: '视频背景已修改',
-  annotation_changed: '勾画标注已修改',
-  digital_human_changed: '数字人讲解已修改',
-});
-const STEP8_IMPACT_AFFECTED = Object.freeze({
-  storyboard: '分镜', images: '图片', Mask: 'Mask', audio: '音频',
-  output: '新版输出', 'reveal layers': '揭示图层',
-  'annotation geometry': '勾画位置', 'annotation timing': '勾画时间',
-  'audio confirmation': '音频确认',
-});
-
-async function loadStep8Impacts(projectId, sessionVersion) {
-  const panel = document.getElementById('step8-impact-panel');
-  const list = document.getElementById('step8-impact-list');
-  if (!panel || !list) return;
-  const result = await API.get(`/api/projects/${projectId}/impacts`);
-  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
-  const items = Array.isArray(result.items) ? result.items : [];
-  panel.style.display = items.length ? 'block' : 'none';
-  list.replaceChildren();
-  items.forEach(item => {
-    const row = document.createElement('div');
-    row.className = 'step8-impact-row';
-    row.style.cssText = 'padding:0.8rem 0; border-top:1px solid #eee;';
-    const title = document.createElement('strong');
-    const scope = item.scope_id === 'project' ? '本项目' : item.scope_id;
-    title.textContent = `${scope} · ${STEP8_IMPACT_LABEL[item.reason] || item.reason}`;
-    const details = document.createElement('p');
-    const affected = (item.affected || []).map(value => STEP8_IMPACT_AFFECTED[value] || value);
-    details.textContent = `待核对：${affected.join('、')}。${item.decision === 'reviewed' ? '已查看，仍需按实际内容更新。' : '已暂缓处理。'}`;
-    const jump = document.createElement('button');
-    jump.type = 'button';
-    jump.className = 'secondary';
-    jump.textContent = '前往检查';
-    jump.addEventListener('click', () => navigateToStep(STEP8_IMPACT_STEP[item.reason] || 8));
-    const reviewed = document.createElement('button');
-    reviewed.type = 'button';
-    reviewed.className = 'secondary';
-    reviewed.textContent = item.decision === 'reviewed' ? '稍后处理' : '标记已查看';
-    reviewed.addEventListener('click', async () => {
-      await API.put(`/api/projects/${projectId}/impacts/decision`, {
-        impact_id: item.id,
-        decision: item.decision === 'reviewed' ? 'defer' : 'reviewed',
-      });
-      await loadStep8Impacts(projectId, sessionVersion);
-    });
-    row.append(title, details, jump, reviewed);
-    if (item.reason === 'article_changed' && (item.affected || []).includes('storyboard') && item.contract_sha256) {
-      const reusePlan = document.createElement('button');
-      reusePlan.type = 'button';
-      reusePlan.className = 'secondary';
-      reusePlan.textContent = '核对并沿用分镜';
-      reusePlan.addEventListener('click', async () => {
-        try {
-          const preview = await API.get(`/api/projects/${projectId}/impacts/storyboard-reuse-preview`);
-          const modal = document.createElement('div');
-          modal.className = 'modal-overlay';
-          modal.style.cssText = 'display:flex;z-index:1200';
-          const content = document.createElement('div');
-          content.className = 'modal-content';
-          content.style.cssText = 'width:min(900px,calc(100vw - 32px));max-height:90vh;overflow:auto;padding:24px';
-          const heading = document.createElement('h3');
-          heading.textContent = '核对文章与现有分镜';
-          const note = document.createElement('p');
-          note.textContent = '请通读当前文章并核对下列分镜是否仍适用。确认后仅结清分镜待办，不会重新生成素材。';
-          const article = document.createElement('pre');
-          article.textContent = preview.article || '';
-          article.style.cssText = 'white-space:pre-wrap;max-height:32vh;overflow:auto;background:#f7f7f7;padding:12px';
-          const slides = document.createElement('ol');
-          (preview.slides || []).forEach(slide => {
-            const line = document.createElement('li');
-            line.textContent = `${slide.slide_id} · ${slide.title}`;
-            slides.appendChild(line);
-          });
-          const cancel = document.createElement('button');
-          cancel.type = 'button';
-          cancel.textContent = '稍后处理';
-          cancel.addEventListener('click', () => modal.remove());
-          const apply = document.createElement('button');
-          apply.type = 'button';
-          apply.textContent = '确认沿用现有分镜';
-          apply.addEventListener('click', async () => {
-            try {
-              await API.put(`/api/projects/${projectId}/impacts/reuse-storyboard`, {
-                source_version: item.source_version,
-                article_sha256: preview.article_sha256,
-                contract_sha256: preview.contract_sha256,
-              });
-              modal.remove();
-              await loadStep8Impacts(projectId, sessionVersion);
-            } catch (error) { showToast(error.message || '复用确认失败，请刷新后重试', 'error'); }
-          });
-          content.append(heading, note, article, slides, cancel, apply);
-          modal.appendChild(content);
-          document.body.appendChild(modal);
-        } catch (error) { showToast(error.message || '无法读取文章与分镜', 'error'); }
-      });
-      row.appendChild(reusePlan);
-    }
-    if (item.reason === 'storyboard_visual_changed' && (item.affected || []).includes('images') && item.image_sha256) {
-      const reuse = document.createElement('button');
-      reuse.type = 'button';
-      reuse.className = 'secondary';
-      reuse.textContent = '核对旧图并复用';
-      reuse.addEventListener('click', async () => {
-        const imageUrl = `/api/projects/${encodeURIComponent(projectId)}/slides/${encodeURIComponent(item.scope_id)}/image?v=${encodeURIComponent(item.image_sha256)}`;
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.style.cssText = 'display:flex;z-index:1200';
-        const content = document.createElement('div');
-        content.className = 'modal-content';
-        content.style.cssText = 'width:min(840px,calc(100vw - 32px));max-height:90vh;overflow:auto;padding:24px';
-        const heading = document.createElement('h3');
-        heading.textContent = `${item.scope_id} · 核对旧图`;
-        const note = document.createElement('p');
-        note.textContent = '请确认旧图仍符合当前分镜画面内容。此操作只结清图片待办，Mask 和勾画位置仍需分别核对。';
-        const image = document.createElement('img');
-        image.src = imageUrl;
-        image.alt = `${item.scope_id} 当前图片`;
-        image.style.cssText = 'display:block;width:100%;height:auto;max-height:65vh;object-fit:contain';
-        const cancel = document.createElement('button');
-        cancel.type = 'button';
-        cancel.textContent = '取消';
-        cancel.addEventListener('click', () => modal.remove());
-        const apply = document.createElement('button');
-        apply.type = 'button';
-        apply.textContent = '确认沿用这张图';
-        apply.addEventListener('click', async () => {
-          try {
-            await API.put(`/api/projects/${projectId}/impacts/reuse-image`, {
-              slide_id: item.scope_id,
-              source_version: item.source_version,
-              image_sha256: item.image_sha256,
-            });
-            modal.remove();
-            await loadStep8Impacts(projectId, sessionVersion);
-          } catch (error) { showToast(error.message || '复用确认失败，请刷新后重试', 'error'); }
-        });
-        content.append(heading, note, image, cancel, apply);
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-      });
-      row.appendChild(reuse);
-    }
-    list.appendChild(row);
-  });
-}
-
 function updateStep8LoadingText(stageLabel, elapsedSec, queueAhead) {
   const text = document.getElementById('step8-loading-text');
   if (!text) return;
@@ -300,7 +122,6 @@ function startStep8RenderPolling(
       if (res.status === 'success') {
         showToast('🎉 视频渲染成功！');
         showStep8VideoResult(res.videos || (res.video ? [res.video] : []));
-        loadStep8Impacts(projectId, sessionVersion).catch(() => {});
         refreshCurrentProjectStatus(8).catch(() => {});
       } else if (res.status === 'error') {
         const message = res.error || '视频渲染失败，请查看 logs/pipeline.log。';
@@ -342,8 +163,6 @@ async function loadStep8Data() {
     if (pptxButton) pptxButton.disabled = true;
     if (renderButton) renderButton.disabled = true;
     document.getElementById('step8-result-box').style.display = 'none';
-    const impactPanel = document.getElementById('step8-impact-panel');
-    if (impactPanel) impactPanel.style.display = 'none';
     const digitalHumanMessage = document.getElementById('step8-digital-human-message');
     if (digitalHumanMessage) digitalHumanMessage.textContent = '尚未生成可用于输出的分镜。';
     return;
@@ -352,11 +171,6 @@ async function loadStep8Data() {
     loadStep8PptxData(projectId, sessionVersion),
     refreshStep8SubtitleExport(projectId, sessionVersion),
     refreshStep8DigitalHumanStatus(projectId, sessionVersion),
-    loadStep8Impacts(projectId, sessionVersion).catch(error => {
-      console.error('Load project impacts failed:', error);
-      const panel = document.getElementById('step8-impact-panel');
-      if (panel) panel.style.display = 'none';
-    }),
   ]);
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   try {
@@ -616,7 +430,6 @@ function startStep8PptxPolling(
       if (job.status === 'succeeded') {
         showToast('PPTX 已生成，可以下载。');
         await loadStep8PptxData(projectId, sessionVersion);
-        loadStep8Impacts(projectId, sessionVersion).catch(() => {});
         refreshCurrentProjectStatus(8).catch(() => {});
       } else {
         setStep8OutputError(

@@ -327,23 +327,6 @@
         window.markStepperRunningStep(runningTargetStep, stageLabel(stageNow));
       }
     }
-    // [生图失败常驻提示 20260912] 一键在图片阶段暂停/失败时，左下角红点
-    // 常驻提醒（点击关闭）；其他阶段的失败仍以一键面板为准。
-    if ((runStateNow === 'paused' || runStateNow === 'failed') && window.showFailureBadge) {
-      const stageList = Array.isArray(status?.stages) ? status.stages : [];
-      const failedImageStage = stageList.find(item => item && ['images', 'confirm_images'].includes(String(item.id || ''))
-        && (item.status === 'failed' || item.status === 'paused' || (Array.isArray(item.blocking_errors) && item.blocking_errors.length)));
-      if (failedImageStage) {
-        const errors = Array.isArray(failedImageStage.blocking_errors) && failedImageStage.blocking_errors.length
-          ? failedImageStage.blocking_errors.join(' / ')
-          : (failedImageStage.message || '');
-        window.showFailureBadge(
-          `one-click:${status?.run_id || ''}:${failedImageStage.id}:${errors}`,
-          '部分图片生成失败，一键流程已暂停',
-          errors || '可在一键生成面板点击续跑，已成功的分镜会保留。'
-        );
-      }
-    }
     // [一键进度出口 20260904] 面板内注入当前阶段进度横幅
     renderStageProgressInPanel(status);
   }

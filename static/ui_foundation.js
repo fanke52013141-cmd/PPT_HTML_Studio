@@ -25,7 +25,7 @@ function showToast(message, duration = 1800) {
   const toastKey = `${presentation.tone}:${presentation.text}`;
   const duplicate = Array.from(container.children).find(item => item.dataset.toastKey === toastKey);
   if (duplicate) return duplicate;
-  while (container.children.length >= 4) {
+  while (container.children.length >= 2) {
     container.firstElementChild?.remove();
   }
   const toast = document.createElement('div');
@@ -107,56 +107,4 @@ function autoResizeTextarea(textarea) {
   if (textarea.tagName === 'TEXTAREA') textarea.rows = 1;
   textarea.style.height = 'auto';
   textarea.style.height = `${textarea.scrollHeight + 2}px`;
-}
-
-// 失败信息需由用户显式关闭；点击正文可复制完整报错，避免截断后无法排查。
-let failureBadgeLastKey = '';
-let failureBadgeDismissedKey = '';
-let failureBadgeTimer = null;
-
-function showFailureBadge(key, message, detail) {
-  const badgeKey = String(key || message || '').trim();
-  const text = String(message || '').trim();
-  if (!text || badgeKey === failureBadgeDismissedKey) return;
-  failureBadgeLastKey = badgeKey;
-  let badge = document.getElementById('failure-badge');
-  if (!badge) {
-    badge = document.createElement('div');
-    badge.id = 'failure-badge';
-    badge.className = 'failure-badge';
-    badge.setAttribute('role', 'alert');
-    document.body.appendChild(badge);
-  }
-  const dot = document.createElement('span');
-  dot.className = 'failure-badge-dot';
-  const body = document.createElement('div');
-  body.className = 'failure-badge-body';
-  const title = document.createElement('strong');
-  title.textContent = text;
-  body.appendChild(title);
-  const detailText = String(detail || '').trim();
-  if (detailText) {
-    const line = document.createElement('small');
-    line.textContent = detailText;
-    body.appendChild(line);
-  }
-  badge.replaceChildren(dot, body);
-  const close = document.createElement('button');
-  close.type = 'button';
-  close.className = 'failure-badge-close';
-  close.textContent = '关闭';
-  close.addEventListener('click', event => {
-    event.stopPropagation();
-    failureBadgeDismissedKey = badgeKey;
-    badge.remove();
-  });
-  badge.append(close);
-  badge.style.display = 'flex';
-  if (failureBadgeTimer) window.clearTimeout(failureBadgeTimer);
-  badge.title = '点击可复制完整异常信息';
-  badge.onclick = async () => {
-    try { await navigator.clipboard.writeText(`${text}${detailText ? `\n${detailText}` : ''}`); } catch (_) {}
-    failureBadgeDismissedKey = badgeKey;
-    badge.remove();
-  };
 }

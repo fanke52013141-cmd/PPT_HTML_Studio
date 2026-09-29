@@ -409,9 +409,6 @@ async function saveStep6Narration(options = {}) {
     if (res.success) {
       // 成功提示只影响当前仍在原项目工作区时的界面；切换后静默收敛。
       if (isCurrentWorkspaceProject(scope.projectId, scope.sessionVersion)) {
-        if (res.changed && state.currentProject?.audio_confirmed === true) {
-          showToast('旁白已修改，音频待核对；已输出视频仍保留。');
-        }
         updateStep6AutosaveStatus('已自动保存');
         if (!silent) showToast('🎉 演讲稿修改保存成功！');
         refreshCurrentProjectStatus(6).catch(() => {});

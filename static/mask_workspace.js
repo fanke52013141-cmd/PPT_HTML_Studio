@@ -767,9 +767,9 @@ function renderStep5BoxesForm() {
     const isPaintTarget = state.canvasState.paintMode && !state.canvasState.eraserMode && idx === state.canvasState.paintingBoxIndex;
     const isEraseTarget = state.canvasState.paintMode && state.canvasState.eraserMode && idx === state.canvasState.paintingBoxIndex;
     const item = document.createElement('div');
-    const reviewIssues = aiMaskIssuesForBox(box, currentSlide?.slide_id);
-    const hasBlockingIssue = reviewIssues.some(issue => issue?.severity === 'blocking');
-    item.className = `mask-block-card soft-outline${isSelected ? ' highlight-glow' : ''}${isPaintTarget ? ' paint-active' : ''}${isEraseTarget ? ' erase-active' : ''}${reviewIssues.length ? ' ai-review-needed' : ''}${hasBlockingIssue ? ' ai-review-blocking' : ''}`;
+    const blockingIssues = aiMaskIssuesForBox(box, currentSlide?.slide_id)
+      .filter(issue => issue?.severity === 'blocking');
+    item.className = `mask-block-card soft-outline${isSelected ? ' highlight-glow' : ''}${isPaintTarget ? ' paint-active' : ''}${isEraseTarget ? ' erase-active' : ''}${blockingIssues.length ? ' ai-review-blocking' : ''}`;
     const maskColor = getBoxColor(box, idx);
     item.style.setProperty('--mask-color', maskColor);
 
@@ -787,7 +787,7 @@ function renderStep5BoxesForm() {
       <div class="mask-block-head">
         <span class="mask-block-number">${idx + 1}</span>
         <span class="mask-block-caption">语块 ${idx + 1}</span>
-        ${reviewIssues.length ? `<span class="ai-mask-card-issue-badge" title="${escHtml(reviewIssues.map(issue => issue.message || issue.type).join('\n'))}">${hasBlockingIssue ? '需修正' : '待检查'} · ${reviewIssues.length}</span>` : ''}
+        ${blockingIssues.length ? `<span class="ai-mask-card-issue-badge" title="${escHtml(blockingIssues.map(issue => issue.message || issue.type).join('\n'))}">需修正 · ${blockingIssues.length}</span>` : ''}
         <div class="mask-block-actions">
           <button class="mask-icon-btn${isPaintTarget ? ' active' : ''}" type="button" data-action="paint" title="画笔补充当前语块" aria-label="画笔补充">
             <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg>

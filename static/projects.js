@@ -74,7 +74,7 @@ function _badgeFromStatus(rawStatus) {
   switch (rawStatus) {
     case 'running':          return { cls: 'badge-running',   label: '进行中' };
     case 'waiting_for_user': return { cls: 'badge-waiting',   label: '等待操作' };
-    case 'waiting_for_review': return { cls: 'badge-waiting', label: '等待审查' };
+    case 'waiting_for_review': return { cls: 'badge-waiting', label: '已暂停' };
     case 'paused':           return { cls: 'badge-paused',    label: '已暂停' };
     case 'failed':           return { cls: 'badge-failed',    label: '出错' };
     case 'completed':        return { cls: 'badge-done',      label: '已完成' };

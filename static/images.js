@@ -338,7 +338,7 @@ async function reorderStep3Images(draggedIdx, targetIdx) {
   const affected = step3ImageOrder.slice(Math.min(draggedIdx, targetIdx), Math.max(draggedIdx, targetIdx) + 1);
   const changes = [];
   for (const image of affected) {
-    const choice = await confirmStep3ReplacementImpact(image.slide_id);
+    const choice = await getStep3ReplacementVersion(image.slide_id);
     if (!choice) return;
     changes.push({ slide_id: image.slide_id, ...choice });
   }
@@ -400,66 +400,12 @@ function closeStep3AIModal() {
 
 window.closeStep3AIModal = closeStep3AIModal;
 
-async function confirmStep3ReplacementImpact(slideId) {
+async function getStep3ReplacementVersion(slideId) {
   const preview = await API.get(
     `/api/projects/${state.currentProject.id}/steps/3/images/${encodeURIComponent(slideId)}/change-preview`
   );
-  if (!preview.has_image) return { disposition: 'keep', expected_version: preview.version || '' };
-  return new Promise(resolve => {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.style.display = 'flex';
-    modal.style.zIndex = '1200';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    const content = document.createElement('div');
-    content.className = 'modal-content';
-    content.style.cssText = 'width:min(680px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:28px';
-    const heading = document.createElement('h3');
-    heading.textContent = `${slideId} 图片变更影响`;
-    content.appendChild(heading);
-    const addGroup = (label, paths) => {
-      if (!paths.length) return;
-      const title = document.createElement('p');
-      title.textContent = `${label}（${paths.length}）`;
-      title.style.cssText = 'font-weight:700;margin:16px 0 6px';
-      content.appendChild(title);
-      const list = document.createElement('ul');
-      list.style.cssText = 'max-height:110px;overflow:auto;margin:0;padding-left:22px;font-size:13px';
-      paths.forEach(path => {
-        const row = document.createElement('li');
-        row.textContent = path;
-        list.appendChild(row);
-      });
-      content.appendChild(list);
-    };
-    addGroup('旧源图归档', preview.archive || []);
-    addGroup('Mask 与勾画待核对', preview.review || []);
-    addGroup('需要重建的揭示缓存', preview.rebuild || []);
-    addGroup('保留的已有成品', preview.retained_outputs || []);
-    const note = document.createElement('p');
-    note.textContent = '旁白和音频保留。保留待核对会连同旧缓存一起归档；清理旧缓存仍会归档旧图与 Mask。';
-    note.style.cssText = 'font-size:14px;margin:18px 0';
-    content.appendChild(note);
-    const actions = document.createElement('div');
-    actions.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap';
-    const finish = disposition => {
-      modal.remove();
-      resolve(disposition ? { disposition, expected_version: preview.version } : null);
-    };
-    [['取消', null], ['应用并保留待核对', 'keep'], ['应用并清理旧缓存', 'cleanup']].forEach(([label, value]) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = value === 'cleanup' ? 'danger' : 'secondary';
-      button.textContent = label;
-      button.addEventListener('click', () => finish(value));
-      actions.appendChild(button);
-    });
-    content.appendChild(actions);
-    modal.appendChild(content);
-    document.body.appendChild(modal);
-    actions.querySelector('button').focus();
-  });
+  // Keep recoverable source assets; the version still prevents a stale write.
+  return { disposition: 'keep', expected_version: preview.version || '' };
 }
 
 async function uploadStep3ImageById(slideId, input) {
@@ -472,7 +418,7 @@ async function uploadStep3ImageById(slideId, input) {
     input.value = '';
     return;
   }
-  const impactChoice = await confirmStep3ReplacementImpact(slideId);
+  const impactChoice = await getStep3ReplacementVersion(slideId);
   if (!impactChoice) {
     input.value = '';
     return;
@@ -503,7 +449,8 @@ async function uploadStep3ImageById(slideId, input) {
 window.uploadStep3ImageById = uploadStep3ImageById;
 
 async function deleteStep3Image(slideId) {
-  const impactChoice = await confirmStep3ReplacementImpact(slideId);
+  if (!window.confirm(`确定移除 ${slideId} 的图片吗？旧图片会保存在归档中。`)) return;
+  const impactChoice = await getStep3ReplacementVersion(slideId);
   if (!impactChoice) return;
   const params = new URLSearchParams(impactChoice);
   const res = await API.delete(
@@ -617,9 +564,10 @@ async function deleteAllStep3Images() {
     showToast('当前没有可删除的图片。');
     return;
   }
+  if (!window.confirm(`确定移除当前项目的 ${imageCount} 张图片吗？旧图片会保存在归档中。`)) return;
   const changes = [];
   for (const image of step3ImageOrder.filter(item => item.exists)) {
-    const choice = await confirmStep3ReplacementImpact(image.slide_id);
+    const choice = await getStep3ReplacementVersion(image.slide_id);
     if (!choice) return;
     changes.push({ slide_id: image.slide_id, ...choice });
   }
@@ -741,7 +689,7 @@ async function handleStep3BatchUpload(e) {
     formData.append('slide_id', slideId);
     formData.append('file', files[i]);
     try {
-      const impactChoice = await confirmStep3ReplacementImpact(slideId);
+      const impactChoice = await getStep3ReplacementVersion(slideId);
       if (!impactChoice) continue;
       formData.append('disposition', impactChoice.disposition);
       formData.append('expected_version', impactChoice.expected_version);
@@ -813,7 +761,7 @@ async function generateAllStep3Images() {
       step3CurrentGenerating = task.slideId;  // 标记当前正在生成的卡片
       renderStep3Grid();
       try {
-        const impactChoice = await confirmStep3ReplacementImpact(task.slideId);
+        const impactChoice = await getStep3ReplacementVersion(task.slideId);
         if (!impactChoice) {
           skippedSlides.push(task.slideId);
           continue;
@@ -864,14 +812,6 @@ async function generateAllStep3Images() {
 
   if (failedSlides.length > 0) {
     showToast(`⚠️ 已生成 ${successCount} 张，失败：${failedSlides.join('、')}${busySlides.length ? `；跳过正在生成：${busySlides.join('、')}` : ''}`, 5000);
-    // [生图失败常驻提示 20260912] 左下角红点常驻，点击关闭；新失败会重新出现
-    if (window.showFailureBadge) {
-      window.showFailureBadge(
-        `step3-batch:${projectId}:${failedSlides.join(',')}`,
-        `${failedSlides.length} 张图片生成失败`,
-        `失败分镜：${failedSlides.join('、')}；已成功 ${successCount} 张，可单独重试失败的分镜。`
-      );
-    }
   } else if (busySlides.length > 0 || skippedSlides.length > 0) {
     showToast(`已生成 ${successCount} 张；已跳过 ${[...busySlides, ...skippedSlides].join('、')}。`, 5000);
   } else {
@@ -950,7 +890,7 @@ async function applyStep3Candidate() {
     showToast('请先生成一张候选图片。');
     return;
   }
-  const impactChoice = await confirmStep3ReplacementImpact(slideId);
+  const impactChoice = await getStep3ReplacementVersion(slideId);
   if (!impactChoice) return;
   const applyButton = document.getElementById('step3-btn-apply-candidate');
   applyButton.disabled = true;
@@ -963,7 +903,6 @@ async function applyStep3Candidate() {
       await refreshStep3Images();
       await refreshCurrentProjectStatus(3);
       closeStep3AIModal();
-      showToast('候选图片已应用；旧图和 Mask 已归档，该页揭示效果待核对。');
     }
   } finally {
     applyButton.disabled = false;
@@ -980,4 +919,3 @@ async function confirmStep3Images() {
     navigateToStep(5);
   }
 }
-

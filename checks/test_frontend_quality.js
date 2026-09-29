@@ -29,8 +29,8 @@ if (eventBindings.includes('getDownstreamEditImpact(')) {
 }
 const step2Logic = `${app}\n${storyboard}\n${storyboardPrompts}`;
 const html = fs.readFileSync(path.join(root, 'static', 'index.html'), 'utf8');
-if (!outputRender.includes('loadStep8Impacts(') || !html.includes('id="step8-impact-list"')) {
-  throw new Error('Output workspace must expose the project impact list');
+if (outputRender.includes('loadStep8Impacts(') || html.includes('id="step8-impact-list"') || html.includes('修改后的待核对内容')) {
+  throw new Error('Output workspace must keep the impact ledger out of the user-facing output page');
 }
 const css = fs.readFileSync(path.join(root, 'static', 'style.css'), 'utf8');
 const stitchCss = fs.readFileSync(path.join(root, 'static', 'stitch.css'), 'utf8');
@@ -39,6 +39,17 @@ const projectProfile = fs.readFileSync(path.join(root, 'static', 'project_profil
 const background = fs.readFileSync(path.join(root, 'static', 'storyboard_background_extension.js'), 'utf8');
 const styleManager = fs.readFileSync(path.join(root, 'static', 'style_reference_manager_extension.js'), 'utf8');
 const oneClick = fs.readFileSync(path.join(root, 'static', 'one_click_extension.js'), 'utf8');
+if ([html, images, storyboard, narrationAudio, aiMask, maskWorkspace, outputRender, oneClick]
+    .some(source => /待核对|建议检查|待检查|等待审查/.test(source))) {
+  throw new Error('Non-actionable review notices must not appear in the workspace');
+}
+if ([uiFoundation, images, oneClick].some(source => source.includes('showFailureBadge'))) {
+  throw new Error('Persistent failure badges duplicate in-context job errors');
+}
+if (!uiFoundation.includes('container.children.length >= 2')
+    || !images.includes('async function getStep3ReplacementVersion(')) {
+  throw new Error('Notification cap or quiet image replacement policy regressed');
+}
 const creationConfigManagement = fs.readFileSync(path.join(root, 'static', 'creation_config_management.js'), 'utf8');
 const selectMenus = fs.readFileSync(path.join(root, 'static', 'select_menus.js'), 'utf8');
 
