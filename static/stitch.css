@@ -3364,6 +3364,52 @@ body.workspace-open #step-panel-1 #step1-btn-save-edit .icon {
   body.workspace-open #step-panel-1 #step1-topic-input { padding-right: 105px !important; }
 }
 
+/* Topic input and article results must not compete for a capped card height. */
+body.workspace-open #step-panel-1 .step1-content-card.is-topic {
+  height: auto !important;
+  overflow: visible !important;
+}
+body.workspace-open #step-panel-1 .is-topic .step1-topic-view {
+  height: auto;
+  overflow: visible;
+  flex: none;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot {
+  margin-top: -20px;
+  min-height: 360px;
+  flex: none;
+}
+body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-editor-shell {
+  height: 360px;
+  min-height: 360px;
+  flex: none;
+}
+#btn-back-home:not([hidden]) {
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  gap: 4px !important;
+  border: 1px solid #fed7c7 !important;
+  border-radius: 8px !important;
+  background: #fff7ed !important;
+  color: #ea580c !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05) !important;
+}
+#btn-back-home:not([hidden]):hover {
+  background: #ffedd5 !important;
+  color: #c2410c !important;
+}
+#btn-back-home .icon {
+  width: 14px !important;
+  height: 14px !important;
+  flex-basis: 14px !important;
+}
+@media (max-width: 760px) {
+  body.workspace-open #step-panel-1 .step1-topic-editor-slot { margin-top: -12px; }
+}
+
 /* Shared notifications remain in the top-center global notice position. */
 #toast-container {
   left: 50% !important;

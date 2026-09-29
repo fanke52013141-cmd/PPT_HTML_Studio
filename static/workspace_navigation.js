@@ -122,7 +122,7 @@ function applyProjectAiMode(aiMode) {
   document.body.classList.add(mode === 'manual' ? 'mode-manual' : 'mode-auto');
   const toggleBtn = document.getElementById('btn-toggle-ai-mode');
   if (toggleBtn) {
-    toggleBtn.style.display = 'inline-block';
+    toggleBtn.style.display = Number(state.currentStep) === 1 ? 'none' : 'inline-block';
     toggleBtn.textContent = `分镜方式：${mode === 'manual' ? '手动编排' : 'AI 辅助'}`;
     toggleBtn.classList.remove('ai-mode-auto', 'ai-mode-manual');
     toggleBtn.classList.add(mode === 'manual' ? 'ai-mode-manual' : 'ai-mode-auto');
@@ -275,6 +275,8 @@ async function navigateToStep(step) {
     step = fallback;
   }
   state.currentStep = step;
+  const modeButton = document.getElementById('btn-toggle-ai-mode');
+  if (modeButton) modeButton.style.display = step === 1 ? 'none' : 'inline-block';
   
   // 隐藏所有面板
   document.querySelectorAll('.step-panel').forEach(panel => panel.style.display = 'none');

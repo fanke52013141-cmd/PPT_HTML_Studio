@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20260917.2">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20260929.6">
+  <link rel="stylesheet" href="stitch.css?v=20260929.7">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
 </head>
@@ -53,7 +53,7 @@
       <button id="btn-config-import" class="secondary" type="button">配置导入</button>
       <button id="btn-toggle-ai-mode" type="button" class="ai-mode-toggle-btn ai-mode-auto" style="display: none;" title="切换分镜制作方式">分镜方式：AI 辅助</button>
       <button id="btn-back-home" class="secondary header-action header-return-home" type="button" hidden>
-        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"></path></svg>
+        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6"></path></svg>
         返回首页
       </button>
     </div>
@@ -178,7 +178,7 @@
             </div>
           </div>
           <div class="card step1-content-card">
-            <div id="step1-import-view" class="step1-content-view">
+            <div id="step1-import-view" class="step1-content-view step1-import-view">
               <div id="step1-editor-shell" class="step1-editor-shell">
                 <div id="step1-markdown-editor" class="step1-markdown-editor markdown-editor" contenteditable="true" role="textbox" aria-label="文章 Markdown 编辑器" aria-multiline="true" data-placeholder="# 在这里粘贴您的文章..."></div>
                 <textarea id="step1-article-input" class="step1-source-textarea" rows="1" placeholder="# 在这里粘贴您的文章..." aria-hidden="true" tabindex="-1"></textarea>
@@ -1799,7 +1799,7 @@
   <script src="creation_config_management.js?v=20260928.2"></script>
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20260913.2"></script>
-  <script src="article.js?v=20260929.3"></script>
+  <script src="article.js?v=20260929.4"></script>
   <script src="storyboard.js?v=20260902.2"></script>
   <script src="storyboard_prompts.js?v=20260801.1"></script>
   <script src="images.js?v=20260928.1"></script>
@@ -1816,7 +1816,7 @@
   <script src="annotations_editor.js?v=20260928.1"></script>
   <script src="output_render.js?v=20260928.1"></script>
   <script src="account_management.js?v=20260916.1"></script>
-  <script src="workspace_navigation.js?v=20260929.2"></script>
+  <script src="workspace_navigation.js?v=20260929.3"></script>
   <script src="event_bindings.js?v=20260929.2"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>
   <script src="storyboard_background_extension.js?v=20260916.1"></script>

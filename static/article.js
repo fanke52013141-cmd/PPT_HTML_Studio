@@ -191,6 +191,7 @@ function setStep1Mode(mode) {
   if (modeSwitch) modeSwitch.dataset.activeMode = normalized;
   const importView = document.getElementById('step1-import-view');
   const topicView = document.getElementById('step1-topic-view');
+  document.querySelector('#step-panel-1 .step1-content-card')?.classList.toggle('is-topic', normalized === 'topic');
   const editorShell = document.getElementById('step1-editor-shell');
   const topicEditorSlot = document.getElementById('step1-topic-editor-slot');
   const editorTarget = normalized === 'topic' ? topicEditorSlot : importView;
