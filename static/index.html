@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="stitch.css?v=20260929.19">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
+  <link rel="stylesheet" href="workspace_content.css?v=20260929.4">
 </head>
 <body>
 
@@ -428,7 +429,7 @@
               <div id="step5-boxes-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <!-- 标注盒子表单 -->
               </div>
-              <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1rem; border-top: 2px dashed #111;">
+              <div class="step5-confirm-footer">
                 <button id="step5-btn-confirm-next" class="btn-next-step success" style="width: 100%;">
                   确认标注，进入下一步
                   <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -618,12 +619,9 @@
                     </div>
                   </div>
                   <div id="dh-slide-status" class="dh-slide-status"></div>
-                  <div class="dh-field-label" style="margin-top:1.2rem; border-top: 1px solid rgba(91,120,147,0.2); padding-top:1rem;">② 整段语音导出</div>
-                  <button id="dh-btn-export-audio" class="secondary" style="width:100%;">导出整段语音（拼接全课程）</button>
-                  <div id="dh-audio-export-status" class="dh-drag-hint" style="margin-top:0.4rem;">把全部页面旁白拼接为一整段 mp3，供离线数字人生成使用。</div>
                 </div>
                 <div class="dh-field">
-                  <div class="dh-field-label">③ 框选与缩放</div>
+                  <div class="dh-field-label">② 框选与缩放</div>
                   <div class="dh-shape-toggle">
                     <button type="button" data-dh-shape="circle" class="dh-shape-active">圆形</button>
                     <button type="button" data-dh-shape="rect">矩形</button>
@@ -641,7 +639,7 @@
                   <div class="dh-drag-hint" style="margin-top:0.4rem;">框内拖动=平移视频 · 框外拖动=移动位置 · 左上角手柄=调整大小</div>
                 </div>
                 <div class="dh-field">
-                  <div class="dh-field-label">④ 位置与缩放精调</div>
+                  <div class="dh-field-label">③ 位置与缩放精调</div>
                   <div class="dh-lock-row">
                     <button type="button" id="dh-btn-lock" class="dh-lock-btn">固定当前布局</button>
                     <span id="dh-lock-status" class="dh-lock-status">未固定</span>
@@ -683,6 +681,11 @@
                   </div>
                   <button id="dh-btn-save" class="secondary" style="width:100%; margin-top:0.8rem;">保存设置</button>
                   <div id="dh-slide-status" class="dh-slide-status"></div>
+                  <div class="dh-audio-export">
+                    <div class="dh-field-label">④ 整段语音导出</div>
+                    <button id="dh-btn-export-audio" class="secondary" style="width:100%;">导出整段语音（拼接全课程）</button>
+                    <div id="dh-audio-export-status" class="dh-drag-hint">把全部页面旁白拼接为一整段 mp3，供离线数字人生成使用。</div>
+                  </div>
                 </div>
               </div>
             </div>

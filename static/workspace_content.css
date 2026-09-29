@@ -1,0 +1,393 @@
+/* Content below the existing workspace titlebars. The menu, global header,
+   and per-step titlebars keep their established styling and behavior. */
+body.workspace-open :is(#step-panel-5, #step-panel-6, #step-panel-8, #step-panel-9, #step-panel-10) {
+  --content-line: #e2e8f0;
+  --content-ink: #0f172a;
+  --content-muted: #64748b;
+  --content-orange: #ee5d36;
+  --content-card-shadow: 0 1px 3px rgba(15, 23, 42, .04);
+}
+
+/* AI Mask: preserve the real canvas, narration fragments and semantic cards. */
+body.workspace-open #step-panel-5 #step5-thumbs {
+  display: flex;
+  gap: 8px !important;
+  margin: 0 0 14px !important;
+  padding: 2px 0 6px !important;
+  overflow-x: auto;
+}
+body.workspace-open #step-panel-5 #step5-thumbs > * {
+  flex: 0 0 auto;
+}
+body.workspace-open #step-panel-5 .workspace-split {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.85fr) minmax(300px, 1fr) !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+body.workspace-open #step-panel-5 .workspace-left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 12px;
+}
+body.workspace-open #step-panel-5 .canvas-wrapper {
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  border: 1px solid var(--content-line) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: var(--content-card-shadow) !important;
+}
+body.workspace-open #step-panel-5 .step5-narration-panel,
+body.workspace-open #step-panel-5 .workspace-right {
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 14px !important;
+  border: 1px solid var(--content-line) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: var(--content-card-shadow) !important;
+}
+body.workspace-open #step-panel-5 .workspace-right {
+  display: flex !important;
+  flex-direction: column;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+body.workspace-open #step-panel-5 .step5-side-header {
+  flex: 0 0 auto;
+  margin: 0 0 10px !important;
+  padding: 0 0 10px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+body.workspace-open #step-panel-5 #step5-boxes-list {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: clamp(260px, 56vh, 580px);
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+body.workspace-open #step-panel-5 .mask-block-card {
+  padding: 12px !important;
+  border: 1px solid var(--content-line) !important;
+  border-left: 3px solid var(--mask-color, var(--content-orange)) !important;
+  border-radius: 10px !important;
+}
+body.workspace-open #step-panel-5 .mask-block-card.highlight-glow {
+  box-shadow: 0 0 0 2px rgba(238, 93, 54, .12) !important;
+}
+body.workspace-open #step-panel-5 .mask-visual-card,
+body.workspace-open #step-panel-5 .mask-narration-card {
+  padding: 9px 10px !important;
+  border-radius: 8px !important;
+}
+body.workspace-open #step-panel-5 .step5-confirm-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+body.workspace-open #step-panel-5 #step5-btn-confirm-next {
+  min-height: 38px !important;
+  padding: 8px 12px !important;
+}
+
+/* Narration: the existing per-slide rows stay in one vertical reading flow. */
+body.workspace-open #step-panel-6 #step7-empty-state,
+body.workspace-open #step-panel-6 #step6-beats-list {
+  margin-top: 14px;
+}
+body.workspace-open #step-panel-6 .step6-slides-stack {
+  gap: 10px !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-row {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 12px 16px !important;
+  border: 1px solid var(--content-line) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: var(--content-card-shadow) !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-row-head {
+  min-height: 28px;
+  margin: 0 0 6px !important;
+  gap: 8px !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-row-head h3 {
+  color: var(--content-ink) !important;
+  font-size: 14px !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-status {
+  color: var(--content-muted) !important;
+  font-size: 12px !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-beats {
+  gap: 4px !important;
+}
+body.workspace-open #step-panel-6 .step6-beat-row {
+  display: block !important;
+  padding: 0 !important;
+}
+body.workspace-open #step-panel-6 .step6-tts-input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 32px !important;
+  padding: 5px 10px !important;
+  border: 1px solid var(--content-line) !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: var(--content-ink) !important;
+  line-height: 1.4 !important;
+  resize: none;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-6 .step6-tts-input:focus {
+  outline: none !important;
+  border-color: var(--content-orange) !important;
+  box-shadow: 0 0 0 2px rgba(238, 93, 54, .12) !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-audio {
+  margin-top: 6px !important;
+  padding-top: 6px !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+body.workspace-open #step-panel-6 .step7-audio-missing {
+  padding: 7px 10px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+body.workspace-open #step-panel-6 .step7-audio-player {
+  display: block;
+  width: 100%;
+  max-width: none;
+}
+
+/* Drawn annotations: keep the actual three panes and full property editor. */
+body.workspace-open #step-panel-10 #annotation-workspace-body {
+  min-width: 0;
+}
+body.workspace-open #step-panel-10 .annotation-thumb-strip {
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 6px;
+  border-color: var(--content-line);
+  border-radius: 10px;
+}
+body.workspace-open #step-panel-10 .annotation-thumb {
+  width: 108px;
+}
+body.workspace-open #step-panel-10 .annotation-columns {
+  gap: 14px !important;
+  align-items: start;
+}
+body.workspace-open #step-panel-10 :is(.annotation-canvas-pane, .annotation-narration-pane, .annotation-list-pane) {
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 14px !important;
+  border: 1px solid var(--content-line) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: var(--content-card-shadow) !important;
+}
+body.workspace-open #step-panel-10 .annotation-canvas-frame {
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  background: #fff;
+}
+body.workspace-open #step-panel-10 .annotation-canvas-toolbar {
+  gap: 6px !important;
+  margin-top: 12px !important;
+}
+body.workspace-open #step-panel-10 .annotation-canvas-toolbar > * {
+  flex: 0 0 auto;
+}
+body.workspace-open #step-panel-10 .annotation-tool-style {
+  white-space: nowrap;
+}
+body.workspace-open #step-panel-10 .annotation-canvas-toolbar button,
+body.workspace-open #step-panel-10 .annotation-tool-style select {
+  min-height: 30px !important;
+  font-size: 12px !important;
+}
+body.workspace-open #step-panel-10 .annotation-pane-title {
+  margin: 0 0 10px !important;
+  color: var(--content-ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+body.workspace-open #step-panel-10 .annotation-card {
+  border-color: var(--content-line);
+  border-radius: 8px;
+}
+body.workspace-open #step-panel-10 .annotation-card.selected {
+  outline: 2px solid rgba(238, 93, 54, .35);
+}
+body.workspace-open #step-panel-10 .annotation-item-editor {
+  gap: 8px;
+}
+body.workspace-open #step-panel-10 .annotation-field {
+  min-width: 0;
+  color: var(--content-muted);
+  font-size: 12px;
+}
+
+/* Digital human: the existing three configuration groups become three quiet
+   columns; no full-slide composite preview is introduced. */
+body.workspace-open #step-panel-9 #digital-human-panel {
+  margin-top: 14px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-9 .dh-panel-header,
+body.workspace-open #step-panel-9 .dh-field {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 14px !important;
+  border: 1px solid var(--content-line) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: var(--content-card-shadow) !important;
+}
+body.workspace-open #step-panel-9 .dh-panel-header {
+  min-height: 50px;
+  margin: 0 0 10px !important;
+  padding-block: 10px !important;
+}
+body.workspace-open #step-panel-9 .dh-panel-title h3,
+body.workspace-open #step-panel-9 .dh-settings-title {
+  display: none !important;
+}
+body.workspace-open #step-panel-9 .dh-panel-body {
+  padding: 0 !important;
+}
+body.workspace-open #step-panel-9 .dh-grid {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.3fr) minmax(0, 1.05fr) !important;
+  gap: 12px !important;
+  align-items: start !important;
+}
+body.workspace-open #step-panel-9 .dh-field {
+  gap: 7px !important;
+}
+body.workspace-open #step-panel-9 .dh-audio-export {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--content-line);
+}
+body.workspace-open #step-panel-9 .dh-field-label {
+  color: var(--content-ink) !important;
+  font-size: 12px !important;
+}
+body.workspace-open #step-panel-9 .dh-circle-canvas {
+  aspect-ratio: var(--project-aspect-ratio, 16 / 9) !important;
+  border-color: var(--content-line) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-9 .dh-slider-row {
+  display: grid !important;
+  grid-template-columns: 76px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 8px !important;
+}
+body.workspace-open #step-panel-9 .dh-slider-label {
+  min-width: 0 !important;
+}
+body.workspace-open #step-panel-9 .dh-slider-row input[type="range"] {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Output: existing MP4 cards and separate PPTX records stay in page order. */
+body.workspace-open #step-panel-8 #step8-digital-human-status,
+body.workspace-open #step-panel-8 .step-plain-section {
+  box-sizing: border-box;
+  margin: 14px 0 0 !important;
+  padding: 16px 18px !important;
+  border: 1px solid var(--content-line) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: var(--content-card-shadow) !important;
+}
+body.workspace-open #step-panel-8 .step8-video-card,
+body.workspace-open #step-panel-8 .step8-pptx-card {
+  padding: 14px !important;
+  border: 1px solid var(--content-line) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-8 .step8-video-card-head,
+body.workspace-open #step-panel-8 .step8-video-actions,
+body.workspace-open #step-panel-8 .step8-pptx-card {
+  gap: 10px;
+}
+body.workspace-open #step-panel-8 .video-preview-box {
+  width: min(100%, 960px);
+  margin-inline: auto;
+  border-radius: 8px;
+  overflow: hidden;
+}
+body.workspace-open #step-panel-8 .step8-video-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+body.workspace-open #step-panel-8 .step8-pptx-list {
+  gap: 10px;
+}
+
+@media (max-width: 1200px) {
+  body.workspace-open #step-panel-5 .workspace-split {
+    grid-template-columns: minmax(0, 1.5fr) minmax(270px, 1fr) !important;
+  }
+  body.workspace-open #step-panel-9 .dh-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  body.workspace-open #step-panel-9 .dh-field:last-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 1050px) {
+  body.workspace-open #step-panel-5 .workspace-split {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  body.workspace-open #step-panel-5 .workspace-right {
+    height: auto !important;
+  }
+}
+@media (max-width: 900px) {
+  body.workspace-open #step-panel-5 .workspace-split,
+  body.workspace-open #step-panel-9 .dh-grid,
+  body.workspace-open #step-panel-10 .annotation-columns {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  body.workspace-open #step-panel-5 .workspace-right {
+    height: auto !important;
+  }
+  body.workspace-open #step-panel-9 .dh-field:last-child {
+    grid-column: auto;
+  }
+  body.workspace-open #step-panel-8 .step8-pptx-card,
+  body.workspace-open #step-panel-8 .step8-video-card-head {
+    flex-wrap: wrap;
+  }
+}
