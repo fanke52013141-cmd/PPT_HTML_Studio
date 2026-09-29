@@ -2680,3 +2680,32 @@ body:not(.workspace-open) #page-home .stitch-chapter-header .tree-overflow {
 body:not(.workspace-open) #page-home .stitch-sidebar-body {
   overflow-x: clip !important;
 }
+
+/* Step 2: each Slide reads top-to-bottom; mapping rows size from their own content. */
+#step-panel-2 .step2-script-slides { display: grid; gap: 1rem; }
+#step-panel-2 .step2-script-slide { min-height: 0; }
+#step-panel-2 .step2-script-slide-title strong { white-space: nowrap; }
+#step-panel-2 .step2-script-slide textarea[data-script-field="narration"] {
+  min-height: 0 !important;
+  overflow: hidden;
+  resize: none;
+}
+#step-panel-2 .step2-inline-visual { margin-top: 1.25rem; border-top: 1px solid #e2e8f0; padding-top: 1rem; }
+#step-panel-2 .step2-inline-visual:empty { display: none; }
+#step-panel-2 .step2-visual-pending { margin: 0; color: #9a3412; }
+#step-panel-2 .step2-visual-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .65rem; margin-top: 1.25rem; }
+#step-panel-2 .step2-visual-actions-label { margin-right: auto; }
+#step-panel-2 .vn-group-body { align-items: stretch !important; }
+#step-panel-2 .vn-visual,
+#step-panel-2 .vn-narration,
+#step-panel-2 .vn-beat,
+#step-panel-2 .vn-edit-field { display: block !important; height: auto !important; min-height: 0 !important; flex: none !important; }
+#step-panel-2 .vn-edit-field > textarea {
+  display: block;
+  width: 100%;
+  height: var(--step2-field-height, auto) !important;
+  min-height: 0 !important;
+  flex: none !important;
+  field-sizing: fixed;
+  resize: vertical;
+}

@@ -489,17 +489,31 @@ def build_step2_visual_repair_user_prompt(
     validation_error: str,
 ) -> str:
     """Ask the planner for one bounded, full-plan repair after an atomicity failure."""
+    previous_mapping = {
+        "slides": [
+            {
+                "slide_id": slide.get("slide_id"),
+                "visual_elements": [
+                    {key: value for key, value in element.items() if key != "reveal_mode"}
+                    for element in (slide.get("visual_elements") or [])
+                    if isinstance(element, dict)
+                ],
+            }
+            for slide in (previous_visual_plan.get("slides") or [])
+            if isinstance(slide, dict)
+        ]
+    }
     return (
         build_step2_visual_user_prompt(script_plan)
         + "\n\n<PreviousVisualPlan>\n"
-        + json.dumps(previous_visual_plan, ensure_ascii=False, indent=2)
+        + json.dumps(previous_mapping, ensure_ascii=False, indent=2)
         + "\n</PreviousVisualPlan>\n"
         + "\n<ValidationFailure>\n"
         + str(validation_error or "").strip()
         + "\n</ValidationFailure>\n"
-        + "\n请基于上一版完整修复并重新输出全部 slides。对被指出含多个独立视觉岛的元素："
-        + "若它们应跟随同一段旁白整体出现，保留该元素并显式设置 reveal_mode 为 together；"
-        + "若它们需要依次出现，拆成多个 body 元素，并把原旁白按自然边界连续分配。"
+        + "\n请基于上一版完整修复并重新输出全部 slides。对被指出含多个独立语义画面的元素，"
+        + "若原旁白有自然边界则拆成多个 body 元素，并连续分配原文；否则设计成统一画面结构。"
+        + "本阶段不决定出现方式，不输出 reveal_mode。"
         + "不要省略未报错页面，不要改写 slide_id 或演讲稿。"
     )
 

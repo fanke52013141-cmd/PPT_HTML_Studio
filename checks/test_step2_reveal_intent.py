@@ -56,14 +56,14 @@ def test_together_intent_is_preserved_in_the_contract_and_manual_normalization()
     assert normalize_visual_contract(old_contract)["slides"][0]["visual_groups"][0]["reveal_mode"] == "sequential"
 
 
-def test_atomicity_repair_prompt_requires_a_full_plan_and_explicit_intent() -> None:
+def test_atomicity_repair_prompt_requires_a_full_plan_without_animation_choice() -> None:
     prompt = build_step2_visual_repair_user_prompt(
         SCRIPT_PLAN,
         {"slides": []},
         "Visual group slide_001_el_002 in slide_001 describes multiple independent visual islands",
     )
     assert "重新输出全部 slides" in prompt
-    assert "reveal_mode 为 together" in prompt
+    assert "不输出 reveal_mode" in prompt
 
 
 def test_compose_retries_atomicity_failure_once_with_the_repaired_plan(monkeypatch, tmp_path: Path) -> None:
@@ -120,4 +120,18 @@ def test_compose_retries_atomicity_failure_once_with_the_repaired_plan(monkeypat
     assert result["success"] is True
     assert len(repair_calls) == 1
     assert "multiple independent visual islands" in repair_calls[0]["repair_validation_error"]
-    assert result["contract"]["slides"][0]["visual_groups"][1]["reveal_mode"] == "together"
+    assert result["contract"]["slides"][0]["visual_groups"][1]["reveal_mode"] == "sequential"
+
+
+def test_project_mask_setting_owns_reveal_mode() -> None:
+    import storyboard_service as service
+
+    plan = {"slides": [{"visual_elements": [{"reveal_mode": "sequential"}, {"reveal_mode": "together"}]}]}
+    without_mask = service._apply_project_reveal_mode(
+        json.loads(json.dumps(plan)), SimpleNamespace(mask_enabled=0)
+    )
+    with_mask = service._apply_project_reveal_mode(
+        json.loads(json.dumps(plan)), SimpleNamespace(mask_enabled=1)
+    )
+    assert {item["reveal_mode"] for item in without_mask["slides"][0]["visual_elements"]} == {"together"}
+    assert {item["reveal_mode"] for item in with_mask["slides"][0]["visual_elements"]} == {"sequential"}

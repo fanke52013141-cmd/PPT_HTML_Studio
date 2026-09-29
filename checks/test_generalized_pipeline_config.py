@@ -45,20 +45,19 @@ def test_step2_prompt_contracts_are_minimal() -> None:
     assert "认知旅程" in script_system
     assert "完整演讲稿" in script_system
     assert "visual_groups" not in script_example["slides"][0]
-    assert "step2_visual_v7_reveal_intent" in visual_system
-    assert "先按语义切分整页 `narration`" in visual_system
+    assert "step2_visual_v8_mapping_only" in visual_system
+    assert "画面内容与原文演讲片段的一对一对应关系" in visual_system
     assert "role" in visual_system and "visual_type" in visual_system
-    assert "逐字还原原演讲稿" in visual_system
-    assert "最小 Mask/Reveal 原子" in visual_system
-    assert "多个独立卡片" in visual_system
-    assert "一个 visual element 对应且只对应一个非空 narration 片段" in visual_system
-    assert "系统不使用副标题" in visual_system
+    assert "逐字还原整页演讲稿" in visual_system
+    assert "不决定动画、出现先后、Mask" in visual_system
+    assert "语义独立的观点" in visual_system
+    assert "每个元素恰好绑定一段非空" in visual_system
+    assert "不生成副标题" in visual_system
     assert "`slide_subtitle`" not in visual_system
     assert all(element["narration"] for slide in visual_example["slides"] for element in slide["visual_elements"])
     first_visual_element = visual_example["slides"][0]["visual_elements"][0]
-    assert set(first_visual_element) == {"element_id", "role", "visual_type", "visual_description", "narration", "reveal_mode"}
-    assert first_visual_element["reveal_mode"] in {"sequential", "together"}
-    assert "`body_points`" in visual_system
+    assert set(first_visual_element) == {"element_id", "role", "visual_type", "visual_description", "narration"}
+    assert "不要输出 `reveal_mode`" in visual_system
     assert "source_segment_id" not in json.dumps(visual_example, ensure_ascii=False)
     assert "speak_policy" not in script_system + visual_system
     ai_template = next(

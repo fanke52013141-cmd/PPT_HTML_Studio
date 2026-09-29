@@ -183,8 +183,14 @@ LEGACY_STEP2_PROMPT_HASHES = {
         "772bf5f95f6da19a387ff1df76960c5e5a7deebda170bc9f06d66031f0a81609",
     },
     "script_output_example": {"a87e75ff998d2b8a415108ba95b73d8b15a12100171439949d3eaa7d2201d603"},
-    "visual_system": {"2cd1d2c659883ccb641743d2db0a3b255036c4ebc67e34075ffb918e102647f3"},
-    "visual_output_example": {"d61dc2dfdd60cddd4be3bc13cfe4848ee5b119964ad726ec8ff214840cd7e9fa"},
+    "visual_system": {
+        "2cd1d2c659883ccb641743d2db0a3b255036c4ebc67e34075ffb918e102647f3",
+        "578fd18c3fd65e287e515e35a228c493ca8779dff38dcd6724e4591dc9f441d3",
+    },
+    "visual_output_example": {
+        "d61dc2dfdd60cddd4be3bc13cfe4848ee5b119964ad726ec8ff214840cd7e9fa",
+        "38a958b1fbaf27e878904c96ad317b3ca007009196f65e9c8e2eeb4f6a83d494",
+    },
 }
 LEGACY_INTERVIEW_SCRIPT_PROMPT_HASH = "7e6f9fbd452f9c94bc02b3c5226edcde21a4bb69d87d5ede8089eb8b28f7bef9"
 from ai_mask_contracts import REVEAL_PIPELINE_VERSION

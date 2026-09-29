@@ -127,6 +127,7 @@ function initGlobalEvents() {
   // ================= 步骤 2 事件 =================
   document.getElementById('step2-btn-generate-script')?.addEventListener('click', () => openStep2ScriptStage());
   document.getElementById('step2-btn-generate-visual')?.addEventListener('click', () => generateStep2VisualPlan());
+  document.getElementById('step2-btn-save-visual')?.addEventListener('click', () => saveStep2Contract());
   document.getElementById('step2-btn-save-script')?.addEventListener('click', () => saveStep2ScriptPlan());
   document.getElementById('step2-btn-regenerate-script')?.addEventListener('click', () => openStep2GenerationModal());
   document.getElementById('btn-step2-generation-cancel')?.addEventListener('click', () => closeStep2GenerationModal());
@@ -214,6 +215,8 @@ function initGlobalEvents() {
   });
   document.getElementById('step2-visual-narration-map')?.addEventListener('input', event => handleStep2MapEditorInput(event));
   document.getElementById('step2-visual-narration-map')?.addEventListener('change', event => handleStep2MapEditorChange(event));
+  document.getElementById('step2-script-slides')?.addEventListener('input', event => handleStep2MapEditorInput(event));
+  document.getElementById('step2-script-slides')?.addEventListener('change', event => handleStep2MapEditorChange(event));
   [
     'step2-script-system-prompt',
     'step2-script-output-example',

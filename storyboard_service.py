@@ -305,15 +305,13 @@ __all__ = (
 )
 
 
-STEP2_VISUAL_REVEAL_MODE_CONTRACT = """
-<RevealModeContract>
-Every visual element must include reveal_mode. Use "sequential" when the
-element must reveal independently at its own narration beat. Use "together"
-only when all visual components in that one element intentionally appear as a
-single whole with its one narration beat; multiple cards or islands are then
-allowed. This field is required in the JSON output for title and body elements.
-</RevealModeContract>
-""".strip()
+def _apply_project_reveal_mode(plan: Dict[str, Any], project: Project) -> Dict[str, Any]:
+    """Keep animation policy outside the model's Step 2 mapping decision."""
+    reveal_mode = "sequential" if bool(getattr(project, "mask_enabled", 1) or 0) else "together"
+    for slide in plan.get("slides") or []:
+        for element in slide.get("visual_elements") or []:
+            element["reveal_mode"] = reveal_mode
+    return plan
 
 
 def _planning_http_error(exc: PlanningError, fallback_status: int) -> HTTPException:
@@ -907,7 +905,7 @@ def _execute_step2_visual_plan(
         trace_id = uuid.uuid4().hex[:8]
         system_prompt = compose_step2_system_prompt(
             prompts["visual_system"], prompts["visual_output_example"]
-        ) + "\n\n" + STEP2_VISUAL_REVEAL_MODE_CONTRACT
+        )
         user_prompt = (
             build_step2_visual_repair_user_prompt(
                 script_plan,
@@ -939,7 +937,7 @@ def _execute_step2_visual_plan(
             trace_id=trace_id,
         )
         try:
-            plan = normalize_slide_visual_plan(raw_plan, script_plan)
+            plan = _apply_project_reveal_mode(normalize_slide_visual_plan(raw_plan, script_plan), project)
         except PlanningError as exc:
             last_error = str(exc)
             if attempt <= max_retries:
@@ -983,7 +981,7 @@ def update_step2_visual_plan(project_id: str, payload: Dict[str, Any], db: Sessi
     project = project_or_404(db, project_id)
     script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
     try:
-        plan = normalize_slide_visual_plan(payload, script_plan)
+        plan = _apply_project_reveal_mode(normalize_slide_visual_plan(payload, script_plan), project)
     except PlanningError as exc:
         raise _planning_http_error(exc, 400)
     plan["source_script_hash"] = _step2_script_plan_fingerprint(script_plan)
@@ -1002,7 +1000,7 @@ def compose_step2_visual_contract(project_id: str, db: Session):
         stored_script_hash = str(stored_visual_plan.get("source_script_hash") or "")
         if stored_script_hash and stored_script_hash != _step2_script_plan_fingerprint(script_plan):
             raise HTTPException(status_code=409, detail="演讲稿已修改，可视化映射已过期，请重新生成可视化。")
-        visual_plan = normalize_slide_visual_plan(stored_visual_plan, script_plan)
+        visual_plan = _apply_project_reveal_mode(normalize_slide_visual_plan(stored_visual_plan, script_plan), project)
         contract = compose_visual_contract_from_plans(script_plan, visual_plan, project_id, project_title)
     except PlanningError as exc:
         raise _planning_http_error(exc, 400)
@@ -1034,7 +1032,7 @@ def compose_step2_visual_contract(project_id: str, db: Session):
             repair_validation_error=validation["stderr"],
             previous_visual_plan=visual_plan,
         )
-        repaired_visual_plan = repaired["visual_plan"]
+        repaired_visual_plan = _apply_project_reveal_mode(repaired["visual_plan"], project)
         try:
             contract = compose_visual_contract_from_plans(
                 script_plan,

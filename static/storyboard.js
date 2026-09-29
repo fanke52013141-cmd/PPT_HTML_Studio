@@ -171,19 +171,37 @@ function renderStep2ScriptReview() {
   const plan = state.step2ScriptPlan;
   const statusText = document.getElementById('step2-script-review-status');
   if (statusText) statusText.textContent = state.step2VisualStale
-    ? '演讲稿有变更，已有可视化映射已过期。保存后点击上方“重新生成可视化”。'
-    : '可直接编辑每页标题和旁白。保存后，第二步会严格使用这里的最新文案生成可视化。';
-  const visible = !isManualMode() && state.step2Stage === 'script' && !!plan?.slides?.length;
+    ? '演讲稿有变更，已有可视化映射已过期。保存后点击下方“重新生成可视化”。'
+    : '可直接编辑每页标题和旁白。生成的可视化会显示在对应 Slide 下方。';
+  const visible = !isManualMode() && !!plan?.slides?.length;
   section.style.display = visible ? 'block' : 'none';
   if (!visible) return;
   list.innerHTML = (plan.slides || []).map((slide, index) => `
     <article class="step2-script-slide" data-script-slide-index="${index}">
-      <div class="step2-script-slide-title"><strong>${escHtml(slide.slide_id || `Slide ${index + 1}`)}</strong>
-        <input type="text" data-script-field="slide_title" aria-label="${escHtml(slide.slide_id || `Slide ${index + 1}`)} 标题" value="${escHtml(slide.slide_title || '')}">
+      <div class="step2-script-slide-title"><strong>Slide ${index + 1}</strong>
+        <input type="text" data-script-field="slide_title" aria-label="Slide ${index + 1} 标题" value="${escHtml(slide.slide_title || '')}">
       </div>
-      <label><span>演讲稿</span><textarea rows="4" data-script-field="narration" aria-label="${escHtml(slide.slide_id || `Slide ${index + 1}`)} 演讲稿">${escHtml(slide.narration || '')}</textarea></label>
+      <label><span>演讲稿</span><textarea rows="1" data-script-field="narration" aria-label="Slide ${index + 1} 演讲稿">${escHtml(slide.narration || '')}</textarea></label>
+      <div class="step2-inline-visual step2-vn-map" data-script-visual-index="${index}"></div>
     </article>
   `).join('');
+  const visualById = new Map((state.slides || []).map(slide => [String(slide.slide_id || ''), slide]));
+  list.querySelectorAll('[data-script-visual-index]').forEach(container => {
+    const slide = plan.slides[Number(container.dataset.scriptVisualIndex)];
+    const visual = visualById.get(String(slide?.slide_id || ''));
+    if (visual && !state.step2VisualStale && !state.step2WorkflowPending) {
+      renderStep2VisualNarrationMap(visual, container);
+    } else if (state.step2VisualStale && state.step2VisualExists) {
+      container.innerHTML = '<p class="step2-visual-pending">演讲稿已修改，请在下方重新生成本页对应的可视化。</p>';
+    }
+  });
+  const visualButton = document.getElementById('step2-btn-generate-visual');
+  if (visualButton) {
+    visualButton.disabled = !plan.slides.length;
+    visualButton.textContent = state.step2VisualStale ? '重新生成可视化' : 'Slides → 可视化';
+  }
+  const saveVisualButton = document.getElementById('step2-btn-save-visual');
+  if (saveVisualButton) saveVisualButton.style.display = state.step2VisualExists && !state.step2VisualStale ? 'inline-flex' : 'none';
   list.querySelectorAll('[data-script-field]').forEach(input => {
     input.addEventListener('input', () => {
       const card = input.closest('[data-script-slide-index]');
@@ -191,9 +209,22 @@ function renderStep2ScriptReview() {
       if (!slide) return;
       slide[input.dataset.scriptField] = input.value;
       state.step2VisualStale = state.step2VisualExists;
+      if (state.step2VisualStale) {
+        list.querySelectorAll('.step2-inline-visual').forEach(visualContainer => {
+          visualContainer.innerHTML = '<p class="step2-visual-pending">演讲稿已修改，请在下方重新生成对应的可视化。</p>';
+        });
+        const nextButton = document.getElementById('step2-btn-next');
+        if (nextButton) nextButton.disabled = true;
+        const saveVisualButton = document.getElementById('step2-btn-save-visual');
+        if (saveVisualButton) saveVisualButton.style.display = 'none';
+      }
       if (statusText) statusText.textContent = state.step2VisualStale
-        ? '演讲稿有变更，已有可视化映射已过期。保存后点击上方“重新生成可视化”。'
+        ? '演讲稿有变更，已有可视化映射已过期。保存后点击下方“重新生成可视化”。'
         : '演讲稿有未保存修改。保存后，点击“Slides → 可视化”生成对应映射。';
+      const visualContainer = card?.querySelector('.step2-inline-visual');
+      if (visualContainer && state.step2VisualStale) {
+        visualContainer.innerHTML = '<p class="step2-visual-pending">演讲稿已修改，请在下方重新生成本页对应的可视化。</p>';
+      }
       if (input.dataset.scriptField === 'narration') autoResizeNarrationTextarea(input);
       updateStep2AutosaveStatus('演讲稿有未保存修改');
       if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
@@ -249,10 +280,24 @@ async function saveStep2ScriptPlan(options = {}) {
       state.step2VisualStale = response.visual_stale
         || (state.step2WorkflowPending && state.step2VisualExists);
     }
+    if (!state.step2VisualStale && state.step2VisualExists) {
+      const visualById = new Map((state.slides || []).map(slide => [String(slide.slide_id || ''), slide]));
+      document.querySelectorAll('#step2-script-slides [data-script-visual-index]').forEach(container => {
+        const scriptSlide = state.step2ScriptPlan.slides[Number(container.dataset.scriptVisualIndex)];
+        const visualSlide = visualById.get(String(scriptSlide?.slide_id || ''));
+        if (visualSlide) renderStep2VisualNarrationMap(visualSlide, container);
+      });
+      const nextButton = document.getElementById('step2-btn-next');
+      if (nextButton) nextButton.disabled = false;
+      const saveVisualButton = document.getElementById('step2-btn-save-visual');
+      if (saveVisualButton) saveVisualButton.style.display = 'inline-flex';
+    }
+    const visualButton = document.getElementById('step2-btn-generate-visual');
+    if (visualButton) visualButton.textContent = state.step2VisualStale ? '重新生成可视化' : 'Slides → 可视化';
     const statusText = document.getElementById('step2-script-review-status');
     if (statusText) statusText.textContent = state.step2VisualStale
-      ? '演讲稿有变更，已有可视化映射已过期。保存后点击上方“重新生成可视化”。'
-      : '可直接编辑每页标题和旁白。保存后，第二步会严格使用这里的最新文案生成可视化。';
+      ? '演讲稿有变更，已有可视化映射已过期。保存后点击下方“重新生成可视化”。'
+      : '可直接编辑每页标题和旁白。生成的可视化会显示在对应 Slide 下方。';
     updateStep2AutosaveStatus('演讲稿已保存');
     if (response.workflow_changed) refreshCurrentProjectStatus(2).catch(() => {});
     if (!options.silent) showToast('演讲稿已保存。');
@@ -575,8 +620,8 @@ function renderStep2Workspace() {
   }
   const manual = isManualMode();
   const hasSlides = state.slides.length > 0;
-  const showScript = !manual && state.step2Stage === 'script' && !!state.step2ScriptPlan?.slides?.length;
-  document.getElementById('step2-editor-area').style.display = hasSlides && !showScript ? 'block' : 'none';
+  const showInlinePlan = !manual && !!state.step2ScriptPlan?.slides?.length;
+  document.getElementById('step2-editor-area').style.display = hasSlides && !showInlinePlan ? 'block' : 'none';
   // 自动模式明确分开文章到演讲稿与演讲稿到可视化两个阶段。
   const scriptGenerateBtn = document.getElementById('step2-btn-generate-script');
   const visualGenerateBtn = document.getElementById('step2-btn-generate-visual');
@@ -598,9 +643,9 @@ function renderStep2Workspace() {
       scriptGenerateBtn.textContent = state.step2ScriptPlan?.slides?.length ? '文章 → Slides（查看/编辑）' : '文章 → Slides';
     }
     if (visualGenerateBtn) {
-      visualGenerateBtn.style.display = 'inline-flex';
+      visualGenerateBtn.style.display = showInlinePlan ? 'inline-flex' : 'none';
       visualGenerateBtn.disabled = !state.step2ScriptPlan?.slides?.length;
-      visualGenerateBtn.classList.toggle('is-active', state.step2Stage === 'visual');
+      visualGenerateBtn.classList.toggle('is-active', state.step2VisualExists && !state.step2VisualStale);
       visualGenerateBtn.textContent = state.step2VisualStale ? '重新生成可视化' : 'Slides → 可视化';
     }
     if (scriptPromptBtn) scriptPromptBtn.style.display = 'inline-flex';
@@ -610,9 +655,9 @@ function renderStep2Workspace() {
   }
   renderStep2ScriptReview();
   // 批量删除/保存按钮在工具栏中（批量导入右侧）常显，方便随时进入删除模式
-  document.getElementById('step2-btn-save').style.display = showScript ? 'none' : 'inline-flex';
+  document.getElementById('step2-btn-save').style.display = showInlinePlan ? 'none' : 'inline-flex';
   const step2NextButton = document.getElementById('step2-btn-next');
-  step2NextButton.style.display = showScript ? 'none' : 'inline-flex';
+  step2NextButton.style.display = hasSlides ? 'inline-flex' : 'none';
   const visualizationNeedsRefresh = !manual && (state.step2WorkflowPending || state.step2VisualStale);
   step2NextButton.disabled = !hasSlides || visualizationNeedsRefresh;
   step2NextButton.title = !hasSlides
@@ -624,7 +669,7 @@ function renderStep2Workspace() {
 
   // 渲染精简版横向缩略图（只显示 Slide 序号）
   const thumbsContainer = document.getElementById('step2-thumbs');
-  thumbsContainer.style.display = showScript ? 'none' : 'flex'; // 脚本阶段聚焦演讲稿编辑
+  thumbsContainer.style.display = showInlinePlan ? 'none' : 'flex';
   if (!thumbsContainer.dataset.horizontalWheelBound) {
     thumbsContainer.dataset.horizontalWheelBound = 'true';
     thumbsContainer.addEventListener('wheel', event => {
@@ -676,7 +721,7 @@ function renderStep2Workspace() {
 
   // 加载当前 Slide 详情
   const slide = state.slides[state.activeSlideIndex];
-  if (slide) {
+  if (slide && !showInlinePlan) {
     const structuredManualSlide = manual && step2SlideHasStructuredVisuals(slide);
     if (!manual) {
       syncStep2SimpleFieldsToInternalGroups(slide);
@@ -977,6 +1022,7 @@ function syncStep2SimpleFieldsToInternalGroups(slide) {
 }
 
 function saveCurrentSlideInputToState() {
+  if (!isManualMode() && state.step2ScriptPlan?.slides?.length) return;
   const slide = state.slides[state.activeSlideIndex];
   if (slide) {
     slide.main_title = document.getElementById('step2-slide-title-input')?.value
@@ -1005,8 +1051,7 @@ function saveCurrentSlideInputToState() {
   }
 }
 
-function renderStep2VisualNarrationMap(slide) {
-  const container = document.getElementById('step2-visual-narration-map');
+function renderStep2VisualNarrationMap(slide, container = document.getElementById('step2-visual-narration-map')) {
   if (!container) return;
   if (!slide) { container.innerHTML = ''; return; }
 
@@ -1055,23 +1100,11 @@ function renderStep2VisualNarrationMap(slide) {
       : '<div class="vn-beat vn-beat-empty">缺少对应演讲片段，请重新生成 Slides → 可视化。</div>';
     const visualField = visualType === 'text'
       ? `<label class="vn-edit-field" aria-label="画面文字">
-          <input type="text" ${sourceTextLock} value="${escHtml(visualContent)}" data-step2-group-id="${escHtml(gid)}" data-step2-group-field="visual_content">
+          <textarea ${sourceTextLock} data-step2-group-id="${escHtml(gid)}" data-step2-group-field="visual_content">${escHtml(visualContent)}</textarea>
         </label>`
       : `<label class="vn-edit-field" aria-label="画面元素描述">
           <textarea data-step2-group-id="${escHtml(gid)}" data-step2-group-field="visual_content">${escHtml(visualContent)}</textarea>
         </label>`;
-    const isRevealableBody = roleValue === 'content_body';
-    const revealMode = group?.reveal_mode === 'together' ? 'together' : 'sequential';
-    const revealModeField = isRevealableBody
-      ? `<label class="vn-edit-field vn-reveal-field" aria-label="画面出现方式">
-          <span>画面出现方式</span>
-          <select data-step2-group-id="${escHtml(gid)}" data-step2-group-field="reveal_mode">
-            <option value="sequential"${revealMode === 'sequential' ? ' selected' : ''}>依次展示（需要独立 Mask）</option>
-            <option value="together"${revealMode === 'together' ? ' selected' : ''}>同时展示（同段旁白整体出现）</option>
-          </select>
-        </label>`
-      : '';
-
     return `
       <div class="vn-group-card vn-role-${escHtml(roleValue)}" data-group-id="${escHtml(gid)}">
         <div class="vn-group-head">
@@ -1083,7 +1116,6 @@ function renderStep2VisualNarrationMap(slide) {
           <div class="vn-visual">
             <span class="vn-column-label">${typeLabel}</span>
             ${visualField}
-            ${revealModeField}
           </div>
           <div class="vn-narration">
             <span class="vn-column-label">对应演讲片段</span>
@@ -1107,7 +1139,7 @@ function renderStep2VisualNarrationMap(slide) {
     <div class="vn-groups">${groupCards}</div>
     ${orphanHtml}`;
   document.dispatchEvent(new CustomEvent('step2WorkspaceRendered'));
-  setTimeout(bindStep2TextareaAutoResize, 0);
+  requestAnimationFrame(() => resizeStep2MapRows(container));
 }
 
 function renderStep2EditableBeat(beat, index = 0, total = 1) {
@@ -1130,22 +1162,50 @@ function autoResizeStep2Textarea(el) {
 }
 
 function bindStep2TextareaAutoResize() {
-  document.querySelectorAll('#step2-editor-area textarea, .vn-edit-field textarea, .vn-beat textarea').forEach(t => {
+  document.querySelectorAll('#step2-editor-area textarea, .step2-inline-visual textarea').forEach(t => {
     if (t.dataset.autoResizeBound === '1') return;
     t.dataset.autoResizeBound = '1';
-    autoResizeStep2Textarea(t);
-    t.addEventListener('input', () => autoResizeStep2Textarea(t));
+    if (t.closest('.step2-vn-map')) resizeStep2MapRows(t.closest('.step2-vn-map'));
+    else autoResizeStep2Textarea(t);
+    t.addEventListener('input', () => {
+      if (t.closest('.step2-vn-map')) resizeStep2MapRows(t.closest('.step2-vn-map'));
+      else autoResizeStep2Textarea(t);
+    });
+  });
+}
+
+function resizeStep2MapRows(root) {
+  if (!root) return;
+  root.querySelectorAll('.vn-group-body').forEach(row => {
+    const visual = row.querySelector('.vn-visual textarea');
+    const narration = row.querySelector('.vn-narration textarea');
+    if (!visual || !narration) return;
+    visual.style.removeProperty('--step2-field-height');
+    narration.style.removeProperty('--step2-field-height');
+    visual.style.height = 'auto';
+    narration.style.height = 'auto';
+    const height = Math.max(visual.scrollHeight, narration.scrollHeight);
+    visual.style.setProperty('--step2-field-height', `${height}px`);
+    narration.style.setProperty('--step2-field-height', `${height}px`);
   });
 }
 
 document.addEventListener('step2WorkspaceRendered', bindStep2TextareaAutoResize);
 window.addEventListener('load', bindStep2TextareaAutoResize);
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.step2-script-slide textarea[data-script-field="narration"]').forEach(autoResizeNarrationTextarea);
+  document.querySelectorAll('.step2-vn-map').forEach(resizeStep2MapRows);
+});
 setTimeout(bindStep2TextareaAutoResize, 500);
 
 
 function handleStep2MapEditorInput(event) {
   const target = event.target;
-  const slide = currentStep2EditorSlide();
+  const scriptIndex = target?.closest?.('[data-script-slide-index]')?.dataset.scriptSlideIndex;
+  const scriptSlide = scriptIndex === undefined ? null : state.step2ScriptPlan?.slides?.[Number(scriptIndex)];
+  const slide = scriptSlide
+    ? state.slides?.find(item => item.slide_id === scriptSlide.slide_id)
+    : currentStep2EditorSlide();
   if (!slide || !(target instanceof HTMLElement)) return;
   const groupId = target.dataset.step2GroupId;
   const groupField = target.dataset.step2GroupField;
@@ -1178,16 +1238,9 @@ function handleStep2MapEditorInput(event) {
     }
   }
 
-  if (groupId && groupField === 'reveal_mode') {
-    const group = slide.visual_groups?.find(item => item?.id === groupId);
-    if (group) {
-      group.reveal_mode = target.value === 'together' ? 'together' : 'sequential';
-      changed = true;
-    }
-  }
-
   if (!changed) return;
-  syncStep2SummaryInputs(slide);
+  if (!scriptSlide) syncStep2SummaryInputs(slide);
+  if (target.tagName === 'TEXTAREA') resizeStep2MapRows(target.closest('.step2-vn-map'));
   scheduleStep2AutoSave();
 }
 
@@ -1195,12 +1248,9 @@ function handleStep2MapEditorChange(event) {
   const target = event.target;
   const slide = currentStep2EditorSlide();
   if (!slide || !(target instanceof HTMLElement)) return;
-  if (target.dataset.step2GroupField === 'reveal_mode') {
-    handleStep2MapEditorInput(event);
-    return;
-  }
-  if (target.tagName === 'TEXTAREA') autoResizeTextarea(target);
-  syncStep2SummaryInputs(slide);
+  if (target.dataset.step2GroupField !== 'visual_content') return;
+  if (target.tagName === 'TEXTAREA') resizeStep2MapRows(target.closest('.step2-vn-map'));
+  if (!target.closest('[data-script-slide-index]')) syncStep2SummaryInputs(slide);
   scheduleStep2AutoSave();
 }
 

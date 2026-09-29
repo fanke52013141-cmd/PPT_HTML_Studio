@@ -91,13 +91,11 @@ step3_system_prompt = (ROOT / "templates" / "prompts" / "step3_image_system.md")
 assert "step2_script_v5_speech_driven" in script_prompt
 assert "认知旅程" in script_prompt
 assert "完整演讲稿" in script_prompt
-assert "step2_visual_v7_reveal_intent" in visual_prompt
-assert "先按语义切分整页 `narration`" in visual_prompt
-assert "视觉岛" in visual_prompt
-assert "最小 Mask/Reveal 原子" in visual_prompt
-assert "多个独立卡片" in visual_prompt
-assert "不预设正文元素数量" in visual_prompt
-assert "标点必须完整归入" in visual_prompt
+assert "step2_visual_v8_mapping_only" in visual_prompt
+assert "画面内容与原文演讲片段的一对一对应关系" in visual_prompt
+assert "不决定动画、出现先后、Mask" in visual_prompt
+assert "数量由内容决定" in visual_prompt
+assert "逐字还原整页演讲稿" in visual_prompt
 assert "insufficient_visual_groups_for_independent_objects" in mask.DEFAULT_METHODOLOGY
 assert "必要且最小" in image_prompt
 assert "step3_image_v3_editable_creative_direction" in step3_system_prompt
