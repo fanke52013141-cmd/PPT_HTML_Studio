@@ -1,5 +1,11 @@
 # UI Style Reference
 
+> Workspace-shell rule update (2026-09-29): the approved 分镜规划 reference
+> is now codified in `docs/ui-spec.md` — logo, 8-step rail, bottom CTA,
+> 返回首页, per-step header buttons, slide tabs, and auto-height content
+> cards. For workspace-shell questions that document wins over this file;
+> this file remains authoritative for the home/course-library surfaces.
+
 This project's application UI is a 1:1 implementation of the supplied Stitch
 design code. The Stitch export is the visual authority. The former global
 blue-purple "Soft Pastel Studio" mandate and the older black-outline sketch

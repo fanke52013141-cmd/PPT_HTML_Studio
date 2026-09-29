@@ -63,6 +63,21 @@ orange `#f46a38` brand, white rounded cards, dark primary buttons, the
 legacy compatibility foundations only — visible surfaces are styled by the
 appended strict-parity layers at the end of the file.
 
+### Workspace shell spec (docs/ui-spec.md)
+
+The workspace shell (Möbius logo, 8-step rail states and motion, borderless
+bottom CTA, 返回首页 pill, per-step header title/buttons at 30px with the
+8px rhythm and 1px group divider, slide-tab secondary menu, auto-height
+content cards, and the Step 2 two-phase 生成演讲稿 → 内容可视化 gating)
+is governed by `docs/ui-spec.md`. Its implementation is the
+`Storyboard workspace UI spec layer` block at the end of `static/stitch.css`
+(including the ID-strength parity addendum); the behavioral rules live in
+`static/storyboard.js`. New workspace surfaces must reuse those tokens and
+geometry instead of introducing a second orange or new button sizes. When
+this spec and the older Stitch parity layers disagree on the workspace
+shell, `docs/ui-spec.md` wins; the home/course library still follows the
+Stitch layers.
+
 ## Frontend Module Boundaries
 
 - `static/workflow_state.js` is the only shared workflow-state entry. It owns
