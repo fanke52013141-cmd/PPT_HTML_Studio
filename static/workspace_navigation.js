@@ -228,16 +228,17 @@ function updateStepperUI(currentStep, stepStatus) {
     }
 
     const status = getVisibleStepState(step, stepStatus, context);
+    const stateLabel = status === 'completed' ? '已完成'
+      : (step === activeStep || step === stepperRunningStep || status === 'in_progress') ? '进行中' : '待完成';
+    const stepLabel = item.querySelector('.step-label')?.textContent?.trim() || `步骤${step}`;
+    item.dataset.state = stateLabel === '已完成' ? 'completed'
+      : stateLabel === '进行中' ? 'in-progress' : 'pending';
+    item.setAttribute('aria-label', `${stepLabel}，${stateLabel}`);
     if (status === 'completed') {
       item.classList.add('completed');
     } else if (status === 'pending_reconfirmation') {
       item.classList.add('pending_reconfirmation');
     }
-    const badge = document.createElement('span');
-    badge.className = 'step-status-tag';
-    badge.textContent = status === 'completed' ? '已完成'
-      : (step === activeStep || step === stepperRunningStep) ? '进行中' : '待完成';
-    item.appendChild(badge);
   });
   applyStepperRunningMark();
 }

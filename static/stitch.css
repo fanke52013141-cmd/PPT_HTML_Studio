@@ -2735,33 +2735,141 @@ body.workspace-open .sidebar { overflow: hidden !important; }
 .step-state-legend .legend-pending { background: #cbd5e1; }
 .sidebar .stepper { flex: 1 1 auto !important; min-height: 0; overflow-y: auto; }
 body.workspace-open .sidebar .step-item {
-  grid-template-columns: 24px minmax(0, 1fr) auto !important;
+  grid-template-columns: 24px minmax(0, 1fr) 10px !important;
   gap: 6px !important;
 }
 .sidebar .step-icon, .sidebar .step-complete { display: none !important; }
-.sidebar .step-status-tag {
-  position: static !important;
-  grid-column: 3 !important;
-  align-self: center;
-  padding: 0 !important;
-  background: none !important;
-  color: #94a3b8 !important;
-  font-size: 10px !important;
-  white-space: nowrap;
+.sidebar .step-status-tag { display: none !important; }
+.sidebar .step-item::after {
+  grid-column: 3;
+  width: 9px;
+  height: 9px;
+  justify-self: center;
+  border-radius: 50%;
+  background: #cbd5e1;
+  content: "";
 }
-.sidebar .step-item.completed .step-status-tag { color: #059669 !important; }
-.sidebar .step-item.active:not(.completed) .step-status-tag,
-.sidebar .step-item.one-click-running .step-status-tag { color: #ea580c !important; }
+.sidebar .step-item.completed:not(.active)::after { background: #10b981; }
+.sidebar .step-item.active::after,
+.sidebar .step-item.one-click-running::after { background: #f46a38; }
+.sidebar .step-item.completed:not(.active) .step-num { background: #ecfdf5 !important; color: #059669 !important; }
+.sidebar .step-item.active .step-num { background: #f46a38 !important; color: #fff !important; }
+.sidebar .step-item.completed:not(.active) .step-label { color: #334155 !important; }
+.sidebar .step-item.active .step-label { color: #c9481b !important; }
 .sidebar .step-item.pending_reconfirmation .step-label { color: inherit !important; }
 .sidebar #project-activity-status { margin-top: 8px !important; }
 .sidebar .one-click-sidebar-entry {
   flex: 0 0 auto !important;
   margin: auto 0 0 !important;
-  padding: 10px 0 0;
-  border-top: 1px solid #e2e8f0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
-#btn-one-click-generate { display: flex; align-items: center; gap: 7px; }
-#btn-one-click-generate svg { width: 17px; height: 17px; flex: 0 0 auto; }
+#btn-one-click-generate {
+  display: flex !important;
+  width: 100% !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: 0 !important;
+  border-radius: 13px !important;
+  background: #f46a38 !important;
+  box-shadow: 0 8px 18px rgba(244, 106, 56, .22) !important;
+  color: #fff !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+#btn-one-click-generate:hover { background: #ed5e2c !important; }
+#btn-one-click-generate > * { margin: 0 !important; }
+#btn-one-click-generate svg { display: block !important; width: 17px; height: 17px; flex: 0 0 auto; }
+
+/* Match the article workspace controls and keep the home icon visible. */
+#btn-back-home:not([hidden]) {
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 0 14px !important;
+  gap: 8px !important;
+  border: 1px solid #fdc6ad !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #d94f20 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 0 2px rgba(244, 106, 56, .08) !important;
+}
+#btn-back-home:not([hidden]):hover { background: #fff7f3 !important; border-color: #f46a38 !important; }
+#btn-back-home .icon {
+  display: block !important;
+  visibility: visible !important;
+  width: 17px !important;
+  height: 17px !important;
+  flex: 0 0 17px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+}
+body.workspace-open #step-panel-1 .step1-content-card {
+  padding: 30px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 20px !important;
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .04) !important;
+}
+body.workspace-open #step-panel-1 .step1-mode-switch {
+  gap: 4px;
+  padding: 5px;
+  border-color: #dfe5ee;
+  border-radius: 17px;
+  background: #f7f8fb;
+}
+body.workspace-open #step-panel-1 .step1-mode-button {
+  min-height: 44px !important;
+  padding: 0 15px !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+  color: #344256 !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-1 .step1-mode-button.active {
+  border: 1px solid #f46a38 !important;
+  background: #fff !important;
+  color: #d94f20 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .05) !important;
+}
+body.workspace-open #step-panel-1 .step1-save-actions { gap: 14px; }
+body.workspace-open #step-panel-1 .step1-save-actions button {
+  display: inline-flex;
+  min-height: 48px !important;
+  padding: 0 16px !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+body.workspace-open #step-panel-1 #step1-btn-submit {
+  border: 1px solid #111827 !important;
+  background: #111827 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, .12) !important;
+}
+body.workspace-open #step-panel-1 #step1-btn-submit:hover { background: #273244 !important; }
+body.workspace-open #step-panel-1 #step1-btn-save-edit {
+  border: 1px solid #dfe5ee !important;
+  background: #fff !important;
+  color: #344256 !important;
+  box-shadow: none !important;
+}
+body.workspace-open #step-panel-1 .step1-save-actions .icon { display: block !important; width: 17px !important; height: 17px !important; }
 
 /* Shared notifications remain in the top-center global notice position. */
 #toast-container {

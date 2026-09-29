@@ -855,10 +855,10 @@ if (!maskWorkspace.includes('claimUniqueMaskColor') || !maskWorkspace.includes('
 if (!css.includes('.step3-toolbar-row::before') || !css.includes('backdrop-filter: saturate(135%) blur(24px)') || !css.includes('mask-image: linear-gradient(')) {
   throw new Error('sticky workflow headers must use the full-width fading glass layer');
 }
-if (!stitchCss.includes('.step-state-legend') || !stitchCss.includes('.sidebar .step-status-tag')
-    || !workspaceNavigation.includes("'已完成'") || !workspaceNavigation.includes("'进行中'")
-    || !workspaceNavigation.includes("'待完成'")) {
-  throw new Error('workflow rail must present the three unified states');
+if (!stitchCss.includes('.step-state-legend') || !stitchCss.includes('.sidebar .step-item::after')
+    || !stitchCss.includes('.sidebar .step-item.completed:not(.active)::after')
+    || workspaceNavigation.includes("badge.textContent = status === 'completed'")) {
+  throw new Error('workflow rail must communicate status through colors without row labels');
 }
 if (aiMask.includes("setInlineStatus('AI 标注已完成'")) {
   throw new Error('completed AI Mask status must be a temporary toast, not persistent sidebar content');
