@@ -36,6 +36,25 @@ def test_services_use_single_project_lookup() -> None:
         assert "project_or_404" in source, f"{name} 未使用统一 helper"
 
 
+ACCOUNT_SCOPED_SITES = (
+    "pptx_service.py",
+    "storyboard_background.py",
+    "visual_settings_service.py",
+    "ai_mask_routes.py",
+    "ip_character_service.py",
+)
+
+
+def test_bypass_sites_carry_account_filter() -> None:
+    """R5-001 闭环:允许保留自有查询的文件必须带账号条件,防止越权访问。"""
+    for name in ACCOUNT_SCOPED_SITES:
+        source = (ROOT / name).read_text(encoding="utf-8")
+        assert "Project.account_id == get_current_account_id()" in source, (
+            f"{name} 的项目查询缺少账号过滤(R5-001)"
+        )
+        assert "account_context" in source, f"{name} 未导入账号上下文"
+
+
 def test_routes_do_not_redefine_project_or_404() -> None:
     for name in ROUTES:
         source = (ROOT / name).read_text(encoding="utf-8")

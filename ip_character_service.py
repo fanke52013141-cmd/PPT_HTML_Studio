@@ -22,6 +22,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from account_context import get_current_account_id
 from fastapi import HTTPException
 
 from canvas_profile_service import get_project_canvas
@@ -171,7 +172,15 @@ def _now_iso():
 
 
 def _project_or_404(db, project_id):
-    project = db.query(Project).filter(Project.id == project_id).first()
+    """按 id + 当前账号读取项目(R5-001 闭环)。"""
+    project = (
+        db.query(Project)
+        .filter(
+            Project.id == project_id,
+            Project.account_id == get_current_account_id(),
+        )
+        .first()
+    )
     if not project:
         raise HTTPException(status_code=404, detail="项目不存在")
     return project

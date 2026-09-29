@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from database import Base, LocalJob, Project  # noqa: E402
-from pptx_service import PptxExportService, PptxServiceDependencies  # noqa: E402
+from pptx_service import PptxExportService, PptxServiceError, PptxServiceDependencies  # noqa: E402
 
 
 @pytest.fixture()
@@ -67,10 +67,22 @@ def service(tmp_path):
 
 def test_retry_job_inherits_project_account(service):
     svc, testing_session = service
+    from account_context import account_scope
+
+    # R5-001(N1): default 上下文访问 acct_b 项目必须 404
     db = testing_session()
     try:
-        # 环境账号上下文保持 default:归属必须来自项目行而非请求上下文
-        result = svc.retry_job(db, "acct-project", "job-old")
+        with pytest.raises(PptxServiceError) as forbidden:
+            svc.retry_job(db, "acct-project", "job-old")
+        assert forbidden.value.status_code == 404
+    finally:
+        db.close()
+
+    # 项目归属账号上下文内重试成功:归属必须来自项目行
+    db = testing_session()
+    try:
+        with account_scope("acct_b"):
+            result = svc.retry_job(db, "acct-project", "job-old")
     finally:
         db.close()
     assert result["success"] is True and result["reused"] is False
@@ -97,9 +109,12 @@ def test_retry_job_inherits_project_account(service):
 
 def test_create_export_records_account_and_digest(service):
     svc, testing_session = service
+    from account_context import account_scope
+
     db = testing_session()
     try:
-        result = svc.create_export(db, "acct-project")
+        with account_scope("acct_b"):
+            result = svc.create_export(db, "acct-project")
     finally:
         db.close()
     assert result["success"] is True and result["reused"] is False

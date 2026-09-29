@@ -1208,6 +1208,23 @@ def export_full_config_with_secrets_zip() -> bytes:
     return build_config_zip_bytes(export_full_config_with_secrets())
 
 
+def _read_zip_entry_bounded(archive: zipfile.ZipFile, name: str, cap: int) -> bytes:
+    """有界流式读取条目:ZipInfo.file_size 可能谎报,读侧再兜一层上限(R5-004)。"""
+    with archive.open(name) as handle:
+        chunks: list[bytes] = []
+        remaining = cap + 1
+        while remaining > 0:
+            chunk = handle.read(min(remaining, 1024 * 1024))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+    data = b"".join(chunks)
+    if len(data) > cap:
+        raise ValueError(f"压缩包条目解压后超过限额：{name}")
+    return data
+
+
 def _read_zip_bundle_payload(data: bytes) -> Dict[str, Any]:
     """Parse a ZIP config package and inline its assets back into Base64.
 
@@ -1237,7 +1254,7 @@ def _read_zip_bundle_payload(data: bytes) -> Dict[str, Any]:
         if config_info.file_size > CONFIG_ZIP_MAX_CONFIG_JSON_BYTES:
             raise ValueError("config.json 超过大小限制（8MB）")
         try:
-            raw_config = archive.read(CONFIG_ZIP_ENTRY)
+            raw_config = _read_zip_entry_bounded(archive, CONFIG_ZIP_ENTRY, CONFIG_ZIP_MAX_CONFIG_JSON_BYTES)
         except (zipfile.BadZipFile, RuntimeError, OSError) as exc:
             raise ValueError("config.json 读取失败") from exc
         try:
@@ -1263,7 +1280,9 @@ def _read_zip_bundle_payload(data: bytes) -> Dict[str, Any]:
             if normalized_key in normalized_seen:
                 raise ValueError(f"压缩包含等价重复资源条目：{name}")
             normalized_seen.add(normalized_key)
-            asset_files[name] = archive.read(name)
+            asset_files[name] = _read_zip_entry_bounded(
+                archive, name, CONFIG_ZIP_MAX_ASSET_BYTES - total_bytes
+            )
     _inline_zip_assets(payload, asset_files)
     return payload
 

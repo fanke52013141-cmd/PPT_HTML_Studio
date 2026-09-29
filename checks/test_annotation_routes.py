@@ -611,3 +611,20 @@ def test_lock_toggle_does_not_reset_confirmed_item(client, project):
     assert item["protection"]["locked"] is True
     assert item["status"]["content"] == "confirmed"
     assert timeline_path.is_file()
+
+
+def test_deleting_confirmed_item_invalidates_timeline(client, project):
+    """R4-004(B2): 删除已确认条目同样删除派生 timeline,被删笔迹不得进视频。"""
+    project_id, run_root = project
+    base = f"/api/projects/{project_id}/annotations"
+    base_resp, timeline_path = _prepare_confirmed_project(client, project)
+    resp = client.patch(
+        f"{base}/slides/slide_001",
+        json={
+            "expected_revision": 2,
+            "operations": [{"op": "delete", "annotation_id": "ann_001"}],
+        },
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["items"] == []
+    assert not timeline_path.is_file()

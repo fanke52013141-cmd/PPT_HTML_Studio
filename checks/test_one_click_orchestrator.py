@@ -978,3 +978,32 @@ if __name__ == "__main__":
     test_preflight_migrates_legacy_article_before_checking_source()
     test_one_click_routes_are_explicit_and_unique()
     print("one-click orchestrator checks passed")
+
+
+def test_write_json_failure_keeps_old_state(tmp_path) -> None:
+    """R2-008 回归:os.replace 失败时保留旧文件并上抛,绝不直写截断目标。"""
+    import os as _os
+    from pathlib import Path as _Path
+    from unittest.mock import patch as _patch
+
+    import one_click_orchestrator as _oco
+
+    target = tmp_path / "one_click_status.json"
+    target.write_text('{"running": true}', encoding="utf-8")
+    real_replace = _os.replace
+
+    def failing_replace(src, dst):
+        if str(dst) == str(target):
+            raise PermissionError(32, "另一个程序正在使用此文件")
+        return real_replace(src, dst)
+
+    with _patch.object(_oco.os, "replace", failing_replace):
+        try:
+            _oco._write_json(_Path(target), {"running": False})
+        except RuntimeError as exc:
+            assert "已保留旧状态" in str(exc)
+        else:
+            raise AssertionError("替换失败必须上抛,而不是静默降级直写")
+    assert json.loads(target.read_text(encoding="utf-8")) == {"running": True}, (
+        "旧状态文件必须原样保留"
+    )

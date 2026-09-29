@@ -354,6 +354,30 @@ function await0() { return new Promise(resolve => setImmediate(resolve)); }
     console.log('R4-005 page-switch draft ok');
   }
 
+
+  // ------------------------------------------------------------ B1: 切页后过期响应复位 saveInFlight
+  {
+    setupProject('pStale2', 'slide_001');
+    g(`ANNOTATIONS_WS.slideIds = ['slide_001', 'slide_002']`);
+    let releaseA;
+    sandbox.__api.patch = () => new Promise(resolve => { releaseA = resolve; });
+    sandbox.__api.get = async url => {
+      if (url.endsWith('/text-layout')) return { candidates: [], layout_revision: 0 };
+      return { revision: 0, items: [], narration: { beats: [] }, image: { hash: 'h' } };
+    };
+    g(`ANNOTATIONS_WS.pendingOps.push(AnnotationsCore.buildAddOperation({ target: AnnotationsCore.buildRegionTarget([[10, 10], [20, 10], [20, 20], [10, 20]]) }))`);
+    const flushPromise = run('flushAnnotationsSave()').catch(() => 'should-not-reject');
+    // 真实完成切页:页面代次 bump、page.slide_id 变为 slide_002
+    await run('selectAnnotationPage(1)').catch(() => {});
+    assert.equal(WS.page.slide_id, 'slide_002', '前置:切页确实完成');
+    releaseA({ revision: 9, items: [] });
+    await flushPromise;
+    assert.equal(WS.saveInFlight, false, 'B1: 过期响应早退必须复位 saveInFlight,否则自动保存停摆');
+    assert.equal(WS.page.slide_id, 'slide_002', '过期响应不得触碰新页面');
+    assert.equal(WS.page.revision, 0, '新页面的 revision 不被旧响应覆盖');
+    console.log('B1 stale-release saveInFlight ok');
+  }
+
   console.log('annotation save flow checks passed');
 })().catch(error => {
   console.error('FAILED:', error && error.message);

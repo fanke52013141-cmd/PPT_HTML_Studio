@@ -90,7 +90,15 @@ class PptxExportService:
             ) from exc
 
     def get_project(self, db: Session, project_id: str) -> Project:
-        project = db.query(Project).filter(Project.id == project_id).first()
+        """按 id + 当前账号读取项目(R5-001):路由面禁止跨创作用户访问。"""
+        project = (
+            db.query(Project)
+            .filter(
+                Project.id == project_id,
+                Project.account_id == get_current_account_id(),
+            )
+            .first()
+        )
         if not project:
             raise PptxServiceError(404, "项目不存在")
         return project
@@ -509,17 +517,28 @@ class PptxExportService:
             if not job:
                 return
             payload = job.get_payload() or {}
-            account_context_token = set_current_account_id(
-                str(payload.get("account_id") or "default")
-            )
-            project = (
-                db.query(Project)
-                .filter(
-                    Project.id == job.project_id,
-                    Project.account_id == get_current_account_id(),
+            payload_account = str(payload.get("account_id") or "").strip()
+            if payload_account:
+                account_context_token = set_current_account_id(payload_account)
+                project = (
+                    db.query(Project)
+                    .filter(
+                        Project.id == job.project_id,
+                        Project.account_id == payload_account,
+                    )
+                    .first()
                 )
-                .first()
-            )
+            else:
+                # 历史 payload 缺账号字段:按项目行归属固化,不无条件 default
+                project = (
+                    db.query(Project)
+                    .filter(Project.id == job.project_id)
+                    .first()
+                )
+                if project is not None:
+                    account_context_token = set_current_account_id(
+                        str(project.account_id or "default")
+                    )
             if not project:
                 raise RuntimeError(
                     "项目不存在，无法继续导出"

@@ -516,7 +516,7 @@ class AnnotationService:
         elif op == "update":
             self._op_update(operation, items, beats, issues, path=path, canvas=canvas, events=events)
         elif op == "delete":
-            self._op_delete(operation, items, issues, path=path)
+            self._op_delete(operation, items, issues, path=path, events=events)
         elif op == "restore":
             self._op_restore(operation, items, beats, image_hash, narration_hash, issues, path=path, canvas=canvas)
         else:
@@ -731,6 +731,7 @@ class AnnotationService:
         issues: List[Issue],
         *,
         path: str,
+        events: Optional[Dict[str, Any]] = None,
     ) -> None:
         annotation_id = operation.get("annotation_id")
         target_item = next((i for i in items if i.annotation_id == annotation_id), None)
@@ -738,6 +739,10 @@ class AnnotationService:
             issues.append(Issue(f"{path}.annotation_id", "unknown_id", f"条目 {annotation_id} 不存在"))
             return
         items.remove(target_item)
+        # R4-004(B2): 删除已确认条目同样使派生时间轴失效,否则被删笔迹
+        # 的墨迹帧仍会渲染进视频。
+        if events is not None and target_item.status.content == "confirmed":
+            events["confirmed_reset"] = True
 
     # ------------------------------------------------------------ W4: 确认门禁
 

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from ai_mask_config import ai_mask_config_payload, save_ai_mask_settings
 from ai_mask_service import get_ai_mask_task_service
+from account_context import get_current_account_id
 from database import Project, get_db
 
 
@@ -34,7 +35,14 @@ def annotate_ai_mask_route(
     payload: dict[str, Any] | None = None,
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    project = db.query(Project).filter(Project.id == project_id).first()
+    project = (
+        db.query(Project)
+        .filter(
+            Project.id == project_id,
+            Project.account_id == get_current_account_id(),
+        )
+        .first()
+    )
     if not project:
         raise HTTPException(status_code=404, detail="项目不存在")
     settings = (

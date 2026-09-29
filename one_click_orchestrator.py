@@ -253,22 +253,19 @@ def _read_json(path: Path, fallback: Any) -> Any:
 
 
 def _write_json(path: Path, value: Any) -> None:
+    """原子写状态文件(R2-008):替换失败保留旧文件并上抛,绝不直写目标。
+
+    历史"沙箱兼容"降级会原地覆盖目标文件,截断的一键状态会让运行进度
+    丢失;失败时保留旧状态并显式报错才是可恢复语义。
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    text = json.dumps(value, ensure_ascii=False, indent=2) + "\n"
+    payload = json.dumps(value, ensure_ascii=False, indent=2) + "\n"
     temp_path = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
     try:
-        try:
-            temp_path.write_text(text, encoding="utf-8")
-            os.replace(temp_path, path)
-        except PermissionError:
-            # [沙箱兼容写盘 20260813] 部分受限环境（如沙箱）不允许创建临时文件并原子改名，
-            # 降级为直接写入目标文件，保证流水线状态仍能正常保存。
-            if temp_path.exists():
-                try:
-                    temp_path.unlink()
-                except Exception:
-                    pass
-            path.write_text(text, encoding="utf-8")
+        temp_path.write_text(payload, encoding="utf-8")
+        os.replace(temp_path, path)
+    except OSError as exc:
+        raise RuntimeError(f"写入一键状态文件失败（已保留旧状态）：{path.name}: {exc}") from exc
     finally:
         if temp_path.exists():
             try:

@@ -115,6 +115,11 @@ async function flushAnnotationsSave() {
 
   // ---- 过期响应:绝不触碰当前(可能已属于其他项目/页面)的状态 ----
   if (annotationContextChanged(generation, projectId, slideId)) {
+    // 代次仍归属本次请求(仅切页,未开新 flush)时必须复位在飞标志,
+    // 否则自动保存永久停摆(B1);项目已切换时由新上下文自管标志。
+    if (generation === ANNOTATIONS_WS.saveGeneration) {
+      ANNOTATIONS_WS.saveInFlight = false;
+    }
     if (error !== null) {
       // 旧上下文的失败批次:归属原页草稿,等待用户回到该页时恢复
       stashAnnotationDraft(projectId, slideId, operations);
@@ -181,9 +186,10 @@ async function flushAnnotationsSave() {
         const deduped = AnnotationsCore.dedupeOperationsAgainstPage(operations, page.items || []);
         remaining = deduped.remaining;
         appliedOnServer = deduped.applied.length > 0;
+        // 服务端真值始终落账:重试以最新 revision 发起,避免必败的 409 循环(B3)
+        ANNOTATIONS_WS.page.revision = page.revision || ANNOTATIONS_WS.page.revision;
+        ANNOTATIONS_WS.page.items = page.items || [];
         if (!remaining.length) {
-          ANNOTATIONS_WS.page.revision = page.revision || ANNOTATIONS_WS.page.revision;
-          ANNOTATIONS_WS.page.items = page.items || [];
           appliedOnServer = true;
         }
       }
@@ -379,7 +385,12 @@ async function selectAnnotationPage(index) {
   // 恢复该页此前暂存的未保存操作,等待下次 flush
   const draftKey = annotationDraftKey(projectId, slideId);
   if (ANNOTATIONS_WS.draftOps[draftKey]?.length) {
-    ANNOTATIONS_WS.pendingOps.push(...ANNOTATIONS_WS.draftOps[draftKey]);
+    // 恢复的暂存批次视为一次有界重放:重放仍被拒时走 422 隔离,不无限循环
+    const restored = ANNOTATIONS_WS.draftOps[draftKey].map(op => ({
+      ...op,
+      __conflictAttempt: Math.max(op.__conflictAttempt || 0, 1),
+    }));
+    ANNOTATIONS_WS.pendingOps.push(...restored);
     delete ANNOTATIONS_WS.draftOps[draftKey];
     renderAnnotationSaveStatus('pending');
   }

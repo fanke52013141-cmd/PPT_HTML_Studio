@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 from typing import Any, Callable
 
+from account_context import get_current_account_id
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -491,9 +492,13 @@ class VisualSettingsService:
 
     @staticmethod
     def _project(project_id: str, db: Session) -> Project:
+        """按 id + 当前账号读取项目(R5-001 闭环)。"""
         project = (
             db.query(Project)
-            .filter(Project.id == project_id)
+            .filter(
+                Project.id == project_id,
+                Project.account_id == get_current_account_id(),
+            )
             .first()
         )
         if not project:
