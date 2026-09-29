@@ -530,3 +530,84 @@ def test_confirm_requires_explicit_review_acceptance(client, project):
     )
     assert resp.status_code == 200
     assert resp.json()["confirmed"] == 1
+
+
+# ---------------------------------------------------------------- R4-004: 确认后编辑
+
+
+def _manual_item() -> dict:
+    item = json.loads(json.dumps(REGION_ITEM))
+    item["target"]["path_points"] = [[120, 210], [170, 230], [240, 220], [330, 250]]
+    item["timing"] = {
+        "trigger_mode": "manual", "manual_start_sec": 0, "offset_sec": 0,
+        "draw_duration_sec": 0.6, "hold_mode": "slide_end", "exit_duration_sec": 0.15,
+    }
+    return item
+
+
+def _prepare_confirmed_project(client, project):
+    """添加手动定时条目并确认,返回 (base, timeline_path, timeline_bytes)。"""
+    project_id, run_root = project
+    base = f"/api/projects/{project_id}/annotations"
+    client.patch(
+        f"{base}/slides/slide_001",
+        json={"expected_revision": 0, "operations": [{"op": "add", "item": _manual_item()}]},
+    )
+    (run_root / "slides" / "slide_001" / "audio_timeline.json").write_text(json.dumps({
+        "duration_sec": 1.0,
+        "audio_content_duration_sec": 1.0,
+        "segments": [{"beat_id": "slide_001_beat_001", "start": 0.0, "end": 0.9}],
+    }), encoding="utf-8")
+    client.put(f"{base}/settings", json={"expected_revision": 0, "enabled": True})
+    confirm = client.post(f"{base}/slides/slide_001/confirm", json={"expected_revision": 1})
+    assert confirm.status_code == 200 and confirm.json()["timeline_built"] is True, confirm.text
+    timeline_path = run_root / "slides" / "slide_001" / "annotation_timeline.json"
+    assert timeline_path.is_file()
+    return base, timeline_path
+
+
+def test_editing_confirmed_item_resets_draft_and_invalidates_timeline(client, project):
+    base, timeline_path = _prepare_confirmed_project(client, project)
+    resp = client.patch(
+        f"{base}/slides/slide_001",
+        json={
+            "expected_revision": 2,
+            "operations": [{"op": "update", "annotation_id": "ann_001", "patch": {"style": {"type": "ellipse", "color": "#00AA00", "opacity": 0.85, "width": 5, "padding": 8, "seed": 11}}}],
+        },
+    )
+    assert resp.status_code == 200, resp.text
+    item = resp.json()["items"][0]
+    assert item["status"]["content"] == "draft"
+    assert item["style"]["color"] == "#00AA00"
+    assert not timeline_path.is_file()
+
+
+def test_same_value_save_keeps_confirmed_state(client, project):
+    base, timeline_path = _prepare_confirmed_project(client, project)
+    resp = client.patch(
+        f"{base}/slides/slide_001",
+        json={
+            "expected_revision": 2,
+            "operations": [{"op": "update", "annotation_id": "ann_001", "patch": {"style": {"type": "ellipse", "color": "#F46A38", "opacity": 0.85, "width": 5, "padding": 8, "seed": 11}}}],
+        },
+    )
+    assert resp.status_code == 200, resp.text
+    item = resp.json()["items"][0]
+    assert item["status"]["content"] == "confirmed"
+    assert timeline_path.is_file()
+
+
+def test_lock_toggle_does_not_reset_confirmed_item(client, project):
+    base, timeline_path = _prepare_confirmed_project(client, project)
+    resp = client.patch(
+        f"{base}/slides/slide_001",
+        json={
+            "expected_revision": 2,
+            "operations": [{"op": "update", "annotation_id": "ann_001", "patch": {"protection": {"locked": True}}}],
+        },
+    )
+    assert resp.status_code == 200, resp.text
+    item = resp.json()["items"][0]
+    assert item["protection"]["locked"] is True
+    assert item["status"]["content"] == "confirmed"
+    assert timeline_path.is_file()

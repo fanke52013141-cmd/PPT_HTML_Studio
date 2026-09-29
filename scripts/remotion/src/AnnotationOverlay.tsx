@@ -77,7 +77,7 @@ export const AnnotationOverlay: React.FC<{
   timeline?: AnnotationTimeline;
 }> = ({timeline}) => {
   const frame = useCurrentFrame();
-  const {fps} = useVideoConfig();
+  const {fps, width, height} = useVideoConfig();
   const events = timeline?.events;
   if (!Array.isArray(events) || events.length === 0) {
     return null; // 旧 props 缺字段 → 空覆盖层
@@ -86,7 +86,8 @@ export const AnnotationOverlay: React.FC<{
   const rasterShapes: RasterShape[] = [];
   let anyRaster = false;
   for (const event of events) {
-    const state = AnnotationsPlayback.sampleEvent(event, timeSec);
+    // fps 必须取视频真实帧率(R4-007):量化网格才与确认时序一致
+    const state = AnnotationsPlayback.sampleEvent(event, timeSec, fps);
     if (state.phase === 'hidden') continue;
     const baseOpacity = Math.max(0, Math.min(1, Number(event.style?.opacity ?? 0.85)));
     const opacity = baseOpacity * state.opacityScale;
@@ -113,7 +114,7 @@ export const AnnotationOverlay: React.FC<{
   let vectorShapes: VectorShape[] = [];
   if (!anyRaster) {
     for (const event of events) {
-      const shapes = AnnotationsPlayback.renderScene([makeVectorOnly(event)], timeSec) as VectorShape[];
+      const shapes = AnnotationsPlayback.renderScene([makeVectorOnly(event)], timeSec, fps) as VectorShape[];
       vectorShapes = vectorShapes.concat(shapes);
     }
   }
@@ -134,7 +135,8 @@ export const AnnotationOverlay: React.FC<{
         );
       })}
       {vectorShapes.length ? (
-        <svg viewBox="0 0 1920 1080" style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}>
+        // viewBox 用视频真实画布(R4-007):竖屏项目不再错位
+        <svg viewBox={`0 0 ${width} ${height}`} style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}>
           {vectorShapes.map((shape, index) => {
             const key = `${String(shape.annotationId)}-${index}`;
             if (shape.kind === 'path') {

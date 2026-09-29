@@ -31,7 +31,7 @@ from config_store import get_setting
 from database import Project
 from project_path_service import project_or_404
 import invalidation_service
-from pipeline_lifecycle import write_json_atomic
+from pipeline_lifecycle import project_artifact_lock, write_json_atomic
 from project_config_runtime import get_config_value
 from storyboard_project_config import read_step2_prompts_for_project, resolve_step2_llm
 from project_storage import slide_file as storage_slide_file
@@ -1231,13 +1231,20 @@ def execute_step2(
     }
 
 
+def storyboard_contract_sha256(contract: Dict[str, Any]) -> str:
+    """契约规范化形态的稳定摘要;Step 2 CAS 的基线令牌。"""
+    return hashlib.sha256(
+        json.dumps(contract, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+
+
 def get_step2_result(project_id: str, db: Session):
     project = project_or_404(db, project_id)
-        
+
     contract_path = os.path.join(project.run_dir, "planning", "visual_contract.json")
     if not os.path.exists(contract_path):
         return {"success": False, "message": "尚未生成分镜规划"}
-        
+
     with open(contract_path, "r", encoding="utf-8") as f:
         stored_contract = json.load(f)
     contract = normalize_visual_contract(stored_contract, read_project_pipeline_profile(project))
@@ -1249,6 +1256,8 @@ def get_step2_result(project_id: str, db: Session):
     return {
         "success": True,
         "contract": contract,
+        # Step 2 CAS(R4/Step2 并发):客户端保存时回传该摘要,过期即 409
+        "contract_sha256": storyboard_contract_sha256(contract),
         "target_duration": target_duration_response(
             project.target_duration_sec,
             read_json_file(step2_script_plan_path(project), {}),
@@ -1290,27 +1299,65 @@ def repair_step2_result(project_id: str, db: Session):
 
 def update_step2_result(project_id: str, payload: Dict[str, Any], db: Session):
     project = project_or_404(db, project_id)
-        
-    payload = normalize_visual_contract(payload, read_project_pipeline_profile(project))
-    contract_path = os.path.join(project.run_dir, "planning", "visual_contract.json")
-    stored_contract = read_json_file(contract_path, {})
-    existing_contract = normalize_visual_contract(
-        deepcopy(stored_contract),
-        read_project_pipeline_profile(project),
-    )
-    previous_slide_ids = contract_slide_ids_from_payload(existing_contract)
-    changed = json.dumps(stored_contract, ensure_ascii=False, sort_keys=True) != json.dumps(
-        payload,
-        ensure_ascii=False,
-        sort_keys=True,
-    )
-    if not changed:
-        return {
-            "success": True,
-            "contract": payload,
-            "validation": read_json_file(visual_contract_validation_path(project), {}),
-            "changed": False,
-        }
+
+    # Step 2 CAS(R4/Step2 并发):保存前在同一项目锁内比较基线摘要,
+    # 过期浏览器快照不再允许后到覆盖新版本。
+    expected_sha = str(payload.get("expected_contract_sha256") or "").strip()
+    with project_artifact_lock(project.run_dir):
+        contract_path = os.path.join(project.run_dir, "planning", "visual_contract.json")
+        stored_contract = read_json_file(contract_path, {})
+        existing_contract = normalize_visual_contract(
+            deepcopy(stored_contract),
+            read_project_pipeline_profile(project),
+        )
+        if expected_sha:
+            current_sha = storyboard_contract_sha256(existing_contract)
+            if current_sha != expected_sha:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "code": "storyboard_conflict",
+                        "message": "分镜已被其他窗口修改；请刷新核对后重试，当前内容未被覆盖。",
+                        "current_contract_sha256": current_sha,
+                    },
+                )
+        payload = normalize_visual_contract(payload, read_project_pipeline_profile(project))
+        previous_slide_ids = contract_slide_ids_from_payload(existing_contract)
+        changed = json.dumps(stored_contract, ensure_ascii=False, sort_keys=True) != json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        if not changed:
+            return {
+                "success": True,
+                "contract": payload,
+                "contract_sha256": storyboard_contract_sha256(payload),
+                "validation": read_json_file(visual_contract_validation_path(project), {}),
+                "changed": False,
+            }
+        _persist_step2_result_locked(project, payload, existing_contract, previous_slide_ids, contract_path, db)
+    refreshed = read_json_file(contract_path, {})
+    return {
+        "success": True,
+        "changed": True,
+        "contract": refreshed,
+        "contract_sha256": storyboard_contract_sha256(
+            normalize_visual_contract(deepcopy(refreshed), read_project_pipeline_profile(project))
+        ),
+        "validation": read_json_file(visual_contract_validation_path(project), {}),
+    }
+
+
+def _persist_step2_result_locked(
+    project: Any,
+    payload: Dict[str, Any],
+    existing_contract: Dict[str, Any],
+    previous_slide_ids: list[str],
+    contract_path: str,
+    db: Session,
+) -> None:
+    """锁内的落盘/归档/同步/影响登记;调用方持有 project_artifact_lock。"""
     contract_impact = diff_storyboard_contracts(existing_contract, payload)
     write_json_atomic(contract_path, payload)
     current_slide_ids = contract_slide_ids_from_payload(payload)

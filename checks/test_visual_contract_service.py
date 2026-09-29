@@ -189,3 +189,27 @@ def test_contract_slide_ids_preserve_order_and_file_failures_are_safe(
         "slide_002",
         "slide_001",
     ]
+
+import pytest
+
+
+def test_blank_and_duplicate_slide_ids_are_rejected() -> None:
+    """R1-002: 空白/重复 slide_id 在任何契约写入前被拒绝;空列表合法。"""
+    from fastapi import HTTPException
+
+    from visual_contract_service import validate_slide_identifiers
+
+    # 空列表仍合法
+    validate_slide_identifiers({"slides": []})
+
+    with pytest.raises(HTTPException) as blank:
+        validate_slide_identifiers({"slides": [{"slide_id": "slide_001"}, {"slide_id": "   "}]})
+    assert blank.value.status_code == 400
+
+    with pytest.raises(HTTPException) as dup:
+        validate_slide_identifiers({"slides": [{"slide_id": "slide_001"}, {"slide_id": "slide_001"}]})
+    assert dup.value.status_code == 400
+    assert "重复" in dup.value.detail
+
+    # 合法场景不抛
+    validate_slide_identifiers({"slides": [{"slide_id": "slide_001"}, {"slide_id": "slide_002"}]})

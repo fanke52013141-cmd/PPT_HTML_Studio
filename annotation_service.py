@@ -456,8 +456,9 @@ class AnnotationService:
             items: List[AnnotationItem] = list(page.items) if page else []
             snapshot = page.ai_suggestion_snapshot if page else None
             issues: List[Issue] = []
+            events: Dict[str, Any] = {}
             for index, operation in enumerate(operations):
-                self._apply_operation(operation, items, beats, image_hash, narration_hash, issues, path=f"operations[{index}]", canvas=canvas)
+                self._apply_operation(operation, items, beats, image_hash, narration_hash, issues, path=f"operations[{index}]", canvas=canvas, events=events)
                 if len(items) > LIMITS["max_items_per_slide"]:
                     issues.append(Issue(f"operations[{index}]", "too_many", f"每页条目超过 {LIMITS['max_items_per_slide']}"))
 
@@ -477,6 +478,12 @@ class AnnotationService:
                     self._store.write_page(run_dir, slide_id, updated_page)
                 except AnnotationStoreError as exc:
                     raise self._store_error_to_http(exc) from exc
+                if events.get("confirmed_reset"):
+                    # R4-004: 确认后内容被编辑,确认时刻派生的旧时间轴立即失效,
+                    # 不得通过导出门禁;重新确认后将按新内容重建。
+                    from project_storage import slide_file
+
+                    Path(slide_file(run_dir, slide_id, "annotation_timeline.json")).unlink(missing_ok=True)
             else:
                 updated_page = page
         if page_changed:
@@ -498,6 +505,7 @@ class AnnotationService:
         *,
         path: str,
         canvas: Tuple[int, int],
+        events: Optional[Dict[str, Any]] = None,
     ) -> None:
         if not isinstance(operation, dict):
             issues.append(Issue(path, "not_object", "操作必须是对象"))
@@ -506,7 +514,7 @@ class AnnotationService:
         if op == "add":
             self._op_add(operation, items, beats, image_hash, narration_hash, issues, path=path, canvas=canvas)
         elif op == "update":
-            self._op_update(operation, items, beats, issues, path=path, canvas=canvas)
+            self._op_update(operation, items, beats, issues, path=path, canvas=canvas, events=events)
         elif op == "delete":
             self._op_delete(operation, items, issues, path=path)
         elif op == "restore":
@@ -600,6 +608,7 @@ class AnnotationService:
         *,
         path: str,
         canvas: Tuple[int, int],
+        events: Optional[Dict[str, Any]] = None,
     ) -> None:
         from annotation_contracts import AnnotationAnchor, AnnotationProtection, AnnotationStatus, AnnotationTarget, AnnotationStyle, AnnotationTiming
         from dataclasses import replace
@@ -685,6 +694,24 @@ class AnnotationService:
             return
         index = items.index(target_item)
         updated = replace(target_item, **replacements)
+        # R4-004: 已确认条目的内容(target/anchor/style/timing)真实变化时,
+        # 重置为 draft 并由调用方删除派生时间轴——旧笔迹不得通过导出门禁。
+        # 相同值的保存不产生 modified,不触发重置;locked 等非像素变化同样豁免。
+        if events is not None and "confirmed_reset" not in events:
+            content_fields = {"target", "anchor", "style", "timing"}
+            if modified and (content_fields & set(modified)) and updated.status.content == "confirmed":
+                events["confirmed_reset"] = True
+                updated = replace(
+                    updated,
+                    status=AnnotationStatus(
+                        content="draft",
+                        spatial=updated.status.spatial,
+                        temporal=updated.status.temporal,
+                    ),
+                )
+            elif "status.content" in modified and target_item.status.content == "confirmed":
+                # 显式改 draft/disabled 同样使派生时间轴过期
+                events["confirmed_reset"] = True
         if modified:
             merged = tuple(dict.fromkeys(target_item.protection.modified_fields + tuple(modified)))
             updated = replace(

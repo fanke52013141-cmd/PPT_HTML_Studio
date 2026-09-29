@@ -203,6 +203,20 @@ class PptxExportService:
         )
         return {"success": True, "export_mode": mode, **payload}
 
+    def _prepared_export_job(self, project: Project, mode: str) -> LocalJob:
+        """首发与重试共用的任务构造(R2-001)。
+
+        账号归属取自已验证归属的项目,输入指纹与影响快照按提交时刻的当前
+        状态重新生成——重试绝不沿用失败任务的旧输入摘要。
+        """
+        return self._new_job(
+            project.id,
+            mode=mode,
+            account_id=getattr(project, "account_id", None) or get_current_account_id(),
+            input_digest=presentation_input_fingerprint(self.project_run_dir(project))["digest"],
+            impact_snapshot=snapshot_impacts(self.project_run_dir(project), affected=("output",)),
+        )
+
     def create_export(
         self,
         db: Session,
@@ -231,13 +245,7 @@ class PptxExportService:
                         queue_ahead=self._queued_ahead(db, active),
                     ),
                 }
-            job = self._new_job(
-                project.id,
-                mode=mode,
-                account_id=getattr(project, "account_id", None) or get_current_account_id(),
-                input_digest=presentation_input_fingerprint(self.project_run_dir(project))["digest"],
-                impact_snapshot=snapshot_impacts(self.project_run_dir(project), affected=("output",)),
-            )
+            job = self._prepared_export_job(project, mode)
             db.add(job)
             db.commit()
             db.refresh(job)
@@ -341,7 +349,7 @@ class PptxExportService:
             mode, _ = self._resolve_export_mode(
                 self.project_run_dir(project)
             )
-            job = self._new_job(project_id, mode=mode)
+            job = self._prepared_export_job(project, mode)
             db.add(job)
             db.commit()
             db.refresh(job)

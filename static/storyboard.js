@@ -15,6 +15,7 @@ async function loadStep2Data() {
   if (res.success && res.contract) {
     state.slides = res.contract.slides || [];
     state.step2PresentationPolicy = res.contract.presentation_policy || {};
+    state.step2ContractSha256 = res.contract_sha256 || null;
     state.step2BatchDeleteMode = false;
     state.step2DeleteSelection = new Set();
     state.step2BatchOriginalSlides = null;
@@ -1014,12 +1015,28 @@ async function saveStep2Contract(options = {}) {
     scheduleStep2AutoSave();
     return { success: false };
   }
+  if (state.step2ContractSha256) {
+    payload.expected_contract_sha256 = state.step2ContractSha256;
+  }
   state.step2AutoSaveInFlight = true;
   state.step2AutoSaveProjectId = projectId;
   try {
-    const res = await API.put(`/api/projects/${projectId}/steps/2/result`, payload);
+    let res;
+    try {
+      res = await API.put(`/api/projects/${projectId}/steps/2/result`, payload);
+    } catch (error) {
+      if (error.status === 409 && error.body?.detail?.code === 'storyboard_conflict') {
+        // Step 2 CAS: 过期快照被拒绝;服务端内容未覆盖,刷新后重进编辑
+        state.step2ContractSha256 = error.body.detail.current_contract_sha256 || null;
+        updateStep2AutosaveStatus('检测到并发修改，已保留服务端版本');
+        showToast('分镜已在其他窗口被修改；本次保存被拒绝。请刷新分镜后重新编辑。');
+        return { success: false, conflict: true };
+      }
+      throw error;
+    }
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return { success: false, cancelled: true };
     if (res.success) {
+      state.step2ContractSha256 = res.contract_sha256 || state.step2ContractSha256;
       state.step2PresentationPolicy = res.contract?.presentation_policy || payload.presentation_policy;
       if (res.changed && state.currentProject?.step_status?.['3'] === 'completed') {
         showToast('分镜已修改：后续画面待核对；旧素材和已输出视频保留。');

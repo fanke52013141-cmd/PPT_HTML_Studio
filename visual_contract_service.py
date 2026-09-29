@@ -24,16 +24,24 @@ def validate_slide_identifiers(contract: Dict[str, Any]) -> None:
     validation, a value like ``..\\..\\outside`` writes outside the project run
     directory (path traversal). This is called before every contract write so a
     single check covers all downstream writers.
+
+    空白与重复 slide_id 一并拒绝(R1-002):空白页会在 diff 与产物寻址中被静默
+    丢弃,重复页则让"最后一页覆盖前页",都会造成改动丢失影响记录。空 slides
+    列表仍然合法(允许空分镜项目)。
     """
     slides = contract.get("slides")
     if not isinstance(slides, list):
         return
-    for slide in slides:
+    seen: set[str] = set()
+    for index, slide in enumerate(slides):
         if not isinstance(slide, dict):
             continue
         slide_id = str(slide.get("slide_id") or "").strip()
         if not slide_id:
-            continue
+            raise HTTPException(
+                status_code=400,
+                detail=f"slides[{index}] 缺少 slide_id；每页必须有唯一非空 ID",
+            )
         try:
             safe_identifier(slide_id, label="slide_id")
         except UnsafeProjectPath:
@@ -43,6 +51,12 @@ def validate_slide_identifiers(contract: Dict[str, Any]) -> None:
                     f"slide_id 含非法字符，可能导致路径穿越，已拒绝：{slide_id!r}"
                 ),
             )
+        if slide_id in seen:
+            raise HTTPException(
+                status_code=400,
+                detail=f"slide_id 重复，已拒绝：{slide_id!r}；每页必须有唯一 ID",
+            )
+        seen.add(slide_id)
 
 
 def normalize_visual_type(value: Any, has_text: bool = False) -> str:
