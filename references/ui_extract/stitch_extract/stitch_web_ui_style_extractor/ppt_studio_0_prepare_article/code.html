@@ -1,0 +1,625 @@
+<!DOCTYPE html><html lang="zh-CN" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PPT Studio - 准备文章</title>
+<!-- Tailwind CSS CDN with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#FFF5F2',
+              100: '#FFE8E2',
+              200: '#FFD3C7',
+              500: '#EE5D36',
+              600: '#D94924',
+              700: '#B83514',
+            },
+            surface: {
+              50: '#F8FAFC',
+              100: '#F1F5F9',
+              200: '#E2E8F0',
+            }
+          },
+          boxShadow: {
+            'glow-brand': '0 4px 16px -2px rgba(238, 93, 54, 0.35)',
+            'card-subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02)',
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: CustomStyles -->
+<style data-purpose="custom-typography">
+    /* Subtle font smoothing & markdown style typography adjustments */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+    .markdown-editor {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+<style data-purpose="scrollbar-styling">
+    /* Elegant clean scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+<style data-purpose="micro-interactions-and-animations">
+    @keyframes toastEnter {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -18px) scale(0.96);
+      }
+      70% {
+        transform: translate(-50%, 2px) scale(1.01);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+      }
+    }
+
+    @keyframes toastExit {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -14px) scale(0.96);
+      }
+    }
+
+    @keyframes subtlePulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(238, 93, 54, 0.25);
+      }
+      50% {
+        box-shadow: 0 0 0 6px rgba(238, 93, 54, 0);
+      }
+    }
+
+    @keyframes sheenGradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    @keyframes logoFloat {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-2px) rotate(1.5deg);
+      }
+    }
+
+    .animate-toast-enter {
+      animation: toastEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-toast-exit {
+      animation: toastExit 0.24s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+
+    .pulse-glow-brand {
+      animation: subtlePulse 2.8s infinite ease-in-out;
+    }
+
+    .gradient-sheen-btn {
+      background-size: 200% 200%;
+      animation: sheenGradient 4s ease infinite;
+    }
+
+    .logo-gentle-hover {
+      animation: logoFloat 4s ease-in-out infinite;
+      transition: filter 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .logo-gentle-hover:hover {
+      transform: scale(1.1) rotate(6deg);
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.65));
+    }
+
+    /* Tab sliding indicator transition */
+    .segmented-slider {
+      transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Editor focus container glow */
+    .editor-card-interactive {
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .editor-card-interactive:focus-within {
+      border-color: #EE5D36;
+      box-shadow: 0 0 0 3px rgba(238, 93, 54, 0.12), 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Button click ripple / press effect */
+    .btn-motion {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-motion:hover {
+      transform: translateY(-1.5px);
+    }
+    .btn-motion:active {
+      transform: scale(0.97) translateY(0);
+    }
+
+    /* Sidebar step interactive slide */
+    .sidebar-step-item {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar-step-item:hover:not(.active-step) {
+      background-color: #F8FAFC;
+      transform: translateX(3px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+<!-- END: CustomStyles -->
+</head>
+<body class="bg-surface-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+<!-- BEGIN: TopHeader -->
+<header class="h-14 bg-white border-b border-slate-200 px-5 flex items-center justify-between z-20 flex-shrink-0 select-none relative"><!-- Left Logo & Project Indicator -->
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2 group cursor-pointer">
+<!-- Brand Logo: Clean infinite loop without dark background -->
+<div class="w-7 h-7 flex items-center justify-center bg-transparent">
+<img alt="PPT Studio Logo" class="w-7 h-7 object-contain logo-gentle-hover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoaMqslSqFY4j4xB8Zk2NXWzNsOFqQEbLLBOdUKclDmMwRApLmQy55ofDfQJpZq73rsy8bqGUq42yF_0jRxDbr50-B63T0888WTSR8UE7kX4GR-ZvdNouL8rtVGGVrauuByvFyNi6k5xgcHyzvEQ4VAjcUIPh3n09VWT0usni8daAheAxMuE8fF83kXjs2GJtTgmurgCJ4Eu_WrNis7Ehv_GYqd9VaXW7pl_k2sTA7IoUU0tHD2R0CEkvwhALAgyfgQg">
+</div>
+<span class="font-bold text-slate-900 tracking-tight text-base group-hover:text-brand-500 transition-colors duration-200">PPT Studio</span>
+</div>
+<div class="h-4 w-px bg-slate-200"></div>
+<!-- Current Project Tag -->
+<div class="flex items-center space-x-1.5 text-xs text-slate-500">
+<span class="">当前项目:</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-brand-50 text-brand-600 border border-brand-200 transition-all duration-200 hover:scale-105 cursor-pointer shadow-sm">
+      # agent
+    </span>
+</div>
+</div>
+<!-- Right Header Utilities -->
+<div class="flex items-center space-x-3">
+<div class="flex items-center space-x-1.5 text-xs text-slate-500 mr-2">
+</div>
+<!-- Return Home Button as shown in Image 2 -->
+<a class="btn-motion inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg transition shadow-sm hover:shadow active:scale-95" href="#">
+<svg class="w-3.5 h-3.5 text-brand-600 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="">返回首页</span>
+</a>
+</div><!-- Global Toast Notification: Positioned strictly center in top global bar. Auto-dismiss after 2.5s for success state, persistent for error state with manual close. -->
+<div class="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3.5 py-1.5 bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-md hover:shadow-lg rounded-full text-xs text-slate-700 select-none transition-all duration-300 hover:scale-[1.02] animate-toast-exit" id="global-toast" style="display: none;">
+<!-- Status indicator dot (emerald green with soft breathing ping) -->
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-sm"></span>
+</span>
+<span class="font-medium text-slate-700 leading-none tracking-tight" id="toast-text">已切换至输入话题视图</span>
+<!-- Close button -->
+<button class="text-slate-400 hover:text-slate-700 ml-1 p-0.5 rounded-full hover:bg-slate-100 transition duration-200 cursor-pointer flex items-center justify-center hover:rotate-90" id="toast-close-btn" title="关闭提示" type="button">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div></header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainWorkspace -->
+<div class="flex-1 flex overflow-hidden">
+<!-- BEGIN: LeftSidebarSteps -->
+<aside class="w-52 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 select-none py-3"><!-- Step List -->
+<div class="px-2 space-y-1 overflow-y-auto">
+<!-- Step State Legend -->
+<div class="px-2.5 py-1.5 mb-2 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+<span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span><span class="">已完成</span></span>
+<span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-brand-500 inline-block animate-pulse"></span><span class="">进行中</span></span>
+<span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-slate-300 inline-block"></span><span class="">待完成</span></span>
+</div>
+<!-- Step 1: Active In-Progress (1 导入文章 / 准备文章) -->
+<div class="active-step sidebar-step-item relative flex items-center justify-between px-3 py-2.5 rounded-xl bg-brand-50 border border-brand-200 shadow-sm transition cursor-pointer">
+<div class="flex items-center space-x-2.5">
+<span class="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs shadow-sm pulse-glow-brand">1</span>
+<span class="text-xs font-semibold text-brand-600">准备文章</span>
+</div>
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span>
+</span>
+</div>
+<!-- Step 2: Pending -->
+<div class="sidebar-step-item flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-50 transition cursor-pointer group">
+<div class="flex items-center space-x-2.5">
+<span class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-400 group-hover:border-slate-300 group-hover:text-slate-600 flex items-center justify-center font-medium text-xs transition-colors">2</span>
+<span class="text-xs font-medium text-slate-500 group-hover:text-slate-800 transition-colors">分镜规划</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-slate-400 transition-colors"></span>
+</div>
+<!-- Step 3: Pending -->
+<div class="sidebar-step-item flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-50 transition cursor-pointer group">
+<div class="flex items-center space-x-2.5">
+<span class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-400 group-hover:border-slate-300 group-hover:text-slate-600 flex items-center justify-center font-medium text-xs transition-colors">3</span>
+<span class="text-xs font-medium text-slate-500 group-hover:text-slate-800 transition-colors">图片生成</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-slate-400 transition-colors"></span>
+</div>
+<!-- Step 4: Pending -->
+<div class="sidebar-step-item flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-50 transition cursor-pointer group">
+<div class="flex items-center space-x-2.5">
+<span class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-400 group-hover:border-slate-300 group-hover:text-slate-600 flex items-center justify-center font-medium text-xs transition-colors">4</span>
+<span class="text-xs font-medium text-slate-500 group-hover:text-slate-800 transition-colors">AI Mask 标注</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-slate-400 transition-colors"></span>
+</div>
+<!-- Step 5: Pending -->
+<div class="sidebar-step-item flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-50 transition cursor-pointer group">
+<div class="flex items-center space-x-2.5">
+<span class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-400 group-hover:border-slate-300 group-hover:text-slate-600 flex items-center justify-center font-medium text-xs transition-colors">5</span>
+<span class="text-xs font-medium text-slate-500 group-hover:text-slate-800 transition-colors">旁白与音频</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-slate-400 transition-colors"></span>
+</div>
+<!-- Step 6: Pending -->
+<div class="sidebar-step-item flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-50 transition cursor-pointer group">
+<div class="flex items-center space-x-2.5">
+<span class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-400 group-hover:border-slate-300 group-hover:text-slate-600 flex items-center justify-center font-medium text-xs transition-colors">6</span>
+<span class="text-xs font-medium text-slate-500 group-hover:text-slate-800 transition-colors">勾图标注</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-slate-400 transition-colors"></span>
+</div>
+<!-- Step 7: Pending -->
+<div class="sidebar-step-item flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-50 transition cursor-pointer group">
+<div class="flex items-center space-x-2.5">
+<span class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-400 group-hover:border-slate-300 group-hover:text-slate-600 flex items-center justify-center font-medium text-xs transition-colors">7</span>
+<span class="text-xs font-medium text-slate-500 group-hover:text-slate-800 transition-colors">数字人讲解</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-slate-400 transition-colors"></span>
+</div>
+<!-- Step 8: Pending -->
+<div class="sidebar-step-item flex items-center justify-between px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-50 transition cursor-pointer group">
+<div class="flex items-center space-x-2.5">
+<span class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-400 group-hover:border-slate-300 group-hover:text-slate-600 flex items-center justify-center font-medium text-xs transition-colors">8</span>
+<span class="text-xs font-medium text-slate-500 group-hover:text-slate-800 transition-colors">作品输出</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-slate-400 transition-colors"></span>
+</div>
+</div>
+<!-- Bottom Action Area (侧边栏底部主操作：一键生成视频，使用原版 ✦ 闪烁四角星/魔法图标，去除齿轮) -->
+<div class="px-3 pt-2">
+<button class="btn-motion gradient-sheen-btn w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-brand-500 via-orange-500 to-amber-500 hover:from-brand-600 hover:to-orange-600 text-white font-medium text-xs flex items-center justify-center space-x-1.5 shadow-glow-brand hover:shadow-lg transition transform active:scale-95 group">
+<!-- ✦ 闪烁四角星矢量图标 -->
+<svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z"></path>
+<path d="M19 17L19.8 19.2L22 20L19.8 20.8L19 23L18.2 20.8L16 20L18.2 19.2L19 17Z" opacity="0.8"></path>
+</svg>
+<span class="">一键生成视频</span>
+</button>
+</div></aside>
+<!-- END: LeftSidebarSteps -->
+<!-- BEGIN: RightContentArea -->
+<main class="flex-1 flex flex-col px-6 pt-3.5 pb-5 bg-surface-50 relative overflow-y-auto">
+<!-- Top Title & Global Prompt Configuration Toolbar: 向上调整间距，层级重构 -->
+<div class="mb-2.5 flex flex-col space-y-2.5">
+<!-- Row 1: 步骤大标题 (准备文章) 与 右侧操作按钮同一行或清晰分层 -->
+<div class="flex items-center justify-between">
+<!-- Left: 独立的步骤大标题（带左侧竖线装饰条） -->
+<div class="flex items-center space-x-2.5">
+<div class="w-1.5 h-6 bg-brand-500 rounded-full transition-transform duration-300 hover:scale-y-110"></div>
+<h1 class="text-xl font-bold text-slate-900 tracking-tight leading-none">准备文章</h1>
+</div>
+<!-- Right: 操作按钮（内容创作prompt 与 主操作 分镜规划） -->
+<div class="flex items-center space-x-2.5">
+<button class="btn-motion inline-flex items-center space-x-1 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-medium border border-slate-200 rounded-lg shadow-sm hover:shadow transition" id="btn-prompt-cfg">
+<span class="">内容创作prompt</span>
+</button>
+<!-- Primary Action: 分镜规划 (主操作按钮) -->
+<button class="btn-motion inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow-md transition group" id="btn-next-step">
+<span class="">分镜规划</span>
+<svg class="w-3.5 h-3.5 text-white transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Row 2: 下属二级 Tab 切换栏（导入文章 / 输入话题） -->
+<div class="flex items-center">
+<div class="relative inline-flex p-0.5 bg-slate-200/80 rounded-lg text-xs font-medium">
+<!-- Sliding indicator background pill -->
+<div class="segmented-slider absolute top-0.5 bottom-0.5 left-0.5 rounded-md bg-white shadow-sm pointer-events-none" id="segment-pill" style="width: calc(50% - 2px); transform: translateX(100%);"></div>
+<button class="relative z-10 px-3.5 py-1.5 rounded-md transition-colors duration-200 text-xs flex items-center space-x-1.5 active:scale-95 text-slate-600 font-medium" id="tab-import" type="button">
+<svg class="w-3.5 h-3.5 transition-colors duration-200 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">导入文章</span>
+</button>
+<button class="relative z-10 px-3.5 py-1.5 rounded-md hover:text-slate-900 transition-colors duration-200 text-xs flex items-center space-x-1.5 active:scale-95 text-brand-600 font-semibold" id="tab-topic" type="button">
+<svg class="w-3.5 h-3.5 transition-colors duration-200 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">输入话题</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Editor / Content Container (Card) -->
+<div class="editor-card-interactive flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+<!-- View 1: 导入文章视图 (Markdown 编辑/大纲视图) -->
+<div class="flex-1 flex flex-col overflow-hidden hidden" id="view-import">
+<div class="flex-1 p-6 overflow-y-auto markdown-editor text-slate-800 leading-relaxed text-sm selection:bg-brand-100 selection:text-brand-700 outline-none" id="editor-workspace">
+<div class="max-w-4xl space-y-6">
+<!-- H1 Element -->
+<div class="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center space-x-1">
+<span class="text-brand-500 select-none transition-transform duration-200 hover:rotate-12 inline-block">#</span>
+<span class="">agent（中文：智能体 / 代理）</span>
+</div>
+<!-- H2 Element -->
+<div class="text-base font-semibold text-slate-800 pt-2 flex items-center space-x-1">
+<span class="text-brand-500 select-none transition-transform duration-200 hover:rotate-12 inline-block">##</span>
+<span class="">一、普通英文含义</span>
+</div>
+<!-- Main explanation Paragraph -->
+<div class="text-slate-700">
+<p class="">
+        agent 本身单词意思：<strong class="text-slate-900 font-semibold bg-slate-100 px-1 py-0.5 rounded transition-colors hover:bg-brand-50 hover:text-brand-700">代理人、代理商、经纪人、特工；作用剂</strong>
+</p>
+</div>
+<!-- Bullet List matching Image 2 panel 4 -->
+<ul class="space-y-2 pl-2">
+<li class="flex items-center space-x-2 text-slate-700 group hover:translate-x-1 transition-transform duration-150 cursor-text">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400 group-hover:bg-brand-500 transition-colors"></span>
+<span class="">real estate agent 房产中介</span>
+</li>
+<li class="flex items-center space-x-2 text-slate-700 group hover:translate-x-1 transition-transform duration-150 cursor-text">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400 group-hover:bg-brand-500 transition-colors"></span>
+<span class="">secret agent 特工</span>
+</li>
+<li class="flex items-center space-x-2 text-slate-700 group hover:translate-x-1 transition-transform duration-150 cursor-text">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400 group-hover:bg-brand-500 transition-colors"></span>
+<span class="">cleaning agent 清洁剂</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Editor Status Bar Footer -->
+
+</div>
+<!-- View 2: 输入话题视图 (输入话题框 + AI 生成文章 + 话题生成区域) -->
+<div class="flex-1 flex flex-col p-6 overflow-y-auto space-y-5" id="view-topic">
+<div class="max-w-4xl w-full mx-auto space-y-5">
+<!-- Topic Input Control Bar -->
+<div class="p-4 bg-surface-50 border border-slate-200 rounded-xl space-y-3 shadow-sm">
+<label class="block text-xs font-semibold text-slate-700 flex items-center space-x-1.5">
+
+
+</label>
+<div class="flex items-center gap-3">
+<div class="relative flex-1">
+<input class="w-full pl-3.5 pr-10 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition shadow-sm" id="input-topic-value" placeholder="例如：为什么大模型需要 Token？/ 深度解析 Agent 架构原理" type="text" value="agent（智能体与代理）的核心概念与前沿演进">
+<button class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-1" id="clear-topic-input" type="button">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<button class="btn-motion px-5 py-2.5 bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow transition flex items-center space-x-1.5 flex-shrink-0" id="btn-ai-generate">
+<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z"></path>
+</svg>
+<span class="">AI 生成文章</span>
+</button>
+</div>
+<!-- Recommended Quick Topics -->
+<div class="flex items-center space-x-2 text-xs pt-1">
+
+
+
+
+</div>
+</div>
+<!-- Topic Preview / Generated Outline Area -->
+<div class="border border-slate-200 rounded-xl p-5 bg-white space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+<span class="text-xs font-semibold text-slate-800">由话题生成的故事板与结构草稿</span>
+
+</div>
+
+</div>
+<div class="space-y-4 text-xs text-slate-700 leading-relaxed font-mono"><div class="p-5 bg-slate-50 rounded-xl border border-slate-100 space-y-5 text-slate-700"><div class="border-b border-slate-200 pb-3"><h2 class="text-base font-bold text-slate-900 mb-1"># agent（中文：智能体 / 代理）架构与多模态演进指南</h2><p class="text-xs text-slate-500">引言：从词源解析、图灵机逻辑模型到现代大语言模型驱动的主动智能实体。</p></div><div class="space-y-2"><h3 class="text-xs font-bold text-brand-600">一、核心词源演化与定义边界</h3><div class="pl-3 border-l-2 border-brand-300 space-y-1.5 text-xs text-slate-600"><p class="">• <span class="font-semibold text-slate-800">词源探究：</span>拉丁语 agere（行动、驱动），原意为“产生某种作用的主体、中介人或促成某种改变的关键力量”。</p><p class="">• <span class="font-semibold text-slate-800">经典分布式系统语境：</span>指能够在复杂动态环境中持续自主运行、拥有自身目标与策略的分布式软件进程。</p><p class="">• <span class="font-semibold text-slate-800">生成式 AI 时代的新质定义：</span>以 LLM（大语言模型）作为大脑控制中心，整合 Planning（规划分解）、Memory（上下文记忆系统）及 Tools（API 动作执行）的自治系统。</p></div></div><div class="space-y-2"><h3 class="text-xs font-bold text-slate-800">二、智能体四大支柱架构体系 (Core Architecture)</h3><div class="grid grid-cols-2 gap-3"><div class="p-3 bg-white rounded-lg border border-slate-200 shadow-sm"><span class="font-bold text-slate-900 block mb-1">1. 目标规划 (Planning)</span><p class="text-[11px] text-slate-500">采用思维链（CoT）、思维树（ToT）与 ReAct 框架，将宏观复杂任务拆解解构为有序的可执行子目标流。</p></div><div class="p-3 bg-white rounded-lg border border-slate-200 shadow-sm"><span class="font-bold text-slate-900 block mb-1">2. 双层记忆 (Memory)</span><p class="text-[11px] text-slate-500">短期记忆基于 Prompt 上下文与注意力窗口；长期记忆依靠向量检索（Vector RAG）实现经验留存与自我更新。</p></div><div class="p-3 bg-white rounded-lg border border-slate-200 shadow-sm"><span class="font-bold text-slate-900 block mb-1">3. 工具外接 (Tool Use)</span><p class="text-[11px] text-slate-500">赋能代码执行器、网络检索搜索引擎、多模态解析器及企业私有 API，突破闭门造车的信息孤岛限制。</p></div><div class="p-3 bg-white rounded-lg border border-slate-200 shadow-sm"><span class="font-bold text-slate-900 block mb-1">4. 自主反思 (Reflection)</span><p class="text-[11px] text-slate-500">在每个执行步长后核验输出合理性，遇到异常或边界错误时进行自我纠错（Self-Correction）与路线重规划。</p></div></div></div><div class="space-y-2"><h3 class="text-xs font-bold text-slate-800">三、多智能体协同模式 (Multi-Agent Collaboration)</h3><div class="pl-3 border-l-2 border-slate-200 space-y-1.5 text-xs text-slate-600"><p class="">• <span class="font-semibold text-slate-700">层级指令模式：</span>主指挥 Agent 接收用户宏观需求，分派任务给各垂直领域的专家 Agent。</p><p class="">• <span class="font-semibold text-slate-700">辩论对抗机制：</span>多个 Agent 针对方案进行红蓝对抗质询，在交叉评审中逼近全局最优解并大幅降低幻觉。</p><p class="">• <span class="font-semibold text-slate-700">协作装配流水线：</span>数据清洗、架构设计、代码生成与测试验证以流水线形态流转，实现工业级软件工程交付。</p></div></div><div class="space-y-2"><h3 class="text-xs font-bold text-slate-800">四、从工具演进为数字员工：行业实战与落地挑战</h3><div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1.5 text-xs text-slate-600"><p class="">• <span class="font-semibold text-slate-800">金融研报自动化：</span>实时爬取财报与行情数据，自主完成财务指标建模并输出合规分析简报。</p><p class="">• <span class="font-semibold text-slate-800">智能软件工程：</span>自主读取 GitHub Issue，复现缺陷用例，生成补丁并跑通 CI/CD 单元测试。</p><p class="">• <span class="font-semibold text-slate-800">当前落地瓶颈：</span>长流程中的累积误差传播、工具调用的权限安全性与企业核心数据的沙箱隔离隔离机制。</p></div></div></div></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- END: RightContentArea -->
+</div>
+<!-- END: MainWorkspace -->
+<!-- Vanilla JavaScript for Rich Micro-interactions -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Toast Notification Management
+    const toast = document.getElementById('global-toast');
+    const toastCloseBtn = document.getElementById('toast-close-btn');
+    const toastText = document.getElementById('toast-text');
+    let toastTimeout;
+
+    function hideToast() {
+      if (!toast) return;
+      toast.classList.remove('animate-toast-enter');
+      toast.classList.add('animate-toast-exit');
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 250);
+    }
+
+    function showToast(message) {
+      if (!toast) return;
+      clearTimeout(toastTimeout);
+      if (message) toastText.textContent = message;
+      toast.style.display = 'flex';
+      toast.classList.remove('animate-toast-exit');
+      toast.classList.add('animate-toast-enter');
+      toastTimeout = setTimeout(() => {
+        hideToast();
+      }, 3000);
+    }
+
+    if (toastCloseBtn) {
+      toastCloseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hideToast();
+      });
+    }
+
+    // 2. Tab Switching Logic (导入文章 / 输入话题) with real content toggling
+    const tabImport = document.getElementById('tab-import');
+    const tabTopic = document.getElementById('tab-topic');
+    const segmentPill = document.getElementById('segment-pill');
+    const viewImport = document.getElementById('view-import');
+    const viewTopic = document.getElementById('view-topic');
+
+    window.setActiveTab = function(tab) {
+      if (tab === 'import') {
+        segmentPill.style.transform = 'translateX(0%)';
+        tabImport.classList.add('text-brand-600', 'font-semibold');
+        tabImport.classList.remove('text-slate-600', 'font-medium');
+        tabImport.querySelector('svg').classList.add('text-brand-600');
+        tabImport.querySelector('svg').classList.remove('text-slate-400');
+
+        tabTopic.classList.remove('text-brand-600', 'font-semibold');
+        tabTopic.classList.add('text-slate-600', 'font-medium');
+        tabTopic.querySelector('svg').classList.add('text-slate-400');
+        tabTopic.querySelector('svg').classList.remove('text-brand-600');
+
+        // Toggle Views
+        if (viewImport && viewTopic) {
+          viewImport.classList.remove('hidden');
+          viewTopic.classList.add('hidden');
+        }
+        showToast('已切换至导入文章视图');
+      } else {
+        segmentPill.style.transform = 'translateX(100%)';
+        tabTopic.classList.add('text-brand-600', 'font-semibold');
+        tabTopic.classList.remove('text-slate-600', 'font-medium');
+        tabTopic.querySelector('svg').classList.add('text-brand-600');
+        tabTopic.querySelector('svg').classList.remove('text-slate-400');
+
+        tabImport.classList.remove('text-brand-600', 'font-semibold');
+        tabImport.classList.add('text-slate-600', 'font-medium');
+        tabImport.querySelector('svg').classList.add('text-slate-400');
+        tabImport.querySelector('svg').classList.remove('text-brand-600');
+
+        // Toggle Views
+        if (viewImport && viewTopic) {
+          viewImport.classList.add('hidden');
+          viewTopic.classList.remove('hidden');
+        }
+        showToast('已切换至输入话题视图');
+      }
+    };
+
+    if (tabImport && tabTopic && segmentPill) {
+      tabImport.addEventListener('click', () => setActiveTab('import'));
+      tabTopic.addEventListener('click', () => setActiveTab('topic'));
+    }
+
+    // 3. AI Generate Interaction in Topic Tab
+    const btnAiGenerate = document.getElementById('btn-ai-generate');
+    const inputTopicValue = document.getElementById('input-topic-value');
+    const clearTopicInput = document.getElementById('clear-topic-input');
+
+    if (clearTopicInput && inputTopicValue) {
+      clearTopicInput.addEventListener('click', () => {
+        inputTopicValue.value = '';
+        inputTopicValue.focus();
+      });
+    }
+
+    if (btnAiGenerate) {
+      btnAiGenerate.addEventListener('click', () => {
+        const topic = inputTopicValue ? inputTopicValue.value.trim() : '';
+        if (!topic) {
+          showToast('请先输入核心话题');
+          return;
+        }
+        const originalText = btnAiGenerate.innerHTML;
+        btnAiGenerate.innerHTML = `<svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 正在生成...`;
+        btnAiGenerate.disabled = true;
+
+        setTimeout(() => {
+          btnAiGenerate.innerHTML = originalText;
+          btnAiGenerate.disabled = false;
+          showToast(`话题「${topic.slice(0, 10)}...」已成功生成文章草稿！`);
+        }, 1200);
+      });
+    }
+
+    // 4. Editor Typing & Status Feedback
+    const editor = document.getElementById('editor-workspace');
+    const statusText = document.getElementById('editor-status');
+    const charCounter = document.getElementById('char-counter');
+    let saveDebounce;
+
+    if (editor && statusText) {
+      editor.addEventListener('input', () => {
+        statusText.textContent = '正在编辑输入...';
+        statusText.classList.add('text-amber-600');
+        statusText.classList.remove('text-slate-500');
+
+        if (charCounter) {
+          const count = editor.innerText.trim().length;
+          charCounter.textContent = `${count} 字符`;
+          charCounter.classList.add('text-brand-500');
+          setTimeout(() => charCounter.classList.remove('text-brand-500'), 400);
+        }
+
+        clearTimeout(saveDebounce);
+        saveDebounce = setTimeout(() => {
+          statusText.textContent = '已同步';
+          statusText.classList.remove('text-amber-600');
+          statusText.classList.add('text-slate-500');
+          showToast('修改已实时自动保存');
+        }, 1200);
+      });
+    }
+
+    // 5. Interactive Feedback on Action Buttons
+    const btnNext = document.getElementById('btn-next-step');
+    if (btnNext) {
+      btnNext.addEventListener('click', () => {
+        showToast('正在为您规划分镜并加载大纲...');
+      });
+    }
+
+    const btnPrompt = document.getElementById('btn-prompt-cfg');
+    if (btnPrompt) {
+      btnPrompt.addEventListener('click', () => {
+        showToast('打开内容创作 Prompt 预设面板');
+      });
+    }
+  });
+</script>
+
+
+</body></html>
