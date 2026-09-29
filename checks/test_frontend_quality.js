@@ -33,6 +33,7 @@ if (!outputRender.includes('loadStep8Impacts(') || !html.includes('id="step8-imp
   throw new Error('Output workspace must expose the project impact list');
 }
 const css = fs.readFileSync(path.join(root, 'static', 'style.css'), 'utf8');
+const stitchCss = fs.readFileSync(path.join(root, 'static', 'stitch.css'), 'utf8');
 const aiMask = fs.readFileSync(path.join(root, 'static', 'ai_mask_extension.js'), 'utf8');
 const projectProfile = fs.readFileSync(path.join(root, 'static', 'project_profile_extension.js'), 'utf8');
 const background = fs.readFileSync(path.join(root, 'static', 'storyboard_background_extension.js'), 'utf8');
@@ -75,7 +76,9 @@ for (const repairOwner of ['artifactRepairPrompts', 'offerArtifactRepair']) {
 if (!(html.indexOf('workflow_state.js') < html.indexOf('api_client.js') && html.indexOf('api_client.js') < html.indexOf('artifact_repair.js'))) {
   throw new Error('workflow state, API client, and artifact repair script order is unsafe');
 }
-if (!css.includes('left: 18px')) throw new Error('desktop toasts are not anchored inside the workflow rail');
+if (!stitchCss.includes('left: 50% !important') || !stitchCss.includes('transform: translateX(-50%)')) {
+  throw new Error('global notices must be centered');
+}
 if (/\.toast\s*\{[^}]*position:\s*fixed/s.test(css)) throw new Error('individual toasts still overlap at a fixed position');
 if (!/\.step3-card-header\s*\{[^}]*min-height:\s*42px/s.test(css)) throw new Error('image card header height is not stable');
 if (!/\.step3-card-actions\s*\{[^}]*grid-template-columns:\s*44px 36px 48px/s.test(css)) throw new Error('image card action columns are not stable');
@@ -852,8 +855,10 @@ if (!maskWorkspace.includes('claimUniqueMaskColor') || !maskWorkspace.includes('
 if (!css.includes('.step3-toolbar-row::before') || !css.includes('backdrop-filter: saturate(135%) blur(24px)') || !css.includes('mask-image: linear-gradient(')) {
   throw new Error('sticky workflow headers must use the full-width fading glass layer');
 }
-if (!css.includes('.sidebar .step-status-tag') || !css.includes('grid-row: 2') || !css.includes('position: static !important')) {
-  throw new Error('pending-reconfirmation badges must sit below the step label');
+if (!stitchCss.includes('.step-state-legend') || !stitchCss.includes('.sidebar .step-status-tag')
+    || !workspaceNavigation.includes("'已完成'") || !workspaceNavigation.includes("'进行中'")
+    || !workspaceNavigation.includes("'待完成'")) {
+  throw new Error('workflow rail must present the three unified states');
 }
 if (aiMask.includes("setInlineStatus('AI 标注已完成'")) {
   throw new Error('completed AI Mask status must be a temporary toast, not persistent sidebar content');
@@ -928,8 +933,8 @@ if (styleManager.includes('visual-draft-quality') || oneClick.includes('图片�
   throw new Error('removed image quality feature is still user-visible');
 }
 if (!oneClick.includes('button-spinner')) throw new Error('one-click stage spinner missing');
-if (!oneClick.includes('one-click-sidebar-entry') || !oneClick.includes('stepper.appendChild(entry)')) {
-  throw new Error('one-click button is not anchored directly below the video step');
+if (!oneClick.includes('one-click-sidebar-entry') || !oneClick.includes('sidebar.appendChild(entry)')) {
+  throw new Error('one-click button is not docked at the sidebar bottom');
 }
 for (const lifecycleOwner of ['function isCurrentWorkspaceProject(', 'function resetProjectScopedAsyncUi(', '++workspaceNavigationVersion;']) {
   if (!workspaceNavigation.includes(lifecycleOwner)) {

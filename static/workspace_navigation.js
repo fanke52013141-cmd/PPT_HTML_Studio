@@ -194,6 +194,8 @@ function applyStepperRunningMark() {
   const item = document.querySelector(`.step-item[data-step="${stepperRunningStep}"]`);
   if (!item) return;
   item.classList.add('one-click-running');
+  const badge = item.querySelector('.step-status-tag');
+  if (badge) badge.textContent = '进行中';
   // The active-step color and status dot already communicate progress.  A
   // second floating stage label (for example “生成分镜”) makes the narrow
   // sidebar look like a tooltip and obscures the following row.
@@ -205,7 +207,7 @@ function markStepperRunningStep(step, label) {
   if (normalized === stepperRunningStep && normalizedLabel === stepperRunningLabel) return;
   stepperRunningStep = normalized;
   stepperRunningLabel = normalizedLabel;
-  applyStepperRunningMark();
+  updateStepperUI(state.currentStep, state.currentProject?.step_status || {});
 }
 
 window.markStepperRunningStep = markStepperRunningStep;
@@ -230,11 +232,12 @@ function updateStepperUI(currentStep, stepStatus) {
       item.classList.add('completed');
     } else if (status === 'pending_reconfirmation') {
       item.classList.add('pending_reconfirmation');
-      const badge = document.createElement('span');
-      badge.className = 'step-status-tag';
-      badge.innerText = '待核对';
-      item.appendChild(badge);
     }
+    const badge = document.createElement('span');
+    badge.className = 'step-status-tag';
+    badge.textContent = status === 'completed' ? '已完成'
+      : (step === activeStep || step === stepperRunningStep) ? '进行中' : '待完成';
+    item.appendChild(badge);
   });
   applyStepperRunningMark();
 }

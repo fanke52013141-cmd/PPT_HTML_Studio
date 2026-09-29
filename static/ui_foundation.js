@@ -30,13 +30,13 @@ function showToast(message, duration = 1800) {
   const toast = document.createElement('div');
   toast.className = `toast toast-${presentation.tone}`;
   toast.dataset.toastKey = toastKey;
-  toast.setAttribute('role', presentation.tone === 'error' ? 'alert' : 'status');
+  toast.setAttribute('role', ['error', 'warning'].includes(presentation.tone) ? 'alert' : 'status');
   const content = document.createElement('div');
   content.className = 'toast-content';
   content.textContent = presentation.text;
   toast.appendChild(content);
   container.appendChild(toast);
-  if (presentation.tone === 'error') {
+  if (presentation.tone === 'error' || presentation.tone === 'warning') {
     const close = document.createElement('button');
     close.className = 'toast-close';
     close.type = 'button';
@@ -46,16 +46,13 @@ function showToast(message, duration = 1800) {
       toast.remove();
     });
     toast.appendChild(close);
-    toast.title = '点击可复制完整异常信息';
-    toast.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(String(message ?? ''));
-        close.textContent = '已复制';
-      } catch (_) {
-        close.textContent = '复制失败';
-      }
-      toast.remove();
-    });
+    if (presentation.tone === 'error') {
+      toast.title = '点击可复制完整异常信息';
+      toast.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(String(message ?? '')); } catch (_) {}
+        toast.remove();
+      });
+    }
     return;
   }
   // 通知类消息只短暂出现；异常类消息则由上方的关闭按钮明确处理。

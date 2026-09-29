@@ -243,18 +243,18 @@
 
   function ensureEntryButton() {
     ensureModal();
-    const stepper = document.querySelector('.sidebar .stepper');
-    if (!stepper || document.getElementById('btn-one-click-generate')) return;
-    const entry = document.createElement('li');
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar || document.getElementById('btn-one-click-generate')) return;
+    const entry = document.createElement('div');
     entry.className = 'one-click-sidebar-entry';
     const button = document.createElement('button');
     button.id = 'btn-one-click-generate';
     button.className = 'success';
     button.type = 'button';
-    button.innerHTML = '<span aria-hidden="true">✦</span><span>一键生成视频</span>';
+    button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z"></path><path d="M19 17L19.8 19.2L22 20L19.8 20.8L19 23L18.2 20.8L16 20L18.2 19.2L19 17Z" opacity="0.8"></path></svg><span>一键生成视频</span>';
     button.addEventListener('click', () => openModal().catch(error => toast(`打开失败：${error.message}`, 6000)));
     entry.appendChild(button);
-    stepper.appendChild(entry);
+    sidebar.appendChild(entry);
   }
 
   function renderStatus(status) {
