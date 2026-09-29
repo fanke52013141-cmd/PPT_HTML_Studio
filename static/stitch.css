@@ -2770,8 +2770,8 @@ body.workspace-open .sidebar .step-item {
 #btn-one-click-generate {
   display: flex !important;
   width: 100% !important;
-  height: 56px !important;
-  min-height: 56px !important;
+  height: 32px !important;
+  min-height: 32px !important;
   margin: 0 !important;
   padding: 0 12px !important;
   align-items: center !important;
@@ -2789,6 +2789,9 @@ body.workspace-open .sidebar .step-item {
 #btn-one-click-generate:hover { background: #ed5e2c !important; }
 #btn-one-click-generate > * { margin: 0 !important; }
 #btn-one-click-generate svg { display: block !important; width: 17px; height: 17px; flex: 0 0 auto; }
+/* The legacy active checkmark is also styled as an orange dot. Hide it so the
+   single ::after marker above is the only state dot on the current step. */
+body.workspace-open .sidebar .step-item.active .step-complete { display: none !important; }
 
 /* Match the article workspace controls and keep the home icon visible. */
 #btn-back-home:not([hidden]) {
