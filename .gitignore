@@ -90,3 +90,7 @@ _sandbox_test.txt
 # Local downloaded fonts (not in repo)
 static/fonts/
 UI优化方案.md
+
+# Local server runtime logs
+logs/*
+!logs/.gitkeep

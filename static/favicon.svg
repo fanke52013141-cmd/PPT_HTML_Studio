@@ -1,16 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Brand favicon: orange gradient tile + white infinite loop mark. -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#6d7bf1"/>
-      <stop offset="100%" stop-color="#9b6cf0"/>
+      <stop offset="0%" stop-color="#f46a38"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
     </linearGradient>
   </defs>
-  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#bg)"/>
-  <rect x="12" y="16" width="40" height="28" rx="3" fill="#ffffff"/>
-  <rect x="16" y="21" width="20" height="3" rx="1.5" fill="#6d7bf1"/>
-  <rect x="16" y="28" width="32" height="2.4" rx="1.2" fill="#c7cdf5"/>
-  <rect x="16" y="33" width="28" height="2.4" rx="1.2" fill="#c7cdf5"/>
-  <rect x="16" y="38" width="24" height="2.4" rx="1.2" fill="#c7cdf5"/>
-  <path d="M30 48 L34 48 L34 52 L38 52 L32 58 L26 52 L30 52 Z" fill="#ffffff"/>
-  <polygon points="40,30 48,34 40,38" fill="#ff6b8a"/>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bg)"/>
+  <path d="M32 32C32 32 27.2 24.6 21.2 24.6C16.5 24.6 13.2 27.9 13.2 32C13.2 36.1 16.5 39.4 21.2 39.4C27.2 39.4 36.8 24.6 42.8 24.6C47.5 24.6 50.8 27.9 50.8 32C50.8 36.1 47.5 39.4 42.8 39.4C36.8 39.4 32 32 32 32Z"
+        fill="none" stroke="#ffffff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
