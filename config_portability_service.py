@@ -1037,6 +1037,11 @@ CONFIG_ZIP_ASSETS_PREFIX = "assets/"
 CONFIG_ZIP_README_ENTRY = "README.txt"
 # 压缩包内参考图片的解压总大小上限，防止畸形压缩包放大内存占用。
 CONFIG_ZIP_MAX_ASSET_BYTES = 64 * 1024 * 1024
+# R5-004: config.json 主条目与解压总量单独限额(压缩体积小而展开大的输入);
+# R5-005: 重复/等价条目名不再静默覆盖。
+CONFIG_ZIP_MAX_CONFIG_JSON_BYTES = 8 * 1024 * 1024
+CONFIG_ZIP_MAX_TOTAL_UNCOMPRESSED_BYTES = 80 * 1024 * 1024
+CONFIG_ZIP_MAX_ENTRIES = 512
 
 _CONFIG_ZIP_README_TEXT = """PPT 可视化工作室 配置包
 ========================
@@ -1204,16 +1209,37 @@ def export_full_config_with_secrets_zip() -> bytes:
 
 
 def _read_zip_bundle_payload(data: bytes) -> Dict[str, Any]:
-    """Parse a ZIP config package and inline its assets back into Base64."""
+    """Parse a ZIP config package and inline its assets back into Base64.
+
+    全部条目按 ZipInfo 预检限额后有界读取;验证失败零写入。
+    """
     try:
         archive = zipfile.ZipFile(io.BytesIO(data))
     except (zipfile.BadZipFile, EOFError) as exc:
         raise ValueError("配置包不是有效的 ZIP 压缩文件") from exc
     with archive:
+        infos = archive.infolist()
+        if len(infos) > CONFIG_ZIP_MAX_ENTRIES:
+            raise ValueError("压缩包条目数超过限制")
+        seen_names: set[str] = set()
+        total_uncompressed = 0
+        for info in infos:
+            if info.filename in seen_names:
+                raise ValueError(f"压缩包含重复条目：{info.filename}")
+            seen_names.add(info.filename)
+            total_uncompressed += info.file_size
+            if total_uncompressed > CONFIG_ZIP_MAX_TOTAL_UNCOMPRESSED_BYTES:
+                raise ValueError("压缩包解压总量超过限制")
         try:
-            raw_config = archive.read(CONFIG_ZIP_ENTRY)
+            config_info = archive.getinfo(CONFIG_ZIP_ENTRY)
         except KeyError as exc:
             raise ValueError("配置压缩包缺少 config.json") from exc
+        if config_info.file_size > CONFIG_ZIP_MAX_CONFIG_JSON_BYTES:
+            raise ValueError("config.json 超过大小限制（8MB）")
+        try:
+            raw_config = archive.read(CONFIG_ZIP_ENTRY)
+        except (zipfile.BadZipFile, RuntimeError, OSError) as exc:
+            raise ValueError("config.json 读取失败") from exc
         try:
             payload = json.loads(raw_config.decode("utf-8-sig"))
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -1221,6 +1247,7 @@ def _read_zip_bundle_payload(data: bytes) -> Dict[str, Any]:
         if not isinstance(payload, dict):
             raise ValueError("config.json 内容无效")
         asset_files: Dict[str, bytes] = {}
+        normalized_seen: set[str] = set()
         total_bytes = 0
         for name in archive.namelist():
             if not name.startswith(CONFIG_ZIP_ASSETS_PREFIX):
@@ -1232,6 +1259,10 @@ def _read_zip_bundle_payload(data: bytes) -> Dict[str, Any]:
                 raise ValueError(
                     "压缩包内参考图片总大小超过限制（64MB）"
                 )
+            normalized_key = posixpath.normpath(name.replace("\\", "/"))
+            if normalized_key in normalized_seen:
+                raise ValueError(f"压缩包含等价重复资源条目：{name}")
+            normalized_seen.add(normalized_key)
             asset_files[name] = archive.read(name)
     _inline_zip_assets(payload, asset_files)
     return payload

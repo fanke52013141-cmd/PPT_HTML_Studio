@@ -8,6 +8,9 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
+import hashlib
+import json
+
 from fastapi import HTTPException
 from project_storage import UnsafeProjectPath, safe_identifier
 from scripts.visual_reveal_modes import normalize_reveal_mode
@@ -25,23 +28,21 @@ def validate_slide_identifiers(contract: Dict[str, Any]) -> None:
     directory (path traversal). This is called before every contract write so a
     single check covers all downstream writers.
 
-    空白与重复 slide_id 一并拒绝(R1-002):空白页会在 diff 与产物寻址中被静默
-    丢弃,重复页则让"最后一页覆盖前页",都会造成改动丢失影响记录。空 slides
-    列表仍然合法(允许空分镜项目)。
+    重复 slide_id 一并拒绝(R1-002):重复页会让"最后一页覆盖前页",改动丢失
+    影响记录。空白 ID 在此保持宽容——normalize 也服务于旧工件修复(缺失 ID
+    由下游补齐);用户手写保存入口(update_step2_result)单独拒绝空白 ID。
+    空 slides 列表仍然合法(允许空分镜项目)。
     """
     slides = contract.get("slides")
     if not isinstance(slides, list):
         return
     seen: set[str] = set()
-    for index, slide in enumerate(slides):
+    for slide in slides:
         if not isinstance(slide, dict):
             continue
         slide_id = str(slide.get("slide_id") or "").strip()
         if not slide_id:
-            raise HTTPException(
-                status_code=400,
-                detail=f"slides[{index}] 缺少 slide_id；每页必须有唯一非空 ID",
-            )
+            continue
         try:
             safe_identifier(slide_id, label="slide_id")
         except UnsafeProjectPath:
@@ -287,3 +288,22 @@ def read_contract_slide_ids(run_dir: str) -> List[str]:
         )
         return []
     return contract_slide_ids_from_payload(contract)
+
+
+def contract_canonical_sha256(contract: Dict[str, Any]) -> str:
+    """规范化契约的稳定摘要(Step 2 CAS 基线令牌,纯函数)。"""
+    return hashlib.sha256(
+        json.dumps(contract, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+
+
+def reject_blank_slide_ids(slides: Any) -> None:
+    """用户手写保存入口拒绝空白 slide_id(空白页在产物寻址中被静默丢弃)。"""
+    if not isinstance(slides, list):
+        return
+    for index, slide in enumerate(slides):
+        if isinstance(slide, dict) and not str(slide.get("slide_id") or "").strip():
+            raise HTTPException(
+                status_code=400,
+                detail=f"slides[{index}] 缺少 slide_id；每页必须有唯一非空 ID",
+            )

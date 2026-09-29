@@ -21,8 +21,22 @@ logger = logging.getLogger("PPTStudio.ProjectPaths")
 
 
 def project_or_404(db: Session, project_id: str) -> Project:
-    """按 id 读取项目，缺失时统一 404（审查 L-11 样板收敛）。"""
-    project = db.query(Project).filter(Project.id == project_id).first()
+    """按 id + 当前账号读取项目，缺失或越权统一 404（审查 L-11/R5-001 样板收敛）。
+
+    账号条件以已验证的请求/任务上下文为准：切换创作用户后,残留的他人项目
+    ID 不能再读写(下载/删除/任务提交/复用确认均经此 helper)。后台 worker
+    必须先用 set_current_account_id 固化任务归属再调用。
+    """
+    from account_context import get_current_account_id
+
+    project = (
+        db.query(Project)
+        .filter(
+            Project.id == project_id,
+            Project.account_id == get_current_account_id(),
+        )
+        .first()
+    )
     if not project:
         raise HTTPException(status_code=404, detail="项目不存在")
     return project

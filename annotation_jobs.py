@@ -19,6 +19,12 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from account_context import (
+    DEFAULT_ACCOUNT_ID,
+    get_current_account_id,
+    reset_current_account_id,
+    set_current_account_id,
+)
 from annotation_contracts import AnnotationItem, AnnotationPage, next_annotation_id
 
 logger = logging.getLogger("PPTStudio.AnnotationJobs")
@@ -93,24 +99,42 @@ class AnnotationJobManager:
 
         返回 (job, created);request_key 命中既有活跃/成功任务时复用。
         """
+        account_id = get_current_account_id()
         job = self._deps.job_store.create(
             project_id,
             job_type="annotation_detect",
-            payload={"slides": [{"slide_id": sid, "image_hash": h} for sid, h, _, _ in slide_targets]},
+            payload={"account_id": account_id, "slides": [{"slide_id": sid, "image_hash": h} for sid, h, _, _ in slide_targets]},
             request_key=request_key,
         )
         created = job.status == "queued"
         if created:
-            self._spawn(job.id, project_id, slide_targets)
+            self._spawn(job.id, project_id, slide_targets, account_id)
         return job, created
 
-    def _spawn(self, job_id: str, project_id: str, slide_targets: List[Tuple[str, str, Tuple[int, int], bytes]]) -> None:
+    def _resolve_worker_account(self, project_id: str, account_id: Optional[str]) -> str:
+        """历史任务 payload 缺账号时回退项目行归属,绝不无条件默认 default。"""
+        if account_id:
+            return account_id
+        try:
+            project = self._project(project_id)
+            return str(getattr(project, "account_id", "") or DEFAULT_ACCOUNT_ID)
+        except Exception:
+            return DEFAULT_ACCOUNT_ID
+
+    def _spawn(
+        self,
+        job_id: str,
+        project_id: str,
+        slide_targets: List[Tuple[str, str, Tuple[int, int], bytes]],
+        account_id: Optional[str] = None,
+    ) -> None:
         cancel_event = threading.Event()
         with self._lock:
             self._cancel_flags[job_id] = cancel_event
 
         def run() -> None:
             acquired = _JOB_SEMAPHORE.acquire()
+            token = set_current_account_id(self._resolve_worker_account(project_id, account_id))
             try:
                 self._run_detect(job_id, project_id, slide_targets, cancel_event)
             except Exception as exc:  # 兜底:任何未捕获错误都必须落到持久状态
@@ -120,6 +144,7 @@ class AnnotationJobManager:
                 except Exception:
                     logger.exception("failed to persist crash state for %s", job_id)
             finally:
+                reset_current_account_id(token)
                 _JOB_SEMAPHORE.release()
                 with self._lock:
                     self._cancel_flags.pop(job_id, None)
@@ -196,10 +221,11 @@ class AnnotationJobManager:
     # ------------------------------------------------------------ plan
 
     def submit_plan(self, project_id: str, slide_ids: List[str], *, request_key: Optional[str] = None) -> Tuple[Any, bool]:
+        account_id = get_current_account_id()
         job = self._deps.job_store.create(
             project_id,
             job_type="annotation_plan",
-            payload={"slides": [{"slide_id": sid} for sid in slide_ids]},
+            payload={"account_id": account_id, "slides": [{"slide_id": sid} for sid in slide_ids]},
             request_key=request_key,
         )
         created = job.status == "queued"
@@ -210,6 +236,7 @@ class AnnotationJobManager:
 
             def run() -> None:
                 acquired = _JOB_SEMAPHORE.acquire()
+                token = set_current_account_id(self._resolve_worker_account(project_id, account_id))
                 try:
                     self._run_plan(job.id, project_id, slide_ids, cancel_event)
                 except Exception as exc:
@@ -219,6 +246,7 @@ class AnnotationJobManager:
                     except Exception:
                         logger.exception("failed to persist crash state for %s", job.id)
                 finally:
+                    reset_current_account_id(token)
                     _JOB_SEMAPHORE.release()
                     with self._lock:
                         self._cancel_flags.pop(job.id, None)

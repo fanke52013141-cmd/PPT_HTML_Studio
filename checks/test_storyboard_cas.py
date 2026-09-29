@@ -41,7 +41,7 @@ def _baseline_sha(contract_path: Path) -> str:
     from visual_contract_service import normalize_visual_contract
 
     stored = json.loads(contract_path.read_text(encoding="utf-8"))
-    return storyboard_service.storyboard_contract_sha256(
+    return storyboard_service.contract_canonical_sha256(
         normalize_visual_contract(stored, None)
     )
 
@@ -102,7 +102,7 @@ def test_get_result_exposes_contract_sha256(tmp_path: Path, monkeypatch) -> None
     _wire_real_dependencies(monkeypatch)
     result = storyboard_service.get_step2_result("p", None)
     assert result["success"] is True
-    assert result["contract_sha256"] == storyboard_service.storyboard_contract_sha256(result["contract"])
+    assert result["contract_sha256"] == storyboard_service.contract_canonical_sha256(result["contract"])
 
 
 def test_stale_snapshot_save_rejected_with_409_and_no_side_effects(tmp_path: Path, monkeypatch) -> None:
@@ -136,6 +136,22 @@ def test_stale_snapshot_save_rejected_with_409_and_no_side_effects(tmp_path: Pat
     ok = _service_call(tmp_path, monkeypatch, {**stale, "expected_contract_sha256": fresh_sha})
     assert ok["changed"] is True
     assert json.loads(contract_path.read_text(encoding="utf-8"))["slides"][0]["main_title"] == "STALE-OVERWRITE"
+
+
+def test_blank_slide_id_rejected_at_user_write(tmp_path: Path, monkeypatch) -> None:
+    from visual_contract_service import validate_slide_identifiers
+
+    contract_path = _setup(tmp_path)
+    # 共享 normalize(旧工件修复路径)保持对空白 ID 宽容
+    validate_slide_identifiers({"slides": [{"slide_id": "slide_001"}, {}]})
+    # 用户手写保存入口拒绝空白 ID,且不落盘
+    bad = json.loads(json.dumps(CONTRACT, ensure_ascii=False))
+    bad["slides"][1]["slide_id"] = "   "
+    with pytest.raises(HTTPException) as exc:
+        _service_call(tmp_path, monkeypatch, bad)
+    assert exc.value.status_code == 400
+    on_disk = json.loads(contract_path.read_text(encoding="utf-8"))
+    assert on_disk["slides"][0]["main_title"] == "A"
 
 
 def test_save_without_hash_stays_compatible(tmp_path: Path, monkeypatch) -> None:
