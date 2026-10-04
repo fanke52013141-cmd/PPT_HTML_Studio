@@ -3,31 +3,16 @@
 
   const MODAL_ID = 'modal-storyboard-background';
 
-  function parseResponse(response) {
-    return response.json().then(data => {
-      if (!response.ok) throw new Error(data.detail || data.message || response.statusText || '请求失败');
-      return data;
-    });
-  }
-
   function apiGet(url) {
-    return window.API?.get ? window.API.get(url) : fetch(url).then(parseResponse);
+    return window.API.get(url);
   }
 
   function apiPut(url, body) {
-    return window.API?.put ? window.API.put(url, body) : fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).then(parseResponse);
+    return window.API.put(url, body);
   }
 
   function apiPostForm(url, body) {
-    return fetch(url, {
-      method: 'POST',
-      headers: { 'X-PPT-Studio-Request': '1' },
-      body,
-    }).then(parseResponse);
+    return window.API.post(url, body);
   }
 
   function toast(message, duration) {
@@ -36,9 +21,7 @@
   }
 
   function activeProjectId() {
-    const current = window.state?.currentProject?.id || window.PPTStudio?.getCurrentProject?.()?.id;
-    if (current) sessionStorage.setItem('ppt_storyboard_background_project_id', String(current));
-    return current || sessionStorage.getItem('ppt_storyboard_background_project_id') || '';
+    return window.PPTStudio?.runtime?.state?.currentProject?.id || '';
   }
 
   function gcd(a, b) {
@@ -68,7 +51,7 @@
 
   function ensureButton() {
     document.getElementById('step2-btn-background-settings')?.remove();
-    const toolbar = document.querySelector('#step-panel-3 .step3-toolbar-row');
+    const toolbar = document.querySelector('#step-panel-3 .workflow-toolbar');
     if (!toolbar) return;
     const confirmButton = document.getElementById('step3-btn-confirm');
     let button = document.getElementById('step3-btn-background-settings');
@@ -258,9 +241,11 @@
     const projectId = activeProjectId();
     if (!projectId) return toast('请先打开项目。');
     const modal = ensureModal();
+    modal.dataset.projectId = String(projectId);
     modal.style.display = 'flex';
     try {
       const result = await apiGet(`/api/projects/${encodeURIComponent(projectId)}/storyboard-background`);
+      if (String(activeProjectId()) !== String(projectId) || modal.dataset.projectId !== String(projectId)) return;
       const background = result.background || {};
       modal.dataset.imageUrl = background.image_url || '';
       modal.querySelector('#storyboard-bg-fit').value = background.image_fit || 'cover';
@@ -280,6 +265,10 @@
     const projectId = activeProjectId();
     if (!projectId) return;
     const modal = ensureModal();
+    if (modal.dataset.projectId !== String(projectId)) {
+      modal.style.display = 'none';
+      return toast('项目已切换，请重新打开背景设置。');
+    }
     const button = modal.querySelector('#btn-storyboard-bg-save');
     const mode = modal.dataset.mode || 'solid';
     const file = modal.querySelector('#storyboard-bg-file').files?.[0];
@@ -313,10 +302,6 @@
     ensureButton();
   }
 
-  const timer = setInterval(() => {
-    boot();
-    if (document.getElementById('step3-btn-background-settings')) clearInterval(timer);
-  }, 500);
   document.addEventListener('DOMContentLoaded', boot);
   if (document.readyState !== 'loading') boot();
 })();

@@ -236,7 +236,7 @@ function renderStep6Workspace() {
   container.innerHTML = '';
 
   if (!narrationData?.slides?.length) {
-    container.innerHTML = '<div class="soft-outline step6-empty-state">暂无演讲稿，请先同步演讲稿模板。</div>';
+    container.innerHTML = '<div class="soft-outline step6-empty-state ws-empty">暂无演讲稿，请先同步演讲稿模板。</div>';
     return;
   }
 
@@ -246,7 +246,7 @@ function renderStep6Workspace() {
     slideRow.dataset.slideId = slide.slide_id;
     slideRow.innerHTML = `
       <div class="step6-slide-row-head">
-        <h3>${escHtml(slide.slide_id)}</h3>
+        <h3>第 ${slideIndex + 1} 页 <small class="step6-slide-id">${escHtml(slide.slide_id)}</small></h3>
         <span class="step6-slide-status">${slide.beats.length ? `${slide.beats.length} 条旁白` : '暂无旁白'}</span>
         <button class="secondary compact-action-btn step6-generate-slide" type="button" data-slide-id="${escHtml(slide.slide_id)}" title="只重新生成当前 Slide 的旁白音频" ${slide.beats.length ? '' : 'disabled'}>单独生成</button>
       </div>
@@ -258,7 +258,7 @@ function renderStep6Workspace() {
     });
     const beatsContainer = slideRow.querySelector('.step6-slide-beats');
     if (!slide.beats.length) {
-      beatsContainer.innerHTML = '<div class="step6-empty-state">当前 Slide 暂无旁白。可返回元素动画页建立语块，或重新同步旁白。</div>';
+      beatsContainer.innerHTML = '<div class="step6-empty-state ws-empty">当前 Slide 暂无旁白。可返回元素动画页建立语块，或重新同步旁白。</div>';
     }
     slide.beats.forEach((beat, beatIndex) => {
       normalizeStep6Beat(beat, beatIndex);
@@ -348,21 +348,10 @@ async function putStep6NarrationWithRetry(projectId, payload) {
   let lastError = null;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const response = await fetch(`/api/projects/${projectId}/steps/6/result`, {
-        method: 'PUT',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json', 'X-PPT-Studio-Request': '1' }
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const error = new Error(data.detail || '保存演讲稿失败');
-        error.isHttpError = true;
-        throw error;
-      }
-      return data;
+      return await API.put(`/api/projects/${projectId}/steps/6/result`, payload, { silent: true });
     } catch (error) {
       lastError = error;
-      if (error.isHttpError || attempt === 1) break;
+      if (error.status || attempt === 1) break;
       await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
@@ -442,7 +431,7 @@ async function loadStep7Data() {
   const step7Status = state.currentProject?.step_status?.['7'] || 'pending';
   const stepAllowsAudio = ['in_progress', 'completed', 'pending_reconfirmation'].includes(step7Status);
 
-  confirmButton.disabled = true;
+  setDisabledReason(confirmButton, true, '正在检查页面音频状态');
   synthButton.style.display = stepAllowsAudio ? 'inline-flex' : 'none';
   if (forceAllButton) forceAllButton.style.display = stepAllowsAudio ? 'inline-flex' : 'none';
   emptyState.style.display = 'block';
@@ -453,6 +442,7 @@ async function loadStep7Data() {
 
   if (!narrationData?.slides?.length) {
     emptyState.innerText = '尚未生成音频。先准备旁白，再点击“生成音频”。';
+    setDisabledReason(confirmButton, true, '请先准备旁白并生成音频');
     return;
   }
 
@@ -497,18 +487,24 @@ async function loadStep7Data() {
       // long, non-actionable missing-slide list above the editor.
       emptyState.style.display = 'none';
       emptyState.innerText = '';
-      confirmButton.disabled = true;
+      setDisabledReason(confirmButton, true, '请先生成全部页面音频，并逐页试听');
     } else if (step7Status === 'pending_reconfirmation') {
       // Keep the confirmation disabled until audio is regenerated, but do not
       // repeat the internal invalidation reason in the visible workspace.
       emptyState.style.display = 'none';
       emptyState.innerText = '';
-      confirmButton.disabled = true;
+      setDisabledReason(confirmButton, true, '音频已变更，请先重新生成后再确认');
     } else {
       emptyState.style.display = 'none';
-      confirmButton.disabled = false;
+      setDisabledReason(confirmButton, false);
       // 文案跟随数字人启用状态：未启用时下一步是作品输出，而不是数字人讲解。
-      document.getElementById('step6-audio-confirm-label').innerText = state.currentProject.audio_confirmed
+      // 完整语义保留在按钮 title 上（ui-consistency-plan P0-4a：标题栏单行化）。
+      const confirmLabel = document.getElementById('step6-audio-confirm-label');
+      confirmLabel.innerText = state.currentProject.audio_confirmed
+        ? '进入勾画'
+        : '确认进入勾画';
+      const confirmBtn = document.getElementById('step6-btn-audio-confirm-next');
+      if (confirmBtn) confirmBtn.title = state.currentProject.audio_confirmed
         ? '进入勾画标注'
         : '确认并进入勾画标注';
     }
@@ -570,17 +566,17 @@ async function runStep7TTS(options = {}) {
             { silent: true },
           );
           const job = res.job || {};
-          if (['completed', 'failed', 'interrupted'].includes(job.status)) {
+          if (['completed', 'failed', 'interrupted', 'cancelled'].includes(job.status)) {
             resolve(job);
             return;
           }
-          if (job.status === 'queued' && loadingText) {
+          if (job.status === 'queued' && loadingText && isCurrentWorkspaceProject(projectId, sessionVersion)) {
             // 进程级合成并发已满：显示全局队列位次（queue_ahead 为前面的同类任务数）。
             const ahead = Number(job.queue_ahead);
             loadingText.innerText = Number.isFinite(ahead) && ahead > 0
               ? `排队中，前面还有 ${ahead} 个合成任务...`
               : '排队等待合成...';
-          } else if (loadingText) {
+          } else if (loadingText && isCurrentWorkspaceProject(projectId, sessionVersion)) {
             loadingText.innerText = '音频合成中...';
           }
           if (Date.now() - started > 30 * 60 * 1000) {
@@ -616,6 +612,11 @@ async function runStep7TTS(options = {}) {
     const failedIds = Array.isArray(finalJob.result?.failed_ids)
       ? finalJob.result.failed_ids.filter(Boolean)
       : [];
+    if (finalJob.status === 'cancelled') {
+      updateStep6AutosaveStatus('音频生成已停止，已完成的音频保留，可继续补齐缺失页面');
+      await loadStep7Data();
+      return false;
+    }
     const fallback = failedIds.length ? `音频部分生成失败：${failedIds.join('、')}` : '音频生成未完成，请重试。';
     showToast(`音频生成失败：${finalJob.error || fallback}`, 7000);
     await refreshCurrentProjectStatus(6);
@@ -626,11 +627,13 @@ async function runStep7TTS(options = {}) {
     return false;
   } finally {
     if (pollTimer) clearTimeout(pollTimer);
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
     loading.style.display = 'none';
     synthButton.disabled = false;
     saveAndTtsButton.disabled = false;
     if (forceAllButton) forceAllButton.disabled = false;
     document.querySelectorAll('.step6-generate-slide').forEach(button => { button.disabled = false; });
+    }
   }
 }
 

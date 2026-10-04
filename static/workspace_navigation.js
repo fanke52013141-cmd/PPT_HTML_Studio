@@ -164,21 +164,6 @@ function renderProductionModeSummary(project = state.currentProject) {
   document.getElementById('project-production-mode')?.remove();
 }
 
-async function selectProductionMode() {
-  if (!state.currentProject) return;
-  const current = state.currentProject.production_mode === 'one_click' ? 'one_click' : 'guided';
-  const chooseOneClick = window.confirm(
-    '选择“确定”会进入一键生成：自动完成分镜、整页图片、旁白、语音和视频，不会做 AI Mask 标注。\n\n选择“取消”则使用分步制作，可在第 5 步主动启用元素动画。'
-  );
-  const next = chooseOneClick ? 'one_click' : 'guided';
-  if (next === current) return;
-  const result = await API.put(`/api/projects/${state.currentProject.id}`, { production_mode: next });
-  if (result?.project) {
-    Object.assign(state.currentProject, result.project);
-    renderProductionModeSummary();
-    showToast(next === 'one_click' ? '已切换为一键生成：将使用整页展示。' : '已切换为分步制作。');
-  }
-}
 
 // [一键进度同步 20260912] 一键生成运行时，左侧步骤条实时挂"进行中"标记：
 // markStepperRunningStep 由一键轮询调用；updateStepperUI 每次重建步骤条后
@@ -235,6 +220,11 @@ function updateStepperUI(currentStep, stepStatus) {
     item.dataset.state = stateLabel === '已完成' ? 'completed'
       : stateLabel === '进行中' ? 'in-progress' : 'pending';
     item.setAttribute('aria-label', `${stepLabel}，${stateLabel}`);
+    const unavailable = step === 9 && !document.getElementById('step-panel-9');
+    item.setAttribute('aria-disabled', String(unavailable));
+    item.tabIndex = unavailable ? -1 : 0;
+    if (step === activeStep) item.setAttribute('aria-current', 'step');
+    else item.removeAttribute('aria-current');
     if (status === 'completed') {
       item.classList.add('completed');
     } else if (status === 'pending_reconfirmation') {

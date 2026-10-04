@@ -243,7 +243,6 @@ configure_narration_audio_dependencies(
     )
 )
 
-# ==================== 项目管理接口 ====================
 
 # Project lifecycle routes are source-owned by project_service.py and project_routes.py.
 try:
@@ -357,7 +356,6 @@ except Exception as exc:
     )
     raise
 
-# ==================== 步骤 1: 导入文章 ====================
 
 # Step 1 article routes are source-owned by article_service.py and article_routes.py.
 from article_service import read_project_article_source
@@ -396,7 +394,6 @@ except Exception as exc:
     )
     raise
 
-# ==================== 步骤 2: 智能分镜规划 ====================
 
 # Step 2 storyboard routes are source-owned by storyboard_routes.py.
 from storyboard_service import (
@@ -479,7 +476,6 @@ from image_workflow_service import (
     read_step3_image_system_content,
 )
 
-# ==================== 步骤 6: 演讲稿编辑 ====================
 
 # Step 5 Mask editing is source-owned by dedicated services.
 from mask_manifest_service import (
@@ -869,7 +865,6 @@ except Exception as exc:
 
 # Step 8 video rendering is source-owned by video_render_service.py and video_routes.py.
 
-# ==================== 前端托管 ====================
 
 static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
 os.makedirs(static_dir, exist_ok=True)
@@ -1049,6 +1044,8 @@ try:
     from diagnostics_routes import router as diagnostics_router
 
     app.include_router(diagnostics_router)
+    from generation_control_routes import router as generation_control_router
+    app.include_router(generation_control_router)
 except Exception as exc:
     logger.exception("Explicit diagnostics route registration failed: %s", exc)
     raise

@@ -485,9 +485,11 @@ input:not([type="checkbox"]):not([type="radio"]):focus,
 select:focus,
 textarea:focus { border-color: var(--stitch-brand) !important; box-shadow: 0 0 0 3px rgba(244, 106, 56, .12) !important; }
 
-/* Modal surfaces from the supplied model/settings screens. */
+/* Modal surfaces from the supplied model/settings screens.
+   z-index is centralized in the UI consistency layer at the end of this file
+   (the former `z-index: 100 !important` here flattened every overlay and made
+   stacking depend on DOM order — see docs/ui-consistency-plan.md P1-5). */
 .modal-overlay {
-  z-index: 100 !important;
   background: rgba(15, 23, 42, .34) !important;
   backdrop-filter: blur(4px);
 }
@@ -566,7 +568,6 @@ body:not(.workspace-open) #page-home .stitch-sidebar-footer {
   flex: 0 0 auto !important;
   margin: 0 !important;
   padding: 12px 14px 14px !important;
-  border-top: 1px solid var(--stitch-line) !important;
   background: #fff !important;
 }
 
@@ -2459,10 +2460,9 @@ body.workspace-open .workflow-title,
 body.workspace-open .highlight-title { display: inline-flex !important; align-items: center !important; min-height: 32px; margin: 0 !important; line-height: 1.18 !important; }
 body.workspace-open .workflow-title::before,
 body.workspace-open .highlight-title::before { width: 5px !important; height: 36px !important; margin-right: 14px !important; border-radius: 4px !important; background: #f46a38 !important; }
-/* Image generation intentionally uses a title row and an evenly spaced tool
-   row, rather than letting wrapping create an arbitrary visual gap. */
+/* Image generation: single-line title bar aligned with the other steps
+   (Rule A implementation, docs/ui-redesign-plan.md §4.1). */
 body.workspace-open #step-panel-3 .step3-toolbar-row { display: flex !important; align-items: center !important; align-content: center !important; gap: 12px !important; }
-body.workspace-open #step-panel-3 .step3-toolbar-row > .workflow-title { flex: 0 0 100% !important; }
 body.workspace-open #step-panel-3 .step3-toolbar-row > :not(.workflow-title) { margin-top: 0 !important; margin-bottom: 0 !important; }
 @media (max-width: 1180px) {
   body.workspace-open .main-content { padding-inline: 1.25rem !important; }
@@ -3410,23 +3410,32 @@ body.workspace-open #step-panel-1 .step1-topic-editor-slot .step1-editor-shell {
   body.workspace-open #step-panel-1 .step1-topic-editor-slot { margin-top: -12px; }
 }
 
-/* Shared notifications remain in the top-center global notice position. */
+/* Shared notifications remain in the top-center global notice position.
+   Single source for toast geometry — consolidated here from three mutually
+   overriding blocks; the centering tokens below are asserted by
+   checks/test_frontend_quality.js and must stay. */
 #toast-container {
   left: 50% !important;
   right: auto !important;
   top: 12px !important;
   bottom: auto !important;
-  width: min(420px, calc(100vw - 24px)) !important;
+  width: min(630px, calc(100vw - 24px)) !important;
   max-height: calc(100vh - 24px) !important;
+  display: flex;
+  flex-direction: column;
   align-items: center !important;
   transform: translateX(-50%);
 }
 #toast-container .toast {
-  width: fit-content !important;
+  box-sizing: border-box;
+  width: max-content !important;
   min-width: min(250px, calc(100vw - 24px));
-  max-width: 100% !important;
-  border-radius: 999px !important;
+  max-width: min(630px, calc(100vw - 24px)) !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  grid-template-columns: 10px minmax(0, 1fr) !important;
 }
+#toast-container .toast-close { display: none !important; }
 #toast-container .toast-warning { border-color: #fdba74 !important; color: #c2410c !important; }
 #toast-container .toast-error { border-color: #fca5a5 !important; color: #b91c1c !important; }
 #toast-container .toast-warning .toast-content { color: #c2410c !important; }
@@ -4696,15 +4705,6 @@ header.app-header .logo:hover .logo-mark {
   transform: none !important;
   filter: none !important;
 }
-#toast-container { width: min(630px, calc(100vw - 24px)) !important; }
-#toast-container .toast {
-  width: min(630px, calc(100vw - 24px)) !important;
-  max-width: 100% !important;
-  border: 0 !important;
-  border-radius: 12px !important;
-  grid-template-columns: 10px minmax(0, 1fr) !important;
-}
-#toast-container .toast-close { display: none !important; }
 body.workspace-open #step-panel-1 .step1-content-card:focus-within {
   border-color: #e2e8f0 !important;
   box-shadow: 0 1px 3px rgba(15, 23, 42, .06) !important;
@@ -4763,13 +4763,6 @@ body.workspace-open #step-panel-1 .step1-markdown-editor {
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
-}
-
-#toast-container { display: flex; flex-direction: column; align-items: center; }
-#toast-container .toast {
-  box-sizing: border-box;
-  width: max-content !important;
-  max-width: min(630px, calc(100vw - 24px)) !important;
 }
 
 #step-panel-2 .step2-thumb-delete {
@@ -4945,4 +4938,297 @@ body.workspace-open #step-panel-3 .step3-image-card .step3-card-utilities > .ste
   padding: 0 9px !important;
   border-radius: 8px !important;
   white-space: nowrap !important;
+}
+
+/* ============================================================
+   UI consistency layer (docs/ui-consistency-plan.md v2, Phase 0)
+   Workspace-scoped tokens + unified page-tab family + toolbar
+   single-line scroll + shared empty/loading primitives.
+   Global (home) surfaces stay under the Stitch parity layers.
+   ============================================================ */
+body.workspace-open {
+  --ws-line: #e2e8f0;
+  --ws-orange: var(--workspace-chrome-orange, #ee5d36);
+  --ws-orange-soft: #fff5f0;
+  --ws-card-radius: 16px;
+  --ws-subcard-radius: 12px;
+  --ws-complete-bg: #eef7f0;
+  --ws-complete-ink: #2f7a47;
+}
+
+/* P0-4b: titlebar tool row stays single-line; narrow viewports scroll
+   horizontally instead of wrapping (ui-spec.md 25-27). */
+body.workspace-open .workflow-toolbar {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+body.workspace-open .workflow-toolbar::-webkit-scrollbar {
+  display: none;
+}
+body.workspace-open .workflow-header {
+  min-width: 0;
+}
+
+/* Unified text page-tab family: 第 N 页 pills shared by Step 2 / 4 / 6.
+   The drag handle and batch-delete badge remain Step 2 only (ui-spec §5).
+   Stated at ID strength with !important so it outranks the frozen legacy
+   restyles of .step5-slide-btn in style.css (3450/3464/3471/6429/9757). */
+body.workspace-open .step5-slide-btn,
+body.workspace-open #step-panel-5 .step5-slide-btn,
+body.workspace-open .annotation-page-tab,
+body.workspace-open #step-panel-10 .annotation-page-tab {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  min-width: 0 !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+  box-shadow: none !important;
+  color: #42464d !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease !important;
+}
+body.workspace-open .step5-slide-btn:hover,
+body.workspace-open #step-panel-5 .step5-slide-btn:hover,
+body.workspace-open .annotation-page-tab:hover,
+body.workspace-open #step-panel-10 .annotation-page-tab:hover {
+  border-color: var(--ws-orange) !important;
+  background: var(--ws-orange-soft) !important;
+  color: var(--ws-orange) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+body.workspace-open .step5-slide-btn.active,
+body.workspace-open #step-panel-5 .step5-slide-btn.active,
+body.workspace-open .annotation-page-tab.active,
+body.workspace-open #step-panel-10 .annotation-page-tab.active {
+  background: var(--ws-orange) !important;
+  border-color: var(--ws-orange) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+body.workspace-open .step5-slide-btn.completed:not(.active),
+body.workspace-open #step-panel-5 .step5-slide-btn.completed:not(.active) {
+  background: var(--ws-complete-bg) !important;
+  border-color: rgba(47, 122, 71, 0.35) !important;
+  color: var(--ws-complete-ink) !important;
+  box-shadow: none !important;
+}
+body.workspace-open .annotation-page-tab .annotation-thumb-badge {
+  position: static !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+  border-radius: 999px !important;
+  background: rgba(238, 93, 54, 0.12) !important;
+  color: var(--ws-orange) !important;
+  font-size: 11px !important;
+  padding: 0 5px !important;
+}
+body.workspace-open .annotation-page-tab.active .annotation-thumb-badge {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+body.workspace-open .annotation-page-tab .annotation-thumb-badge:empty {
+  display: none !important;
+}
+
+/* Shared empty state: append .ws-empty next to the legacy per-step classes. */
+.ws-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 24px;
+  border: 1px dashed rgba(238, 93, 54, 0.45);
+  border-radius: 14px;
+  background: #fafaf9;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+.ws-empty:empty {
+  display: none;
+}
+
+/* Shared loading card: spinner + primary/secondary copy. */
+.ws-loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 24px;
+  background: #ffffff;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--ws-card-radius);
+}
+.ws-loading-card .loading-spinner {
+  width: 28px;
+  height: 28px;
+}
+.ws-loading-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+.ws-loading-sub {
+  font-size: 13px;
+  color: #6e737c;
+}
+body.workspace-open .step6-slide-row-head .step6-slide-id {
+  font-size: 12px;
+  font-weight: 400;
+  color: #6e737c;
+  margin-left: 6px;
+}
+
+/* --- P1: unified modal family (docs/ui-consistency-plan.md Phase 3) --- */
+/* Overlay stacking ladder: central definition replacing the flattened
+   `z-index: 100 !important` that used to live on .modal-overlay. */
+.modal-overlay { z-index: 1000; }
+#modal-confirm { z-index: 1100; }
+.account-create-dialog,
+.ws-draft-modal { z-index: 1200; }
+/* Workspace-scoped modal skin: 16px radius + unified overlay tint.
+   Home (Stitch parity) keeps its own overlay tint and radius. */
+body.workspace-open .modal-overlay {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+body.workspace-open .modal-content {
+  border-radius: 16px !important;
+}
+/* One right-aligned action-row look for every legacy footer container. */
+.modal-actions,
+.config-editor-actions,
+.settings-footer-actions,
+.creation-config-package-actions,
+.model-setup-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--stitch-line, #e2e8f0);
+}
+
+/* ============================================================
+   Rule A implementation layer (docs/ui-redesign-plan.md §2.1/§4.4,
+   approved 2026-10-03; Stitch refs 98240283/78e6dee3). Buttons in
+   step title bars become 30px text-only pills; the single dark
+   advance button (ws-primary) carries the unified ::after arrow.
+   ============================================================ */
+body.workspace-open .workflow-toolbar button,
+body.workspace-open .workflow-toolbar label.btn,
+body.workspace-open .workflow-titlebar-actions button,
+body.workspace-open .step1-heading-actions button {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #1d1d1f !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease !important;
+}
+body.workspace-open .workflow-toolbar button:hover,
+body.workspace-open .workflow-toolbar label.btn:hover,
+body.workspace-open .workflow-titlebar-actions button:hover,
+body.workspace-open .step1-heading-actions button:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+/* Rule A: no decorative icons in toolbar buttons (removed from markup;
+   this also covers any JS re-injection). Busy spinners are spans, not
+   svg, so they are unaffected. */
+body.workspace-open .workflow-toolbar button svg,
+body.workspace-open .workflow-toolbar label.btn svg,
+body.workspace-open .workflow-titlebar-actions button svg,
+body.workspace-open .step1-heading-actions button svg {
+  display: none !important;
+}
+/* The single dark advance button per title bar (docs/ui-redesign-plan.md
+   decision #2: dark #17191D; orange stays only on the sidebar CTA). */
+body.workspace-open .workflow-toolbar button.ws-primary,
+body.workspace-open .workflow-titlebar-actions button.ws-primary,
+body.workspace-open .step1-heading-actions button.ws-primary {
+  background: #17191d !important;
+  border-color: #17191d !important;
+  color: #ffffff !important;
+}
+body.workspace-open .workflow-toolbar button.ws-primary:hover,
+body.workspace-open .workflow-titlebar-actions button.ws-primary:hover,
+body.workspace-open .step1-heading-actions button.ws-primary:hover {
+  background: #2c2e33 !important;
+  border-color: #2c2e33 !important;
+}
+body.workspace-open .workflow-toolbar button.ws-primary::after,
+body.workspace-open .workflow-titlebar-actions button.ws-primary::after,
+body.workspace-open .step1-heading-actions button.ws-primary::after {
+  content: "\2192" !important;
+  margin-left: 6px !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  transition: transform 0.15s ease !important;
+}
+body.workspace-open .workflow-toolbar button.ws-primary:hover::after,
+body.workspace-open .workflow-titlebar-actions button.ws-primary:hover::after,
+body.workspace-open .step1-heading-actions button.ws-primary:hover::after {
+  transform: translateX(2px) !important;
+}
+/* Approved single indigo semantic button (添加停顿与语气). */
+body.workspace-open #step6-btn-ai-annotate {
+  background: #4f46e5 !important;
+  border-color: #4f46e5 !important;
+  color: #ffffff !important;
+}
+body.workspace-open #step6-btn-ai-annotate:hover {
+  background: #4338ca !important;
+  border-color: #4338ca !important;
+}
+/* Step3 card header: 16px ghost handle after the status badge
+   (docs/ui-redesign-plan.md §4.1 — badge first, handle no longer
+   competes with the 12px badge). */
+body.workspace-open #step-panel-3 .slide-drag-handle {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #c0c4cc !important;
+  cursor: grab !important;
+  transition: color 0.15s ease !important;
+}
+body.workspace-open #step-panel-3 .slide-drag-handle:hover {
+  color: var(--ws-orange) !important;
+}
+body.workspace-open #step-panel-3 .slide-drag-handle svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+body.workspace-open #step-panel-3 .step3-card-identity {
+  gap: 6px !important;
 }

@@ -1,6 +1,7 @@
 """Step 6 narration initialization, annotation, repair, and persistence."""
 
 from __future__ import annotations
+from runtime_support import run_subprocess_killable
 
 from dataclasses import dataclass
 import json
@@ -155,9 +156,11 @@ def init_step6_narration(project_id: str, db: Session):
         
     write_narration_script = os.path.abspath(os.path.join(os.path.dirname(__file__), "scripts", "write_narration_from_visual_contract.py"))
     try:
-        res = subprocess.run([
+        res = run_subprocess_killable([
             sys.executable, write_narration_script, "--run-dir", project.run_dir
-        ], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
+        ], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout_sec=180)
+        if res.returncode == 124:
+            raise subprocess.TimeoutExpired(res.args, 180)
     except subprocess.TimeoutExpired:
         raise HTTPException(status_code=504, detail="初始化演讲稿超时，请重试")
     

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import logging
 import re
 from typing import Any, Dict, List, Optional
@@ -638,5 +639,23 @@ def compose_visual_contract_from_plans(
         },
         "slides": slides,
     }
+
+
+
+def _step2_script_plan_fingerprint(plan: Dict[str, Any]) -> str:
+    source = {
+        "title": str(plan.get("title") or ""),
+        "slides": [
+            {
+                "slide_id": str(slide.get("slide_id") or ""),
+                "slide_title": str(slide.get("slide_title") or ""),
+                "narration": str(slide.get("narration") or ""),
+            }
+            for slide in (plan.get("slides") or [])
+            if isinstance(slide, dict)
+        ],
+    }
+    encoded = json.dumps(source, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 

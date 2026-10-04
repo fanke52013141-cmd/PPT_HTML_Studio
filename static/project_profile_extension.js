@@ -18,35 +18,16 @@
     pause_on_render_failure: true,
   };
 
-  function parseJsonResponse(response) {
-    return response.json().then(data => {
-      if (!response.ok) throw new Error(data.detail || data.message || response.statusText || '请求失败');
-      return data;
-    });
-  }
-
   function apiGet(url) {
-    return window.API?.get ? window.API.get(url) : fetch(url).then(parseJsonResponse);
+    return window.API.get(url);
   }
 
   function apiPost(url, body) {
-    if (window.API?.post) return window.API.post(url, body);
-    const isFormData = body instanceof FormData;
-    return fetch(url, {
-      method: 'POST',
-      body: isFormData ? body : JSON.stringify(body || {}),
-      headers: isFormData ? {} : { 'Content-Type': 'application/json' },
-    }).then(parseJsonResponse);
+    return window.API.post(url, body);
   }
 
   function apiPut(url, body) {
-    return window.API?.put
-      ? window.API.put(url, body)
-      : fetch(url, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body || {}),
-        }).then(parseJsonResponse);
+    return window.API.put(url, body);
   }
 
   function toast(message, duration) {
@@ -54,9 +35,7 @@
     else console.log(message);
   }
 
-  function esc(value) {
-    return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
-  }
+  const esc = value => window.escHtml(String(value ?? ''));
 
   async function loadCreationConfigs() {
     try {

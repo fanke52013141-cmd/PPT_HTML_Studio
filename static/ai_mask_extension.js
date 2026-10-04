@@ -44,31 +44,15 @@
   ];
 
   function apiGet(url) {
-    return window.API?.get ? window.API.get(url) : fetch(url).then(async r => {
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d.detail || d.message || r.statusText);
-      return d;
-    });
+    return window.API.get(url);
   }
 
   function apiPut(url, body) {
-    return window.API?.put ? window.API.put(url, body) : fetch(url, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-    }).then(async r => {
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d.detail || d.message || r.statusText);
-      return d;
-    });
+    return window.API.put(url, body);
   }
 
   function apiPost(url, body) {
-    return window.API?.post ? window.API.post(url, body) : fetch(url, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {})
-    }).then(async r => {
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d.detail || d.message || r.statusText);
-      return d;
-    });
+    return window.API.post(url, body, { timeoutMs: 900000 });
   }
 
   function toast(msg, duration) {
@@ -77,21 +61,10 @@
   }
 
   function projectId() {
-    const fromWindow = window.state?.currentProject?.id || window.PPTStudio?.getCurrentProject?.()?.id;
-    if (fromWindow) return fromWindow;
-    const bgSrc = document.getElementById('step5-bg-img')?.getAttribute('src') || '';
-    const match = bgSrc.match(/\/api\/projects\/([^/]+)\/slides\//);
-    if (match) return decodeURIComponent(match[1]);
-    const currentLinks = Array.from(document.querySelectorAll('[src], [href]'))
-      .map(el => el.getAttribute('src') || el.getAttribute('href') || '')
-      .join('\n');
-    const anyMatch = currentLinks.match(/\/api\/projects\/([^/]+)\//);
-    return anyMatch ? decodeURIComponent(anyMatch[1]) : null;
+    return window.PPTStudio?.runtime?.state?.currentProject?.id || '';
   }
 
-  function escapeAttr(value) {
-    return String(value ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  }
+  const escapeAttr = value => window.escHtml(String(value ?? ''));
 
 
   function fitFullscreenCanvas() {
@@ -506,6 +479,11 @@
           skip_locked_groups: true,
         },
       });
+      if (projectId() !== id) return result.success === true;
+      if (result.cancelled) {
+        setInlineStatus('AI 标注已停止，原有 Mask 保留。可重新执行标注。', true, false);
+        return false;
+      }
       if (result.complete !== true) {
         setReviewIssues(result.review_issues || [], result.quality_status || 'failed');
         const error = new Error('仍有画面语块未能完成关联，请重新运行 AI 标注');
@@ -524,14 +502,18 @@
       }
       return true;
     } catch (e) {
-      setInlineStatus('AI 标注失败', true, false);
-      if (!options.automatic) toast(`❌ AI 标注失败：${e.message}`, 8000);
+      if (projectId() === id) {
+        setInlineStatus('AI 标注失败', true, false);
+        if (!options.automatic) toast(`❌ AI 标注失败：${e.message}`, 8000);
+      }
       if (options.rethrow) throw e;
       return false;
     } finally {
-      if (settingsBtn) settingsBtn.disabled = false;
-      btn.disabled = false;
-      fitFullscreenCanvas();
+      if (projectId() === id) {
+        if (settingsBtn) settingsBtn.disabled = false;
+        btn.disabled = false;
+        fitFullscreenCanvas();
+      }
     }
   }
 
@@ -570,9 +552,6 @@
     installAutoAnnotationWatch();
   }
 
-  const timer = setInterval(() => {
-    boot();
-    if (document.getElementById('step5-btn-ai-mask')) clearInterval(timer);
-  }, 500);
-  document.addEventListener('DOMContentLoaded', boot);
+  document.addEventListener('DOMContentLoaded', boot, { once: true });
+  if (document.readyState !== 'loading') boot();
 })();

@@ -21,8 +21,8 @@ def test_init_narration_reports_invalid_contract_as_recoverable_error(
     monkeypatch.setattr(narration_service, "project_or_404", lambda *_args: project)
     monkeypatch.setattr(narration_service, "read_json_file", lambda *_args: {})
     monkeypatch.setattr(
-        narration_service.subprocess,
-        "run",
+        narration_service,
+        "run_subprocess_killable",
         lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stderr=""),
     )
 
@@ -46,8 +46,8 @@ def test_init_narration_keeps_stdout_diagnostics_when_writer_fails(
     monkeypatch.setattr(narration_service, "project_or_404", lambda *_args: project)
     monkeypatch.setattr(narration_service, "read_json_file", lambda *_args: {})
     monkeypatch.setattr(
-        narration_service.subprocess,
-        "run",
+        narration_service,
+        "run_subprocess_killable",
         lambda *_args, **_kwargs: SimpleNamespace(
             returncode=17,
             stdout="writer failed with useful context",
@@ -79,8 +79,8 @@ def test_init_narration_reports_invalid_slide_beats_as_recoverable_error(
     monkeypatch.setattr(narration_service, "project_or_404", lambda *_args: project)
     monkeypatch.setattr(narration_service, "read_json_file", lambda *_args: {})
     monkeypatch.setattr(
-        narration_service.subprocess,
-        "run",
+        narration_service,
+        "run_subprocess_killable",
         lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stderr=""),
     )
 

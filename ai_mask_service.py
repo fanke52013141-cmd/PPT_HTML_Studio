@@ -25,6 +25,9 @@ class AiMaskDependencies:
     logger: logging.Logger
 
 
+import generation_control
+
+
 class AiMaskTaskService:
     def __init__(self, dependencies: AiMaskDependencies) -> None:
         self.dependencies = dependencies
@@ -39,8 +42,10 @@ class AiMaskTaskService:
             is_timeout_exception=dependencies.is_timeout_exception,
             write_project_log=dependencies.write_project_log,
             logger=dependencies.logger,
+            check_cancelled=lambda project_id: generation_control.checkpoint(project_id, 'mask'),
         )
 
+    @generation_control.controlled('mask', method=True)
     def annotate_project(
         self,
         project: Any,

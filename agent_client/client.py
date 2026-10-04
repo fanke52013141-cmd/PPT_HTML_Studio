@@ -116,6 +116,20 @@ class AgentClient:
     def get_identity(self) -> dict[str, Any]:
         return self._request("GET", "/api/agent/v1/identity")
 
+    def get_generation_status(self, project_id: str, stage: str) -> dict[str, Any]:
+        from agent_contract.capabilities import CAPABILITIES
+        from urllib.parse import quote
+        capability = next(item for item in CAPABILITIES if item.id == 'generation.status')
+        return self._request(capability.agent_api_method, capability.agent_api_path.format(
+            project_id=quote(project_id, safe=''), stage=quote(stage, safe='')))
+
+    def stop_generation(self, project_id: str, stage: str, operation_id: str) -> dict[str, Any]:
+        from agent_contract.capabilities import CAPABILITIES
+        from urllib.parse import quote
+        capability = next(item for item in CAPABILITIES if item.id == 'generation.stop')
+        return self._request(capability.agent_api_method, capability.agent_api_path.format(
+            project_id=quote(project_id, safe=''), stage=quote(stage, safe='')), body={'operation_id': operation_id})
+
     def create_project(
         self,
         name: str,

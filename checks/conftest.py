@@ -49,3 +49,17 @@ import database  # noqa: E402  （必须在设置环境变量之后导入）
 
 # 建立与真实库一致的结构：schema + 默认设置 + 默认账号。
 database.init_db()
+
+# Tests emulate separate application lifetimes and frequently leave mocked
+# executors queued. Keep their process-local stop signals isolated as well.
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def isolated_generation_controls():
+    import generation_control
+    with generation_control._lock:
+        generation_control._active.clear()
+    yield
+    with generation_control._lock:
+        generation_control._active.clear()

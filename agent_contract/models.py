@@ -8,9 +8,27 @@ duplicate parameter definitions across layers.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, Literal
 
 from pydantic import BaseModel, Field
+
+GenerationKind = Literal['storyboard_script', 'storyboard_visual', 'mask', 'tts', 'video']
+
+
+class GenerationStopRequest(BaseModel):
+    operation_id: str = Field(min_length=1, max_length=128)
+
+
+class GenerationControlResult(BaseModel):
+    active: bool
+    operation_id: Optional[str] = None
+    stop_requested: bool = False
+
+
+class GenerationStopResult(BaseModel):
+    accepted: bool
+    operation_id: str
+    message: str
 
 
 class IdentityResult(BaseModel):

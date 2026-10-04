@@ -14,6 +14,7 @@
 旧内置默认值完全一致时才迁移,真正的用户自定义内容永不覆盖。
 """
 from __future__ import annotations
+from annotation_contracts import EMPHASIS_LIMITS
 
 import json
 from dataclasses import dataclass
@@ -31,7 +32,6 @@ ANNOTATION_PLAN_PROMPT_VERSION = "annotation_plan_v2"
 ANNOTATION_PROMPTS_FILE = "annotation_prompts.json"
 
 # 旧内置默认值登记表:迁移时只有与这些文本完全一致的项目内容才会被替换。
-LEGACY_BUILTIN_DEFAULTS: tuple[str, ...] = ()
 
 BUILTIN_ANNOTATION_PLAN_SYSTEM_PROMPT = """你是课件视频的重点识别与勾画标注建议助手。目标是帮助观众跟上本页讲解,只推荐讲稿与画面文字明确对应、值得引导视线的内容；不要把所有数字或标题都当重点。
 
@@ -162,7 +162,7 @@ def compose_plan_prompts(
     emphasis: str,
 ) -> dict[str, str]:
     """组装最小必要的 user payload(纯函数;输入字段均已通过必要性判定)。"""
-    max_suggestions = {"weak": 1, "moderate": 2, "strong": 3}.get(emphasis, 2)
+    max_suggestions = EMPHASIS_LIMITS.get(emphasis, 2)
     user_payload = {
         "schema_version": ANNOTATION_PLAN_PROMPT_VERSION,
         "beats": [{"beat_id": b.get("beat_id"), "spoken_text": b.get("spoken_text")} for b in beats],

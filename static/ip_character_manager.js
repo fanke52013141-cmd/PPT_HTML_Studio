@@ -219,7 +219,7 @@
     document.querySelectorAll(".ip-character-btn-delete").forEach(function (btn) {
       btn.onclick = async function () {
         const id = btn.getAttribute("data-id");
-        if (!confirm("确定删除该 IP 形象角色？关联的参考图也会一并移除。")) return;
+        if (!await window.confirmAction('删除 IP 形象', '确定删除该 IP 形象角色？关联的参考图也会一并移除，删除后无法恢复。')) return;
         await deleteCharacter(id);
       };
     });

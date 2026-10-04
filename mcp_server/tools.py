@@ -64,6 +64,10 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
 
     if cap_id == "identity.get":
         return client.get_identity()
+    elif cap_id == 'generation.status':
+        return client.get_generation_status(args.get('project_id', ''), args.get('stage', ''))
+    elif cap_id == 'generation.stop':
+        return client.stop_generation(args.get('project_id', ''), args.get('stage', ''), args.get('operation_id', ''))
     elif cap_id == "project.create":
         return client.create_project(
             name=args.get("name", ""),

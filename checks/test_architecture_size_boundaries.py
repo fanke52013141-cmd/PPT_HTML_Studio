@@ -16,6 +16,7 @@ def line_count(path: str) -> int:
 
 
 def test_extracted_modules_do_not_regress_into_monoliths() -> None:
+    # 修改限额必须在变更说明中解释职责边界及增长原因。
     limits = {
         "static/workflow_state.js": 140,
         "ai_mask_engine.py": 770,

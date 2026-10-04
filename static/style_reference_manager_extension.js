@@ -11,43 +11,24 @@
     selectedTemplateId: 'handdrawn',
   };
 
-  function parseResponse(response) {
-    return response.json().then(data => {
-      if (!response.ok) throw new Error(data.detail || data.message || response.statusText || '请求失败');
-      return data;
-    });
-  }
-
   function apiGet(url) {
-    return window.API?.get ? window.API.get(url) : fetch(url).then(parseResponse);
+    return window.API.get(url);
   }
 
   function apiPost(url, body) {
-    return window.API?.post ? window.API.post(url, body || {}) : fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body || {}),
-    }).then(parseResponse);
+    return window.API.post(url, body);
   }
 
   function apiPut(url, body) {
-    return window.API?.put ? window.API.put(url, body || {}) : fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body || {}),
-    }).then(parseResponse);
+    return window.API.put(url, body);
   }
 
-  function apiPostForm(url, form) {
-    return fetch(url, {
-      method: 'POST',
-      headers: { 'X-PPT-Studio-Request': '1' },
-      body: form,
-    }).then(parseResponse);
+  function apiPostForm(url, body) {
+    return window.API.post(url, body);
   }
 
   function apiDelete(url) {
-    return window.API?.delete ? window.API.delete(url) : fetch(url, { method: 'DELETE' }).then(parseResponse);
+    return window.API.delete(url);
   }
 
   function toast(message, duration) {
@@ -55,9 +36,7 @@
     else console.log(message);
   }
 
-  function esc(value) {
-    return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
-  }
+  const esc = value => window.escHtml(String(value ?? ''));
 
   function projectCanvasLabel() {
     const geometry = typeof window.PPTStudio?.runtime?.getProjectCanvasGeometry === 'function'
@@ -364,13 +343,14 @@
 
   function ensureStep3EntryButton() {
     ensureModal();
-    const toolbar = document.querySelector('#step-panel-3 .step3-toolbar-row');
+    const toolbar = document.querySelector('#step-panel-3 .workflow-toolbar');
     if (!toolbar || document.getElementById('step3-btn-image-style-panel')) return;
     const button = document.getElementById('step3-btn-style') || document.createElement('button');
     button.id = 'step3-btn-image-style-panel';
     button.className = 'secondary';
     button.type = 'button';
-    button.textContent = '图片风格设置';
+    button.textContent = '图片风格';
+    button.title = '图片风格设置';
     if (button.dataset.styleManagerBound !== '1') {
       button.dataset.styleManagerBound = '1';
       button.addEventListener('click', () => openManager().catch(showError));
@@ -656,7 +636,7 @@
     if (!(STATE.references?.images || []).length) throw new Error('请先生成或上传至少 1 张效果预览，再保存模板。');
     const field = document.getElementById('style-panel-template-name');
     let name = String(field?.value || '').trim();
-    if (!name) name = String(window.prompt('请输入新的模板名称', STATE.style?.style_name || '') || '').trim();
+    if (!name) name = String(await window.requestTextInput('保存图片风格模板', '模板名称', STATE.style?.style_name || '') || '').trim();
     if (!name) return;
     const result = await apiPost(step3ImageStyleUrl(projectId, '/templates'), { name });
     STATE.templates = result.templates || [];
@@ -669,7 +649,7 @@
   async function deleteSelectedTemplate() {
     const id = STATE.selectedTemplateId;
     if (!id || id === 'current') throw new Error('请选择一个已保存模板。');
-    if (!window.confirm('确定删除所选图片风格模板？')) return;
+    if (!await window.confirmAction('删除图片风格模板', '确定删除所选图片风格模板？删除后该模板无法恢复，当前项目已应用的风格保持不变。')) return;
     const result = await apiDelete(`/api/image-style/project-templates/${encodeURIComponent(id)}`);
     STATE.templates = result.templates || [];
     STATE.selectedTemplateId = 'current';
@@ -735,8 +715,6 @@
     ensureStep3EntryButton();
   }
 
-  const timer = setInterval(ensureStep3EntryButton, 700);
-  setTimeout(() => clearInterval(timer), 15000);
   document.addEventListener('DOMContentLoaded', boot);
   if (document.readyState !== 'loading') boot();
 })();

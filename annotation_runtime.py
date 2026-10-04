@@ -84,10 +84,11 @@ def configure_annotation_runtime(app, write_json_atomic, read_json_file, reveal_
             llm_generate=_annotation_llm_generate,
         )
     )
+    annotation_job_store = AnnotationJobStore(DatabaseSessionLocal)
+    annotation_job_store.interrupt_orphaned()
     _annotation_job_manager = AnnotationJobManager(
         AnnotationJobDependencies(
-            job_store=AnnotationJobStore(DatabaseSessionLocal),
-            service_get_slide_ids=lambda db, project_id: [],
+            job_store=annotation_job_store,
             session_factory=DatabaseSessionLocal,
             text_layout_builder=_annotation_layout_builder,
             recognize=_annotation_ocr.recognize_text_lines,

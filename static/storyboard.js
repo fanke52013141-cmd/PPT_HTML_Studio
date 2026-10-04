@@ -40,7 +40,6 @@ async function loadStep2Data() {
   try {
     const configRes = await API.get(`/api/projects/${projectId}/steps/2/rules`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
-    state.storyboardRoles = configRes.roles || state.storyboardRoles;
   } catch (e) {}
   const res = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
@@ -136,6 +135,10 @@ async function generateStep2ScriptPlan(requirement = '') {
       { timeoutMs: 900000 },
     );
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
+    if (response.cancelled) {
+      updateStep2AutosaveStatus(response.message || '演讲稿生成已停止');
+      return false;
+    }
     if (!response.success || !response.script_plan) throw new Error(response.message || '演讲稿生成失败');
     state.step2ScriptPlan = response.script_plan;
     if (typeof response.visual_exists === 'boolean') state.step2VisualExists = response.visual_exists;
@@ -355,6 +358,10 @@ async function generateStep2VisualPlan() {
     if (loadingText) loadingText.textContent = '第二步：AI 正在根据已保存的演讲稿规划可视化…';
     const visual = await API.post(`/api/projects/${projectId}/steps/2/visual/execute`, undefined, { timeoutMs: 900000 });
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
+    if (visual.cancelled) {
+      updateStep2AutosaveStatus(visual.message || '内容可视化已停止');
+      return false;
+    }
     if (!visual.success) throw new Error(visual.message || '可视化生成失败');
     const composed = await API.post(`/api/projects/${projectId}/steps/2/compose`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
@@ -455,16 +462,16 @@ async function submitManualSkeletonIfNeeded() {
   if (!state.currentProject || !isManualMode()) return true;
   const slides = collectManualSlidesFromState();
   if (!slides.length) {
-    showToast('⚠️ 请至少添加一页幻灯片');
+    showStep2ValidationError('请至少添加一页幻灯片');
     return false;
   }
   for (let i = 0; i < slides.length; i++) {
     if (!slides[i].main_title) {
-      showToast(`⚠️ 第 ${i + 1} 页标题不能为空`);
+      showStep2ValidationError(`第 ${i + 1} 页标题不能为空`, i, 'title');
       return false;
     }
     if (!slides[i].narration) {
-      showToast(`⚠️ 第 ${i + 1} 页演讲稿不能为空`);
+      showStep2ValidationError(`第 ${i + 1} 页演讲稿不能为空`, i, 'narration');
       return false;
     }
   }
@@ -474,12 +481,23 @@ async function submitManualSkeletonIfNeeded() {
       await loadStep2Data();
       return true;
     }
-    showToast('⚠️ 分镜结构尚未通过校验，请检查当前页内容');
+    showStep2ValidationError('分镜结构尚未通过校验，请检查当前页内容');
     return false;
   } catch (e) {
     showToast('⚠️ 保存失败：' + (e && e.message ? e.message : String(e)));
     return false;
   }
+}
+
+function showStep2ValidationError(message, index = null, field = null) {
+  if (index !== null) {
+    saveCurrentSlideInputToState();
+    state.activeSlideIndex = index;
+    renderStep2Workspace();
+  }
+  updateStep2AutosaveStatus(message);
+  if (field) showFieldError(document.getElementById(field === 'title'
+    ? 'step2-slide-title-input' : 'step2-slide-narration-input'), message);
 }
 
 // ==================== 批量导入弹窗 ====================
@@ -661,7 +679,6 @@ function setStep2GenerationStatus(message = '', type = '') {
 
 async function confirmStep2Generation() {
   const userRequirement = document.getElementById('step2-generation-requirement').value.trim();
-  state.step2GenerationRequirement = userRequirement;
   closeStep2GenerationModal();
   await generateStep2ScriptPlan(userRequirement);
 }
@@ -697,7 +714,7 @@ function renderStep2Workspace() {
     if (visualGenerateBtn) {
       // 自动模式常驻展示：演讲稿未生成/生成中禁用，全部生成完毕后可点（UI 规范 §8）。
       visualGenerateBtn.style.display = 'inline-flex';
-      visualGenerateBtn.disabled = !step2VisualButtonReady();
+      setDisabledReason(visualGenerateBtn, !step2VisualButtonReady(), '先完成每页演讲稿，再进行内容可视化');
       visualGenerateBtn.classList.toggle('is-active', state.step2VisualExists && !state.step2VisualStale);
       setStep2ButtonLabel(visualGenerateBtn, state.step2VisualStale ? '重新生成可视化' : '内容可视化');
       visualGenerateBtn.removeAttribute('title');
@@ -714,7 +731,8 @@ function renderStep2Workspace() {
   const step2NextButton = document.getElementById('step2-btn-next');
   step2NextButton.style.display = hasSlides ? 'inline-flex' : 'none';
   const visualizationNeedsRefresh = !manual && (state.step2WorkflowPending || state.step2VisualStale);
-  step2NextButton.disabled = !hasSlides || visualizationNeedsRefresh;
+  setDisabledReason(step2NextButton, !hasSlides || visualizationNeedsRefresh,
+    !hasSlides ? '请先添加分镜页面' : '演讲稿已修改，请重新生成可视化后继续');
   step2NextButton.removeAttribute('title');
   updateStep2BatchDeleteButton();
 
@@ -735,7 +753,7 @@ function renderStep2Workspace() {
 
   if (!tabSource.length) {
     thumbsContainer.style.display = 'flex';
-    thumbsContainer.innerHTML = '<div class="step2-empty-storyboard" role="status">当前还没有分镜页面。请先生成演讲稿，再执行内容可视化。</div>';
+    thumbsContainer.innerHTML = '<div class="step2-empty-storyboard ws-empty" role="status">当前还没有分镜页面。请先生成演讲稿，再执行内容可视化。</div>';
   }
 
   tabSource.forEach((slide, idx) => {
@@ -744,6 +762,25 @@ function renderStep2Workspace() {
     // 二级菜单 Tab（UI 规范 §5）：胶囊样式与动效由样式层接管；
     // 页码常显，主标题放悬停提示。
     const pageLabel = `第 ${idx + 1} 页`;
+    thumb.tabIndex = 0;
+    thumb.setAttribute('role', 'button');
+    thumb.setAttribute('aria-label', `${pageLabel}，${slide.main_title || slide.slide_title || '未命名'}。Alt 加左右方向键调整顺序`);
+    thumb.setAttribute('aria-pressed', String(idx === state.activeSlideIndex));
+    thumb.addEventListener('keydown', event => {
+      if (event.target !== thumb) return;
+      if (event.altKey && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        event.preventDefault();
+        const target = idx + (event.key === 'ArrowLeft' ? -1 : 1);
+        if (target < 0 || target >= tabSource.length || state.step2BatchDeleteMode) return;
+        moveStep2Thumb(idx, target);
+        document.querySelectorAll('#step2-thumbs .step2-slide-thumb')[target]?.focus();
+        updateStep2AutosaveStatus(`已移至第 ${target + 1} 页，正在保存排序`);
+      } else if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        thumb.click();
+        document.querySelectorAll('#step2-thumbs .step2-slide-thumb')[idx]?.focus();
+      }
+    });
     thumb.innerHTML = `
       <span class="step2-thumb-handle" aria-hidden="true">⠿</span>
       <span class="step2-thumb-label">${escHtml(pageLabel)}</span>

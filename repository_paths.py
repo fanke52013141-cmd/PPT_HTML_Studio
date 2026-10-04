@@ -105,3 +105,19 @@ STEP3_IMAGE_PROMPT_TEMPLATE_PATH = os.path.join(
     "prompts",
     "step3_image_system.md",
 )
+
+
+def resolve_comfyui_tts_workflow_path(endpoint: str = "", repo_root=None):
+    """Resolve a local override, then the legacy and bundled workflow candidates."""
+    from pathlib import Path
+
+    root = Path(repo_root or REPO_ROOT)
+    value = str(endpoint or "").strip()
+    if value and not value.lower().startswith(("http://", "https://")):
+        path = Path(value)
+        return path if path.is_absolute() else root / path
+    candidates = (
+        root / "data" / "digital_human" / "comfyui_tts_workflow.json",
+        root / "config" / "indextts2_5_comfyui_workflow.json",
+    )
+    return next((path for path in candidates if path.is_file()), candidates[-1])

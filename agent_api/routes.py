@@ -42,6 +42,7 @@ from agent_contract.models import (
     ArtifactInfo,
     DiagnosticsResult,
     IdentityResult,
+    GenerationKind, GenerationControlResult, GenerationStopRequest, GenerationStopResult,
 )
 from agent_contract.operations import (
     CHECKPOINT_STAGES, get_checkpoint,
@@ -65,6 +66,20 @@ from agent_idempotency_service import (
 logger = logging.getLogger("PPTStudio.AgentAPI")
 
 router = APIRouter(prefix="/api/agent/v1", tags=["Agent API v1"])
+
+
+@router.get('/projects/{project_id}/generation/{stage}/status', response_model=GenerationControlResult)
+def agent_generation_status(project_id: str, stage: GenerationKind, db: Session = Depends(get_db)):
+    import generation_control
+    _resolve_project(db, project_id)
+    return generation_control.status(project_id, stage)
+
+
+@router.post('/projects/{project_id}/generation/{stage}/stop', response_model=GenerationStopResult)
+def agent_generation_stop(project_id: str, stage: GenerationKind, payload: GenerationStopRequest, db: Session = Depends(get_db)):
+    import generation_control
+    _resolve_project(db, project_id)
+    return generation_control.request_stop(project_id, stage, payload.operation_id)
 
 
 # ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@ from dataclasses import replace
 import json
 from pathlib import Path
 import sys
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -212,8 +213,8 @@ def test_step2_compatibility_endpoint_delegates_to_current_pipeline(monkeypatch)
 
     calls: list[tuple[str, object]] = []
     db = object()
-    monkeypatch.setattr(storyboard_service, "execute_step2_script_plan", lambda project_id, session, payload=None: calls.append(("script", payload)))
-    monkeypatch.setattr(storyboard_service, "execute_step2_visual_plan", lambda project_id, session: calls.append(("visual", session)))
+    monkeypatch.setattr(storyboard_service, "execute_step2_script_plan", lambda project_id, session, payload=None: calls.append(("script", payload)) or {"success": True})
+    monkeypatch.setattr(storyboard_service, "execute_step2_visual_plan", lambda project_id, session: calls.append(("visual", session)) or {"success": True})
     monkeypatch.setattr(
         storyboard_service,
         "compose_step2_visual_contract",
@@ -225,6 +226,16 @@ def test_step2_compatibility_endpoint_delegates_to_current_pipeline(monkeypatch)
     assert calls == [("script", {}), ("visual", db)]
     assert result["success"] is True
     assert result["deprecated_route"] is True
+
+
+def test_step2_compatibility_endpoint_stops_after_cancelled_stage(monkeypatch) -> None:
+    import storyboard_service
+
+    cancelled = {"success": False, "cancelled": True}
+    monkeypatch.setattr(storyboard_service, "execute_step2_script_plan", lambda *args: cancelled)
+    monkeypatch.setattr(storyboard_service, "execute_step2_visual_plan", lambda *args: pytest.fail("cancelled script must not start visualization"))
+    monkeypatch.setattr(storyboard_service, "compose_step2_visual_contract", lambda *args: pytest.fail("cancelled script must not compose a contract"))
+    assert server.execute_step2("project_001", object(), {}) == cancelled
 
 
 def test_reference_image_prompt_has_no_fixed_group_count_or_duplicate_style() -> None:

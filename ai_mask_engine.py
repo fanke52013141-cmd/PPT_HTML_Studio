@@ -78,7 +78,6 @@ DEFAULT_SETTINGS: dict[str, Any] = {
 
 @dataclass(frozen=True)
 class AiMaskEngineDependencies:
-    """Explicit capabilities required by the AI Mask algorithm layer."""
 
     get_setting: Callable[..., Any]
     get_openai_client: Callable[..., Any]
@@ -88,6 +87,7 @@ class AiMaskEngineDependencies:
     is_timeout_exception: Callable[[BaseException], bool]
     write_project_log: Callable[..., None]
     logger: Any
+    check_cancelled: Callable[[str], None] = lambda _project_id: None
 
 LEGACY_DEFAULT_METHODOLOGY_V2 = """你是中文 PPT 视频的 AI Mask 语义标注专家。
 
@@ -446,7 +446,7 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
         "vision_object_batch_size": _int(raw.get("vision_object_batch_size"), 12, 1, 40),
         "vision_max_requests": _int(raw.get("vision_max_requests"), 4, 1, 8),
         "max_group_elements": max(20, _int(raw.get("max_group_elements"), 60, 1, 120)),
-        "doclayout_enabled": _bool(raw.get("doclayout_enabled"), False),
+        "doclayout_enabled": _bool(raw.get("doclayout_enabled"), DEFAULT_SETTINGS["doclayout_enabled"]),
         # "cpu" is an immediate bypass, "cuda" demands verified CUDA binding plus
         # a smoke run, and either failure falls back to CPU for the whole process.
         "doclayout_device_mode": normalize_device_mode(raw.get("doclayout_device_mode")),
@@ -613,6 +613,7 @@ def _annotate_project(
     contract_slides = _select_contract_slides(contract, slide_ids)
     prepared: list[dict[str, Any]] = []
     for slide in contract_slides:
+        capabilities.check_cancelled(str(getattr(project, 'id', '')))
         slide_id = str(slide.get("slide_id") or "")
         slide_dir = run_dir / "slides" / slide_id
         master_image_path = slide_dir / "visual_draft.png"
@@ -662,6 +663,7 @@ def _annotate_project(
         })
 
     def match_slide(item: dict[str, Any]) -> dict[str, Any]:
+        capabilities.check_cancelled(str(getattr(project, 'id', '')))
         stage_ms: dict[str, float] = item["stage_ms"]
         vision_started = time.monotonic()
         vision_mark = time.perf_counter()
@@ -832,6 +834,7 @@ def _annotate_project(
             item["slide_id"]: item["mask_source"] for item in prepared
         },
     }
+    capabilities.check_cancelled(str(getattr(project, 'id', '')))
     write_json_atomic(run_dir / "reveal_manifest.json", manifest)
     return {
         "success": True,

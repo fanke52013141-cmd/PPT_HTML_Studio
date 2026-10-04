@@ -566,6 +566,16 @@ def cmd_identity(args: argparse.Namespace) -> None:
 # Argument parser
 # ---------------------------------------------------------------------------
 
+def cmd_generation_control(args: argparse.Namespace) -> None:
+    client = AgentClient(base_url=args.base_url, app_token=args.token)
+    try:
+        result = client.stop_generation(args.project, args.stage, args.operation_id) if args.subcommand == 'stop' else client.get_generation_status(args.project, args.stage)
+        _print_json(result)
+    except AgentClientError as error:
+        _print_error(str(error))
+        sys.exit(1)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="pptctl",
@@ -580,6 +590,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
+    generation_capabilities = [cap for cap in CAPABILITIES if cap.id.startswith('generation.')]
+    generation_parser = subparsers.add_parser(generation_capabilities[0].cli_command.split()[0], help='Generation safe-stop controls')
+    generation_sub = generation_parser.add_subparsers(dest='subcommand', required=True)
+    for capability in generation_capabilities:
+        control_parser = generation_sub.add_parser(capability.cli_command.split()[1], help=capability.description)
+        control_parser.add_argument('--project', required=True)
+        control_parser.add_argument('--stage', required=True, choices=['storyboard_script', 'storyboard_visual', 'mask', 'tts', 'video'])
+        if capability.id == 'generation.stop':
+            control_parser.add_argument('--operation-id', required=True)
+        control_parser.set_defaults(func=cmd_generation_control)
 
     # project
     proj_parser = subparsers.add_parser("project", help="Project management")

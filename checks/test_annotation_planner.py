@@ -101,6 +101,8 @@ def test_valid_suggestion_becomes_ai_item(tmp_path):
     assert issues == []
     assert len(items) == 1
     item = items[0]
+    assert item.inputs.image_hash == "a" * 64
+    assert item.inputs.narration_hash == "b" * 64
     assert item.protection.source == "ai"
     assert item.status.content == "draft"
     assert item.status.spatial == "valid"

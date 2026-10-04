@@ -438,15 +438,17 @@ function renderAnnotationThumbnails() {
     const counts = summaryBySlide.get(slideId)?.counts || { total: 0 };
     const item = document.createElement('button');
     item.type = 'button';
-    item.className = `annotation-thumb${index === ANNOTATIONS_WS.activeIndex ? ' active' : ''}`;
+    // 文字页签与 Step 4 的「第 N 页」同构；数量角标保留为已有标注指示
+    item.className = `annotation-page-tab${index === ANNOTATIONS_WS.activeIndex ? ' active' : ''}`;
     item.dataset.slideId = slideId;
-    const img = document.createElement('img');
-    img.src = `/api/projects/${ANNOTATIONS_WS.projectId}/slides/${encodeURIComponent(slideId)}/image`;
-    img.alt = slideId;
+    item.setAttribute('aria-label', `切换到第 ${index + 1} 页`);
+    const label = document.createElement('span');
+    label.className = 'page-label';
+    label.textContent = `第 ${index + 1} 页`;
     const badge = document.createElement('span');
     badge.className = 'annotation-thumb-badge';
     badge.textContent = counts.total ? String(counts.total) : '';
-    item.appendChild(img);
+    item.appendChild(label);
     item.appendChild(badge);
     item.addEventListener('click', () => {
       if (index !== ANNOTATIONS_WS.activeIndex) {

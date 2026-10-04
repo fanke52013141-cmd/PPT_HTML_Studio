@@ -24,6 +24,12 @@ const digitalHumanPanel = fs.readFileSync(path.join(root, 'static', 'digital_hum
 const promptHelp = fs.readFileSync(path.join(root, 'static', 'prompt_help.js'), 'utf8');
 const workspaceNavigation = fs.readFileSync(path.join(root, 'static', 'workspace_navigation.js'), 'utf8');
 const eventBindings = fs.readFileSync(path.join(root, 'static', 'event_bindings.js'), 'utf8');
+const generationControls = fs.readFileSync(path.join(root, 'static', 'generation_controls.js'), 'utf8');
+if (!generationControls.includes('function initGenerationControls()')
+    || app.includes('function initGenerationControls()')
+    || !eventBindings.includes('initGenerationControls();')) {
+  throw new Error('Generation control ownership/startup contract is missing');
+}
 if (eventBindings.includes('getDownstreamEditImpact(')) {
   throw new Error('Step navigation must not prompt about edits before an edit occurs');
 }
@@ -67,6 +73,16 @@ for (const stateOwner of ['function createWorkflowState(', 'const state = create
   if (!app.includes(stateOwner)) throw new Error(`workflow state entry is missing ${stateOwner}`);
 }
 if (!css.includes('#toast-container')) throw new Error('toast container layout missing');
+{
+  // index.html must keep unique DOM ids: runtime wiring is id-based, and a
+  // duplicate silently binds only the first node (docs/ui-consistency-plan.md P2-1).
+  const idCounts = new Map();
+  for (const match of html.matchAll(/\bid="([^"]+)"/g)) {
+    idCounts.set(match[1], (idCounts.get(match[1]) || 0) + 1);
+  }
+  const duplicates = [...idCounts.entries()].filter(([, count]) => count > 1).map(([id]) => id);
+  if (duplicates.length) throw new Error(`duplicate DOM ids in index.html: ${duplicates.join(', ')}`);
+}
 for (const uiOwner of ['getToastPresentation', 'showToast', 'showCustomConfirm', 'escHtml', 'narrationDedupeKey', 'autoResizeTextarea']) {
   if (!uiFoundation.includes(`function ${uiOwner}(`)) throw new Error(`UI foundation is missing ${uiOwner}`);
   if (app.includes(`function ${uiOwner}(`)) throw new Error(`UI foundation ownership returned to app.js: ${uiOwner}`);
@@ -784,7 +800,7 @@ if (!images.includes("document.getElementById('step3-preview-box').innerHTML = s
 }
 if (!css.includes('.step3-generating-preview')) throw new Error('step 3 loading preview style missing');
 if (!images.includes('await refreshStep3Images();')) throw new Error('step 3 does not wait for image state');
-if (!images.includes('confirmBtn.disabled = !allImagesReady')) throw new Error('step 3 confirmation is not gated');
+if (!images.includes('setDisabledReason(confirmBtn, !allImagesReady, reason)')) throw new Error('step 3 confirmation is not gated');
 if (!maskEditor.includes('step5AutoSavePromise')) throw new Error('step 5 save serialization missing');
 if (!maskReveal.includes("raw.type || raw.value || 'crop_fade_up'")) {
   throw new Error('mask animation preset values are not normalized correctly');
@@ -1201,5 +1217,15 @@ if (!annotationsWorkspace.includes('refreshAnnotationModuleState')) {
 if (!annotationsCss.includes('.annotation-')) {
   throw new Error('annotation stylesheet must scope new panels');
 }
+
+
+// Shared transport ownership: extensions cannot bypass timeout/auth/error handling.
+for (const filename of ['ai_mask_extension.js', 'project_profile_extension.js',
+  'style_reference_manager_extension.js', 'storyboard_background_extension.js', 'narration_audio.js']) {
+  const source = fs.readFileSync(path.join(root, 'static', filename), 'utf8');
+  if (/\bfetch\s*\(/.test(source)) throw new Error(`${filename} must use api_client.js`);
+}
+const backgroundExtension = fs.readFileSync(path.join(root, 'static', 'storyboard_background_extension.js'), 'utf8');
+if (backgroundExtension.includes('sessionStorage')) throw new Error('background writes must use the live project scope');
 
 console.log('frontend quality checks passed');

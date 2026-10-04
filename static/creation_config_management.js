@@ -1016,7 +1016,7 @@
 
   async function copyPackage(packageItem) {
     const fallbackName = `${packageItem.name || '创作配置'} 副本`;
-    const name = window.prompt('输入复制后的配置包名称', fallbackName);
+    const name = await window.requestTextInput('复制创作配置包', '复制后的配置包名称', fallbackName);
     if (name === null) return;
     if (!name.trim()) {
       toast('请输入配置包名称');
@@ -1161,7 +1161,7 @@
   }
 
   async function archivePackage(packageItem) {
-    const confirmed = window.confirm(`归档“${packageItem.name || '此配置包'}”后将不能用于新建项目，是否继续？`);
+    const confirmed = await window.confirmAction('归档创作配置包', `归档“${packageItem.name || '此配置包'}”后将不能用于新建项目，已有项目保留配置快照。是否继续？`);
     if (!confirmed) return;
     try {
       await window.API.put(`/api/creation-configs/${encodeURIComponent(packageItem.id)}/archive`, { archived: true });
@@ -1198,7 +1198,7 @@
     } else {
       // The shared modal is loaded before this module in production. This
       // fallback only protects non-production fixture pages.
-      if (window.confirm(message)) await performDelete();
+      if (await window.confirmAction('删除创作包', message)) await performDelete();
     }
   }
 
@@ -1243,7 +1243,7 @@
     };
     if (typeof window.showCustomConfirm === 'function') {
       window.showCustomConfirm('删除模型', message, performDelete);
-    } else if (window.confirm(message)) {
+    } else if (await window.confirmAction('删除模型', message)) {
       await performDelete();
     }
   }

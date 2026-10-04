@@ -7,7 +7,8 @@ from quietly maintaining a divergent copy of path parameters.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, get_args
+from agent_contract.models import GenerationKind
 
 from pydantic import BaseModel
 
@@ -28,6 +29,8 @@ def path_parameters_schema(cap: AgentCapability) -> dict[str, Any]:
     for name, description in descriptions.items():
         if "{" + name + "}" in cap.agent_api_path:
             properties[name] = {"type": "string", "description": description}
+            if name == 'stage' and cap.id.startswith('generation.'):
+                properties[name]['enum'] = list(get_args(GenerationKind))
             required.append(name)
     return {"properties": properties, "required": required}
 

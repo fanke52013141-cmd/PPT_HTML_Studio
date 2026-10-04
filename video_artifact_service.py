@@ -16,7 +16,7 @@ from typing import Any, Callable
 
 from sqlalchemy.orm import Session, object_session
 
-from runtime_support import kill_process_tree
+from runtime_support import run_subprocess_killable
 
 from account_context import get_current_account_id
 from artifact_fingerprint import render_input_fingerprint, sha256_file
@@ -566,16 +566,17 @@ class VideoArtifactService:
             str(temporary),
         ]
         try:
-            result = subprocess.run(
+            result = run_subprocess_killable(
                 command,
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                timeout=self.dependencies.render_timeout_sec,
+                timeout_sec=self.dependencies.render_timeout_sec,
             )
+            if result.returncode == 124:
+                raise subprocess.TimeoutExpired(command, self.dependencies.render_timeout_sec)
         except subprocess.TimeoutExpired as exc:
-            kill_process_tree(getattr(exc, "process", None))
             if temporary.exists():
                 temporary.unlink()
             log_pipeline_error(

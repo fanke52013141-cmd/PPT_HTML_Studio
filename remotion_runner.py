@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import uuid
+from generation_control import GenerationStopped
 from typing import Any, Callable
 
 from database import Project
@@ -84,12 +85,13 @@ class RemotionRunner:
             set_stage,
             encoder_selection,
         )
-        color_validation = self._validate_render_color(
-            project,
-            output_path,
-            set_stage,
-            encoder_selection,
-        )
+        try:
+            color_validation = self._validate_render_color(
+                project, output_path, set_stage, encoder_selection,
+            )
+        except GenerationStopped:
+            output_path.unlink(missing_ok=True)
+            raise
         return RemotionRenderResult(
             output_path=output_path,
             output_filename=output_filename,

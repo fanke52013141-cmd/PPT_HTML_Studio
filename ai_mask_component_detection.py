@@ -909,18 +909,12 @@ def _finalize_binding_v2(
     return candidates, residual, report
 
 
-def _assign_ids_and_crops(
+def _assign_element_ids(
     candidates: list[dict[str, Any]],
     residual: list[dict[str, Any]],
-    image: Image.Image,
-    crop_dir: Path,
 ) -> None:
     for i, element in enumerate(candidates, 1):
         element["element_id"] = f"el_auto_{i:03d}"
-        box = element["bbox"]
-        image.crop((box["x"], box["y"], box["x"] + box["w"], box["y"] + box["h"])).save(
-            crop_dir / f"{element['element_id']}.png"
-        )
     for i, element in enumerate(residual, 1):
         element["element_id"] = f"el_residual_{i:04d}"
 
@@ -1091,10 +1085,6 @@ def detect_elements(
     stage_timing_ms["foreground"] = _elapsed_ms(foreground_started)
 
     components_started = time.perf_counter()
-    crop_dir = out_dir / "elements"
-    crop_dir.mkdir(parents=True, exist_ok=True)
-    for stale_crop in crop_dir.glob("*.png"):
-        stale_crop.unlink(missing_ok=True)
     candidates: list[dict[str, Any]] = []
     residual: list[dict[str, Any]] = []
     fine_grained_meta: dict[str, Any] | None = None
@@ -1112,7 +1102,7 @@ def detect_elements(
             edge_ring_support=edge_ring,
         )
         stage_timing_ms["morphology"] = 0.0
-        _assign_ids_and_crops(candidates, residual, image, crop_dir)
+        _assign_element_ids(candidates, residual)
         if layout_boxes is not None and fine_grained_meta is not None:
             # P1 invariant: a center-in-box merge must not undo seed-component
             # ownership. DocLayout boxes stay available as evidence (logged in
@@ -1248,9 +1238,9 @@ def detect_elements(
             )
             candidates.sort(key=lambda e: (e["bbox"]["y"], e["bbox"]["x"]))
             residual.sort(key=lambda e: (e["bbox"]["y"], e["bbox"]["x"]))
-            _assign_ids_and_crops(candidates, residual, image, crop_dir)
+            _assign_element_ids(candidates, residual)
         else:
-            _assign_ids_and_crops(candidates, residual, image, crop_dir)
+            _assign_element_ids(candidates, residual)
             if layout_boxes is not None:
                 # Rollback path: the v1 merge consumes components in box order.
                 candidates, residual = _apply_layout_binding(

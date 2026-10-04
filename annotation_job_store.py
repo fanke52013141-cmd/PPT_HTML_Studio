@@ -140,21 +140,6 @@ class AnnotationJobStore:
             if owned_session:
                 session.close()
 
-    def latest_active(self, project_id: str, job_type: Optional[str] = None) -> Optional[LocalJob]:
-        db = self.session_factory()
-        try:
-            query = db.query(LocalJob).filter(
-                LocalJob.project_id == project_id,
-                LocalJob.status.in_(("queued", "running")),
-            )
-            if job_type:
-                query = query.filter(LocalJob.job_type == job_type)
-            return query.order_by(LocalJob.created_at.desc()).first()
-        finally:
-            db.close()
-
-    # ------------------------------------------------------------ 状态迁移
-
     def mark_running(self, job_id: str, stage: str) -> None:
         self._update(job_id, {"status": "running", "stage": stage, "progress": 5, "error": None})
 

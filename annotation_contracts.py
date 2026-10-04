@@ -77,10 +77,9 @@ TARGET_KINDS = ("text", "region")
 # 保护来源
 PROTECTION_SOURCES = ("ai", "manual")
 # 强调程度
-EMPHASIS_LEVELS = ("weak", "moderate", "strong")
+EMPHASIS_LIMITS = {"weak": 1, "moderate": 2, "strong": 3}
+EMPHASIS_LEVELS = tuple(EMPHASIS_LIMITS)
 RECOMMENDATION_CATEGORIES = ("conclusion", "contrast", "condition", "action", "evidence", "concept")
-# 降级类型
-DEGRADATION_KINDS = ("sentence_fallback", "manual", "none")
 
 # 用户可编辑的条目字段(服务端 diff 维护 modified_fields 的合法域)
 MODIFIABLE_FIELDS = (
@@ -103,7 +102,6 @@ LIMITS = {
 }
 
 _ANNOTATION_ID_RE = re.compile(r"^ann_[0-9]{3,}$")
-_SLIDE_ID_RE = re.compile(r"^[A-Za-z0-9_\-]{1,64}$")
 _BEAT_ID_RE = re.compile(r"^[A-Za-z0-9_\-]{1,96}$")
 _COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")

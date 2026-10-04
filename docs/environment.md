@@ -26,7 +26,8 @@ or shell command arguments.
 | `PPT_STUDIO_DB_PATH` | repository data database | SQLite path. Keep it on a local, writable volume. |
 | `PPT_STUDIO_JOURNAL_MODE` | application default | SQLite journal override for diagnosed deployment needs only. |
 | `PPT_STUDIO_FFMPEG_DIR` | auto-detected by launchers | Directory containing `ffmpeg` and `ffprobe`. |
-| `PPT_STUDIO_ASSETS_DIR` | `D:\PPT_Studio_Assets` in Windows launchers | Optional local asset root. |
+| `PPT_STUDIO_ASSETS_DIR` | `D:\PPT_Studio_Assets\InfiniteTalk_TTS` in Windows launchers | Shared local asset root, also used by the digital-human launcher. |
+| `PPT_DIGITAL_HUMAN_ASSETS_ROOT` | inherits `PPT_STUDIO_ASSETS_DIR` | Optional digital-human override; an explicit launcher `-AssetsRoot` takes precedence. |
 | `PPT_STUDIO_RENDER_ACCELERATION` | `auto` | Encoder selection. Use an explicit mode only after validating output on that machine. |
 | `PPT_STUDIO_REVEAL_BUILD_TIMEOUT_SEC` | application default | Bound for Reveal asset construction. |
 

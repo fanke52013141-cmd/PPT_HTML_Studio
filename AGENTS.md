@@ -18,6 +18,15 @@ injected once by `configure_storyboard_dependencies`.
 fallback, response cleanup/repair, timeout translation, logging, and client
 closure. `storyboard_service.py` owns only the configured wrapper and vendor
 selection; keep direct model-client calls out of it.
+`storyboard_plan_store.py` owns Step 2 plan-file persistence and freshness,
+including unchanged-page reorder reuse. `storyboard_template_store.py` owns
+reusable storyboard-template storage with an explicitly supplied canonical
+path. The request service keeps compatibility adapters for both.
+`generation_control.py` owns process-local, exact-operation cooperative stop
+signals. Services check safe boundaries; never present a client disconnect as
+server cancellation. Persistent TTS/video terminal states stay in their job
+stores. `generation_control_routes.py` owns account-scoped web control routes;
+Agent request/result schemas remain in `agent_contract/models.py`.
 
 The workspace shows eight numbered steps; digital human is optional, and
 annotation completion follows its saved decision state:
@@ -127,7 +136,7 @@ Stitch layers.
   preview composition, editing, reset, and persistence. It also exposes the
   explicit `window.refreshStep3Prompts` bridge consumed by image-style changes.
   Keep these functions out of both `workflow_state.js` and `images.js`.
-- `static/mask_reveal.js` owns Reveal animation presets, normalization, and
+- `static/mask_reveal.js` owns Reveal animation presets and their
   project-wide propagation into Mask groups and semantic blocks. Keep these
   constants and functions out of `workflow_state.js`; load it before the Mask workspace.
 - `static/mask_workspace.js` owns the visible Step 5 Mask workspace shell:
@@ -168,9 +177,26 @@ Stitch layers.
   `static/annotations_editor.js`; shared frame sampling lives in
   `static/annotation_playback.js` (UMD, also consumed by Remotion's
   `AnnotationOverlay.tsx`).
-- `static/event_bindings.js` owns DOM startup and all page-level event binding.
+- `static/flow.js` owns visible-flow rules, progress, unlock checks, edit-impact
+  calculation, and the Step 3→Mask click guard; workflow_state imports it.
+- `static/creation_config_management.js` owns creation-package editing/import/export.
+- `static/courses.js` owns course-library navigation, chapters and course cards.
+- `static/style_reference_manager_extension.js` owns project style references/templates.
+- `static/one_click_extension.js` owns One-click controls and persistent status polling.
+- `static/ip_character_manager.js` owns project IP characters and reference management.
+- `static/project_profile_extension.js` owns project profile selection and creation setup.
+- `static/account_management.js` owns account selection and management views.
+- `static/storyboard_background_extension.js` owns the video-background settings modal;
+  writes must use runtime.state.currentProject, never a sessionStorage fallback.
+- `static/select_menus.js` owns custom select-menu presentation and interaction.
+- `static/ai_mask_auto_state.js` owns pure project-scoped AI Mask attempt state.
+- `static/ai_mask_extension.js` owns AI Mask settings, execution and preview controls.
+- `static/digital_human_panel.js` owns optional visible Step 7 configuration and jobs.
+- Extension-local DOM bindings are allowed and must be idempotent; transport and
+  HTML escaping reuse api_client.js and ui_foundation.js.
+- `static/event_bindings.js` owns shared DOM startup and core page-level event binding.
   It must load after every core workflow module, while its DOMContentLoaded
-  callback remains the only shared frontend boot entry.
+  callback remains the shared core frontend boot entry.
 - New extractions must preserve current DOM IDs and API paths, add an explicit
   script tag in `static/index.html`, and extend `checks/test_frontend_quality.js`
   with an ownership guard.

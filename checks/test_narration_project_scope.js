@@ -30,7 +30,9 @@ function makeElement(id) {
       toggle() {},
       contains() { return false; },
     },
-    appendChild() {},
+    childNodes: [],
+    appendChild(node) { this.childNodes.push(node); },
+    replaceChildren(...nodes) { this.childNodes = nodes; },
     remove() {},
     querySelector() { return makeElement(`${id}-child`); },
     querySelectorAll() { return []; },
@@ -93,11 +95,13 @@ function createSandbox() {
       if (!elements.has(id)) elements.set(id, makeElement(id));
       return elements.get(id);
     },
+    querySelector() { return null; },
     querySelectorAll(selector) {
       if (selector === '.step6-slide-audio') return audioSlots;
       return [];
     },
     createElement(tag) { return makeElement(tag); },
+    createTextNode(text) { return { textContent: text }; },
     body: {
       classList: {
         add() {},
@@ -136,6 +140,7 @@ function createSandbox() {
   sandbox.offerArtifactRepair = () => {};
   sandbox.requestAnimationFrame = () => {};
   sandbox.autoResizeTextarea = () => {};
+  sandbox.setDisabledReason = (element, reason) => { if (element) element.disabled = !!reason; };
   sandbox.loadProjects = () => {};
   // mask_workspace.js 在生产加载顺序中先于 workspace_navigation 加载。
   sandbox.resetStep5ProjectState = () => {};
@@ -165,7 +170,16 @@ function createSandbox() {
       if (handler) return routes.get(handler)(url, body);
       return { success: false };
     },
-    put: async (url, body) => ({ success: true, url, body }),
+    put: async (url, body) => {
+      const response = await sandbox.fetch(url, { method: 'PUT', body: JSON.stringify(body) });
+      const data = await response.json();
+      if (!response.ok) {
+        const error = new Error(data.detail || 'request failed');
+        error.status = response.status || 500;
+        throw error;
+      }
+      return data;
+    },
   };
   sandbox.fetchLog = [];
   let fetchHandler = null;

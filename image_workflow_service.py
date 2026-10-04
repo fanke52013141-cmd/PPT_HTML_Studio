@@ -1,6 +1,7 @@
 """Step 3 prompt, generation, upload, ordering, and confirmation."""
 
 from __future__ import annotations
+from runtime_support import run_subprocess_killable
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -11,7 +12,6 @@ import os
 from pathlib import Path
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 import threading
@@ -2231,12 +2231,12 @@ def confirm_images(project_id: str, db: Session):
                 "write_reveal_manifest_template.py",
             )
         )
-        res = subprocess.run(
+        res = run_subprocess_killable(
             [sys.executable, template_script, "--run-dir", project.run_dir],
             capture_output=True,
             text=True,
             encoding="utf-8",
-            timeout=90,
+            timeout_sec=90,
         )
         if res.returncode != 0:
             logger.error(f"Failed to write reveal manifest template: {res.stderr}")

@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="stitch.css?v=20260929.19">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
-  <link rel="stylesheet" href="workspace_content.css?v=20260929.4">
+  <link rel="stylesheet" href="workspace_content.css?v=20261005.1">
 </head>
 <body>
 
@@ -159,7 +159,7 @@
             <div class="step1-heading-actions">
               <button id="step1-btn-system-content" class="secondary" type="button">内容创作prompt</button>
               <button id="step1-btn-save-edit" class="secondary" style="display:none;" type="button">保存修改</button>
-              <button id="step1-btn-submit" class="success" type="button">
+              <button class="success" type="button">
                 分镜规划
                 <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0-7 7m7-7H3"></path></svg>
               </button>
@@ -232,23 +232,18 @@
                 </button>
                 <span class="workflow-titlebar-divider" aria-hidden="true"></span>
                 <button id="step2-btn-generate-script" class="secondary" type="button">
-                  <svg class="icon step2-action-icon step2-action-icon--refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"></path></svg>
                   <span class="btn-label">生成演讲稿</span>
                 </button>
                 <button id="step2-btn-generate-visual" class="secondary" type="button" disabled>
-                  <svg class="icon step2-action-icon step2-action-icon--zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                   <span class="btn-label">内容可视化</span>
                 </button>
                 <button id="step2-btn-add-slide" class="secondary" style="display: none;">
-                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                   添加幻灯片
                 </button>
                 <button id="step2-btn-batch-import" class="secondary" style="display: none;">
-                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg>
                   批量导入
                 </button>
                 <button id="step2-btn-save" class="secondary" style="display: none;">
-                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg>
                   批量删除
                 </button>
                 <button id="step2-btn-cancel-delete" class="secondary" style="display: none;">
@@ -321,44 +316,36 @@
           <!-- 顶部控制栏 -->
           <div class="step3-toolbar-row workflow-header workflow-header--titlebar">
             <h2 class="highlight-title workflow-title">图片生成与管理</h2>
-            <label id="step3-batch-upload-label" class="btn secondary" style="cursor: pointer;">
-              <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg>
-              批量上传
-              <input type="file" id="step3-batch-upload" accept="image/*" multiple style="display: none;">
-            </label>
-            <button id="step3-btn-batch-generate" class="secondary">
-              <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;">
-                <rect x="3" y="4" width="18" height="16" rx="2"></rect>
-                <circle cx="8.5" cy="9" r="1.5"></circle>
-                <path d="m5 17 4.5-4 3.2 2.8 2.3-2.1 4 3.3"></path>
-                <path d="M18 2v4M16 4h4"></path>
-              </svg>
-              批量生图
-            </button>
-            <button id="step3-btn-copy-prompts" class="secondary">
-              <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              复制提示词
-            </button>
-            <button id="step3-btn-prompt-settings" class="secondary" type="button">
-              生图 Prompt
-            </button>
-            <button id="step3-btn-style" class="secondary">
-              图片风格设置
-            </button>
-            <button id="step3-btn-ip-character" class="secondary" type="button">
-              <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="8" r="4"></circle>
-                <path d="M4 21v-1a8 8 0 0 1 16 0v1"></path>
-              </svg>
-              IP 形象
-            </button>
-            <button id="step3-btn-confirm" class="success" style="display: none;">
-              下一步
-              <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </button>
+            <div class="workflow-toolbar">
+              <label id="step3-batch-upload-label" class="btn secondary" style="cursor: pointer;">
+                批量上传
+                <input type="file" id="step3-batch-upload" accept="image/*" multiple style="display: none;">
+              </label>
+              <button id="step3-btn-batch-generate" class="secondary">
+                批量生图
+              </button>
+              <button id="step3-btn-copy-prompts" class="secondary">
+                复制提示词
+              </button>
+              <button id="step3-btn-prompt-settings" class="secondary" type="button">
+                生图 Prompt
+              </button>
+              <button id="step3-btn-style" class="secondary" title="图片风格设置">
+                图片风格
+              </button>
+              <button id="step3-btn-ip-character" class="secondary" type="button">
+                IP 形象
+              </button>
+              <button class="success" style="display: none;">
+                下一步
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+            </div>
           </div>
 
           <!-- 全局图片管理网格 -->
+          <div id="step3-operation-status" class="workspace-operation-status" role="status" aria-live="polite"></div>
+          <button id="step3-btn-stop-queue" class="secondary" type="button" hidden>停止后续排队</button>
           <div id="step3-images-grid" class="step3-grid-four"></div>
 
         </div>
@@ -369,23 +356,18 @@
             <h2 class="highlight-title workflow-title">AI Mask 标注</h2>
             <div class="step5-toolbar workflow-toolbar">
               <button id="step5-btn-semantic-blocks" class="secondary" type="button" title="基于分镜合约预识别语义块、旁白与画面内容，不会自动绘制 Mask">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M4 5h16"></path><path d="M4 12h10"></path><path d="M4 19h16"></path><circle cx="18" cy="12" r="2"></circle></svg>
                 <span class="btn-label">AI 语义分块</span>
               </button>
               <button id="step5-btn-clear-current" class="secondary" type="button">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg>
                 清除当前页
               </button>
               <button id="step5-btn-subtitle-settings" class="secondary">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M7 10h10"></path><path d="M6 15h12"></path><path d="M9 19h6"></path></svg>
                 字幕设置
               </button>
               <button id="step5-btn-animation-settings" class="secondary">
-                <svg class="icon" viewBox="0 0 24 24"><polygon points="7 4 20 12 7 20 7 4"></polygon></svg>
                 动画设置
               </button>
               <button id="step5-btn-fullscreen" class="secondary" type="button" title="全屏标注">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M16 3h3a2 2 0 0 1 2 2v3"></path><path d="M8 21H5a2 2 0 0 1-2-2v-3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg>
                 <span id="step5-fullscreen-label">放大标注</span>
               </button>
               <label class="step5-brush-control" title="调整手动画笔大小">
@@ -422,7 +404,6 @@
               <div class="step5-side-header">
                 <h3>AI 语块关联</h3>
                 <button id="step5-btn-new-block" class="secondary step5-add-block-btn" type="button">
-                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
                   添加语块
                 </button>
               </div>
@@ -430,7 +411,7 @@
                 <!-- 标注盒子表单 -->
               </div>
               <div class="step5-confirm-footer">
-                <button id="step5-btn-confirm-next" class="btn-next-step success" style="width: 100%;">
+                <button class="btn-next-step success" style="width: 100%;">
                   确认标注，进入下一步
                   <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </button>
@@ -451,32 +432,28 @@
                 <span id="step7-loading-text">音频合成中...</span>
               </div>
               <button id="step6-btn-init" class="secondary">
-                <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                 同步
               </button>
               <button id="step6-btn-ai-annotate" class="success compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
               <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button">AI 标注 Prompt</button>
               <span id="step6-autosave-status" class="step6-autosave-status"></span>
-            </div>
-            <div class="step6-toolbar workflow-toolbar">
               <button id="step6-btn-save-and-tts" class="success step6-next-btn" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
                 生成音频
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
-              <button id="step7-btn-synthesize" class="secondary compact-action-btn" title="检查所有页面，只补生成旁白或语音配置发生变化的音频">
-                <svg class="icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                检查并补齐音频
+              <button id="step7-btn-synthesize" class="secondary compact-action-btn" title="检查并补齐音频：检查所有页面，只补生成旁白或语音配置发生变化的音频">
+                补齐音频
               </button>
-              <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="忽略缓存，重新生成所有页面音频">强制重生成全部</button>
-              <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
-              <button id="step6-btn-audio-confirm-next" class="success" disabled>
-                <span id="step6-audio-confirm-label">确认并进入勾画标注</span>
+              <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="强制重生成全部：忽略缓存，重新生成所有页面音频">强制重生成</button>
+              <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="导出整段语音：拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
+              <button id="step6-btn-audio-confirm-next" class="success" disabled title="确认并进入勾画标注">
+                <span id="step6-audio-confirm-label">确认进入勾画</span>
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
           </div>
 
-          <div id="step7-empty-state" class="step-audio-empty">
+          <div id="step7-empty-state" class="step-audio-empty ws-empty">
             尚未生成音频。编辑旁白后，点击“生成音频”。
           </div>
 
@@ -496,7 +473,7 @@
                 </label>
                 <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
                 <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
-                <button id="step10-btn-next" class="success compact-action-btn" type="button">继续下一步</button>
+                <button class="success compact-action-btn" type="button">继续下一步</button>
               </div>
             </div>
 
@@ -563,14 +540,14 @@
             <h2 class="highlight-title workflow-title">数字人讲解</h2>
             <div class="step9-header-actions workflow-toolbar">
               <span class="step9-optional-hint">可选步骤 · 不设置也能正常出片</span>
-              <button id="step9-btn-skip" class="secondary compact-action-btn" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出</button>
+              <button class="secondary compact-action-btn" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出</button>
             </div>
           </div>
                     <!-- ==================== 数字人讲解 ==================== -->
           <div id="digital-human-panel" class="dh-panel card soft-outline" style="margin-top: 1.5rem;">
             <div class="dh-panel-header">
               <div class="dh-panel-title">
-                <h3 style="margin: 0;">数字人讲解</h3>
+                <h3 style="margin: 0;">数字人配置</h3>
                 <span id="dh-service-status" class="dh-service-status"></span>
               </div>
               <label class="dh-enable-toggle">
@@ -580,7 +557,7 @@
               </label>
             </div>
             <div id="dh-panel-body" class="dh-panel-body" style="display: none;">
-              <div class="dh-settings-title">数字人讲解设置</div>
+              <div class="dh-settings-title">参数设置</div>
               <div class="dh-grid">
                 <div class="dh-field">
                   <div class="dh-field-label">① 数字人生成方式</div>
@@ -680,7 +657,7 @@
                     圆框直径 <span id="dh-info-diameter">—</span> px · 中心 (<span id="dh-info-px">—</span>, <span id="dh-info-py">—</span>) px
                   </div>
                   <button id="dh-btn-save" class="secondary" style="width:100%; margin-top:0.8rem;">保存设置</button>
-                  <div id="dh-slide-status" class="dh-slide-status"></div>
+                  <div id="dh-generate-status" class="dh-slide-status"></div>
                   <div class="dh-audio-export">
                     <div class="dh-field-label">④ 整段语音导出</div>
                     <button id="dh-btn-export-audio" class="secondary" style="width:100%;">导出整段语音（拼接全课程）</button>
@@ -700,26 +677,22 @@
               <span id="step8-pptx-readiness" class="step8-readiness" aria-live="polite"></span>
             </div>
             <div class="step8-header-actions workflow-toolbar">
-              <button id="step8-btn-render" class="success compact-action-btn">
-                <svg class="icon" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2"></rect></svg>
-                生成 MP4
+              <button class="success compact-action-btn">生成 MP4
               </button>
               <button id="step8-btn-pptx" class="secondary compact-action-btn" type="button">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M8 13h8M8 17h5"></path></svg>
                 生成 PPTX
               </button>
               <button id="step8-btn-download-srt" class="secondary compact-action-btn" type="button" disabled title="仅在点击后下载字幕文件">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 3v12"></path></svg>
                 下载字幕 SRT
               </button>
-              <button id="step8-btn-finish" class="secondary compact-action-btn">完成并退出项目</button>
+              <button class="secondary compact-action-btn">完成并退出项目</button>
             </div>
+          </div>
 
-            <div id="step8-error-box" class="card soft-outline" style="display: none; margin-top: 1.5rem; border-color: #d73333; background: #fff4f4;">
-              <h3 id="step8-error-title" style="margin-bottom: 0.6rem;">输出失败</h3>
-              <p id="step8-error-message" style="white-space: pre-wrap; word-break: break-word;"></p>
-              <p id="step8-error-log-hint" style="margin-top: 0.8rem; font-size: 0.9rem;">详细阶段日志见项目目录下的 logs/pipeline.log。</p>
-            </div>
+          <div id="step8-error-box" class="card soft-outline" style="display: none; margin-top: 1.5rem; border-color: #d73333; background: #fff4f4;">
+            <h3 id="step8-error-title" style="margin-bottom: 0.6rem;">输出失败</h3>
+            <p id="step8-error-message" style="white-space: pre-wrap; word-break: break-word;"></p>
+            <p id="step8-error-log-hint" style="margin-top: 0.8rem; font-size: 0.9rem;">详细阶段日志见项目目录下的 logs/pipeline.log。</p>
           </div>
 
           <div id="step8-loading" class="step-inline-loading" style="display: none;">
@@ -1176,7 +1149,7 @@
                       <label>字重<input data-creation-config-subtitle="font_weight" type="number" min="300" max="800" step="100" value="400"></label>
                       <label>距底部<input data-creation-config-subtitle="bottom" type="number" min="0" max="220" value="0"></label>
                       <label>左右留白<input data-creation-config-subtitle="horizontal_margin" type="number" min="40" max="420" value="110"></label>
-                      <label title="相邻两句字幕的间隔小于该窗口时合并为同一页显示，避免字幕频繁闪切">分页时间窗（ms）<input data-creation-config-subtitle="paging_window_ms" type="number" min="600" max="2500" step="100" value="1300"></label>
+                      <label title="相邻两句字幕的间隔小于该窗口时合并为同一页显示，避免字幕频繁闪切">分页MS（ms）<input data-creation-config-subtitle="paging_window_ms" type="number" min="600" max="2500" step="100" value="1300"></label>
                       <label>最大行数<input data-creation-config-subtitle="max_lines" type="number" min="1" max="3" value="1"></label>
                       <label>行高<input data-creation-config-subtitle="line_height" type="number" min="1" max="2" step="0.1" value="1.4"></label>
                       <label>文字颜色<input data-creation-config-subtitle="color" type="color" value="#000000"></label>
@@ -1384,7 +1357,7 @@
     <div class="modal-content" style="max-width: 420px; text-align: center;">
       <h3 class="highlight-title" id="confirm-title" style="margin-bottom: 1.2rem;">操作确认</h3>
       <p id="confirm-message" style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #333; line-height: 1.5;"></p>
-      <div style="display: flex; justify-content: center; gap: 1.5rem;">
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
         <button id="btn-confirm-no" class="secondary">取消</button>
         <button id="btn-confirm-yes" class="danger">确认</button>
       </div>
@@ -1718,7 +1691,7 @@
             <input id="subtitle-highlight-color" type="color" value="#1E3A8A">
           </label>
           <label>
-            <span>分页时间窗：<strong id="subtitle-paging-window-value">1300</strong> ms</span>
+            <span>分页MS：<strong id="subtitle-paging-window-value">1300</strong> ms</span>
             <input id="subtitle-paging-window" type="range" min="600" max="2500" step="100" value="1300">
           </label>
           <label>
@@ -1729,7 +1702,7 @@
             <input id="subtitle-token-highlight" type="checkbox" checked>
             <span>启用逐字高亮（关闭则整页同色显示）</span>
           </label>
-          <div class="subtitle-font-note">字体列表优先选择 SIL Open Font License 的开源中文字体；霞鹜文楷使用本机字体，未安装时自动回退。分页时间窗越小越接近逐句切换，越大越倾向合并多句显示。</div>
+          <div class="subtitle-font-note">字体列表优先选择 SIL Open Font License 的开源中文字体；霞鹜文楷使用本机字体，未安装时自动回退。分页MS越小越接近逐句切换，越大越倾向合并多句显示。</div>
         </div>
       </div>
       <div class="config-editor-actions">
@@ -1780,40 +1753,41 @@
   <!-- 主业务 JavaScript 脚本 -->
   <script src="flow.js?v=20260928.1"></script>
   <script src="workflow_state.js?v=20260928.1"></script>
-  <script src="ui_foundation.js?v=20260929.3"></script>
-  <script src="api_client.js?v=20260929.1"></script>
-  <script src="artifact_repair.js?v=20260801.1"></script>
+  <script src="ui_foundation.js?v=20261005.1"></script>
+  <script src="api_client.js?v=20261005.1"></script>
+  <script src="artifact_repair.js?v=20261005.1"></script>
   <script src="prompt_help.js?v=20260929.1"></script>
   <script src="settings.js?v=20260928.1"></script>
   <script src="projects.js?v=20260916.1"></script>
-  <script src="creation_config_management.js?v=20260928.2"></script>
+  <script src="creation_config_management.js?v=20261005.1"></script>
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20260913.2"></script>
   <script src="article.js?v=20260929.6"></script>
-  <script src="storyboard.js?v=20260929.10"></script>
-  <script src="storyboard_prompts.js?v=20260801.1"></script>
-  <script src="images.js?v=20260929.3"></script>
+  <script src="storyboard.js?v=20261005.1"></script>
+  <script src="storyboard_prompts.js?v=20261005.1"></script>
+  <script src="images.js?v=20261005.1"></script>
   <script src="image_prompts.js?v=20260801.1"></script>
-  <script src="ip_character_manager.js?v=20260818.6"></script>
+  <script src="ip_character_manager.js?v=20261005.1"></script>
   <script src="mask_reveal.js?v=20260801.1"></script>
   <script src="mask_workspace.js?v=20260929.1"></script>
   <script src="mask_editor.js?v=20260809.4"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
-  <script src="narration_audio.js?v=20260929.1"></script>
+  <script src="narration_audio.js?v=20261005.1"></script>
   <script src="annotation_playback.js?v=20260929.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
   <script src="annotations_workspace.js?v=20260928.1"></script>
   <script src="annotations_editor.js?v=20260928.1"></script>
-  <script src="output_render.js?v=20260929.2"></script>
+  <script src="output_render.js?v=20261005.1"></script>
   <script src="account_management.js?v=20260916.1"></script>
-  <script src="workspace_navigation.js?v=20260929.4"></script>
-  <script src="event_bindings.js?v=20260929.7"></script>
+  <script src="workspace_navigation.js?v=20261005.1"></script>
+  <script src="generation_controls.js?v=20261005.1"></script>
+  <script src="event_bindings.js?v=20261005.1"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>
-  <script src="storyboard_background_extension.js?v=20260916.1"></script>
-  <script src="style_reference_manager_extension.js?v=3.1.0"></script>
+  <script src="storyboard_background_extension.js?v=20261005.1"></script>
+  <script src="style_reference_manager_extension.js?v=20261005.1"></script>
   <script src="ai_mask_auto_state.js?v=20260809.1"></script>
   <script src="digital_human_panel.js?v=20260928.1"></script>
-  <script src="ai_mask_extension.js?v=20260912.3"></script>
-  <script src="one_click_extension.js?v=20260929.1"></script>
+  <script src="ai_mask_extension.js?v=20261005.1"></script>
+  <script src="one_click_extension.js?v=20261005.1"></script>
 </body>
 </html>

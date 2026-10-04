@@ -131,6 +131,8 @@ function startStep8RenderPolling(
         const message = res.error || '应用上次运行时退出，视频任务已中断，请重新生成。';
         setStep8OutputError('视频任务已中断', message);
         showToast(message, 7000);
+      } else if (res.status === 'cancelled') {
+        showInlineNotice('视频任务已按请求停止，可重新提交。');
       } else if (res.status === 'idle') {
         // 任务记录丢失（可能服务器重启），刷新视频列表
         if (res.videos && res.videos.length > 0) {
@@ -160,8 +162,8 @@ async function loadStep8Data() {
     const pptxButton = document.getElementById('step8-btn-pptx');
     const renderButton = document.getElementById('step8-btn-render');
     if (pptxLabel) pptxLabel.textContent = '尚未生成分镜与图片';
-    if (pptxButton) pptxButton.disabled = true;
-    if (renderButton) renderButton.disabled = true;
+    setDisabledReason(pptxButton, true, '请先完成分镜规划并准备图片');
+    setDisabledReason(renderButton, true, '请先完成分镜、图片和音频确认');
     document.getElementById('step8-result-box').style.display = 'none';
     const digitalHumanMessage = document.getElementById('step8-digital-human-message');
     if (digitalHumanMessage) digitalHumanMessage.textContent = '尚未生成可用于输出的分镜。';
@@ -173,6 +175,10 @@ async function loadStep8Data() {
     refreshStep8DigitalHumanStatus(projectId, sessionVersion),
   ]);
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+  const audioReadiness = await API.get(`/api/projects/${projectId}/steps/7/audio-status`);
+  if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+  setDisabledReason(document.getElementById('step8-btn-render'), !audioReadiness.complete || !audioReadiness.audio_confirmed,
+    !audioReadiness.complete ? '请先生成全部页面音频' : '请先试听并确认音频，再生成视频');
   try {
     // 先检查是否有进行中的渲染任务（页面刷新后恢复轮询）
     const statusRes = await API.get(`/api/projects/${projectId}/steps/8/render-status`);
@@ -606,7 +612,7 @@ function showStep8VideoResult(videos) {
   if (!list) return;
   const items = Array.isArray(videos) ? videos : [];
   if (!items.length) {
-    list.innerHTML = '<div class="soft-outline step6-empty-state">暂无渲染记录。</div>';
+    list.innerHTML = '<div class="soft-outline step6-empty-state ws-empty">暂无渲染记录。</div>';
   } else {
     list.innerHTML = items.map((item, idx) => {
       const url = `${item.url}?t=${Date.now()}`;

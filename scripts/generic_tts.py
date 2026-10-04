@@ -574,17 +574,9 @@ def synthesize_comfyui(args: argparse.Namespace, tts_text: str, subtitle_text: s
     if wf_path_str and (wf_path_str.lower().startswith("http://") or wf_path_str.lower().startswith("https://")):
         os.environ["PPT_COMFYUI_URL"] = wf_path_str.rstrip("/")
         wf_path_str = ""
-    if not wf_path_str:
-        workflow_candidates = (
-            _repo_root / "data" / "digital_human" / "comfyui_tts_workflow.json",
-            _repo_root / "config" / "indextts2_5_comfyui_workflow.json",
-        )
-        workflow_path = next(
-            (path for path in workflow_candidates if path.is_file()),
-            workflow_candidates[0],
-        )
-        wf_path_str = str(workflow_path)
-    wf_path = Path(wf_path_str)
+    from repository_paths import resolve_comfyui_tts_workflow_path
+
+    wf_path = resolve_comfyui_tts_workflow_path(wf_path_str, _repo_root)
     if not wf_path.exists():
         raise TtsError(
             f"ComfyUI TTS 工作流模板不存在: {wf_path}\n"

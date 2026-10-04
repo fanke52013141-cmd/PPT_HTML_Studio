@@ -19,6 +19,9 @@ let step3BatchTotal = 0;
 let step3CurrentGenerating = null;  // 当前正在生成的 slideId（区别于排队中）
 let step3CurrentUploading = null;
 let step3VideoBackground = '#FEFDF9';
+let step3LoadState = 'idle';
+let step3LoadError = '';
+let step3BatchStopRequested = false;
 
 function resetStep3ProjectState() {
   step3GeneratingSlides.clear();
@@ -31,6 +34,9 @@ function resetStep3ProjectState() {
   step3ImageOrder = [];
   slidePrompts = [];
   step3BatchPrompt = '';
+  step3LoadState = 'idle';
+  step3LoadError = '';
+  step3BatchStopRequested = false;
 }
 
 window.resetStep3ProjectState = resetStep3ProjectState;
@@ -48,10 +54,17 @@ function step3GeneratingPreviewHtml(message = '生成中', subtitle = 'AI 正在
 function updateStep3BatchButton() {
   const button = document.getElementById('step3-btn-batch-generate');
   if (!button) return;
+  const stop = document.getElementById('step3-btn-stop-queue');
+  if (stop) {
+    stop.hidden = !step3BatchGenerating;
+    stop.disabled = step3BatchStopRequested;
+    stop.textContent = step3BatchStopRequested ? '正在停止后续排队…' : '停止后续排队';
+  }
   const hasSlides = step3ImageOrder.length > 0;
   const generationInProgress = step3GeneratingSlides.size > 0;
   const uploadInProgress = step3UploadingSlides.size > 0;
-  button.disabled = !hasSlides || step3BatchGenerating || generationInProgress || uploadInProgress;
+  setDisabledReason(button, !hasSlides || step3BatchGenerating || generationInProgress || uploadInProgress,
+    !hasSlides ? '请先完成分镜规划' : '图片正在生成或上传，请等待完成');
   button.classList.toggle('is-loading', step3BatchGenerating);
   const uploadLabel = document.getElementById('step3-batch-upload-label');
   const uploadInput = document.getElementById('step3-batch-upload');
@@ -59,7 +72,8 @@ function updateStep3BatchButton() {
   if (uploadInput) uploadInput.disabled = generationInProgress || uploadInProgress;
   const deleteAllButton = document.getElementById('step3-btn-delete-all-images');
   if (deleteAllButton) {
-    deleteAllButton.disabled = generationInProgress || uploadInProgress || !step3ImageOrder.some(item => item.exists);
+    setDisabledReason(deleteAllButton, generationInProgress || uploadInProgress || !step3ImageOrder.some(item => item.exists),
+      generationInProgress || uploadInProgress ? '图片正在生成或上传' : '当前没有可删除的图片');
     ensureStep3BatchDownloadButton(deleteAllButton);
   }
   button.innerHTML = step3BatchGenerating
@@ -85,6 +99,10 @@ async function loadStep3Data() {
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
+  step3LoadState = 'loading';
+  step3LoadError = '';
+  renderStep3Grid();
+  try {
   // 优先加载分镜数据，保证即使无图片也能渲染占位卡
   if (!state.slides || state.slides.length === 0) {
     const contractRes = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
@@ -92,6 +110,14 @@ async function loadStep3Data() {
     if (contractRes.success && contractRes.contract) {
       state.slides = contractRes.contract.slides || [];
     }
+  }
+
+  if (!state.slides?.length) {
+    step3ImageOrder = [];
+    slidePrompts = [];
+    step3LoadState = 'ready';
+    renderStep3Grid();
+    return;
   }
 
   await loadStep3VisualSettings(projectId, sessionVersion);
@@ -105,10 +131,20 @@ async function loadStep3Data() {
       slidePrompts = promptRes.prompts || [];
       step3BatchPrompt = promptRes.batch_prompt || '';
     }
-  } catch(e) {}
+  } catch(e) { throw e; }
   
   // 获取生成的图片文件状态
   await refreshStep3Images(projectId, sessionVersion);
+  } catch (error) {
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+    step3LoadState = 'error';
+    step3LoadError = error?.message || '无法加载图片';
+  } finally {
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      if (step3LoadState === 'loading') step3LoadState = 'ready';
+      renderStep3Grid();
+    }
+  }
 }
 
 function normalizeStep3BackgroundColor(value) {
@@ -139,7 +175,7 @@ async function refreshStep3Images(
       images = res.images || [];
       step3OrderVersion = String(res.order_version || '');
     }
-  } catch(e) {}
+  } catch(e) { throw e; }
 
   // 如果后端返回空列表但分镜数据已有，自动生成占位展示
   if (images.length === 0 && state.slides && state.slides.length > 0) {
@@ -159,6 +195,26 @@ function renderStep3Grid() {
   if (!grid) return;
   grid.innerHTML = '';
 
+  if (step3LoadState === 'loading' || step3LoadState === 'error' || !step3ImageOrder.length) {
+    const empty = document.createElement('div');
+    empty.className = 'ws-empty step3-empty';
+    empty.setAttribute('role', 'status');
+    const message = document.createElement('p');
+    message.textContent = step3LoadState === 'loading' ? '正在加载分镜与图片…'
+      : step3LoadState === 'error' ? `图片加载失败：${step3LoadError}`
+        : '还没有可生成的画面。请先完成第 2 步分镜规划。';
+    empty.appendChild(message);
+    if (step3LoadState !== 'loading') {
+      const action = document.createElement('button');
+      action.type = 'button';
+      action.className = 'secondary';
+      action.textContent = step3LoadState === 'error' ? '重新加载' : '返回分镜规划';
+      action.addEventListener('click', () => step3LoadState === 'error' ? loadStep3Data() : navigateToStep(2));
+      empty.appendChild(action);
+    }
+    grid.appendChild(empty);
+  }
+
   const hasSlides = step3ImageOrder.length > 0;
   const missingCount = step3ImageOrder.filter(img => !img.exists).length;
   const staleProvenanceCount = step3ImageOrder.filter(img => img.exists && img.provenance?.valid !== true).length;
@@ -168,16 +224,17 @@ function renderStep3Grid() {
   const confirmBtn = document.getElementById('step3-btn-confirm');
   if (confirmBtn) {
     confirmBtn.style.display = hasSlides ? 'inline-flex' : 'none';
-    confirmBtn.disabled = !allImagesReady;
-    confirmBtn.title = allImagesReady
+    const reason = allImagesReady
       ? ''
       : (step3GeneratingSlides.size > 0 || step3UploadingSlides.size > 0
         ? '图片正在生成或上传中'
         : staleProvenanceCount > 0
           ? `${staleProvenanceCount} 张图片来源待更新，请重新生成或上传`
           : `还缺少 ${missingCount} 张图片`);
+    setDisabledReason(confirmBtn, !allImagesReady, reason);
   }
 
+  if (step3LoadState === 'loading' || step3LoadState === 'error') return;
   step3ImageOrder.forEach((img, idx) => {
     const card = document.createElement('div');
     card.className = 'card soft-elevation slide-card-draggable step3-image-card';
@@ -240,6 +297,9 @@ function renderStep3Grid() {
     card.innerHTML = `
       <div class="step3-card-header">
         <div class="step3-card-identity">
+          <span class="step3-card-status ${isCurrentGenerating ? 'is-current-generating' : ''} ${isQueued ? 'is-queued' : ''} ${isGenerating ? 'is-generating' : ''}" style="color: ${img.exists || isGenerating ? 'var(--ink-color)' : '#888'}; background: ${isCurrentGenerating ? 'var(--color-primary-base)' : (isQueued ? 'var(--secondary-color)' : (img.exists && provenanceReady ? 'var(--success-color)' : '#f3f4f6'))}; ${isCurrentGenerating ? 'color: #fff;' : ''}">
+            ${isCurrentGenerating ? '生成中' : (isQueued ? '排队中' : (img.exists ? (provenanceReady ? '已就绪' : '来源待更新') : '待生成'))}
+          </span>
           <button class="slide-drag-handle" type="button" draggable="${canMoveImage ? 'true' : 'false'}" ${canMoveImage ? '' : 'disabled'} title="拖动当前图片，调整它与 Slide 标题的对应关系" aria-label="移动第 ${idx + 1} 页当前图片，分镜顺序保持不变">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="9" cy="5" r="1.4"></circle><circle cx="15" cy="5" r="1.4"></circle>
@@ -247,9 +307,6 @@ function renderStep3Grid() {
               <circle cx="9" cy="19" r="1.4"></circle><circle cx="15" cy="19" r="1.4"></circle>
             </svg>
           </button>
-          <span class="step3-card-status ${isCurrentGenerating ? 'is-current-generating' : ''} ${isQueued ? 'is-queued' : ''} ${isGenerating ? 'is-generating' : ''}" style="color: ${img.exists || isGenerating ? 'var(--ink-color)' : '#888'}; background: ${isCurrentGenerating ? 'var(--color-primary-base)' : (isQueued ? 'var(--secondary-color)' : (img.exists && provenanceReady ? 'var(--success-color)' : '#f3f4f6'))}; ${isCurrentGenerating ? 'color: #fff;' : ''}">
-            ${isCurrentGenerating ? '生成中' : (isQueued ? '排队中' : (img.exists ? (provenanceReady ? '已就绪' : '来源待更新') : '待生成'))}
-          </span>
         </div>
         <div class="step3-card-actions">
           <label class="btn secondary step3-card-action step3-upload-action ${isBusy ? 'is-disabled' : ''}">
@@ -414,7 +471,7 @@ async function uploadStep3ImageById(slideId, input) {
   // 与后端 MAX_IMAGE_UPLOAD_BYTES=20MB 保持一致，避免上传后才报错
   const MAX_IMAGE_UPLOAD_BYTES = 20 * 1024 * 1024;
   if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
-    showToast(`❌ 图片超过 20MB 限制，请压缩后重试`);
+    showInlineNotice('图片超过 20MB 限制，请压缩后重试');
     input.value = '';
     return;
   }
@@ -448,8 +505,21 @@ async function uploadStep3ImageById(slideId, input) {
 
 window.uploadStep3ImageById = uploadStep3ImageById;
 
+function step3SlideLabel(slideId) {
+  const index = state.slides.findIndex(slide => slide.slide_id === slideId);
+  const slide = state.slides[index];
+  return index >= 0 ? `第 ${index + 1} 页《${slide.main_title || slide.slide_title || '未命名'}》` : '当前页';
+}
+
+function stopStep3GenerationQueue() {
+  step3BatchStopRequested = true;
+  const status = document.getElementById('step3-operation-status');
+  if (status) status.textContent = '已请求停止后续排队；当前图片完成后停止，已经生成的图片保留。';
+  updateStep3BatchButton();
+}
+
 async function deleteStep3Image(slideId) {
-  if (!window.confirm(`确定移除 ${slideId} 的图片吗？旧图片会保存在归档中。`)) return;
+  if (!await confirmAction('移除图片', `确定移除${step3SlideLabel(slideId)}的图片吗？旧图片和 Mask 将保存在归档中，可通过恢复归档重新使用。`)) return;
   const impactChoice = await getStep3ReplacementVersion(slideId);
   if (!impactChoice) return;
   const params = new URLSearchParams(impactChoice);
@@ -475,8 +545,8 @@ async function openStep3GeometryReuse(slideId) {
     return;
   }
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.style.cssText = 'display:flex;z-index:1200';
+  modal.className = 'modal-overlay ws-draft-modal';
+  modal.style.display = 'flex';
   modal.setAttribute('role', 'dialog');
   modal.setAttribute('aria-modal', 'true');
   const content = document.createElement('div');
@@ -564,7 +634,7 @@ async function deleteAllStep3Images() {
     showToast('当前没有可删除的图片。');
     return;
   }
-  if (!window.confirm(`确定移除当前项目的 ${imageCount} 张图片吗？旧图片会保存在归档中。`)) return;
+  if (!await confirmAction('批量移除图片', `确定移除当前项目的 ${imageCount} 张图片吗？旧图片和 Mask 将保存在归档中，可通过恢复归档重新使用。`)) return;
   const changes = [];
   for (const image of step3ImageOrder.filter(item => item.exists)) {
     const choice = await getStep3ReplacementVersion(image.slide_id);
@@ -740,15 +810,17 @@ async function generateAllStep3Images() {
   });
   const missingPrompt = tasks.find(task => !task.prompt);
   if (missingPrompt) {
-    showToast(`❌ ${missingPrompt.slideId} 缺少生图提示词，请先重新进入本步骤。`);
+    showInlineNotice(`${step3SlideLabel(missingPrompt.slideId)}缺少生图提示词，请重新加载本步骤。`);
     return;
   }
 
   step3BatchGenerating = true;
+  step3BatchStopRequested = false;
   step3BatchCompleted = 0;
   step3BatchTotal = tasks.length;
   tasks.forEach(task => step3GeneratingSlides.add(task.slideId));
   renderStep3Grid();
+  document.getElementById('step3-operation-status').textContent = '正在逐页生成图片。停止后续排队会保留已生成图片；切换步骤会停止提交后续页面，请等待当前图片完成。';
   showToast(`🎨 已开始批量生成 ${tasks.length} 张图片。`);
 
   let successCount = 0;
@@ -757,7 +829,7 @@ async function generateAllStep3Images() {
   const skippedSlides = [];
   try {
     for (const task of tasks) {
-      if (!isCurrentWorkspaceProject(projectId, sessionVersion)) break;
+      if (!isCurrentWorkspaceProject(projectId, sessionVersion) || step3BatchStopRequested) break;
       step3CurrentGenerating = task.slideId;  // 标记当前正在生成的卡片
       renderStep3Grid();
       try {
@@ -800,14 +872,17 @@ async function generateAllStep3Images() {
       }
     }
   } finally {
-    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+    if (state.currentProject?.id !== projectId) return;
     step3BatchGenerating = false;
     step3BatchCompleted = 0;
     step3BatchTotal = 0;
     step3GeneratingSlides.clear();
     step3CurrentGenerating = null;
-    await refreshStep3Images(projectId, sessionVersion);
+    await refreshStep3Images(projectId, workspaceNavigationVersion);
     await refreshCurrentProjectStatus(3);
+    document.getElementById('step3-operation-status').textContent = step3BatchStopRequested || sessionVersion !== workspaceNavigationVersion
+      ? `已停止后续排队，本次生成 ${successCount} 张图片。`
+      : `本次生成 ${successCount} 张图片${failedSlides.length ? `，${failedSlides.length} 张失败，请重试` : ''}。`;
   }
 
   if (failedSlides.length > 0) {
@@ -826,7 +901,7 @@ async function generateStep3Image() {
   const prompt = document.getElementById('step3-prompt-input').value.trim();
   
   if (!prompt) {
-    showToast('⚠️ 提示词不能为空');
+    showFieldError(document.getElementById('step3-prompt-input'), '提示词不能为空');
     return;
   }
 

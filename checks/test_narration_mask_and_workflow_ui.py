@@ -260,10 +260,7 @@ def test_default_step2_prompts_explicitly_forbid_duplicate_narration_binding():
     script_prompt = (ROOT / "templates" / "prompts" / "step2_script_system.md").read_text(encoding="utf-8")
     visual_prompt = (ROOT / "templates" / "prompts" / "step2_visual_system.md").read_text(encoding="utf-8")
     assert "一项信息只讲一次" in script_prompt
-    assert "一个片段只绑定一个元素" in visual_prompt
-    assert "不得重复、遗漏或改写" in visual_prompt
-    assert "一个元素也只能绑定一个片段" in visual_prompt
-    assert "每个 `narration` 都必须非空" in visual_prompt
+    assert "<ContractVersion>step2_visual_v8_mapping_only</ContractVersion>" in visual_prompt
 
 
 def test_mask_size_cursor_and_exact_painted_pixel_contracts():
@@ -278,11 +275,12 @@ def test_mask_size_cursor_and_exact_painted_pixel_contracts():
     assert "buildMaskDisplayLayer" in mask_editor
 
 
-def test_step3_actions_reserve_fixed_non_wrapping_slots():
+def test_step3_actions_use_the_current_card_action_layout():
     images = (ROOT / "static" / "images.js").read_text(encoding="utf-8")
     css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
-    assert "step3-action-placeholder" in images
-    assert "grid-template-columns: repeat(3, 54px)" in css
+    assert 'class="step3-card-actions"' in images
+    assert 'class="step3-card-utilities"' in images
+    assert '.step3-card-actions' in css
     assert "#step3-btn-batch-generate," in css
     assert ".step3-ai-action," in css
     assert "background: #ffffff !important" in css
@@ -331,7 +329,8 @@ def test_workflow_connector_stops_at_step_six_and_step2_errors_are_visible():
     assert "height: calc((64px + 0.35rem) * 5)" in css
     assert "step2-generation-status" in html
     assert "setStep2GenerationStatus" in storyboard
-    assert "Step 2 generation failed" in storyboard
+    assert "setStep2GenerationStatus(`演讲稿生成失败" in storyboard
+    assert "setStep2GenerationStatus(`可视化生成失败" in storyboard
 
 
 def test_step2_timeout_is_logged_and_returned_as_actionable_error(monkeypatch, tmp_path):

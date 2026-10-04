@@ -4502,7 +4502,7 @@ textarea.step2-soft-input {
 }
 
 .sidebar {
-  width: 270px;
+  /* width superseded by stitch.css workspace chrome layer (256px) */
   padding: 0.72rem 1rem 1rem;
   background: rgba(255, 255, 255, 0.92) !important;
   box-shadow: 12px 0 34px rgba(69, 78, 120, 0.045) !important;
@@ -4537,11 +4537,9 @@ textarea.step2-soft-input {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 38px 28px minmax(0, 1fr) 22px;
+  /* column template + 64px row height superseded by stitch.css (24px 1fr 18px / 40px) */
   align-items: center;
   gap: 0.62rem;
-  height: 64px;
-  min-height: 64px;
   padding: 0.58rem 0.68rem;
   border: 1px solid transparent !important;
   border-radius: 18px !important;
@@ -6050,12 +6048,6 @@ body.step5-fullscreen-mode #step-panel-5 .workspace-left{align-items:center;just
   flex-wrap: wrap;
   gap: 0.7rem;
   min-width: 0;
-}
-
-#step8-error-box {
-  flex: 1 0 100%;
-  width: 100%;
-  margin-top: 0.2rem !important;
 }
 
 .step8-readiness {

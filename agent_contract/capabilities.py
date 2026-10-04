@@ -40,6 +40,7 @@ from agent_contract.models import (
     IdentityResult,
     CheckpointListResult,
     ProjectDeleteResult,
+    GenerationControlResult, GenerationStopRequest, GenerationStopResult,
 )
 
 
@@ -78,6 +79,20 @@ class AgentCapability:
 # ---------------------------------------------------------------------------
 
 CAPABILITIES: list[AgentCapability] = [
+    AgentCapability(
+        id='generation.status', version='1.0', status=CapabilityStatus.stable,
+        description='Read the active cooperative generation control for a project stage. Controls are process-local; durable TTS/video results remain in their job APIs.',
+        request_model=BaseModel, response_model=GenerationControlResult,
+        agent_api_method='GET', agent_api_path='/api/agent/v1/projects/{project_id}/generation/{stage}/status',
+        mcp_tool_name='ppt_generation_status', cli_command='generation status', service_ref='generation_control.status',
+    ),
+    AgentCapability(
+        id='generation.stop', version='1.0', status=CapabilityStatus.stable,
+        description='Request a safe-boundary stop for the exact active operation ID. In-flight provider requests and render stages finish before stopping.',
+        request_model=GenerationStopRequest, response_model=GenerationStopResult,
+        agent_api_method='POST', agent_api_path='/api/agent/v1/projects/{project_id}/generation/{stage}/stop',
+        mcp_tool_name='ppt_generation_stop', cli_command='generation stop', service_ref='generation_control.request_stop',
+    ),
     AgentCapability(
         id="identity.get",
         version="1.0",

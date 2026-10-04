@@ -8,8 +8,12 @@ const API = {
 
   async fetch(url, options = {}) {
     const controller = new AbortController();
+    const externalAbort = () => controller.abort(options.signal?.reason);
+    if (options.signal?.aborted) externalAbort();
+    else options.signal?.addEventListener('abort', externalAbort, { once: true });
+    let timedOut = false;
     const timeoutId = setTimeout(
-      () => controller.abort(),
+      () => { timedOut = true; controller.abort(); },
       options.timeoutMs || this.REQUEST_TIMEOUT_MS
     );
     try {
@@ -21,7 +25,7 @@ const API = {
       const response = await fetch(url, {
         ...options,
         headers,
-        signal: options.signal || controller.signal
+        signal: controller.signal
       });
       if (options.responseType === 'blob') {
         if (response.ok) return response.blob();
@@ -76,7 +80,7 @@ const API = {
       return data;
     } catch (error) {
       if (error && error.name === 'AbortError') {
-        if (!options.silent) {
+        if (!options.silent && timedOut) {
           showToast(`❌ 请求超时（${Math.round((options.timeoutMs || this.REQUEST_TIMEOUT_MS) / 1000)}秒），请重试`);
         }
         throw new Error('请求超时');
@@ -85,6 +89,7 @@ const API = {
       throw error;
     } finally {
       clearTimeout(timeoutId);
+      options.signal?.removeEventListener('abort', externalAbort);
     }
   },
 

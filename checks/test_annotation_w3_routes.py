@@ -100,7 +100,6 @@ def client():
         job_store=__import__("annotation_job_store", fromlist=["AnnotationJobStore"]).AnnotationJobStore(
             SessionLocal, sleep=lambda _t: None
         ),
-        service_get_slide_ids=lambda db, pid: ["slide_001"],
         session_factory=SessionLocal,
         text_layout_builder=layout_builder,
         recognize=recognize,

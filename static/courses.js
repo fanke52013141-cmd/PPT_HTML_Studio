@@ -714,7 +714,6 @@ const CourseTree = (() => {
 
     const chapterCount = course.chapters ? course.chapters.length : 0;
     const projectCount = course.project_count || 0;
-    const unchapteredCount = (course.unchaptered_projects || []).length;
 
     node.innerHTML = `
       <div class="course-card-header stitch-course-header group flex items-center justify-between px-2.5 py-1.5 rounded-lg">

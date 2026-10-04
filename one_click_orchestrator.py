@@ -846,11 +846,9 @@ def _preflight_errors(dependencies: OneClickDependencies, project: Any) -> list[
             endpoint = str(dependencies.get_setting("tts_endpoint") or "").strip()
         if endpoint.lower().startswith(("http://", "https://")):
             endpoint = ""
-        workflow_path = Path(endpoint) if endpoint else (
-            dependencies.repo_root / "data" / "digital_human" / "comfyui_tts_workflow.json"
-        )
-        if not workflow_path.is_absolute():
-            workflow_path = dependencies.repo_root / workflow_path
+        from repository_paths import resolve_comfyui_tts_workflow_path
+
+        workflow_path = resolve_comfyui_tts_workflow_path(endpoint, dependencies.repo_root)
         if not workflow_path.is_file():
             errors.append(f"ComfyUI TTS 工作流不存在：{workflow_path}")
         else:

@@ -112,6 +112,8 @@ def run_subprocess_killable(
     ):
         if key in kwargs:
             popen_kwargs[key] = kwargs[key]
+    if not _IS_WINDOWS:
+        popen_kwargs["start_new_session"] = True
     proc = subprocess.Popen(args, **popen_kwargs)
     stdout: Any = b""
     stderr: Any = b""

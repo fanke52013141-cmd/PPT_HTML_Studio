@@ -17,6 +17,7 @@ from pathlib import Path
 import threading
 import time
 import uuid
+import generation_control
 from typing import Any, Callable
 
 from sqlalchemy.orm import Session
@@ -320,15 +321,24 @@ class VideoRenderService:
                 "output_filename": None,
             }
 
+        generation_control.reserve(project_id, 'video', task_id)
         try:
-            self._render_executor.submit(
+            future = self._render_executor.submit(
                 self.run_render_job,
                 project_id,
                 task_id,
                 project_lock,
                 getattr(project, "account_id", None) or get_current_account_id(),
             )
+            if future is not None:
+                def stop_queued():
+                    if future.cancel():
+                        self._set_task_status(task_id, 'cancelled')
+                        generation_control.finish(project_id, 'video', task_id)
+                        project_lock.release()
+                generation_control.bind_stop_handler(project_id, 'video', task_id, stop_queued)
         except Exception as exc:
+            generation_control.finish(project_id, 'video', task_id)
             self._set_task_status(
                 task_id,
                 "interrupted",
@@ -346,7 +356,7 @@ class VideoRenderService:
         return {
             "success": True,
             "task_id": task_id,
-            "status": "rendering",
+            "status": "queued",
             "stage": "validating",
             "stage_label": RENDER_STAGE_LABELS["validating"],
             "elapsed_sec": 0.0,
@@ -651,6 +661,7 @@ class VideoRenderService:
                 return
             try:
                 # Source inputs may be edited while the long-running render
+                generation_control.checkpoint(project_id, 'video')
                 # proceeds. Never publish the result as the current version
                 # when that happens.
                 submission_at_start = self._submission_key(project)
@@ -663,10 +674,7 @@ class VideoRenderService:
                 result = self.runner.run(
                     project,
                     output_dir=self.project_video_dir(project),
-                    set_stage=lambda stage: self._set_task_stage(
-                        task_id,
-                        stage,
-                    ),
+                    set_stage=lambda stage: self._controlled_stage(project_id, task_id, stage),
                 )
                 render_elapsed = round(time.time() - render_started, 1)
                 logger.info(
@@ -759,6 +767,8 @@ class VideoRenderService:
                     ),
                     result_artifact_id=artifact.id,
                 )
+            except generation_control.GenerationStopped:
+                self._set_task_status(task_id, 'cancelled')
             except Exception as exc:
                 logger.exception(
                     "Async render failed for project %s",
@@ -770,6 +780,7 @@ class VideoRenderService:
                     error=str(exc),
                 )
         finally:
+            generation_control.finish(project_id, 'video', task_id)
             db.close()
             # R2-006: 只释放显式移交的锁;locked() 探测可能误释放他人持有的锁。
             try:
@@ -1148,6 +1159,10 @@ class VideoRenderService:
             ),
         }
 
+    def _controlled_stage(self, project_id: str, task_id: str, stage: str) -> None:
+        generation_control.checkpoint(project_id, 'video')
+        self._set_task_stage(task_id, stage)
+
     def _set_task_stage(
         self,
         task_id: str,
@@ -1214,6 +1229,7 @@ class VideoRenderService:
                     "success",
                     "error",
                     "interrupted",
+                    "cancelled",
                 }:
                     task["finished_at"] = time.time()
                 task.update(fields)
@@ -1264,7 +1280,7 @@ class VideoRenderService:
             "succeeded": "success",
             "failed": "error",
             "interrupted": "interrupted",
-            "cancelled": "interrupted",
+            "cancelled": "cancelled",
         }.get(job.status, job.status)
         started_at = (
             job.started_at or job.created_at

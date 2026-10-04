@@ -5,8 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -14,54 +12,24 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageStat
 
+if str(Path(__file__).resolve().parents[1]) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 
 class RenderColorError(RuntimeError):
     pass
 
 
 def candidate_binary_dirs() -> list[Path]:
-    repo_root = Path(__file__).resolve().parents[1]
-    candidates: list[Path] = []
-    for value in (
-        os.environ.get("PPT_STUDIO_FFMPEG_DIR"),
-        os.environ.get("FFMPEG_DIR"),
-    ):
-        if value:
-            candidates.append(Path(value))
+    from scripts.media_tools import media_tool_candidate_dirs
 
-    candidates.extend(
-        [
-            repo_root / "tools" / "ffmpeg" / "bin",
-            repo_root / "runtime" / "ffmpeg" / "bin",
-            repo_root.parent / "work" / "runtime" / "ffmpeg" / "bin",
-            repo_root.parent / "work" / "runtime" / "ffmpeg",
-        ]
-    )
-
-    appdata = os.environ.get("APPDATA")
-    if appdata:
-        candidates.extend(
-            [
-                Path(appdata) / "TRAE SOLO CN" / "ModularData" / "ai-agent" / "vm" / "tools" / "app" / "ffmpeg",
-                Path(appdata) / "WEMedia" / "plugin" / "ffmpeg_7_1",
-            ]
-        )
-    return candidates
+    return media_tool_candidate_dirs(Path(__file__).resolve().parents[1])
 
 
 def resolve_media_tool(name: str) -> str | None:
-    direct_env = os.environ.get(f"{name.upper()}_BINARY")
-    if direct_env and Path(direct_env).exists():
-        return direct_env
-    found = shutil.which(name)
-    if found:
-        return found
-    executable = f"{name}.exe" if os.name == "nt" else name
-    for directory in candidate_binary_dirs():
-        path = directory / executable
-        if path.exists():
-            return str(path)
-    return None
+    from scripts.media_tools import resolve_media_tool as resolve
+
+    return resolve(name, Path(__file__).resolve().parents[1])
 
 
 def require_media_tools() -> tuple[str, str]:

@@ -13,6 +13,7 @@
   不可伪造;W1 尚无音频接入,audio_hash 恒为 null。
 """
 from __future__ import annotations
+from annotation_contracts import EMPHASIS_LEVELS
 
 import hashlib
 import json
@@ -1250,7 +1251,7 @@ class AnnotationService:
                 })
         settings = self._store.read_settings(run_dir) or default_annotation_settings()
         emphasis = settings.defaults.get("emphasis", "moderate")
-        if emphasis not in ("weak", "moderate", "strong"):
+        if emphasis not in EMPHASIS_LEVELS:
             emphasis = "moderate"
         prompts = compose_plan_prompts(
             system_prompt=system_prompt,

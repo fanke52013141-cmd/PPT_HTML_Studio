@@ -9,6 +9,7 @@
 - 服务端从不静默吞错:失败写入 job.error(脱敏)。
 """
 from __future__ import annotations
+from annotation_contracts import EMPHASIS_LEVELS
 
 import hashlib
 import logging
@@ -35,7 +36,7 @@ def _next_id(items: List[AnnotationItem]) -> str:
 
 
 def _with_id(item: AnnotationItem, annotation_id: str) -> AnnotationItem:
-    return replace(item, annotation_id=annotation_id, inputs=replace(item.inputs, image_hash=item.inputs.image_hash))
+    return replace(item, annotation_id=annotation_id)
 
 
 def _page_with(*, revision: int, slide_id: str, items: List[AnnotationItem], snapshot: Optional[Dict[str, Any]], now: str) -> AnnotationPage:
@@ -48,7 +49,6 @@ _JOB_SEMAPHORE = threading.BoundedSemaphore(_MAX_CONCURRENT_JOBS)
 @dataclass(frozen=True)
 class AnnotationJobDependencies:
     job_store: Any  # AnnotationJobStore
-    service_get_slide_ids: Callable[[Any, str], List[str]]
     session_factory: Callable[[], Any]
     text_layout_builder: Any  # TextLayoutBuilder
     recognize: Callable[[bytes, Any], Any]  # (image_bytes, config) -> BaiduOcrResult
@@ -294,7 +294,7 @@ class AnnotationJobManager:
 
             settings = annotation_store.read_settings(run_dir)
             configured_emphasis = settings.defaults.get("emphasis") if settings else None
-            emphasis = configured_emphasis if configured_emphasis in ("weak", "moderate", "strong") else "moderate"
+            emphasis = configured_emphasis if configured_emphasis in EMPHASIS_LEVELS else "moderate"
             try:
                 items, snapshot, issues = planner.plan_slide(
                     run_dir,

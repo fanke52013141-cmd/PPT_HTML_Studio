@@ -62,7 +62,6 @@ def manager(store):
     return AnnotationJobManager(
         AnnotationJobDependencies(
             job_store=store,
-            service_get_slide_ids=lambda db, pid: [],
             session_factory=SessionLocal,
             text_layout_builder=builder,
             recognize=recognize,
@@ -178,7 +177,6 @@ def test_engine_failure_marks_failed_with_sanitized_error(store, manager, clean_
     broken_manager = AnnotationJobManager(
         AnnotationJobDependencies(
             job_store=store,
-            service_get_slide_ids=lambda db, pid: [],
             session_factory=SessionLocal,
             text_layout_builder=manager._deps.text_layout_builder,
             recognize=failing_recognize,

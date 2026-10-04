@@ -201,6 +201,9 @@ def test_changed_input_generates_new_submission_key(
     service, project = _service(tmp_path, store, input_digest="input-a")
 
     service.start_render(_CallerDb(), project.id)
+    import generation_control
+    previous = generation_control.status(project.id, 'video')['operation_id']
+    generation_control.finish(project.id, 'video', previous)
     service._project_lock(project.id).release()
     service._tasks.clear()
     service.artifacts.current_render_input_fingerprint = lambda _project: {

@@ -13,6 +13,7 @@ import logging
 import os
 import re
 import shutil
+import shutil
 import subprocess
 import uuid
 from pathlib import Path
@@ -821,10 +822,27 @@ def compose_dh_slide(
     shape = str(body.get("shape") or cfg.get("shape") or "circle")
     position = body.get("position") if isinstance(body.get("position"), dict) else cfg.get("position")
     border = body.get("border") if isinstance(body.get("border"), dict) else cfg.get("border")
+    _assert_safe_slide_id(slide_id)
+    default_output = (_digi_dir(project) / f"composite_{slide_id}.mp4").resolve()
+    requested_output = str(body.get("output") or "").strip()
+    if requested_output and Path(requested_output).resolve() != default_output:
+        raise HTTPException(status_code=400, detail="合成视频必须保存到当前项目的默认输出路径")
+    if not default_output.is_relative_to(Path(project.run_dir).resolve()):
+        raise HTTPException(status_code=400, detail="合成输出路径超出当前项目")
+    output = str(default_output)
     base_video = str(body.get("base_video") or "").strip() or None
-    output = str(body.get("output") or "").strip()
-    if not output:
-        output = str(_digi_dir(project) / f"composite_{slide_id}.mp4")
+    if base_video:
+        base_path = Path(base_video)
+        if not base_path.is_absolute():
+            base_path = Path(project.run_dir) / base_path
+        base_path = base_path.resolve()
+        if not base_path.is_relative_to(Path(project.run_dir).resolve()):
+            raise HTTPException(status_code=400, detail="底层视频必须属于当前项目")
+        if not base_path.is_file() or base_path.suffix.lower() != ".mp4":
+            raise HTTPException(status_code=400, detail="底层视频必须是已存在的 MP4 文件")
+        if base_path == default_output:
+            raise HTTPException(status_code=400, detail="输入视频与输出视频不能相同")
+        base_video = str(base_path)
 
     client = get_digital_human_client()
     try:
@@ -869,39 +887,21 @@ def _full_audio_path(project: Project) -> Path:
 
 
 def _find_ffmpeg() -> str:
-    """定位 ffmpeg/ffprobe（优先使用项目内 Remotion 自带版本，避免外部精简版不兼容）。"""
-    import shutil
+    from scripts.media_tools import resolve_media_tool
 
-    # 优先：项目内 Remotion 自带的 ffmpeg（完整版，兼容性最好）
-    remotion_ff = REPO_ROOT / "scripts" / "remotion" / "node_modules" / \
-        "@remotion" / "compositor-win32-x64-msvc" / "ffmpeg.exe"
-    if remotion_ff.exists():
-        return str(remotion_ff)
-
-    # 次选：环境变量指定的目录
-    candidates = [
-        os.environ.get("PPT_STUDIO_FFMPEG_DIR", ""),
-        os.environ.get("PPT_DIGITAL_HUMAN_FFMPEG_DIR", ""),
-    ]
-    for cand in candidates:
-        if cand and (Path(cand) / "ffmpeg.exe").exists():
-            return str(Path(cand) / "ffmpeg.exe")
-
-    # 最后回退到 PATH 上的 ffmpeg
-    found = shutil.which("ffmpeg")
-    if found:
-        return found
-    raise HTTPException(status_code=503, detail="未找到 ffmpeg，无法导出整段语音")
+    found = resolve_media_tool("ffmpeg", REPO_ROOT)
+    if not found:
+        raise HTTPException(status_code=503, detail="未找到 ffmpeg，无法导出整段语音")
+    return found
 
 
 def _find_ffprobe() -> str:
-    ffmpeg = _find_ffmpeg()
-    if ffmpeg.lower().endswith("ffmpeg.exe"):
-        probe = Path(ffmpeg).with_name("ffprobe.exe")
-        if probe.exists():
-            return str(probe)
-    found = shutil.which("ffprobe")
-    return found or ffmpeg
+    from scripts.media_tools import resolve_media_tool
+
+    found = resolve_media_tool("ffprobe", REPO_ROOT)
+    if not found:
+        raise HTTPException(status_code=503, detail="未找到 ffprobe")
+    return found
 
 
 @router.post("/api/projects/{project_id}/digital-human/export-audio")
@@ -976,7 +976,6 @@ def export_full_audio(
         raise HTTPException(status_code=500, detail=f"整段语音导出失败: {exc}")
     finally:
         # 清理临时文件
-        import shutil
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
     duration = None

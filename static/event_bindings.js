@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 初始化全局页面级事件监听
 function initGlobalEvents() {
+  initModalAccessibility();
+  initGenerationControls();
+  document.addEventListener('generation-finished', event => {
+    if (event.detail.projectId === state.currentProject?.id && event.detail.kind === 'tts'
+        && state.currentStep === 6) loadStep7Data().catch(() => {});
+  });
   // Buttons keep their visible label or aria-label, without native hover explanations.
   document.addEventListener('pointerover', event => {
     const button = event.target.closest?.('button, [role="button"]');
@@ -93,7 +99,26 @@ function initGlobalEvents() {
   // 步骤条点击导航
   const stepItems = document.querySelectorAll('.step-item');
   stepItems.forEach(item => {
+    item.setAttribute('role', 'button');
+    item.tabIndex = 0;
+    item.addEventListener('keydown', event => {
+      if (event.target !== item) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        if (item.getAttribute('aria-disabled') !== 'true') item.click();
+        return;
+      }
+      const direction = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+      if (!direction && !['Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const available = [...stepItems].filter(node => node.getAttribute('aria-disabled') !== 'true');
+      const index = available.indexOf(item);
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? available.length - 1
+        : (index + direction + available.length) % available.length;
+      available[next]?.focus();
+    });
     item.addEventListener('click', () => {
+      if (item.getAttribute('aria-disabled') === 'true') return;
       const step = parseInt(item.dataset.step);
       if (state.currentProject) navigateToStepForReview(step);
     });
@@ -104,7 +129,7 @@ function initGlobalEvents() {
     btn.addEventListener('click', async () => {
       if (state.currentStep === 2) {
         if (!Array.isArray(state.slides) || state.slides.length === 0) {
-          showToast('请先添加至少一个分镜，再进入图片生成。');
+          showStep2ValidationError('请先添加至少一个分镜，再进入图片生成。');
           return;
         }
         // 手动模式下，跳到 Step 3 前先提交手动分镜到后端
@@ -170,6 +195,7 @@ function initGlobalEvents() {
   });
   document.getElementById('step3-batch-upload')?.addEventListener('change', (e) => handleStep3BatchUpload(e));
   document.getElementById('step3-btn-batch-generate')?.addEventListener('click', () => generateAllStep3Images());
+  document.getElementById('step3-btn-stop-queue')?.addEventListener('click', stopStep3GenerationQueue);
   document.getElementById('step3-btn-copy-prompts')?.addEventListener('click', () => copyStep2Prompts());
   document.getElementById('step3-btn-prompt-settings')?.addEventListener('click', () => openStep3PromptSettingsModal());
   document.getElementById('btn-step3-prompt-cancel')?.addEventListener('click', () => closeStep3PromptSettingsModal());

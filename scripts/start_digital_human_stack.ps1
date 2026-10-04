@@ -2,6 +2,8 @@
     [string]$AssetsRoot = $(
         if ($env:PPT_DIGITAL_HUMAN_ASSETS_ROOT) {
             $env:PPT_DIGITAL_HUMAN_ASSETS_ROOT
+        } elseif ($env:PPT_STUDIO_ASSETS_DIR) {
+            $env:PPT_STUDIO_ASSETS_DIR
         } else {
             'D:\PPT_Studio_Assets\InfiniteTalk_TTS'
         }

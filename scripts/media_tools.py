@@ -11,7 +11,7 @@ from pathlib import Path
 
 def media_tool_candidate_dirs(repo_root: Path | None = None) -> list[Path]:
     candidates: list[Path] = []
-    for value in (os.environ.get("PPT_STUDIO_FFMPEG_DIR"), os.environ.get("FFMPEG_DIR")):
+    for value in (os.environ.get("PPT_STUDIO_FFMPEG_DIR"), os.environ.get("PPT_DIGITAL_HUMAN_FFMPEG_DIR"), os.environ.get("FFMPEG_DIR")):
         if value:
             candidates.append(Path(value))
 
@@ -19,6 +19,9 @@ def media_tool_candidate_dirs(repo_root: Path | None = None) -> list[Path]:
         root = Path(repo_root).resolve()
         candidates.extend(
             [
+                root / "scripts" / "remotion" / "node_modules" / "@remotion" / "compositor-win32-x64-msvc",
+                root.parent / "work" / "runtime" / "ffmpeg" / "bin",
+                root.parent / "work" / "runtime" / "ffmpeg",
                 root / "tools" / "ffmpeg" / "bin",
                 root / "runtime" / "ffmpeg" / "bin",
                 root.parent / "runtime" / "ffmpeg" / "bin",

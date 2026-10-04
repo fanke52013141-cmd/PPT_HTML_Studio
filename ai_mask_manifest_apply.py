@@ -343,6 +343,7 @@ def _apply(manifest: dict[str, Any], slide: dict[str, Any], elements_payload: di
         display_group_id = str((semantic_group or {}).get("group_id") or (semantic_group or {}).get("id") or gid)
         color = MASK_COLORS[visual_group_order.get(gid, 0) % len(MASK_COLORS)]
         origins = match.get("element_origins") if isinstance(match.get("element_origins"), dict) else {}
+        group_updated = False
         for collection in (groups, semantic):
             group = _find_group(collection, gid)
             if group is None:
@@ -367,6 +368,7 @@ def _apply(manifest: dict[str, Any], slide: dict[str, Any], elements_payload: di
             if _has_manual(group) and not settings.get("overwrite_existing_ai_mask", True):
                 _mark_manual_owned(group)
                 continue
+            group_updated = True
             group["box"] = box
             group["visual_group_id"] = gid
             group["manual_mask"] = {
@@ -407,7 +409,10 @@ def _apply(manifest: dict[str, Any], slide: dict[str, Any], elements_payload: di
                 "model_ownership_ratio": float(record.get("model_ownership_ratio", 0.0)),
                 "reason": match.get("reason", ""),
             }
-        updated += 1
+        if group_updated:
+            updated += 1
+        else:
+            skipped += 1
     mslide["ai_mask_status"] = {
         "version": "ai_mask_annotation_v4_provenance",
         "updated_group_count": updated,

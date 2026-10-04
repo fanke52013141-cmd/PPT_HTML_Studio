@@ -11,9 +11,10 @@
   密度上限(默认每页最多 3 条,emphasis=weak 1 条)、重复建议剔除。
 """
 from __future__ import annotations
+from annotation_contracts import EMPHASIS_LIMITS
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from annotation_contracts import (
@@ -28,7 +29,7 @@ from annotation_prompt_templates import AnnotationPromptStore, compose_plan_prom
 logger = logging.getLogger("PPTStudio.AnnotationPlanner")
 
 VALID_STYLES = ("ellipse", "underline", "highlighter")
-MAX_SUGGESTIONS = {"weak": 1, "moderate": 2, "strong": 3}
+MAX_SUGGESTIONS = EMPHASIS_LIMITS
 MAX_RANGE_CODEPOINTS = 40
 
 
@@ -63,12 +64,10 @@ class AnnotationPlanner:
         image_hash: Optional[str],
         narration_hash: Optional[str],
         now_iso: str,
-        replace_all: bool = False,
     ) -> Tuple[List[AnnotationItem], Dict[str, Any], List[Issue]]:
         """对本页执行一次 AI 规划,返回 (新增条目, 建议快照, 校验问题)。
 
-        - 不覆盖 locked/modified 条目(replace_all 时先快照,由调用方保存
-          可撤销版本;本函数只产出"新增"条目,删除仍由用户显式操作)。
+        - 不覆盖 locked/modified 条目;本函数只产出新增条目，删除由用户显式操作。
         - LLM 输出非法字段一律拒绝并记录 issue;不猜测 ID。
         """
         system_prompt, source = self._deps.prompt_store.effective_system_prompt(run_dir)
@@ -113,6 +112,8 @@ class AnnotationPlanner:
                 if item.target.token_ids
             ],
         )
+        suggestions = [replace(item, inputs=replace(item.inputs, image_hash=image_hash, narration_hash=narration_hash)) for item in suggestions]
+        snapshot.update(image_hash=image_hash, narration_hash=narration_hash)
         return suggestions, snapshot, issues
 
     # ------------------------------------------------------------ 校验

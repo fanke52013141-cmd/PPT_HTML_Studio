@@ -11,7 +11,6 @@ import json
 import logging
 import os
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import sys
@@ -32,6 +31,11 @@ from database import Project
 from project_path_service import project_or_404
 import invalidation_service
 from pipeline_lifecycle import project_artifact_lock, write_json_atomic
+import generation_control
+import storyboard_plan_store as plan_store
+import storyboard_template_store as template_store
+from storyboard_template_store import storyboard_template_payload  # noqa: F401 - compatibility export
+from storyboard_planning import _step2_script_plan_fingerprint
 from visual_contract_service import contract_canonical_sha256, reject_blank_slide_ids
 from project_config_runtime import get_config_value
 from storyboard_project_config import read_step2_prompts_for_project, resolve_step2_llm
@@ -206,7 +210,7 @@ from storyboard_profiles import (
     apply_storyboard_profile_patch,
     default_storyboard_profile_text,
     default_storyboard_rules,
-    handdrawn_storyboard_rules,
+    handdrawn_storyboard_rules,  # noqa: F401 - compatibility export
     parse_storyboard_profile_text,
     read_project_pipeline_profile,
     sanitize_storyboard_profile,
@@ -336,123 +340,20 @@ def read_plan_json(path: str, missing_message: str) -> Dict[str, Any]:
     return value
 
 
-def _step2_script_plan_fingerprint(plan: Dict[str, Any]) -> str:
-    source = {
-        "title": str(plan.get("title") or ""),
-        "slides": [
-            {
-                "slide_id": str(slide.get("slide_id") or ""),
-                "slide_title": str(slide.get("slide_title") or ""),
-                "narration": str(slide.get("narration") or ""),
-            }
-            for slide in (plan.get("slides") or [])
-            if isinstance(slide, dict)
-        ],
-    }
-    encoded = json.dumps(source, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+def _step2_visual_plan_status(project, script_plan):
+    return plan_store._step2_visual_plan_status(project, script_plan, visual_path=step2_visual_plan_path(project))
 
 
-def _step2_visual_plan_status(project: Project, script_plan: Dict[str, Any]) -> tuple[bool, bool]:
-    visual_path = step2_visual_plan_path(project)
-    if not os.path.isfile(visual_path):
-        return False, False
-    try:
-        with open(visual_path, "r", encoding="utf-8-sig") as file:
-            visual_plan = json.load(file)
-    except (OSError, json.JSONDecodeError):
-        return True, True
-    if not isinstance(visual_plan, dict):
-        return True, True
-    stored_hash = str(visual_plan.get("source_script_hash") or "")
-    return True, bool(stored_hash and stored_hash != _step2_script_plan_fingerprint(script_plan))
+def _mark_step2_visual_plan_stale(project, previous_plan, current_plan):
+    return plan_store._mark_step2_visual_plan_stale(project, previous_plan, current_plan, visual_path=step2_visual_plan_path(project))
 
 
-def _mark_step2_visual_plan_stale(project: Project, previous_plan: Dict[str, Any], current_plan: Dict[str, Any]) -> None:
-    if previous_plan == current_plan:
-        return
-    visual_path = step2_visual_plan_path(project)
-    if not os.path.isfile(visual_path):
-        return
-    try:
-        with open(visual_path, "r", encoding="utf-8-sig") as file:
-            visual_plan = json.load(file)
-        if isinstance(visual_plan, dict) and visual_plan.get("slides"):
-            current_hash = _step2_script_plan_fingerprint(current_plan)
-            existing_hash = str(visual_plan.get("source_script_hash") or "")
-            if existing_hash and existing_hash == current_hash:
-                return
-            # Preserve a real old fingerprint; legacy plans get a sentinel.
-            visual_plan.setdefault("source_script_hash", "legacy-stale")
-            write_json_atomic(visual_path, visual_plan)
-    except (OSError, json.JSONDecodeError):
-        logger.warning("Could not mark the existing visual plan stale after script edit")
+def _sync_visual_plan_for_script_reorder(project, previous_plan, current_plan):
+    return plan_store._sync_visual_plan_for_script_reorder(project, previous_plan, current_plan, visual_path=step2_visual_plan_path(project))
 
 
-def _sync_visual_plan_for_script_reorder(project: Project, previous_plan: Dict[str, Any], current_plan: Dict[str, Any]) -> bool:
-    """Keep existing visuals when only the order of unchanged script pages moves."""
-    previous_slides = previous_plan.get("slides") or []
-    current_slides = current_plan.get("slides") or []
-    if (not previous_slides or len(previous_slides) != len(current_slides)
-            or previous_plan.get("title") != current_plan.get("title")):
-        return False
-    old_by_id = {slide.get("slide_id"): slide for slide in previous_slides if isinstance(slide, dict)}
-    new_by_id = {slide.get("slide_id"): slide for slide in current_slides if isinstance(slide, dict)}
-    if (len(old_by_id) != len(previous_slides) or old_by_id != new_by_id
-            or [slide.get("slide_id") for slide in previous_slides]
-            == [slide.get("slide_id") for slide in current_slides]):
-        return False
-    visual_path = step2_visual_plan_path(project)
-    if not os.path.isfile(visual_path):
-        return False
-    try:
-        with open(visual_path, "r", encoding="utf-8-sig") as file:
-            visual_plan = json.load(file)
-        visual_slides = visual_plan.get("slides") if isinstance(visual_plan, dict) else None
-        if not isinstance(visual_slides, list):
-            return False
-        visual_by_id = {slide.get("slide_id"): slide for slide in visual_slides if isinstance(slide, dict)}
-        if len(visual_by_id) != len(current_slides) or set(visual_by_id) != set(new_by_id):
-            return False
-        old_hash = _step2_script_plan_fingerprint(previous_plan)
-        if visual_plan.get("source_script_hash") not in (None, "", old_hash):
-            return False
-        visual_plan["slides"] = [visual_by_id[slide["slide_id"]] for slide in current_slides]
-        visual_plan["source_script_hash"] = _step2_script_plan_fingerprint(current_plan)
-        write_json_atomic(visual_path, visual_plan)
-        return True
-    except (OSError, json.JSONDecodeError):
-        logger.warning("Could not retain visual plan after script reorder")
-        return False
-
-
-def _persist_step2_script_plan(
-    project: Project,
-    plan: Dict[str, Any],
-    previous_plan: Dict[str, Any],
-) -> tuple[bool, bool, bool, bool]:
-    _sync_visual_plan_for_script_reorder(project, previous_plan, plan)
-    write_json_atomic(step2_script_plan_path(project), plan)
-    _mark_step2_visual_plan_stale(project, previous_plan, plan)
-    visual_plan_exists, visual_stale = _step2_visual_plan_status(project, plan)
-    existing_contract = os.path.isfile(
-        os.path.join(project.run_dir, "planning", "visual_contract.json")
-    )
-    if existing_contract and not visual_plan_exists and previous_plan != plan:
-        visual_stale = True
-    visual_exists = visual_plan_exists or existing_contract
-    statuses = project.get_step_status()
-    visual_work_stale = visual_stale
-    workflow_changed = (
-        previous_plan != plan
-        and visual_work_stale
-        and statuses.get("2") != "in_progress"
-    )
-    if workflow_changed:
-        invalidation_service.storyboard_script_changed(project)
-    step2_status = project.get_step_status().get("2")
-    workflow_pending = step2_status is not None and step2_status != "completed"
-    return visual_exists, visual_stale, workflow_changed, workflow_pending
+def _persist_step2_script_plan(project, plan, previous_plan):
+    return plan_store._persist_step2_script_plan(project, plan, previous_plan, visual_path=step2_visual_plan_path(project), script_path=step2_script_plan_path(project))
 
 
 def configured_step2_llm() -> tuple[str, Optional[str], str, float, int]:
@@ -522,135 +423,20 @@ def run_step2_json_llm(
     )
 
 
-def storyboard_template_payload(
-    template_id: str,
-    name: str,
-    rules: str,
-    profile_text: str,
-    built_in: bool = False,
-    updated_at: str = "",
-) -> Dict[str, Any]:
-    profile = parse_storyboard_profile_text(profile_text)
-    return {
-        "id": template_id,
-        "name": name,
-        "built_in": built_in,
-        "updated_at": updated_at,
-        "rules": rules,
-        "profile_yaml": profile_text,
-        "roles": role_catalog(profile),
-        "editor": storyboard_profile_editor_data(profile),
-    }
-
-
-def list_storyboard_templates() -> List[Dict[str, Any]]:
-    templates = [
-        storyboard_template_payload(
-            "default",
-            "内容优先通用分镜模板",
-            default_storyboard_rules(),
-            default_storyboard_profile_text(),
-            built_in=True,
-        ),
-        storyboard_template_payload(
-            "handdrawn_explainer",
-            "手绘科普内容优先模板",
-            handdrawn_storyboard_rules(),
-            default_storyboard_profile_text(),
-            built_in=True,
-        ),
-    ]
-    stored = read_json_file(STORYBOARD_TEMPLATES_PATH, [])
-    if not isinstance(stored, list):
-        return templates
-    for item in stored:
-        if not isinstance(item, dict):
-            continue
-        try:
-            templates.append(
-                storyboard_template_payload(
-                    str(item.get("id") or ""),
-                    str(item.get("name") or ""),
-                    str(item.get("rules") or ""),
-                    str(item.get("profile_yaml") or ""),
-                    updated_at=str(item.get("updated_at") or ""),
-                )
-            )
-        except HTTPException as exc:
-            logger.warning("Skipping invalid storyboard template %s: %s", item.get("id"), exc.detail)
-    return templates
+def list_storyboard_templates():
+    return template_store.list_storyboard_templates(path=STORYBOARD_TEMPLATES_PATH)
 
 
 def get_storyboard_templates():
-    return {"success": True, "templates": list_storyboard_templates()}
+    return template_store.get_storyboard_templates(path=STORYBOARD_TEMPLATES_PATH)
 
 
-def save_storyboard_template(payload: Dict[str, Any]):
-    name = normalized_template_name(payload.get("name"))
-    protected_names = {"默认分镜模板", "内容优先通用分镜模板", "手绘科普内容优先模板"}
-    if name.casefold() in {item.casefold() for item in protected_names}:
-        raise HTTPException(status_code=400, detail="内置分镜模板名称不可覆盖")
-    rules = str(payload.get("rules") or "").strip() or default_storyboard_rules()
-    profile_text = str(payload.get("profile_yaml") or "").strip() or default_storyboard_profile_text()
-    profile = parse_storyboard_profile_text(profile_text)
-    profile = apply_storyboard_profile_patch(profile, payload.get("profile_patch"))
-    profile_text = yaml.safe_dump(profile, allow_unicode=True, sort_keys=False, width=1000).strip()
-
-    stored = read_json_file(STORYBOARD_TEMPLATES_PATH, [])
-    if not isinstance(stored, list):
-        stored = []
-    existing = next(
-        (
-            item
-            for item in stored
-            if isinstance(item, dict)
-            and str(item.get("name") or "").strip().casefold() == name.casefold()
-        ),
-        None,
-    )
-    now = template_timestamp()
-    if existing is None:
-        existing = {"id": uuid.uuid4().hex[:12], "created_at": now}
-        stored.append(existing)
-    existing.update(
-        {
-            "name": name,
-            "rules": rules,
-            "profile_yaml": profile_text,
-            "updated_at": now,
-        }
-    )
-    write_json_atomic(STORYBOARD_TEMPLATES_PATH, stored)
-    return {
-        "success": True,
-        "template": storyboard_template_payload(
-            str(existing["id"]),
-            name,
-            rules,
-            profile_text,
-            updated_at=now,
-        ),
-        "templates": list_storyboard_templates(),
-    }
+def save_storyboard_template(payload):
+    return template_store.save_storyboard_template(payload, path=STORYBOARD_TEMPLATES_PATH)
 
 
-def delete_storyboard_template(template_id: str):
-    if template_id == "default":
-        raise HTTPException(status_code=400, detail="内置分镜模板不能删除")
-    if not re.fullmatch(r"[0-9a-f]{12}", template_id):
-        raise HTTPException(status_code=404, detail="分镜模板不存在")
-    stored = read_json_file(STORYBOARD_TEMPLATES_PATH, [])
-    if not isinstance(stored, list):
-        stored = []
-    next_stored = [
-        item
-        for item in stored
-        if not (isinstance(item, dict) and str(item.get("id") or "") == template_id)
-    ]
-    if len(next_stored) == len(stored):
-        raise HTTPException(status_code=404, detail="分镜模板不存在")
-    write_json_atomic(STORYBOARD_TEMPLATES_PATH, next_stored)
-    return {"success": True, "templates": list_storyboard_templates()}
+def delete_storyboard_template(template_id):
+    return template_store.delete_storyboard_template(template_id, path=STORYBOARD_TEMPLATES_PATH)
 
 
 def build_storyboard_request(
@@ -813,6 +599,7 @@ def update_step2_prompts(project_id: str, payload: Dict[str, Any], db: Session):
     return step2_prompt_response(project)
 
 
+@generation_control.controlled('storyboard_script')
 def execute_step2_script_plan(
     project_id: str,
     db: Session,
@@ -850,6 +637,7 @@ def execute_step2_script_plan(
         plan = normalize_slide_script_plan(raw_plan, project_title)
     except PlanningError as exc:
         raise _planning_http_error(exc, 502)
+    generation_control.checkpoint(project_id, 'storyboard_script')
     script_path = step2_script_plan_path(project)
     previous_plan: Dict[str, Any] = {}
     if os.path.isfile(script_path):
@@ -940,6 +728,7 @@ def _execute_step2_visual_plan(
     max_retries = 0 if is_targeted_repair else 2
     last_error: Optional[str] = None
     for attempt in range(1, max_retries + 2):
+        generation_control.checkpoint(str(getattr(project, 'id', '')), 'storyboard_visual')
         trace_id = uuid.uuid4().hex[:8]
         system_prompt = compose_step2_system_prompt(
             prompts["visual_system"], prompts["visual_output_example"]
@@ -988,6 +777,7 @@ def _execute_step2_visual_plan(
                 )
                 continue
             raise _planning_http_error(exc, 502)
+        generation_control.checkpoint(str(getattr(project, 'id', '')), 'storyboard_visual')
         plan["source_script_hash"] = _step2_script_plan_fingerprint(script_plan)
         write_json_atomic(step2_visual_plan_path(project), plan)
         write_project_log(
@@ -1000,6 +790,7 @@ def _execute_step2_visual_plan(
         return {"success": True, "visual_plan": plan}
 
 
+@generation_control.controlled('storyboard_visual')
 def execute_step2_visual_plan(project_id: str, db: Session):
     project = project_or_404(db, project_id)
     script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
@@ -1375,8 +1166,12 @@ def execute_step2(
 ):
     """Compatibility endpoint delegated to the narration-first Step 2 pipeline."""
 
-    execute_step2_script_plan(project_id, db, payload if isinstance(payload, dict) else {})
-    execute_step2_visual_plan(project_id, db)
+    script_result = execute_step2_script_plan(project_id, db, payload if isinstance(payload, dict) else {})
+    if not script_result.get('success'):
+        return script_result
+    visual_result = execute_step2_visual_plan(project_id, db)
+    if not visual_result.get('success'):
+        return visual_result
     result = compose_step2_visual_contract(project_id, db)
     return {
         **result,

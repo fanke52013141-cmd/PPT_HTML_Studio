@@ -27,14 +27,6 @@ _MODEL_DECIDED_ROLES_EXCLUDED = frozenset({"title", "subtitle"})
 LARGE_FORCED_COMPONENT_AREA_RATIO = 0.2
 
 
-def _int(value: Any, default: int, lo: int, hi: int) -> int:
-    try:
-        parsed = int(float(str(value).strip()))
-    except Exception:
-        parsed = default
-    return max(lo, min(hi, parsed))
-
-
 def _float(value: Any, default: float, lo: float, hi: float) -> float:
     try:
         parsed = float(str(value).strip())

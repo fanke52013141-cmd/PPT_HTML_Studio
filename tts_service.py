@@ -18,6 +18,7 @@ import tempfile
 import threading
 import time
 import uuid
+import generation_control
 from typing import Any, Callable, Dict, List, Optional
 
 from fastapi import HTTPException
@@ -317,9 +318,17 @@ def _promote_staged_tts_outputs(job: dict[str, Any], project: Project, db: Sessi
             target = Path(job["paths"][key])
             if target.is_file():
                 shutil.copy2(target, backup_dir / target.name)
+        promotion_files: dict[str, Path] = {}
         try:
+            # System temp and the project may live on different volumes.
+            # Copy beside each destination before the atomic replacement.
             for key in keys:
-                os.replace(job["stage_paths"][key], job["paths"][key])
+                target = Path(job["paths"][key])
+                temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex}.tmp")
+                promotion_files[key] = temporary
+                shutil.copy2(job["stage_paths"][key], temporary)
+            for key in keys:
+                os.replace(promotion_files[key], job["paths"][key])
         except Exception:
             for key in keys:
                 target = Path(job["paths"][key])
@@ -329,6 +338,9 @@ def _promote_staged_tts_outputs(job: dict[str, Any], project: Project, db: Sessi
                 elif target.exists():
                     target.unlink()
             raise
+        finally:
+            for temporary in promotion_files.values():
+                temporary.unlink(missing_ok=True)
         return True
 
 
@@ -599,16 +611,9 @@ def _comfyui_workflow_signature(endpoint_value: str) -> str:
     IndexTTS parameters live inside the workflow file, so an edited template
     must invalidate cached audio even when every voice setting is unchanged.
     """
-    wf = str(endpoint_value or "").strip()
-    if wf and not wf.lower().startswith(("http://", "https://")):
-        return _local_file_sha256_or_empty(wf)
-    repo_root = Path(__file__).resolve().parent
-    candidates = (
-        repo_root / "data" / "digital_human" / "comfyui_tts_workflow.json",
-        repo_root / "config" / "indextts2_5_comfyui_workflow.json",
-    )
-    chosen = next((path for path in candidates if path.is_file()), candidates[0])
-    return _local_file_sha256_or_empty(str(chosen))
+    from repository_paths import resolve_comfyui_tts_workflow_path
+
+    return _local_file_sha256_or_empty(str(resolve_comfyui_tts_workflow_path(endpoint_value)))
 
 
 def _resolve_tts_voice_profile(project: Project) -> Dict[str, Any]:
@@ -854,336 +859,349 @@ def synthesize_tts_resumable(
     skipped_slides: List[str] = []
     failed_slides: List[Dict[str, Any]] = []
 
-    pending_jobs: list[dict[str, Any]] = []
-    for slide_id in slide_ids:
-        final_paths = slide_tts_artifact_paths(project, slide_id)
-        text_file = ensure_slide_tts_text_file(project, slide_id, contract)
-        artifact_status = slide_tts_artifact_status(project, slide_id)
+    stage_dirs: list[Path] = []
+    try:
+        pending_jobs: list[dict[str, Any]] = []
+        for slide_id in slide_ids:
+            final_paths = slide_tts_artifact_paths(project, slide_id)
+            text_file = ensure_slide_tts_text_file(project, slide_id, contract)
+            artifact_status = slide_tts_artifact_status(project, slide_id)
 
-        if (
-            not force
-            and artifact_status["complete"]
-            and _tts_artifact_matches_runtime(final_paths, tts_cache_key)
-        ):
-            logger.info("Skipping TTS for %s because audio artifacts are already complete and fresh", slide_id)
-            rewrite_audio_timeline_by_beats(final_paths["timeline"], slide_id, beats_by_slide.get(slide_id, []))
-            skipped_slides.append(slide_id)
-            continue
+            if (
+                not force
+                and artifact_status["complete"]
+                and _tts_artifact_matches_runtime(final_paths, tts_cache_key)
+            ):
+                logger.info("Skipping TTS for %s because audio artifacts are already complete and fresh", slide_id)
+                rewrite_audio_timeline_by_beats(final_paths["timeline"], slide_id, beats_by_slide.get(slide_id, []))
+                skipped_slides.append(slide_id)
+                continue
 
-        if artifact_status["complete"]:
-            logger.info(
-                "Regenerating TTS for %s because it was forced or its voice settings changed",
-                slide_id,
-            )
+            if artifact_status["complete"]:
+                logger.info(
+                    "Regenerating TTS for %s because it was forced or its voice settings changed",
+                    slide_id,
+                )
 
-        logger.info("Preparing TTS audio for slide %s via %s", slide_id, provider)
-        # A running provider process must never replace a previously confirmed
-        # MP3.  Promote the complete page only after its input snapshot still
-        # matches the current narration and voice configuration.
-        stage_dir = Path(tempfile.mkdtemp(prefix="tts-stage-", dir=Path(final_paths["audio"]).parent))
-        stage_paths = {
-            key: str(stage_dir / Path(final_paths[key]).name)
-            for key in ("text", "audio", "metadata", "srt", "timeline")
-        }
-        shutil.copy2(text_file, stage_paths["text"])
-        tts_args = provider_tts_command(
-            provider=provider,
-            text_file=stage_paths["text"],
-            out_audio=stage_paths["audio"],
-            out_meta=stage_paths["metadata"],
-            out_srt=stage_paths["srt"],
-            out_timeline=stage_paths["timeline"],
-            slide_id=slide_id,
-            endpoint=tts_endpoint,
-            region=tts_region,
-            model=tts_model,
-            voice_id=tts_voice_id,
-            clone_voice_id=tts_clone_voice_id,
-            provider_extra=tts_provider_extra,
-            speed=tts_speed,
-            volume=tts_volume,
-            pitch=tts_pitch,
-        )
-
-        pending_jobs.append(
-            {
-                "slide_id": slide_id,
-                "paths": final_paths,
-                "stage_paths": stage_paths,
-                "stage_dir": str(stage_dir),
-                "input_version": _tts_job_input_version(
-                    slide_id, text_file, beats_by_slide.get(slide_id, []), tts_cache_key,
-                ),
-                "args": tts_args,
+            logger.info("Preparing TTS audio for slide %s via %s", slide_id, provider)
+            # A running provider process must never replace a previously confirmed
+            # MP3.  Promote the complete page only after its input snapshot still
+            # matches the current narration and voice configuration.
+            stage_dir = Path(tempfile.mkdtemp(prefix="tts-stage-"))
+            stage_dirs.append(stage_dir)
+            stage_paths = {
+                key: str(stage_dir / Path(final_paths[key]).name)
+                for key in ("text", "audio", "metadata", "srt", "timeline")
             }
-        )
+            shutil.copy2(text_file, stage_paths["text"])
+            tts_args = provider_tts_command(
+                provider=provider,
+                text_file=stage_paths["text"],
+                out_audio=stage_paths["audio"],
+                out_meta=stage_paths["metadata"],
+                out_srt=stage_paths["srt"],
+                out_timeline=stage_paths["timeline"],
+                slide_id=slide_id,
+                endpoint=tts_endpoint,
+                region=tts_region,
+                model=tts_model,
+                voice_id=tts_voice_id,
+                clone_voice_id=tts_clone_voice_id,
+                provider_extra=tts_provider_extra,
+                speed=tts_speed,
+                volume=tts_volume,
+                pitch=tts_pitch,
+            )
 
-    if pending_jobs and provider == "volcengine_seed_audio":
-        # Seed Audio 必须有参考音频；缺失时快速失败，而不是每页空跑满
-        # 额定重试次数后才在日志里留下报错。
-        try:
-            _require_seed_audio_reference(tts_clone_voice_id)
-        except Exception:
-            for job in pending_jobs:
-                shutil.rmtree(job["stage_dir"], ignore_errors=True)
-            raise
+            pending_jobs.append(
+                {
+                    "slide_id": slide_id,
+                    "paths": final_paths,
+                    "stage_paths": stage_paths,
+                    "stage_dir": str(stage_dir),
+                    "input_version": _tts_job_input_version(
+                        slide_id, text_file, beats_by_slide.get(slide_id, []), tts_cache_key,
+                    ),
+                    "args": tts_args,
+                }
+            )
 
-    if pending_jobs:
-        worker_count = min(tts_concurrency, len(pending_jobs))
-        # 上游额度是**网关全局**的（MiniMax 默认 10 请求/分钟）。每页的真实成本
-        # 取决于端点：异步端点 = 上传 + 提交 + 取回 + 轮询（≥4 次），
-        # 同步端点 = 1 次。旧实现按"1 页 = 1 请求"放行，等于超发约 4 倍。
-        governor = generation_governor.get_generation_governor()
-        govern_tts = bool(governor.enabled and provider == "minimax")
-        minimax_async_endpoint = is_minimax_async_endpoint(tts_endpoint)
-        global_poll_interval: Optional[float] = None
-        if govern_tts and minimax_async_endpoint:
-            reserved_cost, global_poll_interval = governor.tts_async_reservation(
-                base_url=tts_endpoint,
-                expected_duration_sec=_EXPECTED_TTS_PAGE_DURATION_SEC,
-            )
-        elif govern_tts:
-            reserved_cost = generation_governor.TTS_SYNC_FIXED_COST
-        else:
-            reserved_cost = 1
-        if govern_tts:
-            worker_count = min(
-                worker_count,
-                governor.budget(
-                    generation_governor.RESOURCE_TTS, tts_endpoint
-                ).max_concurrency,
-            )
-        minimax_poll_interval_sec = (
-            _minimax_poll_interval_seconds(
-                worker_count,
-                tts_requests_per_minute,
-                snapshot_value("tts.poll_interval_seconds", "")
-                if project_runtime
-                else "",
-            )
-            if provider == "minimax"
-            else None
-        )
-        if minimax_poll_interval_sec is not None and global_poll_interval is not None:
-            # 项目级轮询间隔只能更慢，不能快过全局额度允许的节奏。
-            minimax_poll_interval_sec = max(
-                minimax_poll_interval_sec, global_poll_interval
-            )
-        # A single shared launch gate prevents all slide processes from
-        # uploading/submitting at once.  It does not reduce the number of
-        # active async jobs after they have started.  闸口按连接（供应商+地址+密钥
-        # 指纹）区分。这是**项目级子配额**：
-        # 多项目/多账号的合计速率由 generation_governor 兜住。
-        launch_throttle = (
-            _shared_tts_launch_throttle(
-                provider, tts_endpoint, tts_api_key, 60.0 / tts_requests_per_minute
-            )
-            if provider == "minimax"
-            else None
-        )
-        write_project_log(
-            project,
-            "step7_tts_parallel_start",
-            provider=provider,
-            submitted=len(pending_jobs),
-            concurrency=worker_count,
-            requests_per_minute=(
-                tts_requests_per_minute if provider == "minimax" else None
-            ),
-            poll_interval_sec=minimax_poll_interval_sec,
-            launch_interval_sec=(
-                round(60.0 / tts_requests_per_minute, 2)
+        if pending_jobs and provider == "volcengine_seed_audio":
+            # Seed Audio 必须有参考音频；缺失时快速失败，而不是每页空跑满
+            # 额定重试次数后才在日志里留下报错。
+            try:
+                _require_seed_audio_reference(tts_clone_voice_id)
+            except Exception:
+                for job in pending_jobs:
+                    shutil.rmtree(job["stage_dir"], ignore_errors=True)
+                raise
+
+        if pending_jobs:
+            worker_count = min(tts_concurrency, len(pending_jobs))
+            # 上游额度是**网关全局**的（MiniMax 默认 10 请求/分钟）。每页的真实成本
+            # 取决于端点：异步端点 = 上传 + 提交 + 取回 + 轮询（≥4 次），
+            # 同步端点 = 1 次。旧实现按"1 页 = 1 请求"放行，等于超发约 4 倍。
+            governor = generation_governor.get_generation_governor()
+            govern_tts = bool(governor.enabled and provider == "minimax")
+            minimax_async_endpoint = is_minimax_async_endpoint(tts_endpoint)
+            global_poll_interval: Optional[float] = None
+            if govern_tts and minimax_async_endpoint:
+                reserved_cost, global_poll_interval = governor.tts_async_reservation(
+                    base_url=tts_endpoint,
+                    expected_duration_sec=_EXPECTED_TTS_PAGE_DURATION_SEC,
+                )
+            elif govern_tts:
+                reserved_cost = generation_governor.TTS_SYNC_FIXED_COST
+            else:
+                reserved_cost = 1
+            if govern_tts:
+                worker_count = min(
+                    worker_count,
+                    governor.budget(
+                        generation_governor.RESOURCE_TTS, tts_endpoint
+                    ).max_concurrency,
+                )
+            minimax_poll_interval_sec = (
+                _minimax_poll_interval_seconds(
+                    worker_count,
+                    tts_requests_per_minute,
+                    snapshot_value("tts.poll_interval_seconds", "")
+                    if project_runtime
+                    else "",
+                )
                 if provider == "minimax"
                 else None
-            ),
-            governed_by_gateway=govern_tts,
-            reserved_cost_per_page=reserved_cost if govern_tts else None,
-            minimax_async_endpoint=minimax_async_endpoint if provider == "minimax" else None,
-        )
-
-        def synthesize_one(job: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
-            tts_env = provider_tts_environment(tts_api_key, tts_secret_key)
-            if minimax_poll_interval_sec is not None:
-                # generic_tts passes its process environment through to the
-                # MiniMax helper.  The setting is intentionally environment
-                # only so it never becomes part of project logs or metadata.
-                tts_env["MINIMAX_TTS_POLL_INTERVAL_SEC"] = str(
-                    minimax_poll_interval_sec
+            )
+            if minimax_poll_interval_sec is not None and global_poll_interval is not None:
+                # 项目级轮询间隔只能更慢，不能快过全局额度允许的节奏。
+                minimax_poll_interval_sec = max(
+                    minimax_poll_interval_sec, global_poll_interval
                 )
-            if launch_throttle is not None:
-                launch_throttle.wait_for_turn()
-            # 每次尝试（含重试）都重新申请一次网关额度租约：重试会重新上传与
-            # 提交，同样消耗额度，必须在同一份额度内排队。
-            reservation = (
-                (
-                    lambda: governor.job(
-                        generation_governor.RESOURCE_TTS,
-                        tts_endpoint,
-                        reserved_cost=reserved_cost,
-                    )
+            # A single shared launch gate prevents all slide processes from
+            # uploading/submitting at once.  It does not reduce the number of
+            # active async jobs after they have started.  闸口按连接（供应商+地址+密钥
+            # 指纹）区分。这是**项目级子配额**：
+            # 多项目/多账号的合计速率由 generation_governor 兜住。
+            launch_throttle = (
+                _shared_tts_launch_throttle(
+                    provider, tts_endpoint, tts_api_key, 60.0 / tts_requests_per_minute
                 )
-                if govern_tts
+                if provider == "minimax"
                 else None
             )
-            return (
-                job,
-                run_tts_command_with_retries(
-                    project,
-                    job["slide_id"],
-                    job["args"],
-                    tts_env,
-                    reservation=reservation,
-                    gateway_base_url=tts_endpoint,
+            write_project_log(
+                project,
+                "step7_tts_parallel_start",
+                provider=provider,
+                submitted=len(pending_jobs),
+                concurrency=worker_count,
+                requests_per_minute=(
+                    tts_requests_per_minute if provider == "minimax" else None
                 ),
+                poll_interval_sec=minimax_poll_interval_sec,
+                launch_interval_sec=(
+                    round(60.0 / tts_requests_per_minute, 2)
+                    if provider == "minimax"
+                    else None
+                ),
+                governed_by_gateway=govern_tts,
+                reserved_cost_per_page=reserved_cost if govern_tts else None,
+                minimax_async_endpoint=minimax_async_endpoint if provider == "minimax" else None,
             )
 
-        successful_jobs: list[dict[str, Any]] = []
-        # future -> slide_id 显式映射，任何一页的最终结果都能准确归位。
-        future_to_slide: dict[Any, str] = {}
-        gateway_busy_stop = False
-        with ThreadPoolExecutor(
-            max_workers=worker_count,
-            thread_name_prefix="tts-slide",
-        ) as executor:
-            for job in pending_jobs:
-                future_to_slide[
-                    executor.submit(synthesize_one, job)
-                ] = job["slide_id"]
-            for future in as_completed(future_to_slide):
-                slide_id = future_to_slide[future]
-                try:
-                    job, tts_result = future.result()
-                except concurrent.futures.CancelledError:
-                    # 排队超时后被取消的未启动任务：明确记录为"未开始"，
-                    # 不伪装成仍在执行，也不计入合成失败原因。
-                    failed_slides.append({
-                        "slide_id": slide_id,
-                        "attempts": 0,
-                        "returncode": None,
-                        "error": "TTS 网关额度紧张，该页未开始即被暂停（继续任务可补齐）",
-                        "recoverable": True,
-                    })
-                    continue
-                except generation_governor.GovernorTimeout as exc:
-                    # 首个额度排队超时表明本批次继续新增工作只会继续占满额度：
-                    # 立即取消尚未启动的任务，已运行任务按现有有界超时自然结束。
-                    if not gateway_busy_stop:
-                        gateway_busy_stop = True
-                        cancelled_count = 0
-                        for pending_future in future_to_slide:
-                            if pending_future is not future and pending_future.cancel():
-                                cancelled_count += 1
-                        logger.warning(
-                            "TTS gateway queue timeout at %s; cancelled %s not-yet-started pages",
-                            slide_id,
-                            cancelled_count,
+            def synthesize_one(job: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+                generation_control.checkpoint(project.id, 'tts')
+                tts_env = provider_tts_environment(tts_api_key, tts_secret_key)
+                if minimax_poll_interval_sec is not None:
+                    # generic_tts passes its process environment through to the
+                    # MiniMax helper.  The setting is intentionally environment
+                    # only so it never becomes part of project logs or metadata.
+                    tts_env["MINIMAX_TTS_POLL_INTERVAL_SEC"] = str(
+                        minimax_poll_interval_sec
+                    )
+                if launch_throttle is not None:
+                    launch_throttle.wait_for_turn()
+                generation_control.checkpoint(project.id, 'tts')
+                # 每次尝试（含重试）都重新申请一次网关额度租约：重试会重新上传与
+                # 提交，同样消耗额度，必须在同一份额度内排队。
+                reservation = (
+                    (
+                        lambda: governor.job(
+                            generation_governor.RESOURCE_TTS,
+                            tts_endpoint,
+                            reserved_cost=reserved_cost,
                         )
-                    failed_slides.append({
-                        "slide_id": slide_id,
-                        "attempts": 0,
-                        "returncode": None,
-                        "error": _redact_runtime_secrets(
-                            f"TTS 网关额度排队超时（上游忙，可稍后继续）：{exc}",
-                            runtime_secrets,
-                        )[-1200:],
-                        "recoverable": True,
-                    })
-                    continue
-                except Exception as exc:
-                    # 单页排队/执行异常不拖垮整批：记录后继续收集其余页面，
-                    # 让成功页完成时间轴处理、失败页进入统一清单。
-                    logger.error(
-                        "TTS task crashed for %s: %s", slide_id, type(exc).__name__
                     )
-                    failed_slides.append({
-                        "slide_id": slide_id,
-                        "attempts": 0,
-                        "returncode": None,
-                        "error": _redact_runtime_secrets(
-                            f"{type(exc).__name__}: {exc}", runtime_secrets
-                        )[-1200:],
-                    })
-                    continue
-                if not tts_result["ok"]:
-                    error_text = _redact_runtime_secrets(
-                        (tts_result["stderr"] or tts_result["stdout"] or "TTS synthesis failed").strip(),
-                        runtime_secrets,
-                    )
-                    error_text = _tts_connection_hint(error_text)[-1200:]
-                    logger.error("TTS synthesis failed for %s after %s attempts: %s", slide_id, tts_result["attempts"], error_text)
-                    write_project_log(
-                        project,
-                        "step7_slide_tts_error",
-                        slide_id=slide_id,
-                        attempts=tts_result["attempts"],
-                        returncode=tts_result["returncode"],
-                        stdout=_redact_runtime_secrets(tts_result["stdout"], runtime_secrets),
-                        stderr=_redact_runtime_secrets(tts_result["stderr"], runtime_secrets),
-                    )
-                    failed_slides.append({
-                        "slide_id": slide_id,
-                        "attempts": tts_result["attempts"],
-                        "returncode": tts_result["returncode"],
-                        "error": error_text,
-                    })
-                    continue
-                missing_staged = [
-                    key for key in ("audio", "metadata", "srt", "timeline")
-                    if not Path(job["stage_paths"][key]).is_file()
-                    or Path(job["stage_paths"][key]).stat().st_size == 0
-                ]
-                if missing_staged:
-                    error_text = "TTS command returned success but required audio artifacts are incomplete: " + ", ".join(missing_staged)
-                    logger.error("%s for %s", error_text, slide_id)
-                    write_project_log(
-                        project,
-                        "step7_slide_tts_incomplete_artifacts",
-                        slide_id=slide_id,
-                        missing_artifacts=missing_staged,
-                    )
-                    failed_slides.append({
-                        "slide_id": slide_id,
-                        "attempts": tts_result["attempts"],
-                        "returncode": tts_result["returncode"],
-                        "error": error_text,
-                    })
-                    continue
-                successful_jobs.append(job)
-
-        for job in successful_jobs:
-            slide_id = job["slide_id"]
-            try:
-                rewrite_audio_timeline_by_beats(
-                    job["stage_paths"]["timeline"],
-                    slide_id,
-                    beats_by_slide.get(slide_id, []),
+                    if govern_tts
+                    else None
                 )
-                if not _promote_staged_tts_outputs(job, project, db):
+                return (
+                    job,
+                    run_tts_command_with_retries(
+                        project,
+                        job["slide_id"],
+                        job["args"],
+                        tts_env,
+                        reservation=reservation,
+                        gateway_base_url=tts_endpoint,
+                    ),
+                )
+
+            successful_jobs: list[dict[str, Any]] = []
+            # future -> slide_id 显式映射，任何一页的最终结果都能准确归位。
+            future_to_slide: dict[Any, str] = {}
+            gateway_busy_stop = False
+            with ThreadPoolExecutor(
+                max_workers=worker_count,
+                thread_name_prefix="tts-slide",
+            ) as executor:
+                for job in pending_jobs:
+                    future_to_slide[
+                        executor.submit(synthesize_one, job)
+                    ] = job["slide_id"]
+                for future in as_completed(future_to_slide):
+                    slide_id = future_to_slide[future]
+                    try:
+                        job, tts_result = future.result()
+                    except generation_control.GenerationStopped:
+                        continue
+                    except concurrent.futures.CancelledError:
+                        # 排队超时后被取消的未启动任务：明确记录为"未开始"，
+                        # 不伪装成仍在执行，也不计入合成失败原因。
+                        failed_slides.append({
+                            "slide_id": slide_id,
+                            "attempts": 0,
+                            "returncode": None,
+                            "error": "TTS 网关额度紧张，该页未开始即被暂停（继续任务可补齐）",
+                            "recoverable": True,
+                        })
+                        continue
+                    except generation_governor.GovernorTimeout as exc:
+                        # 首个额度排队超时表明本批次继续新增工作只会继续占满额度：
+                        # 立即取消尚未启动的任务，已运行任务按现有有界超时自然结束。
+                        if not gateway_busy_stop:
+                            gateway_busy_stop = True
+                            cancelled_count = 0
+                            for pending_future in future_to_slide:
+                                if pending_future is not future and pending_future.cancel():
+                                    cancelled_count += 1
+                            logger.warning(
+                                "TTS gateway queue timeout at %s; cancelled %s not-yet-started pages",
+                                slide_id,
+                                cancelled_count,
+                            )
+                        failed_slides.append({
+                            "slide_id": slide_id,
+                            "attempts": 0,
+                            "returncode": None,
+                            "error": _redact_runtime_secrets(
+                                f"TTS 网关额度排队超时（上游忙，可稍后继续）：{exc}",
+                                runtime_secrets,
+                            )[-1200:],
+                            "recoverable": True,
+                        })
+                        continue
+                    except Exception as exc:
+                        # 单页排队/执行异常不拖垮整批：记录后继续收集其余页面，
+                        # 让成功页完成时间轴处理、失败页进入统一清单。
+                        logger.error(
+                            "TTS task crashed for %s: %s", slide_id, type(exc).__name__
+                        )
+                        failed_slides.append({
+                            "slide_id": slide_id,
+                            "attempts": 0,
+                            "returncode": None,
+                            "error": _redact_runtime_secrets(
+                                f"{type(exc).__name__}: {exc}", runtime_secrets
+                            )[-1200:],
+                        })
+                        continue
+                    if not tts_result["ok"]:
+                        error_text = _redact_runtime_secrets(
+                            (tts_result["stderr"] or tts_result["stdout"] or "TTS synthesis failed").strip(),
+                            runtime_secrets,
+                        )
+                        error_text = _tts_connection_hint(error_text)[-1200:]
+                        logger.error("TTS synthesis failed for %s after %s attempts: %s", slide_id, tts_result["attempts"], error_text)
+                        write_project_log(
+                            project,
+                            "step7_slide_tts_error",
+                            slide_id=slide_id,
+                            attempts=tts_result["attempts"],
+                            returncode=tts_result["returncode"],
+                            stdout=_redact_runtime_secrets(tts_result["stdout"], runtime_secrets),
+                            stderr=_redact_runtime_secrets(tts_result["stderr"], runtime_secrets),
+                        )
+                        failed_slides.append({
+                            "slide_id": slide_id,
+                            "attempts": tts_result["attempts"],
+                            "returncode": tts_result["returncode"],
+                            "error": error_text,
+                        })
+                        continue
+                    missing_staged = [
+                        key for key in ("audio", "metadata", "srt", "timeline")
+                        if not Path(job["stage_paths"][key]).is_file()
+                        or Path(job["stage_paths"][key]).stat().st_size == 0
+                    ]
+                    if missing_staged:
+                        error_text = "TTS command returned success but required audio artifacts are incomplete: " + ", ".join(missing_staged)
+                        logger.error("%s for %s", error_text, slide_id)
+                        write_project_log(
+                            project,
+                            "step7_slide_tts_incomplete_artifacts",
+                            slide_id=slide_id,
+                            missing_artifacts=missing_staged,
+                        )
+                        failed_slides.append({
+                            "slide_id": slide_id,
+                            "attempts": tts_result["attempts"],
+                            "returncode": tts_result["returncode"],
+                            "error": error_text,
+                        })
+                        continue
+                    successful_jobs.append(job)
+
+            for job in successful_jobs:
+                slide_id = job["slide_id"]
+                try:
+                    rewrite_audio_timeline_by_beats(
+                        job["stage_paths"]["timeline"],
+                        slide_id,
+                        beats_by_slide.get(slide_id, []),
+                    )
+                    if not _promote_staged_tts_outputs(job, project, db):
+                        failed_slides.append({
+                            "slide_id": slide_id,
+                            "attempts": 1,
+                            "returncode": None,
+                            "error": "合成期间旁白或语音配置已变化，旧任务结果未应用，请重新合成该页",
+                            "recoverable": True,
+                        })
+                        continue
+                    generated_slides.append(slide_id)
+                except Exception as exc:
+                    logger.warning("TTS staged promotion failed for %s: %s", slide_id, exc)
                     failed_slides.append({
                         "slide_id": slide_id,
                         "attempts": 1,
                         "returncode": None,
-                        "error": "合成期间旁白或语音配置已变化，旧任务结果未应用，请重新合成该页",
+                        "error": f"音频写入失败，旧音频已保留：{exc}",
                         "recoverable": True,
                     })
-                    continue
-                generated_slides.append(slide_id)
-            except Exception as exc:
-                logger.warning("TTS staged promotion failed for %s: %s", slide_id, exc)
-                failed_slides.append({
-                    "slide_id": slide_id,
-                    "attempts": 1,
-                    "returncode": None,
-                    "error": f"音频写入失败，旧音频已保留：{exc}",
-                    "recoverable": True,
-                })
-        for job in pending_jobs:
-            shutil.rmtree(job["stage_dir"], ignore_errors=True)
+    finally:
+        for stage_dir in stage_dirs:
+            shutil.rmtree(stage_dir, ignore_errors=True)
 
     generated_slides.sort(key=slide_ids.index)
     if generated_slides:
         invalidation_service.audio_artifacts_changed(project, generated_slides)
         db.commit()
+
+    if generation_control.stop_requested(project.id, 'tts'):
+        return {"success": False, "cancelled": True,
+                "message": "已停止后续音频任务，已完成的音频保留，可继续补齐缺失页面",
+                "generated": generated_slides, "skipped": skipped_slides, "failed": failed_slides}
 
     if failed_slides:
         mark_step_retry_needed(project, 7, db)
@@ -1473,7 +1491,32 @@ class TtsAsyncService:
             db.add(job)
             db.commit()
             db.refresh(job)
-        self.submit(job.id)
+        generation_control.reserve(project.id, 'tts', job.id)
+        control_project_id, control_job_id = project.id, job.id
+        try:
+            future = self.submit(job.id)
+            if future is not None:
+                def stop_queued():
+                    if not future.cancel():
+                        return
+                    with self.dependencies.session_factory() as stop_db:
+                        queued = stop_db.query(LocalJob).filter(LocalJob.id == control_job_id).first()
+                        if queued and queued.status == 'queued':
+                            queued.status = 'cancelled'
+                            queued.stage = 'cancelled'
+                            queued.error = None
+                            queued.finished_at = datetime.now()
+                            stop_db.commit()
+                    generation_control.finish(control_project_id, 'tts', control_job_id)
+                generation_control.bind_stop_handler(control_project_id, 'tts', control_job_id, stop_queued)
+        except Exception:
+            generation_control.finish(project.id, 'tts', job.id)
+            job.status = 'interrupted'
+            job.stage = 'interrupted'
+            job.error = '音频任务启动失败，请重试'
+            job.finished_at = datetime.now()
+            db.commit()
+            raise
         return {"success": True, "reused": False, "job": self.job_item(job)}
 
     def list_jobs(self, db: Session, project_id: str) -> dict[str, Any]:
@@ -1516,8 +1559,8 @@ class TtsAsyncService:
             ),
         }
 
-    def submit(self, job_id: str) -> None:
-        self.executor.submit(self.run_job, job_id)
+    def submit(self, job_id: str):
+        return self.executor.submit(self.run_job, job_id)
 
     def recover_jobs(self) -> int:
         """进程重启恢复：running→interrupted，queued→重新排队。"""
@@ -1556,6 +1599,7 @@ class TtsAsyncService:
 
     def run_job(self, job_id: str) -> None:
         account_context_token = None
+        control_project_id = None
         db = self.dependencies.session_factory()
         try:
             job = (
@@ -1568,6 +1612,12 @@ class TtsAsyncService:
             )
             if not job:
                 return
+            if job.status != 'queued':
+                return
+            control_project_id = job.project_id
+            if not generation_control.status(job.project_id, 'tts')['active']:
+                generation_control.reserve(job.project_id, 'tts', job_id)
+            generation_control.checkpoint(job.project_id, 'tts')
             payload = job.get_payload() or {}
             account_context_token = set_current_account_id(
                 str(payload.get("account_id") or "default")
@@ -1629,7 +1679,11 @@ class TtsAsyncService:
             job.payload_json = json.dumps(
                 {"result": summary}, ensure_ascii=False
             )
-            if result.get("success"):
+            if result.get('cancelled'):
+                job.status = 'cancelled'
+                job.stage = 'cancelled'
+                job.error = None
+            elif result.get("success"):
                 job.status = "completed"
                 job.stage = "completed"
                 job.progress = 100
@@ -1638,7 +1692,17 @@ class TtsAsyncService:
                 job.stage = "failed"
                 job.error = summary["message"] or "音频生成未完成，请重试。"
             job.finished_at = datetime.now()
+            generation_control.finish(job.project_id, 'tts', job_id)
             db.commit()
+        except generation_control.GenerationStopped:
+            db.rollback()
+            job = db.query(LocalJob).filter(LocalJob.id == job_id).first()
+            if job:
+                job.status = 'cancelled'
+                job.stage = 'cancelled'
+                job.error = None
+                job.finished_at = datetime.now()
+                db.commit()
         except Exception as exc:
             logger.exception("Async TTS synthesis failed for job %s", job_id)
             try:
@@ -1660,6 +1724,8 @@ class TtsAsyncService:
             except Exception:
                 logger.exception("Failed to persist TTS job failure state")
         finally:
+            if control_project_id:
+                generation_control.finish(control_project_id, 'tts', job_id)
             db.close()
             if account_context_token is not None:
                 reset_current_account_id(account_context_token)

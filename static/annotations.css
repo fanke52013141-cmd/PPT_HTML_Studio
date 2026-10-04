@@ -69,23 +69,8 @@
   border-radius: 12px;
 }
 
-.annotation-thumb {
-  position: relative;
-  flex: 0 0 auto;
-  width: 128px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #f9fafb;
-  padding: 0;
-  cursor: pointer;
-}
-
-.annotation-thumb img {
-  display: block;
-  width: 100%;
-  aspect-ratio: var(--project-aspect-ratio, 16 / 9);
-  object-fit: cover;
+.annotation-page-tab .page-label {
+  white-space: nowrap;
 }
 
 .annotation-thumb.active {

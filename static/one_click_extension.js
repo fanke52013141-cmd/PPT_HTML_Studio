@@ -66,25 +66,12 @@
     return STATUS_LABELS[value] || value || '未开始';
   }
 
-  function parseJsonResponse(response) {
-    return response.json().then(data => {
-      if (!response.ok) throw new Error(data.detail || data.message || response.statusText || '请求失败');
-      return data;
-    });
-  }
-
   function apiGet(url, options = {}) {
-    return window.API?.get ? window.API.get(url, options) : fetch(url).then(parseJsonResponse);
+    return window.API.get(url, options);
   }
 
   function apiPost(url, body) {
-    return window.API?.post
-      ? window.API.post(url, body || {})
-      : fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body || {}),
-        }).then(parseJsonResponse);
+    return window.API.post(url, body || {});
   }
 
   function toast(message, duration) {
@@ -92,9 +79,7 @@
     else console.log(message);
   }
 
-  function esc(value) {
-    return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
-  }
+  const esc = value => window.escHtml(String(value ?? ''));
 
   // 一键生成的进度就是工作区的主叙事。每次后端进入一个新的阶段，都把
   // 左侧高亮和内容面板切到相应步骤；lastFollowedStage 保证轮询不会反复
@@ -443,7 +428,7 @@
     const projectId = activeProjectId();
     if (!projectId) return toast('当前没有可识别的项目，请先进入项目工作区。', 5000);
     await refreshStatus();
-    const confirmed = window.confirm(mode === 'restart'
+    const confirmed = await window.confirmAction('启动自动生成', mode === 'restart'
       ? '将从预检查开始重跑自动流程。已锁定的 Mask 和人工旁白仍会保护，但分镜、图片和音频可能重新生成。继续？'
       : '将重新检查上游产物，自动从最早失效阶段继续，并保护人工 Mask、旁白和未过期产物。继续？');
     if (!confirmed) return;
@@ -510,7 +495,10 @@
     STATE.polling = null;
   }
 
+  let booted = false;
   function boot() {
+    if (booted) return;
+    booted = true;
     patchWorkspaceNavigation();
     ensureEntryButton();
     // [轮询自愈 20260904] 浏览器会把后台标签页的定时器节流到分钟级，切回

@@ -615,12 +615,13 @@ function renderStep5Workspace() {
   manifestData.slides.forEach((slide, idx) => {
     const btn = document.createElement('div');
     const isCurrent = idx === state.activeSlideIndex;
-    btn.className = `step5-slide-btn${isCurrent ? ' active' : ''}`;
+    const isCompleted = slide.status === 'completed';
+    btn.className = `step5-slide-btn${isCurrent ? ' active' : ''}${isCompleted ? ' completed' : ''}`;
     btn.setAttribute('role', 'button');
     btn.setAttribute('tabindex', '0');
     btn.setAttribute('aria-label', `切换到第 ${idx + 1} 页`);
     btn.innerHTML = `
-      <div class="step5-slide-label">第${idx + 1}页</div>
+      <div class="step5-slide-label">第 ${idx + 1} 页</div>
     `;
     
     const activateSlide = () => {
@@ -754,7 +755,7 @@ function renderStep5BoxesForm() {
   
   if (!state.canvasState.boxes.length) {
     container.innerHTML = `
-      <div class="soft-outline mask-empty-state">
+      <div class="soft-outline mask-empty-state ws-empty">
         当前页还没有 Mask 语块。可运行 AI 标注，或点击“添加语块”后直接涂抹。
       </div>
     `;
@@ -981,10 +982,10 @@ function updateStep5ConfirmButton(message = '') {
     return;
   }
 
-  btn.innerHTML = `确认标注，进入下一步 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+  btn.innerHTML = `确认进入下一步 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
   btn.title = aiBusy
-    ? 'AI 标注相关任务正在处理中，请稍候'
-    : '确认全部 Mask 标注并构建切层';
+    ? '确认标注，进入下一步（AI 标注相关任务正在处理中，请稍候）'
+    : '确认标注，进入下一步';
 
   if (status) {
     const isMessageError = !!message && /失败|不能确认|漏标/.test(message);

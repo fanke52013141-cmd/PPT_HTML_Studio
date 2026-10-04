@@ -608,7 +608,7 @@
     if (btn) { btn.disabled = true; }
     if (statusEl) statusEl.textContent = "导出中...";
     try {
-      var res = await API.post(base() + "/export-audio", { gap_sec: 0.6 }, { timeout: 900000 });
+      var res = await API.post(base() + "/export-audio", { gap_sec: 0.6 }, { timeoutMs: 900000 });
       if (res && res.success) {
         var mins = res.duration_sec ? (res.duration_sec / 60).toFixed(1) : "?";
         if (statusEl) statusEl.textContent = "已导出 " + res.slides + " 页，时长约 " + mins + " 分钟";
@@ -668,27 +668,6 @@
     el.innerHTML = chips;
   }
 
-  async function generateSlide(slideId) {
-    var pid = projectId();
-    if (!pid) return;
-    if (!dhState.config.avatar_id) {
-      showToast("请先上传数字人形象图片");
-      return;
-    }
-    try {
-      var res = await API.post(base() + "/generate/" + encodeURIComponent(slideId), {
-        avatar_id: dhState.config.avatar_id,
-      });
-      if (res && res.job_id) {
-        markSlideStatus(slideId, "queued");
-        pollJob(slideId, res.job_id);
-      } else if (res && res.detail) {
-        showToast(res.detail);
-      }
-    } catch (e) {
-      console.error("[DH] generate failed:", e);
-    }
-  }
 
   function markSlideStatus(slideId, status) {
     if (!dhState.config.slides) dhState.config.slides = {};
@@ -759,9 +738,10 @@
 
     try {
       // 第一步：确保整段音频已导出（合并 5 页音频 + 页间静音）
-      var statusEl = document.getElementById("dh-slide-status");
+      // 进度写在生成按钮旁的专用状态行（页签状态行 id 仍是 dh-slide-status）
+      var statusEl = document.getElementById("dh-generate-status");
       if (statusEl) statusEl.innerHTML = '<span class="dh-slide-status-note">正在合并 ' + ready + ' 页音频...</span>';
-      var exportRes = await API.post(base() + "/export-audio", { gap_sec: 0.6 }, { timeout: 900000 });
+      var exportRes = await API.post(base() + "/export-audio", { gap_sec: 0.6 }, { timeoutMs: 900000 });
       if (!exportRes || !exportRes.success) {
         showToast((exportRes && exportRes.detail) || "导出整段语音失败");
         updateAudioStatus();

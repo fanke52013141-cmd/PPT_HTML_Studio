@@ -9,7 +9,7 @@ async function offerArtifactRepair(result, label, onRepaired) {
   const key = `${projectId}:${repair.endpoint}`;
   if (artifactRepairPrompts.has(key)) return;
   artifactRepairPrompts.add(key);
-  const confirmed = window.confirm(`检测到${label}属于旧结构或与当前分镜不一致。是否立即执行一次显式修复？`);
+  const confirmed = await confirmAction('修复旧产物', `检测到${label}属于旧结构或与当前分镜不一致。修复会更新对应的规划或标注文件，并可能使下游生成结果需要重建。是否执行修复？`);
   if (!confirmed) return;
   try {
     const repaired = await API.post(repair.endpoint, {});
