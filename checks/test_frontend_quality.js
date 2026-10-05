@@ -947,6 +947,21 @@ if (aiMask.includes('setInterval(fitFullscreenCanvas, 800)') || !aiMask.includes
   throw new Error('Mask fullscreen fitting must be event-driven rather than permanently polled');
 }
 if (html.includes('请在下方粘贴您的 Markdown 格式文章')) throw new Error('obsolete Step 1 top hint is still present');
+// UI 审查（docs/ui-audit-2026-10-06.md §3）：除确认弹窗（必须显式选择）与已无入口的
+// 系统设置遗留弹窗外，每个静态弹窗都必须带 data-modal-close 关闭按钮。
+{
+  const modalIds = [...html.matchAll(/<div id="(modal-[a-z0-9-]+)" class="modal-overlay"/g)].map(match => match[1]);
+  const closeExempt = new Set(['modal-confirm', 'modal-settings']);
+  for (const modalId of modalIds) {
+    if (closeExempt.has(modalId)) continue;
+    const start = html.indexOf(`<div id="${modalId}" class="modal-overlay"`);
+    const next = html.indexOf('<div id="modal-', start + 1);
+    const section = html.slice(start, next === -1 ? html.length : next);
+    if (!section.includes('data-modal-close')) {
+      throw new Error(`modal ${modalId} is missing its data-modal-close button (UI audit §3.1)`);
+    }
+  }
+}
 for (const script of ['project_profile_extension.js', 'storyboard_background_extension.js', 'style_reference_manager_extension.js', 'ai_mask_auto_state.js', 'ai_mask_extension.js', 'one_click_extension.js']) {
   if (!html.includes(script)) throw new Error(`direct frontend script declaration missing: ${script}`);
 }

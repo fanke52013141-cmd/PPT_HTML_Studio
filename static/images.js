@@ -418,8 +418,14 @@ function openStep3AI(slideId) {
   state.activeSlideIndex = step3ImageOrder.findIndex(img => img.slide_id === slideId);
   step3CandidateReady = false;
   step3CandidateSlideId = '';
+  // 隐藏 span 承载 slide_id（syncStep3ActiveSlideIndex/generateStep3Image 读取），
+  // 标题展示改用「第 N 页 · 页面标题」，不把内部 ID 暴露给用户。
   document.getElementById('step3-slide-id-label').innerText = slideId;
   const pInfo = slidePrompts.find(p => p.slide_id === slideId);
+  const slideInfo = state.slides.find(item => item.slide_id === slideId);
+  const slideTitle = pInfo?.title || slideInfo?.main_title || '';
+  const slideDisplay = `第 ${state.activeSlideIndex + 1} 页${slideTitle ? ` · ${slideTitle}` : ''}`;
+  document.getElementById('step3-slide-display-label').innerText = slideDisplay;
   document.getElementById('step3-prompt-input').value = pInfo ? pInfo.prompt : '';
   const imgInfo = step3ImageOrder.find(img => img.slide_id === slideId);
   const prevEl = document.getElementById('step3-preview-box');
