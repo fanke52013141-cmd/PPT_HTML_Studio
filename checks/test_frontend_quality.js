@@ -936,7 +936,7 @@ if (!styleManager.includes('window.refreshStep3Prompts')) {
 for (const token of ['step1-mode-article', 'step1-mode-topic', 'step1-btn-generate-article', 'step1-btn-system-content']) {
   if (!html.includes(token)) throw new Error(`Step 1 dual-mode UI missing: ${token}`);
 }
-for (const label of ['文章➡️slides', 'slides➡️可视化']) {
+for (const label of ['演讲稿 prompt', '可视化']) {
   if (!html.includes(label)) throw new Error(`Step 2 button label missing: ${label}`);
 }
 if (!maskWorkspace.includes("rle.encoding === 'row_runs_v1'") || !maskEditor.includes('exactRuns.forEach')) {
@@ -1032,7 +1032,7 @@ for (const creationModeToken of [
 if (projectProfile.includes('manual_pause_steps: manualPauseSteps')) {
   throw new Error('project creation must not duplicate creation-package pause settings');
 }
-if (!workspaceNavigation.includes("document.getElementById('btn-toggle-ai-mode').style.display = 'none'")) {
+if (!workspaceNavigation.includes("document.getElementById('ai-mode-segment').style.display = 'none'")) {
   throw new Error('project AI mode control remains visible after returning to the project library');
 }
 if (!workspaceNavigation.includes('await navigateToStep(visibleStep)') || !workspaceNavigation.includes('workspaceNavigationVersion')) {

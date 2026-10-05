@@ -650,16 +650,14 @@
     delete payload.subtitles;
     // Keep legacy ``mask`` data untouched. It remains part of imported and
     // exported configuration packages, but no longer controls new projects.
-    const pauseSteps = [...document.querySelectorAll('[data-creation-config-pause]:checked')]
-      .map(input => input.dataset.creationConfigPause)
-      .filter(Boolean);
+    const pauseStep = document.querySelector('[data-creation-config-pause]:checked')?.dataset.creationConfigPause;
     const automation = objectValue(payload.automation);
     const imageConcurrency = Math.max(1, Math.min(12, Number(element('creation-config-image-concurrency')?.value) || 5));
     automation.mode = automationModeFromForm();
     automation.image_concurrency = imageConcurrency;
     automation.ai_narration_annotation = automation.mode === 'auto' && narrationAnnotationFromForm();
     automation.ai_mask_annotation = automation.mode === 'auto' && maskAnnotationFromForm();
-    if (automation.mode === 'auto' && pauseSteps.length) automation.manual_pause_steps = pauseSteps;
+    if (automation.mode === 'auto' && pauseStep) automation.manual_pause_steps = [pauseStep];
     else delete automation.manual_pause_steps;
     if (Object.keys(automation).length) payload.automation = automation;
     else delete payload.automation;
@@ -719,6 +717,9 @@
     const pauses = Array.isArray(pauseSteps) ? new Set(pauseSteps) : new Set();
     document.querySelectorAll('[data-creation-config-pause]').forEach(input => {
       input.checked = pauses.has(input.dataset.creationConfigPause);
+    });
+    document.querySelectorAll('input[name="creation-config-annotation-annotation"]').forEach(input => {
+      input.checked = input.value === 'true';
     });
   }
 

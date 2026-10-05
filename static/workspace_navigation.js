@@ -103,7 +103,7 @@ function exitWorkspace() {
   document.getElementById('project-info-header').style.display = 'none';
   const btnBackHome = document.getElementById('btn-back-home');
   if (btnBackHome) btnBackHome.hidden = true;
-  document.getElementById('btn-toggle-ai-mode').style.display = 'none';
+  document.getElementById('ai-mode-segment').style.display = 'none';
   document.getElementById('project-production-mode')?.remove();
   document.getElementById('page-workspace').style.display = 'none';
   document.body.classList.remove('workspace-open');
@@ -120,12 +120,18 @@ function applyProjectAiMode(aiMode) {
   const mode = (aiMode || 'auto').toLowerCase() === 'manual' ? 'manual' : 'auto';
   document.body.classList.remove('mode-manual', 'mode-auto');
   document.body.classList.add(mode === 'manual' ? 'mode-manual' : 'mode-auto');
-  const toggleBtn = document.getElementById('btn-toggle-ai-mode');
-  if (toggleBtn) {
-    toggleBtn.style.display = Number(state.currentStep) === 2 ? 'inline-block' : 'none';
-    toggleBtn.textContent = `分镜方式：${mode === 'manual' ? '手动编排' : 'AI 辅助'}`;
-    toggleBtn.classList.remove('ai-mode-auto', 'ai-mode-manual');
-    toggleBtn.classList.add(mode === 'manual' ? 'ai-mode-manual' : 'ai-mode-auto');
+  const segment = document.getElementById('ai-mode-segment');
+  if (segment) {
+    segment.style.display = (document.body.classList.contains('workspace-open') && Number(state.currentStep) === 2) ? 'inline-flex' : 'none';
+    const autoBtn = document.getElementById('btn-ai-mode-auto');
+    const manualBtn = document.getElementById('btn-ai-mode-manual');
+    if (autoBtn && manualBtn) {
+      const activeCls = 'ai-mode-segment-btn-active';
+      autoBtn.classList.toggle(activeCls, mode !== 'manual');
+      manualBtn.classList.toggle(activeCls, mode === 'manual');
+      autoBtn.setAttribute('aria-pressed', String(mode !== 'manual'));
+      manualBtn.setAttribute('aria-pressed', String(mode === 'manual'));
+    }
   }
   if (state.currentProject) {
     state.currentProject.ai_mode = mode;
@@ -138,6 +144,10 @@ async function toggleProjectAiMode() {
   const next = current === 'manual' ? 'auto' : 'manual';
   const toggleBtn = document.getElementById('btn-toggle-ai-mode');
   if (toggleBtn) toggleBtn.disabled = true;
+  const segmentBtns = ['btn-ai-mode-auto', 'btn-ai-mode-manual']
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+  segmentBtns.forEach(btn => { btn.disabled = true; });
   try {
     const res = await API.put(`/api/projects/${state.currentProject.id}/ai-mode`, { ai_mode: next });
     if (res && res.success) {
@@ -155,8 +165,47 @@ async function toggleProjectAiMode() {
     }
   } finally {
     if (toggleBtn) toggleBtn.disabled = false;
+    ['btn-ai-mode-auto', 'btn-ai-mode-manual'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.disabled = false;
+    });
   }
 }
+
+// 指定模式切换（分段控件按钮入口）：复用既有 AI 模式切换 API。
+async function setProjectAiMode(mode) {
+  if (!state.currentProject) return;
+  const target = (mode || 'auto').toLowerCase() === 'manual' ? 'manual' : 'auto';
+  const current = (state.currentProject.ai_mode || 'auto').toLowerCase();
+  if (current === target) return;
+  const toggleBtn = document.getElementById('btn-toggle-ai-mode');
+  if (toggleBtn) toggleBtn.disabled = true;
+  ['btn-ai-mode-auto', 'btn-ai-mode-manual'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = true;
+  });
+  try {
+    const res = await API.put(`/api/projects/${state.currentProject.id}/ai-mode`, { ai_mode: target });
+    if (res && res.success) {
+      applyProjectAiMode(res.ai_mode);
+      showToast(`已切换为${target === 'manual' ? '手动' : '自动'}模式`);
+      if (typeof window.__aiMaskResetAutoAttempted === 'function') {
+        window.__aiMaskResetAutoAttempted();
+      }
+      if (typeof navigateToStep === 'function' && state.currentProject) {
+        const visibleStep = resolveProjectVisibleStep(state.currentProject);
+        await navigateToStep(visibleStep);
+      }
+    }
+  } finally {
+    if (toggleBtn) toggleBtn.disabled = false;
+    ['btn-ai-mode-auto', 'btn-ai-mode-manual'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.disabled = false;
+    });
+  }
+}
+window.setProjectAiMode = setProjectAiMode;
 
 function renderProductionModeSummary(project = state.currentProject) {
   // 制作方式已在创建项目时确定，工作区不再用顶部标签重复展示。
@@ -268,6 +317,7 @@ async function navigateToStep(step) {
   state.currentStep = step;
   const modeButton = document.getElementById('btn-toggle-ai-mode');
   if (modeButton) modeButton.style.display = step === 2 ? 'inline-block' : 'none';
+  if (state.currentProject) applyProjectAiMode(state.currentProject.ai_mode || 'auto');
   
   // 隐藏所有面板
   document.querySelectorAll('.step-panel').forEach(panel => panel.style.display = 'none');

@@ -5950,3 +5950,385 @@ body.workspace-open .workflow-toolbar .control-hint {
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
+
+/* ============================================================
+   验收反馈第二批（2026-10-05）：创作配置排版与交互优化
+   ============================================================ */
+/* 生成模式移出配置包（创建视频流程中已选），隐藏区块；radio 保留供 JS 读取。 */
+#modal-creation-config-management .creation-config-mode-selector {
+  display: none !important;
+}
+/* 一键生成暂停点：全步骤单选列表 */
+.creation-config-pause-block .config-editor-note {
+  margin: 4px 0 10px !important;
+}
+.creation-config-pause-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px 16px !important;
+}
+.creation-config-pause-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 7px 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  font-size: 13px !important;
+  color: #1d1d1f !important;
+  cursor: pointer !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease !important;
+}
+.creation-config-pause-item:hover {
+  border-color: #ee5d36 !important;
+  background: #fff5f0 !important;
+}
+.creation-config-pause-item:has(input:checked) {
+  border-color: #ee5d36 !important;
+  background: #fff5f0 !important;
+  color: #ee5d36 !important;
+  font-weight: 600 !important;
+}
+.creation-config-pause-item input {
+  accent-color: #ee5d36 !important;
+  margin: 0 !important;
+}
+.creation-config-pause-item.is-disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+}
+.creation-config-pause-item.is-disabled input {
+  cursor: not-allowed !important;
+}
+/* AI 标注三组开关：需要/不需要 统一文案与间距 */
+.creation-config-auto-options-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+.creation-config-auto-options-grid > div > .creation-config-options-row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+.creation-config-auto-options-grid .creation-config-check {
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+.creation-config-auto-options-grid .creation-config-check input {
+  accent-color: #ee5d36 !important;
+  margin: 0 !important;
+}
+/* 字幕样式：两排、标签左/控件右 */
+#modal-creation-config-management .creation-config-subtitle-grid,
+.creation-config-subtitle-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+  gap: 10px 14px !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid label,
+.creation-config-subtitle-grid label {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  padding: 8px 12px !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid label > span,
+.creation-config-subtitle-grid label > span {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+  font-weight: 500 !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid label select,
+#modal-creation-config-management .creation-config-subtitle-grid label input,
+.creation-config-subtitle-grid label select,
+.creation-config-subtitle-grid label input {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+/* 自动化并发：紧凑两列，标签左/窄输入右 */
+.creation-config-concurrency-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px 24px !important;
+}
+.creation-config-concurrency-grid label {
+  grid-template-columns: auto 76px !important;
+  justify-content: start !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  padding: 6px 10px !important;
+  border: 0 !important;
+  background: transparent !important;
+  font-weight: 500 !important;
+}
+.creation-config-concurrency-grid label small {
+  display: none !important;
+}
+.creation-config-concurrency-grid input {
+  min-height: 30px !important;
+  text-align: center !important;
+}
+
+/* 字幕样式终审：flex 接管（绕开所有历史 grid 模板），标签左/控件右，自动两排。 */
+#modal-creation-config-management .creation-config-subtitle-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px 14px !important;
+  grid-template-columns: none !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid > label {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: 260px !important;
+  min-height: 0 !important;
+  padding: 8px 12px !important;
+  white-space: nowrap !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid > label > span {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid > label > select,
+#modal-creation-config-management .creation-config-subtitle-grid > label > input {
+  flex: 0 1 auto !important;
+  width: auto !important;
+  max-width: 110px !important;
+  min-width: 0 !important;
+}
+.creation-config-auto-options-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+.creation-config-auto-options-grid .creation-config-pause-block {
+  grid-column: 1 / -1 !important;
+}
+.creation-config-pause-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+/* 分镜方式分段控件（对齐参考样式：浅灰容器 + 白色选中胶囊）。 */
+.ai-mode-segment {
+  align-items: center !important;
+  gap: 2px !important;
+  padding: 3px !important;
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+}
+/* 首页/非工作区一律隐藏（内联 display 由 JS 在 Step2 控制）。 */
+body:not(.workspace-open) .ai-mode-segment {
+  display: none !important;
+}
+.ai-mode-segment-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 5px 14px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+}
+.ai-mode-segment-btn:hover {
+  color: #0f172a !important;
+  background: rgba(226, 232, 240, 0.6) !important;
+}
+.ai-mode-segment-btn.ai-mode-segment-btn-active {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12) !important;
+}
+.ai-mode-segment-btn:disabled {
+  opacity: 0.6 !important;
+  cursor: wait !important;
+}
+/* 工作区顶栏分段控件与相邻元素间距 */
+.workspace-topbar .ai-mode-segment,
+body.workspace-open .ai-mode-segment {
+  margin-right: 2px !important;
+}
+
+/* Step2 分页 Tab：紧凑排版（把手/文字间距收紧） */
+#step-panel-2 .slide-thumbnail-card.step2-slide-thumb {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  height: 28px !important;
+  padding: 0 9px !important;
+  width: auto !important;
+  text-align: left !important;
+}
+#step-panel-2 .step2-slide-thumb .step2-thumb-handle {
+  margin: 0 !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+#step-panel-2 .step2-slide-thumb .step2-thumb-label {
+  margin: 0 !important;
+}
+#step2-thumbs {
+  gap: 6px !important;
+}
+/* 批量删除 × 徽章：圆形居中 + hover 保持红底白叉 */
+#step-panel-2 .step2-thumb-delete {
+  display: grid !important;
+  place-items: center !important;
+  top: -5px !important;
+  right: -5px !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  padding: 0 !important;
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  line-height: 0 !important;
+}
+#step-panel-2 .step2-thumb-delete svg {
+  display: block !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+#step-panel-2 .step2-thumb-delete:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+}
+/* 重新生成演讲稿加载卡：与分页 Tab 拉开间距并收紧高度 */
+#step-panel-2 #step2-loading {
+  margin-top: 12px !important;
+  padding: 1.6rem 2rem !important;
+}
+#step-panel-2 #step2-loading p {
+  font-size: 1rem !important;
+  margin-top: 0.6rem !important;
+}
+
+/* 验收反馈：颜色输入框拉宽（窄条太尴尬）。 */
+#modal-creation-config-management .creation-config-subtitle-grid > label > input[type="color"],
+.creation-config-subtitle-grid > label > input[type="color"] {
+  flex: 1 1 auto !important;
+  width: 72px !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 30px !important;
+  padding: 2px 3px !important;
+  cursor: pointer !important;
+}
+
+/* 一键生成弹窗：× 靠右 + 阶段列表滚动 + 底栏固定 */
+#modal-one-click-generate .prompt-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+#modal-one-click-generate .prompt-title-row .icon-button {
+  flex: 0 0 auto !important;
+}
+
+/* 验收反馈：字幕样式字段去框（简约），保留标签左/控件右布局。 */
+#modal-creation-config-management .creation-config-subtitle-grid > label,
+.creation-config-subtitle-grid > label {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  outline: none !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid > label > select,
+#modal-creation-config-management .creation-config-subtitle-grid > label > input,
+.creation-config-subtitle-grid > label > select,
+.creation-config-subtitle-grid > label > input {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid > label > input[type="color"],
+.creation-config-subtitle-grid > label > input[type="color"] {
+  padding: 2px 3px !important;
+  width: 64px !important;
+  flex: 0 1 72px !important;
+}
+
+/* ============================================================
+   模型设置模型卡终版（2026-10-05c，验收定稿）：
+   1) 卡片上下结构：第一行名称，第二行编辑/复制/删除按钮；
+   2) 名称定为一行，超出省略号，全程左对齐（压掉旧层居中）；
+   3) 按钮独立成行并去掉 96px 限宽，右缘不再有截断感。
+   双 ID 选择器与上方旧层同权，靠加载顺序取胜。
+   ============================================================ */
+#modal-model-management #modal-model-management .model-library-card,
+#modal-model-management .model-library-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 10px 12px !important;
+  overflow: hidden !important;
+}
+#modal-model-management #modal-model-management .model-library-card .model-library-card-heading,
+#modal-model-management .model-library-card .model-library-card-heading {
+  display: block !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+#modal-model-management #modal-model-management .model-library-card .model-library-card-heading strong,
+#modal-model-management .model-library-card .model-library-card-heading strong {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1d1d1f !important;
+  text-align: left !important;
+}
+#modal-model-management #modal-model-management .model-library-card .model-library-card-actions,
+#modal-model-management .model-library-card .model-library-card-actions {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  gap: 4px !important;
+}
+#modal-model-management .model-library-card .model-library-card-actions button,
+#modal-model-management .model-library-card .model-library-card-actions button.cc-icon-action {
+  width: 26px !important;
+  min-width: 26px !important;
+  max-width: 26px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  flex: 0 0 auto !important;
+}

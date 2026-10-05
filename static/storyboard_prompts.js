@@ -18,7 +18,7 @@ async function openStoryboardRulesModal(mode = 'script') {
 }
 
 function step2PromptModeLabel(mode = state.activeStep2PromptMode) {
-  return mode === 'visual' ? 'slides➡️可视化' : '文章➡️slides';
+  return mode === 'visual' ? '可视化' : '演讲稿 prompt';
 }
 
 function composeStep2FullPrompt(systemContent, outputExample) {

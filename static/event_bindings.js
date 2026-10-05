@@ -64,7 +64,8 @@ function initGlobalEvents() {
     if (file) importGlobalSettings(file);
   });
   document.getElementById('btn-back-home')?.addEventListener('click', () => exitWorkspace());
-  document.getElementById('btn-toggle-ai-mode')?.addEventListener('click', () => toggleProjectAiMode());
+  document.getElementById('btn-ai-mode-auto')?.addEventListener('click', () => setProjectAiMode('auto'));
+  document.getElementById('btn-ai-mode-manual')?.addEventListener('click', () => setProjectAiMode('manual'));
   // 绑定设置测试连通性按钮
   document.getElementById('btn-test-llm')?.addEventListener('click', () => testLlmConnection());
   document.getElementById('btn-test-image')?.addEventListener('click', () => testImageConnection());

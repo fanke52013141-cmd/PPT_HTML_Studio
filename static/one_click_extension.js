@@ -39,13 +39,14 @@
     render: 8,
   };
   const STAGE_LABELS = {
-    preflight: '准备检查',
-    storyboard: '生成分镜',
-    images: '生成图片',
-    confirm_images: '确认整页图片',
-    narration: '生成旁白标注',
-    tts: '合成语音',
-    render: '合成视频',
+    preflight: '1 导入文章 · 预检查',
+    storyboard: '2 分镜规划',
+    images: '3 图片生成',
+    confirm_images: '3 图片生成 · 确认整页场景',
+    ai_mask: '4 AI Mask 标注',
+    narration: '5 旁白与音频 · 演讲稿',
+    tts: '5 旁白与音频 · 语音合成',
+    render: '8 作品输出 · 渲染视频',
   };
   const STATUS_LABELS = {
     idle: '未开始',
@@ -206,7 +207,6 @@
           <h3 class="highlight-title">一键生成视频</h3>
           <button id="btn-one-click-close-icon" class="icon-button" type="button" aria-label="关闭">×</button>
         </div>
-        <p class="one-click-note"><strong>一键生成采用整页展示：</strong>从已导入文章开始，自动完成分镜、图片、旁白、语音与视频合成；不会运行 AI Mask 标注。失败时会保留阶段状态，重新运行时复用未过期产物。</p>
         <div id="one-click-status" class="one-click-status-line">尚未读取状态。</div>
         <div id="one-click-stages" class="one-click-stage-list"></div>
         <div class="one-click-toolbar">
@@ -214,7 +214,6 @@
           <button id="btn-one-click-restart" class="secondary" type="button">从头重跑</button>
           <button id="btn-one-click-pause" class="secondary" type="button" hidden>暂停生成</button>
           <button id="btn-one-click-refresh" class="secondary" type="button">刷新状态</button>
-          <button id="btn-one-click-close" class="secondary" type="button">关闭</button>
         </div>
       </div>
     `;

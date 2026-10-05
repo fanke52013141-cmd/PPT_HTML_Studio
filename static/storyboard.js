@@ -76,7 +76,7 @@ async function loadStep2Data() {
     state.step2BatchOriginalSlides = null;
     state.step2Stage = state.step2VisualStale ? 'script' : 'visual';
     renderStep2Workspace();
-    if (!isManualMode() && state.step2ScriptPlan?.slides?.length) updateStep2AutosaveStatus('演讲稿已保存');
+    if (!isManualMode() && state.step2ScriptPlan?.slides?.length) updateStep2AutosaveStatus('');
     void offerArtifactRepair(res, '分镜数据', loadStep2Data);
   } else {
     state.slides = [];
@@ -87,7 +87,7 @@ async function loadStep2Data() {
     state.step2Stage = 'script';
     state.step2WorkflowPending = true;
     renderStep2Workspace();
-    updateStep2AutosaveStatus(!isManualMode() && state.step2ScriptPlan?.slides?.length ? '演讲稿已保存' : '');
+    updateStep2AutosaveStatus('');
   }
 }
 
@@ -332,7 +332,7 @@ async function saveStep2ScriptPlan(options = {}) {
     }
     const visualButton = document.getElementById('step2-btn-generate-visual');
     if (visualButton) setStep2ButtonLabel(visualButton, state.step2VisualStale ? '重新生成可视化' : '内容可视化');
-    updateStep2AutosaveStatus('演讲稿已保存');
+    updateStep2AutosaveStatus('');
     if (response.workflow_changed) refreshCurrentProjectStatus(2).catch(() => {});
     if (!options.silent) showToast('演讲稿已保存。');
     return true;
@@ -505,11 +505,14 @@ function showStep2ValidationError(message, index = null, field = null) {
 const STEP2_BATCH_TEMPLATE = `[
   {
     "main_title": "第一页标题",
-    "narration": "第一页要朗读的演讲稿，可多行。"
+    "segments": [
+      { "screen_text": "画面文字 1", "speech_segment": "这一段对应的演讲片段" },
+      { "screen_text": "画面元素 2", "speech_segment": "这一段对应的演讲片段" }
+    ]
   },
   {
     "main_title": "第二页标题",
-    "narration": "第二页要朗读的演讲稿。"
+    "narration": "第二页完整演讲稿（无 segments 时必填）"
   }
 ]
 `;
@@ -570,13 +573,28 @@ function handleStep2BatchImportFile(event) {
     for (let i = 0; i < parsed.length; i++) {
       const item = parsed[i] || {};
       const title = String(item.main_title || '').trim();
-      const narration = String(item.narration || '').trim();
+      const segments = Array.isArray(item.segments) ? item.segments : null;
+      let narration = String(item.narration || '').trim();
+      if (segments) {
+        for (let s = 0; s < segments.length; s++) {
+          const seg = segments[s] || {};
+          if (!String(seg.screen_text || '').trim() || !String(seg.speech_segment || '').trim()) {
+            previewEl.style.display = 'block';
+            previewEl.innerHTML = `<div class="step2-batch-import-error">❌ 第 ${i + 1} 项第 ${s + 1} 个片段缺少 screen_text 或 speech_segment</div>`;
+            return;
+          }
+        }
+        if (!narration) narration = segments.map(seg => String(seg.speech_segment || '').trim()).filter(Boolean).join('');
+      }
       if (!title || !narration) {
         previewEl.style.display = 'block';
         previewEl.innerHTML = `<div class="step2-batch-import-error">❌ 第 ${i + 1} 项缺少 main_title 或 narration 字段</div>`;
         return;
       }
-      slides.push({ main_title: title, narration });
+      slides.push({ main_title: title, narration, segments: segments ? segments.map(seg => ({
+        screen_text: String(seg.screen_text || '').trim(),
+        speech_segment: String(seg.speech_segment || '').trim(),
+      })) : null });
     }
     if (!slides.length) {
       previewEl.style.display = 'block';
@@ -619,21 +637,58 @@ async function submitStep2BatchImport(mode) {
       slideId = `slide_${String(nextNumber++).padStart(3, '0')}`;
     } while (usedIds.has(slideId));
     usedIds.add(slideId);
-    return {
-      slide_id: slideId,
-      main_title: item.main_title,
-      subtitle: '',
-      core_message: item.narration,
-      body_content: [item.narration],
-      visual_groups: [],
-      narration_beats: [{
+    const segments = Array.isArray(item.segments) ? item.segments.filter(seg => seg && seg.screen_text) : [];
+    const pad = (n) => String(n).padStart(3, '0');
+    const visualGroups = [{
+      id: `${slideId}_group_001`,
+      role: 'title',
+      visual_type: 'text',
+      visible_text: item.main_title,
+      display_text: item.main_title,
+      visual_anchor: item.main_title,
+      mask_target: item.main_title,
+      reveal_order: 0,
+    }];
+    const beats = [];
+    segments.forEach((seg, index) => {
+      const groupId = `${slideId}_group_${pad(index + 2)}`;
+      visualGroups.push({
+        id: groupId,
+        role: 'content_body',
+        visual_type: 'text',
+        visible_text: seg.screen_text,
+        display_text: seg.screen_text,
+        visual_anchor: seg.screen_text,
+        mask_target: seg.screen_text,
+        reveal_order: index + 1,
+      });
+      beats.push({
+        id: `${slideId}_beat_${pad(index + 1)}`,
+        group_id: groupId,
+        content_unit_id: `${slideId}_unit_${pad(index + 1)}`,
+        visible_anchor: seg.screen_text,
+        spoken_intent: seg.screen_text,
+        spoken_text: seg.speech_segment,
+      });
+    });
+    if (!beats.length) {
+      beats.push({
         id: `${slideId}_beat_001`,
         group_id: null,
         content_unit_id: `${slideId}_unit_001`,
         visible_anchor: '',
         spoken_intent: item.main_title,
         spoken_text: item.narration,
-      }],
+      });
+    }
+    return {
+      slide_id: slideId,
+      main_title: item.main_title,
+      subtitle: '',
+      core_message: item.narration,
+      body_content: [item.narration],
+      visual_groups: visualGroups,
+      narration_beats: beats,
     };
   });
   state.slides = existingSlides.concat(newSlides);
@@ -709,7 +764,7 @@ function renderStep2Workspace() {
     if (scriptGenerateBtn) {
       scriptGenerateBtn.style.display = 'inline-flex';
       scriptGenerateBtn.classList.toggle('is-active', state.step2Stage === 'script');
-      setStep2ButtonLabel(scriptGenerateBtn, state.step2ScriptPlan?.slides?.length ? '查看/编辑演讲稿' : '生成演讲稿');
+      setStep2ButtonLabel(scriptGenerateBtn, '生成演讲稿');
     }
     if (visualGenerateBtn) {
       // 自动模式常驻展示：演讲稿未生成/生成中禁用，全部生成完毕后可点（UI 规范 §8）。
@@ -732,7 +787,7 @@ function renderStep2Workspace() {
   step2NextButton.style.display = hasSlides ? 'inline-flex' : 'none';
   const visualizationNeedsRefresh = !manual && (state.step2WorkflowPending || state.step2VisualStale);
   setDisabledReason(step2NextButton, !hasSlides || visualizationNeedsRefresh,
-    !hasSlides ? '请先添加分镜页面' : '演讲稿已修改，请重新生成可视化后继续');
+    !hasSlides ? '请先添加分镜页面' : '');
   step2NextButton.removeAttribute('title');
   updateStep2BatchDeleteButton();
 
@@ -892,7 +947,7 @@ function moveStep2Thumb(from, to) {
     step2ScriptSaveTimer = setTimeout(async () => {
       if (await saveStep2ScriptPlan({ silent: true }) && state.slides.length) {
         const result = await saveStep2Contract({ silent: true, skipCurrentSlideSync: true });
-        updateStep2AutosaveStatus(result.success ? '演讲稿已保存' : '排序保存失败，请重试');
+        updateStep2AutosaveStatus(result.success ? '' : '排序保存失败，请重试');
       }
     }, 700);
   } else if (state.slides?.length) {
