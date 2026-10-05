@@ -37,6 +37,9 @@ function makeElement(id) {
     querySelector() { return makeElement(`${id}-child`); },
     querySelectorAll() { return []; },
     addEventListener() {},
+    setAttribute() {},
+    getAttribute() { return null; },
+    removeAttribute() {},
   };
 }
 

@@ -10,6 +10,8 @@ let _step8RenderPollTimer = null;
 let _step8RenderTaskId = null;
 let _step8RenderProjectId = null;
 let _step8RenderSessionVersion = null;
+// 生成按钮常驻可点：就绪状态缓存在这里，点击时据此 Toast 提示（验收 2026-10-06）。
+let step8RenderReadiness = { hasContract: false, audioComplete: false, audioConfirmed: false };
 
 function updateStep8LoadingText(stageLabel, elapsedSec, queueAhead) {
   const text = document.getElementById('step8-loading-text');
@@ -159,11 +161,8 @@ async function loadStep8Data() {
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   if (!contract.success || !contract.contract?.slides?.length) {
     const pptxLabel = document.getElementById('step8-pptx-readiness');
-    const pptxButton = document.getElementById('step8-btn-pptx');
-    const renderButton = document.getElementById('step8-btn-render');
     if (pptxLabel) pptxLabel.textContent = '尚未生成分镜与图片';
-    setDisabledReason(pptxButton, true, '请先完成分镜规划并准备图片');
-    setDisabledReason(renderButton, true, '请先完成分镜、图片和音频确认');
+    step8RenderReadiness = { hasContract: false, audioComplete: false, audioConfirmed: false };
     document.getElementById('step8-result-box').style.display = 'none';
     const digitalHumanMessage = document.getElementById('step8-digital-human-message');
     if (digitalHumanMessage) digitalHumanMessage.textContent = '尚未生成可用于输出的分镜。';
@@ -177,8 +176,11 @@ async function loadStep8Data() {
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   const audioReadiness = await API.get(`/api/projects/${projectId}/steps/7/audio-status`);
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
-  setDisabledReason(document.getElementById('step8-btn-render'), !audioReadiness.complete || !audioReadiness.audio_confirmed,
-    !audioReadiness.complete ? '请先生成全部页面音频' : '请先试听并确认音频，再生成视频');
+  step8RenderReadiness = {
+    hasContract: true,
+    audioComplete: audioReadiness?.complete === true,
+    audioConfirmed: audioReadiness?.audio_confirmed === true,
+  };
   try {
     // 先检查是否有进行中的渲染任务（页面刷新后恢复轮询）
     const statusRes = await API.get(`/api/projects/${projectId}/steps/8/render-status`);
@@ -282,6 +284,18 @@ async function runStep8Render() {
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
+  if (!step8RenderReadiness.hasContract) {
+    showToast('请先完成分镜规划并准备图片');
+    return;
+  }
+  if (!step8RenderReadiness.audioComplete) {
+    showToast('请先生成全部页面音频');
+    return;
+  }
+  if (!step8RenderReadiness.audioConfirmed) {
+    showToast('请先试听并确认音频，再生成视频');
+    return;
+  }
   const renderBtn = document.getElementById('step8-btn-render');
   if (renderBtn?.disabled) return;
   if (renderBtn) renderBtn.disabled = true;

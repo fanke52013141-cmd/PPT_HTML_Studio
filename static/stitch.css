@@ -447,7 +447,6 @@ button.success:hover,
 #step2-btn-generate-visual,
 #step3-btn-batch-generate,
 #step3-btn-generate,
-#step8-btn-render,
 #step9-btn-generate,
 #btn-create-course,
 #btn-create-project,
@@ -461,7 +460,6 @@ button.success:hover,
 #step2-btn-generate-visual:hover,
 #step3-btn-batch-generate:hover,
 #step3-btn-generate:hover,
-#step8-btn-render:hover,
 #step9-btn-generate:hover,
 #btn-create-course:hover,
 #btn-create-project:hover,
@@ -4920,25 +4918,6 @@ body.workspace-open #step-panel-3 .step3-image-card .step3-card-heading {
   min-height: 0 !important;
   margin-bottom: 12px !important;
 }
-body.workspace-open #step-panel-3 .step3-image-card .step3-card-utilities {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-}
-body.workspace-open #step-panel-3 .step3-image-card .step3-card-utilities > .step3-card-action {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  width: auto !important;
-  min-width: 0 !important;
-  height: 30px !important;
-  min-height: 30px !important;
-  padding: 0 9px !important;
-  border-radius: 8px !important;
-  white-space: nowrap !important;
-}
 
 /* ============================================================
    UI consistency layer (docs/ui-consistency-plan.md v2, Phase 0)
@@ -5240,15 +5219,6 @@ body.workspace-open #step-panel-1 .step1-heading-actions #step1-btn-submit {
   color: #ffffff !important;
 }
 body.workspace-open #step-panel-1 .step1-heading-actions #step1-btn-submit:hover {
-  background: #2c2e33 !important;
-  border-color: #2c2e33 !important;
-}
-#step8-btn-render {
-  background: #17191d !important;
-  border-color: #17191d !important;
-  color: #ffffff !important;
-}
-#step8-btn-render:hover {
   background: #2c2e33 !important;
   border-color: #2c2e33 !important;
 }
@@ -6331,4 +6301,31 @@ body.workspace-open .ai-mode-segment {
   height: 26px !important;
   min-height: 26px !important;
   flex: 0 0 auto !important;
+}
+
+/* ============================================================
+   验收修正层（2026-10-06）：分镜与图片卡片头部
+   ============================================================ */
+
+/* 图1 分镜规划：页签行与内容卡片拉开距离。 */
+body.workspace-open #step-panel-2 #step2-thumbs {
+  padding-bottom: 16px !important;
+  margin-bottom: 4px !important;
+}
+
+/* 图2 图片卡片：头部左侧为拖拽柄 + 状态徽标，右侧为删除/上传/AI生成。 */
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity .slide-drag-handle {
+  flex: 0 0 auto !important;
+}
+body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity .step3-card-status {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }

@@ -9,12 +9,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260929.1">
+  <link rel="stylesheet" href="style.css?v=20261006.1">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20261005.8">
+  <link rel="stylesheet" href="stitch.css?v=20261006.1">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
-  <link rel="stylesheet" href="workspace_content.css?v=20261005.1">
+  <link rel="stylesheet" href="workspace_content.css?v=20261006.1">
 </head>
 <body>
 
@@ -393,7 +393,6 @@
                   <canvas id="step5-canvas" width="1920" height="1080"></canvas>
                 </div>
                 <div id="step5-tool-cursor" class="step5-tool-cursor" aria-hidden="true"></div>
-                <div id="step5-zoom-indicator" class="step5-zoom-indicator" aria-hidden="true">100%</div>
               </div>
               <div id="step5-narration-panel" class="step5-narration-panel"></div>
             </div>
@@ -445,9 +444,8 @@
               </button>
               <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="强制重生成全部：忽略缓存，重新生成所有页面音频">强制重生成</button>
               <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="导出整段语音：拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
-              <button id="step6-btn-audio-confirm-next" class="success" disabled title="确认并进入勾画标注">
+              <button id="step6-btn-audio-confirm-next" class="success ws-primary" title="确认并进入勾画标注">
                 <span id="step6-audio-confirm-label">确认进入勾画</span>
-                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
           </div>
@@ -465,9 +463,9 @@
             <div class="annotation-header workflow-header workflow-header--titlebar">
               <h2 class="highlight-title workflow-title">勾画标注</h2>
               <div class="annotation-header-actions workflow-toolbar">
-                <span class="annotation-optional-hint">视频是否携带勾画由右侧开关决定</span>
                 <label class="annotation-enable-toggle">
                   <input type="checkbox" id="annotation-enabled-toggle">
+                  <span class="annotation-switch-slider" aria-hidden="true"></span>
                   <span>视频中启用勾画</span>
                 </label>
                 <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
@@ -676,7 +674,7 @@
               <span id="step8-pptx-readiness" class="step8-readiness" aria-live="polite"></span>
             </div>
             <div class="step8-header-actions workflow-toolbar">
-              <button id="step8-btn-render" class="success compact-action-btn ws-primary">生成 MP4
+              <button id="step8-btn-render" class="secondary compact-action-btn" type="button">生成 MP4
               </button>
               <button id="step8-btn-pptx" class="secondary compact-action-btn" type="button">
                 生成 PPTX
@@ -684,7 +682,6 @@
               <button id="step8-btn-download-srt" class="secondary compact-action-btn" type="button" disabled title="仅在点击后下载字幕文件">
                 下载字幕 SRT
               </button>
-              <button id="step8-btn-finish" class="secondary compact-action-btn ws-primary">完成并退出项目</button>
             </div>
           </div>
 
@@ -1780,23 +1777,23 @@
   <script src="article.js?v=20260929.6"></script>
   <script src="storyboard.js?v=20261005.3"></script>
   <script src="storyboard_prompts.js?v=20261005.2"></script>
-  <script src="images.js?v=20261005.2"></script>
+  <script src="images.js?v=20261006.1"></script>
   <script src="image_prompts.js?v=20260801.1"></script>
   <script src="ip_character_manager.js?v=20261005.1"></script>
   <script src="mask_reveal.js?v=20260801.1"></script>
   <script src="mask_workspace.js?v=20260929.1"></script>
-  <script src="mask_editor.js?v=20260809.4"></script>
+  <script src="mask_editor.js?v=20261006.1"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
-  <script src="narration_audio.js?v=20261005.1"></script>
+  <script src="narration_audio.js?v=20261006.1"></script>
   <script src="annotation_playback.js?v=20260929.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
   <script src="annotations_workspace.js?v=20260928.1"></script>
   <script src="annotations_editor.js?v=20260928.1"></script>
-  <script src="output_render.js?v=20261005.1"></script>
+  <script src="output_render.js?v=20261006.1"></script>
   <script src="account_management.js?v=20260916.1"></script>
   <script src="workspace_navigation.js?v=20261005.2"></script>
   <script src="generation_controls.js?v=20261005.1"></script>
-  <script src="event_bindings.js?v=20261005.3"></script>
+  <script src="event_bindings.js?v=20261006.1"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>
   <script src="storyboard_background_extension.js?v=20261005.2"></script>
   <script src="style_reference_manager_extension.js?v=20261005.1"></script>

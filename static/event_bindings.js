@@ -172,7 +172,6 @@ function initGlobalEvents() {
   document.getElementById('step2-btn-script-prompt')?.addEventListener('click', () => openStoryboardRulesModal('script'));
   document.getElementById('step2-btn-visual-prompt')?.addEventListener('click', () => openStoryboardRulesModal('visual'));
   document.getElementById('step2-btn-save')?.addEventListener('click', () => handleStep2BatchDeleteButton());
-  document.getElementById('step2-btn-cancel-delete')?.addEventListener('click', () => cancelStep2BatchDelete());
   // 手动模式：添加幻灯片 + 批量导入
   document.getElementById('step2-btn-add-slide')?.addEventListener('click', () => addStep2Slide());
   document.getElementById('step2-btn-batch-import')?.addEventListener('click', () => openStep2BatchImportModal());
@@ -238,7 +237,6 @@ function initGlobalEvents() {
   // ================= 步骤 8 事件 =================
   document.getElementById('step8-btn-render')?.addEventListener('click', () => runStep8Render());
   document.getElementById('step8-btn-pptx')?.addEventListener('click', () => runStep8PptxExport());
-  document.getElementById('step8-btn-finish')?.addEventListener('click', () => exitWorkspace());
   document.getElementById('btn-storyboard-rules-cancel')?.addEventListener('click', () => closeStoryboardRulesModal());
   document.getElementById('btn-step2-prompts-save')?.addEventListener('click', () => saveStep2Prompts());
   document.getElementById('btn-step2-prompt-template-load')?.addEventListener('click', () => loadSelectedStep2PromptTemplate());

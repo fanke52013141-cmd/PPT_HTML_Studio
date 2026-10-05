@@ -425,13 +425,12 @@ async function loadStep7Data() {
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
   const emptyState = document.getElementById('step7-empty-state');
-  const confirmButton = document.getElementById('step6-btn-audio-confirm-next');
   const synthButton = document.getElementById('step7-btn-synthesize');
   const forceAllButton = document.getElementById('step7-btn-force-all');
   const step7Status = state.currentProject?.step_status?.['7'] || 'pending';
   const stepAllowsAudio = ['in_progress', 'completed', 'pending_reconfirmation'].includes(step7Status);
 
-  setDisabledReason(confirmButton, true, '正在检查页面音频状态');
+  // 确认按钮常驻可点，未就绪时在点击处 Toast 提示，不在标题栏挂提示文字。
   synthButton.style.display = stepAllowsAudio ? 'inline-flex' : 'none';
   if (forceAllButton) forceAllButton.style.display = stepAllowsAudio ? 'inline-flex' : 'none';
   emptyState.style.display = 'block';
@@ -442,7 +441,6 @@ async function loadStep7Data() {
 
   if (!narrationData?.slides?.length) {
     emptyState.innerText = '尚未生成音频。先准备旁白，再点击“生成音频”。';
-    setDisabledReason(confirmButton, true, '请先准备旁白并生成音频');
     return;
   }
 
@@ -481,22 +479,17 @@ async function loadStep7Data() {
     });
 
     const allAudioComplete = audioStatus.complete === true;
-    const missingSlides = Array.isArray(audioStatus.missing) ? audioStatus.missing : [];
+    // 确认按钮常驻可点：未就绪时点击给出 Toast 提示（验收 2026-10-06：标题栏不再挂提示文字）。
     if (!allAudioComplete) {
       // Each slide already shows its actionable audio state.  Do not repeat a
       // long, non-actionable missing-slide list above the editor.
       emptyState.style.display = 'none';
       emptyState.innerText = '';
-      setDisabledReason(confirmButton, true, '请先生成全部页面音频，并逐页试听');
     } else if (step7Status === 'pending_reconfirmation') {
-      // Keep the confirmation disabled until audio is regenerated, but do not
-      // repeat the internal invalidation reason in the visible workspace.
       emptyState.style.display = 'none';
       emptyState.innerText = '';
-      setDisabledReason(confirmButton, true, '音频已变更，请先重新生成后再确认');
     } else {
       emptyState.style.display = 'none';
-      setDisabledReason(confirmButton, false);
       // 文案跟随数字人启用状态：未启用时下一步是作品输出，而不是数字人讲解。
       // 完整语义保留在按钮 title 上（ui-consistency-plan P0-4a：标题栏单行化）。
       const confirmLabel = document.getElementById('step6-audio-confirm-label');
@@ -631,6 +624,7 @@ async function runStep7TTS(options = {}) {
     loading.style.display = 'none';
     synthButton.disabled = false;
     saveAndTtsButton.disabled = false;
+    confirmButton.disabled = false;
     if (forceAllButton) forceAllButton.disabled = false;
     document.querySelectorAll('.step6-generate-slide').forEach(button => { button.disabled = false; });
     }
@@ -663,8 +657,24 @@ async function confirmStep7Audio() {
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return false;
   const confirmButton = document.getElementById('step6-btn-audio-confirm-next');
+  if (!narrationData?.slides?.length) {
+    showToast('请先准备旁白并生成音频');
+    return false;
+  }
   confirmButton.disabled = true;
   try {
+    // 常驻可点按钮的点击前置校验：未就绪时提示而不是静默失败。
+    const audioStatus = await API.get(`/api/projects/${projectId}/steps/7/audio-status`);
+    if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
+    if (audioStatus?.complete !== true) {
+      showToast('请先生成全部页面音频，并逐页试听');
+      return false;
+    }
+    const step7Status = state.currentProject?.step_status?.['7'] || 'pending';
+    if (step7Status === 'pending_reconfirmation') {
+      showToast('音频已变更，请先重新生成后再确认');
+      return false;
+    }
     const res = await API.post(`/api/projects/${projectId}/steps/7/confirm`, {});
     // 确认响应迟到时不得刷新/提示到切换后的项目上。
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;

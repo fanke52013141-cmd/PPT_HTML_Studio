@@ -292,9 +292,6 @@ function renderStep3Grid() {
     card.innerHTML = `
       <div class="step3-card-header">
         <div class="step3-card-identity">
-          <span class="step3-card-status ${isCurrentGenerating ? 'is-current-generating' : ''} ${isQueued ? 'is-queued' : ''} ${isGenerating ? 'is-generating' : ''}" style="color: ${img.exists || isGenerating ? 'var(--ink-color)' : '#888'}; background: ${isCurrentGenerating ? 'var(--color-primary-base)' : (isQueued ? 'var(--secondary-color)' : (img.exists && provenanceReady ? 'var(--success-color)' : '#f3f4f6'))}; ${isCurrentGenerating ? 'color: #fff;' : ''}">
-            ${isCurrentGenerating ? '生成中' : (isQueued ? '排队中' : (img.exists ? (provenanceReady ? '已就绪' : '来源待更新') : '待生成'))}
-          </span>
           <button class="slide-drag-handle" type="button" draggable="${canMoveImage ? 'true' : 'false'}" ${canMoveImage ? '' : 'disabled'} title="拖动当前图片，调整它与 Slide 标题的对应关系" aria-label="移动第 ${idx + 1} 页当前图片，分镜顺序保持不变">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="9" cy="5" r="1.4"></circle><circle cx="15" cy="5" r="1.4"></circle>
@@ -302,8 +299,12 @@ function renderStep3Grid() {
               <circle cx="9" cy="19" r="1.4"></circle><circle cx="15" cy="19" r="1.4"></circle>
             </svg>
           </button>
+          <span class="step3-card-status ${isCurrentGenerating ? 'is-current-generating' : ''} ${isQueued ? 'is-queued' : ''} ${isGenerating ? 'is-generating' : ''}" style="color: ${img.exists || isGenerating ? 'var(--ink-color)' : '#888'}; background: ${isCurrentGenerating ? 'var(--color-primary-base)' : (isQueued ? 'var(--secondary-color)' : (img.exists && provenanceReady ? 'var(--success-color)' : '#f3f4f6'))}; ${isCurrentGenerating ? 'color: #fff;' : ''}">
+            ${isCurrentGenerating ? '生成中' : (isQueued ? '排队中' : (img.exists ? (provenanceReady ? '已就绪' : '来源待更新') : '待生成'))}
+          </span>
         </div>
         <div class="step3-card-actions">
+          <button class="danger step3-card-action step3-delete-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>删除</button>
           <label class="btn secondary step3-card-action step3-upload-action ${isBusy ? 'is-disabled' : ''}">
             ${isUploading ? '上传中' : '上传'}
             <input class="step3-upload-input" data-slide-id="${escHtml(img.slide_id)}" type="file" accept="image/*" ${isBusy ? 'disabled' : ''} style="display: none;">
@@ -321,10 +322,6 @@ function renderStep3Grid() {
       <div class="img-preview-container" style="width: 100%; aspect-ratio: ${(typeof getProjectCanvasGeometry === 'function' ? getProjectCanvasGeometry().aspectRatio : '16 / 9')}; position: relative; border: 2px solid var(--ink-color); border-radius: 6px; overflow: hidden; background: #fffdf5;">
         ${previewHtml}
       </div>
-      ${img.exists ? `<div class="step3-card-utilities">
-        <button class="secondary step3-card-action step3-reuse-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>复用旧标注</button>
-        <button class="danger step3-card-action step3-delete-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>删除</button>
-      </div>` : ''}
     `;
     const dragHandle = card.querySelector('.slide-drag-handle');
     card.querySelector('.step3-ai-action')?.addEventListener('click', (event) => {
@@ -337,10 +334,6 @@ function renderStep3Grid() {
     card.querySelector('.step3-delete-action')?.addEventListener('click', (event) => {
       event.stopPropagation();
       deleteStep3Image(img.slide_id);
-    });
-    card.querySelector('.step3-reuse-action')?.addEventListener('click', (event) => {
-      event.stopPropagation();
-      openStep3GeometryReuse(img.slide_id);
     });
     dragHandle.addEventListener('click', (e) => e.stopPropagation());
     dragHandle.addEventListener('dragstart', (e) => {
@@ -529,95 +522,6 @@ async function deleteStep3Image(slideId) {
 }
 
 window.deleteStep3Image = deleteStep3Image;
-
-async function openStep3GeometryReuse(slideId) {
-  const projectId = state.currentProject.id;
-  const base = `/api/projects/${projectId}/steps/3/images/${encodeURIComponent(slideId)}`;
-  const recovery = await API.get(`${base}/recovery`);
-  const available = (recovery.items || []).filter(item => item.mask_groups || item.annotation_items);
-  if (!available.length) {
-    showToast('该页没有可复用的 Mask 或勾画归档');
-    return;
-  }
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay ws-draft-modal';
-  modal.style.display = 'flex';
-  modal.setAttribute('role', 'dialog');
-  modal.setAttribute('aria-modal', 'true');
-  const content = document.createElement('div');
-  content.className = 'modal-content';
-  content.style.cssText = 'width:min(800px,calc(100vw - 32px));max-height:90vh;overflow:auto;padding:28px';
-  const heading = document.createElement('h3');
-  heading.textContent = `${slideId} 复用旧 Mask／勾画`;
-  content.appendChild(heading);
-  const guidance = document.createElement('p');
-  guidance.textContent = '橙色是旧 Mask，蓝色是旧勾画区域。请检查它们在当前图片上的位置；恢复后仍需在相应步骤确认。';
-  content.appendChild(guidance);
-  const select = document.createElement('select');
-  available.forEach(item => {
-    const option = document.createElement('option');
-    option.value = item.archive_id;
-    option.textContent = `${item.created_at || item.archive_id} · Mask ${item.mask_groups} 组 · 勾画 ${item.annotation_items} 项`;
-    select.appendChild(option);
-  });
-  content.appendChild(select);
-  const overlay = document.createElement('img');
-  overlay.alt = '旧 Mask 与勾画叠加在当前图片上的预览';
-  overlay.style.cssText = 'display:block;max-width:100%;max-height:50vh;margin:16px auto;border:1px solid #ccc';
-  const refreshOverlay = () => {
-    overlay.src = `${base}/recovery/${encodeURIComponent(select.value)}/overlay`;
-    const selected = available.find(item => item.archive_id === select.value);
-    maskChoice.disabled = !selected?.mask_groups;
-    annotationChoice.disabled = !selected?.annotation_items;
-    maskChoice.checked = !!selected?.mask_groups;
-    annotationChoice.checked = !!selected?.annotation_items;
-  };
-  content.appendChild(overlay);
-  const maskLabel = document.createElement('label');
-  const maskChoice = document.createElement('input');
-  maskChoice.type = 'checkbox';
-  maskLabel.append(maskChoice, document.createTextNode(' 复用 Mask 草稿'));
-  const annotationLabel = document.createElement('label');
-  const annotationChoice = document.createElement('input');
-  annotationChoice.type = 'checkbox';
-  annotationLabel.append(annotationChoice, document.createTextNode(' 复用勾画草稿'));
-  const options = document.createElement('div');
-  options.style.cssText = 'display:flex;gap:24px;margin:12px 0';
-  options.append(maskLabel, annotationLabel);
-  content.appendChild(options);
-  const actions = document.createElement('div');
-  actions.style.cssText = 'display:flex;gap:12px;justify-content:flex-end';
-  const cancel = document.createElement('button');
-  cancel.className = 'secondary';
-  cancel.textContent = '取消';
-  cancel.addEventListener('click', () => modal.remove());
-  const apply = document.createElement('button');
-  apply.className = 'success';
-  apply.textContent = '恢复所选草稿';
-  apply.addEventListener('click', async () => {
-    apply.disabled = true;
-    try {
-      await API.post(`${base}/reuse-geometry`, {
-        archive_id: select.value,
-        expected_version: recovery.version,
-        reuse_mask: maskChoice.checked,
-        reuse_annotations: annotationChoice.checked,
-      });
-      modal.remove();
-      await refreshCurrentProjectStatus(3);
-      showToast('旧几何已恢复为草稿，请到 Mask／勾画步骤检查并确认。');
-    } finally {
-      apply.disabled = false;
-    }
-  });
-  actions.append(cancel, apply);
-  content.appendChild(actions);
-  modal.appendChild(content);
-  document.body.appendChild(modal);
-  select.addEventListener('change', refreshOverlay);
-  refreshOverlay();
-  select.focus();
-}
 
 async function deleteAllStep3Images() {
   if (step3UploadingSlides.size > 0 || step3GeneratingSlides.size > 0) {

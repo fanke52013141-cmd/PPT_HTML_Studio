@@ -279,7 +279,8 @@ def test_step3_actions_use_the_current_card_action_layout():
     images = (ROOT / "static" / "images.js").read_text(encoding="utf-8")
     css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
     assert 'class="step3-card-actions"' in images
-    assert 'class="step3-card-utilities"' in images
+    assert 'step3-delete-action' in images
+    assert 'step3-card-utilities' not in images
     assert '.step3-card-actions' in css
     assert "#step3-btn-batch-generate," in css
     assert ".step3-ai-action," in css

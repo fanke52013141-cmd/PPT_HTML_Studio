@@ -559,21 +559,6 @@ textarea.step2-soft-input:focus {
   transform-origin: 50% 50%;
 }
 
-.step5-zoom-indicator {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  z-index: 4;
-  min-width: 54px;
-  padding: 0.2rem 0.45rem;
-  border: 1.5px solid var(--ink-color);
-  border-radius: 999px;
-  background: rgba(255, 253, 247, 0.88);
-  font-size: 0.76rem;
-  font-weight: 800;
-  text-align: center;
-  pointer-events: none;
-}
 
 .canvas-wrapper img {
   position: absolute;
@@ -11073,14 +11058,6 @@ body:not(.workspace-open) .account-picker::before {
 #step6-btn-init {
   border-radius: 999px !important;
 }
-#step6-btn-audio-confirm-next {
-  border-radius: 8px !important;
-  border: 0 !important;
-  background: #f1f5f9 !important;
-  color: #334155 !important;
-  box-shadow: none !important;
-}
-#step6-btn-audio-confirm-next:hover { background: #e2e8f0 !important; }
 #step6-btn-audio-confirm-next:disabled {
   opacity: .55;
 }

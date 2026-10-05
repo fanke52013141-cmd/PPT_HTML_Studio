@@ -376,3 +376,123 @@ body.workspace-open #step-panel-8 .step8-pptx-list {
 }
 .generation-control { display: flex; align-items: center; gap: 12px; }
 .generation-control[hidden] { display: none !important; }
+
+/* ============================================================
+   验收修正层（2026-10-06）：间距与样式统一
+   ============================================================ */
+
+/* 图4 AI Mask 右栏：高度随内容收缩，确认按钮紧随列表，上下间距一致。 */
+body.workspace-open #step-panel-5 .workspace-right {
+  height: auto !important;
+  max-height: calc(100vh - 176px) !important;
+  min-height: 0 !important;
+}
+body.workspace-open #step-panel-5 #step5-boxes-list {
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+body.workspace-open #step-panel-5 .workspace-right > :last-child {
+  margin-top: 12px !important;
+  padding-top: 0 !important;
+  border-top: 0 !important;
+}
+
+/* 图5 旁白与音频：卡片紧凑化，页头行与旁白、音频区间距收紧。 */
+body.workspace-open #step-panel-6 .step6-slide-row {
+  padding: 14px 16px !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-row-head {
+  min-height: 26px;
+  margin: 0 0 10px !important;
+  gap: 8px !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-row-head h3 {
+  display: inline-flex;
+  align-items: center;
+  line-height: 26px !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 26px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  background: #f1f5f9 !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+body.workspace-open #step-panel-6 .step6-generate-slide {
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-beats {
+  gap: 6px !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-audio {
+  margin-top: 10px !important;
+  padding-top: 10px !important;
+}
+body.workspace-open #step-panel-6 .step7-audio-missing {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  border-radius: 8px !important;
+}
+
+/* 图6 勾画标注：页签条去掉容器背景，与分镜规划的页签行一致。 */
+body.workspace-open #step-panel-10 .annotation-thumb-strip {
+  gap: 8px !important;
+  margin: 0 0 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 图6 勾画标注：启用开关改为数字人讲解同款滑块开关。 */
+body.workspace-open #step-panel-10 .annotation-enable-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  color: #1d1d1f !important;
+  user-select: none !important;
+}
+body.workspace-open #step-panel-10 .annotation-enable-toggle input[type="checkbox"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.annotation-switch-slider {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  background: #c4c7cc;
+  border-radius: 22px;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+.annotation-switch-slider::before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+body.workspace-open #step-panel-10 .annotation-enable-toggle input:checked + .annotation-switch-slider {
+  background: var(--ws-orange, #ee5d36) !important;
+}
+body.workspace-open #step-panel-10 .annotation-enable-toggle input:checked + .annotation-switch-slider::before {
+  transform: translateX(20px) !important;
+}

@@ -394,8 +394,6 @@ function applyMaskCanvasZoom(canvas = document.getElementById('step5-canvas')) {
     el.style.transform = '';
     el.style.transformOrigin = '';
   });
-  const indicator = document.getElementById('step5-zoom-indicator');
-  if (indicator) indicator.innerText = `${Math.round(zoom * 100)}%`;
 }
 
 function handleMaskCanvasWheel(e, canvas) {

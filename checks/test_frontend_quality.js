@@ -108,7 +108,8 @@ if (!stitchCss.includes('left: 50% !important') || !stitchCss.includes('transfor
   throw new Error('global notices must be centered');
 }
 if (/\.toast\s*\{[^}]*position:\s*fixed/s.test(css)) throw new Error('individual toasts still overlap at a fixed position');
-if (!images.includes('step3-card-utilities') || !stitchCss.includes('.step3-image-card .step3-card-actions')) {
+if (!images.includes('step3-card-actions') || !images.includes('step3-delete-action')
+    || !stitchCss.includes('.step3-image-card .step3-card-actions')) {
   throw new Error('image card actions must separate primary and secondary controls');
 }
 if (!/\.step3-image-card \.step3-card-actions\s*\{[^}]*display:\s*flex\s*!important/s.test(stitchCss)) {
