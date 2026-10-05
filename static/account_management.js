@@ -341,7 +341,10 @@ function editCurrentCreativeAccount() {
   const dialog = ensureAccountDialog();
   _editingAccountId = current.id;
   const title = dialog.querySelector('#account-create-title');
-  if (title) title.hidden = true;
+  if (title) {
+    title.textContent = '修改创作账号';
+    title.hidden = false;
+  }
   dialog.querySelector('[data-account-submit]').textContent = '保存修改';
   dialog.style.display = 'flex';
   const input = document.getElementById('account-create-name');

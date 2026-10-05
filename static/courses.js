@@ -470,9 +470,11 @@ const CourseTree = (() => {
         if (open !== menu) open.classList.remove('is-open');
       });
       menu.classList.add('is-open');
+      menuOpenedAt = Date.now();
     };
     const closeMenu = () => menu.classList.remove('is-open');
     let closeTimer = null;
+    let menuOpenedAt = 0;
     const cancelClose = () => {
       if (closeTimer) window.clearTimeout(closeTimer);
       closeTimer = null;
@@ -486,7 +488,13 @@ const CourseTree = (() => {
     more.addEventListener('mouseleave', scheduleClose);
     more.addEventListener('click', (event) => {
       event.stopPropagation();
-      if (menu.classList.contains('is-open')) closeMenu(); else openMenu();
+      cancelClose();
+      // 悬停刚展开菜单后的首次点击视为"确认展开"，避免菜单闪断（UI 审查 2026-10-06）。
+      if (menu.classList.contains('is-open') && Date.now() - menuOpenedAt > 400) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
     });
     menu.addEventListener('mouseenter', cancelClose);
     menu.addEventListener('mouseleave', closeMenu);
@@ -508,6 +516,8 @@ const CourseTree = (() => {
 
     const progressRow = document.createElement('div');
     progressRow.className = 'home-library-video-progress-row stitch-video-progress-row';
+    // 数字人为可选步骤，不计入 7 段进度（UI 审查 2026-10-06：给 7/8 差异一个解释入口）。
+    progressRow.title = '共 7 个必做步骤；数字人讲解为可选步骤，不计入进度';
     const progressLabel = document.createElement('span');
     progressLabel.textContent = '进度';
     const progressValue = document.createElement('span');

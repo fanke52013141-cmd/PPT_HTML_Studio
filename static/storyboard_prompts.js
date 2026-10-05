@@ -18,7 +18,7 @@ async function openStoryboardRulesModal(mode = 'script') {
 }
 
 function step2PromptModeLabel(mode = state.activeStep2PromptMode) {
-  return mode === 'visual' ? '可视化' : '演讲稿 prompt';
+  return mode === 'visual' ? '可视化 Prompt' : '演讲稿 Prompt';
 }
 
 function composeStep2FullPrompt(systemContent, outputExample) {
@@ -105,7 +105,7 @@ function renderStep2PromptTemplateOptions(selectedId = state.selectedStep2Prompt
   if (!select) return;
   const templates = (state.step2PromptTemplates || []).filter(template => template.prompt_type === mode);
   select.innerHTML = [
-    `<option value="">当前 ${escHtml(step2PromptModeLabel(mode))} Prompt</option>`,
+    `<option value="">当前 ${escHtml(step2PromptModeLabel(mode))}</option>`,
     ...templates.map(template =>
       `<option value="${escHtml(template.id)}">${escHtml(template.name)}${template.built_in ? ' · 内置' : ''}</option>`
     ),

@@ -52,6 +52,7 @@
     idle: '未开始',
     running: '进行中',
     completed: '已完成',
+    done: '已完成',
     failed: '需要处理',
     paused: '已暂停',
     cancelled: '已取消',

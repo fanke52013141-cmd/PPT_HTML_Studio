@@ -37,6 +37,31 @@ function initGlobalEvents() {
     const helpButton = event.target.closest('[data-prompt-help]');
     if (helpButton) openPromptIOHelp(helpButton.dataset.promptHelp);
   });
+  // 弹窗统一右上角 × 关闭（UI 审查 2026-10-06）：只隐藏弹层，不改动各弹窗自己的关闭函数。
+  document.addEventListener('click', event => {
+    const closeButton = event.target.closest('[data-modal-close]');
+    if (!closeButton) return;
+    const overlay = closeButton.closest('.modal-overlay');
+    if (overlay) overlay.style.display = 'none';
+  });
+  // 项目画像向导会在运行时重写 #modal-create 的弹窗体，用观察器保证 × 常驻。
+  const createModal = document.getElementById('modal-create');
+  if (createModal) {
+    const ensureCornerClose = () => {
+      const content = createModal.querySelector('.modal-content');
+      if (content && !content.querySelector('[data-modal-close]')) {
+        const cornerClose = document.createElement('button');
+        cornerClose.type = 'button';
+        cornerClose.className = 'modal-corner-close';
+        cornerClose.setAttribute('data-modal-close', '');
+        cornerClose.setAttribute('aria-label', '关闭');
+        cornerClose.textContent = '×';
+        content.appendChild(cornerClose);
+      }
+    };
+    ensureCornerClose();
+    new MutationObserver(ensureCornerClose).observe(createModal, { childList: true, subtree: true });
+  }
 
   // 顶栏按钮
   document.getElementById('btn-open-settings')?.addEventListener('click', () => openSettingsModal());

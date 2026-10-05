@@ -5490,7 +5490,7 @@ body.workspace-open .workflow-toolbar .control-hint {
 #modal-style-reference-manager .style-ref-header {
   flex: 0 0 auto !important;
   border-bottom: 1px solid #e2e8f0 !important;
-  padding-bottom: 4px !important;
+  padding-bottom: 12px !important;
 }
 #modal-style-reference-manager .style-ref-header .prompt-title-row {
   border-bottom: 0 !important;
@@ -6328,4 +6328,38 @@ body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity .step3-
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
+}
+
+/* -----------------------------------------------------------------------
+ * 弹窗统一规范层（UI 审查 2026-10-06，docs/ui-audit-2026-10-06.md §3）
+ * 右上角 × 关闭按钮：data-modal-close，绝对定位于 .modal-content 右上角，
+ * 复用 .icon-button 的圆形外观语言；仅作用于无标题行的简单弹窗。
+ * -------------------------------------------------------------------- */
+.modal-content .modal-corner-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink-color, #1e1d22);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+  flex: 0 0 auto;
+}
+.modal-content .modal-corner-close:hover {
+  background: #f1f5f9;
+}
+/* 标题行弹窗的 × 与帮助按钮保持一致间距。 */
+.prompt-title-row .icon-button[data-modal-close] {
+  margin-left: 2px;
+  flex: 0 0 auto;
 }

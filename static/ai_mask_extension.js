@@ -116,7 +116,7 @@
     ensureReviewPanel();
     ensurePreviewControls();
     if (document.getElementById('step5-btn-ai-mask')) return;
-    const settings = button('step5-btn-ai-mask-settings', 'AI 标注设置', 'secondary');
+    const settings = button('step5-btn-ai-mask-settings', 'AI 标注参数', 'secondary');
     const run = button('step5-btn-ai-mask', '运行 AI 标注', 'secondary');
     const anchor = document.getElementById('step5-btn-fullscreen');
     toolbar.insertBefore(settings, anchor || null);

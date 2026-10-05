@@ -937,7 +937,7 @@ if (!styleManager.includes('window.refreshStep3Prompts')) {
 for (const token of ['step1-mode-article', 'step1-mode-topic', 'step1-btn-generate-article', 'step1-btn-system-content']) {
   if (!html.includes(token)) throw new Error(`Step 1 dual-mode UI missing: ${token}`);
 }
-for (const label of ['演讲稿 prompt', '可视化']) {
+for (const label of ['演讲稿 Prompt', '可视化 Prompt']) {
   if (!html.includes(label)) throw new Error(`Step 2 button label missing: ${label}`);
 }
 if (!maskWorkspace.includes("rle.encoding === 'row_runs_v1'") || !maskEditor.includes('exactRuns.forEach')) {

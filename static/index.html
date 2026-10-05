@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20261006.1">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20261006.1">
+  <link rel="stylesheet" href="stitch.css?v=20261006.2">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
   <link rel="stylesheet" href="workspace_content.css?v=20261006.1">
@@ -250,7 +250,7 @@
                 </button>
                 <span id="step2-autosave-status" class="step2-autosave-status"></span>
               </div>
-              <button class="btn-next-step success ws-primary" id="step2-btn-next" style="display: none;">
+              <button class="btn-next-step success ws-primary" id="step2-btn-next" style="display: none;" title="完成每页演讲稿与画面可视化后，可进入图片生成">
                 进入图片生成
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
@@ -429,8 +429,8 @@
                 <div class="loading-spinner"></div>
                 <span id="step7-loading-text">音频合成中...</span>
               </div>
-              <button id="step6-btn-init" class="secondary">
-                同步
+              <button id="step6-btn-init" class="secondary" title="按最新分镜与画面同步旁白内容">
+                同步旁白
               </button>
               <button id="step6-btn-ai-annotate" class="success compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
               <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button">AI 标注 Prompt</button>
@@ -733,6 +733,7 @@
   <!-- Modal: 新建项目 -->
   <div id="modal-create" class="modal-overlay" style="display: none;">
     <div class="modal-content">
+      <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
       <h3 class="highlight-title" style="margin-bottom: 1.2rem;">新建视频项目</h3>
       <div style="margin-bottom: 1rem;">
         <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">项目名称:</label>
@@ -783,6 +784,7 @@
   <!-- Modal: 修改视频项目设定 -->
   <div id="modal-edit-project" class="modal-overlay" style="display: none;">
     <div class="modal-content">
+      <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
       <h3 class="highlight-title" style="margin-bottom: 1.2rem;">修改视频设定</h3>
       <input type="hidden" id="edit-project-id">
       <div style="margin-bottom: 1rem;">
@@ -1367,7 +1369,7 @@
 
   <!-- Modal: 手绘风确认对话框 -->
   <div id="modal-confirm" class="modal-overlay" style="display: none;">
-    <div class="modal-content" style="max-width: 420px; text-align: center;">
+    <div class="modal-content" style="max-width: 420px;">
       <h3 class="highlight-title" id="confirm-title" style="margin-bottom: 1.2rem;">操作确认</h3>
       <p id="confirm-message" style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #333; line-height: 1.5;"></p>
       <div style="display: flex; justify-content: flex-end; gap: 10px;">
@@ -1427,6 +1429,7 @@
         <div class="prompt-title-row">
           <h3 id="step3-prompt-settings-title" class="highlight-title">图片生成 Prompt</h3>
           <button class="prompt-help-button" type="button" data-prompt-help="step3-image" aria-label="查看图片生成 Prompt 的输入输出示例">?</button>
+          <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
         </div>
         <p class="config-editor-note">这里只编辑内容表达与构图方法。画布、标题区、正文区、字幕安全区和白底规则由服务端固定，不能被项目 Prompt 或风格模板覆盖。</p>
         <label class="storyboard-config-field storyboard-rule-field">
@@ -1460,6 +1463,7 @@
       <div class="config-editor-scroll">
         <div class="prompt-title-row">
           <h3 id="ip-character-title" class="highlight-title">IP 形象管理</h3>
+          <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
         </div>
         <p class="config-editor-note">为当前项目配置 IP 形象角色（最多 2 个）。生图时以 <strong>上传的参考图</strong> 作为主要载体，文字描述采用固定指引「参考我上传的人物 IP 图」。</p>
 
@@ -1519,6 +1523,7 @@
 
   <div id="modal-step2-generate" class="modal-overlay" style="display: none;">
     <div class="modal-content ai-generation-modal">
+      <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
       <h3 class="highlight-title">生成演讲稿</h3>
       <label class="ai-requirement-field">
         <span>本次补充需求（可选）</span>
@@ -1533,6 +1538,7 @@
 
   <div id="modal-step2-batch-import" class="modal-overlay" style="display: none;">
     <div class="modal-content step2-batch-import-modal">
+      <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
       <h3 class="highlight-title">批量导入分镜</h3>
       <p class="config-editor-note">手动模式专用。下载模板 → 按格式填写 → 上传 txt 文件。文件内容是 JSON 数组：每项含 main_title 与 segments（每段含 screen_text 画面文字、speech_segment 对应演讲片段）；也兼容旧的 main_title + narration 简式。</p>
       <div class="step2-batch-import-actions">
@@ -1561,6 +1567,7 @@
         <div class="prompt-title-row">
           <h3 class="highlight-title">旁白 AI 标注 Prompt</h3>
           <button class="prompt-help-button" type="button" data-prompt-help="narration-annotation" aria-label="查看旁白 AI 标注的输入输出示例">?</button>
+          <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
         </div>
         <p class="config-editor-note">用于为第 5 步旁白添加 MiniMax 停顿与轻量语气标记。展示结构与分镜规划 Prompt 一致，修改后会应用到后续所有 AI 标注。</p>
         <label class="storyboard-config-field storyboard-rule-field">
@@ -1587,8 +1594,9 @@
     <div class="modal-content config-editor-modal">
       <div class="config-editor-scroll">
         <div class="prompt-title-row">
-          <h3 id="storyboard-prompt-modal-title" class="highlight-title">演讲稿 prompt</h3>
+          <h3 id="storyboard-prompt-modal-title" class="highlight-title">演讲稿 Prompt</h3>
           <button id="step2-prompt-help" class="prompt-help-button" type="button" data-prompt-help="step2-script" aria-label="查看当前 Prompt 的输入输出示例">?</button>
+          <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
         </div>
         <div class="template-manager-bar step2-prompt-template-bar">
           <label aria-label="Prompt 模板">
@@ -1600,7 +1608,7 @@
         </div>
         <div id="step2-prompt-template-create-panel" class="step2-prompt-create-panel" style="display:none;">
           <div class="step2-prompt-create-copy">
-            <strong>新建 <span id="step2-prompt-create-mode-label">演讲稿 prompt</span> 模板</strong>
+            <strong>新建 <span id="step2-prompt-create-mode-label">演讲稿 Prompt</span> 模板</strong>
             <span>填写模板名称，并在下方定义 System Content 与 Output Example。</span>
           </div>
           <label class="template-name-field">
@@ -1612,15 +1620,15 @@
         </div>
         <div id="step2-script-prompt-section">
           <label class="storyboard-config-field storyboard-rule-field">
-            <span>演讲稿 prompt · System Content</span>
+            <span>演讲稿 Prompt · System Content</span>
             <textarea id="step2-script-system-prompt" rows="10" spellcheck="false"></textarea>
           </label>
           <label class="storyboard-config-field storyboard-rule-field">
-            <span>演讲稿 prompt · Output Example</span>
+            <span>演讲稿 Prompt · Output Example</span>
             <textarea id="step2-script-output-example" rows="10" spellcheck="false"></textarea>
           </label>
           <label class="storyboard-config-field storyboard-rule-field">
-            <span>演讲稿 prompt · 完整提示词（可直接复制）</span>
+            <span>演讲稿 Prompt · 完整提示词（可直接复制）</span>
             <textarea id="step2-script-full-prompt" rows="16" readonly spellcheck="false"></textarea>
           </label>
         </div>
@@ -1768,15 +1776,15 @@
   <script src="ui_foundation.js?v=20261005.1"></script>
   <script src="api_client.js?v=20261005.1"></script>
   <script src="artifact_repair.js?v=20261005.1"></script>
-  <script src="prompt_help.js?v=20260929.1"></script>
+  <script src="prompt_help.js?v=20261006.2"></script>
   <script src="settings.js?v=20260928.1"></script>
   <script src="projects.js?v=20260916.1"></script>
   <script src="creation_config_management.js?v=20261005.2"></script>
   <script src="select_menus.js?v=20260906.1"></script>
-  <script src="courses.js?v=20260913.2"></script>
+  <script src="courses.js?v=20261006.2"></script>
   <script src="article.js?v=20260929.6"></script>
   <script src="storyboard.js?v=20261005.3"></script>
-  <script src="storyboard_prompts.js?v=20261005.2"></script>
+  <script src="storyboard_prompts.js?v=20261006.2"></script>
   <script src="images.js?v=20261006.1"></script>
   <script src="image_prompts.js?v=20260801.1"></script>
   <script src="ip_character_manager.js?v=20261005.1"></script>
@@ -1790,16 +1798,16 @@
   <script src="annotations_workspace.js?v=20260928.1"></script>
   <script src="annotations_editor.js?v=20260928.1"></script>
   <script src="output_render.js?v=20261006.1"></script>
-  <script src="account_management.js?v=20260916.1"></script>
+  <script src="account_management.js?v=20261006.2"></script>
   <script src="workspace_navigation.js?v=20261005.2"></script>
   <script src="generation_controls.js?v=20261005.1"></script>
-  <script src="event_bindings.js?v=20261006.1"></script>
+  <script src="event_bindings.js?v=20261006.3"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>
   <script src="storyboard_background_extension.js?v=20261005.2"></script>
   <script src="style_reference_manager_extension.js?v=20261005.1"></script>
   <script src="ai_mask_auto_state.js?v=20260809.1"></script>
   <script src="digital_human_panel.js?v=20260928.1"></script>
-  <script src="ai_mask_extension.js?v=20261005.1"></script>
-  <script src="one_click_extension.js?v=20261005.2"></script>
+  <script src="ai_mask_extension.js?v=20261006.2"></script>
+  <script src="one_click_extension.js?v=20261006.2"></script>
 </body>
 </html>
