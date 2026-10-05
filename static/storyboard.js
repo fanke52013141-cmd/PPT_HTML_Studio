@@ -1077,7 +1077,6 @@ async function copyStep2Prompts() {
 
 function updateStep2BatchDeleteButton() {
   const btn = document.getElementById('step2-btn-save');
-  const cancelBtn = document.getElementById('step2-btn-cancel-delete');
   if (!btn) return;
   if (state.step2BatchDeleteMode) {
     btn.className = 'success';
@@ -1085,14 +1084,12 @@ function updateStep2BatchDeleteButton() {
       <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
       保存
     `;
-    if (cancelBtn) cancelBtn.style.display = 'inline-flex';
   } else {
     btn.className = 'secondary';
     btn.innerHTML = `
       <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg>
       批量删除
     `;
-    if (cancelBtn) cancelBtn.style.display = 'none';
   }
 }
 
@@ -1180,7 +1177,9 @@ async function saveStep2BatchDelete() {
     );
   });
   if (!confirmed) {
-    showToast('已取消删除，仍停留在批量删除模式。', 3000);
+    // 「退出批量删除」按钮已移除：确认弹窗点取消即恢复原状并退出，避免停留在一个没有出口的模式。
+    exitStep2BatchDelete();
+    showToast('已取消删除，分镜列表已恢复。');
     return;
   }
   const saved = scriptOnly
@@ -1195,7 +1194,7 @@ async function saveStep2BatchDelete() {
   showToast(`已删除 ${removedCount} 个分镜，并保存当前规划。`);
 }
 
-function cancelStep2BatchDelete() {
+function exitStep2BatchDelete() {
   if (!state.step2BatchDeleteMode) return;
   if (Array.isArray(state.step2BatchOriginalSlides)) {
     state.slides = JSON.parse(JSON.stringify(state.step2BatchOriginalSlides));
@@ -1211,7 +1210,6 @@ function cancelStep2BatchDelete() {
   state.step2BatchOriginalSlides = null;
   state.step2BatchOriginalScriptPlan = null;
   renderStep2Workspace();
-  showToast('已取消批量删除，分镜列表已恢复。');
 }
 
 function updateStep2AutosaveStatus(text) {
