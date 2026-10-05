@@ -364,10 +364,10 @@ for (const defaultConfigToken of [
 }
 for (const packageManagementToken of [
   "item.className = 'creation-config-package-card'",
-  "button('编辑', 'secondary'",
-  "button('复制', 'secondary'",
-  "button('删除', 'danger'",
-  'grid-template-columns: repeat(4, minmax(0, 1fr))',
+  "iconActionButton('edit', '编辑'",
+  "iconActionButton('copy', '复制'",
+  "iconActionButton('delete', '删除', 'danger'",
+  'cc-icon-action',
 ]) {
   if (!creationConfigManagement.includes(packageManagementToken) && !css.includes(packageManagementToken)) {
     throw new Error(`configuration management compact package list is missing: ${packageManagementToken}`);

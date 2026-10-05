@@ -202,8 +202,13 @@
     modal.style.display = 'none';
     modal.innerHTML = `
       <div class="modal-content one-click-modal">
-        <h3 class="highlight-title">一键生成视频</h3>
+        <div class="prompt-title-row">
+          <h3 class="highlight-title">一键生成视频</h3>
+          <button id="btn-one-click-close-icon" class="icon-button" type="button" aria-label="关闭">×</button>
+        </div>
         <p class="one-click-note"><strong>一键生成采用整页展示：</strong>从已导入文章开始，自动完成分镜、图片、旁白、语音与视频合成；不会运行 AI Mask 标注。失败时会保留阶段状态，重新运行时复用未过期产物。</p>
+        <div id="one-click-status" class="one-click-status-line">尚未读取状态。</div>
+        <div id="one-click-stages" class="one-click-stage-list"></div>
         <div class="one-click-toolbar">
           <button id="btn-one-click-start" class="success" type="button">智能继续</button>
           <button id="btn-one-click-restart" class="secondary" type="button">从头重跑</button>
@@ -211,8 +216,6 @@
           <button id="btn-one-click-refresh" class="secondary" type="button">刷新状态</button>
           <button id="btn-one-click-close" class="secondary" type="button">关闭</button>
         </div>
-        <div id="one-click-status" class="one-click-status-line">尚未读取状态。</div>
-        <div id="one-click-stages" class="one-click-stage-list"></div>
       </div>
     `;
     document.body.appendChild(modal);
@@ -220,6 +223,7 @@
       if (event.target === modal) closeModal();
     });
     document.getElementById('btn-one-click-close')?.addEventListener('click', closeModal);
+    document.getElementById('btn-one-click-close-icon')?.addEventListener('click', closeModal);
     document.getElementById('btn-one-click-refresh')?.addEventListener('click', () => refreshStatus().catch(error => toast(`刷新失败：${error.message}`, 6000)));
     document.getElementById('btn-one-click-start')?.addEventListener('click', () => startOneClick('resume').catch(error => toast(`启动失败：${error.message}`, 6000)));
     document.getElementById('btn-one-click-restart')?.addEventListener('click', () => startOneClick('restart').catch(error => toast(`启动失败：${error.message}`, 6000)));

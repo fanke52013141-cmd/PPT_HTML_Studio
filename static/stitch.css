@@ -5232,3 +5232,721 @@ body.workspace-open #step-panel-3 .slide-drag-handle svg {
 body.workspace-open #step-panel-3 .step3-card-identity {
   gap: 6px !important;
 }
+/* Rule A: ID-strength dark overrides — the two legacy orange rules above
+   carry ID specificity; matching selectors later in the cascade win. */
+body.workspace-open #step-panel-1 .step1-heading-actions #step1-btn-submit {
+  background: #17191d !important;
+  border-color: #17191d !important;
+  color: #ffffff !important;
+}
+body.workspace-open #step-panel-1 .step1-heading-actions #step1-btn-submit:hover {
+  background: #2c2e33 !important;
+  border-color: #2c2e33 !important;
+}
+#step8-btn-render {
+  background: #17191d !important;
+  border-color: #17191d !important;
+  color: #ffffff !important;
+}
+#step8-btn-render:hover {
+  background: #2c2e33 !important;
+  border-color: #2c2e33 !important;
+}
+
+/* Rule A: toolbar hints stay horizontal (they were squeezed into
+   one-character columns after the title bar became single-line). */
+body.workspace-open .workflow-toolbar .control-hint {
+  white-space: nowrap !important;
+  font-size: 12px !important;
+  color: #6e737c !important;
+  align-self: center !important;
+  flex: 0 0 auto !important;
+}
+/* Rule A: 批量生图 is a regular action, not a brand-orange primary. */
+#step3-btn-batch-generate {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #1d1d1f !important;
+}
+#step3-btn-batch-generate:hover:not(:disabled) {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ============================================================
+   Three-section modals + master-detail splits
+   (docs/ui-redesign-plan.md §2.2/§2.3/§4.2/§4.3, 方案一 approved).
+   Fixed header / fixed tab bar / single scroll body / fixed footer;
+   pure layout — no ids, bindings, or handlers touched.
+   ============================================================ */
+#modal-creation-config-management .modal-content,
+#modal-model-management .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: min(880px, calc(100vh - 48px)) !important;
+  overflow: hidden !important;
+}
+#modal-creation-config-management .config-editor-scroll,
+#modal-model-management .config-editor-scroll {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+#modal-creation-config-management .prompt-title-row,
+#modal-model-management .prompt-title-row {
+  flex: 0 0 auto !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+/* --- 创作配置：左包列表右编辑 --- */
+#modal-creation-config-management .creation-config-management-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+#modal-creation-config-management .cc-split-grid {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 16px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+#modal-creation-config-management .cc-aside {
+  flex: 0 0 280px !important;
+  width: 280px !important;
+  min-width: 0 !important;
+  overflow-y: auto !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding-right: 14px !important;
+}
+#modal-creation-config-management .cc-main {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+#modal-creation-config-management .creation-config-tabs {
+  flex: 0 0 auto !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+  background: #ffffff !important;
+  margin: 0 0 12px !important;
+}
+#modal-creation-config-management #creation-config-structured-editor {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+#modal-creation-config-management .creation-config-json-editor {
+  flex: 0 0 auto !important;
+}
+#modal-creation-config-management .creation-config-package-actions {
+  flex: 0 0 auto !important;
+  margin: 12px 0 0 !important;
+  padding: 14px 0 0 !important;
+  border-top: 1px solid #e2e8f0 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+/* --- 模型设置：左模型目录右编辑 --- */
+#modal-model-management .mm-split {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 16px !important;
+}
+#modal-model-management .model-library-section {
+  flex: 0 0 300px !important;
+  width: 300px !important;
+  min-width: 0 !important;
+  overflow-y: auto !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding-right: 14px !important;
+  margin: 0 !important;
+}
+#modal-model-management .model-setup-card {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-y: auto !important;
+  margin: 0 !important;
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+#modal-model-management .model-setup-actions {
+  flex: 0 0 auto !important;
+  margin: 12px 0 0 !important;
+  padding: 14px 0 0 !important;
+  border-top: 1px solid #e2e8f0 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+#modal-model-management .model-management-status,
+#modal-model-management #model-management-status {
+  flex: 0 0 auto !important;
+}
+/* Split layout: model cards become a single column inside the 300px rail. */
+#modal-model-management .model-library-list {
+  grid-template-columns: 1fr !important;
+}
+#modal-model-management .model-library-card {
+  max-width: none !important;
+}
+/* Split layout: package cards single-column inside the 280px rail. */
+#modal-creation-config-management .creation-config-package-grid,
+#modal-creation-config-management #creation-config-package-list {
+  grid-template-columns: 1fr !important;
+}
+#modal-creation-config-management .creation-config-package-card {
+  max-width: none !important;
+}
+
+/* ============================================================
+   §4.5 batch 3: three-section behavior for the config-editor modal
+   family via sticky header/footer — the existing whole-modal scroll
+   is kept, but the title row and action bar no longer scroll away.
+   Pure CSS; covers 系统设置 / 生图Prompt / 旁白Prompt / 批量导入 /
+   生成演讲稿 / 故事板规则 / System Content / IP 形象 / 一键生成等.
+   ============================================================ */
+.modal-content.config-editor-modal .prompt-title-row {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 6 !important;
+  background: #ffffff !important;
+  margin: 0 !important;
+  padding: 12px 18px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+.modal-content.config-editor-modal .config-editor-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 6 !important;
+  background: #ffffff !important;
+  margin: 0 !important;
+  padding: 12px 18px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  border-bottom: 0 !important;
+}
+/* Subtitle / animation preview modals: preview stays put, the control
+   column is the single scrollable region, footer fixed. */
+#modal-subtitle-settings .modal-content,
+#modal-animation-settings .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: min(820px, calc(100vh - 48px)) !important;
+  overflow: hidden !important;
+}
+#modal-subtitle-settings .subtitle-settings-header,
+#modal-animation-settings .subtitle-settings-header {
+  flex: 0 0 auto !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+#modal-subtitle-settings .subtitle-settings-layout,
+#modal-animation-settings .subtitle-settings-layout {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+#modal-subtitle-settings .subtitle-settings-controls,
+#modal-animation-settings .subtitle-settings-controls {
+  overflow-y: auto !important;
+  min-height: 0 !important;
+}
+#modal-subtitle-settings .config-editor-actions,
+#modal-animation-settings .config-editor-actions {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 12px 18px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  border-bottom: 0 !important;
+}
+
+/* One-click modal: three-section with the toolbar as fixed footer. */
+#modal-one-click-generate .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: min(760px, calc(100vh - 48px)) !important;
+  overflow: hidden !important;
+}
+#modal-one-click-generate .prompt-title-row {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 12px 18px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+#modal-one-click-generate .one-click-note,
+#modal-one-click-generate .one-click-status-line,
+#modal-one-click-generate .one-click-stage-list {
+  flex: 0 0 auto !important;
+}
+#modal-one-click-generate .one-click-stage-list {
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  margin-bottom: 8px !important;
+}
+#modal-one-click-generate .one-click-toolbar {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 12px 0 0 !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* ============================================================
+   §4.5 batch 3b: the five JS-injected modals join the
+   three-section standard. AI Mask 设置 and the two Prompt
+   viewers are already .config-editor-modal (covered by the
+   sticky rules above); the remaining two get explicit flex.
+   ============================================================ */
+/* 图片风格设置面板: header / tabs fixed, workbench scrolls, footer fixed. */
+#modal-style-reference-manager .modal-content.style-ref-modal {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: min(860px, calc(100vh - 48px)) !important;
+  overflow: hidden !important;
+}
+#modal-style-reference-manager .style-ref-header {
+  flex: 0 0 auto !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding-bottom: 4px !important;
+}
+#modal-style-reference-manager .style-ref-header .prompt-title-row {
+  border-bottom: 0 !important;
+}
+#modal-style-reference-manager .style-ref-tabs {
+  flex: 0 0 auto !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+#modal-style-reference-manager .style-ref-workbench {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+#modal-style-reference-manager .style-ref-footer {
+  flex: 0 0 auto !important;
+  border-top: 1px solid #e2e8f0 !important;
+  margin-top: 0 !important;
+}
+/* 最终视频背景设置: header fixed, two-column body scrolls, footer fixed. */
+#modal-storyboard-background .modal-content.storyboard-bg-modal {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: min(760px, calc(100vh - 48px)) !important;
+  overflow: hidden !important;
+}
+#modal-storyboard-background .storyboard-bg-header {
+  flex: 0 0 auto !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+#modal-storyboard-background .storyboard-bg-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+#modal-storyboard-background .storyboard-bg-footer {
+  flex: 0 0 auto !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* ============================================================
+   Split-modal fixes (验收反馈 2026-10-05):
+   1) 弹窗宽度回到 1280 档（旧 94vw/980 规则压制了内联宽度）
+   2) 右列自身滚动（JSON 展开不再溢出弹窗），Tab 吸顶
+   3) 三个网格改为自适应列宽（旧 5 列硬编码压出竖排字）
+   4) 左栏配置包改为紧凑行（不再是大卡片）
+   ============================================================ */
+#modal-creation-config-management .modal-content.config-editor-modal {
+  width: min(1280px, calc(100vw - 48px)) !important;
+  max-width: min(1280px, calc(100vw - 48px)) !important;
+}
+#modal-creation-config-management .config-editor-scroll {
+  max-width: none !important;
+  width: 100% !important;
+}
+#modal-creation-config-management .creation-config-management-body {
+  max-width: none !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+#modal-creation-config-management .cc-split-grid {
+  height: auto !important;
+  align-items: flex-start !important;
+}
+#modal-creation-config-management .cc-main {
+  display: block !important;
+  overflow-y: auto !important;
+  max-height: calc(100vh - 320px) !important;
+  min-height: 320px !important;
+  padding-right: 6px !important;
+}
+#modal-creation-config-management .creation-config-tabs {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 3 !important;
+  background: #ffffff !important;
+  margin: 0 0 14px !important;
+}
+#modal-creation-config-management #creation-config-structured-editor {
+  overflow: visible !important;
+  max-height: none !important;
+  flex: 0 0 auto !important;
+}
+/* 网格自适应：图片风格卡（竖排卡：缩略图在上文字在下）、字幕 10 字段、并发数字 */
+#modal-creation-config-management .creation-config-image-style-cards {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
+  gap: 10px !important;
+}
+#modal-creation-config-management .creation-config-image-style-card {
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  min-height: 0 !important;
+}
+#modal-creation-config-management .creation-config-image-style-thumb {
+  width: 100% !important;
+  aspect-ratio: 16 / 9 !important;
+}
+#modal-creation-config-management .creation-config-image-style-card > div:last-child,
+#modal-creation-config-management .creation-config-image-style-meta {
+  white-space: normal !important;
+  width: 100% !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid {
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)) !important;
+  gap: 10px !important;
+}
+#modal-creation-config-management .creation-config-subtitle-grid label {
+  min-height: 0 !important;
+}
+#modal-creation-config-management .creation-config-number-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+}
+/* 左栏配置包：紧凑行替代大卡片 */
+#modal-creation-config-management .creation-config-existing-packages {
+  margin: 0 0 12px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+#modal-creation-config-management .creation-config-package-grid,
+#modal-creation-config-management #creation-config-package-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+#modal-creation-config-management .creation-config-package-card {
+  display: block !important;
+  min-height: 0 !important;
+  padding: 10px 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-left: 3px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+}
+#modal-creation-config-management .creation-config-package-card:hover {
+  border-color: #ee5d36 !important;
+  border-left-color: #ee5d36 !important;
+}
+#modal-creation-config-management .creation-config-package-card.is-active,
+#modal-creation-config-management .creation-config-package-card.active {
+  background: #fff5f0 !important;
+  border-color: #ffd9cd !important;
+  border-left: 3px solid #ee5d36 !important;
+}
+#modal-creation-config-management .creation-config-package-card-heading {
+  min-height: 0 !important;
+  margin: 0 0 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+#modal-creation-config-management .creation-config-package-card-heading strong {
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  -webkit-line-clamp: unset !important;
+  display: inline !important;
+}
+#modal-creation-config-management .creation-config-package-card-actions {
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 6px !important;
+}
+#modal-creation-config-management .creation-config-package-card-actions button {
+  width: auto !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+  border-radius: 7px !important;
+}
+#modal-creation-config-management .cc-aside .creation-config-name-field {
+  margin-top: 4px !important;
+}
+
+/* ============================================================
+   Card refinement (验收反馈 2026-10-05b):
+   名称两行省略；编辑/复制/删除改为图标按钮固定在卡片右侧；
+   卡片更紧凑（标题区 + 图标列的横向布局）。
+   ============================================================ */
+#modal-model-management .model-library-card,
+#modal-creation-config-management .creation-config-package-card {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  padding: 9px 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+}
+#modal-creation-config-management .creation-config-package-card.is-active,
+#modal-creation-config-management .creation-config-package-card.active {
+  background: #fff5f0 !important;
+  border-color: #ffd9cd !important;
+}
+#modal-model-management .model-library-card-heading,
+#modal-creation-config-management .creation-config-package-card-heading {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: block !important;
+  margin: 0 !important;
+}
+#modal-model-management .model-library-card-heading strong {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.4 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1d1d1f !important;
+}
+/* 紧凑行卡：标题自然横排（-webkit-box 在 flex 行内会塌陷为 0 宽）。 */
+#modal-creation-config-management .creation-config-package-card-heading strong {
+  display: inline !important;
+  overflow: visible !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.4 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1d1d1f !important;
+}
+#modal-model-management .model-library-card-actions,
+#modal-creation-config-management .creation-config-package-card-actions {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 2px !important;
+  margin: 0 !important;
+}
+#modal-model-management .model-library-card-actions button,
+#modal-creation-config-management .creation-config-package-card-actions button {
+  width: 26px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid transparent !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: #5f6368 !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+#modal-model-management .model-library-card-actions button svg,
+#modal-creation-config-management .creation-config-package-card-actions button svg {
+  width: 14px !important;
+  height: 14px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+#modal-model-management .model-library-card-actions button:hover,
+#modal-creation-config-management .creation-config-package-card-actions button:hover {
+  background: #f1f3f5 !important;
+  color: #17191d !important;
+}
+#modal-model-management .model-library-card-actions button.danger,
+#modal-creation-config-management .creation-config-package-card-actions button.danger {
+  color: #a63d3d !important;
+}
+#modal-model-management .model-library-card-actions button.danger:hover,
+#modal-creation-config-management .creation-config-package-card-actions button.danger:hover {
+  background: #fdf0f0 !important;
+  color: #a63d3d !important;
+}
+#modal-creation-config-management .creation-config-package-card-heading {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 0 8px !important;
+}
+#modal-creation-config-management .creation-config-package-card-heading strong {
+  display: block !important;
+  width: 100% !important;
+}
+
+/* ============================================================
+   Final ruling: creation-config package card (compact row).
+   Highest-specificity chain overrides every legacy display rule
+   (-webkit-box / grid / flex-row variants above).
+   ============================================================ */
+#modal-creation-config-management #creation-config-package-list .creation-config-package-grid .creation-config-package-card {
+  display: block !important;
+  min-height: 0 !important;
+  padding: 10px 12px !important;
+}
+#modal-creation-config-management #creation-config-package-list .creation-config-package-grid .creation-config-package-card .creation-config-package-card-heading {
+  display: block !important;
+  width: auto !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  margin: 0 0 8px !important;
+}
+#modal-creation-config-management #creation-config-package-list .creation-config-package-grid .creation-config-package-card .creation-config-package-card-heading strong {
+  display: inline !important;
+  width: auto !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  -webkit-line-clamp: unset !important;
+  line-height: 1.4 !important;
+}
+#modal-creation-config-management #creation-config-package-list .creation-config-package-grid .creation-config-package-card .creation-config-package-card-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  width: auto !important;
+  grid-template-columns: none !important;
+  margin: 6px 0 0 !important;
+}
+#modal-creation-config-management #creation-config-package-list .creation-config-package-grid .creation-config-package-card .creation-config-package-card-actions button {
+  display: inline-flex !important;
+  width: auto !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 0 8px !important;
+}
+
+/* Rule A final: 风格卡缩略图恢复 16:9（旧层 height:38px 裁剪修正）。 */
+#modal-creation-config-management #creation-config-structured-editor .creation-config-image-style-thumb {
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+  width: 100% !important;
+}
+#modal-creation-config-management #creation-config-structured-editor .creation-config-image-style-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* ============================================================
+   模型设置验收修正（2026-10-05）：
+   1) 标题「模型设置」与内容框左缘对齐；
+   2) 去掉左栏无意义的横向滚动；
+   3) 模型名称恢复横排显示（-webkit-box 在窄栏塌陷导致消失）。
+   ============================================================ */
+#modal-model-management .prompt-title-row {
+  padding-left: 28px !important;
+  padding-right: 28px !important;
+}
+#modal-model-management .mm-split {
+  overflow: hidden !important;
+  min-width: 0 !important;
+}
+#modal-model-management .model-library-section {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-width: 0 !important;
+  padding-right: 14px !important;
+}
+#modal-model-management .model-library-list {
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+#modal-model-management .model-library-card {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 10px 12px !important;
+  overflow: hidden !important;
+}
+#modal-model-management .model-library-card-heading {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+#modal-model-management .model-library-card-heading strong {
+  display: inline !important;
+  overflow: visible !important;
+  -webkit-line-clamp: unset !important;
+  white-space: normal !important;
+  width: auto !important;
+  font-size: 13px !important;
+  color: #1d1d1f !important;
+}
+#modal-model-management .model-library-card-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex: 0 0 auto !important;
+  gap: 2px !important;
+  margin: 0 !important;
+}
+#modal-model-management .model-setup-card {
+  overflow-x: hidden !important;
+}
+
+/* 模型设置左栏：actions 图标钮固定宽，heading 占满剩余空间（终审）。 */
+#modal-model-management #modal-model-management .model-library-card .model-library-card-actions,
+#modal-model-management .model-library-card .model-library-card-actions {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: 96px !important;
+}
+#modal-model-management .model-library-card .model-library-card-actions button,
+#modal-model-management .model-library-card .model-library-card-actions button.cc-icon-action {
+  width: 26px !important;
+  min-width: 26px !important;
+  max-width: 26px !important;
+  flex: 0 0 auto !important;
+  padding: 0 !important;
+}
+#modal-model-management #modal-model-management .model-library-card .model-library-card-heading {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  max-width: none !important;
+}
+/* 模型设置：标题行与分栏框左缘精确对齐（与 scroll 同 34px）。 */
+#modal-model-management .prompt-title-row {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+#modal-model-management .prompt-title-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}

@@ -88,7 +88,7 @@
       <div class="modal-content storyboard-bg-modal" role="dialog" aria-modal="true" aria-labelledby="storyboard-bg-title">
         <header class="storyboard-bg-header">
           <h3 id="storyboard-bg-title" class="storyboard-bg-title"><span class="storyboard-bg-title-icon">▧</span>最终视频背景设置</h3>
-          <button id="btn-storyboard-bg-x" class="storyboard-bg-close" type="button"><span aria-hidden="true">×</span> 关闭</button>
+          <button id="btn-storyboard-bg-x" class="storyboard-bg-close" type="button" aria-label="关闭"><span aria-hidden="true">×</span></button>
         </header>
         <div class="storyboard-bg-body">
           <div class="storyboard-bg-column">

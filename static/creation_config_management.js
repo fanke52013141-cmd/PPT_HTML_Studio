@@ -102,6 +102,23 @@
     return control;
   }
 
+  const CARD_ACTION_ICONS = {
+    edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>',
+    copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+    delete: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>'
+  };
+
+  function iconActionButton(kind, label, tone, onClick) {
+    const control = document.createElement('button');
+    control.type = 'button';
+    control.className = 'cc-icon-action ' + (tone || '');
+    control.title = label;
+    control.setAttribute('aria-label', label);
+    control.innerHTML = CARD_ACTION_ICONS[kind] || '';
+    control.addEventListener('click', onClick);
+    return control;
+  }
+
   function objectValue(value) {
     return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   }
@@ -763,9 +780,9 @@
       const actions = document.createElement('div');
       actions.className = 'creation-config-package-card-actions';
       actions.append(
-        button('编辑', 'secondary', () => editPackage(packageItem)),
-        button('复制', 'secondary', () => copyPackage(packageItem)),
-        button('删除', 'danger', () => deletePackage(packageItem, { isDefault })),
+        iconActionButton('edit', '编辑', '', () => editPackage(packageItem)),
+        iconActionButton('copy', '复制', '', () => copyPackage(packageItem)),
+        iconActionButton('delete', '删除', 'danger', () => deletePackage(packageItem, { isDefault })),
       );
       item.append(heading, actions);
       return item;
@@ -819,9 +836,9 @@
       heading.append(title);
       const actions = document.createElement('div');
       actions.className = 'model-library-card-actions';
-      actions.append(button('编辑', 'secondary', () => editModelConnection(connection)));
-      actions.append(button('复制', 'secondary', () => duplicateModelConnection(connection)));
-      actions.append(button('删除', 'danger', () => deleteModelConnection(connection)));
+      actions.append(iconActionButton('edit', '编辑', '', () => editModelConnection(connection)));
+      actions.append(iconActionButton('copy', '复制', '', () => duplicateModelConnection(connection)));
+      actions.append(iconActionButton('delete', '删除', 'danger', () => deleteModelConnection(connection)));
       item.append(heading, actions);
       target.append(item);
     });

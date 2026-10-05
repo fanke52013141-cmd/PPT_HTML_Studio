@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20260929.1">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20260929.19">
+  <link rel="stylesheet" href="stitch.css?v=20261005.5">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
   <link rel="stylesheet" href="workspace_content.css?v=20261005.1">
@@ -159,9 +159,8 @@
             <div class="step1-heading-actions">
               <button id="step1-btn-system-content" class="secondary" type="button">内容创作prompt</button>
               <button id="step1-btn-save-edit" class="secondary" style="display:none;" type="button">保存修改</button>
-              <button class="success" type="button">
+              <button id="step1-btn-submit" class="success ws-primary" type="button">
                 分镜规划
-                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0-7 7m7-7H3"></path></svg>
               </button>
             </div>
           </div>
@@ -251,7 +250,7 @@
                 </button>
                 <span id="step2-autosave-status" class="step2-autosave-status"></span>
               </div>
-              <button class="btn-next-step success" id="step2-btn-next" style="display: none;">
+              <button class="btn-next-step success ws-primary" id="step2-btn-next" style="display: none;">
                 进入图片生成
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
@@ -336,7 +335,7 @@
               <button id="step3-btn-ip-character" class="secondary" type="button">
                 IP 形象
               </button>
-              <button class="success" style="display: none;">
+              <button id="step3-btn-confirm" class="success ws-primary" style="display: none;">
                 下一步
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
@@ -411,7 +410,7 @@
                 <!-- 标注盒子表单 -->
               </div>
               <div class="step5-confirm-footer">
-                <button class="btn-next-step success" style="width: 100%;">
+                <button id="step5-btn-confirm-next" class="btn-next-step success ws-primary" style="width: 100%;">
                   确认标注，进入下一步
                   <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </button>
@@ -437,7 +436,7 @@
               <button id="step6-btn-ai-annotate" class="success compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
               <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button">AI 标注 Prompt</button>
               <span id="step6-autosave-status" class="step6-autosave-status"></span>
-              <button id="step6-btn-save-and-tts" class="success step6-next-btn" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
+              <button id="step6-btn-save-and-tts" class="success step6-next-btn ws-primary" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
                 生成音频
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
@@ -473,7 +472,7 @@
                 </label>
                 <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
                 <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
-                <button class="success compact-action-btn" type="button">继续下一步</button>
+                <button id="step10-btn-next" class="success compact-action-btn ws-primary" type="button">继续下一步</button>
               </div>
             </div>
 
@@ -540,7 +539,7 @@
             <h2 class="highlight-title workflow-title">数字人讲解</h2>
             <div class="step9-header-actions workflow-toolbar">
               <span class="step9-optional-hint">可选步骤 · 不设置也能正常出片</span>
-              <button class="secondary compact-action-btn" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出</button>
+              <button id="step9-btn-skip" class="secondary compact-action-btn ws-primary" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出</button>
             </div>
           </div>
                     <!-- ==================== 数字人讲解 ==================== -->
@@ -677,7 +676,7 @@
               <span id="step8-pptx-readiness" class="step8-readiness" aria-live="polite"></span>
             </div>
             <div class="step8-header-actions workflow-toolbar">
-              <button class="success compact-action-btn">生成 MP4
+              <button id="step8-btn-render" class="success compact-action-btn ws-primary">生成 MP4
               </button>
               <button id="step8-btn-pptx" class="secondary compact-action-btn" type="button">
                 生成 PPTX
@@ -685,7 +684,7 @@
               <button id="step8-btn-download-srt" class="secondary compact-action-btn" type="button" disabled title="仅在点击后下载字幕文件">
                 下载字幕 SRT
               </button>
-              <button class="secondary compact-action-btn">完成并退出项目</button>
+              <button id="step8-btn-finish" class="secondary compact-action-btn ws-primary">完成并退出项目</button>
             </div>
           </div>
 
@@ -1067,13 +1066,16 @@
           <button id="btn-creation-config-management-close" class="icon-button" type="button" aria-label="关闭">×</button>
         </div>
         <div id="creation-config-management-body" class="creation-config-management-body">
-          <section class="soft-outline" style="padding:1rem; border-radius:12px;">
+          <section class="soft-outline cc-split-grid" style="padding:1rem; border-radius:12px;">
+            <div class="cc-aside">
             <h4 style="margin-top:0;">创作配置包</h4>
             <section class="creation-config-existing-packages" aria-label="创作配置包">
               <div id="creation-config-package-list"></div>
             </section>
             <label class="creation-config-name-field" for="creation-config-package-name">当前配置包名称<input id="creation-config-package-name" type="text" maxlength="80" placeholder="例如：科普账号长视频" aria-describedby="creation-config-editing-status"></label>
             <p id="creation-config-editing-status" class="config-editor-note" aria-live="polite" hidden></p>
+            </div>
+            <div class="cc-main">
             <nav class="creation-config-tabs" role="tablist" aria-label="创作配置分类">
               <button id="creation-config-tab-models" type="button" role="tab" class="is-active" aria-controls="creation-config-panel-models" aria-selected="true" tabindex="0" data-creation-config-tab="models">基础与模型</button>
               <button id="creation-config-tab-visual" type="button" role="tab" aria-controls="creation-config-panel-visual" aria-selected="false" tabindex="-1" data-creation-config-tab="visual">视觉与风格</button>
@@ -1218,13 +1220,14 @@
               <label>配置内容 JSON<textarea id="creation-config-package-payload" rows="12" spellcheck="false">{}</textarea></label>
               <button id="btn-creation-config-load-json" class="secondary" type="button">从 JSON 载入</button>
             </details>
-            <div class="creation-config-package-actions">
+            </div>
+            </section>
+        </div>
+        <div class="creation-config-package-actions">
               <button id="btn-cancel-creation-config-edit" class="secondary" type="button">放弃修改</button>
               <button id="btn-prepare-save-creation-config-as" class="secondary" type="button">另存为新配置</button>
               <button id="btn-create-creation-config" class="success" type="button">保存当前修改</button>
             </div>
-          </section>
-        </div>
       </div>
     </div>
   </div>
@@ -1258,6 +1261,7 @@
           <button id="btn-model-management-close-icon" class="icon-button" type="button" aria-label="关闭">×</button>
         </div>
         <p id="model-management-status" class="config-editor-note" aria-live="polite"></p>
+        <div class="mm-split">
         <section class="model-library-section">
           <div class="model-kind-tabs" role="tablist" aria-label="模型类型">
             <button class="model-kind-tab is-active" type="button" data-model-kind="text" role="tab" aria-selected="true">文本模型</button>
@@ -1343,11 +1347,12 @@
             <p class="config-editor-note">系统会自动绑定已上传的参考音频，并将口播风格置于旁白前。输出固定为 MP3 / 48kHz；字幕与水印不会发送。</p>
           </div>
           <p id="model-setup-editing-status" class="config-editor-note" aria-live="polite" hidden></p>
-          <div class="model-setup-actions">
+        </section>
+        </div>
+        <div class="model-setup-actions">
             <button id="btn-save-model" class="success" type="button">保存文本模型</button>
             <button id="btn-cancel-model-edit" class="secondary" type="button" hidden>取消编辑</button>
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   </div>
