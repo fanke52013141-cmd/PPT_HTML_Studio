@@ -1,8 +1,41 @@
 # 代码审查报告 · 2026-10-04
 
+> ## ⚠️ 状态更新(2026-10-05 复核)
+>
+> **本报告针对 `a7f991d` 基线撰写,报告中列出的 B1–B7 与 S1–S11 已由提交 `5bd520e`修复并推送到 `origin/main`(123 文件,+7398/−3906)。**
+>
+> 复核结论(逐项 Read + Grep 确认,非依赖报告自述):
+>
+> | 问题 | 现状 | 证据 |
+> |---|---|---|
+> | B1 前端超时参数 | ✅ 已修 | `digital_human_panel.js:611,744` 均为 `timeoutMs: 900000` |
+> | B2 跨项目写错背景 | ✅ 已修 | `storyboard_background_extension.js:23` 只读 `runtime.state.currentProject`,sessionStorage 兜底已移除 |
+> | B3 杀不掉进程树 | ✅ 已修 | `video_artifact_service.py:19,569` 改用 `run_subprocess_killable` |
+> | B4 路径穿越 | ✅ 已修 | `digital_human_routes.py:826-846` 输出固定默认路径;`base_video` 强制 `is_relative_to(run_dir)` + 存在性 + 后缀 + 同路径四重校验 |
+> | B5 AI Mask假完成 | ✅ 已修 | `ai_mask_manifest_apply.py:346,412` 引入 `group_updated` 标志 |
+> | B6 TTS 目录泄漏 | ✅ 已修 | `tts_service.py:890` 已去掉 `dir=`(走系统temp),`:936`/`:1194` 纳入 finally |
+> | B7 Prompt 字面守卫 | ✅ 已修 | `test_narration_mask_and_workflow_ui.py:264` 改为断言 `ContractVersion` |
+> | S1 预检/实际候选不一致 | ✅ 已修 | 抽出 `repository_paths.resolve_comfyui_tts_workflow_path`,三处共用 |
+> | S2 渲染状态矛盾 | ✅ 已修 | `video_render_service.py:312,359` 均为 `queued` |
+> | S3 DocLayout 默认值相反 | ✅ 已修 | `ai_mask_engine.py:449` fallback 改用 `DEFAULT_SETTINGS[...]` |
+> | S4 image_hash no-op | ✅ 已修 | `annotation_planner.py:115` 写真实 hash;`annotation_jobs.py:39` no-op 已删 |
+> | S5 重启恢复缺失 | ✅ 已修 | `annotation_runtime.py:88` 启动时调用 `interrupt_orphaned()` |
+> | S6 service_get_slide_ids | ✅ 已修 | 全仓零引用,字段与注入已删 |
+> | S7 ffmpeg 三套定位 | ✅ 已修 | `digital_human_routes.py:889-901` 复用 `media_tools.resolve_media_tool` |
+> | S8 架构门禁余量 | ✅ 已修 | 门禁通过,限额变更已加说明要求 |
+> | S10 资产变量分叉 | ✅ 已修 | PS1 接受 `PPT_STUDIO_ASSETS_DIR` 继承,`environment.md:29-30` 已补优先级 |
+> | S11 脚本伪装成测试 | ✅ 已修 | 22 个脚本改为 pytest 可收集函数 |
+>
+> **本报告以下内容保留为审计轨迹**(记录"曾存在问题"及其判定依据),**不再代表当前代码状态**。
+> 逐项修复明细见 `docs/code_review_fixes_2026-10-05.md`。
+>
+> **复核实测**:`pytest checks` → 1485 passed / 1 failed(沙盒临时目录只读所致,`test_database_initialization.py` 单独重跑 passed)/ 8 skipped;`ruff check .` All checks passed;36 个前端 JS `node --check` 全通过。
+
+---
+
 **范围**:`D:\Program Files (x86)\PPT_presentation_video`
 **规模**:152 个 Python 文件(57,833 行)+ 36 个前端 JS(约 1.5 万行)+ 18,608 行 CSS
-**基线**:`a7f991d`,另有 12 个文件未提交改动
+**原基线**:`a7f991d`(问题发现时的状态)
 **方法**:AST 全量解析 + 跨目录引用验证(`static/` `templates/` `scripts/` `checks/` `docs/` `cli/` `mcp_server/` `agent_api/`)+ 关键结论运行时实测复验
 
 ---
@@ -118,15 +151,30 @@ for job in pending_jobs:
 
 ## 🟡 Suggestion(矛盾与重复)
 
-### S1 · ComfyUI 工作流预检与实际解析的候选集不一致 → 一键流水线可被单个文件卡死
+### S1 · ComfyUI 工作流预检与实际解析的候选集不一致 → 一键流水线可被单个文件卡死 ✅已修
 | 位置 | 查找的候选 |
 |---|---|
-| `one_click_orchestrator.py:849` 预检 | 仅 `data/digital_human/comfyui_tts_workflow.json` |
-| `tts_service.py:606`、`generic_tts.py:578` 实际 | 两个候选(含 `config/indextts2_5_comfyui_workflow.json`) |
+| `one_click_orchestrator.py:849` 预检 | ~~仅 `data/digital_human/comfyui_tts_workflow.json`~~ |
+| `tts_service.py:606`、`generic_tts.py:578` 实际 | ~~两个候选~~ |
 
-**已确认这两个 JSON 内容 100% 相同(md5 一致,`diff` 无输出)**。当 `data/` 那份缺失而 `config/` 那份存在时,一键流水线在预检阶段误报"工作流不存在"并**拒绝启动**,但单独跑 TTS 却能成功。
+**原问题**:当 `data/` 那份缺失而 `config/` 那份存在时,一键流水线在预检阶段误报"工作流不存在"并**拒绝启动**,但单独跑 TTS 却能成功。
 
-修复:抽 `resolve_comfyui_tts_workflow_path()` 单一函数三处共用;并二选一保留(建议留 `config/`,删 `data/`)。
+**修复现状**:已抽出 `repository_paths.resolve_comfyui_tts_workflow_path(endpoint, repo_root)`(`repository_paths.py:110-123`),预检、缓存签名与实际合成三处共用,统一了相对路径与 URL 处理。
+
+**关于两份内容重复的 JSON —— 复核后判定为合理,不应删除**:
+
+```
+git ls-files → config/indextts2_5_comfyui_workflow.json   （已跟踪）
+             → data/digital_human/comfyui_tts_workflow.json （未跟踪）
+```
+
+两者 md5 确实相同(`6bdfb674…`),但角色不同:
+- `config/` = 版本控制内的**捆绑基线**,随clone 到用户机器
+- `data/` = **用户上传覆盖槽**,由设置页写入(`settings_routes.py`),不进git
+
+`resolve_comfyui_tts_workflow_path` 的候选顺序(data 优先 → config 回退)正是为此设计:用户自定义工作流优先,未自定义时回落到基线。**这是有意的双槽设计,不是冗余复制。**
+
+> 原报告在此处判断有误:曾建议"删除其中一份并改指另一份"。复核 git 跟踪状态后确认,两份都要保留。
 
 ### S2 · `start_render` 返回状态与内存真实状态矛盾
 `video_render_service.py:304` 写入 `"status":"queued"`,`:349` 却返回 `"status":"rendering"`。前端首屏读返回值、后续读轮询值,**同一任务前后显示不同状态**。同文件 `_active_task_response:1121` 已正确区分,应对齐。
@@ -302,6 +350,23 @@ narration_audio.js:351-355                ← 无 AbortController
 |---|---|
 | `creation_config_management.js:779` `setDefaultPackage` | 完整实现"设为账号默认配置"并调刷新,但**无调用点** → 是入口漏做还是功能已下线?后端端点 `/api/accounts/{id}/default-config` 存在 |
 | `storyboard_prompts.js:157` `refreshStep2PromptTemplates` | 无调用点 → 模板列表外部变更后不刷新,是功能缺失 |
-| `docs/ui-redesign-plan.md` vs `ui-consistency-plan.md` | 明确覆盖范围或加 superseded 标记 |
-| `.toast-success` / `.toast-warning` CSS | 恢复多 tone 渲染,或清理死 CSS |
-| `static/annotations.css:76-78` `.annotation-thumb.active` | `ui-consistency-plan.md` P0-1 残留,随收尾一并删 |
+| `docs/ui-redesign-plan.md` vs `ui-consistency-plan.md` | 明确覆盖范围或加 superseded 标记(整改报告 §S9 已声明统一以 `ui-spec` 为准) |
+| `.toast-success` / `.toast-warning` CSS | **整改报告明确保留** "Toast 仅错误显示" 策略 → 需产品决策:恢复多 tone 渲染,或清理不可达 CSS |
+| `static/annotations.css:76-78` `.annotation-thumb.active` | P0-1 残留,随收尾一并删 |
+
+---
+
+## 整改报告的保留项复核(2026-10-05)
+
+`code_review_fixes_2026-10-05.md` 有意未执行的删除,复核其判断是否成立:
+
+| 保留项 | 报告给的理由 | 我的复核 |
+|---|---|---|
+| 大范围 CSS 删除(231 条) | 正在承载未提交 UI 调整;动态 class 与层叠覆盖不能仅凭零静态引用删除 | ✅ **成立**。`.sidebar` 定义 9 次是分层叠加设计,盲目删除会破坏层叠 |
+| `step2-slide-card/fields` | 包裹真实表单,需独立视觉比对 | ✅ **成立**,本就不应仅凭"JS 不引用"就删 DOM 节点 |
+| `UI优化方案.md`、`hand off.md` | 被 `scripts/build_portable_package.ps1` 引用,零引用结论不成立 | ✅ **成立**。我原报告的"零引用"判断确有误 |
+| `checks/rebuild_project_reveal.py`、`run_project_ai_mask.py` | 是可直接调用的维护 CLI,无内部调用者不足以证明不可用 | ✅ **成立**。这纠正了我"可删除"的误判 |
+| 不删历史 ffmpeg 路径探测 | 已装在该位置的用户可复用 | ✅ 合理,共享解析已消除差异 |
+| `tts-stage-7zmwa62_` 删除被拒 | 策略拒绝未给原因 | ⚠️ 目录仍在,建议手动清理并保留已加的 gitignore |
+
+**结论**:原报告"可安全删除清单"中的项目级文件删除建议(3 个)判断过严,已由整改报告纠正。代码级删除(死常量、no-op 参数、零引用字段)已执行并通过测试。
