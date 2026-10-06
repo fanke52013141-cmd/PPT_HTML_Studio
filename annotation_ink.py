@@ -26,14 +26,13 @@ from PIL import Image, ImageDraw, ImageFilter
 __all__ = [
     "INK_VERSION",
     "InkRequest",
-    "render_stroke_full",
     "render_stroke_frames",
     "precision_metrics",
     "frames_needed",
 ]
 
 
-INK_VERSION = "annotation_ink_v1"
+INK_VERSION = "annotation_ink_v2_complete"
 _DEFAULT_FPS = 30
 
 
@@ -68,7 +67,7 @@ def _time_to_arc(stroke: Dict[str, Any], t: float) -> float:
     """时间进度(0–1)→ 弧长进度;speed_profile 与前端同一语义。"""
     profile = stroke.get("speed_profile")
     points = stroke.get("points") or []
-    if not isinstance(profile, list) or len(profile) < 2 or len(points) < 2:
+    if not isinstance(profile, (list, tuple)) or len(profile) < 2:
         return max(0.0, min(1.0, t))
     clamped = max(0.0, min(1.0, t))
     for i in range(1, len(profile)):
@@ -120,6 +119,7 @@ class InkRequest:
     seed: int = 1
     closed: bool = False
     texture: bool = True
+    speed_profile: Tuple[float, ...] = ()
 
 
 def _draw_centerline(alpha: Image.Image, points, width_profile, base_width, origin):
@@ -151,7 +151,7 @@ def render_stroke_rgba(request: InkRequest, arc: float = 1.0) -> Image.Image:
     """渲染弧长进度 arc(0–1)的 RGBA 墨迹;同输入逐字节一致。"""
     width, height = request.canvas
     points = list(request.points)
-    if len(points) < 2:
+    if arc <= 0 or len(points) < 2:
         return Image.new("RGBA", (width, height), (0, 0, 0, 0))
     if arc < 1.0:
         points = _points_up_to(points, arc)
@@ -202,9 +202,10 @@ def render_stroke_frames(
     draw_duration_sec: float,
     fps: int = _DEFAULT_FPS,
 ) -> List[Image.Image]:
-    """绘制阶段的逐帧墨迹:第 k 帧 = 画到 time_progress (k+1)/N。"""
+    """Include a transparent zero frame and a complete final frame."""
     total = frames_needed(draw_duration_sec, fps)
-    return [render_stroke_rgba(request, arc=(k + 1) / total) for k in range(total)]
+    return [render_stroke_rgba(request, arc=_time_to_arc(
+        {"speed_profile": request.speed_profile}, k / (total - 1))) for k in range(total)]
 
 
 # ---------------------------------------------------------------- 精准度指标
@@ -312,13 +313,15 @@ def render_and_write(
     full = render_stroke_rgba(request, arc=1.0)
     full_path = out_dir / "full.png"
     full_path.write_bytes(_png_bytes(full))
-    frames = render_stroke_frames(request, draw_duration_sec=draw_duration_sec, fps=fps)
-    for index, frame in enumerate(frames):
+    frame_count = frames_needed(draw_duration_sec, fps)
+    for index in range(frame_count):
+        frame = render_stroke_rgba(request, arc=_time_to_arc(
+            {"speed_profile": request.speed_profile}, index / (frame_count - 1)))
         (out_dir / f"frame_{index:03d}.png").write_bytes(_png_bytes(frame))
     meta = {
         "ink_version": INK_VERSION,
         "fps": fps,
-        "frame_count": len(frames),
+        "frame_count": frame_count,
         "canvas": list(request.canvas),
         "color": list(request.color),
         "full": "full.png",
@@ -330,7 +333,7 @@ def render_and_write(
     return {
         "kind": "raster",
         "dir": out_dir.name,
-        "frame_count": len(frames),
+        "frame_count": frame_count,
         "fps": fps,
         "canvas": list(request.canvas),
     }

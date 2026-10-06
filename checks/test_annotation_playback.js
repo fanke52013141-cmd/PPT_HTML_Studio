@@ -91,3 +91,12 @@ assert.ok(Math.abs(rectScene[0].opacity - 0.85) < 0.001);
 assert.deepEqual(playback.renderScene([EVENT], 1.7), playback.renderScene([EVENT], 1.7));
 
 console.log('annotation playback checks passed');
+
+// Future strokes remain absent, then reach their complete final raster.
+const multi = {...EVENT, strokes: [
+  {kind:'path',points:[[0,0],[100,0]],draw_start_offset_sec:0,draw_end_offset_sec:.3},
+  {kind:'path',points:[[0,0],[0,100]],draw_start_offset_sec:.4,draw_end_offset_sec:1}
+]};
+assert.equal(playback.rasterFrameIndex(multi,multi.strokes[1],1,.2,18),-1);
+assert.equal(playback.rasterFrameIndex(multi,multi.strokes[1],1,1,18),17);
+assert.equal(playback.sampleEvent({...EVENT,start_sec:1.011},1.0).phase,'hidden');

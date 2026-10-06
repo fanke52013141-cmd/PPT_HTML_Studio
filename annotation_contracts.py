@@ -259,6 +259,7 @@ class AnnotationTarget:
     granularity: str
     mask_group_ids: Tuple[str, ...]
     path_points: Tuple[Tuple[int, int], ...] = ()
+    path_strokes: Tuple[Tuple[Tuple[int, int], ...], ...] = ()
 
     @staticmethod
     def from_payload(
@@ -320,6 +321,27 @@ class AnnotationTarget:
                         path_points = tuple(checked_path)
                 elif checked_path:
                     issues.append(Issue(f"{path}.path_points", "degenerate", "自由笔迹至少要包含 2 个不同的点"))
+        path_strokes = ()
+        raw_strokes = data.get("path_strokes", [])
+        if raw_strokes:
+            if raw_path:
+                issues.append(Issue(f"{path}.path_strokes", "ambiguous_path", "不能同时提供单笔与多笔轨迹"))
+            elif not isinstance(raw_strokes, list) or len(raw_strokes) > 12:
+                issues.append(Issue(f"{path}.path_strokes", "bad_path", "多笔轨迹必须为最多 12 笔的数组"))
+            else:
+                checked_strokes = []
+                for index, points in enumerate(raw_strokes):
+                    single = AnnotationTarget.from_payload(
+                        {**data, "path_strokes": [], "path_points": points}, issues,
+                        canvas=canvas, path=f"{path}.path_strokes[{index}]",
+                    )
+                    if single and single.path_points:
+                        checked_strokes.append(single.path_points)
+                    else:
+                        issues.append(Issue(f"{path}.path_strokes[{index}]", "bad_path", "每笔至少需要两个不同的点"))
+                path_strokes = tuple(checked_strokes)
+        elif not isinstance(raw_strokes, list):
+            issues.append(Issue(f"{path}.path_strokes", "bad_path", "多笔轨迹必须为数组"))
         quote = data.get("quote")
         if kind == "text":
             quote = _check_str(
@@ -349,6 +371,7 @@ class AnnotationTarget:
             granularity=granularity or "region",
             mask_group_ids=mask_group_ids,
             path_points=path_points,
+            path_strokes=path_strokes,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -363,6 +386,8 @@ class AnnotationTarget:
         }
         if self.path_points:
             payload["path_points"] = [list(point) for point in self.path_points]
+        if self.path_strokes:
+            payload["path_strokes"] = [[list(point) for point in stroke] for stroke in self.path_strokes]
         return payload
 
 
@@ -487,6 +512,7 @@ class AnnotationTiming:
     hold_duration_sec: Optional[float]
     exit_duration_sec: float
     manual_start_sec: Optional[float] = None
+    time_reference: str = "slide"
 
     @staticmethod
     def from_payload(data: Any, issues: List[Issue], *, path: str = "timing") -> Optional["AnnotationTiming"]:
@@ -512,6 +538,7 @@ class AnnotationTiming:
             issues, f"{path}.exit_duration_sec", data.get("exit_duration_sec", 0.15), minimum=0.0, maximum=5.0
         )
         manual_start: Optional[float] = None
+        reference = _check_enum(issues, f"{path}.time_reference", data.get("time_reference", "slide"), ("slide", "audio"))
         if data.get("manual_start_sec") is not None:
             manual_start = _check_number(
                 issues, f"{path}.manual_start_sec", data.get("manual_start_sec"), minimum=0.0, maximum=3600.0
@@ -530,6 +557,7 @@ class AnnotationTiming:
             hold_duration_sec=hold_duration,
             exit_duration_sec=float(exit_duration or 0.0),
             manual_start_sec=manual_start,
+            time_reference=reference or "slide",
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -544,6 +572,7 @@ class AnnotationTiming:
             payload["hold_duration_sec"] = self.hold_duration_sec
         if self.trigger_mode == "manual":
             payload["manual_start_sec"] = self.manual_start_sec
+            payload["time_reference"] = self.time_reference
         return payload
 
 

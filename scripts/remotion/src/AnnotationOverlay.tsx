@@ -84,7 +84,7 @@ export const AnnotationOverlay: React.FC<{
   }
   const timeSec = frame / fps;
   const rasterShapes: RasterShape[] = [];
-  let anyRaster = false;
+  let vectorShapes: VectorShape[] = [];
   for (const event of events) {
     // fps 必须取视频真实帧率(R4-007):量化网格才与确认时序一致
     const state = AnnotationsPlayback.sampleEvent(event, timeSec, fps);
@@ -93,7 +93,6 @@ export const AnnotationOverlay: React.FC<{
     const opacity = baseOpacity * state.opacityScale;
     (event.strokes || []).forEach((stroke, strokeIndex) => {
       if (stroke.kind === 'path' && stroke.ink?.kind === 'raster' && stroke.ink.frames?.length) {
-        anyRaster = true;
         const frameIndex = AnnotationsPlayback.rasterFrameIndex(
           event,
           stroke,
@@ -101,6 +100,7 @@ export const AnnotationOverlay: React.FC<{
           state.drawProgress,
           stroke.ink.frames.length,
         );
+        if (frameIndex < 0) return;
         rasterShapes.push({
           annotationId: event.annotation_id,
           frames: stroke.ink.frames,
@@ -109,14 +109,11 @@ export const AnnotationOverlay: React.FC<{
         });
       }
     });
-  }
-  // 矢量回退:仅当没有任何栅格帧时(旧 timeline)
-  let vectorShapes: VectorShape[] = [];
-  if (!anyRaster) {
-    for (const event of events) {
-      const shapes = AnnotationsPlayback.renderScene([makeVectorOnly(event)], timeSec, fps) as VectorShape[];
-      vectorShapes = vectorShapes.concat(shapes);
-    }
+    const sampled = AnnotationsPlayback.renderScene([makeVectorOnly(event)], timeSec, fps) as VectorShape[];
+    vectorShapes = vectorShapes.concat(sampled.filter((_shape, index) => {
+      const stroke = event.strokes[index];
+      return !(stroke?.kind === 'path' && stroke.ink?.kind === 'raster' && stroke.ink.frames?.length);
+    }));
   }
   if (!rasterShapes.length && !vectorShapes.length) {
     return null;

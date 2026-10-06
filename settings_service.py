@@ -21,6 +21,7 @@ SETTINGS_SECRET_KEYS = {
     "tts_api_key",
     "tts_secret_key",
     "tts_provider_extra",
+    "annotation_ocr_baidu_api_key",
 }
 
 

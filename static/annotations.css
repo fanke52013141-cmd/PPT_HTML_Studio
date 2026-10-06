@@ -131,6 +131,14 @@
   color: #111827;
 }
 
+/* 标注列表标题行:标题与逐页确认按钮两端对齐 */
+.annotation-pane-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .annotation-canvas-frame {
   position: relative;
   width: 100%;
@@ -453,3 +461,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.annotation-sync-preview { width: min(1100px, 92vw); max-height: 94vh; overflow: auto; border: 0; border-radius: 16px; padding: 20px; }
+.annotation-sync-preview::backdrop { background: rgba(0, 0, 0, .55); }
+.annotation-field audio { width: 100%; min-width: 0; }

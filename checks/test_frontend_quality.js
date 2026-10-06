@@ -1150,6 +1150,21 @@ const annotationsCore = fs.readFileSync(path.join(root, 'static', 'annotations_c
 const annotationsWorkspace = fs.readFileSync(path.join(root, 'static', 'annotations_workspace.js'), 'utf8');
 const annotationsEditor = fs.readFileSync(path.join(root, 'static', 'annotations_editor.js'), 'utf8');
 const annotationsCss = fs.readFileSync(path.join(root, 'static', 'annotations.css'), 'utf8');
+const annotationPreview = fs.readFileSync(path.join(root, 'static', 'annotation_preview.js'), 'utf8');
+if (!annotationsWorkspace.includes('mask_groups: page.mask_groups || []')) {
+  throw new Error('annotation workspace must retain the server content groups');
+}
+if (!annotationPreview.includes("script.src = '/annotation_player.bundle.js")
+  || annotationPreview.includes("script.src = '/static/annotation_player.bundle.js")) {
+  throw new Error('annotation player must load from the root static mount');
+}
+if (!html.includes('annotation_preview.js') || !annotationPreview.includes('function prepareAnnotationPreview(')
+  || !annotationPreview.includes('window.AnnotationPlayer.mount')) {
+  throw new Error('formal annotation preview must own preparation and the shared Remotion player');
+}
+if (annotationsEditor.includes('let cursor = 0.2') || !annotationsEditor.includes('window.showAnnotationSyncPreview')) {
+  throw new Error('annotation editor must not invent a second playback timeline');
+}
 
 if (!html.includes('annotations_core.js')) throw new Error('annotation core module is not loaded explicitly');
 if (!html.includes('annotation_playback.js')) throw new Error('annotation playback module is not loaded explicitly');
@@ -1232,6 +1247,50 @@ if (!annotationsWorkspace.includes('refreshAnnotationModuleState')) {
 }
 if (!annotationsCss.includes('.annotation-')) {
   throw new Error('annotation stylesheet must scope new panels');
+}
+// 勾画确认/决策/预览闭环:确认接口必须由前端调用,渲染门禁才可通过
+for (const annotationActionId of ['annotation-btn-decision', 'annotation-btn-confirm-page', 'annotation-btn-preview']) {
+  if (!html.includes(`id="${annotationActionId}"`)) throw new Error(`annotation workspace action ${annotationActionId} is missing`);
+}
+if (!annotationsWorkspace.includes('/confirm')) {
+  throw new Error('annotation workspace must call the per-slide confirm endpoint');
+}
+if (!annotationsWorkspace.includes('function confirmAnnotationPage(')
+  || !annotationsWorkspace.includes('function requestAnnotationDecision(')
+  || !annotationsWorkspace.includes('function updateAnnotationConfirmButton(')) {
+  throw new Error('annotation workspace must implement page confirm and decision entries');
+}
+if (!annotationsEditor.includes('function previewAnnotationAnimation(')
+  || !annotationsEditor.includes('function cancelAnnotationPreviewLoop(')) {
+  throw new Error('annotation editor must own the animation preview lifecycle');
+}
+if (!eventBindings.includes('previewAnnotationAnimation')
+  || !eventBindings.includes('confirmAnnotationPage')
+  || !eventBindings.includes('requestAnnotationDecision')) {
+  throw new Error('annotation preview/confirm/decision buttons must be bound in event bindings');
+}
+if (!html.includes('data-creation-config-pause="annotation"')) {
+  throw new Error('creation package must expose the annotation manual-pause option');
+}
+// 撤销/重做必须以变更前条目为 diff 基准并同步服务端(自比较导致撤销从不入队)
+if (!annotationsEditor.includes('queueSyncAnnotationItems(before, restored)')) {
+  throw new Error('annotation undo/redo must diff against the pre-change items');
+}
+// 编辑态静态预览必须采样在绘制完成区间(此前 0.5 只显示半截笔迹)
+if (!annotationsEditor.includes('ANNOTATION_EDIT_SAMPLE_SEC = 1')) {
+  throw new Error('annotation edit overlay must render fully drawn strokes');
+}
+// AI 重点密度必须声明自己的 projectId(此前 ReferenceError 使选择框永远失败)
+const emphasisBody = annotationsWorkspace.slice(annotationsWorkspace.indexOf('async function setAnnotationEmphasis('));
+if (emphasisBody.length < 30 || !emphasisBody.slice(0, 400).includes('const projectId = ANNOTATIONS_WS.projectId')) {
+  throw new Error('setAnnotationEmphasis must resolve projectId before calling the settings API');
+}
+// 勾画 OCR 密钥设置入口:表单字段与读写两侧接线
+if (!html.includes('setting-annotation-ocr-key')) {
+  throw new Error('settings modal must expose the annotation Baidu OCR key field');
+}
+if (!settings.includes('annotation_ocr_baidu_api_key')) {
+  throw new Error('settings form must load/save the annotation Baidu OCR key');
 }
 
 

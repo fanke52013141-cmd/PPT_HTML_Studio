@@ -97,3 +97,4 @@ logs/*
 
 # Temporary TTS staging from legacy runs
 tts-stage-*/
+.workbuddy/

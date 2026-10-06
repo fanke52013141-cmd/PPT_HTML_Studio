@@ -8,7 +8,9 @@ const ANNOTATIONS_ED = {
   regionGhost: null,
   freehandPoints: [],
   freehandGhost: null,
+  freehandStrokes: [],
   editorTimer: null,
+  previewFrame: null,
 };
 
 // ------------------------------------------------------------ 画布覆盖层
@@ -45,7 +47,41 @@ function fallbackStrokeFor(item) {
   return [{ kind: 'polyline', points }];
 }
 
+// 编辑态静态渲染采样点:落在绘制窗口之后的 hold 区间内,保证笔迹呈现
+// "绘制完成"的完整形态(此前采样在 0.5,所有笔迹都只显示一半)。
+const ANNOTATION_EDIT_SAMPLE_SEC = 1;
+const ANNOTATION_EDIT_EVENT_WINDOW = { draw_end_sec: 1, hold_end_sec: 2, exit_end_sec: 3 };
+
+function annotationEffectiveEvent(item, color) {
+  return {
+    annotation_id: item.annotation_id,
+    start_sec: 0,
+    ...ANNOTATION_EDIT_EVENT_WINDOW,
+    style: { ...item.style, color },
+    strokes: item.strokes && item.strokes.length ? item.strokes : fallbackStrokeFor(item),
+  };
+}
+
+function annotationShapeMarkup(item, shape, extraAttrs = '') {
+  const color = item.style?.color || '#F46A38';
+  const opacity = Math.max(0, Math.min(1, Number(item.style?.opacity ?? 0.85)));
+  const disabled = item.status?.content === 'disabled';
+  const owner = ` data-owner="${escHtml(item.annotation_id)}"${disabled ? ' data-disabled="true"' : ''}${extraAttrs}`;
+  const effectiveOpacity = disabled ? opacity * 0.3 : opacity;
+  if (shape.kind === 'path') {
+    return `<path d="${escHtml(shape.d)}" fill="${shape.closed ? escHtml(color) : 'none'}" fill-opacity="${shape.closed ? Math.min(0.12, opacity * 0.14) : 0}" stroke="${escHtml(color)}" stroke-width="${Math.max(1, Number(item.style?.width || 5) * 0.6)}" stroke-linejoin="round" opacity="${effectiveOpacity}"${owner} />`;
+  }
+  if (shape.kind === 'polyline') {
+    return `<path d="${escHtml(shape.d)}" fill="none" stroke="${escHtml(color)}" stroke-width="${shape.strokeWidth}" stroke-linecap="round" stroke-linejoin="round" opacity="${effectiveOpacity}"${owner} />`;
+  }
+  if (shape.kind === 'rect') {
+    return `<rect x="${shape.x}" y="${shape.y}" width="${shape.width}" height="${shape.height}" fill="${escHtml(color)}" fill-opacity="${opacity * 0.35}" stroke="none"${owner} />`;
+  }
+  return '';
+}
+
 function renderAnnotationOverlay() {
+  cancelAnnotationPreviewLoop();
   const overlay = document.getElementById('annotation-canvas-overlay');
   const image = document.getElementById('annotation-canvas-image');
   if (!overlay || !image) return;
@@ -57,43 +93,20 @@ function renderAnnotationOverlay() {
   const items = ANNOTATIONS_WS.page.items || [];
   const shapes = [];
   items.forEach(item => {
-    const selected = item.annotation_id === ANNOTATIONS_WS.selectedAnnotationId;
     const polygons = item.target?.polygons || [];
     const bounds = AnnotationsCore.polygonBounds(polygons);
     if (!bounds) return;
-    const color = item.style?.color || '#F46A38';
-    // 浓度 0% 必须真正不可见(R2 修复:不再钳到 0.05)
-    const opacity = Math.max(0, Math.min(1, Number(item.style?.opacity ?? 0.85)));
     const pad = Number(item.style?.padding || 8);
-    const disabled = item.status?.content === 'disabled';
-    const attrs = disabled ? ' data-disabled="true"' : '';
-    if (selected) {
+    if (item.annotation_id === ANNOTATIONS_WS.selectedAnnotationId) {
       shapes.push(`<rect class="annotation-select-frame" x="${bounds.left - pad}" y="${bounds.top - pad}" width="${bounds.width + pad * 2}" height="${bounds.height + pad * 2}" fill="none" stroke="#111827" stroke-width="2" stroke-dasharray="10 6" data-owner="${escHtml(item.annotation_id)}" />`);
     }
     // 正式笔迹:服务端派生的 v2 strokes 经共享采样器生成轮廓,
-    // 与导出几何完全一致(R2 方案 4.6)。编辑态 = 绘制完成(progress=1)。
-    const officialStrokes = item.strokes && item.strokes.length
-      ? item.strokes
-      : fallbackStrokeFor(item);
-    const effectiveEvent = {
-      annotation_id: item.annotation_id,
-      start_sec: 0,
-      draw_end_sec: 1,
-      hold_end_sec: 1,
-      exit_end_sec: 1,
-      style: { ...item.style, color },
-      strokes: officialStrokes,
-    };
-    AnnotationsPlayback.renderScene([effectiveEvent], 0.5, 30).forEach(shape => {
-      const owner = ` data-owner="${escHtml(item.annotation_id)}"${attrs}`;
-      if (shape.kind === 'path') {
-        shapes.push(`<path d="${escHtml(shape.d)}" fill="${shape.closed ? escHtml(color) : 'none'}" fill-opacity="${shape.closed ? Math.min(0.12, opacity * 0.14) : 0}" stroke="${escHtml(color)}" stroke-width="${Math.max(1, Number(item.style?.width || 5) * 0.6)}" stroke-linejoin="round" opacity="${disabled ? opacity * 0.3 : opacity}"${owner} />`);
-      } else if (shape.kind === 'polyline') {
-        shapes.push(`<path d="${escHtml(shape.d)}" fill="none" stroke="${escHtml(color)}" stroke-width="${shape.strokeWidth}" stroke-linecap="round" stroke-linejoin="round" opacity="${disabled ? opacity * 0.3 : opacity}"${owner} />`);
-      } else if (shape.kind === 'rect') {
-        shapes.push(`<rect x="${shape.x}" y="${shape.y}" width="${shape.width}" height="${shape.height}" fill="${escHtml(color)}" fill-opacity="${opacity * 0.35}" stroke="none"${owner} />`);
-      }
-    });
+    // 与导出几何完全一致(R2 方案 4.6)。
+    AnnotationsPlayback.renderScene(
+      [annotationEffectiveEvent(item, item.style?.color || '#F46A38')],
+      ANNOTATION_EDIT_SAMPLE_SEC,
+      30,
+    ).forEach(shape => shapes.push(annotationShapeMarkup(item, shape)));
   });
   overlay.innerHTML = shapes.join('');
   overlay.querySelectorAll('[data-owner]').forEach(shape => {
@@ -101,9 +114,38 @@ function renderAnnotationOverlay() {
   });
 }
 
+// ------------------------------------------------------------ 动画预览
+
+// 同步预览复用正式 Remotion 组件、真实音频和服务端构建的时间轴。
+function cancelAnnotationPreviewLoop() {
+  window.stopAnnotationSyncPreview?.();
+  if (ANNOTATIONS_ED.previewFrame) {
+    cancelAnimationFrame(ANNOTATIONS_ED.previewFrame);
+    ANNOTATIONS_ED.previewFrame = null;
+    setAnnotationPreviewButton(false);
+  }
+}
+
+function stopAnnotationPreview() {
+  cancelAnnotationPreviewLoop();
+  renderAnnotationOverlay();
+}
+
+function setAnnotationPreviewButton(playing) {
+  const button = document.getElementById('annotation-btn-preview');
+  if (!button) return;
+  button.classList.toggle('active', playing);
+  button.textContent = playing ? '停止预览' : '预览动画';
+}
+
+function previewAnnotationAnimation() {
+  return window.showAnnotationSyncPreview?.();
+}
+
 // ------------------------------------------------------------ 手工绘制
 
 function setAnnotationDrawMode(mode) {
+  if (mode !== 'freehand' && ANNOTATIONS_ED.freehandStrokes.length) finishAnnotationFreehand();
   ANNOTATIONS_ED.drawMode = mode === 'region' || mode === 'freehand' ? mode : null;
   const frame = document.getElementById('annotation-canvas-frame');
   const regionButton = document.getElementById('annotation-btn-region');
@@ -114,6 +156,8 @@ function setAnnotationDrawMode(mode) {
   }
   if (regionButton) regionButton.classList.toggle('active', ANNOTATIONS_ED.drawMode === 'region');
   if (freehandButton) freehandButton.classList.toggle('active', ANNOTATIONS_ED.drawMode === 'freehand');
+  const done = document.getElementById('annotation-btn-finish-freehand');
+  if (done) done.hidden = ANNOTATIONS_ED.drawMode !== 'freehand';
 }
 
 function annotationCanvasPoint(event) {
@@ -134,6 +178,7 @@ function limitAnnotationPathPoints(points, limit = 512) {
 function handleAnnotationDrawPointerDown(event) {
   if (!ANNOTATIONS_ED.drawMode || event.button !== 0) return;
   event.preventDefault();
+  cancelAnnotationPreviewLoop();
   const frame = document.getElementById('annotation-canvas-frame');
   const image = document.getElementById('annotation-canvas-image');
   if (!frame || !image) return;
@@ -200,17 +245,25 @@ function handleAnnotationDrawPointerUp(event) {
   if (!ANNOTATIONS_ED.drawMode) return;
   const image = document.getElementById('annotation-canvas-image');
   if (ANNOTATIONS_ED.drawMode === 'freehand') {
-    if (ANNOTATIONS_ED.freehandGhost) ANNOTATIONS_ED.freehandGhost.remove();
+    const ghost = ANNOTATIONS_ED.freehandGhost;
     ANNOTATIONS_ED.freehandGhost = null;
     const points = ANNOTATIONS_ED.freehandPoints;
     ANNOTATIONS_ED.freehandPoints = [];
     const finalPoint = annotationCanvasPoint(event);
     if (finalPoint) points.push([Math.round(finalPoint.x), Math.round(finalPoint.y)]);
     if (points.length < 2 || new Set(points.map(point => point.join(','))).size < 2) {
+      ghost?.remove();
       showToast('笔迹太短，请再画一次。');
       return;
     }
-    addAnnotationFreehand(limitAnnotationPathPoints(points));
+    if (ANNOTATIONS_ED.freehandStrokes.length >= 12) {
+      ghost?.remove();
+      showToast('每条最多 12 笔，请先完成绘制。');
+      return;
+    }
+    ANNOTATIONS_ED.freehandStrokes.push(limitAnnotationPathPoints(points));
+    if (ghost) ghost.dataset.pendingStroke = 'true';
+    showToast(`已记录第 ${ANNOTATIONS_ED.freehandStrokes.length} 笔，可继续画或点击完成绘制。`);
     return;
   }
   if (!ANNOTATIONS_ED.regionStart) return;
@@ -263,8 +316,16 @@ function addAnnotationRegion(polygon) {
     },
   };
   pushAnnotationHistory();
-  ANNOTATIONS_WS.page.items.push({ ...item, annotation_id: `local_${Date.now()}` });
-  queueAnnotationSave(AnnotationsCore.buildAddOperation(item));
+  const localId = nextLocalAnnotationId();
+  if (ANNOTATIONS_WS.pendingNarrationAnchor) {
+    item.anchor = ANNOTATIONS_WS.pendingNarrationAnchor;
+    item.timing = {...item.timing, trigger_mode: 'anchor_start', hold_mode: 'beat_end'};
+    delete item.timing.manual_start_sec;
+  }
+  const stored = { ...item, annotation_id: localId };
+  ANNOTATIONS_WS.page.items.push(stored);
+  // add 操作携带 local id(→ __local_id),保存前合并才能接住后续 update/delete
+  queueAnnotationSave(AnnotationsCore.buildAddOperation(stored));
   const lastIndex = ANNOTATIONS_WS.page.items.length - 1;
   renderAnnotationItems();
   renderAnnotationOverlay();
@@ -274,7 +335,15 @@ function addAnnotationRegion(polygon) {
   showToast('已添加区域标注，默认从本页开始显示；可在右侧调整样式和出现时间。');
 }
 
-function addAnnotationFreehand(points) {
+function finishAnnotationFreehand() {
+  const strokes = ANNOTATIONS_ED.freehandStrokes;
+  if (!strokes.length) return;
+  ANNOTATIONS_ED.freehandStrokes = [];
+  document.querySelectorAll('[data-pending-stroke]').forEach(node => node.remove());
+  addAnnotationFreehand(strokes.flat(), strokes);
+}
+
+function addAnnotationFreehand(points, pathStrokes = null) {
   const xs = points.map(point => point[0]);
   const ys = points.map(point => point[1]);
   let left = Math.min(...xs);
@@ -297,16 +366,24 @@ function addAnnotationFreehand(points) {
   const item = buildManualRegionItem([
     [left, top], [right, top], [right, bottom], [left, bottom],
   ]);
-  item.target.path_points = points.slice(-512);
+  if (pathStrokes) item.target.path_strokes = pathStrokes;
+  else item.target.path_points = limitAnnotationPathPoints(points);
   pushAnnotationHistory();
-  ANNOTATIONS_WS.page.items.push({ ...item, annotation_id: `local_${Date.now()}` });
-  queueAnnotationSave(AnnotationsCore.buildAddOperation(item));
+  const localId = nextLocalAnnotationId();
+  if (ANNOTATIONS_WS.pendingNarrationAnchor) {
+    item.anchor = ANNOTATIONS_WS.pendingNarrationAnchor;
+    item.timing = {...item.timing, trigger_mode: 'anchor_start', hold_mode: 'beat_end'};
+    delete item.timing.manual_start_sec;
+  }
+  const stored = { ...item, annotation_id: localId };
+  ANNOTATIONS_WS.page.items.push(stored);
+  queueAnnotationSave(AnnotationsCore.buildAddOperation(stored));
   renderAnnotationItems();
   renderAnnotationOverlay();
   const lastItem = ANNOTATIONS_WS.page.items[ANNOTATIONS_WS.page.items.length - 1];
   selectAnnotationItem(lastItem.annotation_id);
   setAnnotationDrawMode(null);
-  showToast('自由笔迹已保存，默认从本页开始显示。');
+  showToast(stored.anchor ? '自由笔迹已关联讲稿，请同步预览。' : '自由笔迹已保存，请试听设置起笔点。');
 }
 
 function buildManualRegionItem(polygon) {
@@ -351,8 +428,16 @@ function annotationNarrationAnchorPicked(anchor) {
   const timing = { ...item.timing, trigger_mode: 'anchor_start' };
   delete timing.manual_start_sec;
   if (timing.hold_mode === 'slide_end') timing.hold_mode = 'beat_end';
-  ANNOTATIONS_WS.page.items[index] = { ...item, anchor, timing };
-  queueAnnotationSave(AnnotationsCore.buildUpdateOperation(item.annotation_id, { anchor, timing }));
+  const stored = { ...item, anchor, timing };
+  if (String(item.annotation_id).startsWith('local_') && item.__deferredAdd) {
+    // 首次提交:文字目标必须带锚点,直接随 add 落盘
+    delete stored.__deferredAdd;
+    ANNOTATIONS_WS.page.items[index] = stored;
+    queueAnnotationSave(AnnotationsCore.buildAddOperation(stored));
+  } else {
+    ANNOTATIONS_WS.page.items[index] = stored;
+    queueAnnotationSave(AnnotationsCore.buildUpdateOperation(item.annotation_id, { anchor, timing }));
+  }
   renderAnnotationItems();
   renderAnnotationNarrationHighlights();
   showToast(`已关联讲稿:"${anchor.quote}"`);
@@ -388,9 +473,23 @@ function renderAnnotationItemEditor() {
         <option value="anchor_start"${timing.trigger_mode === 'anchor_start' ? ' selected' : ''}${item.anchor ? '' : ' disabled'}>跟随讲稿关联</option>
       </select>
     </label>
-    <label class="annotation-field annotation-manual-start${timing.trigger_mode === 'manual' ? '' : ' hidden'}">出现时间(秒)
+    <label class="annotation-field annotation-manual-start${timing.trigger_mode === 'manual' ? '' : ' hidden'}">出现时间(${timing.time_reference === 'audio' ? '音频' : '页面'}秒)
       <input type="number" id="annotation-edit-timing-start" min="0" max="3600" step="0.1" value="${Number(timing.manual_start_sec || 0)}">
-      <small>从本页音频开始计时；0 表示本页开始。</small>
+      <small>${timing.time_reference === 'audio' ? '从音频第一声开始计时，系统自动加入播放延迟。' : '从页面出现开始计时，包含音频前的等待时间。'}</small>
+    </label>
+    <div class="annotation-field">
+      <span>试听定位起笔点</span>
+      <audio id="annotation-calibration-audio" controls preload="metadata"
+        src="/api/projects/${encodeURIComponent(ANNOTATIONS_WS.projectId)}/slides/${encodeURIComponent(ANNOTATIONS_WS.page.slide_id)}/audio"></audio>
+      <button type="button" id="annotation-use-audio-time" class="secondary compact-action-btn">以当前音频位置起笔</button>
+      <small>听到关联内容时暂停并设置；之后用同步预览检查。</small>
+    </div>
+    <label class="annotation-field">关联画面内容组
+      <select id="annotation-edit-mask-group">
+        <option value="">自动按目标区域检查</option>
+        ${(ANNOTATIONS_WS.page.mask_groups || []).map(group => `<option value="${escHtml(group.id)}"${item.target?.mask_group_ids?.includes(group.id) ? ' selected' : ''}>${escHtml(group.label)}</option>`).join('')}
+      </select>
+      <small>手绘线条未接触内容时，可指定对应内容组检查出现时机。</small>
     </label>
     <label class="annotation-field">样式
       <select id="annotation-edit-style-type">
@@ -447,7 +546,11 @@ function queueAnnotationItemPatch(annotationId, patchOrCollector) {
   if (!patch || typeof patch !== 'object' || !Object.keys(patch).length) return;
   const index = ANNOTATIONS_WS.page.items.indexOf(item);
   ANNOTATIONS_WS.page.items[index] = { ...item, ...patch };
-  queueAnnotationSave(AnnotationsCore.buildUpdateOperation(annotationId, patch));
+  if (String(annotationId).startsWith('local_') && ANNOTATIONS_WS.page.items[index].__deferredAdd) {
+    // 延迟提交的本地条目:仅更新本地状态,最终随 add 一并提交
+  } else {
+    queueAnnotationSave(AnnotationsCore.buildUpdateOperation(annotationId, patch));
+  }
   renderAnnotationItems();
   renderAnnotationOverlay();
   renderAnnotationNarrationHighlights();
@@ -467,6 +570,25 @@ function bindAnnotationEditorEvents(annotationId) {
   const editor = document.getElementById('annotation-item-editor');
   if (!editor) return;
 
+  editor.querySelector('#annotation-edit-mask-group')?.addEventListener('change', event => {
+    pushAnnotationHistory();
+    const item = annotationSelectedItem();
+    if (item) queueAnnotationItemPatch(annotationId, {target: {...item.target, mask_group_ids: event.target.value ? [event.target.value] : []}});
+  });
+  editor.querySelector('#annotation-use-audio-time')?.addEventListener('click', () => {
+    const audio = editor.querySelector('#annotation-calibration-audio');
+    const item = annotationSelectedItem();
+    if (!audio || !item || !Number.isFinite(audio.duration) || audio.readyState < 1) {
+      showToast('请先加载并试听本页音频。');
+      return;
+    }
+    audio.pause();
+    pushAnnotationHistory();
+    queueAnnotationItemPatch(annotationId, {timing: {...item.timing,
+      trigger_mode: 'manual', manual_start_sec: audio.currentTime, time_reference: 'audio', offset_sec: 0}});
+    renderAnnotationItemEditor();
+    showToast(`已设置音频 ${audio.currentTime.toFixed(2)} 秒起笔，请预览确认。`);
+  });
   const styleType = editor.querySelector('#annotation-edit-style-type');
   styleType?.addEventListener('change', () => {
     pushAnnotationHistory();
@@ -532,6 +654,7 @@ function bindAnnotationEditorEvents(annotationId) {
     const timing = { ...item.timing, trigger_mode: triggerMode.value };
     if (triggerMode.value === 'manual') {
       timing.manual_start_sec = Number(item.timing.manual_start_sec || 0);
+      timing.time_reference = 'slide';
       if (!item.anchor && timing.hold_mode === 'beat_end') timing.hold_mode = 'slide_end';
     } else {
       delete timing.manual_start_sec;
@@ -560,6 +683,7 @@ function bindAnnotationEditorEvents(annotationId) {
 
   const locked = editor.querySelector('#annotation-edit-locked');
   locked?.addEventListener('change', () => {
+    pushAnnotationHistory();
     queueAnnotationItemPatch(annotationId, item => ({
       protection: { locked: locked.checked },
     }));
@@ -601,25 +725,67 @@ function pushAnnotationHistory() {
   ANNOTATIONS_WS.histories[slideId].push(ANNOTATIONS_WS.page.items);
 }
 
-function queueSyncAnnotationItems(targetItems) {
-  const current = ANNOTATIONS_WS.page.items || [];
+// 撤销未保存条目时撤下其排队/隔离中的 add 操作。返回是否确实撤下了排队项;
+// false 表示 add 不在队列里(可能在飞或已保存),调用方应改为排队 delete。
+function cancelPendingLocalAnnotationAdd(localId) {
+  const pendingBefore = ANNOTATIONS_WS.pendingOps.length;
+  const failedBefore = ANNOTATIONS_WS.failedOps.length;
+  ANNOTATIONS_WS.pendingOps = ANNOTATIONS_WS.pendingOps.filter(
+    op => !(op && op.op === 'add' && op.__local_id === localId)
+  );
+  ANNOTATIONS_WS.failedOps = ANNOTATIONS_WS.failedOps.filter(
+    op => !(op && op.op === 'add' && op.__local_id === localId)
+  );
+  const removed = ANNOTATIONS_WS.pendingOps.length !== pendingBefore
+    || ANNOTATIONS_WS.failedOps.length !== failedBefore;
+  if (removed
+    && !ANNOTATIONS_WS.pendingOps.length
+    && !ANNOTATIONS_WS.failedOps.length
+    && !ANNOTATIONS_WS.saveInFlight
+    && !ANNOTATIONS_WS.conflict) {
+    clearTimeout(ANNOTATIONS_WS.saveTimer);
+    ANNOTATIONS_WS.saveTimer = null;
+    renderAnnotationSaveStatus('idle');
+  }
+  return ANNOTATIONS_WS.pendingOps.length !== pendingBefore;
+}
+
+function queueSyncAnnotationItems(currentItems, targetItems) {
+  const current = currentItems || [];
   const currentIds = new Set(current.map(item => item.annotation_id));
   const targetIds = new Set(targetItems.map(item => item.annotation_id));
   const operations = [];
   targetItems.forEach(item => {
-    if (!currentIds.has(item.annotation_id) && !String(item.annotation_id).startsWith('local_')) {
+    if (currentIds.has(item.annotation_id)) return;
+    if (String(item.annotation_id).startsWith('local_')) {
+      // 撤销/重做找回的未保存条目:重入队 add(__local_id 让保存前合并继续生效);
+      // 入队即视为待保存,清除延迟标记,让后续撤销走"撤下 add"路径
+      item.__deferredAdd = false;
+      operations.push(AnnotationsCore.buildAddOperation(item));
+    } else {
       const { annotation_id, ...rest } = item;
       void annotation_id;
       operations.push(AnnotationsCore.buildAddOperation(rest));
     }
   });
   current.forEach(item => {
-    if (!targetIds.has(item.annotation_id) && !String(item.annotation_id).startsWith('local_')) {
+    if (targetIds.has(item.annotation_id)) return;
+    if (String(item.annotation_id).startsWith('local_')) {
+      // 延迟提交的本地条目(尚无 add 操作):仅从本地删除,不产生服务端操作
+      if (item.__deferredAdd) return;
+      // 该条目尚未保存:直接撤下排队/隔离中的 add;若 add 已在飞,
+      // 落一个 delete 由 flush 成功后的 local id 重映射改写为服务端 id
+      if (!cancelPendingLocalAnnotationAdd(item.annotation_id)) {
+        operations.push(AnnotationsCore.buildDeleteOperation(item.annotation_id));
+      }
+    } else {
       operations.push(AnnotationsCore.buildDeleteOperation(item.annotation_id));
     }
   });
   targetItems.forEach(item => {
     if (currentIds.has(item.annotation_id)) {
+      // 延迟提交的本地条目:状态只留在本地,最终随 add 一并提交
+      if (String(item.annotation_id).startsWith('local_') && item.__deferredAdd) return;
       const before = current.find(entry => entry.annotation_id === item.annotation_id);
       const patch = {};
       if (JSON.stringify(before?.target) !== JSON.stringify(item.target)) patch.target = item.target;
@@ -642,8 +808,11 @@ function undoAnnotationEdit() {
   if (!history?.canUndo()) return;
   const restored = history.undo(ANNOTATIONS_WS.page.items);
   if (!restored) return;
+  // 先以变更前的条目作为 diff 基准再替换,否则队列会把数组与自身比较,
+  // 永远算出 0 个操作(撤销只改屏幕,下一次自动保存会静默回滚)。
+  const before = ANNOTATIONS_WS.page.items;
   ANNOTATIONS_WS.page.items = restored;
-  queueSyncAnnotationItems(restored);
+  queueSyncAnnotationItems(before, restored);
   renderAnnotationItems();
   renderAnnotationOverlay();
   renderAnnotationNarrationHighlights();
@@ -656,8 +825,9 @@ function redoAnnotationEdit() {
   if (!history?.canRedo()) return;
   const restored = history.redo(ANNOTATIONS_WS.page.items);
   if (!restored) return;
+  const before = ANNOTATIONS_WS.page.items;
   ANNOTATIONS_WS.page.items = restored;
-  queueSyncAnnotationItems(restored);
+  queueSyncAnnotationItems(before, restored);
   renderAnnotationItems();
   renderAnnotationOverlay();
   renderAnnotationNarrationHighlights();
@@ -688,6 +858,9 @@ window.undoAnnotationEdit = undoAnnotationEdit;
 window.redoAnnotationEdit = redoAnnotationEdit;
 window.annotationEditorKeyboardHandler = annotationEditorKeyboardHandler;
 window.addAnnotationRegion = addAnnotationRegion;
+window.previewAnnotationAnimation = previewAnnotationAnimation;
+window.finishAnnotationFreehand = finishAnnotationFreehand;
+window.cancelAnnotationPreviewLoop = cancelAnnotationPreviewLoop;
 window.handleAnnotationDrawPointerDown = handleAnnotationDrawPointerDown;
 window.handleAnnotationDrawPointerMove = handleAnnotationDrawPointerMove;
 window.handleAnnotationDrawPointerUp = handleAnnotationDrawPointerUp;

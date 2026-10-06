@@ -56,6 +56,7 @@ class AnnotationJobDependencies:
     # plan 任务依赖:annotation store(页面读写)、planner、项目锁工厂、画布
     annotation_store: Any = None
     planner: Any = None
+    align_audio: Any = None
     lock_for: Callable[[Any], Any] = lambda project: _null_lock()
     canvas: Tuple[int, int] = (1920, 1080)
 
@@ -216,29 +217,32 @@ class AnnotationJobManager:
         if cancel_event.is_set():
             store.mark_cancelled(job_id)
             return
+        failed = [result for result in results if result.get("status") == "failed"]
+        if failed and len(failed) == len(results):
+            # 全部页面失败:任务按失败收场,不得向用户谎报"识别完成"
+            store.mark_failed(job_id, str(failed[0].get("error") or "detect failed"))
+            return
         store.mark_succeeded(job_id, "done", {"slides": results})
 
     # ------------------------------------------------------------ plan
 
-    def submit_plan(self, project_id: str, slide_ids: List[str], *, request_key: Optional[str] = None) -> Tuple[Any, bool]:
+    def submit_plan(self, project_id: str, slide_ids: List[str], *, request_key: Optional[str] = None, operation="plan") -> Tuple[Any, bool]:
         account_id = get_current_account_id()
-        job = self._deps.job_store.create(
-            project_id,
-            job_type="annotation_plan",
-            payload={"account_id": account_id, "slides": [{"slide_id": sid} for sid in slide_ids]},
-            request_key=request_key,
-        )
-        created = job.status == "queued"
-        if created:
-            cancel_event = threading.Event()
-            with self._lock:
+        with self._lock:
+            job = self._deps.job_store.create(
+                project_id, job_type="annotation_" + operation,
+                payload={"account_id": account_id, "slides": [{"slide_id": sid} for sid in slide_ids]},
+                request_key=request_key)
+            created = job.status == "queued" and job.id not in self._cancel_flags
+            if created:
+                cancel_event = threading.Event()
                 self._cancel_flags[job.id] = cancel_event
-
+        if created:
             def run() -> None:
                 _JOB_SEMAPHORE.acquire()
                 token = set_current_account_id(self._resolve_worker_account(project_id, account_id))
                 try:
-                    self._run_plan(job.id, project_id, slide_ids, cancel_event)
+                    (self._run_alignment if operation == "align" else self._run_plan)(job.id, project_id, slide_ids, cancel_event)
                 except Exception as exc:
                     logger.exception("annotation plan job %s crashed", job.id)
                     try:
@@ -253,6 +257,52 @@ class AnnotationJobManager:
 
             self._executor.submit(run)
         return job, created
+
+    def _run_alignment(self, job_id, project_id, slide_ids, cancel_event):
+        from annotation_build import file_hash
+        from pipeline_lifecycle import write_json_atomic
+        from project_storage import slide_dir
+        store = self._deps.job_store
+        store.mark_running(job_id, "align")
+        if self._deps.align_audio is None:
+            raise RuntimeError("音频定位引擎未配置")
+        run_dir = self._run_dir(project_id)
+        results = []
+        changed_slides = []
+        for index, slide_id in enumerate(slide_ids):
+            if cancel_event.is_set():
+                store.mark_cancelled(job_id)
+                return
+            project = self._project(project_id)
+            directory = Path(slide_dir(run_dir, slide_id))
+            with self._deps.lock_for(project):
+                hashes = {name: file_hash(directory / name) for name in ("voice.mp3", "narration_beats.json")}
+                beats = self._read_beats(run_dir, slide_id)
+            result = self._deps.align_audio(directory, beats, cancel_event)
+            if cancel_event.is_set() or result is None:
+                store.mark_cancelled(job_id)
+                return
+            with self._deps.lock_for(project):
+                if any(file_hash(directory / name) != value for name, value in hashes.items()):
+                    raise RuntimeError("stale_input: 音频或讲稿已修改，请重新定位")
+                from annotation_build import read_json
+                previous = read_json(directory / "word_alignment.json", optional=True)
+                if previous != result:
+                    write_json_atomic(directory / "word_alignment.json", result)
+                    changed_slides.append(slide_id)
+            results.append({"slide_id": slide_id, "status": "aligned", "tokens": len(result.get("tokens", []))})
+            store.update_progress(job_id, int(95 * (index + 1) / len(slide_ids)), stage="align")
+        if changed_slides:
+            from database import Project
+            from invalidation_service import annotation_content_changed
+            db = self._deps.session_factory()
+            try:
+                project = db.query(Project).filter(Project.id == project_id).first()
+                annotation_content_changed(project, changed_slides)
+                db.commit()
+            finally:
+                db.close()
+        store.mark_succeeded(job_id, "done", {"slides": results})
 
     def _run_plan(self, job_id: str, project_id: str, slide_ids: List[str], cancel_event: threading.Event) -> None:
         store = self._deps.job_store
@@ -347,6 +397,11 @@ class AnnotationJobManager:
             store.update_progress(job_id, 10 + int(80 * (index + 1) / max(1, total)), stage="plan")
         if cancel_event.is_set():
             store.mark_cancelled(job_id)
+            return
+        failed = [result for result in results if result.get("status") == "failed"]
+        if failed and len(failed) == len(results):
+            # 全部页面失败:任务按失败收场,不得向用户谎报"AI 重点已生成"
+            store.mark_failed(job_id, str(failed[0].get("error") or "plan failed"))
             return
         store.mark_succeeded(job_id, "done", {"slides": results})
 

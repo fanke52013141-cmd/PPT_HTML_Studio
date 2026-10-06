@@ -215,3 +215,52 @@ def test_default_creation_config_honors_explicit_version_and_overrides(
     finally:
         db.close()
         engine.dispose()
+
+
+def test_creation_config_pause_steps_accept_annotation_module(
+    tmp_path: Path,
+) -> None:
+    """勾画暂停值必须放行;未知值仍被过滤;存量 mask 原样保留。"""
+    engine = create_engine(f"sqlite:///{tmp_path / 'pause.db'}")
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(bind=engine)
+
+    effective = {
+        "package_id": "science",
+        "version": 1,
+        "content_hash": "hash-v1",
+        "payload": {
+            "automation": {"manual_pause_steps": ["annotation", "mask", "bogus"]},
+        },
+    }
+    service = ProjectService(
+        ProjectDependencies(
+            runs_root=tmp_path / "runs",
+            project_audio_confirmed=lambda _project: False,
+            resolve_creation_config=lambda package_id, version, overrides: (
+                effective
+                if package_id == "science"
+                else (_ for _ in ()).throw(ValueError("unexpected config"))
+            ),
+            write_json_atomic=lambda path, payload: Path(path).write_text(
+                json.dumps(payload, ensure_ascii=False), encoding="utf-8"
+            ),
+            materialize_image_style=lambda project, binding: {"template_id": binding["template_id"]},
+        )
+    )
+    db = session_factory()
+    try:
+        result = service.create(
+            ProjectCreate(
+                name="Annotated project",
+                creation_config_package_id="science",
+                creation_config_version=1,
+            ),
+            db,
+        )
+        project_id = result["project"]["id"]
+        project = service.get(project_id, db)
+        assert project["manual_pause_steps"] == ["annotation", "mask"]
+    finally:
+        db.close()
+        engine.dispose()

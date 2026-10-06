@@ -59,7 +59,7 @@ REGION_ITEM = {
         "mask_group_ids": [],
     },
     "style": {"type": "ellipse", "color": "#F46A38", "opacity": 0.85, "width": 5, "padding": 8, "seed": 11},
-    "timing": {"trigger_mode": "anchor_start", "offset_sec": 0.0, "draw_duration_sec": 0.6, "hold_mode": "beat_end", "exit_duration_sec": 0.15},
+    "timing": {"trigger_mode": "manual", "manual_start_sec": 0.5, "offset_sec": 0.0, "draw_duration_sec": 0.6, "hold_mode": "slide_end", "exit_duration_sec": 0.15},
 }
 
 
@@ -113,6 +113,7 @@ def test_annotation_edit_and_confirmation_only_invalidate_output_when_changed(tm
 
     assert same_update["revision"] == 1
 
+    write_json_atomic(tmp_path / "slides" / "slide_001" / "audio_timeline.json", {"duration_sec": 3.0, "segments": [{"id": "slide_001_beat_001", "start": 0, "end": 3}]})
     confirmed = service.confirm_slide(None, project.id, "slide_001", {"expected_revision": 1})
     assert confirmed["revision"] == 2
 

@@ -1,18 +1,9 @@
 # -*- coding: utf-8 -*-
-"""勾画标注的音频对齐(W4):统一适配器接口 + 句级降级落地。
+"""Audio alignment contracts and original-narration range resolution.
 
-对应交接文档 6.4/5.3:
-
-- 首期**选定并交付**的适配器:句级时间(来自既有 TTS 音频时间轴的
-  ``segments``,timing_source=provider_sentence_timestamps)。它是可靠的
-  句级来源,精度诚实标记 ``sentence_fallback``,绝不冒充 word_aligned。
-- 字级适配器只定义统一接口(引擎注入);WhisperX 等字级引擎在本机
-  Python 3.13 环境的可行性评测记录于 docs/annotation-validation/
-  adapter-decision.md。评测通过并接入前,支持范围明确收窄为
-  sentence_fallback + manual。
-- 缓存键:音频字节哈希 + 发音文本/映射哈希 + 引擎/配置版本。
-- 时间必须有限、单调、非负且不超内容时长;无对应发音的区间如实标记,
-  不平均切分。
+Sentence adapters remain available for diagnostics. Production anchor triggers
+require measured provider/forced-alignment tokens; unavailable words require
+explicit audio calibration. The isolated CPU worker owns model execution.
 """
 from __future__ import annotations
 
@@ -85,13 +76,16 @@ def read_beat_spans(timeline_payload: Dict[str, Any]) -> Tuple[List[BeatSpan], O
         end = _finite_nonnegative(segment.get("end"))
         if not beat_id or start is None or end is None or end <= start:
             continue
-        if duration is not None and start > duration:
+        if duration is not None and start >= duration:
+            continue
+        end = min(end, duration) if duration is not None else end
+        if end <= start:
             continue
         spans.append(
             BeatSpan(
                 beat_id=beat_id,
-                start_sec=min(start, duration or start),
-                end_sec=min(end, duration or end),
+                start_sec=start,
+                end_sec=end,
                 timing_source=str(segment.get("timing_source") or "unknown"),
             )
         )
@@ -201,5 +195,58 @@ def beat_times_from_alignment(
     返回 (beat_times, temporal_status):sentence → sentence_fallback。
     """
     spans, _duration = read_beat_spans(timeline_payload or {})
-    beat_times = {span.beat_id: (span.start_sec, span.end_sec) for span in spans}
+    beat_times = {}
+    for span in spans:
+        previous = beat_times.get(span.beat_id, (span.start_sec, span.end_sec))
+        beat_times[span.beat_id] = (min(previous[0], span.start_sec), max(previous[1], span.end_sec))
     return beat_times, "sentence_fallback"
+
+
+def resolve_anchor_times(items, alignment, *, audio_hash=None, narration_hash=None):
+    """Resolve selected codepoint ranges using measured tokens, never interpolation.
+
+    Tokens use beat-local original narration ranges. Overlapping normalized tokens
+    (e.g. 20% -> 百分之二十) may share a range. Every spoken codepoint must be
+    covered; punctuation alone cannot create a timestamp.
+    """
+    if not isinstance(alignment, dict):
+        return {}
+    if alignment.get("time_reference", "audio") != "audio":
+        return {}
+    for key, expected in (("audio_hash", audio_hash), ("narration_hash", narration_hash)):
+        if expected and alignment.get(key) != expected:
+            return {}
+    tokens = alignment.get("tokens") or []
+    resolved = {}
+    for item in items:
+        anchor = item.anchor
+        if anchor is None:
+            continue
+        selected = []
+        covered = set()
+        for token in tokens:
+            if not isinstance(token, dict) or token.get("beat_id") != anchor.beat_id:
+                continue
+            if token.get("precision") not in ("word", "character"):
+                continue
+            if token.get("source") not in ("provider_word", "forced_alignment", "manual_verified"):
+                continue
+            bounds = token.get("range")
+            start, end = _finite_nonnegative(token.get("start")), _finite_nonnegative(token.get("end"))
+            if (not isinstance(bounds, list) or len(bounds) != 2
+                    or any(not isinstance(v, int) or isinstance(v, bool) for v in bounds)
+                    or bounds[0] >= bounds[1] or start is None or end is None or end <= start):
+                continue
+            if bounds[0] < anchor.range_end and bounds[1] > anchor.range_start:
+                selected.append((start, end, token["source"]))
+                covered.update(range(max(bounds[0], anchor.range_start), min(bounds[1], anchor.range_end)))
+        import unicodedata
+        required = {anchor.range_start + i for i, char in enumerate(anchor.quote)
+                    if not char.isspace() and not unicodedata.category(char).startswith("P")}
+        if selected and required and required <= covered:
+            resolved[item.annotation_id] = {
+                "start": min(entry[0] for entry in selected),
+                "end": max(entry[1] for entry in selected),
+                "source": selected[0][2],
+            }
+    return resolved

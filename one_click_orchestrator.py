@@ -494,9 +494,12 @@ def _pause_for_manual_step(
     confirmed = set(status.get("manual_pause_resumed") or [])
     module_name = next(
         (
-            name
-            for name in pause_modules
-            if _MANUAL_PAUSE_BEFORE_STAGE.get(name, name) == target and name not in confirmed
+            normalized
+            for raw_name in pause_modules
+            # 存量创作包的 "mask" 归一为 "ai_mask"(旧值从未匹配过任何阶段)
+            for normalized in ("ai_mask" if raw_name == "mask" else raw_name,)
+            if _MANUAL_PAUSE_BEFORE_STAGE.get(normalized, normalized) == target
+            and normalized not in confirmed
         ),
         None,
     )

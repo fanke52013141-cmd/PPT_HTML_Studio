@@ -94,10 +94,14 @@ def test_basic_event_bounds_and_offset_once():
     # 音频内起点 0.0 + offset(-0.1) → 钳制到 0
     assert event["start_sec"] == 0.0
     assert event["draw_end_sec"] == 0.6
-    assert event["hold_end_sec"] == 3.0  # beat_end
+    # beat_end:hold 至少覆盖到语块终点(3.0),并按帧量化约束收敛
+    assert event["hold_end_sec"] == 3.0
     assert event["exit_end_sec"] == 3.15
     assert 0 <= event["start_sec"] < event["draw_end_sec"] <= event["hold_end_sec"] <= event["exit_end_sec"] <= SLIDE_DURATION
-    assert event["timing_source"] == "anchor"
+    # 无词级锚点数据时诚实降级为句级回退,不谎报精确锚定
+    assert event["timing_source"] == "sentence_fallback"
+    assert payload["fps"] == 30
+    assert event["start_frame"] == 0 and event["draw_end_frame"] == 18
 
 
 def test_manual_event_retains_user_path_in_timeline():
@@ -166,24 +170,20 @@ def test_hold_modes():
     assert by_id["ann_002"]["exit_end_sec"] == 5.75
 
 
-def test_conflict_within_tolerance_delayed():
-    # 两条锚点同起点:首笔 0.15s,第二条延后 0.15s ≤ 容忍窗口
-    payload, issues = _build([_item("ann_001", draw=0.15), _item("ann_002", draw=0.4)])
-    by_id = {e["annotation_id"]: e for e in payload["events"]}
-    assert issues == []
-    assert by_id["ann_002"]["scheduling_note"] == "delayed"
-    assert by_id["ann_002"]["start_sec"] == by_id["ann_001"]["draw_end_sec"]
-
-
-def test_conflict_beyond_tolerance_needs_review():
-    # 第一条绘制 1.0s,第二条延后 1.0 > 0.2 容忍 → needs_review
+def test_drawing_concurrency_cap():
+    # 同一时刻最多两个同时绘制事件(v2 以并发上限替代旧的容忍窗口延迟);
+    # 第三个同起点条目被拒并记录 drawing_concurrency_exceeded,不生成事件
     payload, issues = _build([
-        _item("ann_001", draw=1.0),
+        _item("ann_001", draw=0.4),
         _item("ann_002", draw=0.4),
+        _item("ann_003", draw=0.4),
     ])
-    assert any(issue["annotation_id"] == "ann_002" and issue["reason"] == "conflict_beyond_tolerance" for issue in issues)
-    by_id = {e["annotation_id"]: e for e in payload["events"]}
-    assert "ann_002" not in by_id  # 被拒条目不生成事件
+    by_id = {e["annotation_id"] for e in payload["events"]}
+    assert by_id == {"ann_001", "ann_002"}
+    assert any(
+        issue["annotation_id"] == "ann_003" and issue["reason"] == "drawing_concurrency_exceeded"
+        for issue in issues
+    )
 
 
 def test_manual_timing_not_rescheduled():
@@ -193,21 +193,41 @@ def test_manual_timing_not_rescheduled():
     ])
     assert issues == []
     by_id = {e["annotation_id"]: e for e in payload["events"]}
-    # manual 起笔不因冲突重排
+    # manual 起笔不受并发上限约束,不重排
     assert by_id["ann_002"]["start_sec"] == 1.2
     assert by_id["ann_002"]["timing_source"] == "manual"
     assert by_id["ann_002"]["scheduling_note"] == ""
 
 
-def test_exceeds_slide_duration_reported():
-    # 语块终点 3.0 超过页长 0.8:beat_end hold 使 exit_end 越界
+def test_insufficient_draw_window_reported():
+    # 页长 0.1s 减去最小保留后容不下任何一笔:记录 insufficient_draw_window
     payload, issues = _build(
         [_item()],
         beat_times={"slide_001_beat_001": (0.0, 3.0)},
-        slide_duration=0.8,
+        slide_duration=0.1,
     )
-    assert any(issue["reason"] == "exceeds_slide_duration" for issue in issues)
+    assert any(issue["reason"] == "insufficient_draw_window" for issue in issues)
     assert payload["events"] == []
+
+
+def test_short_page_compresses_draw_instead_of_cutting():
+    # 可用窗口小于请求绘制时长但容得下最短笔迹:压缩绘制而不是截断路径
+    from annotation_geometry import build_manual_path_stroke
+
+    item = _item(draw=2.0)
+    path = [(100, 100), (180, 140), (260, 120), (340, 160)]
+    stroke = build_manual_path_stroke(path)
+    payload, issues = _build(
+        [_with_strokes(item, [stroke])],
+        beat_times={"slide_001_beat_001": (0.0, 3.0)},
+        slide_duration=1.0,
+    )
+    assert issues == []
+    event = payload["events"][0]
+    assert event["scheduling_note"] == "compressed"
+    assert event["draw_end_sec"] < 1.0
+    # 每笔轨迹点完整保留,只压缩时间
+    assert tuple(map(tuple, event["strokes"][0]["points"])) == tuple(path)
 
 
 def test_missing_anchor_time_reported():
@@ -237,5 +257,7 @@ def test_deterministic_hash():
 def test_inputs_recorded():
     payload, _ = _build([_item()])
     assert payload["inputs"]["image_hash"] == "a" * 64
-    assert payload["resolver_version"] == "annotation_timeline_v1"
+    assert payload["resolver_version"] == "annotation_timeline_v2"
+    assert payload["time_reference"] == "slide"
+    # 页长按帧量化(30fps 下 8.0s 不变)
     assert payload["slide_duration_sec"] == SLIDE_DURATION

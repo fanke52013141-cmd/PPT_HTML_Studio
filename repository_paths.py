@@ -15,6 +15,11 @@ RUNS_DIR = os.path.abspath(
 DATA_DIR = os.path.join(REPO_ROOT, "data")
 MODEL_VOICE_REFERENCES_DIR = os.path.join(DATA_DIR, "model_voice_references")
 LOGS_DIR = os.path.join(REPO_ROOT, "logs")
+ANNOTATION_WORKER_PYTHON = os.environ.get("PPT_ANNOTATION_ALIGN_PYTHON") or os.path.join(
+    REPO_ROOT, "runtime", "annotation_worker", "Scripts", "python.exe"
+)
+ANNOTATION_WORKER_SCRIPT = os.path.join(REPO_ROOT, "scripts", "align_annotation_audio.py")
+ANNOTATION_ALIGNMENT_MODELS_DIR = os.path.join(REPO_ROOT, "runtime", "annotation_models")
 
 # Versioned, user-managed registries.  These are JSON persistence adapters for
 # the first configuration rollout; the services keep the storage boundary

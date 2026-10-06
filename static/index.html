@@ -498,6 +498,7 @@
                     <button id="annotation-btn-select" class="secondary compact-action-btn" type="button">选择/编辑</button>
                     <button id="annotation-btn-region" class="secondary compact-action-btn" type="button">框选区域</button>
                     <button id="annotation-btn-freehand" class="secondary compact-action-btn" type="button">自由画笔</button>
+                    <button id="annotation-btn-finish-freehand" class="secondary compact-action-btn" type="button" hidden>完成绘制</button>
                     <label class="annotation-tool-style">新标注样式
                       <select id="annotation-new-style">
                         <option value="ellipse">手写圈</option>
@@ -513,10 +514,11 @@
                       </select>
                     </label>
                     <button id="annotation-btn-detect" class="secondary compact-action-btn" type="button">识别文字</button>
+                    <button id="annotation-btn-align" class="secondary compact-action-btn" type="button">定位音频文字</button>
                     <button id="annotation-btn-ai-plan" class="success compact-action-btn" type="button">AI 推荐重点</button>
                     <button id="annotation-btn-undo" class="secondary compact-action-btn" type="button">撤销</button>
                     <button id="annotation-btn-redo" class="secondary compact-action-btn" type="button">重做</button>
-                    <button id="annotation-btn-preview" class="secondary compact-action-btn" type="button">预览动画</button>
+                    <button id="annotation-btn-preview" class="secondary compact-action-btn" type="button">同步预览</button>
                   </div>
                 </div>
                 <div class="annotation-narration-pane card">
@@ -1794,7 +1796,7 @@
   <script src="creation_config_management.js?v=20261006.4"></script>
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20261006.2"></script>
-  <script src="article.js?v=20261006.6"></script>
+  <script src="article.js?v=20261006.7"></script>
   <script src="storyboard.js?v=20261005.3"></script>
   <script src="storyboard_prompts.js?v=20261006.2"></script>
   <script src="images.js?v=20261006.6"></script>
@@ -1807,8 +1809,9 @@
   <script src="narration_audio.js?v=20261006.6"></script>
   <script src="annotation_playback.js?v=20260929.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
-  <script src="annotations_workspace.js?v=20260928.1"></script>
-  <script src="annotations_editor.js?v=20260928.1"></script>
+  <script src="annotations_workspace.js?v=20261006.2"></script>
+  <script src="annotations_editor.js?v=20261006.2"></script>
+  <script src="annotation_preview.js?v=20261006.2"></script>
   <script src="output_render.js?v=20261006.1"></script>
   <script src="account_management.js?v=20261006.2"></script>
   <script src="workspace_navigation.js?v=20261005.2"></script>

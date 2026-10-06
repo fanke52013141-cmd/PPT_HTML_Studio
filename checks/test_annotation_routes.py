@@ -108,6 +108,36 @@ REGION_ITEM = {
     "timing": {"trigger_mode": "anchor_start", "offset_sec": 0.0, "draw_duration_sec": 0.6, "hold_mode": "beat_end", "exit_duration_sec": 0.15},
 }
 
+# 可直接确认的条目:manual 定时不依赖词级对齐(confirm 构建要求精确锚点,
+# anchor_start 条目必须先有音频字词对齐数据)。
+MANUAL_REGION_ITEM = {
+    "target": REGION_ITEM["target"],
+    "style": REGION_ITEM["style"],
+    "timing": {
+        "trigger_mode": "manual", "offset_sec": 0.0, "manual_start_sec": 0.5,
+        "draw_duration_sec": 0.6, "hold_mode": "slide_end", "exit_duration_sec": 0.15,
+    },
+}
+
+
+def _make_audio(run_root: Path) -> None:
+    """写入确认构建所需的最小音频时间轴(页长 8s,单语块)。"""
+    (run_root / "slides" / "slide_001" / "audio_timeline.json").write_text(
+        json.dumps(
+            {
+                "slide_id": "slide_001",
+                "audio_content_duration_sec": 8.0,
+                "audio_start_sec": 0.0,
+                "segments": [
+                    {"id": "slide_001_beat_001", "beat_id": "slide_001_beat_001",
+                     "start": 0.0, "end": 4.0}
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
 TEXT_ITEM = {
     "target": {
         "kind": "text",
@@ -417,27 +447,45 @@ def test_corrupt_page_file_is_500_with_diagnostics(client, project):
 
 
 def test_readiness_gates_per_handover(client, project):
-    project_id, _ = project
-    # enabled + 无任何条目 → no_annotations
+    project_id, run_root = project
+    # enabled + 无任何条目 → 空页是有效的"无标注页",可导出(R2 方案:不伪造标注)
     client.put(f"/api/projects/{project_id}/annotations/settings", json={"expected_revision": 0, "enabled": True})
     body = client.get(f"/api/projects/{project_id}/annotations").json()
-    assert body["readiness"] == {"can_render": False, "reason": "no_annotations", "blocking": []}
+    assert body["readiness"] == {"can_render": True, "reason": "", "blocking": []}
 
     # enabled + 未确认条目 → unconfirmed_items 且逐条列出
     client.patch(
         f"/api/projects/{project_id}/annotations/slides/slide_001",
-        json={"expected_revision": 0, "operations": [{"op": "add", "item": REGION_ITEM}]},
+        json={"expected_revision": 0, "operations": [{"op": "add", "item": MANUAL_REGION_ITEM}]},
     )
     body = client.get(f"/api/projects/{project_id}/annotations").json()
     assert body["readiness"]["can_render"] is False
     assert body["readiness"]["reason"] == "unconfirmed_items"
     assert body["readiness"]["blocking"] == [{"slide_id": "slide_001", "annotation_id": "ann_001", "reason": "unconfirmed"}]
 
-    # 关闭功能 → 恢复可导出,草稿保留
+    # 确认后产物齐备 → 可导出
+    _make_audio(run_root)
+    resp = client.post(f"/api/projects/{project_id}/annotations/slides/slide_001/confirm", json={"expected_revision": 1})
+    assert resp.status_code == 200
+    body = client.get(f"/api/projects/{project_id}/annotations").json()
+    assert body["readiness"]["can_render"] is True, body["readiness"]
+
+    # 音频时间轴变化后,旧时间轴输入过期 → 导出再次被阻塞(annotation_not_ready)
+    (run_root / "slides" / "slide_001" / "audio_timeline.json").write_text(
+        json.dumps({"slide_id": "slide_001", "audio_content_duration_sec": 9.0,
+                    "segments": [{"id": "slide_001_beat_001", "beat_id": "slide_001_beat_001",
+                                  "start": 0.0, "end": 5.0}]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    body = client.get(f"/api/projects/{project_id}/annotations").json()
+    assert body["readiness"]["can_render"] is False
+    assert body["readiness"]["reason"] == "annotation_not_ready"
+
+    # 关闭功能 → 恢复可导出,草稿(已确认)保留
     client.put(f"/api/projects/{project_id}/annotations/settings", json={"expected_revision": 1, "enabled": False})
     body = client.get(f"/api/projects/{project_id}/annotations").json()
     assert body["readiness"]["can_render"] is True
-    assert body["slides"][0]["counts"]["draft"] == 1
+    assert body["slides"][0]["counts"]["confirmed"] == 1
 
 
 def test_account_isolation_other_account_gets_404(client, project):
@@ -469,12 +517,13 @@ def test_account_scope_allows_owner(client, project):
 
 
 def test_confirm_gate_flow(client, project):
-    project_id, _ = project
+    project_id, run_root = project
     base = f"/api/projects/{project_id}/annotations"
-    # 添加区域条目
+    _make_audio(run_root)
+    # 添加可确认的手动定时条目
     client.patch(
         f"{base}/slides/slide_001",
-        json={"expected_revision": 0, "operations": [{"op": "add", "item": REGION_ITEM}]},
+        json={"expected_revision": 0, "operations": [{"op": "add", "item": MANUAL_REGION_ITEM}]},
     )
     # 启用勾画
     client.put(f"{base}/settings", json={"expected_revision": 1, "enabled": True})
@@ -483,31 +532,39 @@ def test_confirm_gate_flow(client, project):
     resp = client.post(f"{base}/slides/slide_001/confirm", json={"expected_revision": 99})
     assert resp.status_code == 409
 
-    # 正常确认
+    # 正常确认:确认内联完成构建并发布 v2 时间轴
     resp = client.post(f"{base}/slides/slide_001/confirm", json={"expected_revision": 1})
-    assert resp.status_code == 200
+    assert resp.status_code == 200, resp.json()
     body = resp.json()
     assert body["confirmed"] == 1
-    assert body["readiness"]["can_render"] is True  # 全部确认后可导出
-    # 确认后的条目带输入快照
+    assert body["timeline_built"] is True
+    assert body["readiness"]["can_render"] is True  # 全部确认且产物就绪后可导出
+    timeline = json.loads(
+        (run_root / "slides" / "slide_001" / "annotation_timeline.json").read_text(encoding="utf-8")
+    )
+    assert timeline["resolver_version"] == "annotation_timeline_v2"
+    assert timeline["events"][0]["strokes"][0]["ink"]["kind"] == "raster"
+    # 确认后的条目带构建输入快照
     detail = client.get(f"{base}/slides/slide_001").json()
     item = detail["items"][0]
     assert item["status"]["content"] == "confirmed"
+    assert item["status"]["temporal"] == "manual"
     assert item["confirmed_inputs"]["image_hash"] == item["inputs"]["image_hash"]
+    assert item["confirmed_inputs"]["build_id"] == timeline["build_id"]
 
-    # 无标注页确认被拒绝
+    # 已确认页幂等重确认成功,且不产生新的改动
     resp = client.post(f"{base}/slides/slide_001/confirm", json={"expected_revision": 2})
-    assert resp.status_code == 200  # 已确认页幂等重确认成功
+    assert resp.status_code == 200
+    assert resp.json()["revision"] == 2
 
 
 def test_confirm_requires_explicit_review_acceptance(client, project):
     project_id, run_root = project
     base = f"/api/projects/{project_id}/annotations"
-    # 直接写入一条 needs_review 条目(经真实 patch 后手动置状态不可行,走 restore 构造 AI 条目不适用;
-    # 这里通过 store 层面构造:添加条目后用 update 把 target 改成 line 粒度不可行 —— 用计划快照恢复路径)
+    _make_audio(run_root)
     client.patch(
         f"{base}/slides/slide_001",
-        json={"expected_revision": 0, "operations": [{"op": "add", "item": REGION_ITEM}]},
+        json={"expected_revision": 0, "operations": [{"op": "add", "item": MANUAL_REGION_ITEM}]},
     )
     # 人为把 spatial 置为 needs_review(模拟规划器/换图结果)
     page_path = run_root / "slides" / "slide_001" / "annotations.json"
@@ -515,12 +572,12 @@ def test_confirm_requires_explicit_review_acceptance(client, project):
     page["items"][0]["status"]["spatial"] = "needs_review"
     page_path.write_text(json.dumps(page, ensure_ascii=False), encoding="utf-8")
 
-    # 不带 accepted_review → 422 review_required
+    # 不带 accepted_review → 422 review_required(复核检查先于构建)
     resp = client.post(f"{base}/slides/slide_001/confirm", json={"expected_revision": 1})
     assert resp.status_code == 422
     detail = resp.json()["detail"]
     assert detail["code"] == "review_required"
-    assert detail["items"][0]["reason"] == "needs_review"
+    assert detail["items"][0]["reason"] == "review_required"
 
     # 显式接受后确认成功
     annotation_id = detail["items"][0]["annotation_id"]
@@ -628,3 +685,54 @@ def test_deleting_confirmed_item_invalidates_timeline(client, project):
     assert resp.status_code == 200, resp.text
     assert resp.json()["items"] == []
     assert not timeline_path.is_file()
+
+
+def test_failed_prepare_does_not_confirm_draft(client, project):
+    project_id, run_root = project
+    base = f"/api/projects/{project_id}/annotations/slides/slide_001"
+    client.patch(base, json={"expected_revision":0,"operations":[{"op":"add","item":MANUAL_REGION_ITEM}]})
+    response = client.post(base+"/confirm",json={"expected_revision":1})
+    assert response.status_code == 422
+    assert client.get(base).json()["items"][0]["status"]["content"] == "draft"
+    assert not (run_root/"slides"/"slide_001"/"annotation_timeline.json").exists()
+
+
+def test_prepared_build_assets_and_stale_audio_rejected(client, project):
+    from PIL import Image
+    import io
+    project_id, run_root = project
+    base = f"/api/projects/{project_id}/annotations/slides/slide_001"
+    _make_audio(run_root)
+    client.patch(base,json={"expected_revision":0,"operations":[{"op":"add","item":MANUAL_REGION_ITEM}]})
+    prepared = client.post(base+"/prepare",json={"expected_revision":1})
+    assert prepared.status_code == 200, prepared.json()
+    build_id = prepared.json()["build_id"]
+    ink_url = f"{base}/ink/{build_id}/ann_001/0/0"
+    frame = client.get(ink_url)
+    assert frame.status_code == 200
+    assert Image.open(io.BytesIO(frame.content)).getchannel("A").getbbox() is None
+    assert client.get(base+"/scene-asset",params={"asset":"../narration_beats.json"}).status_code == 404
+    assert client.get(ink_url.replace(build_id,"wrong")).status_code == 404
+    assert client.get(base).json()["revision"] == 1
+    (run_root/"slides"/"slide_001"/"voice.mp3").write_bytes(b"replacement audio")
+    response = client.post(base+"/confirm",json={"expected_revision":1,"prepared_build_id":build_id})
+    assert response.status_code == 409
+    assert client.get(base).json()["items"][0]["status"]["content"] == "draft"
+
+
+def test_formal_export_loader_accepts_confirmed_and_blocks_missing_ink(client, project):
+    from scripts.build_remotion_props import _load_annotation_timeline_for_render, BuildError
+    project_id, run_root = project
+    base = f"/api/projects/{project_id}/annotations"
+    directory = run_root / "slides" / "slide_001"
+    client.put(base+"/settings",json={"expected_revision":0,"enabled":True})
+    assert _load_annotation_timeline_for_render(directory,"slide_001") is None
+    _make_audio(run_root)
+    client.patch(base+"/slides/slide_001",json={"expected_revision":0,"operations":[{"op":"add","item":MANUAL_REGION_ITEM}]})
+    response=client.post(base+"/slides/slide_001/confirm",json={"expected_revision":1})
+    assert response.status_code == 200, response.json()
+    timeline=_load_annotation_timeline_for_render(directory,"slide_001")
+    stroke=timeline["events"][0]["strokes"][0]
+    (directory/"annotation_ink"/"ann_001"/stroke["ink"]["dir"]/"frame_001.png").unlink()
+    with pytest.raises(BuildError,match="ink_asset_missing"):
+        _load_annotation_timeline_for_render(directory,"slide_001")

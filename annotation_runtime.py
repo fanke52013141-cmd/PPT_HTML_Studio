@@ -10,6 +10,7 @@ def configure_annotation_runtime(app, write_json_atomic, read_json_file, reveal_
     from annotation_routes import router as annotation_router
     from annotation_job_store import AnnotationJobStore
     from annotation_jobs import AnnotationJobDependencies, AnnotationJobManager
+    from annotation_alignment_worker import run_alignment
     from annotation_planner import AnnotationPlanner, AnnotationPlannerDependencies
     from annotation_prompt_templates import AnnotationPromptStore
     from database import SessionLocal as DatabaseSessionLocal
@@ -27,11 +28,20 @@ def configure_annotation_runtime(app, write_json_atomic, read_json_file, reveal_
 
     import annotation_ocr_baidu as _annotation_ocr
 
+    def _annotation_ocr_api_key() -> str:
+        # 设置页密钥优先;未配置时回退环境变量(旧部署兼容)。
+        try:
+            from config_store import get_setting
+
+            stored = (get_setting("annotation_ocr_baidu_api_key") or "").strip()
+            if stored:
+                return stored
+        except Exception:  # noqa: BLE001 - 数据库不可用时仍允许环境变量兜底
+            pass
+        return os.environ.get("PPT_ANNOTATION_BAIDU_OCR_KEY", "").strip()
+
     def _annotation_ocr_config():
-        # W3 过渡:密钥经环境变量注入;全局设置/配置包接线在 W3 收尾。
-        return _annotation_ocr.BaiduOcrEngineConfig(
-            api_key=os.environ.get("PPT_ANNOTATION_BAIDU_OCR_KEY", "").strip()
-        )
+        return _annotation_ocr.BaiduOcrEngineConfig(api_key=_annotation_ocr_api_key())
 
     configure_annotation_store(
         AnnotationStoreDependencies(write_json_atomic=write_json_atomic)
@@ -94,6 +104,7 @@ def configure_annotation_runtime(app, write_json_atomic, read_json_file, reveal_
             recognize=_annotation_ocr.recognize_text_lines,
             annotation_store=get_annotation_store(),
             planner=_annotation_planner,
+            align_audio=run_alignment,
             lock_for=reveal_lock_for,
         )
     )
@@ -103,8 +114,24 @@ def configure_annotation_runtime(app, write_json_atomic, read_json_file, reveal_
             lock_for=reveal_lock_for,
             text_layout_builder=_annotation_layout_builder,
             job_manager=_annotation_job_manager,
-            ocr_ready=lambda: bool(os.environ.get("PPT_ANNOTATION_BAIDU_OCR_KEY", "").strip()),
+            ocr_ready=lambda: bool(_annotation_ocr_api_key()),
             prompt_store=_annotation_prompt_store,
+            prepare_playback=_annotation_prepare_playback,
         )
     )
     app.include_router(annotation_router)
+
+
+def _annotation_prepare_playback(project, slide_id):
+    """Use the same production reveal build and binding as video export."""
+    from mask_manifest_service import build_current_reveal_assets
+    from scripts.bind_reveal_timeline import bind_slide
+    from tts_service import REVEAL_VISUAL_LEAD_SEC
+    from project_storage import slide_dir
+    directory = Path(slide_dir(project.run_dir, slide_id))
+    if not (directory / "audio_timeline.json").is_file():
+        return
+    if not (Path(project.run_dir) / "reveal_manifest.json").is_file():
+        return
+    build_current_reveal_assets(project)
+    bind_slide(directory, REVEAL_VISUAL_LEAD_SEC, False)

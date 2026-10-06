@@ -55,7 +55,8 @@
     const holdEnd = Number(event.hold_end_sec) || drawEnd;
     const exitEnd = Number(event.exit_end_sec) || holdEnd;
     const t = quantize(timeSec, fps);
-    const qStart = quantize(start, fps);
+    const rate = Math.max(1, Math.round(Number(fps) || DEFAULT_FPS));
+    const qStart = Math.ceil(start * rate - 1e-7) / rate;
     if (t < qStart) return { phase: 'hidden', pathProgress: 0, opacityScale: 0, drawProgress: 0 };
     const drawWindow = Math.max(EPS, drawEnd - start);
     const drawProgress = Math.max(0, Math.min(1, (t - start) / drawWindow));
@@ -149,11 +150,15 @@
     const strokeCount = Math.max(1, strokes.length);
     const strokeShare = drawingTime / strokeCount;
     const elapsed = drawProgress * drawWindow;
+    if (Number.isFinite(stroke.draw_start_offset_sec) && Number.isFinite(stroke.draw_end_offset_sec)) {
+      return Math.max(0, Math.min(1, (elapsed - stroke.draw_start_offset_sec)
+        / Math.max(EPS, stroke.draw_end_offset_sec - stroke.draw_start_offset_sec)));
+    }
     const strokeStart = strokes.slice(0, index).reduce(
       (sum, s) => sum + Math.max(0, Number(s.start_offset_sec) || 0) + strokeShare,
       0,
     );
-    const local = (elapsed - strokeStart) / Math.max(EPS, strokeShare);
+    const local = (elapsed - strokeStart - startOffset) / Math.max(EPS, strokeShare);
     return Math.max(0, Math.min(1, local));
   }
 
@@ -242,9 +247,9 @@
   // 退出期仍用最后一帧(淡出由 opacity 承担)。与矢量采样同一笔迹时序。
   function rasterFrameIndex(event, stroke, index, drawProgress, frameCount) {
     const count = Math.max(1, Number(frameCount) || 1);
-    if (count <= 1) return 0;
     const local = strokeProgress(event, stroke, index, Math.max(0, Math.min(1, Number(drawProgress) || 0)));
-    return Math.min(count - 1, Math.floor(local * count));
+    if (local <= 0) return -1;
+    return Math.min(count - 1, Math.floor(local * (count - 1) + 1e-7));
   }
 
   return Object.freeze({

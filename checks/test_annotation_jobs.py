@@ -170,7 +170,8 @@ def test_cancel_before_start_marks_cancelled(store, manager, clean_jobs):
 
 
 def test_engine_failure_marks_failed_with_sanitized_error(store, manager, clean_jobs):
-    # 单页引擎失败不拖垮整批:job 成功、页级 failed;错误文本脱敏落库
+    # 唯一页面失败时,任务必须按失败收场(否则前端会谎报"识别完成"),
+    # 且错误文本脱敏落库
     def failing_recognize(image_bytes, config):
         raise RuntimeError("baidu ocr error: Bearer ALTAK-secret-key leaked")
 
@@ -184,20 +185,50 @@ def test_engine_failure_marks_failed_with_sanitized_error(store, manager, clean_
     )
     job, _ = broken_manager.submit_detect("annojobtest1", _targets())
     final = _wait_terminal(store, job.id)
-    assert final.status == "succeeded"
-    result = final.get_payload().get("result", {})
-    page = result["slides"][0]
-    assert page["status"] == "failed"
-    assert "ALTAK-secret-key" not in (page.get("error") or "")
+    assert final.status == "failed"
+    assert "ALTAK-secret-key" not in (final.error or "")
 
-    # job 级失败路径:错误文本必须脱敏
-    store.mark_failed("sanity-job", "Bearer ALTAK-secret-key leaked in crash")
-    row = store.get("sanity-job")
-    assert row is None or True  # 不存在时安全返回
     from annotation_job_store import _sanitize_error
 
     sanitized = _sanitize_error("Bearer ALTAK-secret-key leaked in crash")
     assert "ALTAK-secret-key" not in sanitized
+
+
+def test_partial_failure_keeps_job_succeeded(store, manager, clean_jobs):
+    # 多页批量里单页失败不拖垮整批:成功页落账,失败页页级记录
+    import hashlib
+
+    def selective_recognize(image_bytes, config):
+        if b"broken-slide" in image_bytes:
+            raise RuntimeError("baidu ocr error: Bearer ALTAK-secret-key leaked")
+        return BaiduOcrResult(
+            lines=(BaiduOcrLine("测试", 10, 10, 100, 40, (BaiduOcrChar("测", 10, 10, 40, 40),)),),
+            direction=0,
+            log_id=1,
+            granularity="char",
+            request_elapsed_sec=0.01,
+        )
+
+    partial_manager = AnnotationJobManager(
+        AnnotationJobDependencies(
+            job_store=store,
+            session_factory=SessionLocal,
+            text_layout_builder=manager._deps.text_layout_builder,
+            recognize=selective_recognize,
+        )
+    )
+    targets = [
+        ("slide_001", hashlib.sha256(b"good-image").hexdigest(), (1920, 1080), b"good-image"),
+        ("slide_002", hashlib.sha256(b"broken-slide").hexdigest(), (1920, 1080), b"broken-slide"),
+    ]
+    job, _ = partial_manager.submit_detect("annojobtest1", targets)
+    final = _wait_terminal(store, job.id)
+    assert final.status == "succeeded"
+    result = final.get_payload().get("result", {})
+    statuses = {page["slide_id"]: page["status"] for page in result["slides"]}
+    assert statuses["slide_001"] == "detected"
+    assert statuses["slide_002"] == "failed"
+    assert "ALTAK-secret-key" not in (result["slides"][1].get("error") or "")
 
 
 def test_plan_job_merges_suggestions_and_snapshots(store, manager, clean_jobs, tmp_path):
@@ -305,3 +336,27 @@ def test_interrupt_orphaned_marks_active_jobs(store, clean_jobs):
     assert count >= 1
     assert store.get(job.id).status == "interrupted"
     assert "中断" in (store.get(job.id).error or "")
+
+
+def test_alignment_job_publishes_and_rejects_changed_audio(manager, store, tmp_path):
+    from dataclasses import replace
+    from checks.test_annotation_routes import _make_project, _drop_project
+    project_id, run_dir = _make_project()
+    directory = run_dir / "slides" / "slide_001"
+    directory.joinpath("voice.mp3").write_bytes(b"audio")
+    try:
+        manager._deps = replace(manager._deps, align_audio=lambda directory, beats, cancel: {"tokens": [], "audio_hash": "measured"})
+        job, _ = manager.submit_plan(project_id,["slide_001"],operation="align")
+        final = _wait_terminal(store,job.id)
+        assert final.status == "succeeded", final.error
+        published = directory.joinpath("word_alignment.json").read_bytes()
+        def changing_audio(directory, beats, cancel):
+            directory.joinpath("voice.mp3").write_bytes(b"new audio")
+            return {"tokens": ["must never publish"]}
+        manager._deps = replace(manager._deps, align_audio=changing_audio)
+        job, _ = manager.submit_plan(project_id,["slide_001"],operation="align")
+        final = _wait_terminal(store,job.id)
+        assert final.status == "failed" and "stale_input" in final.error
+        assert directory.joinpath("word_alignment.json").read_bytes() == published
+    finally:
+        _drop_project(project_id)

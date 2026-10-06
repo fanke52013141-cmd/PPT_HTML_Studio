@@ -133,7 +133,20 @@ class ProjectService:
         if review_policy not in {"none", "images_and_video", "all_stages"}:
             review_policy = "none"
         # Normalize manual pause steps — only accept known module names.
-        _valid_pause = {"digital_human", "mask", "narration", "tts"}
+        # Keeps legacy "mask" for storage compatibility; the orchestrator
+        # aliases it to "ai_mask" at read time. The other names mirror
+        # _MANUAL_PAUSE_BEFORE_STAGE in one_click_orchestrator.
+        _valid_pause = {
+            "storyboard",
+            "images",
+            "ai_mask",
+            "mask",
+            "narration",
+            "tts",
+            "annotation",
+            "digital_human",
+            "render",
+        }
         raw_pause = payload.manual_pause_steps or []
         manual_pause = [s for s in raw_pause if s in _valid_pause]
         image_style_template = (payload.image_style_template or "default").strip()

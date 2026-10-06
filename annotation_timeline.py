@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -32,9 +33,9 @@ __all__ = [
     "timeline_hash",
 ]
 
-TIMELINE_SCHEMA_VERSION = 1
+TIMELINE_SCHEMA_VERSION = 2
 ANNOTATION_TIMELINE_FILE = "annotation_timeline.json"
-RESOLVER_VERSION = "annotation_timeline_v1"
+RESOLVER_VERSION = "annotation_timeline_v2"
 CONFLICT_TOLERANCE_SEC = 0.2
 _MIN_DRAW = 0.05
 _MIN_EXIT = 0.0
@@ -71,8 +72,8 @@ class TimelineEvent:
                 "width": self.width, "padding": self.padding, "seed": self.seed,
             },
             "strokes": [dict(s) for s in self.strokes],
-            "start_sec": round(self.start_sec, 4),
-            "draw_end_sec": round(self.draw_end_sec, 4),
+            "start_sec": self.start_sec,
+            "draw_end_sec": self.draw_end_sec,
             "hold_end_sec": round(self.hold_end_sec, 4),
             "exit_end_sec": round(self.exit_end_sec, 4),
             "timing_source": self.timing_source,
@@ -117,117 +118,141 @@ def _resolve_hold_end(hold_mode: str, hold_duration: Optional[float], beat_end: 
     return None, None
 
 
+def schedule_strokes(strokes, draw_duration, fps=30):
+    """Freeze each stroke's local window, weighted by arc length and pen lifts."""
+    if not strokes:
+        return ()
+    lengths = [max(1.0, sum(math.dist(a, b) for a, b in zip(
+        stroke.get("points", []), stroke.get("points", [])[1:]))) for stroke in strokes]
+    gaps = [math.ceil(max(0.0, float(stroke.get("start_offset_sec", 0))) * fps) / fps for stroke in strokes]
+    available = max(0.001, draw_duration - sum(gaps))
+    cursor = 0.0
+    result = []
+    for stroke, length, gap in zip(strokes, lengths, gaps):
+        cursor += gap
+        duration = 2 / fps + max(0.0, available - len(strokes) * 2 / fps) * length / sum(lengths)
+        result.append({**stroke, "draw_start_offset_sec": round(cursor, 6),
+                       "draw_end_offset_sec": round(cursor + duration, 6)})
+        cursor += duration
+    return tuple(result)
+
+
 def build_annotation_timeline(
-    *,
-    slide_id: str,
-    items: List[Any],
-    canvas: Tuple[int, int] = DEFAULT_CANVAS,
-    beat_times: Dict[str, Tuple[float, float]],
-    slide_duration: float,
-    image_hash: Optional[str],
-    narration_hash: Optional[str],
-    audio_hash: Optional[str],
-    confirmed_input_hashes: Dict[str, Optional[str]],
-) -> Tuple[Dict[str, Any], List[Dict[str, str]]]:
-    """构建页级 annotation_timeline 载荷;返回 (载荷, 全页 needs_review 原因)。
+    *, slide_id, items, canvas=DEFAULT_CANVAS, beat_times, slide_duration,
+    image_hash, narration_hash, audio_hash, confirmed_input_hashes,
+    audio_start_sec=0.0, anchor_times=None, target_ready_times=None,
+    require_precise=False, fps=30, max_concurrent_draws=2,
+):
+    """Compile audio-relative anchors into a deterministic slide clock.
 
-    items 为 AnnotationItem(或同形对象);beat_times: beat_id -> (起点, 终点),
-    音频文件起点为 0。页长口径复用 build_remotion_props 的统一值。
+    The production caller requires measured anchors. Legacy sentence timing is
+    available only to explicit offline callers and is labelled sentence_fallback.
+    Manual starts default to the legacy slide clock; new audio calibration
+    declares its reference. Fade/hold may shrink, but strokes are never cut off.
     """
-    events: List[TimelineEvent] = []
-    issues: List[Dict[str, str]] = []
-    # 排序:锚点时间 -> 用户顺序 -> 稳定 ID
-    def sort_key(item: Any):
-        start, _source, _rev = _resolve_start(item, beat_times)
-        return (start if start is not None else float("inf"), item.annotation_id)
+    events, issues = [], []
+    anchor_times, target_ready_times = anchor_times or {}, target_ready_times or {}
+    delay = max(0.0, float(audio_start_sec))
+    fps = max(1, int(fps))
+    slide_duration = math.floor(float(slide_duration) * fps + 1e-7) / fps
+    minimum_hold = max(0.2, 2 / fps)
 
-    ordered = sorted(items, key=sort_key)
-    last_main_draw_end = -1.0
+    def start_for(item):
+        timing = item.timing
+        if timing.trigger_mode == "manual":
+            value = timing.manual_start_sec
+            if value is None:
+                return None, "manual", False
+            reference = getattr(timing, "time_reference", "slide")
+            return float(value) + (delay if reference == "audio" else 0), "manual", False
+        precise = anchor_times.get(item.annotation_id)
+        if precise:
+            return float(precise["start"]) + delay + timing.offset_sec, precise["source"], False
+        if require_precise:
+            return None, "anchor", True
+        start, _, review = _resolve_start(item, beat_times)
+        return (start + delay if start is not None else None), "sentence_fallback", review
+
+    ordered = sorted(items, key=lambda item: (start_for(item)[0] if start_for(item)[0] is not None
+                                              else float("inf"), item.annotation_id))
     for item in ordered:
         if item.status.content == "disabled":
             continue
-        timing = item.timing
-        start, source, review = _resolve_start(item, beat_times)
-        note = ""
+        start, source, review = start_for(item)
         if start is None:
-            issues.append({
-                "annotation_id": item.annotation_id,
-                "reason": "missing_anchor_time" if source == "anchor" else "missing_manual_start",
-            })
+            issues.append({"annotation_id": item.annotation_id, "reason":
+                           "anchor_unresolved" if require_precise and source == "anchor" else
+                           "missing_manual_start" if source == "manual" else "missing_anchor_time"})
             continue
-        if start < 0:
-            start = 0.0
-        draw_duration = max(_MIN_DRAW, float(timing.draw_duration_sec))
-        draw_end = start + draw_duration
+        nominal_start = max(0.0, start)
+        ready = target_ready_times.get(item.annotation_id, 0.0)
+        if ready is None:
+            issues.append({"annotation_id": item.annotation_id, "reason": "target_visibility_unresolved"})
+            continue
+        if ready - nominal_start > 0.15 + 1e-7:
+            issues.append({"annotation_id": item.annotation_id, "reason": "target_not_ready"})
+            continue
+        start = math.ceil(max(nominal_start, ready) * fps - 1e-7) / fps
+        strokes = tuple(getattr(item, "strokes", ()) or ())
+        gaps = sum(math.ceil(max(0, float(s.get("start_offset_sec", 0))) * fps) / fps for s in strokes)
+        minimum_draw = max(2 / fps, len(strokes) * 2 / fps + gaps)
+        available = slide_duration - start - minimum_hold
+        if available + 1e-7 < minimum_draw:
+            issues.append({"annotation_id": item.annotation_id, "reason": "insufficient_draw_window"})
+            continue
+        requested_draw = max(minimum_draw, float(item.timing.draw_duration_sec))
+        draw_frames = min(math.ceil(requested_draw * fps - 1e-7),
+                          math.floor(available * fps + 1e-7))
+        draw_end = start + draw_frames / fps
+        timing = item.timing
         beat_end = beat_times.get(item.anchor.beat_id, (None, None))[1] if item.anchor else None
-        hold_end, exit_end = _resolve_hold_end(
-            timing.hold_mode, timing.hold_duration_sec, beat_end, slide_duration, draw_end,
-            max(_MIN_EXIT, float(timing.exit_duration_sec)),
-        )
-        if hold_end is None or exit_end is None or hold_end < draw_end:
-            issues.append({
-                "annotation_id": item.annotation_id,
-                "reason": "hold_window_invalid" if hold_end is not None else "missing_hold_reference",
-            })
+        if timing.hold_mode == "beat_end":
+            if beat_end is None:
+                issues.append({"annotation_id": item.annotation_id, "reason": "missing_hold_reference"})
+                continue
+            hold_end = max(draw_end + minimum_hold, float(beat_end) + delay)
+        elif timing.hold_mode == "slide_end":
+            hold_end = max(draw_end + minimum_hold, slide_duration - max(0.0, timing.exit_duration_sec))
+        else:
+            if timing.hold_duration_sec is None:
+                issues.append({"annotation_id": item.annotation_id, "reason": "missing_hold_reference"})
+                continue
+            hold_end = draw_end + max(minimum_hold, timing.hold_duration_sec)
+        hold_end = min(slide_duration, hold_end)
+        exit_end = min(slide_duration, hold_end + max(0.0, timing.exit_duration_sec))
+        active = [event for event in events if event.draw_end_sec > start + 1e-7]
+        if source != "manual" and len(active) >= max_concurrent_draws:
+            issues.append({"annotation_id": item.annotation_id, "reason": "drawing_concurrency_exceeded"})
             continue
-        if draw_end > slide_duration or exit_end > slide_duration:
-            issues.append({"annotation_id": item.annotation_id, "reason": "exceeds_slide_duration"})
-            continue
-        # 冲突调度:manual 不重排;anchor 冲突在容忍窗口内延后
-        if start < last_main_draw_end and source == "anchor":
-            delayed_start = last_main_draw_end
-            if delayed_start - start > CONFLICT_TOLERANCE_SEC:
-                issues.append({"annotation_id": item.annotation_id, "reason": "conflict_beyond_tolerance"})
-                continue
-            shifted = delayed_start
-            draw_end = shifted + draw_duration
-            if hold_end < draw_end:
-                issues.append({"annotation_id": item.annotation_id, "reason": "conflict_exceeds_hold"})
-                continue
-            note = "delayed"
-            start = shifted
-            if exit_end > slide_duration:
-                issues.append({"annotation_id": item.annotation_id, "reason": "exceeds_slide_duration"})
-                continue
-        last_main_draw_end = max(last_main_draw_end, draw_end)
-        events.append(
-            TimelineEvent(
-                annotation_id=item.annotation_id,
-                beat_id=item.anchor.beat_id if item.anchor else None,
-                target_kind=item.target.kind,
-                token_ids=tuple(item.target.token_ids),
-                style_type=item.style.type,
-                color=item.style.color,
-                opacity=item.style.opacity,
-                width=item.style.width,
-                padding=item.style.padding,
-                seed=item.style.seed,
-                start_sec=start,
-                draw_end_sec=draw_end,
-                hold_end_sec=hold_end,
-                exit_end_sec=exit_end,
-                timing_source=source,
-                scheduling_note=note,
-                needs_review=review,
-                strokes=tuple(getattr(item, "strokes", ()) or ()),
-            )
+        note = "compressed" if draw_frames / fps + 1e-7 < requested_draw else ""
+        event = TimelineEvent(
+            annotation_id=item.annotation_id, beat_id=item.anchor.beat_id if item.anchor else None,
+            target_kind=item.target.kind, token_ids=tuple(item.target.token_ids),
+            style_type=item.style.type, color=item.style.color, opacity=item.style.opacity,
+            width=item.style.width, padding=item.style.padding, seed=item.style.seed,
+            start_sec=start, draw_end_sec=draw_end, hold_end_sec=hold_end, exit_end_sec=exit_end,
+            timing_source=source, scheduling_note=note, needs_review=review,
+            strokes=schedule_strokes(strokes, draw_frames / fps, fps),
         )
-
+        events.append(event)
     payload = {
-        "schema_version": TIMELINE_SCHEMA_VERSION,
-        "resolver_version": RESOLVER_VERSION,
-        "slide_id": slide_id,
-        "canvas": [int(canvas[0]), int(canvas[1])],
-        "inputs": {
-            "image_hash": image_hash,
-            "narration_hash": narration_hash,
-            "audio_hash": audio_hash,
-            "confirmed_input_hashes": dict(confirmed_input_hashes or {}),
-        },
-        "slide_duration_sec": round(float(slide_duration), 4),
-        "events": [event.to_dict() for event in events],
-        "needs_review": list(issues),
+        "schema_version": TIMELINE_SCHEMA_VERSION, "resolver_version": RESOLVER_VERSION,
+        "time_reference": "slide", "fps": fps, "slide_id": slide_id, "canvas": list(canvas),
+        "inputs": {"image_hash": image_hash, "narration_hash": narration_hash,
+                   "audio_hash": audio_hash, "audio_start_sec": delay,
+                   "confirmed_input_hashes": dict(confirmed_input_hashes or {})},
+        "page_state": "ready" if events else "no_annotations",
+        "slide_duration_frames": round(slide_duration * fps),
+        "slide_duration_sec": round(slide_duration, 6), "events": [event.to_dict() for event in events],
+        "needs_review": issues,
     }
+    for event in payload["events"]:
+        event["start_frame"] = math.ceil(event["start_sec"] * fps - 0.001)
+        event["draw_end_frame"] = round(event["draw_end_sec"] * fps)
+        precise = anchor_times.get(event["annotation_id"], {})
+        event["anchor_audio_start_sec"] = precise.get("start")
+        event["anchor_audio_end_sec"] = precise.get("end")
+        event["target_ready_sec"] = target_ready_times.get(event["annotation_id"], 0.0)
     return payload, issues
 
 

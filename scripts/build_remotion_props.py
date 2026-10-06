@@ -518,7 +518,7 @@ def contract_slide_ids(run_dir: Path) -> list[str]:
     return slide_ids
 
 
-ANNOTATION_TIMELINE_RESOLVER_VERSION = "annotation_timeline_v1"
+ANNOTATION_TIMELINE_RESOLVER_VERSION = "annotation_timeline_v2"
 
 
 def _sha256_file(path: Path) -> str | None:
@@ -535,6 +535,7 @@ def _load_annotation_timeline_for_render(
     slide_id: str,
     asset_store: "RuntimeAssetStore | None" = None,
     repo_root: Path | None = None,
+    fps: int = 30,
 ) -> dict[str, Any] | None:
     timeline_path = slide_dir / "annotation_timeline.json"
     # slide_dir = <run>/slides/<slide_id>;planning 位于 run 根(slide_dir 上两级)
@@ -544,30 +545,30 @@ def _load_annotation_timeline_for_render(
         try:
             raw = json.loads(settings_path.read_text(encoding="utf-8-sig"))
             enabled = bool(raw.get("enabled")) if isinstance(raw, dict) else False
-        except ValueError:
-            enabled = False
+        except ValueError as exc:
+            raise BuildError("勾画设置损坏，请检查 annotation_settings.json") from exc
     if not enabled:
         return None  # 功能关闭:旧 timeline 一律忽略
-    if not timeline_path.exists():
-        raise BuildError(
-            f"Slide {slide_id}: 勾画已启用但缺少 annotation_timeline.json;"
-            "请在勾画工作区完成确认后重新导出"
-        )
-    timeline = read_json(timeline_path)
-    if not isinstance(timeline, dict) or not timeline.get("events"):
-        raise BuildError(f"Slide {slide_id}: annotation_timeline.json 缺少 events,无法渲染勾画")
-    if timeline.get("resolver_version") != ANNOTATION_TIMELINE_RESOLVER_VERSION:
-        raise BuildError(
-            f"Slide {slide_id}: 勾画时间轴版本过期"
-            f"({timeline.get('resolver_version')} != {ANNOTATION_TIMELINE_RESOLVER_VERSION});请重新确认勾画"
-        )
-    inputs = timeline.get("inputs") or {}
-    image_hash = _sha256_file(slide_dir / "visual_draft.png")
-    if image_hash and inputs.get("image_hash") and inputs["image_hash"] != image_hash:
-        raise BuildError(f"Slide {slide_id}: 勾画时间轴基于旧图片,请重新确认勾画后导出")
-    narration_hash = _sha256_file(slide_dir / "narration_beats.json")
-    if narration_hash and inputs.get("narration_hash") and inputs["narration_hash"] != narration_hash:
-        raise BuildError(f"Slide {slide_id}: 勾画时间轴基于旧讲稿,请重新确认勾画后导出")
+    from annotation_build import AnnotationBuildError, read_json as read_annotation_json, validate_timeline
+    from annotation_contracts import AnnotationPage
+    raw_page = read_annotation_json(slide_dir / "annotations.json", optional=True)
+    if raw_page is None:
+        return None
+    raw_timeline = read_annotation_json(timeline_path, optional=True)
+    canvas = tuple((raw_timeline or {}).get("canvas") or [1920, 1080])
+    profile = read_annotation_json(slide_dir.parent.parent / "planning" / "canvas_profile.json", optional=True)
+    if profile:
+        canvas = (int(profile["width"]), int(profile["height"]))
+    issues = []
+    page = AnnotationPage.from_payload(raw_page, issues, canvas=canvas)
+    if issues or page is None:
+        raise BuildError(f"Slide {slide_id}: 勾画数据损坏，请检查 annotations.json")
+    try:
+        timeline = validate_timeline(slide_dir, page, canvas=canvas, timeline=raw_timeline, fps=fps)
+    except AnnotationBuildError as exc:
+        raise BuildError(f"Slide {slide_id}: 勾画未就绪 ({exc});请预览并重新确认勾画") from exc
+    if timeline is None:
+        return None
     if asset_store is not None and repo_root is not None:
         _attach_raster_assets(timeline, slide_dir, slide_id, asset_store, repo_root)
     return timeline
@@ -625,6 +626,7 @@ def build_slide(
     repo_root: Path,
     asset_store: RuntimeAssetStore,
     start_sec: float,
+    fps: int = 30,
 ) -> dict[str, Any]:
     scene = convert_scene_assets(read_json(slide_dir / "scene.json"), slide_dir, repo_root, asset_store)
     audio_timeline = read_json(slide_dir / "audio_timeline.json")
@@ -652,7 +654,7 @@ def build_slide(
     # enabled=true  → timeline 必须存在、resolver 未过期、输入哈希与当前
     #                 文件一致;否则拒绝渲染并给出可操作错误。
     annotation_timeline = _load_annotation_timeline_for_render(
-        slide_dir, slide_id, asset_store=asset_store, repo_root=repo_root
+        slide_dir, slide_id, asset_store=asset_store, repo_root=repo_root, fps=fps
     )
 
     payload = {
@@ -704,7 +706,7 @@ def build_props(
     start_sec = 0.0
 
     for slide_dir in slide_dirs:
-        slide = build_slide(slide_dir, repo_root, asset_store, start_sec)
+        slide = build_slide(slide_dir, repo_root, asset_store, start_sec, fps=fps)
         slides.append(slide)
         start_sec += float(slide["duration_sec"])
 

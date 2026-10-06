@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from annotation_service import AnnotationService, get_annotation_service
@@ -111,6 +112,27 @@ def put_annotation_prompts(
 
 
 # ------------------------------------------------------------ W4: 确认门禁
+
+@router.post("/api/projects/{project_id}/annotations/slides/{slide_id}/prepare")
+def prepare_annotation_slide(project_id: str, slide_id: str, payload: dict[str, Any],
+                             db: Session = Depends(get_db),
+                             service: AnnotationService = Depends(get_annotation_service)):
+    return service.prepare_slide(db, project_id, slide_id, payload)
+
+
+@router.get("/api/projects/{project_id}/annotations/slides/{slide_id}/scene-asset")
+def get_annotation_scene_asset(project_id: str, slide_id: str, asset: str,
+                               db: Session = Depends(get_db),
+                               service: AnnotationService = Depends(get_annotation_service)):
+    return FileResponse(service.preview_scene_asset(db, project_id, slide_id, asset), media_type="image/png")
+
+
+@router.get("/api/projects/{project_id}/annotations/slides/{slide_id}/ink/{build_id}/{annotation_id}/{stroke_index}/{frame_index}")
+def get_annotation_ink(project_id: str, slide_id: str, build_id: str, annotation_id: str,
+                       stroke_index: int, frame_index: int, db: Session = Depends(get_db),
+                       service: AnnotationService = Depends(get_annotation_service)):
+    path = service.annotation_asset(db, project_id, slide_id, build_id, annotation_id, stroke_index, frame_index)
+    return FileResponse(path, media_type="image/png")
 
 
 @router.post("/api/projects/{project_id}/annotations/slides/{slide_id}/confirm")

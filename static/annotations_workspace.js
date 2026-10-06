@@ -24,10 +24,18 @@ const ANNOTATIONS_WS = {
   conflict: null,
   // 跨项目/跨页暂存:`${projectId}::${slideId}` -> 未保存操作
   draftOps: {},
+  // 讲稿文本选区暂存:先选旁白文字、再点文字候选时直接带上锚点
+  pendingNarrationAnchor: null,
 };
 
 function annotationsApiBase(projectId = ANNOTATIONS_WS.projectId) {
   return `/api/projects/${projectId}/annotations`;
+}
+
+// 本地临时条目 id:时间戳+自增序号,避免同一毫秒内的两条标注 id 碰撞。
+function nextLocalAnnotationId() {
+  ANNOTATIONS_WS.localSeq = (ANNOTATIONS_WS.localSeq || 0) + 1;
+  return `local_${Date.now()}_${ANNOTATIONS_WS.localSeq}`;
 }
 
 // ------------------------------------------------------------ 项目生命周期
@@ -49,6 +57,8 @@ function resetAnnotationsProjectState() {
   ANNOTATIONS_WS.summary = null;
   ANNOTATIONS_WS.page = { slide_id: '', revision: 0, items: [] };
   ANNOTATIONS_WS.selectedAnnotationId = null;
+  ANNOTATIONS_WS.pendingNarrationAnchor = null;
+  if (typeof cancelAnnotationPreviewLoop === 'function') cancelAnnotationPreviewLoop();
   window.__annotationsEnabled = false;
   renderAnnotationSaveStatus('idle');
 }
@@ -71,7 +81,53 @@ function annotationContextChanged(generation, projectId, slideId) {
     || ANNOTATIONS_WS.page.slide_id !== slideId;
 }
 
+// local_ 临时 id 的目标内容指纹(与 operationAlreadyApplied 同一组字段,
+// 不取整个 target:自由笔迹的 path_points 不会原样回到服务端响应)。
+function annotationTargetFingerprint(item) {
+  const target = item?.target || {};
+  return JSON.stringify([
+    target.kind ?? null,
+    target.granularity ?? null,
+    target.polygons ?? null,
+    target.token_ids ?? null,
+    target.quote ?? null,
+  ]);
+}
+
+// 保存成功后本地临时 id 已在服务端定型。把仍在队列/隔离区里引用 local_ id
+// 的操作重写到新服务端 id(在飞窗口内的撤销/编辑),否则下一轮 flush 必然
+// 以 unknown_id 整批被拒。已定型的 add 直接撤下。
+function remapAnnotationLocalOps(batchOperations, responseItems) {
+  const map = new Map();
+  const usedIds = new Set();
+  (Array.isArray(batchOperations) ? batchOperations : []).forEach(op => {
+    if (!op || op.op !== 'add' || typeof op.__local_id !== 'string') return;
+    const fingerprint = annotationTargetFingerprint(op.item);
+    const match = (responseItems || []).find(item => {
+      if (usedIds.has(item.annotation_id)) return false;
+      return annotationTargetFingerprint(item) === fingerprint;
+    });
+    if (match) {
+      map.set(op.__local_id, match.annotation_id);
+      usedIds.add(match.annotation_id);
+    }
+  });
+  if (!map.size) return;
+  const rewrite = operations => operations
+    .filter(op => !(op && op.op === 'add' && typeof op.__local_id === 'string' && map.has(op.__local_id)))
+    .map(op => {
+      if (op && typeof op.annotation_id === 'string'
+        && op.annotation_id.startsWith('local_') && map.has(op.annotation_id)) {
+        return { ...op, annotation_id: map.get(op.annotation_id) };
+      }
+      return op;
+    });
+  ANNOTATIONS_WS.pendingOps = rewrite(ANNOTATIONS_WS.pendingOps);
+  ANNOTATIONS_WS.failedOps = rewrite(ANNOTATIONS_WS.failedOps);
+}
+
 async function flushAnnotationsSave() {
+  window.finishAnnotationFreehand?.();
   if (!ANNOTATIONS_WS.projectId || !ANNOTATIONS_WS.page.slide_id) return;
   if (ANNOTATIONS_WS.saveInFlight || !ANNOTATIONS_WS.pendingOps.length) {
     return;
@@ -132,6 +188,7 @@ async function flushAnnotationsSave() {
   if (error === null) {
     ANNOTATIONS_WS.page.revision = res.revision;
     ANNOTATIONS_WS.page.items = res.items;
+    remapAnnotationLocalOps(operations, res.items || []);
     ANNOTATIONS_WS.saveInFlight = false;
     ANNOTATIONS_WS.conflict = null;
     delete ANNOTATIONS_WS.draftOps[annotationDraftKey(projectId, slideId)];
@@ -302,6 +359,7 @@ async function reloadAnnotationsSummary() {
   if (enabledToggle) enabledToggle.checked = summary?.settings?.enabled === true;
   const emphasis = document.getElementById('annotation-ai-emphasis');
   if (emphasis) emphasis.value = summary?.settings?.defaults?.emphasis || 'moderate';
+  updateAnnotationDecisionButton();
   refreshAnnotationsStepFlag();
 }
 
@@ -320,6 +378,26 @@ function refreshAnnotationModuleState() {
   refreshAnnotationsStepFlag();
 }
 
+// ------------------------------------------------------------ 决策与逐页确认
+
+function updateAnnotationDecisionButton() {
+  const button = document.getElementById('annotation-btn-decision');
+  if (!button) return;
+  const decision = ANNOTATIONS_WS.summary?.settings?.decision || 'none';
+  button.textContent = decision === 'no_annotations' ? '恢复勾画决策' : '本项目不加勾画';
+}
+
+function requestAnnotationDecision() {
+  const current = ANNOTATIONS_WS.summary?.settings?.decision || 'none';
+  if (current !== 'no_annotations') {
+    showCustomConfirm('本项目不加勾画', '将把本项目标记为"明确不使用勾画标注",本步骤视为完成;已有草稿会保留,随时可恢复。', () => {
+      setAnnotationDecision('no_annotations');
+    });
+    return;
+  }
+  setAnnotationDecision('none');
+}
+
 async function setAnnotationDecision(decision) {
   const projectId = ANNOTATIONS_WS.projectId;
   if (!projectId) return;
@@ -336,13 +414,115 @@ async function setAnnotationDecision(decision) {
       ANNOTATIONS_WS.summary.settings.revision = res.revision;
     }
     refreshAnnotationModuleState();
+    updateAnnotationDecisionButton();
     showToast(decision === 'no_annotations' ? '已记录:本项目不添加勾画。' : '已恢复勾画决策。');
   } catch (error) {
     showToast(`决策保存失败：${error.message || '未知错误'}`);
   }
 }
 
+function updateAnnotationConfirmButton() {
+  const button = document.getElementById('annotation-btn-confirm-page');
+  if (!button) return;
+  const items = ANNOTATIONS_WS.page.items || [];
+  const active = items.filter(item => item.status?.content !== 'disabled');
+  if (!active.length) {
+    button.disabled = true;
+    button.textContent = '确认本页';
+    return;
+  }
+  const allConfirmed = active.every(item => item.status?.content === 'confirmed');
+  button.disabled = false;
+  button.textContent = allConfirmed ? '重新确认本页' : '确认本页';
+}
+
+function annotationTimelineErrorText(error) {
+  const text = String(error || '');
+  if (text === 'audio_timeline_missing') return '该页还没有音频时间轴';
+  if (text === 'text_layout_missing') return '文字布局缺失,请重新识别文字';
+  if (text.startsWith('unconfirmed:')) return '仍有未确认条目';
+  return '构建失败';
+}
+
+async function submitAnnotationConfirm(projectId, slideId, acceptedReviewIds) {
+  let res;
+  try {
+    res = await API.post(
+      `${annotationsApiBase(projectId)}/slides/${encodeURIComponent(slideId)}/confirm`,
+      { expected_revision: ANNOTATIONS_WS.page.revision, accepted_review: acceptedReviewIds,
+        prepared_build_id: typeof ANNOTATION_PREVIEW !== 'undefined'
+          && ANNOTATION_PREVIEW.prepared?.projectId === projectId
+          && ANNOTATION_PREVIEW.prepared?.slideId === slideId
+          && ANNOTATION_PREVIEW.prepared?.revision === ANNOTATIONS_WS.page.revision
+          ? ANNOTATION_PREVIEW.prepared.result.build_id : undefined },
+      { silent: true }
+    );
+  } catch (error) {
+    if (error?.status === 409) {
+      showToast('页面已被其他窗口修改,正在重新加载。');
+      await selectAnnotationPage(ANNOTATIONS_WS.activeIndex).catch(() => {});
+      return;
+    }
+    const detail = error?.body?.detail;
+    if (error?.status === 422 && detail?.code === 'review_required'
+      && Array.isArray(detail.items) && detail.items.length && !acceptedReviewIds.length) {
+      showCustomConfirm('确认含复核项的标注',
+        `有 ${detail.items.length} 条标注带几何复核提示(如整行降级识别)。确认后将按当前形态带入视频。`,
+        () => { submitAnnotationConfirm(projectId, slideId, detail.items.map(entry => entry.annotation_id)); });
+      return;
+    }
+    showToast(`确认失败：${typeof annotationPrepareError === 'function' ? annotationPrepareError(error) : error?.message || '未知错误'}`);
+    return;
+  }
+  if (ANNOTATIONS_WS.projectId !== projectId || ANNOTATIONS_WS.page.slide_id !== slideId) return;
+  ANNOTATIONS_WS.page.revision = res.revision;
+  (ANNOTATIONS_WS.page.items || []).forEach(item => {
+    if (item.status?.content !== 'disabled') {
+      item.status = { ...(item.status || {}), content: 'confirmed' };
+    }
+  });
+  // Read the authoritative timing status as well as the confirmation revision.
+  await selectAnnotationPage(ANNOTATIONS_WS.activeIndex);
+  await reloadAnnotationsSummary().catch(() => {});
+  if (res.timeline_built) {
+    showToast(`已确认本页 ${res.confirmed} 条标注,动画时间轴已生成。`);
+  } else if (res.timeline_error) {
+    showToast(`已确认本页 ${res.confirmed} 条标注;时间轴暂未生成(${annotationTimelineErrorText(res.timeline_error)}),生成音频后重新确认即可。`);
+  } else {
+    showToast(`已确认本页 ${res.confirmed} 条标注。`);
+  }
+}
+
+async function confirmAnnotationPage() {
+  const projectId = ANNOTATIONS_WS.projectId;
+  const slideId = ANNOTATIONS_WS.page.slide_id;
+  if (!projectId || !slideId) return;
+  if (annotationPrerequisitesBlocked()) return;
+  // 确认必须基于服务端当前版本:先把未保存编辑落盘
+  await flushAnnotationsSave().catch(() => {});
+  if (ANNOTATIONS_WS.projectId !== projectId || ANNOTATIONS_WS.page.slide_id !== slideId) return;
+  if (ANNOTATIONS_WS.conflict || ANNOTATIONS_WS.failedOps.length || ANNOTATIONS_WS.pendingOps.length) {
+    showToast('当前页还有未保存或未解决的编辑,请先处理保存状态再确认。');
+    return;
+  }
+  const active = (ANNOTATIONS_WS.page.items || []).filter(item => item.status?.content !== 'disabled');
+  if (!active.length) {
+    showToast('当前页没有可确认的标注。');
+    return;
+  }
+  const reviewBlocked = active.filter(item =>
+    item.status?.spatial === 'needs_review' || (item.review_issues?.length));
+  if (reviewBlocked.length) {
+    showCustomConfirm('确认含复核项的标注',
+      `有 ${reviewBlocked.length} 条标注带几何复核提示(如整行降级识别)。确认后将按当前形态带入视频。`,
+      () => { submitAnnotationConfirm(projectId, slideId, reviewBlocked.map(item => item.annotation_id)); });
+    return;
+  }
+  await submitAnnotationConfirm(projectId, slideId, []);
+}
+
 async function selectAnnotationPage(index) {
+  window.finishAnnotationFreehand?.();
   const projectId = ANNOTATIONS_WS.projectId;
   const previousSlideId = ANNOTATIONS_WS.page.slide_id;
   // 离开当前页:flush 尽力而为;残留的未保存操作(含冲突/被拒批次)归属原页草稿,
@@ -363,6 +543,8 @@ async function selectAnnotationPage(index) {
   const generation = ++ANNOTATIONS_WS.pageGeneration;
   ANNOTATIONS_WS.activeIndex = index;
   ANNOTATIONS_WS.selectedAnnotationId = null;
+  // 跨页的讲稿选区暂存不再适用:锚点必须绑定当前页语块
+  ANNOTATIONS_WS.pendingNarrationAnchor = null;
   const page = await API.get(`${annotationsApiBase(projectId)}/slides/${encodeURIComponent(slideId)}`);
   // 过期页面响应丢弃:仅当项目与页面代次都未变化才落账(R4-005)
   if (ANNOTATIONS_WS.projectId !== projectId
@@ -375,6 +557,7 @@ async function selectAnnotationPage(index) {
     revision: page.revision || 0,
     items: page.items || [],
     narration: page.narration || { beats: [] },
+    mask_groups: page.mask_groups || [],
     imageHash: page.image?.hash || null,
     aiSnapshot: page.ai_suggestion_snapshot || null,
   };
@@ -543,6 +726,8 @@ function handleAnnotationNarrationSelection(event) {
   const utf16Start = probeStart.toString().length;
   const utf16End = utf16Start + text.length;
   const anchor = AnnotationsCore.buildAnchor(node.dataset.beatId, spoken, utf16Start, utf16End);
+  // 暂存选区:先选旁白文字、再点文字候选时直接带上锚点
+  ANNOTATIONS_WS.pendingNarrationAnchor = anchor;
   if (typeof window.annotationNarrationAnchorPicked === 'function') {
     window.annotationNarrationAnchorPicked(anchor);
   }
@@ -561,6 +746,7 @@ function renderAnnotationItems() {
   const items = ANNOTATIONS_WS.page.items || [];
   if (!items.length) {
     container.innerHTML = '<div class="annotation-items-empty">暂无标注。可用框选或自由画笔手动添加，也可让 AI 推荐重点。</div>';
+    updateAnnotationConfirmButton();
     return;
   }
   container.innerHTML = items.map((item, index) => {
@@ -588,6 +774,7 @@ function renderAnnotationItems() {
       }
     });
   });
+  updateAnnotationConfirmButton();
 }
 
 function selectAnnotationItem(annotationId) {
@@ -665,6 +852,8 @@ async function setAnnotationsEnabled(enabled) {
 
 async function setAnnotationEmphasis(emphasis) {
   if (!['weak', 'moderate', 'strong'].includes(emphasis)) return;
+  const projectId = ANNOTATIONS_WS.projectId;
+  if (!projectId) return;
   const settings = ANNOTATIONS_WS.summary?.settings || {};
   const defaults = { ...(settings.defaults || {}), emphasis };
   try {
@@ -700,6 +889,8 @@ window.selectAnnotationPage = selectAnnotationPage;
 window.selectAnnotationItem = selectAnnotationItem;
 window.refreshAnnotationModuleState = refreshAnnotationModuleState;
 window.setAnnotationDecision = setAnnotationDecision;
+window.requestAnnotationDecision = requestAnnotationDecision;
+window.confirmAnnotationPage = confirmAnnotationPage;
 window.resolveAnnotationConflict = resolveAnnotationConflict;
 window.retryAnnotationFailedOps = retryAnnotationFailedOps;
 window.ANNOTATIONS_WS = ANNOTATIONS_WS;
@@ -744,6 +935,16 @@ async function submitAnnotationJob(operation) {
   pollAnnotationJob(res.job_id, operation, projectId, slideId);
 }
 
+// 任务成功收场时如实上报页级失败:部分页失败(跳过原因如缺讲稿)不算失败,
+// 有 failed 页就必须告诉用户,否则"已生成"提示掩盖了空结果。
+function annotationJobSlideFailure(job) {
+  const slides = Array.isArray(job?.result?.slides) ? job.result.slides : [];
+  const failed = slides.filter(entry => entry?.status === 'failed');
+  if (!failed.length) return '';
+  const error = String(failed[0]?.error || '未知错误');
+  return failed.length === slides.length ? error : `${failed.length}/${slides.length} 页失败:${error}`;
+}
+
 function pollAnnotationJob(jobId, operation, projectId, slideId) {
   stopAnnotationJobPolling();
   const tick = async () => {
@@ -760,18 +961,22 @@ function pollAnnotationJob(jobId, operation, projectId, slideId) {
     if (ANNOTATIONS_WS.projectId !== projectId) return;
     renderAnnotationJobProgress(operation, jobId, job.status, job.progress, job.error);
     if (job.status === 'succeeded') {
+      const slideFailure = annotationJobSlideFailure(job);
       if (operation === 'detect_text') {
         await loadAnnotationCandidates();
         if (ANNOTATIONS_WS.projectId === projectId) {
-          showToast('文字识别完成;可点选候选生成文字标注。');
+          showToast(slideFailure ? `文字识别完成,但有页面失败:${slideFailure}` : '文字识别完成;可点选候选生成文字标注。');
         }
+      } else if (operation === 'align') {
+        showToast('音频文字定位完成，请同步预览；无法可靠定位的文字可人工试听校准。');
       } else if (operation === 'plan') {
         // 仅当用户仍停留在发起页才重载,避免把 AI 条目刷进别的页面(R4-005)
         if (ANNOTATIONS_WS.page.slide_id === slideId) {
           await selectAnnotationPage(ANNOTATIONS_WS.activeIndex);
         }
         if (ANNOTATIONS_WS.projectId === projectId) {
-          showToast('AI 重点已生成,均为待确认草稿。');
+          showToast(slideFailure ? `AI 重点未能生成:${slideFailure}` : 'AI 重点已生成，开始定位音频文字。');
+          if (!slideFailure && ANNOTATIONS_WS.page.slide_id === slideId) await submitAnnotationJob('align');
         }
       }
       return;
@@ -786,7 +991,7 @@ function pollAnnotationJob(jobId, operation, projectId, slideId) {
 function renderAnnotationJobProgress(operation, jobId, status, progress, error) {
   const node = document.getElementById('annotation-job-status');
   if (!node) return;
-  const label = operation === 'detect_text' ? '文字识别' : 'AI 生成重点';
+  const label = operation === 'detect_text' ? '文字识别' : operation === 'align' ? '音频文字定位' : 'AI 生成重点';
   if (status === 'succeeded') {
     node.style.display = 'none';
     node.textContent = '';
@@ -856,6 +1061,19 @@ function addAnnotationFromCandidate(tokenId) {
     showToast('该候选缺少有效几何,请重新识别文字。');
     return;
   }
+  // 工具栏"新标注样式"对文字候选同样生效
+  const styleType = document.getElementById('annotation-new-style')?.value || defaults.type || 'ellipse';
+  const anchor = ANNOTATIONS_WS.pendingNarrationAnchor || null;
+  const timing = {
+    trigger_mode: anchor ? 'anchor_start' : 'manual',
+    offset_sec: 0,
+    draw_duration_sec: Number(defaults.draw_duration_sec || 0.6),
+    hold_mode: anchor ? 'beat_end' : 'slide_end',
+    exit_duration_sec: Number(defaults.exit_duration_sec || 0.15),
+  };
+  if (!anchor) {
+    timing.manual_start_sec = 0;
+  }
   pushAnnotationHistory();
   const item = {
     target: {
@@ -867,30 +1085,34 @@ function addAnnotationFromCandidate(tokenId) {
       granularity: candidate.granularity || 'char',
       mask_group_ids: [],
     },
-    anchor: null,
+    anchor,
     style: {
-      type: defaults.type || 'ellipse',
+      type: styleType,
       color: defaults.color || '#F46A38',
       opacity: Number(defaults.opacity ?? 0.85),
       width: Number(defaults.width || 5),
       padding: Number(defaults.padding || 8),
       seed: Math.floor(Math.random() * 2147483647),
     },
-    timing: {
-      trigger_mode: 'anchor_start',
-      offset_sec: 0,
-      draw_duration_sec: Number(defaults.draw_duration_sec || 0.6),
-      hold_mode: 'beat_end',
-      exit_duration_sec: Number(defaults.exit_duration_sec || 0.15),
-    },
+    timing,
   };
-  ANNOTATIONS_WS.page.items.push({ ...item, annotation_id: `local_${Date.now()}` });
-  queueAnnotationSave(AnnotationsCore.buildAddOperation(item));
+  const localId = nextLocalAnnotationId();
+  const stored = { ...item, annotation_id: localId };
+  if (!anchor) {
+    // 服务端要求文字目标必须带讲稿锚点:先建本地草稿,选中短语后随 add 提交
+    stored.__deferredAdd = true;
+  }
+  ANNOTATIONS_WS.page.items.push(stored);
+  if (!stored.__deferredAdd) {
+    // add 操作携带 local id(→ __local_id),保存前合并才能接住后续 update/delete
+    queueAnnotationSave(AnnotationsCore.buildAddOperation(stored));
+  }
   renderAnnotationItems();
   renderAnnotationOverlay();
-  const lastIndex = ANNOTATIONS_WS.page.items.length - 1;
-  selectAnnotationItem(ANNOTATIONS_WS.page.items[lastIndex].annotation_id);
-  showToast('已添加文字标注;到讲稿中选中短语完成关联。');
+  selectAnnotationItem(localId);
+  showToast(anchor
+    ? '已添加文字标注并关联讲稿。'
+    : '已添加文字标注;到讲稿中选中短语完成关联后自动保存。');
 }
 
 window.submitAnnotationJob = submitAnnotationJob;

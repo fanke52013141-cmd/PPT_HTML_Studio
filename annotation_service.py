@@ -71,6 +71,7 @@ class AnnotationServiceDependencies:
     ocr_ready: Callable[[], bool] = lambda: False
     # W3:规划 Prompt 存储(AnnotationPromptStore);未配置时 Prompt 端点报 503。
     prompt_store: Any = None
+    prepare_playback: Any = None
 
 
 class AnnotationService:
@@ -83,6 +84,7 @@ class AnnotationService:
         self._job_manager = dependencies.job_manager
         self._ocr_ready = dependencies.ocr_ready
         self._prompt_store = dependencies.prompt_store
+        self._prepare_playback = dependencies.prepare_playback
 
     def _annotation_content_changed(self, project: Project, slide_ids: Sequence[str]) -> None:
         """Register the output-only consequence of a persisted annotation edit.
@@ -197,7 +199,9 @@ class AnnotationService:
         return {
             "settings": settings.to_dict(),
             "slides": slides,
-            "module_state": self._module_state(settings, pages),
+            "module_state": ("stale" if self._module_state(settings, pages) == "confirmed"
+                             and not self._readiness(settings, run_dir, slide_ids, canvas)["can_render"]
+                             else self._module_state(settings, pages)),
             "readiness": self._readiness(settings, run_dir, slide_ids, canvas),
         }
 
@@ -232,18 +236,22 @@ class AnnotationService:
             pages = {sid: self._store.read_page(run_dir, sid, canvas=canvas) for sid in slide_ids}
         except AnnotationStoreError as exc:
             raise self._store_error_to_http(exc) from exc
-        if all(page_item_counts(page)["total"] == 0 for page in pages.values()):
-            return {"can_render": False, "reason": "no_annotations", "blocking": []}
-        blocking: List[Dict[str, Any]] = []
+        from annotation_build import AnnotationBuildError, validate_timeline
+        blocking = []
         for slide_id, page in pages.items():
-            for item in page.items if page else ():
-                if item.status.content == "disabled":
-                    continue
-                if item.status.content != "confirmed":
-                    blocking.append({"slide_id": slide_id, "annotation_id": item.annotation_id, "reason": "unconfirmed"})
-        if blocking:
-            return {"can_render": False, "reason": "unconfirmed_items", "blocking": blocking}
-        return {"can_render": True, "reason": "", "blocking": []}
+            active = [i for i in page.items if i.status.content != "disabled"] if page else []
+            if not active:
+                continue
+            drafts = [i for i in active if i.status.content != "confirmed"]
+            if drafts:
+                blocking.extend({"slide_id": slide_id, "annotation_id": i.annotation_id, "reason": "unconfirmed"} for i in drafts)
+                continue
+            try:
+                validate_timeline(Path(slide_file(run_dir, slide_id, "annotations.json")).parent, page, canvas=canvas)
+            except AnnotationBuildError as exc:
+                blocking.extend({"slide_id": slide_id, **issue} for issue in exc.issues)
+        reason = "unconfirmed_items" if any(i["reason"] == "unconfirmed" for i in blocking) else "annotation_not_ready" if blocking else ""
+        return {"can_render": not blocking, "reason": reason, "blocking": blocking}
 
     # ------------------------------------------------------------ 设置
 
@@ -325,50 +333,10 @@ class AnnotationService:
         from annotation_geometry import FragmentInput, GeometryInputV2, build_manual_path_stroke, build_strokes_v2
         from annotation_target_resolver import TargetResolutionError, resolve_phrase_target
 
+        from annotation_build import item_strokes
         try:
-            if item.target.path_points:
-                return [build_manual_path_stroke(
-                    item.target.path_points,
-                    style_type=item.style.type,
-                    width=item.style.width,
-                )]
-            if item.target.kind == "text" and item.target.token_ids:
-                if layout is None:
-                    return []
-                resolution = resolve_phrase_target(
-                    layout=layout,
-                    token_ids=list(item.target.token_ids),
-                    expected_layout_revision=item.target.layout_revision,
-                )
-                fragments = tuple(
-                    FragmentInput(
-                        polygons=tuple(tuple((p[0], p[1]) for p in poly) for poly in fragment["polygons"]),
-                        style_type=item.style.type,
-                        width=item.style.width,
-                        padding=item.style.padding,
-                        seed=item.style.seed,
-                    )
-                    for fragment in resolution["fragments"]
-                )
-            else:
-                polygons = item.target.polygons or ()
-                if not polygons:
-                    return []
-                fragments = tuple(
-                    FragmentInput(
-                        polygons=(tuple((p[0], p[1]) for p in poly),),
-                        style_type=item.style.type,
-                        width=item.style.width,
-                        padding=item.style.padding,
-                        seed=item.style.seed,
-                    )
-                    for poly in polygons
-                )
-            return [dict(stroke) for stroke in build_strokes_v2(GeometryInputV2(fragments=fragments))]
-        except TargetResolutionError as exc:
-            logger.debug("stroke resolution failed for %s: %s", item.annotation_id, exc)
-            return []
-        except Exception as exc:  # noqa: BLE001 - 预览层兜底
+            return item_strokes(item, layout)
+        except Exception as exc:
             logger.debug("stroke derivation failed for %s: %s", item.annotation_id, exc)
             return []
 
@@ -399,7 +367,12 @@ class AnnotationService:
         except AnnotationStoreError as exc:
             raise self._store_error_to_http(exc) from exc
         beats = self._read_beats(project, slide_id)
+        from annotation_build import read_json
+        scene = read_json(self._slide_file(project, slide_id, "scene.json"), optional=True) or {}
+        mask_groups = [{"id": layer["target_group_id"], "label": layer.get("visible_text") or layer["target_group_id"]}
+                       for layer in scene.get("layers", []) if layer.get("target_group_id")]
         return {
+            "mask_groups": mask_groups,
             "slide_id": slide_id,
             "revision": page.revision if page else 0,
             "items": self._items_with_strokes(run_dir, slide_id, page.items) if page else [],
@@ -747,271 +720,143 @@ class AnnotationService:
 
     # ------------------------------------------------------------ W4: 确认门禁
 
-    def confirm_slide(self, db: Session, project_id: str, slide_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """确认当前页全部启用条目;降级必须显式接受。
-
-        - 未确认条目阻塞导出(readiness.unconfirmed_items)。
-        - spatial=needs_review 或带 review_issues 的条目必须在
-          accepted_review 中显式列出 annotation_id 才能确认。
-        - confirmed_inputs 记录确认时的输入哈希与页面 revision,
-          供后续失效比对;编辑会重置为 draft(见 patch)。
-        """
+    def prepare_slide(self, db, project_id, slide_id, payload):
+        from annotation_build import AnnotationBuildError, compile_slide, input_snapshot
+        from pipeline_lifecycle import write_json_atomic
         project = self._project_or_404(db, project_id)
-        slide_ids = self._slide_ids_or_404(project)
-        if slide_id not in slide_ids:
+        if slide_id not in self._slide_ids_or_404(project):
             raise HTTPException(status_code=404, detail="Slide 不存在")
-        expected_revision = payload.get("expected_revision")
-        if not isinstance(expected_revision, int) or isinstance(expected_revision, bool) or expected_revision < 0:
-            raise HTTPException(status_code=422, detail="expected_revision 必须是非负整数")
-        accepted_review = payload.get("accepted_review") or []
-        if not isinstance(accepted_review, list):
-            raise HTTPException(status_code=422, detail="accepted_review 必须是数组")
-        accepted_review_ids = {str(v) for v in accepted_review}
-
-        run_dir = self._run_dir(project)
-        from project_impact_service import resolve_impacts, snapshot_impacts
-
-        impact_snapshot = snapshot_impacts(
-            run_dir, affected=("annotation geometry", "annotation timing"),
-            slide_ids=(slide_id,),
-        )
+        if self._prepare_playback:
+            self._prepare_playback(project, slide_id)
         canvas = self._canvas_for(project)
-        image_hash = self._image_hash(project, slide_id)
-        narration_hash = self._narration_hash(project, slide_id)
+        directory = self._slide_file(project, slide_id, "annotations.json").parent
         with self._lock_for(project):
-            try:
-                page = self._store.read_page(run_dir, slide_id, canvas=canvas)
-            except AnnotationStoreError as exc:
-                raise self._store_error_to_http(exc) from exc
-            current_revision = page.revision if page else 0
-            if expected_revision != current_revision:
-                raise HTTPException(
-                    status_code=409,
-                    detail={"code": "revision_conflict", "current_revision": current_revision},
-                )
-            if page is None or not page.items:
-                raise HTTPException(status_code=422, detail={"code": "no_annotations", "message": "当前页没有可确认的标注"})
-            from dataclasses import replace
+            page = self._store.read_page(self._run_dir(project), slide_id, canvas=canvas)
+            revision = page.revision if page else 0
+            expected = payload.get("expected_revision")
+            if not isinstance(expected, int) or isinstance(expected, bool) or expected != revision:
+                raise HTTPException(status_code=409, detail={"code": "revision_conflict", "current_revision": revision})
+            if not page:
+                raise HTTPException(status_code=422, detail={"code": "no_annotations"})
+            before = input_snapshot(directory, page.items, canvas)
+        try:
+            compiled = compile_slide(directory, page, canvas=canvas)
+        except AnnotationBuildError as exc:
+            raise HTTPException(status_code=422, detail={"code": "annotation_prepare_failed", "items": exc.issues}) from exc
+        with self._lock_for(project):
+            latest = self._store.read_page(self._run_dir(project), slide_id, canvas=canvas)
+            if not latest or latest.revision != revision or input_snapshot(directory, latest.items, canvas) != before:
+                raise HTTPException(status_code=409, detail={"code": "stale_input", "current_revision": latest.revision if latest else 0})
+            write_json_atomic(directory / "annotation_preview.json", compiled)
+        from annotation_build import read_json
+        scene = read_json(directory / "scene.json", optional=True) or {
+            "slide_id": slide_id, "canvas": {"width": canvas[0], "height": canvas[1], "background": "#FEFDF9"},
+            "layers": [{"id": "full_slide", "type": "png", "role": "full_slide", "asset": "visual_draft.png",
+                        "box": {"x": 0, "y": 0, "w": canvas[0], "h": canvas[1]}, "z_index": 0}],
+        }
+        return {"revision": revision, "timeline": compiled, "build_id": compiled.get("build_id"),
+                "scene": scene, "animation_timeline": read_json(directory / "animation_timeline.json", optional=True) or {"events": []},
+                "audio_timeline": read_json(directory / "audio_timeline.json", optional=True),
+                "audio_url": f"/api/projects/{project_id}/slides/{slide_id}/audio"}
 
-            updated_items = []
-            blocked: List[Dict[str, str]] = []
-            page_changed = False
-            for item in page.items:
-                if item.status.content == "disabled":
-                    updated_items.append(item)
-                    continue
-                if item.status.content == "confirmed":
-                    updated_items.append(item)
-                    continue
-                needs_acceptance = item.status.spatial == "needs_review" or bool(item.review_issues)
-                if needs_acceptance and item.annotation_id not in accepted_review_ids:
-                    blocked.append({
-                        "annotation_id": item.annotation_id,
-                        "reason": item.status.spatial if item.status.spatial == "needs_review" else "has_review_issues",
-                    })
-                    continue
-                updated_items.append(
-                    replace(
-                        item,
-                        status=AnnotationStatus(
-                            content="confirmed",
-                            spatial=item.status.spatial,
-                            temporal=item.status.temporal,
-                        ),
-                        confirmed_inputs={
-                            "image_hash": image_hash,
-                            "narration_hash": narration_hash,
-                            "revision": current_revision,
-                            "confirmed_at": self._now_iso(),
-                        },
-                    )
-                )
-                page_changed = True
+    def confirm_slide(self, db, project_id, slide_id, payload):
+        from dataclasses import replace
+        from annotation_build import input_snapshot, read_json
+        from pipeline_lifecycle import write_json_atomic
+        from project_impact_service import resolve_impacts, snapshot_impacts
+        project = self._project_or_404(db, project_id)
+        if slide_id not in self._slide_ids_or_404(project):
+            raise HTTPException(status_code=404, detail="Slide 不存在")
+        expected = payload.get("expected_revision")
+        if not isinstance(expected, int) or isinstance(expected, bool) or expected < 0:
+            raise HTTPException(status_code=422, detail="expected_revision 必须是非负整数")
+        accepted = payload.get("accepted_review") or []
+        if not isinstance(accepted, list):
+            raise HTTPException(status_code=422, detail="accepted_review 必须是数组")
+        run_dir, canvas = self._run_dir(project), self._canvas_for(project)
+        directory = self._slide_file(project, slide_id, "annotations.json").parent
+        with self._lock_for(project):
+            page = self._store.read_page(run_dir, slide_id, canvas=canvas)
+            revision = page.revision if page else 0
+            if revision != expected:
+                raise HTTPException(status_code=409, detail={"code": "revision_conflict", "current_revision": revision})
+            if not page or not page.items:
+                raise HTTPException(status_code=422, detail={"code": "no_annotations"})
+            blocked = [{"annotation_id": item.annotation_id, "reason": "review_required"}
+                       for item in page.items if item.status.content != "disabled"
+                       and (item.status.spatial == "needs_review" or item.review_issues)
+                       and item.annotation_id not in accepted]
             if blocked:
                 raise HTTPException(status_code=422, detail={"code": "review_required", "items": blocked})
-            if page_changed:
-                updated_page = replace(
-                    page,
-                    revision=current_revision + 1,
-                    items=tuple(updated_items),
-                    updated_at=self._now_iso(),
-                )
-                try:
-                    self._store.write_page(run_dir, slide_id, updated_page)
-                except AnnotationStoreError as exc:
-                    raise self._store_error_to_http(exc) from exc
-            else:
-                updated_page = page
-        try:
-            settings = self._store.read_settings(run_dir)
-        except AnnotationStoreError as exc:
-            raise self._store_error_to_http(exc) from exc
-        enabled = settings.enabled if settings else False
-        # 确认后尝试构建正式时间轴(R2 方案 6:导出前产物必须就绪)。
-        # 无音频/语块时间缺失时保留 needs_review,不写 timeline——
-        # 渲染门禁会在 enabled=true 且缺文件时给出可操作错误。
-        timeline_result: Dict[str, Any] = {"timeline_built": False, "timeline_error": ""}
-        if enabled:
-            try:
-                timeline_result = self._build_timeline_for_slide(project, run_dir, slide_id)
-            except Exception as exc:  # noqa: BLE001 - 构建失败不回滚确认
-                timeline_result = {"timeline_built": False, "timeline_error": str(exc)[:300]}
-        if page_changed or timeline_result.get("timeline_changed"):
+        requested_build = payload.get("prepared_build_id")
+        if requested_build:
+            compiled = read_json(directory / "annotation_preview.json", optional=True)
+            if not compiled or compiled.get("build_id") != requested_build:
+                raise HTTPException(status_code=409, detail={"code": "stale_preview"})
+        else:
+            compiled = self.prepare_slide(db, project_id, slide_id, {"expected_revision": expected})["timeline"]
+        impact = snapshot_impacts(run_dir, affected=("annotation geometry", "annotation timing"), slide_ids=(slide_id,))
+        with self._lock_for(project):
+            page = self._store.read_page(run_dir, slide_id, canvas=canvas)
+            if (not page or page.revision != expected
+                    or any(compiled.get("inputs", {}).get(key) != value
+                           for key, value in input_snapshot(directory, page.items, canvas).items())):
+                raise HTTPException(status_code=409, detail={"code": "stale_preview", "current_revision": page.revision if page else 0})
+            existing = read_json(directory / "annotation_timeline.json", optional=True)
+            changed = existing != compiled or any(i.status.content not in ("confirmed", "disabled") for i in page.items)
+            if changed:
+                event_by_id = {event["annotation_id"]: event for event in compiled["events"]}
+                items = tuple(replace(item, status=AnnotationStatus(
+                    content="confirmed", spatial=item.status.spatial,
+                    temporal="manual" if event_by_id[item.annotation_id]["timing_source"] == "manual" else "word_aligned"),
+                    confirmed_inputs={**compiled["inputs"], "build_id": compiled.get("build_id"), "confirmed_at": self._now_iso()})
+                    if item.status.content != "disabled" else item for item in page.items)
+                page = replace(page, revision=page.revision + 1, items=items, updated_at=self._now_iso())
+                # Publish only complete immutable assets; a crash between files is blocked by readiness.
+                write_json_atomic(directory / "annotation_timeline.json", compiled)
+                self._store.write_page(run_dir, slide_id, page)
+        if changed:
             self._annotation_content_changed(project, (slide_id,))
-        resolved_effects = ["annotation geometry"]
-        if timeline_result.get("timeline_built"):
-            resolved_effects.append("annotation timing")
-        resolve_impacts(
-            run_dir, affected=resolved_effects, slide_ids=(slide_id,),
-            snapshot=impact_snapshot,
-        )
-        return {
-            "slide_id": slide_id,
-            "revision": updated_page.revision,
-            "confirmed": sum(1 for i in updated_items if i.status.content == "confirmed"),
-            **timeline_result,
-            "readiness": self._readiness(settings or default_annotation_settings(), run_dir, slide_ids, canvas)
-            if enabled else {"can_render": True, "reason": "", "blocking": []},
-        }
+        resolve_impacts(run_dir, affected=("annotation geometry", "annotation timing"), slide_ids=(slide_id,), snapshot=impact)
+        settings = self._store.read_settings(run_dir) or default_annotation_settings()
+        return {"slide_id": slide_id, "revision": page.revision,
+                "confirmed": sum(i.status.content == "confirmed" for i in page.items),
+                "timeline_built": True, "timeline_changed": changed, "build_id": compiled.get("build_id"),
+                "readiness": self._readiness(settings, run_dir, self._slide_ids_or_404(project), canvas)}
 
-    def _build_timeline_for_slide(self, project: Project, run_dir: str, slide_id: str) -> Dict[str, Any]:
-        """构建并落盘单页 annotation_timeline.json(确认门禁之后调用)。"""
-        import json as _json
-
-        from annotation_alignment import read_beat_spans
-        from annotation_geometry import FragmentInput, GeometryInputV2, build_manual_path_stroke, build_strokes_v2
-        from annotation_target_resolver import resolve_phrase_target
-        from annotation_timeline import ANNOTATION_TIMELINE_FILE, build_annotation_timeline
-        from project_storage import slide_file
-
-        canvas = self._canvas_for(project)
-        page = self._store.read_page(run_dir, slide_id, canvas=canvas)
-        if page is None or not page.items:
-            return {"timeline_built": False, "timeline_error": "no_annotations"}
-        unconfirmed = [i.annotation_id for i in page.items if i.status.content not in ("confirmed", "disabled")]
-        if unconfirmed:
-            return {"timeline_built": False, "timeline_error": f"unconfirmed: {','.join(unconfirmed)}"}
-
-        audio_path = self._slide_file(project, slide_id, "audio_timeline.json")
-        try:
-            audio_timeline = _json.loads(audio_path.read_text(encoding="utf-8-sig"))
-        except (OSError, ValueError):
-            return {"timeline_built": False, "timeline_error": "audio_timeline_missing"}
-        spans, duration = read_beat_spans(audio_timeline)
-        beat_times = {span.beat_id: (span.start_sec, span.end_sec) for span in spans}
-
-        layout = None
-        if self._layout_builder is not None:
-            try:
-                layout = self._layout_builder.load(run_dir, slide_id)
-            except Exception:  # noqa: BLE001
-                layout = None
-        events_items = []
-        for item in page.items:
-            if item.status.content == "disabled":
+    def annotation_asset(self, db, project_id, slide_id, build_id, annotation_id, stroke_index, frame_index):
+        from annotation_build import read_json
+        project = self._project_or_404(db, project_id)
+        if slide_id not in self._slide_ids_or_404(project):
+            raise HTTPException(status_code=404, detail="Slide 不存在")
+        directory = self._slide_file(project, slide_id, "annotations.json").parent
+        for filename in ("annotation_preview.json", "annotation_timeline.json"):
+            manifest = read_json(directory / filename, optional=True)
+            if not manifest or manifest.get("build_id") != build_id:
                 continue
-            try:
-                if item.target.path_points:
-                    strokes = [build_manual_path_stroke(
-                        item.target.path_points,
-                        style_type=item.style.type,
-                        width=item.style.width,
-                    )]
-                    fragments = None
-                elif item.target.kind == "text" and item.target.token_ids:
-                    if layout is None:
-                        return {"timeline_built": False, "timeline_error": "text_layout_missing"}
-                    resolution = resolve_phrase_target(
-                        layout=layout,
-                        token_ids=list(item.target.token_ids),
-                        expected_layout_revision=item.target.layout_revision,
-                    )
-                    fragments = tuple(
-                        FragmentInput(
-                            polygons=tuple(tuple((p[0], p[1]) for p in poly) for poly in fragment["polygons"]),
-                            style_type=item.style.type,
-                            width=item.style.width,
-                            padding=item.style.padding,
-                            seed=item.style.seed,
-                        )
-                        for fragment in resolution["fragments"]
-                    )
-                else:
-                    fragments = tuple(
-                        FragmentInput(
-                            polygons=(tuple((p[0], p[1]) for p in poly),),
-                            style_type=item.style.type,
-                            width=item.style.width,
-                            padding=item.style.padding,
-                            seed=item.style.seed,
-                        )
-                        for poly in item.target.polygons
-                    )
-                if fragments is not None:
-                    strokes = [dict(s) for s in build_strokes_v2(GeometryInputV2(fragments=fragments))]
-            except Exception as exc:  # noqa: BLE001
-                return {"timeline_built": False, "timeline_error": f"strokes: {exc}"}
-            try:
-                strokes = self._attach_ink(run_dir, slide_id, item, strokes, canvas=canvas)
-            except Exception as exc:  # noqa: BLE001 - 墨迹失败退回矢量,不阻塞确认
-                logger.warning("ink render failed for %s/%s: %s", slide_id, item.annotation_id, exc)
-            from dataclasses import replace
+            event = next((e for e in manifest.get("events", []) if e["annotation_id"] == annotation_id), None)
+            if event and 0 <= stroke_index < len(event["strokes"]):
+                ink = event["strokes"][stroke_index].get("ink", {})
+                if 0 <= frame_index < int(ink.get("frame_count", 0)):
+                    path = directory / "annotation_ink" / annotation_id / ink["dir"] / f"frame_{frame_index:03d}.png"
+                    if path.is_file() and path.resolve().is_relative_to(directory.resolve()):
+                        return path
+        raise HTTPException(status_code=404, detail="勾画帧不存在或预览已更新")
 
-            events_items.append(replace(item))
-            events_items[-1] = _ItemWithStrokesView(events_items[-1], strokes)
-
-        payload, issues = build_annotation_timeline(
-            slide_id=slide_id,
-            items=events_items,
-            canvas=canvas,
-            beat_times=beat_times,
-            slide_duration=float(duration or 0.0),
-            image_hash=self._image_hash(project, slide_id),
-            narration_hash=self._narration_hash(project, slide_id),
-            audio_hash=None,
-            confirmed_input_hashes={},
-        )
-        if issues:
-            return {"timeline_built": False, "timeline_error": f"needs_review: {issues[0]['reason']}"}
-        out_path = Path(slide_file(run_dir, slide_id, ANNOTATION_TIMELINE_FILE))
-        from pipeline_lifecycle import write_json_atomic
-
-        try:
-            existing = json.loads(out_path.read_text(encoding="utf-8-sig"))
-        except (OSError, ValueError):
-            existing = None
-        if existing == payload:
-            return {"timeline_built": True, "timeline_changed": False, "events": len(payload["events"])}
-        write_json_atomic(out_path, payload)
-        return {"timeline_built": True, "timeline_changed": True, "events": len(payload["events"])}
-
-
-    def _attach_ink(self, run_dir: str, slide_id: str, item, strokes, *, canvas: Tuple[int, int]):
-        """确认后为每笔渲染栅格墨迹帧(视频呈现位图手写,而非 SVG)。"""
-        from annotation_ink import InkRequest, render_and_write
-        from project_storage import slide_dir as storage_slide_dir
-
-        ink_root = Path(storage_slide_dir(run_dir, slide_id)) / "annotation_ink" / item.annotation_id
-        attached = []
-        for index, stroke in enumerate(strokes):
-            brush = stroke.get("brush_height")
-            request = InkRequest(
-                points=tuple(map(tuple, stroke["points"])),
-                width_profile=tuple(stroke["width_profile"]),
-                canvas=canvas,
-                color=tuple(int(item.style.color[index:index + 2], 16) for index in (1, 3, 5)),
-                base_width=float(brush) if brush else float(item.style.width),
-                opacity=item.style.opacity,
-                seed=item.style.seed + index * 733,
-                closed=stroke.get("closed", False),
-            )
-            meta = render_and_write(
-                request,
-                ink_root / f"stroke_{index}",
-                draw_duration_sec=item.timing.draw_duration_sec,
-            )
-            attached.append({**stroke, "ink": meta})
-        return attached
+    def preview_scene_asset(self, db, project_id, slide_id, asset):
+        from annotation_build import read_json
+        project = self._project_or_404(db, project_id)
+        if slide_id not in self._slide_ids_or_404(project):
+            raise HTTPException(status_code=404, detail="Slide 不存在")
+        directory = self._slide_file(project, slide_id, "annotations.json").parent
+        scene = read_json(directory / "scene.json", optional=True) or {}
+        allowed = {"visual_draft.png"}
+        allowed.update(layer.get("asset") for layer in scene.get("layers", []))
+        allowed.add(scene.get("canvas", {}).get("background_asset"))
+        path = directory / asset
+        if asset not in allowed or not path.resolve().is_relative_to(directory.resolve()) or not path.is_file():
+            raise HTTPException(status_code=404, detail="预览图片不存在")
+        return path
 
     def _op_restore(
         self,
@@ -1138,8 +983,8 @@ class AnnotationService:
     def submit_job(self, db: Session, project_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         project = self._project_or_404(db, project_id)
         operation = payload.get("operation")
-        if operation not in ("detect_text", "plan"):
-            raise HTTPException(status_code=422, detail="operation 仅支持 detect_text / plan(align 随后续工作包开放)")
+        if operation not in ("detect_text", "plan", "align"):
+            raise HTTPException(status_code=422, detail="operation 仅支持 detect_text / plan / align")
         if self._job_manager is None or self._layout_builder is None:
             raise HTTPException(status_code=503, detail="勾画任务引擎尚未配置")
         if operation == "detect_text" and not self._ocr_ready():
@@ -1182,6 +1027,7 @@ class AnnotationService:
                 project.id,
                 requested,
                 request_key=request_key,
+                operation=operation,
             )
         return {
             "job_id": job.id,
@@ -1231,7 +1077,13 @@ class AnnotationService:
 
         layout = self._layout_builder.load(run_dir, slide_id) if self._layout_builder else None
         candidates = candidate_tokens(layout) if layout else []
-        beats = self._read_beats(project, slide_id)
+        # 与真实 plan 任务(annotation_jobs)一致:语块 id 映射为 beat_id,
+        # 否则预览 user payload 里 beat_id 恒为 null。
+        beats = [
+            {"beat_id": beat.get("id"), "spoken_text": beat.get("spoken_text")}
+            for beat in self._read_beats(project, slide_id)
+            if isinstance(beat, dict)
+        ]
         canvas = self._canvas_for(project)
         try:
             page = self._store.read_page(run_dir, slide_id, canvas=canvas)
