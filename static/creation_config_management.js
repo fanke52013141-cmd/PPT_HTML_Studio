@@ -332,6 +332,10 @@
     return document.querySelector('input[name="creation-config-mask-annotation"]:checked')?.value === 'true';
   }
 
+  function annotationAnnotationFromForm() {
+    return document.querySelector('input[name="creation-config-annotation-annotation"]:checked')?.value === 'true';
+  }
+
   function updateAutomationControls() {
     const automatic = automationModeFromForm() === 'auto';
     const section = document.querySelector('.creation-config-auto-options');
@@ -657,6 +661,9 @@
     automation.image_concurrency = imageConcurrency;
     automation.ai_narration_annotation = automation.mode === 'auto' && narrationAnnotationFromForm();
     automation.ai_mask_annotation = automation.mode === 'auto' && maskAnnotationFromForm();
+    // 勾画标注默认不需要（creation_config_defaults.py 同名字段）；配置包只记录
+    // 包级意向，实际是否使用仍由项目内勾画标注步骤的开关决策决定。
+    automation.annotation_annotation = automation.mode === 'auto' && annotationAnnotationFromForm();
     if (automation.mode === 'auto' && pauseStep) automation.manual_pause_steps = [pauseStep];
     else delete automation.manual_pause_steps;
     if (Object.keys(automation).length) payload.automation = automation;
@@ -718,9 +725,11 @@
     document.querySelectorAll('[data-creation-config-pause]').forEach(input => {
       input.checked = pauses.has(input.dataset.creationConfigPause);
     });
-    document.querySelectorAll('input[name="creation-config-annotation-annotation"]').forEach(input => {
-      input.checked = input.value === 'true';
-    });
+    // 勾画标注与其他两项一致地反映配置值；旧包缺省该字段时按「不需要」处理。
+    const annotationAnnotationControl = document.querySelector(
+      `input[name="creation-config-annotation-annotation"][value="${automation.annotation_annotation === true ? 'true' : 'false'}"]`,
+    );
+    if (annotationAnnotationControl) annotationAnnotationControl.checked = true;
   }
 
   function loadJsonIntoStructured() {

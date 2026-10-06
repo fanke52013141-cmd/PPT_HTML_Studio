@@ -80,6 +80,9 @@ def default_creation_config_payload() -> dict[str, Any]:
             # existing full-frame production behavior until its owner enables
             # the additional annotation stage explicitly.
             "ai_mask_annotation": False,
+            # 勾画标注（可见步骤 6）默认不需要：是否使用由项目内该步骤的
+            # 开关决策决定，配置包字段只是记录包级意向，缺省关闭。
+            "annotation_annotation": False,
         },
         "tts": {
             # MiniMax 的网关额度是 10 请求/分钟，而单页**异步**合成要消耗
