@@ -613,7 +613,7 @@ function deleteStep8Pptx(artifactId) {
       );
       showStep8PptxResults(res.artifacts || []);
       showToast('PPTX 已删除。');
-    },
+    }, { danger: true },
   );
 }
 
@@ -751,7 +751,7 @@ function deleteStep8Video(filename) {
         showStep8VideoResult(res.videos || []);
         showToast('本地视频已删除。');
       }
-    }
+    }, { danger: true }
   );
 }
 

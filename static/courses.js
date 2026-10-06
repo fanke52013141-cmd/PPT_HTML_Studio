@@ -1093,7 +1093,7 @@ const CourseTree = (() => {
           showToast('课程已删除');
           await load();
         } catch (e) { showToast('删除失败'); }
-      }
+      }, { danger: true }
     );
   }
 
@@ -1121,7 +1121,7 @@ const CourseTree = (() => {
           showToast('项目已删除');
           await load();
         } catch (e) { showToast('删除失败'); }
-      }
+      }, { danger: true }
     );
   }
 

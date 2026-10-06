@@ -53,12 +53,8 @@
     document.getElementById('step2-btn-background-settings')?.remove();
     const toolbar = document.querySelector('#step-panel-3 .workflow-toolbar');
     if (!toolbar) return;
-    const confirmButton = document.getElementById('step3-btn-confirm');
-    // 标题栏排序规则（UI 审查第六轮）：按钮从右往左按工作流排，
-    // 批量删除/视频背景/批量下载依次落在「IP 形象」左侧。
-    const mountPoint = document.getElementById('step3-btn-ip-character')
-      || confirmButton
-      || null;
+    // 2026-10-06 用户裁决：工具栏按钮统一从左到右按工作流排列；
+    // 这里只负责创建按钮，位置交给 images.js 的 normalizeStep3ToolbarOrder 归位。
 
     let deleteAllButton = document.getElementById('step3-btn-delete-all-images');
     if (!deleteAllButton) {
@@ -67,8 +63,7 @@
       deleteAllButton.type = 'button';
       deleteAllButton.className = 'secondary step3-delete-all-images';
       deleteAllButton.textContent = '批量删除';
-      if (mountPoint) mountPoint.before(deleteAllButton);
-      else toolbar.appendChild(deleteAllButton);
+      toolbar.appendChild(deleteAllButton);
       deleteAllButton.addEventListener('click', () => window.deleteAllStep3Images?.());
     }
 
@@ -79,11 +74,10 @@
       button.type = 'button';
       button.className = 'secondary';
       button.textContent = '视频背景';
-      if (deleteAllButton) deleteAllButton.after(button);
-      else if (mountPoint) mountPoint.before(button);
-      else toolbar.appendChild(button);
+      toolbar.appendChild(button);
       button.addEventListener('click', openModal);
     }
+    window.normalizeStep3ToolbarOrder?.();
   }
 
   function ensureModal() {

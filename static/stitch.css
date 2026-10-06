@@ -1229,6 +1229,9 @@ body.workspace-open #step-panel-1 .step1-heading-row {
 }
 #modal-model-management .model-library-section { margin: 0 0 20px !important; }
 #modal-model-management .model-kind-tabs {
+  /* 与下方模型卡片列表同宽并三等分（2026-10-06：tab 条不再按内容收缩）。 */
+  display: flex !important;
+  width: 100% !important;
   margin-bottom: 14px;
   padding: 3px;
   border: 1px solid #ebe8ee;
@@ -1296,14 +1299,25 @@ body.workspace-open #step-panel-1 .step1-heading-row {
   font-size: 12px;
   font-weight: 650;
 }
-#modal-model-management .model-setup-grid input,
+#modal-model-management .model-setup-grid input:not([type="checkbox"]),
 #modal-model-management .model-setup-grid select,
-#modal-model-management .model-provider-panel input,
+#modal-model-management .model-provider-panel input:not([type="checkbox"]),
 #modal-model-management .model-provider-panel select {
   min-height: 36px;
   margin-top: 6px;
   padding: 7px 10px !important;
   font-size: 12px !important;
+}
+/* 勾选框不吃输入框的尺寸规则，保持与文字垂直居中（2026-10-06）。 */
+#modal-model-management .model-setup-grid input[type="checkbox"],
+#modal-model-management .model-provider-panel input[type="checkbox"] {
+  min-height: 0;
+  margin: 0;
+  padding: 0 !important;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  accent-color: #17191d;
 }
 #modal-model-management .model-setup-actions {
   margin-top: 18px;
@@ -5176,16 +5190,6 @@ body.workspace-open .workflow-titlebar-actions button.ws-primary:hover::after,
 body.workspace-open .step1-heading-actions button.ws-primary:hover::after {
   transform: translateX(2px) !important;
 }
-/* Approved single indigo semantic button (添加停顿与语气). */
-body.workspace-open #step6-btn-ai-annotate {
-  background: #4f46e5 !important;
-  border-color: #4f46e5 !important;
-  color: #ffffff !important;
-}
-body.workspace-open #step6-btn-ai-annotate:hover {
-  background: #4338ca !important;
-  border-color: #4338ca !important;
-}
 /* Step3 card header: 16px ghost handle after the status badge
    (docs/ui-redesign-plan.md §4.1 — badge first, handle no longer
    competes with the 12px badge). */
@@ -6382,21 +6386,6 @@ body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity .step3-
   color: var(--color-text-tertiary);
   font-size: .74rem;
 }
-.creation-config-image-style-card.creation-config-image-style-chip {
-  display: block;
-  width: 100%;
-  padding: 9px 12px;
-  border-radius: 10px;
-  background: #fff;
-  text-align: left;
-  font-weight: 700;
-  font-size: .95rem;
-  color: var(--ink-color, #1e1d22);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* 并发网格一行四项（UI 审查第三轮图3）：双类名提高特异性，压过
    .creation-config-number-grid 的 auto-fill 规则。 */
 #modal-creation-config-management .creation-config-concurrency-grid.creation-config-number-grid {
@@ -6408,21 +6397,51 @@ body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity .step3-
 }
 
 /* -----------------------------------------------------------------------
- * 旁白与音频卡片（UI 审查第六轮）：语音状态徽章挂标题行「第 N 页」右侧，
- * 不再占据整行；无音频时音频槽位整体收起。
+ * 旁白与音频卡片：三态状态徽章（2026-10-06 用户裁决 + Stitch 参考稿）——
+ * 生成中=橙+spinner、已生成=绿+对勾、待生成=灰，挂标题行「第 N 页」右侧；
+ * 原因只保留在悬浮 title，无音频时音频槽位整体收起。
  * -------------------------------------------------------------------- */
 body.workspace-open #step-panel-6 .step6-slide-state {
   display: inline-flex !important;
   align-items: center !important;
+  gap: 5px !important;
   height: 24px !important;
   padding: 0 10px !important;
   border-radius: 999px !important;
-  background: #fff5f0 !important;
-  border: 1px solid #ffd9cd !important;
-  color: #c9481b !important;
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #6b7280 !important;
   font-size: 12px !important;
   line-height: 1 !important;
   white-space: nowrap !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-state.is-generating {
+  background: #fff1e8 !important;
+  border-color: #ffd9cd !important;
+  color: #c9481b !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-state.is-generating::before {
+  width: 10px !important;
+  height: 10px !important;
+  border: 2px solid #f0a017 !important;
+  border-top-color: transparent !important;
+  border-radius: 50% !important;
+  content: "" !important;
+  flex: 0 0 auto !important;
+  animation: step7-state-spin 0.8s linear infinite !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-state.is-done {
+  background: #eaf7f0 !important;
+  border-color: #cdeadd !important;
+  color: #2f7251 !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-state.is-done::before {
+  content: "✓" !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+}
+@keyframes step7-state-spin {
+  to { transform: rotate(360deg); }
 }
 body.workspace-open #step-panel-6 .step6-slide-state[hidden] {
   display: none !important;

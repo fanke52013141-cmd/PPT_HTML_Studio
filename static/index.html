@@ -321,11 +321,11 @@
                 生图 Prompt
               </button>
               <span class="workflow-titlebar-divider" aria-hidden="true"></span>
-              <button id="step3-btn-ip-character" class="secondary" type="button">
-                IP 形象
-              </button>
               <button id="step3-btn-style" class="secondary" title="图片风格设置">
                 图片风格
+              </button>
+              <button id="step3-btn-ip-character" class="secondary" type="button">
+                IP 形象
               </button>
               <label id="step3-batch-upload-label" class="btn secondary" style="cursor: pointer;">
                 批量上传
@@ -337,6 +337,7 @@
               <button id="step3-btn-batch-generate" class="secondary">
                 批量生图
               </button>
+              <button id="step3-btn-stop-queue" class="secondary" type="button" hidden>停止后续排队</button>
               <button id="step3-btn-confirm" class="success ws-primary" style="display: none;" title="确认全部页面图片并进入 AI Mask 标注">
                 进入 AI Mask 标注
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -344,9 +345,7 @@
             </div>
           </div>
 
-          <!-- 全局图片管理网格 -->
-          <div id="step3-operation-status" class="workspace-operation-status" role="status" aria-live="polite"></div>
-          <button id="step3-btn-stop-queue" class="secondary" type="button" hidden>停止后续排队</button>
+          <!-- 全局图片管理网格：生成状态只呈现在每张图片卡片上（2026-10-06 裁决，顶部不放状态条）。 -->
           <div id="step3-images-grid" class="step3-grid-four"></div>
 
         </div>
@@ -427,29 +426,23 @@
           <div class="step6-compact-header workflow-header workflow-header--titlebar">
             <h2 class="highlight-title workflow-title">旁白与音频</h2>
             <div class="step6-header-actions workflow-toolbar">
-              <div id="step7-loading" class="step-inline-loading" style="display: none;">
-                <div class="loading-spinner"></div>
-                <span id="step7-loading-text">音频合成中...</span>
-              </div>
               <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button" title="编辑旁白 AI 停顿语气标注使用的提示词">AI 标注 Prompt</button>
               <span class="workflow-titlebar-divider" aria-hidden="true"></span>
               <button id="step6-btn-init" class="secondary" title="按最新分镜与画面同步旁白内容">
                 同步旁白
               </button>
-              <button id="step6-btn-ai-annotate" class="success compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
+              <button id="step6-btn-ai-annotate" class="secondary compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
               <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="导出整段语音：拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
               <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="强制重生成全部：忽略缓存，重新生成所有页面音频">强制重生成</button>
               <button id="step7-btn-synthesize" class="secondary compact-action-btn" title="检查并补齐音频：检查所有页面，只补生成旁白或语音配置发生变化的音频">
                 补齐音频
               </button>
-              <span id="step6-autosave-status" class="step6-autosave-status"></span>
-              <button id="step6-btn-save-and-tts" class="success step6-next-btn ws-primary" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
+              <button id="step6-btn-save-and-tts" class="secondary compact-action-btn" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
                 生成音频
-                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
-              <button id="step6-btn-audio-confirm-next" class="secondary compact-action-btn" title="确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过">
+              <span id="step6-autosave-status" class="step6-autosave-status"></span>
+              <button id="step6-btn-audio-confirm-next" class="success compact-action-btn ws-primary" title="确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过">
                 <span id="step6-audio-confirm-label">进入勾画标注</span>
-                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
           </div>
@@ -1388,14 +1381,17 @@
     </div>
   </div>
 
-  <!-- Modal: 手绘风确认对话框 -->
+  <!-- Modal: 通用确认对话框（2026-10-06 重设计：图标徽章 + 语义化主按钮） -->
   <div id="modal-confirm" class="modal-overlay" style="display: none;">
-    <div class="modal-content" style="max-width: 420px;">
-      <h3 class="highlight-title" id="confirm-title" style="margin-bottom: 1.2rem;">操作确认</h3>
-      <p id="confirm-message" style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #333; line-height: 1.5;"></p>
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button id="btn-confirm-no" class="secondary">取消</button>
-        <button id="btn-confirm-yes" class="danger">确认</button>
+    <div class="modal-content confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div class="confirm-modal-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <h3 id="confirm-title">操作确认</h3>
+      <p id="confirm-message"></p>
+      <div class="confirm-modal-actions">
+        <button id="btn-confirm-no" class="secondary" type="button">取消</button>
+        <button id="btn-confirm-yes" type="button">确认</button>
       </div>
     </div>
   </div>

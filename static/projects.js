@@ -271,6 +271,6 @@ function deleteProject(id) {
       if (!result.success) return;
       showToast('项目已删除');
       loadProjects();
-    }
+    }, { danger: true }
   );
 }

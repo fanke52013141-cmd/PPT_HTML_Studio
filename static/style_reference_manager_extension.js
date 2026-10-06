@@ -649,7 +649,7 @@
   async function deleteSelectedTemplate() {
     const id = STATE.selectedTemplateId;
     if (!id || id === 'current') throw new Error('请选择一个已保存模板。');
-    if (!await window.confirmAction('删除图片风格模板', '确定删除所选图片风格模板？删除后该模板无法恢复，当前项目已应用的风格保持不变。')) return;
+    if (!await window.confirmAction('删除图片风格模板', '确定删除所选图片风格模板？删除后该模板无法恢复，当前项目已应用的风格保持不变。', { danger: true })) return;
     const result = await apiDelete(`/api/image-style/project-templates/${encodeURIComponent(id)}`);
     STATE.templates = result.templates || [];
     STATE.selectedTemplateId = 'current';

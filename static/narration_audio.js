@@ -421,6 +421,33 @@ async function saveStep6Narration(options = {}) {
 
 // ==================== 可见步骤 6 的音频阶段（内部步骤 7） ====================
 
+// 本次合成任务的目标页：这些卡片显示「生成中」，任务结束后清空并重取状态。
+let step7ActiveTtsSlides = new Set();
+
+function renderStep7SlideState(stateBadge, slideId, audio) {
+  if (!stateBadge) return;
+  stateBadge.classList.remove('is-generating', 'is-done', 'is-pending');
+  stateBadge.removeAttribute('title');
+  if (step7ActiveTtsSlides.has(slideId)) {
+    stateBadge.hidden = false;
+    stateBadge.classList.add('is-generating');
+    stateBadge.textContent = '生成中';
+    return;
+  }
+  if (audio?.audio_exists && !audio?.stale) {
+    stateBadge.hidden = false;
+    stateBadge.classList.add('is-done');
+    stateBadge.textContent = '已生成';
+    return;
+  }
+  stateBadge.hidden = false;
+  stateBadge.classList.add('is-pending');
+  stateBadge.textContent = '待生成';
+  stateBadge.title = audio?.voice_config_stale
+    ? '语音配置已变更，需重新生成'
+    : audio?.stale ? '旁白已修改，需重新生成' : '音频尚未生成';
+}
+
 async function loadStep7Data() {
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
@@ -467,26 +494,17 @@ async function loadStep7Data() {
         .find(item => item.dataset.audioSlideId === img.slide_id);
       if (!slot) return;
       const audio = audioBySlide.get(img.slide_id);
-      // 状态徽章挂在卡片标题行（第 N 页右侧），不再占据整行（UI 审查第六轮）。
+      // 三态徽章挂在卡片标题行右侧（2026-10-06 用户裁决 + Stitch 参考稿）：
+      // 生成中 / 已生成 / 待生成，原因只留在悬浮 title。
       const stateBadge = slot.closest('.step6-slide-row')?.querySelector('.step6-slide-state');
-      if (audio?.audio_exists && !audio?.stale) {
+      renderStep7SlideState(stateBadge, img.slide_id, audio);
+      if (audio?.audio_exists && !audio?.stale && !step7ActiveTtsSlides.has(img.slide_id)) {
         const audioUrl = `/api/projects/${projectId}/slides/${img.slide_id}/audio?t=${Date.now()}`;
         slot.innerHTML = `<audio controls preload="metadata" src="${audioUrl}" class="step7-audio-player" aria-label="${escHtml(img.slide_id)} 音频"></audio>`;
         slot.classList.add('has-audio');
-        if (stateBadge) {
-          stateBadge.hidden = true;
-          stateBadge.textContent = '';
-        }
       } else {
-        const reason = audio?.voice_config_stale
-          ? '语音配置已变更，请重新生成'
-          : audio?.stale ? '旁白已修改，请重新生成' : '音频尚未生成';
         slot.innerHTML = '';
         slot.classList.remove('has-audio');
-        if (stateBadge) {
-          stateBadge.hidden = false;
-          stateBadge.textContent = reason;
-        }
       }
     });
 
@@ -523,20 +541,32 @@ async function runStep7TTS(options = {}) {
     const saved = await flushStep6Autosave({ userInitiated: false });
     if (!saved || !isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
   }
-  const loading = document.getElementById('step7-loading');
   const synthButton = document.getElementById('step7-btn-synthesize');
   const saveAndTtsButton = document.getElementById('step6-btn-save-and-tts');
   const forceAllButton = document.getElementById('step7-btn-force-all');
   const confirmButton = document.getElementById('step6-btn-audio-confirm-next');
-  loading.style.display = 'inline-flex';
   synthButton.disabled = true;
   saveAndTtsButton.disabled = true;
   if (forceAllButton) forceAllButton.disabled = true;
   confirmButton.disabled = true;
   document.querySelectorAll('.step6-generate-slide').forEach(button => { button.disabled = true; });
-  showToast(targetSlideId
-    ? `🔊 已提交 ${targetSlideId} 的单独音频任务…`
-    : '🔊 已提交音频检查任务；有效音频会跳过，只补生成缺失或已变更的页面…');
+
+  // 顶部不再挂全局加载条（2026-10-06 用户裁决）：本次合成的目标页直接在
+  // 卡片上显示「生成中」，任务结束后清空标记并重取音频状态。
+  try {
+    const statusRes = await API.get(`/api/projects/${projectId}/steps/7/audio-status`, { silent: true });
+    const slides = statusRes?.slides || [];
+    step7ActiveTtsSlides = new Set(targetSlideId
+      ? [targetSlideId]
+      : options.force
+        ? slides.map(item => item.slide_id).filter(Boolean)
+        : slides
+          .filter(item => !item?.audio_exists || item?.stale || item?.voice_config_stale)
+          .map(item => item.slide_id));
+  } catch (_) {
+    step7ActiveTtsSlides = new Set();
+  }
+  if (isCurrentWorkspaceProject(projectId, sessionVersion)) await loadStep7Data();
 
   // TTS 后台任务（M-09 第二步）：提交即返回 job_id，前端轮询直至终态。
   // 客户端断连/代理超时不再中断合成，状态经 local_jobs 持久化。
@@ -552,11 +582,7 @@ async function runStep7TTS(options = {}) {
     if (!submitted.success || !submitted.job) {
       throw new Error(submitted.message || '无法创建合成任务');
     }
-    if (submitted.reused) {
-      showToast('⏳ 该项目已有合成任务进行中，继续等待其完成...', 5000);
-    }
     const jobId = submitted.job.id;
-    const loadingText = document.getElementById('step7-loading-text');
 
     const finalJob = await new Promise((resolve, reject) => {
       const started = Date.now();
@@ -573,15 +599,6 @@ async function runStep7TTS(options = {}) {
             resolve(job);
             return;
           }
-          if (job.status === 'queued' && loadingText && isCurrentWorkspaceProject(projectId, sessionVersion)) {
-            // 进程级合成并发已满：显示全局队列位次（queue_ahead 为前面的同类任务数）。
-            const ahead = Number(job.queue_ahead);
-            loadingText.innerText = Number.isFinite(ahead) && ahead > 0
-              ? `排队中，前面还有 ${ahead} 个合成任务...`
-              : '排队等待合成...';
-          } else if (loadingText && isCurrentWorkspaceProject(projectId, sessionVersion)) {
-            loadingText.innerText = '音频合成中...';
-          }
           if (Date.now() - started > 30 * 60 * 1000) {
             reject(new Error('合成任务轮询超时（30 分钟），请稍后刷新页面查看状态。'));
             return;
@@ -594,19 +611,14 @@ async function runStep7TTS(options = {}) {
       tick();
     });
 
+    step7ActiveTtsSlides.clear();
+
     // 轮询可达 30 分钟：终态只回写原项目的工作区；已切走时仅收敛按钮状态。
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) {
       return finalJob.status === 'completed';
     }
 
     if (finalJob.status === 'completed') {
-      const result = finalJob.result || {};
-      const skipped = Number(result.skipped || 0);
-      const generated = Number(result.generated || 0);
-      const suffix = targetSlideId
-        ? `（${targetSlideId}：${generated ? '已生成' : skipped ? '已是最新' : '未更新'}）`
-        : skipped ? `（新生成 ${generated} 页，跳过已有 ${skipped} 页）` : '';
-      showToast(`🎀 音频生成完成${suffix}，请逐页试听并确认。`);
       await refreshCurrentProjectStatus(6);
       await loadStep7Data();
       return true;
@@ -616,22 +628,21 @@ async function runStep7TTS(options = {}) {
       ? finalJob.result.failed_ids.filter(Boolean)
       : [];
     if (finalJob.status === 'cancelled') {
-      updateStep6AutosaveStatus('音频生成已停止，已完成的音频保留，可继续补齐缺失页面');
       await loadStep7Data();
       return false;
     }
-    const fallback = failedIds.length ? `音频部分生成失败：${failedIds.join('、')}` : '音频生成未完成，请重试。';
+    const fallback = failedIds.length ? `部分页面失败：${failedIds.join('、')}` : '音频生成未完成';
     showToast(`音频生成失败：${finalJob.error || fallback}`, 7000);
     await refreshCurrentProjectStatus(6);
     await loadStep7Data();
     return false;
   } catch (e) {
+    step7ActiveTtsSlides.clear();
     showToast(`音频生成失败：${e.message}`, 7000);
     return false;
   } finally {
     if (pollTimer) clearTimeout(pollTimer);
     if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
-    loading.style.display = 'none';
     synthButton.disabled = false;
     saveAndTtsButton.disabled = false;
     confirmButton.disabled = false;
@@ -658,7 +669,6 @@ async function saveNarrationAndRunTTS() {
   // 显式保存路径：需要用户确认音频状态被清除；静默自动保存不会到达这里。
   const saved = await flushStep6Autosave({ userInitiated: true });
   if (!saved) return false;
-  showToast('旁白已保存，开始生成音频...');
   return runStep7TTS({ alreadySaved: true });
 }
 
@@ -689,7 +699,6 @@ async function confirmStep7Audio() {
     // 确认响应迟到时不得刷新/提示到切换后的项目上。
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
     if (res.success) {
-      showToast('✅ 音频已确认，准备进入勾画标注。');
       await refreshCurrentProjectStatus(6);
       return true;
     }

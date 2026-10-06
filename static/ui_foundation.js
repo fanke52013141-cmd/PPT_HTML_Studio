@@ -98,12 +98,16 @@ function presentCustomConfirm(title, message, onYes, onNo = null, labels = {}) {
 
   const btnYes = document.getElementById('btn-confirm-yes');
   const btnNo = document.getElementById('btn-confirm-no');
+  // 删除类确认经 labels.danger 转红色危险态；普通确认保持深色主按钮。
+  const danger = labels.danger === true;
+  btnYes.closest('.confirm-modal')?.classList.toggle('is-danger', danger);
 
   // Clone controls so each confirmation owns exactly one callback pair.
   const newYes = btnYes.cloneNode(true);
   const newNo = btnNo.cloneNode(true);
   newYes.disabled = false;
   newNo.disabled = false;
+  newYes.classList.toggle('danger', danger);
   newYes.textContent = labels.confirm || '确认';
   newNo.textContent = labels.cancel || '取消';
   btnYes.parentNode.replaceChild(newYes, btnYes);

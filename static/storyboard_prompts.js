@@ -211,7 +211,7 @@ async function deleteSelectedStep2PromptTemplate() {
     showToast('内置模板不能删除。');
     return;
   }
-  const confirmed = await confirmAction('删除 Prompt 模板', `确定删除模板“${template.name}”吗？删除后该模板无法恢复。`);
+  const confirmed = await confirmAction('删除 Prompt 模板', `确定删除模板“${template.name}”吗？删除后该模板无法恢复。`, { danger: true });
   if (!confirmed) return;
   const res = await API.delete(`/api/step2-prompt-templates/${encodeURIComponent(template.id)}`);
   if (res.success) {

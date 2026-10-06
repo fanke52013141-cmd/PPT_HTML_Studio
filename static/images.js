@@ -51,6 +51,34 @@ function step3GeneratingPreviewHtml(message = '生成中', subtitle = 'AI 正在
   `;
 }
 
+// 标题栏排序规则（2026-10-06 用户裁决）：所有按钮从左到右按工作流排列，
+// 主 CTA「进入 AI Mask 标注」固定最右；动态插入的视频背景/批量下载/批量删除
+// 无论何时创建，统一由这里归位。
+function normalizeStep3ToolbarOrder() {
+  const toolbar = document.querySelector('#step-panel-3 .workflow-toolbar');
+  if (!toolbar) return;
+  const order = [
+    'step3-btn-prompt-settings',
+    'step3-btn-style',
+    'step3-btn-ip-character',
+    'step3-btn-background-settings',
+    'step3-batch-upload-label',
+    'step3-btn-copy-prompts',
+    'step3-btn-batch-generate',
+    'step3-btn-stop-queue',
+    'step3-btn-download-all-images',
+    'step3-btn-delete-all-images',
+    'step3-btn-confirm',
+  ];
+  let cursor = toolbar.querySelector('.workflow-titlebar-divider') || toolbar.firstChild;
+  order.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (cursor && cursor.nextSibling !== el) cursor.insertAdjacentElement('afterend', el);
+    cursor = el;
+  });
+}
+
 function updateStep3BatchButton() {
   const button = document.getElementById('step3-btn-batch-generate');
   if (!button) return;
@@ -58,7 +86,7 @@ function updateStep3BatchButton() {
   if (stop) {
     stop.hidden = !step3BatchGenerating;
     stop.disabled = step3BatchStopRequested;
-    stop.textContent = step3BatchStopRequested ? '正在停止后续排队…' : '停止后续排队';
+    stop.textContent = step3BatchStopRequested ? '正在停止…' : '停止后续排队';
   }
   const hasSlides = step3ImageOrder.length > 0;
   const generationInProgress = step3GeneratingSlides.size > 0;
@@ -77,6 +105,7 @@ function updateStep3BatchButton() {
   button.innerHTML = step3BatchGenerating
     ? `<span class="step3-button-spinner" aria-hidden="true"></span> 批量生图中 ${step3BatchCompleted}/${step3BatchTotal}`
     : `批量生图`;
+  normalizeStep3ToolbarOrder();
 }
 
 function setStep3SlideGenerating(slideId, generating) {
@@ -265,6 +294,13 @@ function renderStep3Grid() {
       card.classList.add('is-current-generating');
     }
     const provenanceReady = img.provenance?.valid === true;
+    // 三态（2026-10-06 用户裁决 + Stitch 参考稿）：生成中 / 完成 / 待生成；
+    // 排队与上传并入「生成中」，来源过期并入「待生成」，差异只留在 title。
+    const statusBusy = isGenerating || isUploading;
+    const statusDone = !statusBusy && img.exists && provenanceReady;
+    const statusClass = statusBusy ? 'is-generating' : (statusDone ? 'is-done' : 'is-pending');
+    const statusLabel = statusBusy ? '生成中' : (statusDone ? '完成' : '待生成');
+    const statusTitle = !statusBusy && img.exists && !provenanceReady ? '图片来源已过期，需重新生成或上传' : '';
     const previewHtml = isCurrentUploading
       ? step3GeneratingPreviewHtml('上传中', '正在处理并裁剪这张图片...')
       : isUploadQueued
@@ -290,9 +326,7 @@ function renderStep3Grid() {
               <circle cx="9" cy="19" r="1.4"></circle><circle cx="15" cy="19" r="1.4"></circle>
             </svg>
           </button>
-          <span class="step3-card-status ${isCurrentGenerating ? 'is-current-generating' : ''} ${isQueued ? 'is-queued' : ''} ${isGenerating ? 'is-generating' : ''}" style="color: ${img.exists || isGenerating ? 'var(--ink-color)' : '#888'}; background: ${isCurrentGenerating ? 'var(--color-primary-base)' : (isQueued ? 'var(--secondary-color)' : (img.exists && provenanceReady ? 'var(--success-color)' : '#f3f4f6'))}; ${isCurrentGenerating ? 'color: #fff;' : ''}">
-            ${isCurrentGenerating ? '生成中' : (isQueued ? '排队中' : (img.exists ? (provenanceReady ? '已就绪' : '来源待更新') : '待生成'))}
-          </span>
+          <span class="step3-card-status ${statusClass}"${statusTitle ? ` title="${escHtml(statusTitle)}"` : ''}>${statusLabel}</span>
         </div>
         <div class="step3-card-actions">
           <button class="danger step3-card-action step3-delete-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>删除</button>
@@ -393,7 +427,6 @@ async function reorderStep3Images(draggedIdx, targetIdx) {
       changes,
     });
     step3OrderVersion = String(res.order_version || step3OrderVersion);
-    showToast('图片与 Slide 标题的对应关系已更新');
     await refreshCurrentProjectStatus(3);
   } catch (error) {
     showToast('图片移动失败，已恢复服务器中的最新对应关系', 'error');
@@ -476,7 +509,6 @@ async function uploadStep3ImageById(slideId, input) {
   try {
     const res = await API.post(`/api/projects/${state.currentProject.id}/steps/3/upload`, formData);
     if (res.success) {
-      showToast('图片上传成功！');
       await refreshStep3Images();
       await refreshCurrentProjectStatus(3);
     }
@@ -498,8 +530,6 @@ function step3SlideLabel(slideId) {
 
 function stopStep3GenerationQueue() {
   step3BatchStopRequested = true;
-  const status = document.getElementById('step3-operation-status');
-  if (status) status.textContent = '已请求停止后续排队；当前图片完成后停止，已经生成的图片保留。';
   updateStep3BatchButton();
 }
 
@@ -514,7 +544,6 @@ async function deleteStep3Image(slideId) {
   if (res.success) {
     await refreshStep3Images();
     await refreshCurrentProjectStatus(3);
-    showToast('图片已从当前页面移除；旧图和 Mask 数据已归档。');
   }
 }
 
@@ -536,7 +565,6 @@ async function deleteAllStep3Images() {
   if (res.success) {
     await refreshStep3Images();
     await refreshCurrentProjectStatus(3);
-    showToast(`已移除 ${res.deleted_count || imageCount} 张图片；旧图和 Mask 数据已归档。`);
   }
 }
 
@@ -546,7 +574,7 @@ function ensureStep3BatchDownloadButton(deleteAllButton) {
   const disabled = step3GeneratingSlides.size > 0
     || step3UploadingSlides.size > 0
     || !step3ImageOrder.some(item => item.exists);
-  deleteAllButton.disabled = disabled;
+  if (deleteAllButton) deleteAllButton.disabled = disabled;
   let button = document.getElementById('step3-btn-download-all-images');
   if (!button) {
     button = document.createElement('button');
@@ -554,26 +582,19 @@ function ensureStep3BatchDownloadButton(deleteAllButton) {
     button.type = 'button';
     button.className = 'secondary step3-download-all-images';
     button.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 3v12"></path></svg> 批量下载`;
-    // 标题栏排序规则（UI 审查第六轮）：批量下载固定在视频背景之后。
-    const bgButton = document.getElementById('step3-btn-background-settings');
-    const anchor = bgButton || deleteAllButton;
-    anchor.insertAdjacentElement('afterend', button);
     button.addEventListener('click', downloadAllStep3Images);
-  } else {
-    const bgButton = document.getElementById('step3-btn-background-settings');
-    const anchor = bgButton || deleteAllButton;
-    if (anchor.nextElementSibling !== button) anchor.insertAdjacentElement('afterend', button);
+    document.querySelector('#step-panel-3 .workflow-toolbar')?.appendChild(button);
   }
   button.disabled = disabled;
+  normalizeStep3ToolbarOrder();
 }
+
+window.normalizeStep3ToolbarOrder = normalizeStep3ToolbarOrder;
 
 async function downloadAllStep3Images() {
   const projectId = state.currentProject?.id;
   const imageCount = step3ImageOrder.filter(item => item.exists).length;
-  if (!projectId || imageCount === 0) {
-    showToast('当前没有可下载的图片。');
-    return;
-  }
+  if (!projectId || imageCount === 0) return;
 
   const button = document.getElementById('step3-btn-download-all-images');
   const originalHtml = button?.innerHTML;
@@ -596,7 +617,6 @@ async function downloadAllStep3Images() {
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
-    showToast(`已打包 ${imageCount} 张图片，开始下载。`);
   } finally {
     if (button) {
       button.innerHTML = originalHtml;
@@ -643,8 +663,7 @@ async function handleStep3BatchUpload(e) {
   const queuedSlideIds = slideIds.slice(0, files.length);
   queuedSlideIds.forEach(slideId => step3UploadingSlides.add(slideId));
   renderStep3Grid();
-  
-  let successCount = 0;
+
   for (let i = 0; i < files.length; i++) {
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) break;
     const slideId = slideIds[i];
@@ -662,7 +681,6 @@ async function handleStep3BatchUpload(e) {
       const res = await API.post(`/api/projects/${projectId}/steps/3/upload`, formData);
       if (!isCurrentWorkspaceProject(projectId, sessionVersion)) break;
       if (res && res.success) {
-        successCount++;
         // 上传成功：立即更新内存中的图片状态，图片随下方重绘马上显示，无需等全部传完
         const target = step3ImageOrder.find(item => item.slide_id === slideId);
         if (target) {
@@ -672,7 +690,7 @@ async function handleStep3BatchUpload(e) {
         }
       }
     } catch(err) {
-      showToast(`⚠️ 第 ${i+1} 张上传失败`);
+      showToast(`第 ${i + 1} 张图片上传失败`, 6000);
     } finally {
       if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
         step3UploadingSlides.delete(slideId);
@@ -684,7 +702,6 @@ async function handleStep3BatchUpload(e) {
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   queuedSlideIds.forEach(slideId => step3UploadingSlides.delete(slideId));
   step3CurrentUploading = null;
-  showToast(successCount === files.length ? '批量上传完成！' : `批量上传完成（成功 ${successCount}/${files.length}）`);
   // 全部完成后拉取一次服务端权威列表，补齐 provenance 等完整信息，保证与后端一致
   await refreshStep3Images(projectId, sessionVersion);
   await refreshCurrentProjectStatus(3);
@@ -716,10 +733,7 @@ async function generateAllStep3Images() {
   step3BatchTotal = tasks.length;
   tasks.forEach(task => step3GeneratingSlides.add(task.slideId));
   renderStep3Grid();
-  document.getElementById('step3-operation-status').textContent = '正在逐页生成图片。停止后续排队会保留已生成图片；切换步骤会停止提交后续页面，请等待当前图片完成。';
-  showToast(`🎨 已开始批量生成 ${tasks.length} 张图片。`);
 
-  let successCount = 0;
   const failedSlides = [];
   const busySlides = [];
   const skippedSlides = [];
@@ -746,7 +760,6 @@ async function generateAllStep3Images() {
         );
         if (!isCurrentWorkspaceProject(projectId, sessionVersion)) break;
         if (res.success) {
-          successCount += 1;
           const image = step3ImageOrder.find(item => item.slide_id === task.slideId);
           if (image) {
             image.exists = true;
@@ -776,17 +789,13 @@ async function generateAllStep3Images() {
     step3CurrentGenerating = null;
     await refreshStep3Images(projectId, workspaceNavigationVersion);
     await refreshCurrentProjectStatus(3);
-    document.getElementById('step3-operation-status').textContent = step3BatchStopRequested || sessionVersion !== workspaceNavigationVersion
-      ? `已停止后续排队，本次生成 ${successCount} 张图片。`
-      : `本次生成 ${successCount} 张图片${failedSlides.length ? `，${failedSlides.length} 张失败，请重试` : ''}。`;
   }
 
+  // 批量结果只通过卡片状态呈现；失败属于真实错误，走 Toast（error-only 策略）。
   if (failedSlides.length > 0) {
-    showToast(`⚠️ 已生成 ${successCount} 张，失败：${failedSlides.join('、')}${busySlides.length ? `；跳过正在生成：${busySlides.join('、')}` : ''}`, 5000);
+    showToast(`图片生成失败：${failedSlides.map(slideId => step3SlideLabel(slideId)).join('、')}`, 6000);
   } else if (busySlides.length > 0 || skippedSlides.length > 0) {
-    showToast(`已生成 ${successCount} 张；已跳过 ${[...busySlides, ...skippedSlides].join('、')}。`, 5000);
-  } else {
-    showToast(`✅ ${successCount} 张图片已全部生成完成！`);
+    showToast(`已跳过正在生成的页面：${[...busySlides, ...skippedSlides].map(slideId => step3SlideLabel(slideId)).join('、')}`, 5000);
   }
 }
 
@@ -810,10 +819,6 @@ async function generateStep3Image() {
   document.getElementById('step3-candidate-status').style.display = 'none';
   document.getElementById('step3-btn-apply-candidate').style.display = 'none';
   document.getElementById('step3-preview-box').innerHTML = step3GeneratingPreviewHtml();
-  const imageModel = state.settings?.image_model || 'gpt-image-1';
-  const canvas = state.currentProject?.canvas || { width: 1920, height: 1080 };
-  const imageSize = `${canvas.width}x${canvas.height}`;
-  showToast(`🎨 正在调用 ${imageModel} 合成 ${imageSize} 候选图...`);
 
   let generated = false;
   try {
@@ -834,11 +839,10 @@ async function generateStep3Image() {
       document.getElementById('step3-preview-box').innerHTML =
         `<img src="${res.candidate_url}" alt="${slideId} AI 候选图片">`;
       document.getElementById('step3-btn-apply-candidate').style.display = 'inline-flex';
-      showToast('候选图片已生成。确认画面后点击“替换原图”。');
     }
   } catch(e) {
     const busy = String(e?.message || '').includes('正在生成图片');
-    showToast(busy ? `⚠️ ${slideId} 正在生成图片，请等待当前任务完成。` : `❌ ${slideId} 图片生成失败`, 'error');
+    showToast(busy ? `${slideId} 正在生成图片，请等待当前任务完成` : `${slideId} 图片生成失败`, 'error');
   } finally {
     document.getElementById('step3-loading').style.display = 'none';
     document.getElementById('step3-btn-generate').disabled = false;
@@ -886,7 +890,6 @@ async function confirmStep3Images() {
   const res = await API.post(`/api/projects/${state.currentProject.id}/steps/3/confirm`);
   if (res.success) {
     await refreshCurrentProjectStatus(5);
-    showToast('🔒 所有图片已确认并锁定！进入标注阶段。');
     navigateToStep(5);
   }
 }

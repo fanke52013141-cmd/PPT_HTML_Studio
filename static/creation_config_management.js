@@ -401,28 +401,24 @@
         renderImageStyleCards();
       };
       card.addEventListener('click', pick);
-      if (item.built_in) {
-        // 系统内置风格不再展示参考图：名称本身即选择项（UI 审查第三轮）。
-        card.classList.add('creation-config-image-style-chip');
-        card.append(name);
+      // 内置与自定义风格统一渲染参考图缩略图（2026-10-06 用户裁决：风格资源必须呈现图片）。
+      const preview = document.createElement('span');
+      preview.className = 'creation-config-image-style-thumb';
+      if (imageInfo?.url) {
+        const image = document.createElement('img');
+        image.src = imageInfo.url;
+        image.alt = `${item.name || '图片风格'}参考图`;
+        preview.append(image);
+        card.append(preview);
       } else {
-        const preview = document.createElement('span');
-        preview.className = 'creation-config-image-style-thumb';
-        if (imageInfo?.url) {
-          const image = document.createElement('img');
-          image.src = imageInfo.url;
-          image.alt = `${item.name || '图片风格'}参考图`;
-          preview.append(image);
-          card.append(preview);
-        } else {
-          preview.textContent = '加载预览中';
-          card.append(preview);
-        }
-        const meta = document.createElement('small');
-        const count = detail?.references?.images?.length ?? item.reference_count ?? 0;
-        meta.textContent = `${count} 张参考图`;
-        copy.append(name, meta);
+        preview.textContent = '加载预览中';
+        card.append(preview);
       }
+      const meta = document.createElement('small');
+      const count = detail?.references?.images?.length ?? item.reference_count ?? 0;
+      meta.textContent = count ? `${count} 张参考图` : (item.built_in ? '系统内置' : '');
+      if (meta.textContent) copy.append(name, meta);
+      else copy.append(name);
       wrap.append(card, copy);
       target.append(wrap);
     });
@@ -1232,11 +1228,11 @@
       }
     };
     if (typeof window.showCustomConfirm === 'function') {
-      window.showCustomConfirm('删除创作包', message, performDelete);
+      window.showCustomConfirm('删除创作包', message, performDelete, null, { danger: true });
     } else {
       // The shared modal is loaded before this module in production. This
       // fallback only protects non-production fixture pages.
-      if (await window.confirmAction('删除创作包', message)) await performDelete();
+      if (await window.confirmAction('删除创作包', message, { danger: true })) await performDelete();
     }
   }
 
@@ -1280,8 +1276,8 @@
       }
     };
     if (typeof window.showCustomConfirm === 'function') {
-      window.showCustomConfirm('删除模型', message, performDelete);
-    } else if (await window.confirmAction('删除模型', message)) {
+      window.showCustomConfirm('删除模型', message, performDelete, null, { danger: true });
+    } else if (await window.confirmAction('删除模型', message, { danger: true })) {
       await performDelete();
     }
   }

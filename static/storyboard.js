@@ -1173,6 +1173,7 @@ async function saveStep2BatchDelete() {
         : `将删除 ${removedCount} 个分镜页。这些页的图片、Mask、切层素材和音频将被彻底删除且不可恢复。`,
       () => resolve(true),
       () => resolve(false),
+      { danger: true },
     );
   });
   if (!confirmed) {
