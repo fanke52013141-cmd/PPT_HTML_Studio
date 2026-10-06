@@ -414,3 +414,107 @@ def test_estimated_timeline_caps_pause_budget_and_fills_duration(
         == "beat_pause_aware_estimated_split"
         for segment in timeline["segments"]
     )
+
+
+def _write_run_dir(
+    tmp_path: Path,
+    beats_slides: list[dict[str, Any]],
+    contract_slides: list[dict[str, Any]],
+) -> Path:
+    planning = tmp_path / "planning"
+    planning.mkdir(parents=True, exist_ok=True)
+    _write_json(
+        str(planning / "narration_beats.json"),
+        {"slides": beats_slides},
+    )
+    _write_json(
+        str(planning / "visual_contract.json"),
+        {"slides": contract_slides},
+    )
+    return tmp_path
+
+
+def test_subset_sync_keeps_entries_for_slides_outside_request(
+    tmp_path: Path,
+) -> None:
+    """单页 sync 不得截断共享 beats 文件：请求之外的条目是其他页的合成输入。"""
+    run_dir = _write_run_dir(
+        tmp_path,
+        beats_slides=[
+            {
+                "slide_id": "slide_001",
+                "beats": [{"id": "b1", "tts_text": "已处理文本一"}],
+            },
+            {
+                "slide_id": "slide_002",
+                "beats": [{"id": "b2", "tts_text": "已处理文本二"}],
+            },
+        ],
+        contract_slides=[],
+    )
+    changed = service.sync_narration_beats_to_contract(
+        SimpleNamespace(run_dir=str(run_dir)),
+        ["slide_001"],
+    )
+    assert changed is False
+    saved = _read_json(str(run_dir / "planning" / "narration_beats.json"), {})
+    assert [slide["slide_id"] for slide in saved["slides"]] == [
+        "slide_001",
+        "slide_002",
+    ]
+    assert saved["slides"][1]["beats"] == [{"id": "b2", "tts_text": "已处理文本二"}]
+
+
+def test_subset_sync_rebuilds_missing_request_and_keeps_others(
+    tmp_path: Path,
+) -> None:
+    run_dir = _write_run_dir(
+        tmp_path,
+        beats_slides=[
+            {
+                "slide_id": "slide_001",
+                "beats": [{"id": "b1", "tts_text": "已处理文本一"}],
+            },
+        ],
+        contract_slides=[
+            {
+                "slide_id": "slide_002",
+                "narration_beats": [
+                    {"id": "b2"},
+                    {"id": "b2", "tts_text": "重复条目"},
+                ],
+            },
+        ],
+    )
+    changed = service.sync_narration_beats_to_contract(
+        SimpleNamespace(run_dir=str(run_dir)),
+        ["slide_002"],
+    )
+    assert changed is True
+    saved = _read_json(str(run_dir / "planning" / "narration_beats.json"), {})
+    assert [slide["slide_id"] for slide in saved["slides"]] == [
+        "slide_001",
+        "slide_002",
+    ]
+    assert saved["slides"][0]["beats"] == [{"id": "b1", "tts_text": "已处理文本一"}]
+    assert saved["slides"][1]["beats"] == [{"id": "b2"}]
+
+
+def test_explicit_empty_request_still_clears_shared_beats(
+    tmp_path: Path,
+) -> None:
+    """显式空列表保留清空语义：分镜清空时与 reveal manifest 一起重置。"""
+    run_dir = _write_run_dir(
+        tmp_path,
+        beats_slides=[
+            {"slide_id": "slide_001", "beats": [{"id": "b1"}]},
+        ],
+        contract_slides=[],
+    )
+    changed = service.sync_narration_beats_to_contract(
+        SimpleNamespace(run_dir=str(run_dir)),
+        [],
+    )
+    assert changed is True
+    saved = _read_json(str(run_dir / "planning" / "narration_beats.json"), {})
+    assert saved["slides"] == []

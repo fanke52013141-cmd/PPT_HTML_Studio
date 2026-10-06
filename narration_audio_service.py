@@ -556,34 +556,69 @@ def sync_narration_beats_to_contract(
         if isinstance(slide, dict)
         and str(slide.get("slide_id") or "").strip()
     }
-    synced_slides = []
-    for slide_id in current_slide_ids:
-        existing = by_id.get(slide_id)
-        if existing is not None:
-            synced_slides.append(existing)
-            continue
+    def _rebuilt_from_contract(slide_id: str) -> Dict[str, Any]:
         contract_slide = contract_by_id.get(slide_id, {})
-        synced_slides.append(
-            {
-                "slide_id": slide_id,
-                "beats": copy.deepcopy(
-                    contract_slide.get("narration_beats", [])
-                ),
-            }
-        )
-    normalized_slides = []
-    for slide in synced_slides:
+        return {
+            "slide_id": slide_id,
+            "beats": copy.deepcopy(
+                contract_slide.get("narration_beats", [])
+            ),
+        }
+
+    def _normalized(slide: Dict[str, Any]) -> Dict[str, Any]:
         normalized = dict(slide)
         normalized["beats"] = (
             dependencies.dedupe_narration_beats(
                 slide.get("beats")
             )
         )
-        normalized_slides.append(normalized)
-    if normalized_slides == slides:
+        return normalized
+
+    if explicit_slide_ids and current_slide_ids:
+        # 子集同步是单页修复入口（TTS 完成校验、单页重试）：请求之外的
+        # 页面条目必须原样保留——它们是其他页正在使用的合成输入；整体
+        # 替换会把共享 beats 文件截断成单页，让后续页被误判为
+        # "合成期间旁白已变化"而丢弃已合成的音频。
+        requested_ids = [
+            str(value or "").strip() for value in current_slide_ids
+        ]
+        requested_set = set(requested_ids)
+        normalized_requested: Dict[str, Dict[str, Any]] = {}
+        for slide_id in requested_ids:
+            existing = by_id.get(slide_id)
+            if existing is not None:
+                normalized_requested[slide_id] = _normalized(existing)
+            else:
+                normalized_requested[slide_id] = _normalized(
+                    _rebuilt_from_contract(slide_id)
+                )
+        synced_slides = []
+        covered: set[str] = set()
+        for slide in slides:
+            slide_id = str(slide.get("slide_id") or "").strip()
+            if slide_id in requested_set:
+                synced_slides.append(normalized_requested[slide_id])
+                covered.add(slide_id)
+            else:
+                synced_slides.append(slide)
+        for slide_id in requested_ids:
+            if slide_id not in covered:
+                synced_slides.append(normalized_requested[slide_id])
+    else:
+        # 全量同步（slide_ids=None）对照契约裁剪；显式空列表保留清空
+        # 语义，供分镜清空时与 reveal manifest 一起重置。
+        synced_slides = []
+        for slide_id in current_slide_ids:
+            existing = by_id.get(slide_id)
+            if existing is not None:
+                synced_slides.append(existing)
+                continue
+            synced_slides.append(_rebuilt_from_contract(slide_id))
+        synced_slides = [_normalized(slide) for slide in synced_slides]
+    if synced_slides == slides:
         return False
 
-    payload["slides"] = normalized_slides
+    payload["slides"] = synced_slides
     dependencies.write_json_atomic(beats_path, payload)
     logger.info(
         "Synced narration beats to visual contract: "
