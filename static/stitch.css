@@ -1235,11 +1235,13 @@ body.workspace-open #step-panel-1 .step1-heading-row {
   background: #faf9fb;
 }
 #modal-model-management .model-kind-tab {
-  min-width: 92px;
+  min-width: 0 !important;
+  flex: 1 1 0 !important;
   min-height: 32px;
-  padding: 0 14px !important;
+  padding: 0 8px !important;
   font-size: 12px !important;
   font-weight: 700 !important;
+  white-space: nowrap !important;
 }
 #modal-model-management .model-kind-tab.is-active,
 #modal-model-management .model-kind-tab[aria-selected="true"] {
@@ -2361,12 +2363,10 @@ header .account-picker-menu .account-picker-option[aria-selected="true"] { borde
 #modal-model-management select,
 #modal-model-management textarea { box-shadow: none !important; }
 #modal-model-management .model-library-list { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-#modal-model-management .model-library-card { display: flex !important; min-height: 118px !important; flex-direction: column !important; padding: .72rem !important; }
-#modal-model-management .model-library-card-heading { display: block !important; min-height: 3rem !important; }
-#modal-model-management .model-library-card-heading strong { display: -webkit-box !important; overflow: hidden !important; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal !important; }
-#modal-model-management .model-library-card-heading { text-align: center !important; }
-#modal-model-management .model-library-card-actions { display: grid !important; grid-column: auto !important; grid-row: auto !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; width: 100% !important; margin-top: auto !important; }
-#modal-model-management .model-library-card-actions button { display: flex !important; width: 100% !important; justify-content: center !important; }
+#modal-model-management .model-library-card { display: flex !important; min-height: 0 !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important; padding: .8rem .9rem !important; }
+#modal-model-management .model-library-card-heading { display: flex !important; min-height: 0 !important; flex: 1 1 auto !important; text-align: left !important; }
+#modal-model-management .model-library-card-heading strong { display: block !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+#modal-model-management .model-library-card-actions { flex: 0 0 auto !important; }
 
 #modal-creation-config-management .creation-config-package-card { display: flex !important; min-height: 126px !important; flex-direction: column !important; }
 #modal-creation-config-management .creation-config-package-card-heading { display: block !important; min-height: 3rem !important; }
@@ -2377,7 +2377,7 @@ header .account-picker-menu .account-picker-option[aria-selected="true"] { borde
 #modal-creation-config-management .creation-config-tabs [role="tab"][aria-selected="true"] { border-color: #f46a38 !important; background: #fff0ea !important; color: #c9481b !important; box-shadow: inset 0 -2px 0 #f46a38 !important; }
 #modal-creation-config-management .creation-config-concurrency-group { display: block !important; min-height: 0 !important; }
 #modal-creation-config-management .creation-config-concurrency-group > h5 { display: block !important; margin: 0 0 .65rem !important; }
-#modal-creation-config-management .creation-config-concurrency-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+#modal-creation-config-management .creation-config-concurrency-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 
 body.workspace-open .main-content { --workspace-canvas-bg: var(--color-bg-page, #f8fafc); padding: 0 2rem 2.5rem !important; background: var(--workspace-canvas-bg) !important; }
 body.workspace-open #workspace-main { padding-top: 0 !important; }
@@ -6238,18 +6238,17 @@ body.workspace-open .ai-mode-segment {
 }
 
 /* ============================================================
-   模型设置模型卡终版（2026-10-05c，验收定稿）：
-   1) 卡片上下结构：第一行名称，第二行编辑/复制/删除按钮；
-   2) 名称定为一行，超出省略号，全程左对齐（压掉旧层居中）；
-   3) 按钮独立成行并去掉 96px 限宽，右缘不再有截断感。
-   双 ID 选择器与上方旧层同权，靠加载顺序取胜。
+   模型设置模型卡终版（2026-10-06 修订，覆盖 10-05c 上下结构）：
+   名称占左侧一行省略号，编辑/复制/删除固定卡片最右侧同一行
+   （UI 审查第三轮图5/6 用户定稿）。双 ID 选择器与旧层同权，
+   靠源码顺序取胜。
    ============================================================ */
 #modal-model-management #modal-model-management .model-library-card,
 #modal-model-management .model-library-card {
   display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 6px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
@@ -6260,8 +6259,8 @@ body.workspace-open .ai-mode-segment {
 #modal-model-management #modal-model-management .model-library-card .model-library-card-heading,
 #modal-model-management .model-library-card .model-library-card-heading {
   display: block !important;
-  flex: 0 0 auto !important;
-  width: 100% !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
   max-width: none !important;
   min-width: 0 !important;
   min-height: 0 !important;
@@ -6362,4 +6361,57 @@ body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity .step3-
 .prompt-title-row .icon-button[data-modal-close] {
   margin-left: 2px;
   flex: 0 0 auto;
+}
+
+/* -----------------------------------------------------------------------
+ * 图片风格选择（UI 审查第三轮）：系统内置风格只留名称胶囊（参考图删除）；
+ * 自定义风格的名称与参考图计数移到选择框外，图片与文字分离。
+ * -------------------------------------------------------------------- */
+.creation-config-image-style-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.creation-config-image-style-item .creation-config-image-style-copy {
+  display: block;
+  min-width: 0;
+}
+.creation-config-image-style-item .creation-config-image-style-copy strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .95rem;
+  color: var(--ink-color, #1e1d22);
+}
+.creation-config-image-style-item .creation-config-image-style-copy small {
+  display: block;
+  margin-top: .15rem;
+  color: var(--color-text-tertiary);
+  font-size: .74rem;
+}
+.creation-config-image-style-card.creation-config-image-style-chip {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--ink-color, #1e1d22);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 并发网格一行四项（UI 审查第三轮图3）：双类名提高特异性，压过
+   .creation-config-number-grid 的 auto-fill 规则。 */
+#modal-creation-config-management .creation-config-concurrency-grid.creation-config-number-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  column-gap: 12px !important;
+}
+#modal-creation-config-management .creation-config-concurrency-grid.creation-config-number-grid > label > input {
+  --creation-config-concurrency-input-width: 64px;
 }

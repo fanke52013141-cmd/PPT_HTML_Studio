@@ -88,9 +88,9 @@ body.workspace-open #step-panel-5 .mask-narration-card {
 }
 body.workspace-open #step-panel-5 .workspace-right > :last-child {
   flex: 0 0 auto;
-  margin-top: 10px !important;
-  padding-top: 10px !important;
-  border-top: 1px solid #f1f5f9 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: 0 !important;
 }
 
 /* Narration: the existing per-slide rows stay in one vertical reading flow. */
@@ -393,7 +393,7 @@ body.workspace-open #step-panel-5 #step5-boxes-list {
   overflow-y: auto !important;
 }
 body.workspace-open #step-panel-5 .workspace-right > :last-child {
-  margin-top: 12px !important;
+  margin-top: 0 !important;
   padding-top: 0 !important;
   border-top: 0 !important;
 }

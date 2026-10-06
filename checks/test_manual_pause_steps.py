@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from one_click_orchestrator import (
-    _MANUAL_PAUSE_AFTER_STAGE,
+    _MANUAL_PAUSE_BEFORE_STAGE,
     _pause_for_manual_step,
     _overall_progress,
     pause_one_click,
@@ -21,11 +21,17 @@ from one_click_orchestrator import (
 # ---------------------------------------------------------------------------
 
 def test_manual_pause_mapping_covers_configurable_modules() -> None:
-    """Every creation-config pause option must map to a valid pipeline stage."""
-    assert set(_MANUAL_PAUSE_AFTER_STAGE.keys()) == {"narration", "tts", "digital_human"}
-    assert _MANUAL_PAUSE_AFTER_STAGE["narration"] == "narration"
-    assert _MANUAL_PAUSE_AFTER_STAGE["tts"] == "tts"
-    assert _MANUAL_PAUSE_AFTER_STAGE["digital_human"] == "tts"
+    """Every creation-config pause option must map to a real pipeline stage."""
+    assert set(_MANUAL_PAUSE_BEFORE_STAGE.keys()) == {
+        "storyboard", "images", "ai_mask", "narration", "tts",
+        "annotation", "digital_human", "render",
+    }
+    for module in ("storyboard", "images", "ai_mask", "narration", "tts"):
+        assert _MANUAL_PAUSE_BEFORE_STAGE[module] == module
+    # 勾画标注与数字人是渲染前的手动模块，与「作品输出」共用渲染前暂停点。
+    assert _MANUAL_PAUSE_BEFORE_STAGE["annotation"] == "render"
+    assert _MANUAL_PAUSE_BEFORE_STAGE["digital_human"] == "render"
+    assert _MANUAL_PAUSE_BEFORE_STAGE["render"] == "render"
 
 
 # ---------------------------------------------------------------------------
@@ -76,11 +82,30 @@ def test_pause_sets_waiting_for_user_on_narration(mock_save: MagicMock) -> None:
 def test_pause_sets_waiting_for_user_on_digital_human(mock_save: MagicMock) -> None:
     project = _make_project(["digital_human"])
     status: dict = {"stages": []}
-    result = _pause_for_manual_step(project, status, "tts")
+    # 数字人讲解与作品输出共用渲染前暂停点。
+    result = _pause_for_manual_step(project, status, "render")
     assert result is True
     assert status["status"] == "waiting_for_user"
     assert status["manual_pause_module"] == "digital_human"
     mock_save.assert_called_once()
+
+
+@patch("one_click_orchestrator._save_status")
+def test_pause_sets_waiting_for_user_on_annotation(mock_save: MagicMock) -> None:
+    project = _make_project(["annotation"])
+    status: dict = {"stages": []}
+    result = _pause_for_manual_step(project, status, "render")
+    assert result is True
+    assert status["manual_pause_module"] == "annotation"
+    mock_save.assert_called_once()
+
+
+def test_pause_skipped_stage_keeps_flow_moving() -> None:
+    """已完成、将被跳过的阶段不再触发暂停（没有新内容需要人工处理）。"""
+    project = _make_project(["storyboard"])
+    status: dict = {"stages": []}
+    assert _pause_for_manual_step(project, status, "storyboard", lambda stage: False) is False
+    assert status.get("status") is None  # unchanged
 
 
 @patch("one_click_orchestrator._save_status")

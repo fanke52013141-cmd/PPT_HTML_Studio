@@ -381,39 +381,50 @@
       if (!item?.id) return;
       const detail = state.styleTemplateDetails.get(String(item.id));
       const imageInfo = detail?.references?.images?.[0];
+      const active = item.id === select.value;
+      const wrap = document.createElement('div');
+      wrap.className = 'creation-config-image-style-item';
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'creation-config-image-style-card';
-      const active = item.id === select.value;
       card.classList.toggle('active', active);
       card.setAttribute('role', 'radio');
       card.setAttribute('aria-checked', String(active));
       card.title = item.summary || item.name || '图片风格';
-      const preview = document.createElement('span');
-      preview.className = 'creation-config-image-style-thumb';
-      if (imageInfo?.url) {
-        const image = document.createElement('img');
-        image.src = imageInfo.url;
-        image.alt = `${item.name || '图片风格'}参考图`;
-        preview.append(image);
-      } else {
-        preview.textContent = '加载预览中';
-      }
       const copy = document.createElement('span');
       copy.className = 'creation-config-image-style-copy';
       const name = document.createElement('strong');
       name.textContent = item.name || '未命名风格';
-      const meta = document.createElement('small');
-      const count = detail?.references?.images?.length ?? item.reference_count ?? 0;
-      meta.textContent = `${item.built_in ? '系统内置 · ' : ''}${count} 张参考图`;
-      copy.append(name, meta);
-      card.append(preview, copy);
-      card.addEventListener('click', () => {
+      const pick = () => {
         select.value = item.id;
         updateImageStyleSummary();
         renderImageStyleCards();
-      });
-      target.append(card);
+      };
+      card.addEventListener('click', pick);
+      if (item.built_in) {
+        // 系统内置风格不再展示参考图：名称本身即选择项（UI 审查第三轮）。
+        card.classList.add('creation-config-image-style-chip');
+        card.append(name);
+      } else {
+        const preview = document.createElement('span');
+        preview.className = 'creation-config-image-style-thumb';
+        if (imageInfo?.url) {
+          const image = document.createElement('img');
+          image.src = imageInfo.url;
+          image.alt = `${item.name || '图片风格'}参考图`;
+          preview.append(image);
+          card.append(preview);
+        } else {
+          preview.textContent = '加载预览中';
+          card.append(preview);
+        }
+        const meta = document.createElement('small');
+        const count = detail?.references?.images?.length ?? item.reference_count ?? 0;
+        meta.textContent = `${count} 张参考图`;
+        copy.append(name, meta);
+      }
+      wrap.append(card, copy);
+      target.append(wrap);
     });
   }
 

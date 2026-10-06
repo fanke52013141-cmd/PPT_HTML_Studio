@@ -11,10 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20261006.1">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20261006.2">
+  <link rel="stylesheet" href="stitch.css?v=20261006.7">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
   <link rel="stylesheet" href="annotations.css?v=20260928.1">
-  <link rel="stylesheet" href="workspace_content.css?v=20261006.1">
+  <link rel="stylesheet" href="workspace_content.css?v=20261006.5">
 </head>
 <body>
 
@@ -367,7 +367,7 @@
                 动画设置
               </button>
               <button id="step5-btn-fullscreen" class="secondary" type="button" title="全屏标注">
-                <span id="step5-fullscreen-label">放大标注</span>
+                <span id="step5-fullscreen-label">全屏标注</span>
               </button>
               <label class="step5-brush-control" title="调整手动画笔大小">
                 <span>画笔</span>
@@ -433,7 +433,7 @@
                 同步旁白
               </button>
               <button id="step6-btn-ai-annotate" class="success compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
-              <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button">AI 标注 Prompt</button>
+              <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button" title="编辑旁白 AI 停顿语气标注使用的提示词">AI 标注 Prompt</button>
               <span id="step6-autosave-status" class="step6-autosave-status"></span>
               <button id="step6-btn-save-and-tts" class="success step6-next-btn ws-primary" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
                 生成音频
@@ -444,7 +444,7 @@
               </button>
               <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="强制重生成全部：忽略缓存，重新生成所有页面音频">强制重生成</button>
               <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="导出整段语音：拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
-              <button id="step6-btn-audio-confirm-next" class="success ws-primary" title="确认并进入勾画标注">
+              <button id="step6-btn-audio-confirm-next" class="secondary compact-action-btn" title="确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过">
                 <span id="step6-audio-confirm-label">确认进入勾画</span>
               </button>
             </div>
@@ -1171,13 +1171,14 @@
                   <div class="creation-config-auto-options-grid">
                     <div class="creation-config-pause-block">
                       <h6>一键生成暂停点</h6>
-                      <p class="config-editor-note">单选：自动流程进入所选步骤前先暂停，等你确认后再继续；不选则全程自动。</p>
                       <div class="creation-config-pause-list" role="radiogroup" aria-label="一键生成暂停点">
                         <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="storyboard"><span>分镜规划</span></label>
                         <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="images"><span>图片生成</span></label>
                         <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="ai_mask"><span>AI Mask 标注</span></label>
                         <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="narration"><span>旁白与音频</span></label>
                         <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="tts"><span>语音合成</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="annotation"><span>勾画标注</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="digital_human"><span>数字人讲解</span></label>
                         <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="render"><span>作品输出</span></label>
                       </div>
                     </div>
@@ -1220,7 +1221,6 @@
               </section>
               <section id="creation-config-panel-prompts" class="creation-config-section creation-config-prompts-section" role="tabpanel" aria-labelledby="creation-config-tab-prompts" data-creation-config-panel="prompts">
                 <h5>Prompt</h5>
-                <p class="config-editor-note">所有步骤默认展开，方便一次性审阅和编辑；没有输出示例时保持为空。</p>
                 <div id="creation-config-prompt-fields" class="creation-config-prompt-fields"></div>
               </section>
             </div>
@@ -1779,7 +1779,7 @@
   <script src="prompt_help.js?v=20261006.2"></script>
   <script src="settings.js?v=20260928.1"></script>
   <script src="projects.js?v=20260916.1"></script>
-  <script src="creation_config_management.js?v=20261006.3"></script>
+  <script src="creation_config_management.js?v=20261006.4"></script>
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20261006.2"></script>
   <script src="article.js?v=20260929.6"></script>
@@ -1789,7 +1789,7 @@
   <script src="image_prompts.js?v=20260801.1"></script>
   <script src="ip_character_manager.js?v=20261005.1"></script>
   <script src="mask_reveal.js?v=20260801.1"></script>
-  <script src="mask_workspace.js?v=20260929.1"></script>
+  <script src="mask_workspace.js?v=20261006.4"></script>
   <script src="mask_editor.js?v=20261006.1"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
   <script src="narration_audio.js?v=20261006.1"></script>

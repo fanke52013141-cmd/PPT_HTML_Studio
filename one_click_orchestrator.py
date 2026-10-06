@@ -451,12 +451,18 @@ def _pause_for_requested_review(
     return True
 
 
-# Map manual pause module names to the pipeline stage after which they
-# should pause for user interaction.
-_MANUAL_PAUSE_AFTER_STAGE: dict[str, str] = {
+# Map manual pause module names to the pipeline stage they pause before
+# (「进入所选步骤前先暂停」). 勾画标注与数字人是渲染前的手动模块：自动流程
+# 不会替用户执行它们，因此二者与「作品输出」共用渲染前这一个暂停点。
+_MANUAL_PAUSE_BEFORE_STAGE: dict[str, str] = {
+    "storyboard": "storyboard",
+    "images": "images",
+    "ai_mask": "ai_mask",
     "narration": "narration",
     "tts": "tts",
-    "digital_human": "tts",
+    "annotation": "render",
+    "digital_human": "render",
+    "render": "render",
 }
 
 
@@ -464,12 +470,15 @@ def _pause_for_manual_step(
     project: Any,
     status: dict[str, Any],
     stage_id: str,
+    should_run_fn: Any = None,
 ) -> bool:
-    """Pause after *stage_id* if the user requested manual interaction.
+    """Pause before *stage_id* starts if the user flagged that step.
 
     Unlike ``_pause_for_requested_review`` (which is driven by
     ``review_policy``), this checks the per-project ``manual_pause_steps``
-    list — modules the user explicitly flagged for manual handling.
+    list — steps the user explicitly flagged for manual handling. The pause
+    only fires when the stage is about to run; already-completed stages that
+    will be skipped keep the flow moving toward the first pending stage.
     """
     import json as _json
 
@@ -481,29 +490,36 @@ def _pause_for_manual_step(
     if not isinstance(pause_modules, list) or not pause_modules:
         return False
 
-    for module_name, after_stage in _MANUAL_PAUSE_AFTER_STAGE.items():
-        if module_name in pause_modules and after_stage == stage_id:
-            stage_ids = [item[0] for item in STAGES]
-            try:
-                next_stage = stage_ids[stage_ids.index(stage_id) + 1]
-            except (ValueError, IndexError):
-                next_stage = ""
-            checkpoint = _REVIEW_CHECKPOINT_AFTER_STAGE.get(stage_id, "")
-            status.update(
-                {
-                    "status": "waiting_for_user",
-                    "current_stage": stage_id,
-                    "completed_at": _now(),
-                    "review_checkpoint": checkpoint,
-                    "review_next_stage": next_stage,
-                    "review_decision": "pending",
-                    "manual_pause_module": module_name,
-                    "message": f"等待手动操作：{module_name}",
-                }
-            )
-            _save_status(project, status)
-            return True
-    return False
+    target = _MANUAL_PAUSE_BEFORE_STAGE.get(stage_id, stage_id)
+    confirmed = set(status.get("manual_pause_resumed") or [])
+    module_name = next(
+        (
+            name
+            for name in pause_modules
+            if _MANUAL_PAUSE_BEFORE_STAGE.get(name, name) == target and name not in confirmed
+        ),
+        None,
+    )
+    if not module_name:
+        return False
+    if should_run_fn is not None and not should_run_fn(stage_id):
+        return False
+
+    checkpoint = _REVIEW_CHECKPOINT_AFTER_STAGE.get(stage_id, "")
+    status.update(
+        {
+            "status": "waiting_for_user",
+            "current_stage": stage_id,
+            "completed_at": _now(),
+            "review_checkpoint": checkpoint,
+            "review_next_stage": stage_id,
+            "review_decision": "pending",
+            "manual_pause_module": module_name,
+            "message": f"等待手动操作：{module_name}",
+        }
+    )
+    _save_status(project, status)
+    return True
 
 
 def _warn_stage(project: Any, status: dict[str, Any], stage_id: str, warning: str) -> None:
@@ -1075,10 +1091,16 @@ def _run_pipeline(
             )
         elif status.get("status") == "waiting_for_user":
             # Manual pause (user-flagged module). Resume without checkpoint
-            # approval — the user explicitly clicked "continue".
+            # approval — the user explicitly clicked "continue". The confirmed
+            # module is recorded so the same pause point does not re-fire
+            # immediately after the resume (进入前暂停的防重触发).
             next_stage = str(status.get("review_next_stage") or "")
             if next_stage not in {stage_id for stage_id, _ in STAGES}:
                 raise RuntimeError("手动暂停缺少可恢复的下一阶段")
+            confirmed_module = str(status.get("manual_pause_module") or "")
+            resumed_modules = [name for name in (status.get("manual_pause_resumed") or []) if name]
+            if confirmed_module and confirmed_module not in resumed_modules:
+                resumed_modules.append(confirmed_module)
             start_index = _stage_index(next_stage)
             status.update(
                 {
@@ -1088,6 +1110,7 @@ def _run_pipeline(
                     "review_checkpoint": "",
                     "review_next_stage": "",
                     "manual_pause_module": "",
+                    "manual_pause_resumed": resumed_modules,
                 }
             )
         elif start_from:
@@ -1116,6 +1139,8 @@ def _run_pipeline(
             if _pause_at_stage_boundary(project, status, project_id):
                 return
 
+        if _pause_for_manual_step(project, status, "storyboard", should_run):
+            return
         if should_run("storyboard"):
             _start_stage(project, status, "storyboard", "生成或复用 visual_contract.json")
             if mode == "restart" or not _has_contract(project):
@@ -1144,6 +1169,8 @@ def _run_pipeline(
             if _pause_for_requested_review(project, status, "storyboard"):
                 return
 
+        if _pause_for_manual_step(project, status, "images", should_run):
+            return
         if should_run("images"):
             _start_stage(project, status, "images", "生成缺失或过期的 slide 图片")
             prompts_payload = _invoke(services.image_prompts, "Step 3 prompts")
@@ -1327,6 +1354,8 @@ def _run_pipeline(
             if _pause_for_requested_review(project, status, "images"):
                 return
 
+        if _pause_for_manual_step(project, status, "confirm_images", should_run):
+            return
         if should_run("confirm_images"):
             _start_stage(project, status, "confirm_images", "确认整页图片并准备视频场景")
             _invoke(services.confirm_images, "Step 3 confirm")
@@ -1343,6 +1372,8 @@ def _run_pipeline(
             if _pause_at_stage_boundary(project, status, project_id):
                 return
 
+        if _pause_for_manual_step(project, status, "ai_mask", should_run):
+            return
         if should_run("ai_mask"):
             ai_mask_enabled = _should_annotate_ai_mask(project)
             if not ai_mask_enabled:
@@ -1435,6 +1466,8 @@ def _run_pipeline(
             if _pause_for_requested_review(project, status, "ai_mask"):
                 return
 
+        if _pause_for_manual_step(project, status, "narration", should_run):
+            return
         if should_run("narration"):
             _start_stage(project, status, "narration", "生成或复用演讲稿")
             narration_backed_up = False
@@ -1481,9 +1514,9 @@ def _run_pipeline(
                 return
             if _pause_for_requested_review(project, status, "narration"):
                 return
-            if _pause_for_manual_step(project, status, "narration"):
-                return
 
+        if _pause_for_manual_step(project, status, "tts", should_run):
+            return
         if should_run("tts"):
             _start_stage(
                 project,
@@ -1513,10 +1546,10 @@ def _run_pipeline(
                 return
             if _pause_for_requested_review(project, status, "tts"):
                 return
-            if _pause_for_manual_step(project, status, "tts"):
-                return
 
         video = None
+        if _pause_for_manual_step(project, status, "render", should_run):
+            return
         if should_run("render"):
             _start_stage(project, status, "render", "渲染最终视频")
 

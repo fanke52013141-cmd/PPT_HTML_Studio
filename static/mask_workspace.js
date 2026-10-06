@@ -607,7 +607,7 @@ function renderStep5Workspace() {
   updateStep5ConfirmButton();
   document.body.classList.toggle('step5-fullscreen-mode', !!state.canvasState.maskFullscreen);
   const fullscreenLabel = document.getElementById('step5-fullscreen-label');
-  if (fullscreenLabel) fullscreenLabel.textContent = state.canvasState.maskFullscreen ? '退出全屏' : '放大标注';
+  if (fullscreenLabel) fullscreenLabel.textContent = state.canvasState.maskFullscreen ? '退出全屏' : '全屏标注';
   const thumbsContainer = document.getElementById('step5-thumbs');
   thumbsContainer.className = 'step5-slides-grid'; // 改用平铺换行类名
   thumbsContainer.innerHTML = '';
@@ -713,7 +713,7 @@ function toggleStep5Fullscreen(force) {
   document.body.classList.toggle('step5-fullscreen-mode', !!state.canvasState.maskFullscreen);
   syncStep5FullscreenThumbs();
   const fullscreenLabel = document.getElementById('step5-fullscreen-label');
-  if (fullscreenLabel) fullscreenLabel.textContent = state.canvasState.maskFullscreen ? '退出全屏' : '放大标注';
+  if (fullscreenLabel) fullscreenLabel.textContent = state.canvasState.maskFullscreen ? '退出全屏' : '全屏标注';
   const canvas = document.getElementById('step5-canvas');
   setTimeout(() => {
     applyMaskCanvasZoom(canvas);

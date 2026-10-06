@@ -711,7 +711,7 @@ for (const settingsOwner of ['LLM_PROVIDER_PRESETS', 'detectLlmProvider', 'apply
 const fullscreenStart = maskWorkspace.indexOf('function toggleStep5Fullscreen');
 const fullscreenEnd = maskWorkspace.indexOf('function uuid', fullscreenStart);
 const fullscreenImplementation = maskWorkspace.slice(fullscreenStart, fullscreenEnd);
-if (!fullscreenImplementation.includes("fullscreenLabel.textContent = state.canvasState.maskFullscreen ? '退出全屏' : '放大标注'")) {
+if (!fullscreenImplementation.includes("fullscreenLabel.textContent = state.canvasState.maskFullscreen ? '退出全屏' : '全屏标注'")) {
   throw new Error('Step 5 fullscreen toggle does not update its label directly');
 }
 if (fullscreenImplementation.includes('renderStep5Workspace')) {
