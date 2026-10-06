@@ -1,4 +1,4 @@
-// 勾画标注工作区(可见步骤 10):项目/页面生命周期、三栏渲染、选中联动、
+// 勾画标注工作区(可见步骤 6，内部 Step 10):项目/页面生命周期、三栏渲染、选中联动、
 // 自动保存与冲突处理。纯逻辑在 annotations_core.js;画布交互与属性编辑在
 // annotations_editor.js;本模块不实现业务算法,只做编排与渲染。
 
@@ -41,12 +41,14 @@ function nextLocalAnnotationId() {
 // ------------------------------------------------------------ 项目生命周期
 
 function resetAnnotationsProjectState() {
+  window.cancelAnnotationRepair?.();
   ++ANNOTATIONS_WS.saveGeneration;
   ++ANNOTATIONS_WS.pageGeneration;
   clearTimeout(ANNOTATIONS_WS.saveTimer);
   ANNOTATIONS_WS.saveTimer = null;
   ANNOTATIONS_WS.pendingOps = [];
   ANNOTATIONS_WS.saveInFlight = false;
+  ANNOTATIONS_WS.savePromise = null;
   ANNOTATIONS_WS.failedOps = [];
   ANNOTATIONS_WS.failedOpsMessage = '';
   ANNOTATIONS_WS.conflict = null;
@@ -60,6 +62,7 @@ function resetAnnotationsProjectState() {
   ANNOTATIONS_WS.pendingNarrationAnchor = null;
   if (typeof cancelAnnotationPreviewLoop === 'function') cancelAnnotationPreviewLoop();
   window.__annotationsEnabled = false;
+  window.__annotationModuleState = 'not_started';
   renderAnnotationSaveStatus('idle');
 }
 
@@ -127,6 +130,27 @@ function remapAnnotationLocalOps(batchOperations, responseItems) {
 }
 
 async function flushAnnotationsSave() {
+  window.flushAnnotationEditorEdits?.();
+  const projectId = ANNOTATIONS_WS.projectId;
+  const slideId = ANNOTATIONS_WS.page.slide_id;
+  if (ANNOTATIONS_WS.savePromise) await ANNOTATIONS_WS.savePromise;
+  while (projectId === ANNOTATIONS_WS.projectId && slideId === ANNOTATIONS_WS.page.slide_id) {
+    if (ANNOTATIONS_WS.savePromise) {
+      await ANNOTATIONS_WS.savePromise;
+      continue;
+    }
+    window.flushAnnotationEditorEdits?.();
+    window.finishAnnotationFreehand?.();
+    if (!ANNOTATIONS_WS.pendingOps.length || ANNOTATIONS_WS.failedOps.length || ANNOTATIONS_WS.conflict) return;
+    const promise = saveAnnotationBatch();
+    ANNOTATIONS_WS.savePromise = promise;
+    try { await promise; } finally {
+      if (ANNOTATIONS_WS.savePromise === promise) ANNOTATIONS_WS.savePromise = null;
+    }
+  }
+}
+
+async function saveAnnotationBatch() {
   window.finishAnnotationFreehand?.();
   if (!ANNOTATIONS_WS.projectId || !ANNOTATIONS_WS.page.slide_id) return;
   if (ANNOTATIONS_WS.saveInFlight || !ANNOTATIONS_WS.pendingOps.length) {
@@ -321,6 +345,7 @@ async function retryAnnotationFailedOps() {
 function queueAnnotationSave(operationOrList) {
   const operations = Array.isArray(operationOrList) ? operationOrList : [operationOrList];
   if (!operations.length) return;
+  ANNOTATIONS_WS.editGeneration = (ANNOTATIONS_WS.editGeneration || 0) + 1;
   ANNOTATIONS_WS.pendingOps.push(...operations.filter(Boolean));
   renderAnnotationSaveStatus('pending');
   clearTimeout(ANNOTATIONS_WS.saveTimer);
@@ -334,10 +359,20 @@ function queueAnnotationSave(operationOrList) {
 async function loadStep10Data() {
   const projectId = state.currentProject?.id;
   if (!projectId) return;
+  await flushAnnotationsSave().catch(() => {});
   resetAnnotationsProjectState();
   ANNOTATIONS_WS.projectId = projectId;
   ANNOTATIONS_WS.loading = true;
   try {
+    const diagnostics = await API.get('/api/runtime/diagnostics', {silent: true});
+    if (diagnostics.annotation_runtime?.version !== 'annotation_batch_bcd_v1'
+        || !diagnostics.annotation_runtime?.ready) {
+      showToast('勾画服务版本未就绪，请重启应用服务后刷新页面。');
+      ANNOTATIONS_WS.runtimeBlocked = true;
+      renderAnnotationMissingState();
+      return;
+    }
+    ANNOTATIONS_WS.runtimeBlocked = false;
     await reloadAnnotationsSummary();
     if (ANNOTATIONS_WS.slideIds.length) {
       await selectAnnotationPage(0);
@@ -362,6 +397,15 @@ async function reloadAnnotationsSummary() {
   updateAnnotationDecisionButton();
   refreshAnnotationsStepFlag();
 }
+
+// Restore the saved decision even when reopening directly into Output.
+async function loadAnnotationWorkflowState(projectId) {
+  if (!projectId || state.currentProject?.id !== projectId) return;
+  ANNOTATIONS_WS.projectId = projectId;
+  await reloadAnnotationsSummary();
+}
+
+window.loadAnnotationWorkflowState = loadAnnotationWorkflowState;
 
 function refreshAnnotationsStepFlag() {
   const enabled = ANNOTATIONS_WS.summary?.settings?.enabled === true;
@@ -446,6 +490,7 @@ function annotationTimelineErrorText(error) {
 
 async function submitAnnotationConfirm(projectId, slideId, acceptedReviewIds) {
   let res;
+  const editGeneration = ANNOTATIONS_WS.editGeneration || 0;
   try {
     res = await API.post(
       `${annotationsApiBase(projectId)}/slides/${encodeURIComponent(slideId)}/confirm`,
@@ -475,6 +520,12 @@ async function submitAnnotationConfirm(projectId, slideId, acceptedReviewIds) {
     return;
   }
   if (ANNOTATIONS_WS.projectId !== projectId || ANNOTATIONS_WS.page.slide_id !== slideId) return;
+  window.flushAnnotationEditorEdits?.();
+  if (editGeneration !== (ANNOTATIONS_WS.editGeneration || 0)) {
+    ANNOTATIONS_WS.page.revision = res.revision;
+    showToast('确认期间标注已修改，请保存并重新预览确认。');
+    return;
+  }
   ANNOTATIONS_WS.page.revision = res.revision;
   (ANNOTATIONS_WS.page.items || []).forEach(item => {
     if (item.status?.content !== 'disabled') {
@@ -494,6 +545,10 @@ async function submitAnnotationConfirm(projectId, slideId, acceptedReviewIds) {
 }
 
 async function confirmAnnotationPage() {
+  if (window.annotationRepairPending?.()) {
+    showToast('请先完成重画，或取消重画，再确认本页。');
+    return;
+  }
   const projectId = ANNOTATIONS_WS.projectId;
   const slideId = ANNOTATIONS_WS.page.slide_id;
   if (!projectId || !slideId) return;
@@ -506,6 +561,7 @@ async function confirmAnnotationPage() {
     return;
   }
   const active = (ANNOTATIONS_WS.page.items || []).filter(item => item.status?.content !== 'disabled');
+  if (annotationTriggerNeedsSelection(active)) return;
   if (!active.length) {
     showToast('当前页没有可确认的标注。');
     return;
@@ -521,7 +577,17 @@ async function confirmAnnotationPage() {
   await submitAnnotationConfirm(projectId, slideId, []);
 }
 
+function annotationTriggerNeedsSelection(items = ANNOTATIONS_WS.page.items || []) {
+  const unresolved = items.filter(item => item.status?.content !== 'disabled'
+    && !item.anchor && item.status?.content !== 'confirmed'
+    && !(item.protection?.modified_fields || []).includes('timing'));
+  if (!unresolved.length) return false;
+  showToast('请为未关联标注选择讲稿，或明确设置指定起笔时间后再预览确认。');
+  return true;
+}
+
 async function selectAnnotationPage(index) {
+  window.cancelAnnotationRepair?.();
   window.finishAnnotationFreehand?.();
   const projectId = ANNOTATIONS_WS.projectId;
   const previousSlideId = ANNOTATIONS_WS.page.slide_id;
@@ -558,6 +624,8 @@ async function selectAnnotationPage(index) {
     items: page.items || [],
     narration: page.narration || { beats: [] },
     mask_groups: page.mask_groups || [],
+    audio_locator: page.audio_locator || {},
+    audio_start_sec: Number.isFinite(page.audio_start_sec) ? page.audio_start_sec : 0,
     imageHash: page.image?.hash || null,
     aiSnapshot: page.ai_suggestion_snapshot || null,
   };
@@ -594,7 +662,7 @@ function renderAnnotationWorkspace() {
 
 function annotationPrerequisitesBlocked() {
   const page = ANNOTATIONS_WS.page;
-  return !page.imageHash || !(page.narration?.beats?.length);
+  return ANNOTATIONS_WS.runtimeBlocked === true || !page.imageHash || !(page.narration?.beats?.length);
 }
 
 function renderAnnotationMissingState() {
@@ -606,6 +674,7 @@ function renderAnnotationMissingState() {
   body.style.display = blocked ? 'none' : 'block';
   if (!blocked) return;
   const reasons = [];
+  if (ANNOTATIONS_WS.runtimeBlocked) reasons.push('勾画服务版本未就绪，请重启应用服务并刷新');
   if (!ANNOTATIONS_WS.page.imageHash) reasons.push('当前页面还没有图片');
   if (!(ANNOTATIONS_WS.page.narration?.beats?.length)) reasons.push('当前页面还没有有效讲稿');
   const reason = document.getElementById('annotation-missing-reason');
@@ -657,6 +726,17 @@ function renderAnnotationNarration() {
   container.querySelectorAll('.annotation-beat').forEach(node => {
     node.addEventListener('mouseup', handleAnnotationNarrationSelection);
   });
+  const bind = document.createElement('button');
+  bind.type = 'button';
+  bind.className = 'secondary compact-action-btn';
+  bind.textContent = '将所选讲稿关联到当前标注';
+  bind.addEventListener('mousedown', event => event.preventDefault());
+  bind.addEventListener('click', () => {
+    const anchor = ANNOTATIONS_WS.pendingNarrationAnchor;
+    if (!anchor) { showToast('请先选中当前页讲稿中的触发内容。'); return; }
+    window.annotationNarrationAnchorPicked?.(anchor);
+  });
+  container.appendChild(bind);
   renderAnnotationNarrationHighlights();
 }
 
@@ -778,6 +858,8 @@ function renderAnnotationItems() {
 }
 
 function selectAnnotationItem(annotationId) {
+  if (annotationId !== ANNOTATIONS_WS.selectedAnnotationId) window.cancelAnnotationRepair?.();
+  window.flushAnnotationEditorEdits?.();
   ANNOTATIONS_WS.selectedAnnotationId = annotationId;
   renderAnnotationItems();
   renderAnnotationOverlay();
@@ -910,6 +992,7 @@ const _resetAnnotationsBase = resetAnnotationsProjectState;
 resetAnnotationsProjectState = function () {
   stopAnnotationJobPolling();
   ANNOTATIONS_WS.candidates = [];
+  ANNOTATIONS_WS.activeJob = null;
   _resetAnnotationsBase();
 };
 
@@ -917,6 +1000,21 @@ async function submitAnnotationJob(operation) {
   const projectId = ANNOTATIONS_WS.projectId;
   if (!projectId) return;
   const slideId = ANNOTATIONS_WS.page.slide_id;
+  if (ANNOTATIONS_WS.activeJob?.projectId === projectId) {
+    showToast('已有勾画任务在执行，请等待完成后再提交。');
+    return;
+  }
+  ANNOTATIONS_WS.activeJob = {projectId, slideId, operation};
+  try { await flushAnnotationsSave(); } catch (error) {
+    ANNOTATIONS_WS.activeJob = null;
+    showToast(`请先保存编辑：${error.message}`);
+    return;
+  }
+  if (ANNOTATIONS_WS.projectId !== projectId || ANNOTATIONS_WS.page.slide_id !== slideId
+      || ANNOTATIONS_WS.failedOps.length || ANNOTATIONS_WS.conflict) {
+    ANNOTATIONS_WS.activeJob = null;
+    return;
+  }
   const requestKey = `${operation}-${projectId}-${slideId}-${Date.now()}`;
   const body = {
     operation,
@@ -927,6 +1025,7 @@ async function submitAnnotationJob(operation) {
   try {
     res = await API.post(`${annotationsApiBase(projectId)}/jobs`, body, { silent: true });
   } catch (error) {
+    ANNOTATIONS_WS.activeJob = null;
     showToast(`任务提交失败：${error.message || '未知错误'}`);
     return;
   }
@@ -955,12 +1054,14 @@ function pollAnnotationJob(jobId, operation, projectId, slideId) {
       job = await API.get(`${annotationsApiBase(projectId)}/jobs/${encodeURIComponent(jobId)}`, { silent: true });
     } catch (error) {
       if (ANNOTATIONS_WS.projectId !== projectId) return;
+      ANNOTATIONS_WS.activeJob = null;
       renderAnnotationJobProgress(operation, jobId, 'error', 0, error.message);
       return;
     }
     if (ANNOTATIONS_WS.projectId !== projectId) return;
     renderAnnotationJobProgress(operation, jobId, job.status, job.progress, job.error);
     if (job.status === 'succeeded') {
+      ANNOTATIONS_WS.activeJob = null;
       const slideFailure = annotationJobSlideFailure(job);
       if (operation === 'detect_text') {
         await loadAnnotationCandidates();
@@ -968,7 +1069,8 @@ function pollAnnotationJob(jobId, operation, projectId, slideId) {
           showToast(slideFailure ? `文字识别完成,但有页面失败:${slideFailure}` : '文字识别完成;可点选候选生成文字标注。');
         }
       } else if (operation === 'align') {
-        showToast('音频文字定位完成，请同步预览；无法可靠定位的文字可人工试听校准。');
+        showToast(slideFailure ? `音频定位失败：${slideFailure}。可人工试听校准。`
+          : '音频文字定位完成，请同步预览；无法可靠定位的文字可人工试听校准。');
       } else if (operation === 'plan') {
         // 仅当用户仍停留在发起页才重载,避免把 AI 条目刷进别的页面(R4-005)
         if (ANNOTATIONS_WS.page.slide_id === slideId) {
@@ -983,6 +1085,8 @@ function pollAnnotationJob(jobId, operation, projectId, slideId) {
     }
     if (job.status === 'running' || job.status === 'queued') {
       ANNOTATIONS_WS.jobTimer = setTimeout(tick, 1200);
+    } else {
+      ANNOTATIONS_WS.activeJob = null;
     }
   };
   ANNOTATIONS_WS.jobTimer = setTimeout(tick, 800);

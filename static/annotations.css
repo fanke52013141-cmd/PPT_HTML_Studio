@@ -464,4 +464,61 @@
 
 .annotation-sync-preview { width: min(1100px, 92vw); max-height: 94vh; overflow: auto; border: 0; border-radius: 16px; padding: 20px; }
 .annotation-sync-preview::backdrop { background: rgba(0, 0, 0, .55); }
+.annotation-video-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.annotation-video-tools label { display: flex; align-items: center; gap: 8px; }
+.annotation-video-tools output { font-variant-numeric: tabular-nums; }
+#annotation-video-change { color: #a34420; }
+
+/* Stitch-oriented annotation preview: scoped to preserve the workspace shell. */
+#annotation-sync-preview { width: min(1360px, 96vw); max-height: 94dvh; padding: 0; color: #0f172a; background: #fff; border-radius: 16px; box-shadow: 0 24px 80px rgba(15,23,42,.22); }
+#annotation-sync-preview .annotation-video-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: auto; min-height: 0; padding: 20px 24px !important; border-bottom: 1px solid #e2e8f0; }
+#annotation-sync-preview .annotation-video-eyebrow { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+#annotation-sync-preview h2 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4; }
+#annotation-sync-preview h3 { margin: 0 0 12px; font-size: 14px; font-weight: 700; }
+#annotation-sync-preview .annotation-video-layout { display: grid; grid-template-columns: minmax(0,1fr) 288px; }
+#annotation-sync-preview .annotation-video-stage { min-width: 0; background: #f8fafc; padding: 20px 24px; }
+#annotation-sync-preview .annotation-video-stage-heading { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; font-size: 12px; color: #475569; }
+#annotation-sync-preview .annotation-video-stage-heading span:first-child { font-weight: 700; color: #0f172a; }
+#annotation-sync-preview .annotation-video-screen { overflow: hidden; border-radius: 10px; background: #0f172a; border: 1px solid #e2e8f0; }
+#annotation-sync-preview .annotation-video-transport { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+#annotation-sync-preview .annotation-video-frame-actions, #annotation-sync-preview .annotation-video-geometry-actions { display: flex; gap: 8px; }
+#annotation-sync-preview #annotation-video-clock { color: #475569; font: 12px/1.5 Consolas, monospace; font-variant-numeric: tabular-nums; }
+#annotation-sync-preview .annotation-video-hint { margin: 12px 0 0; color: #475569; font-size: 13px; line-height: 1.6; }
+#annotation-sync-preview .annotation-video-inspector { padding: 4px 20px; border-left: 1px solid #e2e8f0; min-width: 0; }
+#annotation-sync-preview .annotation-video-section { padding: 20px 0; }
+#annotation-sync-preview .annotation-video-section + .annotation-video-section { border-top: 1px solid #e2e8f0; }
+#annotation-sync-preview .annotation-video-section label { display: block; font-size: 12px; color: #475569; margin-bottom: 8px; }
+#annotation-sync-preview .annotation-video-section p { font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 12px; }
+#annotation-sync-preview .annotation-video-section select { width: 100%; margin-bottom: 12px; min-height: 36px; }
+#annotation-sync-preview .annotation-video-section .ppt-select-menu { width: 100%; margin-bottom: 16px !important; }
+#annotation-sync-preview .annotation-video-section > button { width: 100%; }
+#annotation-sync-preview .annotation-video-geometry-actions > button { flex: 1; min-width: 0; }
+#annotation-sync-preview .annotation-video-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid #e2e8f0; padding: 16px 24px; background: #fff; }
+#annotation-sync-preview .annotation-video-footer span { font-size: 13px; color: #475569; }
+#annotation-sync-preview #annotation-video-change { margin: 0; font-size: 13px; line-height: 1.6; }
+#annotation-sync-preview #annotation-video-change:empty { display: none; }
+#annotation-sync-preview button.secondary, #annotation-sync-preview button.primary { min-height: 36px; padding: 8px 12px; margin: 0; font-size: 12px; line-height: 18px; border-radius: 8px; box-shadow: none; white-space: nowrap; justify-content: center; transition: background .15s, transform .15s; }
+#annotation-sync-preview button.secondary { color: #475569; border: 1px solid #e2e8f0; background: #fff; }
+#annotation-sync-preview button.secondary:hover { background: #f8fafc; color: #0f172a; }
+#annotation-sync-preview button.primary { color: #fff !important; border: 1px solid #0f172a !important; background: #0f172a !important; }
+#annotation-sync-preview button.primary:hover { background: #334155 !important; }
+#annotation-sync-preview button:focus-visible, #annotation-sync-preview select:focus-visible { outline: 2px solid #f46a38; outline-offset: 3px; }
+/* Remotion owns these controls; undo global white-button/icon rules. */
+#annotation-player-root button { min-height: 0 !important; min-width: 0 !important; padding: 0 !important; margin: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: transparent !important; color: #fff !important; transform: none !important; }
+#annotation-player-root button svg { display: block; color: #fff; }
+@media (max-width: 900px) {
+  #annotation-sync-preview .annotation-video-layout { grid-template-columns: minmax(0,1fr); }
+  #annotation-sync-preview .annotation-video-inspector { border-left: 0; border-top: 1px solid #e2e8f0; padding: 0 24px; }
+}
+@media (max-width: 767px) {
+  #annotation-sync-preview .annotation-video-header, #annotation-sync-preview .annotation-video-stage, #annotation-sync-preview .annotation-video-footer { padding: 16px; }
+  #annotation-sync-preview .annotation-video-header { padding: 16px !important; }
+  #annotation-sync-preview .annotation-video-inspector { padding: 0 16px; }
+  #annotation-sync-preview h2 { font-size: 18px; }
+  #annotation-sync-preview button.secondary, #annotation-sync-preview button.primary { min-height: 44px; }
+  #annotation-sync-preview .annotation-video-footer { align-items: stretch; flex-direction: column; gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #annotation-sync-preview button { transition: none !important; }
+}
 .annotation-field audio { width: 100%; min-width: 0; }

@@ -152,6 +152,26 @@ def test_missing_page_is_noop(tmp_path):
     assert invalidate_for_audio_change(project, "slide_001") == []
 
 
+def test_audio_change_keeps_manual_point_and_idempotent_stale_marker(tmp_path):
+    from dataclasses import replace
+    run_dir = _run_dir(tmp_path)
+    _confirmed_page(run_dir)
+    store = _store()
+    page = store.read_page(str(run_dir), "slide_001", canvas=CANVAS)
+    item = page.items[0]
+    item = replace(item, timing=replace(item.timing, trigger_mode="manual", manual_start_sec=1.234,
+                                       time_reference="audio"))
+    store.write_page(str(run_dir), "slide_001", replace(page, items=(item,)))
+    invalidate_for_audio_change(_Project(run_dir), "slide_001", store=store)
+    updated = store.read_page(str(run_dir), "slide_001", canvas=CANVAS)
+    assert updated.items[0].timing.manual_start_sec == 1.234
+    assert updated.items[0].timing.calibration_stale
+    assert updated.items[0].target == item.target
+    assert updated.items[0].style == item.style
+    invalidate_for_audio_change(_Project(run_dir), "slide_001", store=store)
+    assert store.read_page(str(run_dir), "slide_001", canvas=CANVAS).revision == updated.revision
+
+
 def test_disabled_items_untouched(tmp_path):
     run_dir = _run_dir(tmp_path)
     _confirmed_page(run_dir, anchored=False)

@@ -333,7 +333,7 @@ function initAnnotationWorkspaceEvents() {
     const active = document.getElementById('annotation-btn-freehand').classList.contains('active');
     window.setAnnotationDrawMode?.(active ? null : 'freehand');
   });
-  document.getElementById('annotation-btn-finish-freehand')?.addEventListener('click', () => window.finishAnnotationFreehand?.());
+  document.getElementById('annotation-btn-finish-freehand')?.addEventListener('click', () => window.finishAnnotationFreehand?.(true));
   document.getElementById('annotation-btn-detect')?.addEventListener('click', () => {
     window.submitAnnotationJob?.('detect_text');
   });

@@ -21,6 +21,16 @@ EXPECTED_SOURCE_ROUTES = {
     "/api/projects/{project_id}/steps/3/image-style": {"GET", "PUT"},
 }
 
+ANNOTATION_RUNTIME_VERSION = "annotation_batch_bcd_v1"
+ANNOTATION_REQUIRED_ROUTES = {
+    "/api/projects/{project_id}/annotations/jobs": "POST",
+    "/api/projects/{project_id}/annotations/jobs/{job_id}": "GET",
+    "/api/projects/{project_id}/annotations/jobs/{job_id}/cancel": "POST",
+    "/api/projects/{project_id}/annotations/slides/{slide_id}/prepare": "POST",
+    "/api/projects/{project_id}/annotations/slides/{slide_id}/confirm": "POST",
+    "/api/projects/{project_id}/annotations/slides/{slide_id}/ink/{build_id}/{annotation_id}/{stroke_index}/{frame_index}": "GET",
+}
+
 
 def _route_methods_by_path(app: Any) -> dict[str, list[str]]:
     result: dict[str, set[str]] = {}
@@ -52,6 +62,10 @@ def _diagnostics_payload(app: Any) -> dict[str, Any]:
         "missing_routes": missing_routes,
         "route_count": effective_route_count,
         "routes": routes,
+        "annotation_runtime": {
+            "version": ANNOTATION_RUNTIME_VERSION,
+            "ready": all(method in routes.get(path, []) for path, method in ANNOTATION_REQUIRED_ROUTES.items()),
+        },
     }
 
 

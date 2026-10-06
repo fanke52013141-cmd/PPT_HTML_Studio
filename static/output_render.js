@@ -161,7 +161,7 @@ async function loadStep8Data() {
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   if (!contract.success || !contract.contract?.slides?.length) {
     const pptxLabel = document.getElementById('step8-pptx-readiness');
-    if (pptxLabel) pptxLabel.textContent = '尚未生成分镜与图片';
+    if (pptxLabel) { pptxLabel.textContent = ''; pptxLabel.hidden = true; }
     step8RenderReadiness = { hasContract: false, audioComplete: false, audioConfirmed: false };
     document.getElementById('step8-result-box').style.display = 'none';
     const digitalHumanMessage = document.getElementById('step8-digital-human-message');
@@ -480,16 +480,12 @@ async function refreshStep8PptxReadiness(
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return null;
   label.classList.toggle('ready', readiness.ready === true);
   label.classList.toggle('blocked', readiness.ready !== true);
-  if (readiness.ready) {
-    label.innerText = `${readiness.slide_count} 页图片已就绪`;
-    label.title = '可以生成图片型 PPTX';
-    button.disabled = Boolean(_step8PptxJobId);
-  } else {
-    const issues = Array.isArray(readiness.issues) ? readiness.issues : [];
-    label.innerText = issues[0]?.message || 'PPTX 尚未就绪';
-    label.title = issues.map(item => item.message).filter(Boolean).join('\n');
-    button.disabled = true;
-  }
+  // 就绪与否由「生成 PPTX」按钮的禁用态表达；缺因细节保留在悬浮 title（2026-10-06 用户裁决）。
+  label.textContent = '';
+  label.hidden = true;
+  label.title = readiness.ready ? '可以生成图片型 PPTX'
+    : (Array.isArray(readiness.issues) ? readiness.issues.map(item => item.message).filter(Boolean).join('\n') : 'PPTX 尚未就绪');
+  button.disabled = readiness.ready !== true || Boolean(_step8PptxJobId);
   return readiness;
 }
 
@@ -524,6 +520,7 @@ async function loadStep8PptxData(
     const label = document.getElementById('step8-pptx-readiness');
     if (label) {
       label.className = 'step8-readiness blocked';
+      label.hidden = false;
       label.innerText = 'PPTX 状态读取失败';
     }
   }
@@ -637,7 +634,7 @@ function showStep8VideoResult(videos) {
         ? formatProjectTotalElapsed(item.project_total_elapsed_sec)
         : '';
       const artifactBadge = item.artifact_state === 'current'
-        ? '<span class="step8-current-badge">精确 RLE Mask v5 · 当前</span>'
+        ? '<span class="step8-current-badge">精确 RLE Mask · 当前</span>'
         : item.artifact_state === 'stale'
           ? '<span class="step8-legacy-badge">输入已变化 · 需重渲染</span>'
           : item.artifact_state === 'invalid'

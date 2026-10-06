@@ -5223,15 +5223,6 @@ body.workspace-open #step-panel-1 .step1-heading-actions #step1-btn-submit:hover
   border-color: #2c2e33 !important;
 }
 
-/* Rule A: toolbar hints stay horizontal (they were squeezed into
-   one-character columns after the title bar became single-line). */
-body.workspace-open .workflow-toolbar .control-hint {
-  white-space: nowrap !important;
-  font-size: 12px !important;
-  color: #6e737c !important;
-  align-self: center !important;
-  flex: 0 0 auto !important;
-}
 /* Rule A: 批量生图 is a regular action, not a brand-orange primary. */
 #step3-btn-batch-generate {
   background: #ffffff !important;
@@ -6442,3 +6433,5 @@ body.workspace-open #step-panel-6 .step6-slide-audio:empty {
   padding: 0 !important;
   border: 0 !important;
 }
+/* The annotation finish action is available only while using the freehand tool. */
+#annotation-btn-finish-freehand[hidden] { display: none !important; }

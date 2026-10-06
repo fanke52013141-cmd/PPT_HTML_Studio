@@ -257,3 +257,28 @@ def test_restore_rejects_non_ai_source(client, project):
     )
     assert resp.status_code == 422
     assert any(issue["code"] == "bad_enum" for issue in resp.json()["detail"]["issues"])
+
+
+def test_persisted_preview_route_rejects_stale_completed_result(client, project):
+    from checks.test_annotation_routes import _make_audio, MANUAL_REGION_ITEM
+    project_id, run_root = project
+    _make_audio(run_root)
+    base = f"/api/projects/{project_id}/annotations"
+    saved = client.patch(base + "/slides/slide_001", json={"expected_revision": 0,
+        "operations": [{"op": "add", "item": MANUAL_REGION_ITEM}]})
+    assert saved.status_code == 200, saved.text
+    revision = saved.json()["revision"]
+    submitted = client.post(base + "/jobs", json={"operation": "preview", "slide_ids": ["slide_001"],
+        "expected_revision": revision, "request_key": "preview-route-test"})
+    assert submitted.status_code == 200, submitted.text
+    url = base + "/jobs/" + submitted.json()["job_id"]
+    deadline = time.monotonic() + 6
+    while time.monotonic() < deadline:
+        result = client.get(url)
+        if result.json().get("status") not in ("queued", "running"):
+            break
+        time.sleep(.05)
+    assert result.json()["status"] == "succeeded", result.text
+    assert result.json()["result"]["revision"] == revision
+    (run_root / "slides" / "slide_001" / "visual_draft.png").write_bytes(b"changed image")
+    assert client.get(url).status_code == 409

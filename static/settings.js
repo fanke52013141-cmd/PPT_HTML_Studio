@@ -130,6 +130,7 @@ async function loadSettings() {
   document.getElementById('setting-llm-temp').value = state.settings.llm_temperature || '0.7';
   document.getElementById('setting-llm-max-tokens').value = state.settings.llm_max_tokens || '50000';
   document.getElementById('setting-annotation-ocr-key').value = state.settings.annotation_ocr_baidu_api_key || '';
+  document.getElementById('setting-annotation-ocr-secret').value = state.settings.annotation_ocr_baidu_secret_key || '';
 
   document.getElementById('setting-image-base-url').value = state.settings.image_base_url || '';
   document.getElementById('setting-image-api-key').value = state.settings.image_api_key || '';
@@ -180,6 +181,7 @@ function readSettingsForm() {
     llm_temperature: document.getElementById('setting-llm-temp').value.trim(),
     llm_max_tokens: document.getElementById('setting-llm-max-tokens').value.trim(),
     annotation_ocr_baidu_api_key: document.getElementById('setting-annotation-ocr-key').value.trim(),
+    annotation_ocr_baidu_secret_key: document.getElementById('setting-annotation-ocr-secret').value.trim(),
     vision_model: state.settings?.vision_model || document.getElementById('setting-llm-model').value.trim(),
     image_base_url: document.getElementById('setting-image-base-url').value.trim(),
     image_api_key: document.getElementById('setting-image-api-key').value.trim(),

@@ -182,6 +182,7 @@ class TextLayoutBuilder:
         recognize: Callable[[bytes, BaiduOcrEngineConfig], BaiduOcrResult],
         roi: Optional[Sequence[int]] = None,
         force: bool = False,
+        publish: Optional[Callable[[Dict[str, Any], Optional[Dict[str, Any]]], None]] = None,
     ) -> Tuple[Dict[str, Any], bool]:
         """返回 (布局载荷, 是否新识别)。
 
@@ -217,7 +218,10 @@ class TextLayoutBuilder:
         )
         # 重识别不继承纠正(原文可能整体变化);纠正随 revision 失效并
         # 由上层对引用旧 token 的目标标记 needs_review。
-        self._deps.write_json_atomic(self.layout_path(run_dir, slide_id), payload)
+        if publish is not None:
+            publish(payload, existing)
+        else:
+            self._deps.write_json_atomic(self.layout_path(run_dir, slide_id), payload)
         return payload, True
 
     def save(self, run_dir: str, slide_id: str, layout: Dict[str, Any]) -> None:

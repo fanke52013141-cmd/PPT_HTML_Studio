@@ -129,7 +129,7 @@ class _WithStrokes:
         return getattr(self.item, name)
 
 
-def compile_slide(slide_dir, page, *, canvas, fps=30, alignment=None):
+def compile_slide(slide_dir, page, *, canvas, fps=30, alignment=None, cancel_event=None, progress=None):
     """Build complete assets without publishing confirmation or mutating a page."""
     slide_dir = Path(slide_dir)
     active = [item for item in page.items if item.status.content != "disabled"]
@@ -181,7 +181,11 @@ def compile_slide(slide_dir, page, *, canvas, fps=30, alignment=None):
     payload["inputs"].update(snapshot)
     payload["build_id"] = timeline_build_id(payload)
     by_id = {item.annotation_id: item for item in active}
+    total_strokes = sum(len(event["strokes"]) for event in payload["events"])
+    completed_strokes = 0
     for event in payload["events"]:
+        if cancel_event and cancel_event.is_set():
+            raise AnnotationBuildError([{"reason": "cancelled"}])
         item = by_id[event["annotation_id"]]
         for index, stroke in enumerate(event["strokes"]):
             request = InkRequest(
@@ -199,10 +203,14 @@ def compile_slide(slide_dir, page, *, canvas, fps=30, alignment=None):
                     metadata = read_json(directory / "meta.json", optional=True)
                     if not metadata or int(metadata.get("frame_count", 0)) < 2 or not all((directory / f"frame_{i:03d}.png").is_file()
                                                for i in range(int(metadata.get("frame_count", 0)))):
-                        metadata = render_and_write(request, directory, draw_duration_sec=duration, fps=fps)
+                        metadata = render_and_write(request, directory, draw_duration_sec=duration, fps=fps,
+                                                    **({"cancel_event": cancel_event} if cancel_event else {}))
                 stroke["ink"] = {"kind": "raster", "dir": relative,
                                  "frame_count": int(metadata["frame_count"]), "fps": fps,
                                  "canvas": list(canvas)}
+                completed_strokes += 1
+                if progress:
+                    progress(30 + int(60 * completed_strokes / max(1, total_strokes)), "ink")
             except Exception as exc:
                 raise AnnotationBuildError([{"annotation_id": item.annotation_id, "reason": "ink_build_failed"}]) from exc
     return json.loads(json.dumps(payload))
@@ -225,6 +233,8 @@ def validate_timeline(slide_dir, page, *, canvas, fps=30, timeline=None):
     if not timeline:
         raise AnnotationBuildError([{"reason": "timeline_missing"}])
     if timeline.get("resolver_version") != RESOLVER_VERSION:
+        raise AnnotationBuildError([{"reason": "timeline_version_stale"}])
+    if any(event.get('timing_source') == 'forced_alignment' for event in timeline.get('events', [])):
         raise AnnotationBuildError([{"reason": "timeline_version_stale"}])
     if timeline.get("build_id") != timeline_build_id(timeline):
         raise AnnotationBuildError([{"reason": "timeline_content_corrupt"}])

@@ -6051,6 +6051,9 @@ body.step5-fullscreen-mode #step-panel-5 .workspace-left{align-items:center;just
   white-space: nowrap;
 }
 
+/* 就绪/阻塞的常态文字已按 2026-10-06 裁决移除，仅在错误时短暂可见。 */
+.step8-readiness[hidden] { display: none !important; }
+
 .step8-readiness::before {
   width: 7px;
   height: 7px;

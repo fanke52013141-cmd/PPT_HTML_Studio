@@ -275,6 +275,8 @@ def run_minimax(args: argparse.Namespace) -> int:
         str(args.max_subtitle_chars),
         "--timeout",
         str(args.timeout),
+        "--subtitle-type",
+        "word",
     ]
     if args.text_file:
         cmd.extend(["--text-file", args.text_file])

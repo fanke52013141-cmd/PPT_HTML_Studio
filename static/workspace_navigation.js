@@ -92,6 +92,14 @@ async function enterWorkspace(projectId) {
   document.body.classList.add('workspace-open');
 
   // 加载步骤状态并导航至当前步骤
+  if (typeof window.loadAnnotationWorkflowState === 'function') {
+    try {
+      await window.loadAnnotationWorkflowState(projectId);
+    } catch (error) {
+      console.error('annotation workflow state restore failed:', error);
+    }
+    if (entryVersion !== workspaceNavigationVersion) return;
+  }
   updateStepperUI(visibleStep, project.step_status);
   await navigateToStep(visibleStep);
 }

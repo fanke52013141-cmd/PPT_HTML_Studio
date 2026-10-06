@@ -37,6 +37,11 @@ from typing import Any
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
+# Direct CLI execution must resolve source-owned annotation modules without
+# depending on the launching shell's PYTHONPATH.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 try:
     from scripts.media_tools import probe_media_duration_sec
 except ModuleNotFoundError:

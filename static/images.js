@@ -63,8 +63,7 @@ function updateStep3BatchButton() {
   const hasSlides = step3ImageOrder.length > 0;
   const generationInProgress = step3GeneratingSlides.size > 0;
   const uploadInProgress = step3UploadingSlides.size > 0;
-  setDisabledReason(button, !hasSlides || step3BatchGenerating || generationInProgress || uploadInProgress,
-    !hasSlides ? '请先完成分镜规划' : '图片正在生成或上传，请等待完成');
+  setDisabledReason(button, !hasSlides || step3BatchGenerating || generationInProgress || uploadInProgress);
   button.classList.toggle('is-loading', step3BatchGenerating);
   const uploadLabel = document.getElementById('step3-batch-upload-label');
   const uploadInput = document.getElementById('step3-batch-upload');
@@ -72,8 +71,7 @@ function updateStep3BatchButton() {
   if (uploadInput) uploadInput.disabled = generationInProgress || uploadInProgress;
   const deleteAllButton = document.getElementById('step3-btn-delete-all-images');
   if (deleteAllButton) {
-    setDisabledReason(deleteAllButton, generationInProgress || uploadInProgress || !step3ImageOrder.some(item => item.exists),
-      generationInProgress || uploadInProgress ? '图片正在生成或上传' : '当前没有可删除的图片');
+    setDisabledReason(deleteAllButton, generationInProgress || uploadInProgress || !step3ImageOrder.some(item => item.exists));
     ensureStep3BatchDownloadButton(deleteAllButton);
   }
   button.innerHTML = step3BatchGenerating
@@ -219,14 +217,7 @@ function renderStep3Grid() {
   const confirmBtn = document.getElementById('step3-btn-confirm');
   if (confirmBtn) {
     confirmBtn.style.display = hasSlides ? 'inline-flex' : 'none';
-    const reason = allImagesReady
-      ? ''
-      : (step3GeneratingSlides.size > 0 || step3UploadingSlides.size > 0
-        ? '图片正在生成或上传中'
-        : staleProvenanceCount > 0
-          ? `${staleProvenanceCount} 张图片来源待更新，请重新生成或上传`
-          : `还缺少 ${missingCount} 张图片`);
-    setDisabledReason(confirmBtn, !allImagesReady, reason);
+    setDisabledReason(confirmBtn, !allImagesReady);
   }
 
   if (step3LoadState === 'loading' || step3LoadState === 'error') return;
@@ -530,15 +521,10 @@ async function deleteStep3Image(slideId) {
 window.deleteStep3Image = deleteStep3Image;
 
 async function deleteAllStep3Images() {
-  if (step3UploadingSlides.size > 0 || step3GeneratingSlides.size > 0) {
-    showToast('请等待当前图片生成或上传完成后再批量删除。');
-    return;
-  }
+  // 按钮在生成/上传期间与无图可删时均为禁用态，这里只保留静默守卫。
+  if (step3UploadingSlides.size > 0 || step3GeneratingSlides.size > 0) return;
   const imageCount = step3ImageOrder.filter(item => item.exists).length;
-  if (imageCount === 0) {
-    showToast('当前没有可删除的图片。');
-    return;
-  }
+  if (imageCount === 0) return;
   if (!await confirmAction('批量移除图片', `确定移除当前项目的 ${imageCount} 张图片吗？旧图片和 Mask 将保存在归档中，可通过恢复归档重新使用。`)) return;
   const changes = [];
   for (const image of step3ImageOrder.filter(item => item.exists)) {

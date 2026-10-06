@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import binascii
 import io
+import hashlib
 import json
 import os
 import re
@@ -790,6 +791,17 @@ def main() -> int:
         response_json = call_minimax_tts(payload, args.endpoint, args.api_key, args.timeout)
         check_base_resp(response_json, "sync")
         write_audio(response_json, out_audio)
+        subtitle_url = (response_json.get("data") or {}).get("subtitle_file")
+        if isinstance(subtitle_url, str) and urllib.parse.urlparse(subtitle_url).scheme == "https":
+            # Optional timing retrieval failure must not discard successful audio.
+            try:
+                body = request_bytes_with_retry(urllib.request.Request(subtitle_url),
+                    timeout=min(args.timeout, 60), purpose="subtitle", attempts=1)
+                titles = json.loads(body)
+                if isinstance(titles, list):
+                    response_json["subtitle_timestamps"] = titles
+            except (RuntimeError, ValueError, OSError):
+                print("Warning: provider subtitles unavailable; audio alignment will use its fallback.", file=sys.stderr)
 
     duration_sec, duration_source, provider_duration_sec = choose_audio_duration(response_json, subtitle_text, out_audio)
     provider_timestamps = response_json.get("subtitle_timestamps")
@@ -814,6 +826,10 @@ def main() -> int:
         "subtitle_display": {"max_lines": 1, "max_cjk_chars": args.max_subtitle_chars},
         "segments": segments,
     }
+    if isinstance(provider_timestamps, list):
+        # Preserve unmodified measured timings independently of subtitle layout.
+        timeline["provider_timestamps"] = provider_timestamps
+        timeline["provider_timestamps_audio_hash"] = hashlib.sha256(out_audio.read_bytes()).hexdigest()
 
     if args.out_meta:
         meta = {

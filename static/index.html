@@ -164,6 +164,7 @@
               <span class="workflow-titlebar-divider" aria-hidden="true"></span>
               <button id="step1-btn-submit" class="success ws-primary" type="button" title="保存文章并进入分镜规划">
                 进入分镜规划
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
           </div>
@@ -242,11 +243,11 @@
                 <button id="step2-btn-add-slide" class="secondary" style="display: none;">
                   添加幻灯片
                 </button>
-                <button id="step2-btn-generate-visual" class="secondary" type="button" disabled>
-                  <span class="btn-label">内容可视化</span>
-                </button>
                 <button id="step2-btn-generate-script" class="secondary" type="button">
                   <span class="btn-label">生成演讲稿</span>
+                </button>
+                <button id="step2-btn-generate-visual" class="secondary" type="button" disabled>
+                  <span class="btn-label">内容可视化</span>
                 </button>
                 <span id="step2-autosave-status" class="step2-autosave-status"></span>
               </div>
@@ -432,22 +433,23 @@
               </div>
               <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button" title="编辑旁白 AI 停顿语气标注使用的提示词">AI 标注 Prompt</button>
               <span class="workflow-titlebar-divider" aria-hidden="true"></span>
+              <button id="step6-btn-init" class="secondary" title="按最新分镜与画面同步旁白内容">
+                同步旁白
+              </button>
+              <button id="step6-btn-ai-annotate" class="success compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
               <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="导出整段语音：拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
               <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="强制重生成全部：忽略缓存，重新生成所有页面音频">强制重生成</button>
               <button id="step7-btn-synthesize" class="secondary compact-action-btn" title="检查并补齐音频：检查所有页面，只补生成旁白或语音配置发生变化的音频">
                 补齐音频
               </button>
+              <span id="step6-autosave-status" class="step6-autosave-status"></span>
               <button id="step6-btn-save-and-tts" class="success step6-next-btn ws-primary" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
                 生成音频
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
-              <button id="step6-btn-ai-annotate" class="success compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
-              <button id="step6-btn-init" class="secondary" title="按最新分镜与画面同步旁白内容">
-                同步旁白
-              </button>
-              <span id="step6-autosave-status" class="step6-autosave-status"></span>
               <button id="step6-btn-audio-confirm-next" class="secondary compact-action-btn" title="确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过">
                 <span id="step6-audio-confirm-label">进入勾画标注</span>
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
           </div>
@@ -473,7 +475,9 @@
                 <button id="annotation-btn-decision" class="secondary compact-action-btn" type="button">本项目不加勾画</button>
                 <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
                 <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
-                <button id="step10-btn-next" class="success compact-action-btn ws-primary" type="button" title="进入数字人讲解步骤；数字人为可选步骤">进入数字人讲解</button>
+                <button id="step10-btn-next" class="success compact-action-btn ws-primary" type="button" title="进入数字人讲解步骤；数字人为可选步骤">进入数字人讲解
+                  <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
               </div>
             </div>
 
@@ -546,7 +550,9 @@
             <h2 class="highlight-title workflow-title">数字人讲解</h2>
             <div class="step9-header-actions workflow-toolbar">
               <span class="step9-optional-hint">可选步骤 · 不设置也能正常出片</span>
-              <button id="step9-btn-skip" class="secondary compact-action-btn ws-primary" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出</button>
+              <button id="step9-btn-skip" class="secondary compact-action-btn ws-primary" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
             </div>
           </div>
                     <!-- ==================== 数字人讲解 ==================== -->
@@ -890,7 +896,8 @@
           <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(17,24,39,0.1);">
             <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">勾画标注 · 百度 OCR 密钥:</label>
             <input type="password" id="setting-annotation-ocr-key" placeholder="bce-v3/ALTAK-.../...">
-            <small style="display:block; margin-top:0.3rem; color:#6b7280;">用于"识别文字"与 AI 重点推荐。百度千帆 bce-v3 格式密钥,留空时回退读取环境变量 PPT_ANNOTATION_BAIDU_OCR_KEY。</small>
+            <small style="display:block; margin-top:0.3rem; color:#6b7280;">支持统一 API Key；使用 AK/SK 时，上方填 Access Key ID，下方填 Secret Access Key。</small>
+            <input type="password" id="setting-annotation-ocr-secret" placeholder="Secret Access Key（统一 API Key 方式留空）" autocomplete="new-password">
           </div>
         </div>
 
@@ -1797,7 +1804,7 @@
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20261006.2"></script>
   <script src="article.js?v=20261006.7"></script>
-  <script src="storyboard.js?v=20261005.3"></script>
+  <script src="storyboard.js?v=20261006.BCD1"></script>
   <script src="storyboard_prompts.js?v=20261006.2"></script>
   <script src="images.js?v=20261006.6"></script>
   <script src="image_prompts.js?v=20260801.1"></script>
@@ -1809,12 +1816,13 @@
   <script src="narration_audio.js?v=20261006.6"></script>
   <script src="annotation_playback.js?v=20260929.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
-  <script src="annotations_workspace.js?v=20261006.2"></script>
-  <script src="annotations_editor.js?v=20261006.2"></script>
-  <script src="annotation_preview.js?v=20261006.2"></script>
-  <script src="output_render.js?v=20261006.1"></script>
+  <script src="annotations_workspace.js?v=20261006.CAL2"></script>
+  <script src="annotation_audio_calibration.js?v=20261006.2"></script>
+  <script src="annotations_editor.js?v=20261006.CAL3"></script>
+  <script src="annotation_preview.js?v=20261006.CAL3"></script>
+  <script src="output_render.js?v=20261006.BCD1"></script>
   <script src="account_management.js?v=20261006.2"></script>
-  <script src="workspace_navigation.js?v=20261005.2"></script>
+  <script src="workspace_navigation.js?v=20261006.BCD2"></script>
   <script src="generation_controls.js?v=20261005.1"></script>
   <script src="event_bindings.js?v=20261006.3"></script>
   <script src="project_profile_extension.js?v=20260917.3"></script>

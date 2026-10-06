@@ -18,6 +18,7 @@ const api = {
   },
   stop() {player?.pause(); root?.unmount(); root = null; player = null;},
   frame() {return player?.getCurrentFrame() ?? 0;},
+  pause() {player?.pause();},
   seek(frame: number) {player?.seekTo(frame);},
 };
 (window as unknown as {AnnotationPlayer: typeof api}).AnnotationPlayer = api;

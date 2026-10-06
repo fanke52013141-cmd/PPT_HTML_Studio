@@ -801,7 +801,7 @@ if (!images.includes("document.getElementById('step3-preview-box').innerHTML = s
 }
 if (!css.includes('.step3-generating-preview')) throw new Error('step 3 loading preview style missing');
 if (!images.includes('await refreshStep3Images();')) throw new Error('step 3 does not wait for image state');
-if (!images.includes('setDisabledReason(confirmBtn, !allImagesReady, reason)')) throw new Error('step 3 confirmation is not gated');
+if (!images.includes('setDisabledReason(confirmBtn, !allImagesReady)')) throw new Error('step 3 confirmation is not gated');
 if (!maskEditor.includes('step5AutoSavePromise')) throw new Error('step 5 save serialization missing');
 if (!maskReveal.includes("raw.type || raw.value || 'crop_fade_up'")) {
   throw new Error('mask animation preset values are not normalized correctly');
@@ -1303,4 +1303,7 @@ for (const filename of ['ai_mask_extension.js', 'project_profile_extension.js',
 const backgroundExtension = fs.readFileSync(path.join(root, 'static', 'storyboard_background_extension.js'), 'utf8');
 if (backgroundExtension.includes('sessionStorage')) throw new Error('background writes must use the live project scope');
 
+const calibrationSource = fs.readFileSync(path.join(root, 'static', 'annotation_audio_calibration.js'), 'utf8');
+if (!html.includes('annotation_audio_calibration.js') || !calibrationSource.includes('decodeAudioData') || !annotationsEditor.includes('AnnotationAudioCalibration.attach')) throw new Error('audio calibration must own waveform decoding and be wired before the editor');
+if (annotationsEditor.includes('decodeAudioData') || app.includes('decodeAudioData')) throw new Error('waveform decoding belongs to the audio calibration module');
 console.log('frontend quality checks passed');

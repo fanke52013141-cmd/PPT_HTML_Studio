@@ -178,14 +178,19 @@ def invalidate_for_audio_change(
     changed = False
     updated = []
     for item in page.items:
-        if item.status.content == "disabled" or item.status.temporal == "awaiting_audio":
+        timing = item.timing
+        if timing.trigger_mode == "manual":
+            timing = replace(timing, calibration_stale=True)
+        if item.status.temporal == "awaiting_audio" and timing == item.timing:
             updated.append(item)
             continue
         changed = True
         updated.append(
             replace(
                 item,
-                status=AnnotationStatus(content="draft", spatial=item.status.spatial, temporal="awaiting_audio"),
+                status=AnnotationStatus(content="disabled" if item.status.content == "disabled" else "draft",
+                                        spatial=item.status.spatial, temporal="awaiting_audio"),
+                timing=timing,
                 confirmed_inputs=None,
             )
         )

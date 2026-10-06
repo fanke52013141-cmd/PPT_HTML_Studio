@@ -1,0 +1,16 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+const context = {window: {}};
+vm.createContext(context);
+vm.runInContext(fs.readFileSync(path.join(__dirname, '../static/annotation_preview.js'), 'utf8'), context);
+const time = (frame, fps = 30) => vm.runInContext(`annotationVideoAudioTime(${frame}, ${fps}, {audio_start_sec: .5, audio_content_duration_sec: 4}, 6)`, context);
+assert.equal(time(14), null, 'leading silent frames cannot become negative audio times');
+assert.equal(time(15), 0);
+assert.equal(time(90), 2.5, 'page delay is subtracted exactly once');
+assert.equal(time(134), 134 / 30 - .5);
+assert.equal(time(135), null, 'audio end and trailing video hold are not valid speech points');
+assert.equal(time(180), null);
+assert.equal(time(10, 0), null);
+console.log('video calibration clock boundary checks passed');

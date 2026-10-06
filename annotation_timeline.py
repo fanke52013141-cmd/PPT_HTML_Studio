@@ -178,6 +178,9 @@ def build_annotation_timeline(
     for item in ordered:
         if item.status.content == "disabled":
             continue
+        if item.timing.trigger_mode == "manual" and item.timing.calibration_stale:
+            issues.append({"annotation_id": item.annotation_id, "reason": "manual_calibration_stale"})
+            continue
         start, source, review = start_for(item)
         if start is None:
             issues.append({"annotation_id": item.annotation_id, "reason":
@@ -190,7 +193,9 @@ def build_annotation_timeline(
             issues.append({"annotation_id": item.annotation_id, "reason": "target_visibility_unresolved"})
             continue
         if ready - nominal_start > 0.15 + 1e-7:
-            issues.append({"annotation_id": item.annotation_id, "reason": "target_not_ready"})
+            issues.append({"annotation_id": item.annotation_id, "reason": "target_not_ready",
+                           "phrase_start_sec": nominal_start, "target_ready_sec": ready,
+                           "delay_sec": ready - nominal_start})
             continue
         start = math.ceil(max(nominal_start, ready) * fps - 1e-7) / fps
         strokes = tuple(getattr(item, "strokes", ()) or ())

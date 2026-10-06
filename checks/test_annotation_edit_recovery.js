@@ -49,7 +49,7 @@ function regionItem(id, overrides = {}) {
       draw_duration_sec: 0.6, hold_mode: 'slide_end', exit_duration_sec: 0.15,
     },
     status: { content: 'draft', spatial: 'valid', temporal: 'awaiting_audio' },
-    protection: { source: 'manual', modified_fields: [], locked: false },
+    protection: { source: 'manual', modified_fields: ['timing'], locked: false },
     ...overrides,
   };
 }
@@ -107,17 +107,14 @@ function regionItem(id, overrides = {}) {
   run('pushAnnotationHistory()');
   WS.page.items = [];
   WS.pendingOps.push(core.buildDeleteOperation('local_7_1'));
-  releasePatch({ revision: 2, items: [{ annotation_id: 'ann_005', target: stored.target }] });
-  await flushPromise;
-  assert.equal(WS.pendingOps.length, 1, '重映射后应只剩 delete');
-  assert.equal(WS.pendingOps[0].annotation_id, 'ann_005', '在飞窗口的 local delete 必须重映射为服务端 id');
-  // 下一轮 flush 发送 delete ann_005
   sandbox.__api.patch = async (_url, payload) => {
     assert.equal(payload.operations[0].annotation_id, 'ann_005');
     assert.equal(payload.expected_revision, 2);
     return { revision: 3, items: [] };
   };
-  await run('flushAnnotationsSave()').catch(() => { throw new Error('remapped delete must flush cleanly'); });
+  releasePatch({ revision: 2, items: [{ annotation_id: 'ann_005', target: stored.target }] });
+  await flushPromise;
+  assert.equal(WS.pendingOps.length, 0, '保存屏障必须排空重映射后的删除');
   assert.equal(WS.page.items.length, 0);
   console.log('in-flight local id remap ok');
 }
@@ -200,6 +197,100 @@ function regionItem(id, overrides = {}) {
   console.log('review_required acceptance ok');
 }
 
+// Immediately confirming must capture edits before the debounce timer fires.
+{
+  setupProject('pBarrier', 'slide_001', 1);
+  WS.page.items = [regionItem('ann_001')];
+  WS.selectedAnnotationId = 'ann_001';
+  run("scheduleAnnotationStyleCommit('ann_001', item => ({timing: {...item.timing, manual_start_sec: 11.2}}))");
+  sandbox.__api.patch = async (_url, payload) => {
+    assert.equal(payload.operations[0].patch.timing.manual_start_sec, 11.2);
+    return {revision: 2, items: [regionItem('ann_001', {timing: {...WS.page.items[0].timing}})]};
+  };
+  await run('flushAnnotationsSave()');
+  assert.equal(WS.page.revision, 2);
+  assert.equal(WS.pendingOps.length, 0);
+  console.log('immediate edit save barrier ok');
+}
+{
+  setupProject('pUnbound', 'slide_001', 1);
+  WS.page.items = [regionItem('ann_001', {protection: {source: 'manual', modified_fields: []}})];
+  sandbox.__api.post = async () => { throw new Error('unbound default must not confirm'); };
+  await run('confirmAnnotationPage()');
+  assert.equal(WS.page.revision, 1);
+  assert.equal(WS.page.items[0].status.content, 'draft');
+  console.log('unbound default trigger blocked ok');
+}
+{
+  setupProject('videoRepair', 'slide_001');
+  const item = regionItem('ann_001', {anchor: {beat_id: 'b1', quote: '重点', range: [2, 4]}});
+  WS.page.items = [item];
+  assert.equal(run("setAnnotationVideoStart('ann_001', 2.5)"), true);
+  assert.equal(WS.page.items[0].timing.manual_start_sec, 2.5);
+  assert.equal(WS.page.items[0].timing.time_reference, 'audio');
+  assert.equal(WS.page.items[0].timing.offset_sec, 0);
+  assert.equal(JSON.stringify(WS.page.items[0].anchor), JSON.stringify(item.anchor));
+  assert.equal(JSON.stringify(WS.page.items[0].target), JSON.stringify(item.target));
+  assert.equal(run("setAnnotationVideoStart('ann_001', -1)"), false);
+  assert.equal(run("setAnnotationVideoStart('missing', 1)"), false);
+  console.log('video timing repair preserves geometry and narration ok');
+}
+// 修正必须更新原条目，保留独立人工时间和讲稿，不创建重复标注。
+{
+  setupProject('pRepair', 'slide_001');
+  const item = regionItem('ann_001', {
+    anchor: {beat_id: 'b1', range: [2, 4], quote: '重点', occurrence: 1},
+    timing: {trigger_mode: 'manual', manual_start_sec: 2.731, time_reference: 'audio'},
+  });
+  WS.page.items = [item]; WS.selectedAnnotationId = item.annotation_id;
+  const polygon = [[200, 300], [600, 300], [600, 360], [200, 360]];
+  run("beginAnnotationRepair('region')");
+  run(`addAnnotationRegion(${JSON.stringify(polygon)})`);
+  assert.equal(WS.page.items.length, 1);
+  assert.equal(WS.pendingOps[0].op, 'update');
+  assert.equal(WS.pendingOps[0].annotation_id, 'ann_001');
+  assert.equal(JSON.stringify(WS.page.items[0].anchor), JSON.stringify(item.anchor));
+  assert.equal(JSON.stringify(WS.page.items[0].timing), JSON.stringify(item.timing));
+  run('undoAnnotationEdit()');
+  assert.equal(JSON.stringify(WS.page.items[0].target.polygons), JSON.stringify(item.target.polygons));
+  console.log('region repair preserves identity, anchor, manual time and undo ok');
+}
+{
+  setupProject('pRepair', 'slide_001');
+  WS.page.items = [regionItem('ann_001')]; WS.selectedAnnotationId = 'ann_001';
+  run("beginAnnotationRepair('freehand'); ANNOTATIONS_ED.freehandStrokes = [[[100,200],[200,220],[300,210]]]");
+  run('finishAnnotationFreehand()');
+  assert.equal(WS.pendingOps.length, 0, '后台自动保存不能提前提交重画的半条笔迹');
+  run('finishAnnotationFreehand(true)');
+  assert.equal(WS.page.items.length, 1);
+  assert.equal(WS.pendingOps[0].op, 'update');
+  assert.equal(WS.page.items[0].target.path_strokes.length, 1);
+  console.log('explicit freehand repair replaces original item ok');
+}
+{
+  setupProject('pRepair', 'slide_001');
+  WS.page.items = [regionItem('ann_001'), regionItem('ann_002')]; WS.selectedAnnotationId = 'ann_001';
+  const before = JSON.stringify(WS.page.items);
+  run("beginAnnotationRepair('freehand'); ANNOTATIONS_ED.freehandStrokes = [[[100,200],[200,220]]]; selectAnnotationItem('ann_002')");
+  assert.equal(JSON.stringify(WS.page.items), before);
+  assert.equal(run('ANNOTATIONS_ED.repair'), null);
+  assert.equal(run('ANNOTATIONS_ED.drawMode'), null);
+  assert.equal(WS.pendingOps.length, 0);
+  console.log('selection change cancels uncommitted repair without changing original ok');
+}
+{
+  setupProject('pRepair', 'slide_001');
+  WS.page.items = [regionItem('ann_001')]; WS.selectedAnnotationId = 'ann_001';
+  run("beginAnnotationRepair('region')");
+  const beforeCalls = sandbox.__calls.post.length;
+  await run('confirmAnnotationPage()');
+  assert.equal(sandbox.__calls.post.length, beforeCalls, '未完成重画不能确认原标注');
+  run('cancelAnnotationRepair()');
+  WS.failedOps = [{op:'update',annotation_id:'ann_001',patch:{}}];
+  await run('saveAnnotationEdits()');
+  assert.match(sandbox.__toasts.at(-1), /尚未保存/);
+  console.log('unfinished repair blocks confirmation and rejected edits never claim saved ok');
+}
 console.log('annotation edit recovery checks passed');
 })().catch(error => { console.error(error); process.exit(1); });
 
@@ -220,7 +311,7 @@ function createSandbox() {
     addEventListener: () => {},
     classList: { toggle: () => {}, add: () => {}, remove: () => {} },
   });
-  const document = { getElementById: () => nodeStub(), createElement: () => nodeStub(), createElementNS: () => nodeStub() };
+  const document = { getElementById: () => nodeStub(), createElement: () => nodeStub(), createElementNS: () => nodeStub(), querySelectorAll: () => [] };
   const windowObj = {};
   const queue = [];
   const sandbox = {

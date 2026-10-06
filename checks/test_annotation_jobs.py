@@ -102,6 +102,10 @@ def _cleanup_project_jobs(project_id):
 def clean_jobs(tmp_path):
     from database import Project
 
+    image_path = tmp_path / "annojobtest1" / "slides" / "slide_001" / "visual_draft.png"
+    image_path.parent.mkdir(parents=True, exist_ok=True)
+    image_path.write_bytes(b"stable-image-bytes")
+
     db = SessionLocal()
     try:
         db.merge(Project(id="annojobtest1", name="job-test", run_dir=str(tmp_path / "annojobtest1")))
@@ -129,6 +133,36 @@ def test_detect_job_success_lifecycle(store, manager, clean_jobs):
     result = final.get_payload().get("result", {})
     assert result["slides"][0]["status"] == "detected"
     assert result["slides"][0]["layout_revision"] == 1
+
+
+@pytest.mark.parametrize("action", ["replace", "cancel", "correct"])
+def test_detect_does_not_publish_after_inputs_change(store, manager, clean_jobs, action):
+    import threading
+    from dataclasses import replace
+    entered, release = threading.Event(), threading.Event()
+    original = manager._deps.recognize
+    def delayed(image, config):
+        entered.set()
+        assert release.wait(4)
+        return original(image, config)
+    worker = AnnotationJobManager(replace(manager._deps, recognize=delayed))
+    run_dir = worker._run_dir("annojobtest1")
+    builder = worker._deps.text_layout_builder
+    job, _ = worker.submit_detect("annojobtest1", _targets())
+    assert entered.wait(4)
+    if action == "replace":
+        Path(run_dir, "slides", "slide_001", "visual_draft.png").write_bytes(b"new image")
+    elif action == "cancel":
+        worker.cancel(job.id)
+    else:
+        builder.save(run_dir, "slide_001", {"schema_version": 1, "layout_revision": 7})
+    release.set()
+    final = _wait_terminal(store, job.id)
+    assert final.status == ("cancelled" if action == "cancel" else "succeeded")
+    if action != "correct":
+        assert builder.load(run_dir, "slide_001") is None
+    else:
+        assert builder._deps.read_json_file(builder.layout_path(run_dir, "slide_001"))["layout_revision"] == 7
 
 
 def test_request_key_dedupes(store, manager, clean_jobs):
@@ -221,6 +255,7 @@ def test_partial_failure_keeps_job_succeeded(store, manager, clean_jobs):
         ("slide_001", hashlib.sha256(b"good-image").hexdigest(), (1920, 1080), b"good-image"),
         ("slide_002", hashlib.sha256(b"broken-slide").hexdigest(), (1920, 1080), b"broken-slide"),
     ]
+    Path(partial_manager._run_dir("annojobtest1"), "slides", "slide_001", "visual_draft.png").write_bytes(b"good-image")
     job, _ = partial_manager.submit_detect("annojobtest1", targets)
     final = _wait_terminal(store, job.id)
     assert final.status == "succeeded"
@@ -360,3 +395,43 @@ def test_alignment_job_publishes_and_rejects_changed_audio(manager, store, tmp_p
         assert directory.joinpath("word_alignment.json").read_bytes() == published
     finally:
         _drop_project(project_id)
+
+
+def test_preview_persistent_success_and_dedupe(store, manager, clean_jobs):
+    import threading
+    entered = threading.Event()
+    release = threading.Event()
+    calls = []
+    def prepare(db, project_id, slide_id, payload, *, cancel_event, progress):
+        calls.append(slide_id)
+        entered.set()
+        assert release.wait(3)
+        return {"revision": payload["expected_revision"], "build_id": "proof"}
+    job, created = manager.submit_preview("annojobtest1", "slide_001", {"expected_revision": 2},
+                                          prepare, request_key="preview-dedupe")
+    assert created and entered.wait(3)
+    again, created = manager.submit_preview("annojobtest1", "slide_001", {"expected_revision": 2},
+                                            prepare, request_key="preview-dedupe")
+    assert again.id == job.id and not created
+    release.set()
+    final = _wait_terminal(store, job.id)
+    assert final.status == "succeeded" and final.error is None
+    assert final.get_payload()["result"]["build_id"] == "proof"
+    assert calls == ["slide_001"]
+
+
+def test_preview_cancel_discards_result(store, manager, clean_jobs):
+    import threading
+    entered = threading.Event()
+    release = threading.Event()
+    def prepare(*args, **kwargs):
+        entered.set()
+        assert release.wait(3)
+        return {"build_id": "must-not-publish"}
+    job, _ = manager.submit_preview("annojobtest1", "slide_001", {"expected_revision": 1}, prepare)
+    assert entered.wait(3)
+    assert manager.cancel(job.id)
+    release.set()
+    final = _wait_terminal(store, job.id)
+    assert final.status == "cancelled"
+    assert not final.get_payload().get("result")

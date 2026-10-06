@@ -181,6 +181,26 @@ const REGION_TARGET = {
 function await0() { return new Promise(resolve => setImmediate(resolve)); }
 
 (async () => {
+  // Reopening into Output restores the saved decision; an old project's
+  // delayed response must not overwrite the newly opened project's state.
+  {
+    setupProject('pA', 'slide_001');
+    sandbox.state.currentProject = { id: 'pA' };
+    sandbox.__api.get = async () => ({ settings: { enabled: true }, module_state: 'confirmed', slides: [] });
+    await run('loadAnnotationWorkflowState("pA")');
+    assert.equal(sandbox.window.__annotationModuleState, 'confirmed');
+    assert.equal(sandbox.window.__annotationsEnabled, true);
+    let finish;
+    sandbox.__api.get = () => new Promise(resolve => { finish = resolve; });
+    const pending = run('loadAnnotationWorkflowState("pA")');
+    run('resetAnnotationsProjectState()');
+    sandbox.state.currentProject = { id: 'pB' };
+    finish({ settings: { enabled: true }, module_state: 'confirmed', slides: [] });
+    await pending;
+    assert.equal(sandbox.window.__annotationModuleState, 'not_started');
+    assert.equal(sandbox.window.__annotationsEnabled, false);
+    sandbox.state.currentProject = { id: 'pA' };
+  }
   // ------------------------------------------------------------ R4-002(主流程)
   {
     setupProject('pA', 'slide_001');
@@ -368,7 +388,9 @@ function await0() { return new Promise(resolve => setImmediate(resolve)); }
     g(`ANNOTATIONS_WS.pendingOps.push(AnnotationsCore.buildAddOperation({ target: AnnotationsCore.buildRegionTarget([[10, 10], [20, 10], [20, 20], [10, 20]]) }))`);
     const flushPromise = run('flushAnnotationsSave()').catch(() => 'should-not-reject');
     // 真实完成切页:页面代次 bump、page.slide_id 变为 slide_002
-    await run('selectAnnotationPage(1)').catch(() => {});
+    const switchPromise = run('selectAnnotationPage(1)').catch(() => {});
+    releaseA({ revision: 9, items: [] });
+    await switchPromise;
     assert.equal(WS.page.slide_id, 'slide_002', '前置:切页确实完成');
     releaseA({ revision: 9, items: [] });
     await flushPromise;

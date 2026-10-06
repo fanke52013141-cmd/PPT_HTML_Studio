@@ -4,7 +4,7 @@
 职责边界
 --------
 - 本模块是勾画标注模块 OCR 统一接口的首个引擎适配器,只做:
-  受控参数封装、Bearer 鉴权头、有界 HTTP 传输、响应解析与错误映射、
+  受控参数封装、API Key 或 AK/SK 鉴权、有界 HTTP 传输、响应解析与错误映射、
   缓存键计算。
 - 纯模块:不导入 server、FastAPI、数据库或任何应用装配代码;上游 API Key
   由调用方注入,本模块不读取全局设置,也绝不把密钥写入日志或错误信息。
@@ -28,9 +28,12 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import hmac
+from datetime import datetime, timezone
+from urllib.parse import urlsplit, quote, parse_qsl
 import json
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import httpx
@@ -71,13 +74,14 @@ _IMAGE_ERROR_CODES = frozenset({216200, 216201, 216202, 216203})
 class BaiduOcrEngineConfig:
     """一次 OCR 调用的受控参数快照;字段变更会进入缓存键。"""
 
-    api_key: str
+    api_key: str = field(repr=False)
     language_type: str = "CHN_ENG"
     recognize_granularity: str = "small"
     detect_direction: bool = True
     probability: bool = True
     timeout_sec: float = 20.0
     endpoint: str = BAIDU_OCR_GENERAL_ENDPOINT
+    secret_key: str = field(default="", repr=False)
 
     def public_snapshot(self) -> Dict[str, Any]:
         """返回不含密钥的配置快照,用于日志与缓存键。"""
@@ -88,6 +92,7 @@ class BaiduOcrEngineConfig:
             "recognize_granularity": self.recognize_granularity,
             "detect_direction": self.detect_direction,
             "probability": self.probability,
+            "auth_mode": "ak_sk" if self.secret_key else "api_key",
         }
 
 
@@ -292,6 +297,22 @@ def _httpx_transport(endpoint: str, headers: Dict[str, str], form: Dict[str, str
         ) from exc
 
 
+def signed_ocr_headers(config, headers, *, timestamp=None):
+    """BCE v1 AK/SK signing; credentials never enter the URL or public snapshot."""
+    url = urlsplit(config.endpoint)
+    timestamp = timestamp or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    result = {**headers, "Host": url.netloc, "x-bce-date": timestamp}
+    signed = {key.lower(): value.strip() for key, value in result.items() if key.lower() in ("host", "x-bce-date", "content-type")}
+    canonical_headers = "\n".join(sorted(quote(k, safe="") + ":" + quote(v, safe="") for k, v in signed.items()))
+    query = "&".join(sorted(quote(k, safe="") + "=" + quote(v, safe="") for k, v in parse_qsl(url.query, keep_blank_values=True) if k.lower() != "authorization"))
+    canonical = "\n".join(("POST", quote(url.path or "/", safe="/"), query, canonical_headers))
+    prefix = f"bce-auth-v1/{config.api_key}/{timestamp}/1800"
+    signing_key = hmac.new(config.secret_key.encode(), prefix.encode(), hashlib.sha256).hexdigest()
+    signature = hmac.new(signing_key.encode(), canonical.encode(), hashlib.sha256).hexdigest()
+    result["Authorization"] = prefix + "/" + ";".join(sorted(signed)) + "/" + signature
+    return result
+
+
 def recognize_text_lines(
     image_bytes: bytes,
     config: BaiduOcrEngineConfig,
@@ -332,6 +353,8 @@ def recognize_text_lines(
         "Authorization": f"Bearer {config.api_key}",
     }
 
+    if config.secret_key:
+        headers = signed_ocr_headers(config, headers)
     active_transport = transport or _httpx_transport
     started = time.monotonic()
     try:

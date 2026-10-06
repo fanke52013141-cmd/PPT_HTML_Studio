@@ -29,9 +29,11 @@ def test_visible_and_internal_step_mapping_is_complete() -> None:
         3: (3, 4),
         4: (5,),
         5: (6, 7),
-        6: (8,),
+        6: (10,),
+        7: (9,),
+        8: (8,),
     }
-    assert set(INTERNAL_TO_USER_STEP) == set(range(1, 9))
+    assert set(INTERNAL_TO_USER_STEP) == set(range(1, 11))
 
 
 def test_begin_step_does_not_mutate_input() -> None:
@@ -65,7 +67,7 @@ def test_invalid_steps_and_states_are_rejected() -> None:
     with pytest.raises(ValueError):
         begin_step(_statuses(), 0)
     with pytest.raises(ValueError):
-        complete_step(_statuses(), 9)
+        complete_step(_statuses(), 11)
     invalid = _statuses()
     invalid["4"] = "done"
     with pytest.raises(ValueError):
@@ -76,6 +78,16 @@ def test_current_step_never_moves_back_on_completion() -> None:
     assert current_step_after_completion(None, 3) == 3
     assert current_step_after_completion(6, 2) == 6
     assert current_step_after_completion(4, 7) == 7
+    assert current_step_after_completion(10, 8) == 8
+    assert current_step_after_completion(9, 8) == 8
+    assert current_step_after_completion(8, 10) == 8
+
+
+def test_output_completion_preserves_annotation_and_optional_presenter():
+    result = complete_step({"8": "pending", "9": "pending", "10": "completed"}, 8)
+    assert result == {"8": "completed", "9": "pending", "10": "completed"}
+    result = begin_step({"8": "completed", "9": "pending", "10": "completed"}, 10)
+    assert result["8"] == "pending_reconfirmation" and result["9"] == "pending"
 
 
 if __name__ == "__main__":

@@ -371,7 +371,16 @@ class AnnotationService:
         scene = read_json(self._slide_file(project, slide_id, "scene.json"), optional=True) or {}
         mask_groups = [{"id": layer["target_group_id"], "label": layer.get("visible_text") or layer["target_group_id"]}
                        for layer in scene.get("layers", []) if layer.get("target_group_id")]
+        from annotation_build import file_hash
+        from annotation_alignment import calibration_locator, calibration_audio_delay
+        locator = calibration_locator(page.items if page else [],
+            read_json(self._slide_file(project, slide_id, "word_alignment.json"), optional=True),
+            audio_hash=file_hash(self._slide_file(project, slide_id, "voice.mp3")),
+            narration_hash=self._narration_hash(project, slide_id))
+        audio_timeline = read_json(self._slide_file(project, slide_id, "audio_timeline.json"), optional=True) or {}
         return {
+            "audio_locator": locator,
+            "audio_start_sec": calibration_audio_delay(audio_timeline),
             "mask_groups": mask_groups,
             "slide_id": slide_id,
             "revision": page.revision if page else 0,
@@ -630,6 +639,11 @@ class AnnotationService:
         if "timing" in patch:
             new_timing = AnnotationTiming.from_payload(patch["timing"], issues, path=f"{path}.patch.timing")
             if new_timing is not None:
+                # Old clients omitting the stale marker must not silently
+                # approve a calibration made against replaced audio.
+                if (target_item.timing.calibration_stale and new_timing.trigger_mode == "manual"
+                        and patch["timing"].get("calibration_stale") is not False):
+                    new_timing = replace(new_timing, calibration_stale=True)
                 if new_timing.to_dict() != target_item.timing.to_dict():
                     modified.append("timing")
                 replacements["timing"] = new_timing
@@ -720,13 +734,15 @@ class AnnotationService:
 
     # ------------------------------------------------------------ W4: 确认门禁
 
-    def prepare_slide(self, db, project_id, slide_id, payload):
+    def prepare_slide(self, db, project_id, slide_id, payload, *, cancel_event=None, progress=None):
         from annotation_build import AnnotationBuildError, compile_slide, input_snapshot
         from pipeline_lifecycle import write_json_atomic
         project = self._project_or_404(db, project_id)
         if slide_id not in self._slide_ids_or_404(project):
             raise HTTPException(status_code=404, detail="Slide 不存在")
         if self._prepare_playback:
+            if progress:
+                progress(10, "reveal")
             self._prepare_playback(project, slide_id)
         canvas = self._canvas_for(project)
         directory = self._slide_file(project, slide_id, "annotations.json").parent
@@ -740,10 +756,16 @@ class AnnotationService:
                 raise HTTPException(status_code=422, detail={"code": "no_annotations"})
             before = input_snapshot(directory, page.items, canvas)
         try:
-            compiled = compile_slide(directory, page, canvas=canvas)
+            if progress:
+                progress(25, "target_check")
+            compiled = compile_slide(directory, page, canvas=canvas,
+                **({"cancel_event": cancel_event} if cancel_event else {}),
+                **({"progress": progress} if progress else {}))
         except AnnotationBuildError as exc:
             raise HTTPException(status_code=422, detail={"code": "annotation_prepare_failed", "items": exc.issues}) from exc
         with self._lock_for(project):
+            if cancel_event and cancel_event.is_set():
+                raise HTTPException(status_code=409, detail={"code": "cancelled"})
             latest = self._store.read_page(self._run_dir(project), slide_id, canvas=canvas)
             if not latest or latest.revision != revision or input_snapshot(directory, latest.items, canvas) != before:
                 raise HTTPException(status_code=409, detail={"code": "stale_input", "current_revision": latest.revision if latest else 0})
@@ -983,8 +1005,8 @@ class AnnotationService:
     def submit_job(self, db: Session, project_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         project = self._project_or_404(db, project_id)
         operation = payload.get("operation")
-        if operation not in ("detect_text", "plan", "align"):
-            raise HTTPException(status_code=422, detail="operation 仅支持 detect_text / plan / align")
+        if operation not in ("detect_text", "plan", "align", "preview"):
+            raise HTTPException(status_code=422, detail="operation 仅支持 detect_text / plan / align / preview")
         if self._job_manager is None or self._layout_builder is None:
             raise HTTPException(status_code=503, detail="勾画任务引擎尚未配置")
         if operation == "detect_text" and not self._ocr_ready():
@@ -1002,7 +1024,15 @@ class AnnotationService:
             if slide_id not in slide_ids:
                 raise HTTPException(status_code=404, detail=f"Slide {slide_id} 不存在")
         request_key = payload.get("request_key")
-        if operation == "detect_text":
+        if operation == "preview":
+            if len(requested) != 1:
+                raise HTTPException(status_code=422, detail="预览任务只支持单页")
+            expected = payload.get("expected_revision")
+            if not isinstance(expected, int) or isinstance(expected, bool):
+                raise HTTPException(status_code=422, detail="expected_revision 必须是整数")
+            job, _created = self._job_manager.submit_preview(project.id, requested[0],
+                {"expected_revision": expected}, self.prepare_slide, request_key=request_key)
+        elif operation == "detect_text":
             run_dir = self._run_dir(project)
             canvas = self._canvas_for(project)
             from project_storage import slide_file
@@ -1032,6 +1062,7 @@ class AnnotationService:
         return {
             "job_id": job.id,
             "job_type": job.job_type,
+            "error_detail": payload.get("error_detail"),
             "status": job.status,
         }
 
@@ -1138,17 +1169,29 @@ class AnnotationService:
         return {"revision": updated["revision"], "builtin_version": updated["builtin_version"]}
 
     def get_job(self, db: Session, project_id: str, job_id: str) -> Dict[str, Any]:
-        self._project_or_404(db, project_id)
+        project = self._project_or_404(db, project_id)
         if self._job_manager is None:
             raise HTTPException(status_code=503, detail="勾画任务引擎尚未配置")
         job = self._deps_job_or_404(project_id, job_id)
         payload = job.get_payload()
+        if job.job_type == "annotation_preview" and job.status == "succeeded":
+            from annotation_build import input_snapshot
+            sid = payload.get("slide_id")
+            canvas = self._canvas_for(project)
+            page = self._store.read_page(self._run_dir(project), sid, canvas=canvas)
+            result = payload.get("result") or {}
+            directory = self._slide_file(project, sid, "annotations.json").parent
+            if (not page or page.revision != result.get("revision")
+                    or any(result.get("timeline", {}).get("inputs", {}).get(key) != value
+                           for key, value in input_snapshot(directory, page.items, canvas).items())):
+                raise HTTPException(status_code=409, detail={"code": "stale_preview"})
         return {
             "job_id": job.id,
             "job_type": job.job_type,
             "status": job.status,
             "stage": job.stage,
             "progress": job.progress,
+            "error_detail": payload.get("error_detail"),
             "error": job.error,
             "retryable": bool(payload.get("retryable")),
             "result": payload.get("result"),

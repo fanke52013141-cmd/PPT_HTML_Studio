@@ -162,13 +162,21 @@ class AnnotationJobStore:
             },
         )
 
-    def mark_failed(self, job_id: str, message: str, *, retryable: bool = False) -> None:
+    def mark_failed(self, job_id: str, message: str, *, retryable: bool = False, detail=None) -> None:
+        safe_items = []
+        if isinstance(detail, dict):
+            for item in detail.get("items", [])[:60]:
+                if isinstance(item, dict):
+                    safe_items.append({key: value for key, value in item.items()
+                        if key in ("annotation_id", "reason", "phrase_start_sec", "target_ready_sec", "delay_sec")
+                        and isinstance(value, (str, int, float))})
         self._update(
             job_id,
             {
                 "status": "failed",
                 "error": _sanitize_error(message),
-                "payload_json": _dump_payload({**self._payload_of(job_id), "retryable": retryable}),
+                "payload_json": _dump_payload({**self._payload_of(job_id), "retryable": retryable,
+                    "error_detail": {"items": safe_items}}),
             },
         )
 

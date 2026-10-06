@@ -364,8 +364,7 @@ body.workspace-open #step-panel-8 .step8-pptx-list {
 /* Interaction feedback follows the existing workspace geometry and brand. */
 .field-error { color: #b91c1c; font-size: 12px; margin: 6px 0; }
 [aria-invalid="true"] { border-color: #b91c1c !important; }
-.control-hint { color: #64748b; font-size: 11px; line-height: 1.4; max-width: 180px; }
-.control-hint[hidden], #step3-btn-stop-queue[hidden] { display: none !important; }
+#step3-btn-stop-queue[hidden] { display: none !important; }
 .workspace-operation-status { color: #64748b; font-size: 12px; margin: 12px 0; }
 .workspace-operation-status:empty { display: none; }
 .step3-empty { grid-column: 1 / -1; padding: 32px; text-align: center; }

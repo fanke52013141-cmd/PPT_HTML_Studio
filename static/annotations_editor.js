@@ -1,15 +1,17 @@
-// 勾画标注编辑器(可见步骤 10):画布框选、属性编辑、撤销/重做、
+// 勾画标注编辑器(可见步骤 6，内部 Step 10):画布框选、属性编辑、撤销/重做、
 // 删除/锁定/禁用。状态与渲染入口在 annotations_workspace.js;
 // 服务端操作协议见 annotation_routes(PATCH operations)。
 
 const ANNOTATIONS_ED = {
   drawMode: null,
+  repair: null,
   regionStart: null,
   regionGhost: null,
   freehandPoints: [],
   freehandGhost: null,
   freehandStrokes: [],
   editorTimer: null,
+  calibrationCleanup: null,
   previewFrame: null,
 };
 
@@ -139,12 +141,15 @@ function setAnnotationPreviewButton(playing) {
 }
 
 function previewAnnotationAnimation() {
+  finishAnnotationFreehand(true);
+  if (ANNOTATIONS_ED.repair) {showToast('请先完成重画，或点击取消重画。'); return;}
   return window.showAnnotationSyncPreview?.();
 }
 
 // ------------------------------------------------------------ 手工绘制
 
 function setAnnotationDrawMode(mode) {
+  if (ANNOTATIONS_ED.repair && mode !== ANNOTATIONS_ED.drawMode) cancelAnnotationRepair();
   if (mode !== 'freehand' && ANNOTATIONS_ED.freehandStrokes.length) finishAnnotationFreehand();
   ANNOTATIONS_ED.drawMode = mode === 'region' || mode === 'freehand' ? mode : null;
   const frame = document.getElementById('annotation-canvas-frame');
@@ -158,6 +163,68 @@ function setAnnotationDrawMode(mode) {
   if (freehandButton) freehandButton.classList.toggle('active', ANNOTATIONS_ED.drawMode === 'freehand');
   const done = document.getElementById('annotation-btn-finish-freehand');
   if (done) done.hidden = ANNOTATIONS_ED.drawMode !== 'freehand';
+}
+
+function cancelAnnotationRepair() {
+  if (!ANNOTATIONS_ED.repair) return;
+  ANNOTATIONS_ED.repair = null;
+  ANNOTATIONS_ED.freehandStrokes = [];
+  document.querySelectorAll('[data-pending-stroke]').forEach(node => node.remove());
+  handleAnnotationDrawPointerCancel();
+  setAnnotationDrawMode(null);
+}
+
+function beginAnnotationRepair(mode) {
+  const item = annotationSelectedItem();
+  if (!item || item.status?.content === 'disabled') return;
+  if (String(item.annotation_id).startsWith('local_')) {
+    showToast('请先保存新标注，再修改它的范围或笔迹。');
+    return;
+  }
+  if (!ANNOTATIONS_ED.repair && ANNOTATIONS_ED.freehandStrokes.length) {
+    showToast('请先完成当前绘制，再修改已有标注。');
+    return;
+  }
+  cancelAnnotationRepair();
+  finishAnnotationFreehand();
+  setAnnotationDrawMode(mode);
+  ANNOTATIONS_ED.repair = {projectId: ANNOTATIONS_WS.projectId,
+    slideId: ANNOTATIONS_WS.page.slide_id, annotationId: item.annotation_id};
+  renderAnnotationItemEditor();
+  document.getElementById('annotation-canvas-frame')?.scrollIntoView?.({block: 'center', behavior: 'auto'});
+  showToast(mode === 'region' ? '在画面上重新框选，只修改当前标注的范围。' : '重新画出笔迹，点击完成绘制后替换当前标注；可取消。');
+}
+
+function commitAnnotationRepair(target) {
+  const repair = ANNOTATIONS_ED.repair;
+  if (!repair) return false;
+  const item = ANNOTATIONS_WS.page.items.find(entry => entry.annotation_id === repair.annotationId);
+  if (repair.projectId !== ANNOTATIONS_WS.projectId || repair.slideId !== ANNOTATIONS_WS.page.slide_id || !item) {
+    cancelAnnotationRepair();
+    setAnnotationDrawMode(null);
+    showToast('当前标注已变化，请重新选择后修改。');
+    return true;
+  }
+  pushAnnotationHistory();
+  queueAnnotationItemPatch(item.annotation_id, {target: {...target, mask_group_ids: item.target?.mask_group_ids || []}});
+  ANNOTATIONS_ED.repair = null;
+  setAnnotationDrawMode(null);
+  renderAnnotationItemEditor();
+  showToast('已修改当前标注，讲稿关联和起笔时间保留。请保存、同步预览并重新确认本页。');
+  return true;
+}
+
+async function saveAnnotationEdits() {
+  const projectId = ANNOTATIONS_WS.projectId, slideId = ANNOTATIONS_WS.page.slide_id;
+  finishAnnotationFreehand(true);
+  if (ANNOTATIONS_ED.repair) {showToast('请先完成重画，或点击取消重画保留原标注。'); return;}
+  await flushAnnotationsSave();
+  if (projectId !== ANNOTATIONS_WS.projectId || slideId !== ANNOTATIONS_WS.page.slide_id) return;
+  if (ANNOTATIONS_WS.failedOps.length || ANNOTATIONS_WS.conflict || ANNOTATIONS_WS.pendingOps.length) {
+    showToast('修改尚未保存，请点击保存状态提示处理失败或冲突。');
+    return;
+  }
+  showToast('修改已保存。请同步预览，核对后确认本页。');
 }
 
 function annotationCanvasPoint(event) {
@@ -294,6 +361,7 @@ function handleAnnotationDrawPointerCancel() {
 }
 
 function addAnnotationRegion(polygon) {
+  if (commitAnnotationRepair(AnnotationsCore.buildRegionTarget(polygon))) return;
   const defaults = ANNOTATIONS_WS.summary?.settings?.defaults || {};
   const item = {
     target: AnnotationsCore.buildRegionTarget(polygon),
@@ -335,7 +403,8 @@ function addAnnotationRegion(polygon) {
   showToast('已添加区域标注，默认从本页开始显示；可在右侧调整样式和出现时间。');
 }
 
-function finishAnnotationFreehand() {
+function finishAnnotationFreehand(explicit = false) {
+  if (ANNOTATIONS_ED.repair && !explicit) return;
   const strokes = ANNOTATIONS_ED.freehandStrokes;
   if (!strokes.length) return;
   ANNOTATIONS_ED.freehandStrokes = [];
@@ -368,6 +437,7 @@ function addAnnotationFreehand(points, pathStrokes = null) {
   ]);
   if (pathStrokes) item.target.path_strokes = pathStrokes;
   else item.target.path_points = limitAnnotationPathPoints(points);
+  if (commitAnnotationRepair(item.target)) return;
   pushAnnotationHistory();
   const localId = nextLocalAnnotationId();
   if (ANNOTATIONS_WS.pendingNarrationAnchor) {
@@ -452,6 +522,8 @@ function annotationSelectedItem() {
 }
 
 function renderAnnotationItemEditor() {
+  ANNOTATIONS_ED.calibrationCleanup?.();
+  ANNOTATIONS_ED.calibrationCleanup = null;
   const editor = document.getElementById('annotation-item-editor');
   if (!editor) return;
   const item = annotationSelectedItem();
@@ -462,11 +534,23 @@ function renderAnnotationItemEditor() {
   }
   const style = item.style || {};
   const timing = item.timing || {};
+  const audioCue = annotationListeningCue(item);
   const opacityPercent = AnnotationsCore.opacityToPercent(style.opacity);
   const isDisabled = item.status?.content === 'disabled';
   editor.style.display = 'block';
   editor.innerHTML = `
-    <div class="annotation-editor-title">属性 · ${escHtml(item.annotation_id)}</div>
+    <div class="annotation-editor-title">修改标注 · ${escHtml(item.anchor?.quote || '画面区域')}</div>
+    <small>修改会自动保存；保存草稿后仍需同步预览并确认本页。人工修改的条目不会被 AI 重规划覆盖。</small>
+    <div class="annotation-actions">
+      <button type="button" id="annotation-repair-region" class="secondary compact-action-btn"${isDisabled ? ' disabled' : ''}>重新框选范围</button>
+      <button type="button" id="annotation-repair-freehand" class="secondary compact-action-btn"${isDisabled ? ' disabled' : ''}>重画笔迹</button>
+      ${ANNOTATIONS_ED.repair ? '<button type="button" id="annotation-cancel-repair" class="secondary compact-action-btn">取消重画</button>' : ''}
+    </div>
+    <small>框选或重画只修改当前条目，保留讲稿关联和起笔时间。关联错了：在讲稿中选中正确文字，再点击“将所选讲稿关联到当前标注”。</small>
+    <div class="annotation-actions">
+      <button type="button" id="annotation-save-edits" class="secondary compact-action-btn">保存修改</button>
+      <button type="button" id="annotation-preview-edits" class="secondary compact-action-btn">预览修改</button>
+    </div>
     <label class="annotation-field">出现方式
       <select id="annotation-edit-trigger-mode">
         <option value="manual"${timing.trigger_mode === 'manual' ? ' selected' : ''}>本页指定时间</option>
@@ -474,14 +558,26 @@ function renderAnnotationItemEditor() {
       </select>
     </label>
     <label class="annotation-field annotation-manual-start${timing.trigger_mode === 'manual' ? '' : ' hidden'}">出现时间(${timing.time_reference === 'audio' ? '音频' : '页面'}秒)
-      <input type="number" id="annotation-edit-timing-start" min="0" max="3600" step="0.1" value="${Number(timing.manual_start_sec || 0)}">
-      <small>${timing.time_reference === 'audio' ? '从音频第一声开始计时，系统自动加入播放延迟。' : '从页面出现开始计时，包含音频前的等待时间。'}</small>
+      <input type="number" id="annotation-edit-timing-start" min="0" max="3600" step="0.001" value="${Number(timing.manual_start_sec || 0)}">
+      ${timing.calibration_stale ? '<small role="alert">音频已变化：此时间仅供定位，请重新试听并记录起笔点。</small>' : ''}
+      <small>${timing.time_reference === 'audio' ? '从音频文件起点计时（包含开头静音），系统自动加入播放延迟。' : '从页面出现开始计时，包含音频前的等待时间。'}</small>
     </label>
     <div class="annotation-field">
       <span>试听定位起笔点</span>
+      <small>所选短语：${escHtml(item.anchor?.quote || '未关联讲稿')}。请定位第一个字开始发音的位置。</small>
+      <small id="annotation-audio-cue" aria-live="polite">${audioCue ? `自动参考 ${audioCue.start.toFixed(3)} 秒（请试听核对）` : '没有可靠的自动参考，可手动试听定位。'}</small>
+      <button type="button" id="annotation-listen-phrase" class="secondary compact-action-btn"${audioCue ? '' : ' disabled'}>试听所选短语</button>
       <audio id="annotation-calibration-audio" controls preload="metadata"
         src="/api/projects/${encodeURIComponent(ANNOTATIONS_WS.projectId)}/slides/${encodeURIComponent(ANNOTATIONS_WS.page.slide_id)}/audio"></audio>
+      <canvas id="annotation-audio-waveform" width="800" height="64" style="width:100%;height:64px;cursor:crosshair" aria-label="音频波形，点击可定位；也可用播放器和前后帧按钮定位"></canvas>
+      <small id="annotation-audio-position" aria-live="polite">正在加载波形…</small>
       <button type="button" id="annotation-use-audio-time" class="secondary compact-action-btn">以当前音频位置起笔</button>
+      <div class="annotation-actions">
+        <button type="button" data-annotation-audio-frame="-1" class="secondary compact-action-btn">前一帧</button>
+        <button type="button" data-annotation-audio-frame="1" class="secondary compact-action-btn">后一帧</button>
+        <button type="button" id="annotation-audio-loop" class="secondary compact-action-btn">循环试听前后 1 秒</button>
+        <button type="button" id="annotation-restore-auto" class="secondary compact-action-btn"${item.anchor ? '' : ' disabled'}>恢复讲稿定位</button>
+      </div>
       <small>听到关联内容时暂停并设置；之后用同步预览检查。</small>
     </div>
     <label class="annotation-field">关联画面内容组
@@ -556,19 +652,105 @@ function queueAnnotationItemPatch(annotationId, patchOrCollector) {
   renderAnnotationNarrationHighlights();
 }
 
-function scheduleAnnotationStyleCommit(annotationId, collect) {
+function flushAnnotationEditorEdits() {
   clearTimeout(ANNOTATIONS_ED.editorTimer);
-  ANNOTATIONS_ED.editorTimer = setTimeout(() => {
-    const item = annotationSelectedItem();
-    if (!item || item.annotation_id !== annotationId) return;
-    pushAnnotationHistory();
-    queueAnnotationItemPatch(annotationId, collect(item));
-  }, 350);
+  ANNOTATIONS_ED.editorTimer = null;
+  const pending = ANNOTATIONS_ED.pendingEdit;
+  ANNOTATIONS_ED.pendingEdit = null;
+  if (!pending || pending.projectId !== ANNOTATIONS_WS.projectId
+      || pending.slideId !== ANNOTATIONS_WS.page.slide_id) return;
+  pushAnnotationHistory();
+  queueAnnotationItemPatch(pending.annotationId, pending.patch);
+}
+
+function scheduleAnnotationStyleCommit(annotationId, collect) {
+  const pending = ANNOTATIONS_ED.pendingEdit;
+  if (pending && pending.annotationId !== annotationId) flushAnnotationEditorEdits();
+  const item = ANNOTATIONS_WS.page.items.find(entry => entry.annotation_id === annotationId);
+  if (!item) return;
+  const previous = ANNOTATIONS_ED.pendingEdit;
+  const patch = collect({...item, ...(previous?.patch || {})});
+  ANNOTATIONS_ED.pendingEdit = {
+    projectId: ANNOTATIONS_WS.projectId, slideId: ANNOTATIONS_WS.page.slide_id,
+    annotationId, patch: {...(previous?.patch || {}), ...patch},
+  };
+  clearTimeout(ANNOTATIONS_ED.editorTimer);
+  ANNOTATIONS_ED.editorTimer = setTimeout(flushAnnotationEditorEdits, 350);
+}
+window.flushAnnotationEditorEdits = flushAnnotationEditorEdits;
+
+function annotationListeningCue(item) {
+  const cue = ANNOTATIONS_WS.page.audio_locator?.[item?.annotation_id];
+  const anchor = item?.anchor;
+  return cue && anchor && cue.beat_id === anchor.beat_id && cue.quote === anchor.quote
+    && cue.range?.[0] === anchor.range?.[0] && cue.range?.[1] === anchor.range?.[1]
+    && Number.isFinite(cue.start) && Number.isFinite(cue.end) ? cue : null;
 }
 
 function bindAnnotationEditorEvents(annotationId) {
   const editor = document.getElementById('annotation-item-editor');
   if (!editor) return;
+  editor.querySelector('#annotation-repair-region')?.addEventListener('click', () => beginAnnotationRepair('region'));
+  editor.querySelector('#annotation-repair-freehand')?.addEventListener('click', () => beginAnnotationRepair('freehand'));
+  editor.querySelector('#annotation-cancel-repair')?.addEventListener('click', () => {
+    cancelAnnotationRepair(); setAnnotationDrawMode(null); renderAnnotationItemEditor();
+    showToast('已取消重画，原标注保留。');
+  });
+  editor.querySelector('#annotation-save-edits')?.addEventListener('click', () => saveAnnotationEdits().catch(error => showToast(error.message)));
+  editor.querySelector('#annotation-preview-edits')?.addEventListener('click', () => {
+    previewAnnotationAnimation();
+  });
+
+  const calibration = editor.querySelector('#annotation-calibration-audio');
+  let loopRange = null;
+  const waveform = editor.querySelector('#annotation-audio-waveform');
+  const selected = annotationSelectedItem(), cue = annotationListeningCue(selected);
+  const manual = selected?.timing?.trigger_mode === 'manual' && Number.isFinite(selected.timing.manual_start_sec)
+    ? Math.max(0, selected.timing.manual_start_sec - (selected.timing.time_reference === 'audio' ? 0 : (ANNOTATIONS_WS.page.audio_start_sec || 0))) : null;
+  const initialTime = Number.isFinite(manual) ? manual : (cue?.start || 0);
+  const markers = cue ? [{start: cue.start, end: cue.end, color: '#777'}] : [];
+  if (Number.isFinite(manual)) markers.push({start: manual, color: '#f46a38'});
+  if (calibration && waveform && window.AnnotationAudioCalibration) ANNOTATIONS_ED.calibrationCleanup =
+    window.AnnotationAudioCalibration.attach({audio: calibration, canvas: waveform, status: editor.querySelector('#annotation-audio-position'), initialTime, markers});
+  const stopLoop = () => {loopRange = null; const button = editor.querySelector('#annotation-audio-loop'); if (button) button.textContent = '循环试听前后 1 秒';};
+  waveform?.addEventListener('click', stopLoop);
+  editor.querySelector('#annotation-listen-phrase')?.addEventListener('click', () => {
+    if (!cue || !calibration || !Number.isFinite(calibration.duration)) return;
+    stopLoop();
+    loopRange = [Math.max(0, cue.start - .6), Math.min(calibration.duration, cue.end + .3)];
+    calibration.currentTime = loopRange[0];
+    editor.querySelector('#annotation-audio-loop').textContent = '停止循环试听';
+    calibration.play().catch(error => showToast(error.message));
+  });
+  calibration?.addEventListener('timeupdate', () => {
+    const char = cue?.characters?.find(char => calibration.currentTime >= char.start && calibration.currentTime < char.end);
+    const label = editor.querySelector('#annotation-audio-cue');
+    if (label && cue) label.textContent = char ? `自动参考正在讲：${char.text}（请听音核对）` : `自动参考 ${cue.start.toFixed(3)} 秒（请试听核对）`;
+    if (loopRange && calibration.currentTime >= loopRange[1]) calibration.currentTime = loopRange[0];
+  });
+  editor.querySelectorAll('[data-annotation-audio-frame]').forEach(button => button.addEventListener('click', () => {
+    if (!calibration || !Number.isFinite(calibration.duration)) return;
+    calibration.pause(); stopLoop();
+    const fps = ANNOTATION_PREVIEW?.prepared?.result?.timeline?.fps || 30;
+    calibration.currentTime = Math.min(calibration.duration, Math.max(0,
+      calibration.currentTime + Number(button.dataset.annotationAudioFrame) / fps));
+  }));
+  editor.querySelector('#annotation-audio-loop')?.addEventListener('click', event => {
+    if (!calibration || !Number.isFinite(calibration.duration)) return;
+    if (loopRange) {loopRange = null; calibration.pause(); event.target.textContent = '循环试听前后 1 秒'; return;}
+    loopRange = [Math.max(0, calibration.currentTime - 1), Math.min(calibration.duration, calibration.currentTime + 1)];
+    calibration.currentTime = loopRange[0]; event.target.textContent = '停止循环试听';
+    calibration.play().catch(error => showToast(error.message));
+  });
+  editor.querySelector('#annotation-restore-auto')?.addEventListener('click', () => {
+    const item = annotationSelectedItem();
+    if (!item?.anchor) return;
+    calibration?.pause(); loopRange = null;
+    const timing = {...item.timing, trigger_mode: 'anchor_start', offset_sec: 0};
+    delete timing.manual_start_sec; delete timing.time_reference;
+    pushAnnotationHistory(); queueAnnotationItemPatch(annotationId, {timing});
+    renderAnnotationItemEditor();
+  });
 
   editor.querySelector('#annotation-edit-mask-group')?.addEventListener('change', event => {
     pushAnnotationHistory();
@@ -582,12 +764,14 @@ function bindAnnotationEditorEvents(annotationId) {
       showToast('请先加载并试听本页音频。');
       return;
     }
-    audio.pause();
+    audio.pause(); stopLoop();
+    if (audio.currentTime >= audio.duration) {showToast('请定位到音频结束之前的发音起点。'); return;}
     pushAnnotationHistory();
     queueAnnotationItemPatch(annotationId, {timing: {...item.timing,
-      trigger_mode: 'manual', manual_start_sec: audio.currentTime, time_reference: 'audio', offset_sec: 0}});
+      trigger_mode: 'manual', manual_start_sec: audio.currentTime, time_reference: 'audio', offset_sec: 0,
+      calibration_stale: false}});
     renderAnnotationItemEditor();
-    showToast(`已设置音频 ${audio.currentTime.toFixed(2)} 秒起笔，请预览确认。`);
+    showToast(`已设置音频 ${audio.currentTime.toFixed(3)} 秒起笔，请预览确认。`);
   });
   const styleType = editor.querySelector('#annotation-edit-style-type');
   styleType?.addEventListener('change', () => {
@@ -665,7 +849,7 @@ function bindAnnotationEditorEvents(annotationId) {
   });
   editor.querySelector('#annotation-edit-timing-start')?.addEventListener('change', event => {
     scheduleAnnotationStyleCommit(annotationId, item => ({
-      timing: { ...item.timing, manual_start_sec: Math.max(0, Number(event.target.value) || 0) },
+      timing: { ...item.timing, manual_start_sec: Math.max(0, Number(event.target.value) || 0), calibration_stale: false },
     }));
   });
 
@@ -714,6 +898,18 @@ function bindAnnotationEditorEvents(annotationId) {
 }
 
 // ------------------------------------------------------------ 撤销/重做
+
+function setAnnotationVideoStart(annotationId, audioTime) {
+  const item = ANNOTATIONS_WS.page.items.find(item => item.annotation_id === annotationId);
+  if (!item || !Number.isFinite(audioTime) || audioTime < 0) return false;
+  pushAnnotationHistory();
+  queueAnnotationItemPatch(annotationId, {timing: {...item.timing,
+    trigger_mode: 'manual', manual_start_sec: audioTime, time_reference: 'audio',
+    offset_sec: 0, calibration_stale: false}});
+  renderAnnotationItemEditor();
+  return true;
+}
+window.setAnnotationVideoStart = setAnnotationVideoStart;
 
 function pushAnnotationHistory() {
   const slideId = ANNOTATIONS_WS.page.slide_id;
@@ -803,6 +999,7 @@ function queueSyncAnnotationItems(currentItems, targetItems) {
 }
 
 function undoAnnotationEdit() {
+  cancelAnnotationRepair();
   const slideId = ANNOTATIONS_WS.page.slide_id;
   const history = slideId && ANNOTATIONS_WS.histories[slideId];
   if (!history?.canUndo()) return;
@@ -820,6 +1017,7 @@ function undoAnnotationEdit() {
 }
 
 function redoAnnotationEdit() {
+  cancelAnnotationRepair();
   const slideId = ANNOTATIONS_WS.page.slide_id;
   const history = slideId && ANNOTATIONS_WS.histories[slideId];
   if (!history?.canRedo()) return;
@@ -860,6 +1058,8 @@ window.annotationEditorKeyboardHandler = annotationEditorKeyboardHandler;
 window.addAnnotationRegion = addAnnotationRegion;
 window.previewAnnotationAnimation = previewAnnotationAnimation;
 window.finishAnnotationFreehand = finishAnnotationFreehand;
+window.cancelAnnotationRepair = cancelAnnotationRepair;
+window.annotationRepairPending = () => Boolean(ANNOTATIONS_ED.repair);
 window.cancelAnnotationPreviewLoop = cancelAnnotationPreviewLoop;
 window.handleAnnotationDrawPointerDown = handleAnnotationDrawPointerDown;
 window.handleAnnotationDrawPointerMove = handleAnnotationDrawPointerMove;

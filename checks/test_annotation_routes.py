@@ -193,6 +193,33 @@ def test_get_slide_returns_narration_and_input_hashes(client, project):
     assert body["layout"] is None
 
 
+def test_listening_cue_never_uses_replaced_audio_or_narration(client, project):
+    project_id, run_root = project
+    import copy
+    item = copy.deepcopy(REGION_ITEM)
+    item['anchor'] = copy.deepcopy(TEXT_ITEM['anchor'])
+    base = f'/api/projects/{project_id}/annotations/slides/slide_001'
+    response = client.patch(base, json={'expected_revision': 0, 'operations': [{'op': 'add', 'item': item}]})
+    assert response.status_code == 200, response.text
+    aid = response.json()['items'][0]['annotation_id']
+    directory = run_root / 'slides/slide_001'
+    (directory / 'voice.mp3').write_bytes(b'current audio')
+    tokens = [{'beat_id': item['anchor']['beat_id'], 'range': [i, i+1], 'text': SPOKEN[i],
+               'start': 1 + (i-5)*.1, 'end': 1.09 + (i-5)*.1,
+               'source': 'provider_word', 'precision': 'character'} for i in range(5, 10)]
+    write_json_atomic(directory / 'word_alignment.json', {
+        'tokens': tokens, 'audio_hash': hashlib.sha256(b'current audio').hexdigest(),
+        'narration_hash': hashlib.sha256((directory / 'narration_beats.json').read_bytes()).hexdigest()})
+    cue = client.get(base).json()['audio_locator'][aid]
+    assert cue['start'] == 1 and cue['range'] == [5, 10]
+    assert ''.join(t['text'] for t in cue['characters']) == item['anchor']['quote']
+    (directory / 'voice.mp3').write_bytes(b'replaced audio')
+    assert client.get(base).json()['audio_locator'] == {}
+    (directory / 'voice.mp3').write_bytes(b'current audio')
+    (directory / 'narration_beats.json').write_text('{"beats": []}', encoding='utf-8')
+    assert client.get(base).json()['audio_locator'] == {}
+
+
 def test_unknown_slide_404(client, project):
     project_id, _ = project
     assert client.get(f"/api/projects/{project_id}/annotations/slides/slide_999").status_code == 404
@@ -736,3 +763,34 @@ def test_formal_export_loader_accepts_confirmed_and_blocks_missing_ink(client, p
     (directory/"annotation_ink"/"ann_001"/stroke["ink"]["dir"]/"frame_001.png").unlink()
     with pytest.raises(BuildError,match="ink_asset_missing"):
         _load_annotation_timeline_for_render(directory,"slide_001")
+
+
+def test_audio_regeneration_requires_manual_recalibration_before_prepare(client, project):
+    from annotation_invalidation import invalidate_for_audio_change
+    from types import SimpleNamespace
+    project_id, run_root = project
+    base = f"/api/projects/{project_id}/annotations/slides/slide_001"
+    _make_audio(run_root)
+    response = client.patch(base,json={"expected_revision":0,"operations":[{"op":"add","item":MANUAL_REGION_ITEM}]})
+    assert response.status_code == 200
+    invalidate_for_audio_change(SimpleNamespace(run_dir=run_root), "slide_001")
+    page = client.get(base).json()
+    assert page["items"][0]["timing"]["calibration_stale"] is True
+    original_start = page["items"][0]["timing"]["manual_start_sec"]
+    response = client.post(base+"/prepare",json={"expected_revision":page["revision"]})
+    assert response.status_code == 422
+    assert "manual_calibration_stale" in response.text
+    timing = {**page["items"][0]["timing"], "draw_duration_sec":0.8}
+    timing.pop("calibration_stale")  # Legacy clients must not clear the marker by omission.
+    response = client.patch(base,json={"expected_revision":page["revision"],"operations":[
+        {"op":"update","annotation_id":"ann_001","patch":{"timing":timing}}]})
+    assert response.status_code == 200, response.text
+    page = response.json()
+    assert page["items"][0]["timing"]["manual_start_sec"] == original_start
+    assert page["items"][0]["timing"]["calibration_stale"] is True
+    timing["calibration_stale"] = False
+    response = client.patch(base,json={"expected_revision":page["revision"],"operations":[
+        {"op":"update","annotation_id":"ann_001","patch":{"timing":timing}}]})
+    assert response.status_code == 200, response.text
+    response = client.post(base+"/prepare",json={"expected_revision":response.json()["revision"]})
+    assert response.status_code == 200, response.text

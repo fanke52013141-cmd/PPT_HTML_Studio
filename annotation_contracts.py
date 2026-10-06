@@ -513,6 +513,7 @@ class AnnotationTiming:
     exit_duration_sec: float
     manual_start_sec: Optional[float] = None
     time_reference: str = "slide"
+    calibration_stale: bool = False
 
     @staticmethod
     def from_payload(data: Any, issues: List[Issue], *, path: str = "timing") -> Optional["AnnotationTiming"]:
@@ -538,6 +539,10 @@ class AnnotationTiming:
             issues, f"{path}.exit_duration_sec", data.get("exit_duration_sec", 0.15), minimum=0.0, maximum=5.0
         )
         manual_start: Optional[float] = None
+        calibration_stale = data.get("calibration_stale", False)
+        if not isinstance(calibration_stale, bool):
+            issues.append(Issue(f"{path}.calibration_stale", "bad_type", "calibration_stale 必须是布尔值"))
+            return None
         reference = _check_enum(issues, f"{path}.time_reference", data.get("time_reference", "slide"), ("slide", "audio"))
         if data.get("manual_start_sec") is not None:
             manual_start = _check_number(
@@ -558,6 +563,7 @@ class AnnotationTiming:
             exit_duration_sec=float(exit_duration or 0.0),
             manual_start_sec=manual_start,
             time_reference=reference or "slide",
+            calibration_stale=calibration_stale if trigger == "manual" else False,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -573,6 +579,8 @@ class AnnotationTiming:
         if self.trigger_mode == "manual":
             payload["manual_start_sec"] = self.manual_start_sec
             payload["time_reference"] = self.time_reference
+            if self.calibration_stale:
+                payload["calibration_stale"] = True
         return payload
 
 

@@ -301,6 +301,7 @@ def render_and_write(
     *,
     draw_duration_sec: float,
     fps: int = _DEFAULT_FPS,
+    cancel_event=None,
 ) -> Dict[str, Any]:
     """渲染整笔墨迹并落盘:full.png + frame_%03d.png + meta.json。
 
@@ -315,6 +316,8 @@ def render_and_write(
     full_path.write_bytes(_png_bytes(full))
     frame_count = frames_needed(draw_duration_sec, fps)
     for index in range(frame_count):
+        if cancel_event and cancel_event.is_set():
+            raise RuntimeError("cancelled")
         frame = render_stroke_rgba(request, arc=_time_to_arc(
             {"speed_profile": request.speed_profile}, index / (frame_count - 1)))
         (out_dir / f"frame_{index:03d}.png").write_bytes(_png_bytes(frame))

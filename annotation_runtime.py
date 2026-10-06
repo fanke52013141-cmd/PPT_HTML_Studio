@@ -41,7 +41,9 @@ def configure_annotation_runtime(app, write_json_atomic, read_json_file, reveal_
         return os.environ.get("PPT_ANNOTATION_BAIDU_OCR_KEY", "").strip()
 
     def _annotation_ocr_config():
-        return _annotation_ocr.BaiduOcrEngineConfig(api_key=_annotation_ocr_api_key())
+        from config_store import get_setting
+        secret = (get_setting("annotation_ocr_baidu_secret_key") or os.environ.get("PPT_ANNOTATION_BAIDU_OCR_SECRET", "")).strip()
+        return _annotation_ocr.BaiduOcrEngineConfig(api_key=_annotation_ocr_api_key(), secret_key=secret)
 
     configure_annotation_store(
         AnnotationStoreDependencies(write_json_atomic=write_json_atomic)

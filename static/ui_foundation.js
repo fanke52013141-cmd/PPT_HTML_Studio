@@ -202,27 +202,17 @@ function requestTextInput(title, label, initialValue = '') {
   });
 }
 
+// 禁用只呈现禁用态本身：工具栏不再生成「禁用原因」提示文字（2026-10-06 用户裁决）。
+// reason 参数仅为兼容既有调用方保留，不再产生任何可见输出。
 function setDisabledReason(button, disabled, reason = '') {
   if (!button) return;
   button.disabled = disabled;
+  if (!button.id) return;
   const id = `hint-${button.id}`;
-  let hint = document.getElementById(id);
-  if (!hint && button.id && reason) {
-    hint = document.createElement('span');
-    hint.id = id;
-    hint.className = 'control-hint';
-    button.insertAdjacentElement('afterend', hint);
-  }
-  if (hint) {
-    const text = disabled ? reason : '';
-    if (hint.textContent !== text) hint.textContent = text;
-    hint.hidden = !text;
-    const ids = (button.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean).filter(value => value !== id);
-    if (text) ids.push(id);
-    if (ids.length) button.setAttribute('aria-describedby', ids.join(' '));
-    else button.removeAttribute('aria-describedby');
-  }
-  button.removeAttribute('title');
+  document.getElementById(id)?.remove();
+  const ids = (button.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean).filter(value => value !== id);
+  if (ids.length) button.setAttribute('aria-describedby', ids.join(' '));
+  else button.removeAttribute('aria-describedby');
 }
 
 function clearFieldError(field) {

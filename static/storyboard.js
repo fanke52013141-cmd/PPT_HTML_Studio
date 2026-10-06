@@ -769,7 +769,7 @@ function renderStep2Workspace() {
     if (visualGenerateBtn) {
       // 自动模式常驻展示：演讲稿未生成/生成中禁用，全部生成完毕后可点（UI 规范 §8）。
       visualGenerateBtn.style.display = 'inline-flex';
-      setDisabledReason(visualGenerateBtn, !step2VisualButtonReady(), '先完成每页演讲稿，再进行内容可视化');
+      setDisabledReason(visualGenerateBtn, !step2VisualButtonReady());
       visualGenerateBtn.classList.toggle('is-active', state.step2VisualExists && !state.step2VisualStale);
       setStep2ButtonLabel(visualGenerateBtn, state.step2VisualStale ? '重新生成可视化' : '内容可视化');
       visualGenerateBtn.removeAttribute('title');
@@ -786,8 +786,7 @@ function renderStep2Workspace() {
   const step2NextButton = document.getElementById('step2-btn-next');
   step2NextButton.style.display = hasSlides ? 'inline-flex' : 'none';
   const visualizationNeedsRefresh = !manual && (state.step2WorkflowPending || state.step2VisualStale);
-  setDisabledReason(step2NextButton, !hasSlides || visualizationNeedsRefresh,
-    !hasSlides ? '请先添加分镜页面' : '');
+  setDisabledReason(step2NextButton, !hasSlides || visualizationNeedsRefresh);
   step2NextButton.removeAttribute('title');
   updateStep2BatchDeleteButton();
 
@@ -1469,7 +1468,10 @@ function resizeStep2MapRows(root) {
 document.addEventListener('step2WorkspaceRendered', bindStep2TextareaAutoResize);
 window.addEventListener('load', bindStep2TextareaAutoResize);
 window.addEventListener('resize', () => {
-  document.querySelectorAll('.step2-script-slide textarea[data-script-field="narration"]').forEach(autoResizeNarrationTextarea);
+  document.querySelectorAll('.step2-script-slide textarea[data-script-field="narration"]').forEach(textarea => {
+    if (typeof autoResizeNarrationTextarea === 'function') autoResizeNarrationTextarea(textarea);
+    else autoResizeTextarea(textarea);
+  });
   document.querySelectorAll('.step2-vn-map').forEach(resizeStep2MapRows);
 });
 setTimeout(bindStep2TextareaAutoResize, 500);

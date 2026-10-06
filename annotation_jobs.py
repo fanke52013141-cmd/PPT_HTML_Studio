@@ -89,6 +89,45 @@ class AnnotationJobManager:
 
     # ------------------------------------------------------------ 提交
 
+    def submit_preview(self, project_id, slide_id, payload, prepare, *, request_key=None):
+        account_id = get_current_account_id()
+        with self._lock:
+            job = self._deps.job_store.create(project_id, job_type="annotation_preview",
+                payload={"account_id": account_id, "slide_id": slide_id,
+                         "expected_revision": payload.get("expected_revision")}, request_key=request_key)
+            created = job.status == "queued" and job.id not in self._cancel_flags
+            if created:
+                event = threading.Event()
+                self._cancel_flags[job.id] = event
+        if created:
+            def run():
+                with _JOB_SEMAPHORE:
+                    token = set_current_account_id(account_id)
+                    try:
+                        if event.is_set():
+                            self._deps.job_store.mark_cancelled(job.id)
+                            return
+                        self._deps.job_store.mark_running(job.id, "prepare")
+                        with self._deps.session_factory() as db:
+                            result = prepare(db, project_id, slide_id, payload, cancel_event=event,
+                                progress=lambda value, stage: self._deps.job_store.update_progress(job.id, value, stage=stage))
+                        if event.is_set():
+                            self._deps.job_store.mark_cancelled(job.id)
+                        else:
+                            self._deps.job_store.mark_succeeded(job.id, "done", result)
+                    except Exception as exc:
+                        if event.is_set():
+                            self._deps.job_store.mark_cancelled(job.id)
+                        else:
+                            detail = getattr(exc, "detail", None)
+                            self._deps.job_store.mark_failed(job.id, str(detail or exc), detail=detail)
+                    finally:
+                        reset_current_account_id(token)
+                        with self._lock:
+                            self._cancel_flags.pop(job.id, None)
+            self._executor.submit(run)
+        return job, created
+
     def submit_detect(
         self,
         project_id: str,
@@ -101,13 +140,14 @@ class AnnotationJobManager:
         返回 (job, created);request_key 命中既有活跃/成功任务时复用。
         """
         account_id = get_current_account_id()
-        job = self._deps.job_store.create(
-            project_id,
-            job_type="annotation_detect",
-            payload={"account_id": account_id, "slides": [{"slide_id": sid, "image_hash": h} for sid, h, _, _ in slide_targets]},
-            request_key=request_key,
-        )
-        created = job.status == "queued"
+        with self._lock:
+            job = self._deps.job_store.create(
+                project_id, job_type="annotation_detect",
+                payload={"account_id": account_id, "slides": [{"slide_id": sid, "image_hash": h} for sid, h, _, _ in slide_targets]},
+                request_key=request_key)
+            created = job.status == "queued" and job.id not in self._cancel_flags
+            if created:
+                self._cancel_flags[job.id] = threading.Event()
         if created:
             self._spawn(job.id, project_id, slide_targets, account_id)
         return job, created
@@ -129,9 +169,8 @@ class AnnotationJobManager:
         slide_targets: List[Tuple[str, str, Tuple[int, int], bytes]],
         account_id: Optional[str] = None,
     ) -> None:
-        cancel_event = threading.Event()
         with self._lock:
-            self._cancel_flags[job_id] = cancel_event
+            cancel_event = self._cancel_flags.setdefault(job_id, threading.Event())
 
         def run() -> None:
             _JOB_SEMAPHORE.acquire()
@@ -192,6 +231,20 @@ class AnnotationJobManager:
                 continue
             try:
                 run_dir = self._run_dir(project_id)
+                def publish_layout(payload, previous):
+                    with self._deps.lock_for(self._project(project_id)):
+                        if cancel_event.is_set():
+                            raise ValueError("cancelled")
+                        current = self._read_image(run_dir, slide_id)
+                        if current is None or hashlib.sha256(current).hexdigest() != expected_hash:
+                            raise ValueError("stale_input")
+                        try:
+                            latest = self._deps.text_layout_builder.load(run_dir, slide_id)
+                        except ValueError:
+                            latest = None
+                        if latest != previous:
+                            raise ValueError("layout_changed")
+                        self._deps.text_layout_builder.save(run_dir, slide_id, payload)
                 layout, detected = self._deps.text_layout_builder.get_or_detect(
                     run_dir,
                     slide_id,
@@ -199,6 +252,7 @@ class AnnotationJobManager:
                     actual_hash,
                     image_size,
                     recognize=self._deps.recognize,
+                    publish=publish_layout,
                 )
                 results.append(
                     {
@@ -212,7 +266,8 @@ class AnnotationJobManager:
                 # 单页失败不拖垮整批;错误文本先脱敏再落库
                 from annotation_job_store import _sanitize_error
 
-                results.append({"slide_id": slide_id, "status": "failed", "error": _sanitize_error(str(exc))[:300]})
+                status = "stale_input" if str(exc) in ("stale_input", "layout_changed") else "failed"
+                results.append({"slide_id": slide_id, "status": status, "error": _sanitize_error(str(exc))[:300]})
             store.update_progress(job_id, 10 + int(80 * (index + 1) / max(1, total)), stage="detect")
         if cancel_event.is_set():
             store.mark_cancelled(job_id)

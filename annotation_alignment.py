@@ -202,6 +202,30 @@ def beat_times_from_alignment(
     return beat_times, "sentence_fallback"
 
 
+def _credible_anchor_tokens(tokens):
+    """Reject visibly weak forced alignment; scores are not accuracy guarantees."""
+    forced = [token for token in tokens if token['source'] == 'forced_alignment']
+    scores = [_finite_nonnegative(token.get('score')) for token in forced]
+    if forced and (any(score is None or score < .5 or score > 1 for score in scores)
+                   or sum(scores) / len(scores) < .75):
+        return False
+    ordered = sorted(tokens, key=lambda token: (token['range'][0], token['start']))
+    for token in ordered:
+        if token['source'] == 'qwen_alignment' and token['precision'] == 'character':
+            if not .015 <= token['end'] - token['start'] <= 1.0:
+                return False
+        if token['source'] == 'forced_alignment' and token['precision'] == 'character':
+            if not .015 <= token['end'] - token['start'] <= 1.0:
+                return False
+    for previous, current in zip(ordered, ordered[1:]):
+        # Expanded percentages legitimately share an original-text range.
+        if current['range'] == previous['range']:
+            continue
+        if current['start'] < previous['start'] or current['start'] < previous['end'] - .04:
+            return False
+    return True
+
+
 def resolve_anchor_times(items, alignment, *, audio_hash=None, narration_hash=None):
     """Resolve selected codepoint ranges using measured tokens, never interpolation.
 
@@ -210,6 +234,11 @@ def resolve_anchor_times(items, alignment, *, audio_hash=None, narration_hash=No
     covered; punctuation alone cannot create a timestamp.
     """
     if not isinstance(alignment, dict):
+        return {}
+    engine = alignment.get('engine') or {}
+    if isinstance(engine, dict) and str(engine.get('engine_version', '')).startswith('whisperx_'):
+        # Historical measurements remain on disk, but cannot silently survive
+        # the selected engine migration. Manual calibration is independent.
         return {}
     if alignment.get("time_reference", "audio") != "audio":
         return {}
@@ -223,13 +252,14 @@ def resolve_anchor_times(items, alignment, *, audio_hash=None, narration_hash=No
         if anchor is None:
             continue
         selected = []
+        selected_tokens = []
         covered = set()
         for token in tokens:
             if not isinstance(token, dict) or token.get("beat_id") != anchor.beat_id:
                 continue
             if token.get("precision") not in ("word", "character"):
                 continue
-            if token.get("source") not in ("provider_word", "forced_alignment", "manual_verified"):
+            if token.get("source") not in ("provider_word", "forced_alignment", "qwen_alignment", "manual_verified"):
                 continue
             bounds = token.get("range")
             start, end = _finite_nonnegative(token.get("start")), _finite_nonnegative(token.get("end"))
@@ -238,15 +268,55 @@ def resolve_anchor_times(items, alignment, *, audio_hash=None, narration_hash=No
                     or bounds[0] >= bounds[1] or start is None or end is None or end <= start):
                 continue
             if bounds[0] < anchor.range_end and bounds[1] > anchor.range_start:
+                # A measured multi-character word cannot locate a substring's
+                # first sound without another character-level measurement.
+                if token["source"] in ("provider_word", "qwen_alignment") and (bounds[0] < anchor.range_start or bounds[1] > anchor.range_end):
+                    continue
                 selected.append((start, end, token["source"]))
+                selected_tokens.append(token)
                 covered.update(range(max(bounds[0], anchor.range_start), min(bounds[1], anchor.range_end)))
         import unicodedata
         required = {anchor.range_start + i for i, char in enumerate(anchor.quote)
                     if not char.isspace() and not unicodedata.category(char).startswith("P")}
-        if selected and required and required <= covered:
+        if selected and required and required <= covered and _credible_anchor_tokens(selected_tokens):
             resolved[item.annotation_id] = {
                 "start": min(entry[0] for entry in selected),
                 "end": max(entry[1] for entry in selected),
                 "source": selected[0][2],
             }
     return resolved
+
+
+def calibration_audio_delay(timeline):
+    if not isinstance(timeline, dict):
+        return 0
+    return _finite_nonnegative(timeline.get('audio_start_sec')) or 0
+
+
+def calibration_locator(items, alignment, *, audio_hash, narration_hash):
+    """Read-only listening cues from current measured audio, never stale timings."""
+    if not audio_hash or not narration_hash:
+        return {}
+    anchors = resolve_anchor_times(items, alignment, audio_hash=audio_hash, narration_hash=narration_hash)
+    for item in items:
+        if item.annotation_id not in anchors:
+            continue
+        cue = anchors[item.annotation_id]
+        cue['quote'] = item.anchor.quote
+        cue['range'] = [item.anchor.range_start, item.anchor.range_end]
+        cue['beat_id'] = item.anchor.beat_id
+        cue['characters'] = []
+        for token in alignment.get('tokens', []):
+            if not isinstance(token, dict) or token.get('beat_id') != item.anchor.beat_id:
+                continue
+            bounds = token.get('range')
+            if (not isinstance(bounds, list) or len(bounds) != 2
+                    or any(not isinstance(v, int) or isinstance(v, bool) for v in bounds)
+                    or bounds[0] >= bounds[1]):
+                continue
+            start, end = _finite_nonnegative(token.get('start')), _finite_nonnegative(token.get('end'))
+            if (bounds[0] < item.anchor.range_end and bounds[1] > item.anchor.range_start
+                    and isinstance(token.get('text'), str) and start is not None and end is not None
+                    and end > start and token.get('source') in ('provider_word', 'forced_alignment', 'qwen_alignment', 'manual_verified')):
+                cue['characters'].append({'text': token['text'], 'start': start, 'end': end})
+    return anchors

@@ -13,7 +13,7 @@ def test_selected_occurrence_uses_original_range_and_hashes():
     item = _item()
     item = replace(item, anchor=replace(item.anchor, range_start=4, range_end=6, quote="标注"))
     tokens = [{"beat_id": item.anchor.beat_id, "range": [i, i+1], "start": t, "end": t+.1,
-               "precision": "character", "source": "forced_alignment"}
+               "precision": "character", "source": "forced_alignment", "score": .99}
               for i,t in [(0,.2),(1,.4),(4,2.1),(5,2.3)]]
     data = {"audio_hash": "a", "narration_hash": "b", "tokens": tokens}
     assert resolve_anchor_times([item], data, audio_hash="a", narration_hash="b")[item.annotation_id]["start"] == 2.1
@@ -65,3 +65,18 @@ def test_percentage_mapping_keeps_original_codepoints():
     assert text.startswith("增长百分之二十")
     assert len(text) == len(mapping)
     assert all(value["range"] == [2,5] for value in mapping[2:7])
+
+
+def test_old_manual_point_cannot_build_until_explicit_recalibration():
+    item = _item(trigger="manual", manual_start=1.234)
+    item = replace(item, timing=replace(item.timing, calibration_stale=True))
+    args = dict(slide_id="slide_001", items=[item], beat_times={item.anchor.beat_id:(0,3)},
+                slide_duration=5, image_hash="a", narration_hash="b", audio_hash="c",
+                confirmed_input_hashes={}, require_precise=True)
+    payload, issues = build_annotation_timeline(**args)
+    assert payload["events"] == []
+    assert issues == [{"annotation_id":item.annotation_id,"reason":"manual_calibration_stale"}]
+    recalibrated = replace(item, timing=replace(item.timing, calibration_stale=False))
+    payload, issues = build_annotation_timeline(**{**args, "items":[recalibrated]})
+    assert not issues
+    assert len(payload["events"]) == 1

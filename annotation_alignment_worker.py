@@ -4,9 +4,11 @@ from __future__ import annotations
 import difflib
 import hashlib
 import json
+import os
 import re
 import tempfile
 import threading
+import unicodedata
 from pathlib import Path
 
 from annotation_build import AnnotationBuildError, file_hash, read_json
@@ -14,9 +16,9 @@ from repository_paths import ANNOTATION_WORKER_PYTHON, ANNOTATION_WORKER_SCRIPT,
 from runtime_support import run_subprocess_bounded
 
 _WORKER_GATE = threading.BoundedSemaphore(1)
-ENGINE_VERSION = "whisperx_3_8_6_chars_v2"
-MODEL = "jonatasgrosman/wav2vec2-large-xlsr-53-chinese-zh-cn"
-MODEL_REVISION = "99ccb2737be22b8bb50dcfcc39ad4d567fb90cfd"
+ENGINE_VERSION = "qwen_forced_aligner_0_6b_v1"
+MODEL = "Qwen/Qwen3-ForcedAligner-0.6B"
+MODEL_REVISION = "c7cbfc2048c462b0d63a45797104fc9db3ad62b7"
 
 
 def normalized_transcript(beats):
@@ -37,8 +39,10 @@ def normalized_transcript(beats):
                 for index in range(c, d):
                     ranges[index] = [a + index - c, a + index - c + 1]
             elif tag == "replace" and b > a:
-                for index in range(c, d):
-                    ranges[index] = [a, b]
+                # An arbitrary TTS rewrite has no verified pronunciation map.
+                # Preserve unmapped spans for manual review rather than assigning
+                # every replacement character to an unrelated original phrase.
+                continue
         # Expand common percentages only, retaining original range. Other
         # ambiguous numeric pronunciations remain unavailable for manual review.
         expansions = {}
@@ -57,6 +61,11 @@ def normalized_transcript(beats):
                 mapping.extend({"beat_id": str(beat.get("id") or beat.get("beat_id")), "range": bounds} for _ in reading)
                 index = end
                 continue
+            # Silent punctuation has no acoustic interval. Preserve the original
+            # codepoint map across skipped marks.
+            if unicodedata.category(spoken[index]).startswith("P"):
+                index += 1
+                continue
             text.append(spoken[index].lower())
             mapping.append({"beat_id": str(beat.get("id") or beat.get("beat_id")), "range": ranges[index]})
             index += 1
@@ -70,9 +79,9 @@ def run_alignment(slide_dir, beats, cancel_event):
     audio = directory / "voice.mp3"
     if not audio.is_file():
         raise AnnotationBuildError([{"reason": "missing_audio"}])
+    transcript, mapping = normalized_transcript(beats)
     if not Path(ANNOTATION_WORKER_PYTHON).is_file():
         raise AnnotationBuildError([{"reason": "alignment_worker_unavailable"}])
-    transcript, mapping = normalized_transcript(beats)
     key = {"audio_hash": file_hash(audio), "narration_hash": file_hash(directory / "narration_beats.json"),
            "engine_version": ENGINE_VERSION, "model": MODEL, "model_revision": MODEL_REVISION,
            "transcript_hash": hashlib.sha256(transcript.encode()).hexdigest()}
@@ -92,7 +101,10 @@ def run_alignment(slide_dir, beats, cancel_event):
                 "cache_key": key}, ensure_ascii=False), encoding="utf-8")
             result = run_subprocess_bounded(
                 [ANNOTATION_WORKER_PYTHON, ANNOTATION_WORKER_SCRIPT, "--input", str(request), "--output", str(response)],
-                timeout_sec=600, capture_output=True, text=True, encoding="utf-8", errors="replace")
+                timeout_sec=600, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                env={**os.environ, "PYTHONIOENCODING": "utf-8", "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"})
+            if result.returncode == 124:
+                raise RuntimeError("Qwen 音频定位超时，请缩短单页音频或人工试听校准")
             if result.returncode != 0:
                 # Keep diagnostic tail without credentials or binary response data.
                 raise RuntimeError("音频定位失败: " + str(result.stderr or result.stdout)[-1200:])
