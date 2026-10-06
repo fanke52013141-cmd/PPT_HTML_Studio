@@ -144,6 +144,7 @@ function pasteStep1PlainText(event) {
 }
 
 async function loadStep1Data() {
+  renderPageTaskState(document.getElementById('step1-editor-shell'), 'article', null, '');
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
@@ -265,7 +266,8 @@ async function generateStep1Article() {
   const button = document.getElementById('step1-btn-generate-article');
   const originalHtml = button.innerHTML;
   button.disabled = true;
-  button.innerHTML = '<span class="button-spinner"></span> 生成中...';
+  button.innerHTML = '生成中…';
+  renderPageTaskState(document.getElementById('step1-editor-shell'), 'article', 'running', '正在根据话题生成文章', 'text');
   try {
     const result = await API.post(
       `/api/projects/${projectId}/steps/1/generate-article`,
@@ -279,7 +281,11 @@ async function generateStep1Article() {
     renderStep1MarkdownEditor(articleInput.value);
     autoResizeTextarea(articleInput);
     document.getElementById('step1-status-hint').innerText = '文章已生成，可编辑后保存';
+    renderPageTaskState(document.getElementById('step1-editor-shell'), 'article', 'done', '文章已生成');
     showToast('AI 文章已生成');
+  } catch (error) {
+    if (isCurrentWorkspaceProject(projectId, sessionVersion)) renderPageTaskState(document.getElementById('step1-editor-shell'), 'article', 'error', `文章生成失败：${error.message}`);
+    throw error;
   } finally {
     button.disabled = false;
     button.innerHTML = originalHtml;

@@ -9,6 +9,9 @@ let step5SourceCanvas = null;
 let step2Contract = null; // 用于缓存步骤 2 分镜规划数据
 
 function resetStep5ProjectState() {
+  renderPageTaskState(document.getElementById('step-panel-5'), 'mask', null, '');
+  const taskStatus = document.getElementById('step5-task-status');
+  if (taskStatus) { taskStatus.hidden = true; taskStatus.textContent = ''; taskStatus.setAttribute('aria-busy', 'false'); }
   if (state.step5AutoSaveTimer) {
     clearTimeout(state.step5AutoSaveTimer);
     state.step5AutoSaveTimer = null;

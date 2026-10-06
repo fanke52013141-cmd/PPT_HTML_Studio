@@ -56,7 +56,7 @@ function initGlobalEvents() {
         cornerClose.setAttribute('data-modal-close', '');
         cornerClose.setAttribute('aria-label', '关闭');
         cornerClose.textContent = '×';
-        content.appendChild(cornerClose);
+        (content.querySelector('.project-profile-scroll') || content).prepend(cornerClose);
       }
     };
     ensureCornerClose();
@@ -338,8 +338,9 @@ function initAnnotationWorkspaceEvents() {
     window.submitAnnotationJob?.('detect_text');
   });
   document.getElementById('annotation-btn-align')?.addEventListener('click', () => window.submitAnnotationJob?.('align'));
+  document.getElementById('annotation-btn-ai-all')?.addEventListener('click', () => window.autoAnnotateCurrentPage?.(true));
   document.getElementById('annotation-btn-ai-plan')?.addEventListener('click', () => {
-    window.submitAnnotationJob?.('plan');
+    window.autoAnnotateCurrentPage?.();
   });
   document.getElementById('annotation-ai-emphasis')?.addEventListener('change', event => {
     window.setAnnotationEmphasis?.(event.target.value);
@@ -348,7 +349,6 @@ function initAnnotationWorkspaceEvents() {
   document.getElementById('annotation-btn-redo')?.addEventListener('click', () => window.redoAnnotationEdit?.());
   document.getElementById('annotation-btn-preview')?.addEventListener('click', () => window.previewAnnotationAnimation?.());
   document.getElementById('annotation-btn-confirm-page')?.addEventListener('click', () => window.confirmAnnotationPage?.());
-  document.getElementById('annotation-btn-decision')?.addEventListener('click', () => window.requestAnnotationDecision?.());
 
   const canvasFrame = document.getElementById('annotation-canvas-frame');
   canvasFrame?.addEventListener('pointerdown', event => {

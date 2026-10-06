@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 from pathlib import Path
 from types import SimpleNamespace
 import sys
@@ -51,6 +52,7 @@ def _project(tmp_path: Path) -> SimpleNamespace:
 
 
 def _stub_workflow(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, project: SimpleNamespace) -> Path:
+    monkeypatch.setattr(images, "reveal_lock_for", lambda *_a: nullcontext())
     out_path = tmp_path / "visual_draft.png"
     monkeypatch.setattr(images, "project_or_404", lambda _db, _id: project)
     monkeypatch.setattr(
@@ -86,6 +88,7 @@ def _stub_workflow(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, project: Sim
         "enforce_white_image_region",
         lambda *_a, **_kw: {"nonwhite_ratio": 0.0, "cleared": False},
     )
+    monkeypatch.setattr(images, "archive_current_slide_image", lambda *_a, **_kw: None)
     monkeypatch.setattr(images, "write_visual_provenance", lambda *_a, **_kw: None)
     monkeypatch.setattr(images, "mark_slide_image_changed", lambda *_a, **_kw: None)
     monkeypatch.setenv("PPT_STUDIO_IMAGE_RETRY_INITIAL_BACKOFF_SEC", "0")
@@ -134,6 +137,7 @@ def test_first_failure_then_success_calls_provider_twice(
 
     outcome = _invoke()
 
+    assert not isinstance(outcome, images.HTTPException), str(getattr(outcome, "detail", ""))
     assert outcome["success"] is True
     assert outcome["generation_attempts"] == 2
     assert calls == ["provider", "provider"]
@@ -159,6 +163,7 @@ def test_transient_failure_recovers_on_third_attempt(
 
     outcome = _invoke()
 
+    assert not isinstance(outcome, images.HTTPException), str(getattr(outcome, "detail", ""))
     assert outcome["success"] is True
     assert outcome["generation_attempts"] == 3
     assert calls == ["provider"] * 3
@@ -266,6 +271,7 @@ def test_download_failure_retries_same_result_without_regenerating(
 
     outcome = _invoke()
 
+    assert not isinstance(outcome, images.HTTPException), str(getattr(outcome, "detail", ""))
     assert outcome["success"] is True
     assert calls == ["provider"]
     assert len(download_calls) == 2
@@ -307,3 +313,39 @@ def test_page_budget_exhaustion_stops_the_next_round(
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-q"]))
+
+
+def test_terminal_processing_failure_retries_with_new_task(tmp_path, monkeypatch):
+    project = _project(tmp_path)
+    _stub_workflow(monkeypatch, tmp_path, project)
+    requests = []
+    def provider(**kwargs):
+        requests.append(kwargs.get("resume_task_id"))
+        if len(requests) == 1:
+            raise errors.ImageGenerationError(errors.classify_terminal_image_task_failure(
+                {"error": {"message": "task processing failed"}}, "failed-task",
+            ))
+        return {"data": []}
+    monkeypatch.setattr(images, "generate_image_response", provider)
+    monkeypatch.setattr(images, "extract_image_bytes_from_response", lambda _r: b"image")
+    monkeypatch.setattr(images, "process_and_save_image", lambda _d, p, **_kw: Path(p).write_bytes(b"image"))
+    outcome = _invoke()
+    assert not isinstance(outcome, images.HTTPException), str(getattr(outcome, "detail", ""))
+    assert outcome["success"]
+    assert requests == ["", ""]
+
+
+def test_terminal_processing_failure_stops_after_two_submissions(tmp_path, monkeypatch):
+    project = _project(tmp_path)
+    _stub_workflow(monkeypatch, tmp_path, project)
+    submissions = []
+    def provider(**kwargs):
+        submissions.append(kwargs.get("resume_task_id"))
+        raise errors.ImageGenerationError(errors.classify_terminal_image_task_failure(
+            {"error": {"message": "task processing failed"}}, f"task-{len(submissions)}",
+        ))
+    monkeypatch.setattr(images, "generate_image_response", provider)
+    outcome = _invoke()
+    assert isinstance(outcome, images.HTTPException)
+    assert outcome.image_generation_failure.attempts == 2
+    assert submissions == ["", ""]

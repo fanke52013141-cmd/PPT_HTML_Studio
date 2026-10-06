@@ -198,6 +198,7 @@
       el.className = "dh-service-status dh-ok";
       return;
     }
+    setUiTaskState(el, 'loading', '正在连接数字人服务');
     try {
       // This is a passive status probe.  Its result is shown inline in the
       // panel, so a temporarily stopped local service must not create a new
@@ -218,6 +219,8 @@
     } catch (e) {
       el.textContent = "数字人服务未启动（需先启动 :9001）";
       el.className = "dh-service-status dh-error";
+    } finally {
+      setUiTaskState(el, el.classList.contains("dh-error") ? "error" : el.classList.contains("dh-ok") ? "done" : "pending", el.textContent);
     }
   }
 
@@ -654,6 +657,10 @@
         chips += '<div style="margin-top:0.3rem;"><span class="dh-slide-status-note" style="color:#4CAF50;">整段视频已生成，可在预览中查看</span></div>';
       }
       el.innerHTML = chips;
+      renderPageTaskState(document.getElementById('dh-generate-status')?.parentElement, 'digital-human-submit', null, '');
+      renderPageTaskState(el, 'digital-human', fst === 'done' ? 'done' : fst === 'failed' ? 'error' : fst === 'queued' ? 'queued' : 'running', fst === 'done' ? '数字人视频已生成' : fst === 'failed' ? '数字人生成失败' : fst === 'queued' ? '数字人任务排队中' : '数字人视频生成中', 'video');
+      var chip = el.querySelector('.dh-slide-chip');
+      setUiTaskState(chip, fst === 'done' ? 'done' : fst === 'failed' ? 'error' : fst === 'queued' ? 'queued' : 'running', labels[fst] || fst);
       return;
     }
 
@@ -740,29 +747,38 @@
       // 第一步：确保整段音频已导出（合并 5 页音频 + 页间静音）
       // 进度写在生成按钮旁的专用状态行（页签状态行 id 仍是 dh-slide-status）
       var statusEl = document.getElementById("dh-generate-status");
-      if (statusEl) statusEl.innerHTML = '<span class="dh-slide-status-note">正在合并 ' + ready + ' 页音频...</span>';
+      if (statusEl) statusEl.hidden = false;
+      setUiTaskState(statusEl, 'running', '正在合并 ' + ready + ' 页音频');
+      renderPageTaskState(statusEl.parentElement, 'digital-human-submit', 'running', '正在准备数字人视频与旁白音频', 'video');
       var exportRes = await API.post(base() + "/export-audio", { gap_sec: 0.6 }, { timeoutMs: 900000 });
       if (!exportRes || !exportRes.success) {
+        setUiTaskState(statusEl, 'error', "音频合并失败");
         showToast((exportRes && exportRes.detail) || "导出整段语音失败");
         updateAudioStatus();
         return;
       }
 
       // 第二步：使用整段音频创建单个数字人生成任务
-      if (statusEl) statusEl.innerHTML = '<span class="dh-slide-status-note">正在提交数字人生成任务...</span>';
+      setUiTaskState(statusEl, 'running', '正在提交数字人生成任务');
       var res = await API.post(base() + "/generate-full", {
         avatar_id: dhState.config.avatar_id,
       });
       if (res && res.job_id) {
+        if (statusEl) statusEl.hidden = true;
         markSlideStatus("full", "queued");
         pollJob("full", res.job_id);
         showToast("已提交整段数字人生成任务（" + exportRes.slides + " 页音频已合并）。Wan2.2 S2V 生成耗时较长，请耐心等待。");
       } else if (res && res.detail) {
+        setUiTaskState(statusEl, 'error', res.detail);
         showToast(res.detail);
         updateAudioStatus();
+      } else {
+        setUiTaskState(statusEl, "error", "未收到生成任务，请重试");
       }
     } catch (e) {
       console.error("[DH] generateAll failed:", e);
+      setUiTaskState(statusEl, 'error', "生成失败：" + (e?.message || "请求未完成"));
+      renderPageTaskState(statusEl.parentElement, 'digital-human-submit', 'error', '数字人生成失败，请重试', 'video');
       showToast("生成失败：" + ((e && (e.detail || e.message)) || "未知错误"));
       updateAudioStatus();
     } finally {

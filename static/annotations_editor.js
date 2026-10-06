@@ -368,8 +368,8 @@ function addAnnotationRegion(polygon) {
     anchor: null,
     style: {
       type: document.getElementById('annotation-new-style')?.value || defaults.type || 'ellipse',
-      color: defaults.color || '#F46A38',
-      opacity: Number(defaults.opacity ?? 0.85),
+      color: document.getElementById('annotation-new-style')?.value === 'highlighter' ? '#F6CE46' : defaults.color || '#F46A38',
+      opacity: document.getElementById('annotation-new-style')?.value === 'highlighter' ? 0.28 : Number(defaults.opacity ?? 0.85),
       width: Number(defaults.width || 5),
       padding: Number(defaults.padding || 8),
       seed: Math.floor(Math.random() * 2147483647),
@@ -463,8 +463,8 @@ function buildManualRegionItem(polygon) {
     anchor: null,
     style: {
       type: document.getElementById('annotation-new-style')?.value || defaults.type || 'ellipse',
-      color: defaults.color || '#F46A38',
-      opacity: Number(defaults.opacity ?? 0.85),
+      color: document.getElementById('annotation-new-style')?.value === 'highlighter' ? '#F6CE46' : defaults.color || '#F46A38',
+      opacity: document.getElementById('annotation-new-style')?.value === 'highlighter' ? 0.28 : Number(defaults.opacity ?? 0.85),
       width: Number(defaults.width || 5),
       padding: Number(defaults.padding || 8),
       seed: Math.floor(Math.random() * 2147483647),

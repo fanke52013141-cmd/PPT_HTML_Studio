@@ -41,14 +41,11 @@ function resetStep3ProjectState() {
 
 window.resetStep3ProjectState = resetStep3ProjectState;
 
-function step3GeneratingPreviewHtml(message = '生成中', subtitle = 'AI 正在绘制图片，请稍候...') {
-  return `
-    <div class="step3-generating-preview" role="status" aria-live="polite">
-      <span class="loading-spinner" aria-hidden="true"></span>
-      <strong>${escHtml(message)}</strong>
-      <small>${escHtml(subtitle)}</small>
-    </div>
-  `;
+function step3GeneratingPreviewHtml(message = '生成中', subtitle = '正在生成图片') {
+  const queued = message.includes('排队') || message.includes('等待');
+  return `<div class="step3-generating-preview" role="status" aria-live="polite" aria-label="${escHtml(subtitle)}" aria-busy="${!queued}" data-task-state="${queued ? 'queued' : 'running'}">
+    ${queued ? `<span class="page-task-waiting">${escHtml(message)}</span>` : '<span class="loading-spinner" aria-hidden="true"></span>'}
+  </div>`;
 }
 
 // 标题栏排序规则（2026-10-06 用户裁决）：所有按钮从左到右按工作流排列，
@@ -70,12 +67,12 @@ function normalizeStep3ToolbarOrder() {
     'step3-btn-delete-all-images',
     'step3-btn-confirm',
   ];
-  let cursor = toolbar.querySelector('.workflow-titlebar-divider') || toolbar.firstChild;
+  const divider = toolbar.querySelector('.workflow-titlebar-divider');
   order.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    if (cursor && cursor.nextSibling !== el) cursor.insertAdjacentElement('afterend', el);
-    cursor = el;
+    toolbar.appendChild(el);
+    if (id === 'step3-btn-prompt-settings' && divider) toolbar.appendChild(divider);
   });
 }
 
@@ -194,7 +191,7 @@ async function refreshStep3Images(
     const res = await API.get(`/api/projects/${projectId}/steps/3/images`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     if (res.success) {
-      images = res.images || [];
+      images = (res.images || []).map(image => ({...image, generating: (res.active_slide_ids || []).includes(image.slide_id)}));
       step3OrderVersion = String(res.order_version || '');
     }
   } catch(e) { throw e; }
@@ -225,6 +222,7 @@ function renderStep3Grid() {
     message.textContent = step3LoadState === 'loading' ? '正在加载分镜与图片…'
       : step3LoadState === 'error' ? `图片加载失败：${step3LoadError}`
         : '还没有可生成的画面。请先完成第 2 步分镜规划。';
+    setUiTaskState(message, step3LoadState === 'loading' ? 'loading' : step3LoadState === 'error' ? 'error' : 'pending', message.textContent);
     empty.appendChild(message);
     if (step3LoadState !== 'loading') {
       const action = document.createElement('button');
@@ -279,14 +277,14 @@ function renderStep3Grid() {
     const promptInfo = slidePrompts.find(item => item.slide_id === img.slide_id);
     const slideInfo = state.slides.find(item => item.slide_id === img.slide_id);
     const slideTitle = promptInfo?.title || slideInfo?.main_title || '未命名 Slide';
-    const isGenerating = step3GeneratingSlides.has(img.slide_id);
+    const isGenerating = img.generating || step3GeneratingSlides.has(img.slide_id);
     const isUploading = step3UploadingSlides.has(img.slide_id);
     const isBusy = isGenerating || isUploading;
     const canMoveImage = img.exists
       && !isBusy
       && !step3ImageReassigning
       && step3GeneratingSlides.size === 0;
-    const isCurrentGenerating = step3CurrentGenerating === img.slide_id;  // 当前正在生成的卡片
+    const isCurrentGenerating = img.generating || step3CurrentGenerating === img.slide_id;  // 当前正在生成的卡片
     const isQueued = isGenerating && !isCurrentGenerating;  // 排队等待中的卡片
     const isCurrentUploading = step3CurrentUploading === img.slide_id;
     const isUploadQueued = isUploading && !isCurrentUploading;
@@ -296,10 +294,11 @@ function renderStep3Grid() {
     const provenanceReady = img.provenance?.valid === true;
     // 三态（2026-10-06 用户裁决 + Stitch 参考稿）：生成中 / 完成 / 待生成；
     // 排队与上传并入「生成中」，来源过期并入「待生成」，差异只留在 title。
-    const statusBusy = isGenerating || isUploading;
+    const statusBusy = img.generating || isGenerating || isUploading;
     const statusDone = !statusBusy && img.exists && provenanceReady;
     const statusClass = statusBusy ? 'is-generating' : (statusDone ? 'is-done' : 'is-pending');
-    const statusLabel = statusBusy ? '生成中' : (statusDone ? '完成' : '待生成');
+    const imageConfirmed = state.currentProject?.step_status?.['4'] === 'completed';
+    const statusLabel = statusBusy ? (isQueued || isUploadQueued ? '排队中' : isUploading ? '上传中' : '生成中') : (statusDone ? imageConfirmed ? '完成' : '已生成' : '待生成');
     const statusTitle = !statusBusy && img.exists && !provenanceReady ? '图片来源已过期，需重新生成或上传' : '';
     const previewHtml = isCurrentUploading
       ? step3GeneratingPreviewHtml('上传中', '正在处理并裁剪这张图片...')
@@ -326,7 +325,7 @@ function renderStep3Grid() {
               <circle cx="9" cy="19" r="1.4"></circle><circle cx="15" cy="19" r="1.4"></circle>
             </svg>
           </button>
-          <span class="step3-card-status ${statusClass}"${statusTitle ? ` title="${escHtml(statusTitle)}"` : ''}>${statusLabel}</span>
+          <span class="step3-card-status ${statusClass} ui-task-state" role="status" aria-live="polite" aria-busy="${statusBusy}" data-task-state="${statusBusy ? isQueued || isUploadQueued ? 'queued' : 'running' : statusDone ? 'done' : 'pending'}"${statusTitle ? ` title="${escHtml(statusTitle)}"` : ''}>${statusLabel}</span>
         </div>
         <div class="step3-card-actions">
           <button class="danger step3-card-action step3-delete-action" data-slide-id="${escHtml(img.slide_id)}" ${isBusy ? 'disabled' : ''}>删除</button>

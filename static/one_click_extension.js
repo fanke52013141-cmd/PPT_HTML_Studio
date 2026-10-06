@@ -34,6 +34,7 @@
     storyboard: 2,
     images: 3,
     confirm_images: 3,
+    ai_mask: 5,
     narration: 6,
     tts: 6,
     render: 8,
@@ -246,6 +247,41 @@
     sidebar.appendChild(entry);
   }
 
+  let panelRefreshInFlight = false;
+  let previousPanelStage = '';
+  let oneClickContentStage = '';
+  async function syncLivePanel(status) {
+    window.syncStoryboardGenerationState?.(status);
+    const contentStage = status?.status === 'running' ? status?.current_stage : '';
+    if (contentStage === 'ai_mask' || oneClickContentStage === 'ai_mask') {
+      renderPageTaskState(document.getElementById('step-panel-5'), 'mask', contentStage === 'ai_mask' ? 'running' : status?.status === 'failed' ? 'error' : 'done', contentStage === 'ai_mask' ? '正在关联画面元素与演讲稿，生成 AI Mask 标注' : status?.status === 'failed' ? 'AI Mask 标注失败' : 'AI Mask 标注已完成', 'image');
+    }
+    if (contentStage === 'render' || oneClickContentStage === 'render') {
+      renderPageTaskState(document.getElementById('step-panel-8'), 'one-click-output', contentStage === 'render' ? 'running' : status?.status === 'completed' ? 'done' : 'error', contentStage === 'render' ? '正在生成作品视频' : status?.status === 'completed' ? '作品视频生成完成' : '作品生成已停止', 'video');
+    }
+    oneClickContentStage = contentStage;
+
+    if (panelRefreshInFlight) return;
+    const runtimeState = window.PPTStudio?.runtime?.state;
+    if (!runtimeState?.currentProject || runtimeState.currentProject.id !== activeProjectId()) return;
+    const stage = status?.current_stage || '';
+    const previous = previousPanelStage;
+    previousPanelStage = stage;
+    panelRefreshInFlight = true;
+    try {
+      // Refresh artifacts in the visible panel; never rebuild narration editors
+      // while the user is typing. Existing loaders guard project/session races.
+      if (runtimeState.currentStep === 3 && ['images', 'confirm_images'].includes(stage)) await window.refreshStep3Images?.();
+      if (runtimeState.currentStep === 6 && stage === 'tts') await window.loadStep7Data?.();
+      if (previous === 'storyboard' && stage !== 'storyboard' && runtimeState.currentStep === 2) await window.loadStep2Data?.();
+      if (previous === 'tts' && stage !== 'tts' && runtimeState.currentStep === 6) await window.loadStep7Data?.();
+    } catch (error) {
+      console.warn('Live generation presentation refresh failed', error);
+    } finally {
+      panelRefreshInFlight = false;
+    }
+  }
+
   function renderStatus(status) {
     const summary = document.getElementById('one-click-status');
     const stages = document.getElementById('one-click-stages');
@@ -291,17 +327,38 @@
       ${status?.video?.url ? `<br><a href="${esc(status.video.url)}" target="_blank">打开生成视频</a>` : ''}
     `;
     const list = Array.isArray(status?.stages) ? status.stages : [];
-    stages.innerHTML = list.map(stage => {
-      const errors = Array.isArray(stage.blocking_errors) && stage.blocking_errors.length ? `<small>错误：${esc(stage.blocking_errors.join(' / '))}</small>` : '';
-      const warnings = Array.isArray(stage.warnings) && stage.warnings.length ? `<small>警告：${esc(stage.warnings.join(' / '))}</small>` : '';
-      return `
-        <article class="one-click-stage">
-          <strong>${esc(stage.title || stageLabel(stage.id))} <span>${stage.status === 'running' ? '<span class="button-spinner"></span>' : ''}<span class="one-click-pill ${esc(stage.status || 'pending')}">${esc(statusLabel(stage.status || 'pending'))}</span></span></strong>
-          <small>${esc(stage.message || '')}</small>
-          ${warnings}${errors}
-        </article>
-      `;
+    const visibleStages = [
+      ['1 导入文章', ['preflight']], ['2 分镜规划', ['storyboard']],
+      ['3 图片生成', ['images', 'confirm_images']], ['4 AI 标注', ['ai_mask']],
+      ['5 旁白与音频', ['narration', 'tts']], ['6 勾画标注', ['annotation']],
+      ['7 数字人讲解', ['digital_human']], ['8 作品输出', ['render']],
+    ];
+    const renderReached = list.some(item => item.id === 'render' && item.status !== 'pending');
+    const copiedErrors = [];
+    stages.innerHTML = visibleStages.map(([title, ids], index) => {
+      const members = list.filter(item => ids.includes(item.id));
+      const finished = item => ['done', 'completed', 'success', 'skipped'].includes(item.status);
+      let cardStatus = 'pending';
+      if (members.some(item => item.status === 'failed')) cardStatus = 'failed';
+      else if (members.some(item => item.status === 'running')) cardStatus = state === 'paused' ? 'paused' : 'running';
+      else if (members.some(item => item.status === 'paused')) cardStatus = 'paused';
+      else if (members.length && ids.every(id => members.some(item => item.id === id && finished(item)))) cardStatus = 'done';
+      else if (!members.length && index >= 5 && index <= 6 && renderReached) cardStatus = 'done';
+      const errors = members.flatMap(item => item.blocking_errors?.length ? item.blocking_errors : item.status === 'failed' && item.message ? [item.message] : []);
+      const active = members.find(item => item.status === 'running' || item.status === 'failed') || members[members.length - 1];
+      const message = errors.length ? `错误：${errors.join(' / ')}` : cardStatus === 'done' ? '' : cardStatus === 'paused' ? '' : active?.message || '';
+      copiedErrors[index] = message;
+      return `<article class="one-click-stage"><strong>${esc(title)}<span class="one-click-pill ${esc(cardStatus)}">${esc(statusLabel(cardStatus))}</span></strong>
+        ${errors.length ? `<button type="button" class="one-click-stage-message" data-copy-error="${index}" aria-label="复制完整错误">${esc(message)}</button>` : `<small class="one-click-stage-message">${esc(message)}</small>`}</article>`;
     }).join('');
+    stages.querySelectorAll('[data-copy-error]').forEach(button => {
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(copiedErrors[Number(button.dataset.copyError)]);
+          toast('错误已复制');
+        } catch (_) { toast('复制失败，请检查浏览器剪贴板权限'); }
+      });
+    });
     // 阶段变化时同步切换左侧 Tab 和对应内容面板。
     followActiveStage(status);
     // [一键进度同步 20260912] 无论面板停在哪里，左侧步骤条都实时挂上
@@ -318,6 +375,7 @@
     }
     // [一键进度出口 20260904] 面板内注入当前阶段进度横幅
     renderStageProgressInPanel(status);
+    void syncLivePanel(status);
   }
 
   async function refreshStatus() {

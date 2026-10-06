@@ -219,3 +219,26 @@ def test_policy_defaults_and_environment_overrides(monkeypatch: pytest.MonkeyPat
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-q"]))
+
+
+def test_terminal_task_failure_regenerates_once_and_does_not_resume():
+    info = errors.classify_terminal_image_task_failure(
+        {"error": {"message": "Generation failed: task processing failed"}}, "task-old",
+    )
+    assert info.code == errors.CODE_UPSTREAM_TASK_FAILED
+    assert info.retry_scope == errors.RETRY_SCOPE_REGENERATE
+    assert retry.decide_retry(info, attempt=1, policy=POLICY, remaining_sec=600).retry
+    assert not retry.decide_retry(info, attempt=2, policy=POLICY, remaining_sec=600).retry
+
+
+@pytest.mark.parametrize("message", ["invalid parameter size", "content rejected by moderation", "invalid api key"])
+def test_explicit_terminal_rejection_is_not_retried(message):
+    info = errors.classify_terminal_image_task_failure({"error": {"message": message}}, "task-rejected")
+    assert not info.retryable
+
+
+def test_terminal_failure_retains_fail_reason_without_error_message():
+    info = errors.classify_terminal_image_task_failure({"fail_reason": "invalid parameter size"}, "task-rejected")
+    assert info.code == errors.CODE_INVALID_PARAMETERS
+    assert "invalid parameter size" in info.safe_message
+    assert not info.retryable

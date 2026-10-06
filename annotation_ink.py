@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 
-INK_VERSION = "annotation_ink_v2_complete"
+INK_VERSION = "annotation_ink_v3_handdrawn_oval"
 _DEFAULT_FPS = 30
 
 

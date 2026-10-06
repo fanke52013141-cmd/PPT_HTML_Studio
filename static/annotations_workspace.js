@@ -382,9 +382,10 @@ async function loadStep10Data() {
   }
 }
 
-async function reloadAnnotationsSummary() {
+async function reloadAnnotationsSummary(optional = false) {
   const projectId = ANNOTATIONS_WS.projectId;
-  const summary = await API.get(annotationsApiBase(projectId));
+  const summary = await (optional ? API.getOptional(annotationsApiBase(projectId)) : API.get(annotationsApiBase(projectId)));
+  if (optional && summary?.success === false) return;
   // 响应返回时项目已切换:丢弃过期 summary,不污染新项目状态(R4-005)
   if (!projectId || ANNOTATIONS_WS.projectId !== projectId) return;
   ANNOTATIONS_WS.summary = summary;
@@ -402,7 +403,7 @@ async function reloadAnnotationsSummary() {
 async function loadAnnotationWorkflowState(projectId) {
   if (!projectId || state.currentProject?.id !== projectId) return;
   ANNOTATIONS_WS.projectId = projectId;
-  await reloadAnnotationsSummary();
+  await reloadAnnotationsSummary(true);
 }
 
 window.loadAnnotationWorkflowState = loadAnnotationWorkflowState;
@@ -476,7 +477,7 @@ function updateAnnotationConfirmButton() {
     return;
   }
   const allConfirmed = active.every(item => item.status?.content === 'confirmed');
-  button.disabled = false;
+  button.disabled = Boolean(ANNOTATIONS_WS.activeJob);
   button.textContent = allConfirmed ? '重新确认本页' : '确认本页';
 }
 
@@ -815,17 +816,58 @@ function handleAnnotationNarrationSelection(event) {
 
 function annotationStatusChips(item) {
   const labels = AnnotationsCore.STATUS_LABELS;
-  return `<span class="annotation-chip content-${escHtml(item.status?.content || 'draft')}">${escHtml(labels.content[item.status?.content] || '未知')}</span>
-    <span class="annotation-chip spatial-${escHtml(item.status?.spatial || 'valid')}">${escHtml(labels.spatial[item.status?.spatial] || '')}</span>
-    <span class="annotation-chip temporal-${escHtml(item.status?.temporal || 'awaiting_audio')}">${escHtml(labels.temporal[item.status?.temporal] || '')}</span>`;
+  const chips = [`<span class="annotation-chip content-${escHtml(item.status?.content || 'draft')}">${escHtml(labels.content[item.status?.content] || '待确认')}</span>`];
+  if (item.status?.spatial && item.status.spatial !== 'valid') chips.push(`<span class="annotation-chip spatial-${escHtml(item.status.spatial)}">${item.status.spatial === 'stale' ? '位置需更新' : '检查勾画范围'}</span>`);
+  const temporal = {awaiting_audio: '语音待定位', sentence_fallback: '按整句起笔', failed: '语音定位失败', stale: '起笔时间需更新'};
+  if (temporal[item.status?.temporal]) chips.push(`<span class="annotation-chip temporal-${escHtml(item.status.temporal)}">${temporal[item.status.temporal]}</span>`);
+  return chips.join('');
+}
+
+function renderAnnotationFlow(task) {
+  const items = (ANNOTATIONS_WS.page.items || []).filter(item => item.status?.content !== 'disabled');
+  const confirmed = items.filter(item => item.status?.content === 'confirmed').length;
+  const busy = task ? ['queued', 'running'].includes(task.status) : Boolean(ANNOTATIONS_WS.activeJob);
+  const phase = busy || !items.length ? 1 : confirmed === items.length ? 3 : 2;
+  document.querySelectorAll('[data-annotation-phase]').forEach(node => {
+    const step = Number(node.dataset.annotationPhase);
+    node.classList.toggle('is-current', step === phase);
+    node.classList.toggle('is-complete', step < phase || (step === 3 && items.length > 0 && confirmed === items.length));
+    if (step === phase) node.setAttribute('aria-current', 'step'); else node.removeAttribute('aria-current');
+  });
+  const count = document.getElementById('annotation-result-count');
+  if (count) count.textContent = items.length ? `${items.length} 处勾画 · ${confirmed}/${items.length} 已确认` : '尚未添加';
+  const hint = document.getElementById('annotation-next-action');
+  if (hint) hint.textContent = busy ? '自动处理完成后，在这里检查勾画结果。' : !items.length ? '点击 AI 勾画本页，自动选择重点并匹配语音。' : confirmed === items.length ? '本页已确认，可切换下一页检查。' : '点击下方勾画调整位置，再用同步预览检查起笔时机。';
+  const confirmHint = document.getElementById('annotation-confirm-hint');
+  if (confirmHint) confirmHint.textContent = confirmed && confirmed === items.length ? '本页勾画已确认' : '检查预览后确认当前页';
+  ['annotation-btn-ai-plan', 'annotation-btn-ai-all'].forEach(id => {
+    const button = document.getElementById(id);
+    if (button) button.disabled = busy;
+  });
+  const generate = document.getElementById('annotation-btn-ai-plan');
+  if (generate) {
+    generate.dataset.hasItems = String(items.length > 0);
+    generate.textContent = items.length ? '重新 AI 勾画本页' : 'AI 勾画本页';
+  }
+  const preview = document.getElementById('annotation-btn-preview');
+  if (preview) preview.classList.toggle('annotation-recommended-action', !busy && items.length > 0 && confirmed < items.length);
+  const confirm = document.getElementById('annotation-btn-confirm-page');
+  if (confirm) confirm.disabled = busy || !items.length;
+  const feedback = document.getElementById('annotation-stage-feedback');
+  if (feedback) {
+    feedback.hidden = !busy;
+    const operation = ANNOTATIONS_WS.activeJob?.operation;
+    feedback.textContent = busy ? (task?.label || ({detect_text: '正在识别画面文字', plan: '正在选择重点并生成勾画', align: '正在匹配语音与起笔时间'}[operation] || '正在处理勾画')) : '';
+  }
 }
 
 function renderAnnotationItems() {
   const container = document.getElementById('annotation-items');
   if (!container) return;
   const items = ANNOTATIONS_WS.page.items || [];
+  renderAnnotationFlow();
   if (!items.length) {
-    container.innerHTML = '<div class="annotation-items-empty">暂无标注。可用框选或自由画笔手动添加，也可让 AI 推荐重点。</div>';
+    container.innerHTML = '<div class="annotation-items-empty"><strong>这页还没有勾画</strong><span>自动勾画后，重点词句会显示在这里。</span></div>';
     updateAnnotationConfirmButton();
     return;
   }
@@ -839,7 +881,7 @@ function renderAnnotationItems() {
       : '';
     return `<div class="annotation-card${selected ? ' selected' : ''}${item.status?.content === 'disabled' ? ' is-disabled' : ''}"
         data-annotation-id="${escHtml(item.annotation_id)}" tabindex="0" role="button">
-      <div class="annotation-card-title">${escHtml(AnnotationsCore.annotationCardLabel(item, index))}${lockBadge}${disabledBadge}</div>
+      <div class="annotation-card-title">${escHtml(String(index + 1).padStart(2, '0'))} · ${escHtml(AnnotationsCore.STATUS_LABELS.styleType[item.style?.type] || '勾画')}${lockBadge}${disabledBadge}</div>
       <div class="annotation-card-quote">"${escHtml(quote)}"</div>
       ${reason}
       <div class="annotation-card-status">${annotationStatusChips(item)}</div>
@@ -996,7 +1038,7 @@ resetAnnotationsProjectState = function () {
   _resetAnnotationsBase();
 };
 
-async function submitAnnotationJob(operation) {
+async function submitAnnotationJob(operation, options = {}) {
   const projectId = ANNOTATIONS_WS.projectId;
   if (!projectId) return;
   const slideId = ANNOTATIONS_WS.page.slide_id;
@@ -1018,9 +1060,10 @@ async function submitAnnotationJob(operation) {
   const requestKey = `${operation}-${projectId}-${slideId}-${Date.now()}`;
   const body = {
     operation,
-    slide_ids: slideId ? [slideId] : undefined,
+    slide_ids: options.slideIds || (slideId ? [slideId] : undefined),
     request_key: requestKey,
   };
+  if (operation === 'plan') ANNOTATIONS_WS.activePlanSlideIds = options.slideIds;
   let res;
   try {
     res = await API.post(`${annotationsApiBase(projectId)}/jobs`, body, { silent: true });
@@ -1068,6 +1111,11 @@ function pollAnnotationJob(jobId, operation, projectId, slideId) {
         if (ANNOTATIONS_WS.projectId === projectId) {
           showToast(slideFailure ? `文字识别完成,但有页面失败:${slideFailure}` : '文字识别完成;可点选候选生成文字标注。');
         }
+        const next = annotationAutoPlanRequest;
+        annotationAutoPlanRequest = null;
+        if (!slideFailure && (job.result?.slides || []).every(entry => entry.status !== 'skipped') && next?.projectId === projectId && next?.slideId === ANNOTATIONS_WS.page.slide_id) {
+          await submitAnnotationJob('plan', {slideIds: next.slideIds});
+        }
       } else if (operation === 'align') {
         showToast(slideFailure ? `音频定位失败：${slideFailure}。可人工试听校准。`
           : '音频文字定位完成，请同步预览；无法可靠定位的文字可人工试听校准。');
@@ -1078,7 +1126,7 @@ function pollAnnotationJob(jobId, operation, projectId, slideId) {
         }
         if (ANNOTATIONS_WS.projectId === projectId) {
           showToast(slideFailure ? `AI 重点未能生成:${slideFailure}` : 'AI 重点已生成，开始定位音频文字。');
-          if (!slideFailure && ANNOTATIONS_WS.page.slide_id === slideId) await submitAnnotationJob('align');
+          if (!slideFailure && ANNOTATIONS_WS.page.slide_id === slideId) await submitAnnotationJob('align', {slideIds: ANNOTATIONS_WS.activePlanSlideIds});
         }
       }
       return;
@@ -1096,19 +1144,20 @@ function renderAnnotationJobProgress(operation, jobId, status, progress, error) 
   const node = document.getElementById('annotation-job-status');
   if (!node) return;
   const label = operation === 'detect_text' ? '文字识别' : operation === 'align' ? '音频文字定位' : 'AI 生成重点';
+  renderAnnotationFlow({status, label: status === 'queued' ? `${label}排队中` : `${label}中`});
   if (status === 'succeeded') {
-    node.style.display = 'none';
-    node.textContent = '';
+    node.style.display = 'inline-flex';
+    setUiTaskState(node, 'done', `${label}完成`);
     return;
   }
-  node.style.display = 'inline-block';
+  node.style.display = 'inline-flex';
   if (status === 'failed' || status === 'error') {
     node.dataset.state = 'error';
-    node.textContent = `${label}失败:${error || '请重试'}`;
+    setUiTaskState(node, 'error', `${label}失败:${error || '请重试'}`);
     return;
   }
   node.dataset.state = 'saving';
-  node.textContent = `${label}中… ${Math.round(progress || 0)}%`;
+  setUiTaskState(node, status === 'queued' ? 'queued' : 'running', status === 'queued' ? `${label}排队中` : `${label}中${Number(progress) > 0 ? ` · ${Math.round(progress)}%` : ''}`);
 }
 
 async function loadAnnotationCandidates() {
@@ -1192,8 +1241,8 @@ function addAnnotationFromCandidate(tokenId) {
     anchor,
     style: {
       type: styleType,
-      color: defaults.color || '#F46A38',
-      opacity: Number(defaults.opacity ?? 0.85),
+      color: document.getElementById('annotation-new-style')?.value === 'highlighter' ? '#F6CE46' : defaults.color || '#F46A38',
+      opacity: document.getElementById('annotation-new-style')?.value === 'highlighter' ? 0.28 : Number(defaults.opacity ?? 0.85),
       width: Number(defaults.width || 5),
       padding: Number(defaults.padding || 8),
       seed: Math.floor(Math.random() * 2147483647),
@@ -1221,3 +1270,13 @@ function addAnnotationFromCandidate(tokenId) {
 
 window.submitAnnotationJob = submitAnnotationJob;
 window.loadAnnotationCandidates = loadAnnotationCandidates;
+
+// One action prepares recognition, then plans and aligns through existing jobs.
+let annotationAutoPlanRequest = null;
+async function autoAnnotateCurrentPage(allPages = false) {
+  if (ANNOTATIONS_WS.activeJob) { showToast('当前任务仍在执行，请等待完成。'); return; }
+  annotationAutoPlanRequest = {projectId: ANNOTATIONS_WS.projectId, slideId: ANNOTATIONS_WS.page.slide_id, slideIds: allPages ? [...ANNOTATIONS_WS.slideIds] : undefined};
+  await submitAnnotationJob('detect_text', {slideIds: annotationAutoPlanRequest.slideIds});
+  if (!ANNOTATIONS_WS.activeJob) annotationAutoPlanRequest = null;
+}
+window.autoAnnotateCurrentPage = autoAnnotateCurrentPage;

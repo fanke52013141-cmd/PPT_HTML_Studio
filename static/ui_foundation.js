@@ -348,3 +348,56 @@ function autoResizeTextarea(textarea) {
   textarea.style.height = 'auto';
   textarea.style.height = `${textarea.scrollHeight + 2}px`;
 }
+
+// Shared task presentation only; feature modules own all job state.
+function setUiTaskState(node, status, label) {
+  if (!node) return;
+  node.classList.add('ui-task-state');
+  node.dataset.taskState = status;
+  node.setAttribute('role', 'status');
+  node.setAttribute('aria-live', 'polite');
+  node.setAttribute('aria-busy', String(['loading', 'running', 'queued'].includes(status)));
+  node.textContent = label;
+}
+
+// Layout-aware presentation only. Feature modules retain task ownership.
+function renderPageTaskState(host, key, status, label, layout = 'text') {
+  if (!host) return;
+  let panel = Array.from(host.children).find(node => node.dataset.pageTaskKey === key);
+  if (!panel) {
+    panel = document.createElement('section');
+    panel.className = 'page-task-surface';
+    panel.dataset.pageTaskKey = key;
+    const title = document.createElement('strong');
+    title.className = 'page-task-title';
+    const skeleton = document.createElement('div');
+    skeleton.className = 'page-task-skeleton';
+    skeleton.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 4; i++) skeleton.appendChild(document.createElement('span'));
+    panel.append(title, skeleton);
+    const header = Array.from(host.children).find(node => node.classList?.contains?.("workflow-header"));
+    if (header) header.after(panel);
+    else host.prepend(panel);
+  }
+  const busy = ['running', 'loading', 'queued'].includes(status);
+  // Replace the output region during work; retain DOM and edits for restoration.
+  Array.from(host.children).filter(node => node !== panel && !node.classList?.contains?.("workflow-header")).forEach(node => {
+    if (busy && !node.dataset.pageTaskPreviousHidden) {
+      node.dataset.pageTaskPreviousHidden = node.hidden ? 'hidden' : 'visible';
+      node.hidden = true;
+    } else if (!busy && node.dataset.pageTaskPreviousHidden) {
+      node.hidden = node.dataset.pageTaskPreviousHidden === 'hidden';
+      delete node.dataset.pageTaskPreviousHidden;
+    }
+  });
+  host.classList.toggle('is-page-task-loading', busy);
+  host.setAttribute('aria-busy', String(busy));
+  panel.hidden = !status || status === 'done' || (status === 'pending' && layout !== 'audio');
+  panel.dataset.layout = layout;
+  panel.dataset.taskState = status || 'pending';
+  panel.setAttribute('role', 'status');
+  panel.setAttribute('aria-live', 'polite');
+  panel.setAttribute('aria-busy', String(busy));
+  panel.querySelector('.page-task-title').textContent = label || '';
+  panel.querySelector('.page-task-skeleton').hidden = !busy;
+}

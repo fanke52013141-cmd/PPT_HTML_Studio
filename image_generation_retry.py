@@ -21,6 +21,7 @@ from typing import Any, Callable, Optional
 
 from image_generation_errors import (
     CODE_GATEWAY_BUSY,
+    CODE_UPSTREAM_TASK_FAILED,
     ImageGenerationErrorInfo,
     recoverable_codes,
 )
@@ -169,7 +170,8 @@ def decide_retry(
             recoverable=True,
             reason="gateway_busy",
         )
-    if attempt >= max(1, int(policy.max_generation_attempts)):
+    attempt_limit = min(2, max(1, int(policy.max_generation_attempts))) if info.code == CODE_UPSTREAM_TASK_FAILED else max(1, int(policy.max_generation_attempts))
+    if attempt >= attempt_limit:
         return RetryVerdict(
             retry=False,
             recoverable=True,

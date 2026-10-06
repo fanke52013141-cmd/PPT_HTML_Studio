@@ -183,47 +183,20 @@ def _push_outside_protection(points: List[Tuple[float, float]], bbox: Tuple[floa
 
 
 def _deform_ellipse(template: List[Tuple[float, float]], bbox: Tuple[float, float, float, float], seed: int, pad: float, pad_left: Optional[float] = None, pad_right: Optional[float] = None) -> List[Tuple[float, float]]:
-    """模板 → 目标框:非均匀缩放 + 低频局部非对称扰动(短边 2%–5%)。
-
-    pad_left/pad_right 提供时覆盖左右留白(邻词感知收紧)。
-    """
+    """Circumscribed, pressure-rendered oval with deterministic hand tremor."""
     left, top, right, bottom = bbox
-    width = right - left
-    height = bottom - top
-    short_side = min(width, height)
+    width, height = right - left, bottom - top
     rand = _seeded(seed)
-    # 低频扰动:3 个固定相位正弦 + 种子相位;幅度为短边的 2%–5%
-    amp = short_side * (0.02 + rand() * 0.03)
     phase1, phase2 = rand() * math.tau, rand() * math.tau
-    freq1 = 2 + int(rand() * 2)
-    # 模板坐标围绕 [0,1] 方框但极值略超出(手绘 overshoot)。
-    # 按模板实际极值精确映射:模板最远点恰好落在 (框±留白) 边界上,
-    # 保证邻词感知留白(pl/pr)是笔迹的硬外界(方案 4.3 邻词排除区)。
-    pl = pad if pad_left is None else max(2.0, pad_left)
-    pr = pad if pad_right is None else max(2.0, pad_right)
-    tx_min = min(tpl[0] for tpl in template)
-    tx_max = max(tpl[0] for tpl in template)
-    ty_min = min(tpl[1] for tpl in template)
-    ty_max = max(tpl[1] for tpl in template)
-    span_x = width + pl + pr
-    span_y = height + 2 * pad
-    sx = span_x / (tx_max - tx_min)
-    sy = span_y / (ty_max - ty_min)
-    cx = left - pl - tx_min * sx
-    cy = top - pad - ty_min * sy
-    deformed: List[Tuple[float, float]] = []
-    n = len(template)
-    hard_left = left - pl - 1.5
-    hard_right = right + pr + 1.5
-    hard_top = top - pad - 1.5
-    hard_bottom = bottom + pad + 1.5
-    for i, (tx, ty) in enumerate(template):
-        wobble = math.sin(i / n * math.tau * freq1 + phase1) * amp + math.sin(i / n * math.tau * 3 + phase2) * amp * 0.4
-        x = min(hard_right, max(hard_left, cx + tx * sx + wobble * 0.6))
-        y = min(hard_bottom, max(hard_top, cy + ty * sy + wobble))
-        deformed.append((round(x, 2), round(y, 2)))
-    # 像素空间按 SAMPLE_STEP_PX 弧长重采样(速度/宽度 profile 与点一一对应)
-    return _resample_uniform(_push_outside_protection(deformed, bbox), closed=True, step=SAMPLE_STEP_PX)
+    center_x, center_y = (left + right) / 2, (top + bottom) / 2
+    rx = (width / 2 + pad) * math.sqrt(2)
+    ry = (height / 2 + pad) * math.sqrt(2)
+    deformed = []
+    for i in range(96):
+        angle = math.tau * i / 96
+        wobble = 1 + .015 * math.sin(3 * angle + phase1) + .008 * math.sin(5 * angle + phase2)
+        deformed.append((center_x + rx * math.cos(angle) * wobble, center_y + ry * math.sin(angle) * wobble))
+    return _resample_uniform(deformed, closed=True, step=SAMPLE_STEP_PX)
 
 
 def _underline_centerline(bbox: Tuple[float, float, float, float], pad: float, seed: int, pad_left: Optional[float] = None, pad_right: Optional[float] = None) -> List[Tuple[float, float]]:

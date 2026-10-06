@@ -54,6 +54,7 @@ CODE_AUTH_FAILED = "auth_failed"
 CODE_INVALID_PARAMETERS = "invalid_parameters"
 CODE_SAVE_FAILED = "save_failed"
 CODE_UNKNOWN = "unknown"
+CODE_UPSTREAM_TASK_FAILED = "upstream_task_failed"
 
 _RETRY_AFTER_PATTERN = re.compile(
     r"retry(?:-| )?after\D{0,4}(\d+(?:\.\d+)?)",
@@ -439,6 +440,7 @@ def recoverable_codes() -> frozenset[str]:
             CODE_GATEWAY_BUSY,
             CODE_RATE_LIMITED,
             CODE_UPSTREAM_OVERLOADED,
+            CODE_UPSTREAM_TASK_FAILED,
             CODE_CONNECTION_FAILED,
             CODE_CONNECTION_RESET,
             CODE_READ_TIMEOUT,
@@ -449,4 +451,29 @@ def recoverable_codes() -> frozenset[str]:
             CODE_EMPTY_RESPONSE,
             CODE_CORRUPT_IMAGE,
         }
+    )
+
+
+def classify_terminal_image_task_failure(payload: dict[str, Any], task_id: str) -> ImageGenerationErrorInfo:
+    """An accepted task that fails processing can be regenerated once.
+
+    Explicit rejection remains permanent; terminal tasks must never be resumed.
+    """
+    error = payload.get("error") or {}
+    raw_message = error.get("message") if isinstance(error, dict) else error
+    message = str(raw_message or payload.get("fail_reason") or "未知错误")
+    upstream_code = str(error.get("code") or "") if isinstance(error, dict) else ""
+    text = (upstream_code + " " + message).lower()
+    code = CODE_UPSTREAM_TASK_FAILED
+    if any(marker in text for marker in ("content_policy", "content rejected", "safety", "moderation", "nsfw", "内容拒绝")):
+        code = CODE_CONTENT_REJECTED
+    elif any(marker in text for marker in ("unauthorized", "invalid api key", "authentication", "insufficient_quota", "insufficient balance")):
+        code = CODE_AUTH_FAILED
+    elif is_parameter_incompatibility(RuntimeError(text)):
+        code = CODE_INVALID_PARAMETERS
+    retryable = code == CODE_UPSTREAM_TASK_FAILED
+    return ImageGenerationErrorInfo(
+        code=code, phase=PHASE_POLL, retryable=retryable,
+        retry_scope=RETRY_SCOPE_REGENERATE if retryable else RETRY_SCOPE_NONE,
+        safe_message=f"ToAPIs 图片任务失败: {message[:800]}", upstream_task_id=task_id,
     )

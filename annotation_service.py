@@ -781,6 +781,29 @@ class AnnotationService:
                 "audio_timeline": read_json(directory / "audio_timeline.json", optional=True),
                 "audio_url": f"/api/projects/{project_id}/slides/{slide_id}/audio"}
 
+    def export_preview(self, db, project_id, slide_id, payload):
+        from annotation_preview_export import export_preview
+        if self._job_manager is None:
+            raise HTTPException(503, "勾画任务引擎尚未配置")
+        prepared = self.prepare_slide(db, project_id, slide_id, payload)
+        source = self.preview_scene_asset(db, project_id, slide_id, "visual_draft.png").parent
+        store = self._job_manager._deps.job_store
+        job = store.create(project_id, job_type="annotation_preview", payload={"slide_id": slide_id, "export": True})
+        store.mark_running(job.id, "render")
+        try:
+            token = export_preview(source, prepared, payload.get("subtitle_style"))
+            from artifact_registry import record_artifact
+            output = source / "preview_exports" / (token + ".mp4")
+            record_artifact(db, project_id=project_id, artifact_type="annotation_preview_video",
+                            path=output, relative_path=f"slides/{slide_id}/preview_exports/{token}.mp4",
+                            mime_type="video/mp4", metadata={"slide_id": slide_id, "revision": prepared["revision"]})
+            db.commit()
+            store.mark_succeeded(job.id, "done", {"export_token": token})
+        except Exception as error:
+            store.mark_failed(job.id, str(error))
+            raise
+        return {"success": True, "url": f"/api/projects/{project_id}/annotations/slides/{slide_id}/export-preview/{token}"}
+
     def confirm_slide(self, db, project_id, slide_id, payload):
         from dataclasses import replace
         from annotation_build import input_snapshot, read_json
@@ -1174,7 +1197,7 @@ class AnnotationService:
             raise HTTPException(status_code=503, detail="勾画任务引擎尚未配置")
         job = self._deps_job_or_404(project_id, job_id)
         payload = job.get_payload()
-        if job.job_type == "annotation_preview" and job.status == "succeeded":
+        if job.job_type == "annotation_preview" and job.status == "succeeded" and not payload.get("export"):
             from annotation_build import input_snapshot
             sid = payload.get("slide_id")
             canvas = self._canvas_for(project)

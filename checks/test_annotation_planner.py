@@ -111,7 +111,9 @@ def test_valid_suggestion_becomes_ai_item(tmp_path):
     assert len(item.target.polygons) == 5
     assert item.anchor.range_start == 7 and item.anchor.range_end == 12
     # 系统生成字段不在模型输出中,种子/颜色由程序填充
-    assert item.style.color == "#F46A38"
+    assert item.style.type == "highlighter"
+    assert item.style.color == "#F6CE46"
+    assert item.style.opacity == 0.28
     assert item.recommendation == {"category": "concept", "priority": 3, "reason": "关键截止日期"}
     # 快照保留原始建议
     assert snapshot["suggestions"][0]["quote"] == "9月30日"
@@ -377,3 +379,25 @@ def test_prompt_store_uses_creation_package_prompt_before_builtin_and_project_ov
     assert (prompt, source) == ("创作包重点识别规则", "creation_package")
     store.save_override("run1", "项目单独覆盖", expected_revision=None, now_iso="t1")
     assert store.effective_system_prompt("run1") == ("项目单独覆盖", "project")
+
+
+def test_timeout_retries_once_then_succeeds(tmp_path):
+    store, _ = _store()
+    calls = []
+    def generate(**kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            raise TimeoutError("request timed out")
+        return {"schema_version": "annotation_plan_v2", "suggestions": []}
+    planner = AnnotationPlanner(AnnotationPlannerDependencies(prompt_store=store, llm_generate=generate))
+    _run(planner, tmp_path)
+    assert len(calls) == 2
+
+
+def test_timeout_stops_after_second_request(tmp_path):
+    store, _ = _store()
+    planner, calls = _planner(store, TimeoutError("request timed out"))
+    with pytest.raises(AnnotationPlanningError) as caught:
+        _run(planner, tmp_path)
+    assert caught.value.code == "llm_timeout"
+    assert len(calls) == 2

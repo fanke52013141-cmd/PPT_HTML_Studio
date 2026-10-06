@@ -13,6 +13,7 @@ from __future__ import annotations
 from datetime import datetime
 import json
 import logging
+import time
 from typing import Any, Dict
 
 from fastapi import HTTPException
@@ -142,6 +143,8 @@ def generate_json_with_configured_llm(
     temperature: float = 0.35,
     max_tokens_default: int = 12000,
     model_binding: Any = None,
+    request_timeout: float = 120.0,
+    max_tokens_limit: int | None = None,
 ) -> Dict[str, Any]:
     llm_api_key = getattr(model_binding, "api_key", None) or get_setting("llm_api_key")
     llm_base_url = getattr(model_binding, "endpoint", None) if model_binding is not None else get_setting("llm_base_url")
@@ -156,52 +159,60 @@ def generate_json_with_configured_llm(
         1024,
         64000,
     )
-    client = get_openai_client(api_key=llm_api_key, base_url=llm_base_url)
+    if max_tokens_limit is not None:
+        max_tokens = min(max_tokens, max(1024, int(max_tokens_limit)))
+    client = get_openai_client(api_key=llm_api_key, base_url=llm_base_url, timeout=request_timeout)
+    started = time.monotonic()
+    logger.info("JSON task %s: model=%s input_chars=%s max_tokens=%s timeout=%ss", artifact_prefix, llm_model, len(system_prompt) + len(user_prompt), max_tokens, request_timeout)
     try:
         try:
-            with governed_llm_request(llm_base_url):
-                response = client.chat.completions.create(
-                    model=llm_model,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    response_format={"type": "json_object"},
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
+            try:
+                with governed_llm_request(llm_base_url):
+                    response = client.chat.completions.create(
+                        model=llm_model,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                        response_format={"type": "json_object"},
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                    )
+            except Exception as format_error:
+                if not is_llm_format_incompatibility(format_error):
+                    raise
+                logger.warning(
+                    "AI JSON generation with response_format failed for %s, retrying without it: %s",
+                    artifact_prefix,
+                    format_error,
                 )
-        except Exception as format_error:
-            if not is_llm_format_incompatibility(format_error):
-                raise
-            logger.warning(
-                "AI JSON generation with response_format failed for %s, retrying without it: %s",
-                artifact_prefix,
-                format_error,
-            )
-            with governed_llm_request(llm_base_url):
-                response = client.chat.completions.create(
-                    model=llm_model,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    messages=[
-                        {"role": "system", "content": system_prompt + "\n只输出纯 JSON，不要 Markdown，不要解释。"},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                )
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"AI 生成失败: {exc}") from exc
+                with governed_llm_request(llm_base_url):
+                    response = client.chat.completions.create(
+                        model=llm_model,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                        messages=[
+                            {"role": "system", "content": system_prompt + "\n只输出纯 JSON，不要 Markdown，不要解释。"},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                    )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"AI 生成失败: {exc}") from exc
 
-    raw_content = response.choices[0].message.content.strip()
-    return parse_json_or_repair_with_llm(
-        cleaned_content=clean_json_markdown(raw_content),
-        raw_content=raw_content,
-        client=client,
-        model=llm_model,
-        run_dir=run_dir,
-        artifact_prefix=artifact_prefix,
-        schema_hint=schema_hint,
-        max_tokens=max_tokens,
-        base_url=str(llm_base_url or ""),
-    )
+        raw_content = response.choices[0].message.content.strip()
+        return parse_json_or_repair_with_llm(
+            cleaned_content=clean_json_markdown(raw_content),
+            raw_content=raw_content,
+            client=client,
+            model=llm_model,
+            run_dir=run_dir,
+            artifact_prefix=artifact_prefix,
+            schema_hint=schema_hint,
+            max_tokens=max_tokens,
+            base_url=str(llm_base_url or ""),
+        )
+    finally:
+        client.close()
+        logger.info("JSON task %s finished after %.1fs", artifact_prefix, time.monotonic() - started)

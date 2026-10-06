@@ -179,3 +179,18 @@ def cancel_annotation_job(
     service: AnnotationService = Depends(get_annotation_service),
 ) -> dict[str, Any]:
     return service.cancel_job(db, project_id, job_id)
+
+
+@router.post("/api/projects/{project_id}/annotations/slides/{slide_id}/export-preview")
+def export_annotation_preview(project_id: str, slide_id: str, payload: dict[str, Any], db: Session = Depends(get_db), service: AnnotationService = Depends(get_annotation_service)):
+    return service.export_preview(db, project_id, slide_id, payload)
+
+@router.get("/api/projects/{project_id}/annotations/slides/{slide_id}/export-preview/{token}")
+def download_annotation_preview(project_id: str, slide_id: str, token: str, db: Session = Depends(get_db), service: AnnotationService = Depends(get_annotation_service)):
+    import re
+    from fastapi import HTTPException
+    if not re.fullmatch(r"[a-f0-9]{32}", token): raise HTTPException(404, "预览不存在")
+    source = service.preview_scene_asset(db, project_id, slide_id, "visual_draft.png").parent
+    path = source / "preview_exports" / (token + ".mp4")
+    if not path.is_file(): raise HTTPException(404, "预览不存在")
+    return FileResponse(path, media_type="video/mp4", filename=f"{slide_id}_annotation_preview.mp4")

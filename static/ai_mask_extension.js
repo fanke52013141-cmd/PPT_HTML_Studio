@@ -298,6 +298,12 @@
   }
 
   function setInlineStatus(message, active = true, spinning = false) {
+    const local = document.getElementById('step5-task-status');
+    if (local) {
+      local.hidden = !message;
+      setUiTaskState(local, spinning ? 'running' : message.includes('失败') ? 'error' : message.includes('停止') ? 'paused' : 'done', message);
+    }
+    renderPageTaskState(document.getElementById('step-panel-5'), 'mask', !message ? null : spinning ? 'running' : message.includes('失败') ? 'error' : message.includes('停止') ? 'paused' : 'done', message, 'image');
     const status = ensureInlineStatus();
     if (!status) return;
     status.innerHTML = message
@@ -491,7 +497,7 @@
         error.retryable = false;
         throw error;
       }
-      setInlineStatus('', false, false);
+      setInlineStatus('AI 标注完成', true, false);
       const qualityStatus = String(result.quality_status || 'passed');
       if (typeof window.loadStep5Data === 'function') await window.loadStep5Data();
       else if (typeof loadStep5Data === 'function') await loadStep5Data();
@@ -504,7 +510,7 @@
       return true;
     } catch (e) {
       if (projectId() === id) {
-        setInlineStatus('AI 标注失败', true, false);
+        setInlineStatus(`AI 标注失败：${e.message || '请求未完成'}`, true, false);
         if (!options.automatic) toast(`❌ AI 标注失败：${e.message}`, 8000);
       }
       if (options.rethrow) throw e;

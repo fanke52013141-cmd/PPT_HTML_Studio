@@ -1531,6 +1531,8 @@ def _generate_slide_image_impl(
             info.code,
             verdict.delay_sec,
         )
+        if info.retry_scope == image_generation_errors.RETRY_SCOPE_REGENERATE:
+            resume_task_id = ""
         time.sleep(verdict.delay_sec)
 
     assert failure is not None
@@ -1940,6 +1942,7 @@ def get_all_images(project_id: str, db: Session):
     return {
         "success": True,
         "images": results,
+        "active_slide_ids": active_slide_image_generation(project_id),
         "order_version": step3_image_assignment_version(
             project.run_dir,
             [item["slide_id"] for item in results],

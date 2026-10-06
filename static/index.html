@@ -11,9 +11,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20261006.1">
   <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
-  <link rel="stylesheet" href="stitch.css?v=20261006.8">
+  <link rel="stylesheet" href="stitch.css?v=20261006.26">
   <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
-  <link rel="stylesheet" href="annotations.css?v=20260928.1">
+  <link rel="stylesheet" href="annotations.css?v=20261006.25">
   <link rel="stylesheet" href="workspace_content.css?v=20261006.5">
 </head>
 <body>
@@ -63,7 +63,7 @@
 
   <!-- 全局 Container -->
   <main id="app-viewport">
-    
+
     <!-- 首页: 项目管理 -->
     <div id="page-home" class="main-content" style="padding: 2rem 4rem;">
       <div class="home-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.62rem; gap: 1rem; flex-wrap: wrap;">
@@ -91,7 +91,7 @@
 
     <!-- 工作区: 步骤条向导 + 主工作区 -->
     <div id="page-workspace" class="app-container" style="display: none;">
-      
+
       <!-- 左侧步骤条 -->
       <aside class="sidebar">
         <div class="step-state-legend" aria-label="步骤状态示例">
@@ -154,7 +154,7 @@
 
       <!-- 右侧主展示区 -->
       <section class="main-content" id="workspace-main">
-        
+
         <!-- ==================== 步骤 1: 导入文章 ==================== -->
         <div id="step-panel-1" class="step-panel" style="display: none;">
           <div class="step1-heading-row workflow-header workflow-header--titlebar">
@@ -164,7 +164,6 @@
               <span class="workflow-titlebar-divider" aria-hidden="true"></span>
               <button id="step1-btn-submit" class="success ws-primary" type="button" title="保存文章并进入分镜规划">
                 进入分镜规划
-                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
           </div>
@@ -221,7 +220,7 @@
 
         <!-- ==================== 步骤 2: 分镜规划 ==================== -->
         <div id="step-panel-2" class="step-panel" style="display: none;">
-          
+
           <!-- 粘性吸顶栏容器：合并按钮与缩略图，使用不透明背景挡住滚上来的正文 -->
           <div class="step2-sticky-header workflow-header workflow-header--tabs">
             <div class="workflow-titlebar">
@@ -253,7 +252,6 @@
               </div>
               <button class="btn-next-step success ws-primary" id="step2-btn-next" style="display: none;" title="完成每页演讲稿与画面可视化后，可进入图片生成">
                 进入图片生成
-                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
 
@@ -273,6 +271,8 @@
               <div class="step2-stage-head">
                 <span class="step-stage-badge step-stage-badge--one" aria-hidden="true">1</span>
                 <h3 class="step2-stage-title">第一步：演讲稿</h3>
+                <span id="step2-script-task-status"></span>
+                <span class="step2-word-count" data-step2-word-count></span>
                 <div class="step2-script-review-actions">
                   <button id="step2-btn-regenerate-script" class="secondary" type="button">重新生成演讲稿</button>
                 </div>
@@ -283,6 +283,7 @@
               <div class="step2-stage-head">
                 <span class="step-stage-badge step-stage-badge--two" aria-hidden="true">2</span>
                 <h3 class="step2-stage-title">第二步：画面与演讲片段（可视化）</h3>
+                <span id="step2-visual-task-status"></span>
               </div>
               <div id="step2-script-visuals" class="step2-script-visuals"></div>
             </div>
@@ -321,6 +322,10 @@
                 生图 Prompt
               </button>
               <span class="workflow-titlebar-divider" aria-hidden="true"></span>
+              <button id="step3-btn-copy-prompts" class="secondary">
+                复制提示词
+              </button>
+
               <button id="step3-btn-style" class="secondary" title="图片风格设置">
                 图片风格
               </button>
@@ -331,16 +336,12 @@
                 批量上传
                 <input type="file" id="step3-batch-upload" accept="image/*" multiple style="display: none;">
               </label>
-              <button id="step3-btn-copy-prompts" class="secondary">
-                复制提示词
-              </button>
               <button id="step3-btn-batch-generate" class="secondary">
                 批量生图
               </button>
               <button id="step3-btn-stop-queue" class="secondary" type="button" hidden>停止后续排队</button>
               <button id="step3-btn-confirm" class="success ws-primary" style="display: none;" title="确认全部页面图片并进入 AI Mask 标注">
-                进入 AI Mask 标注
-                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                进入 AI 标注
               </button>
             </div>
           </div>
@@ -354,7 +355,9 @@
         <div id="step-panel-5" class="step-panel" style="display: none;">
           <div class="step5-mask-header workflow-header workflow-header--stacked">
             <h2 class="highlight-title workflow-title">AI Mask 标注</h2>
+            <span id="step5-task-status" hidden></span>
             <div class="step5-toolbar workflow-toolbar">
+              <span class="workflow-titlebar-divider" aria-hidden="true"></span>
               <label class="step5-brush-control" title="调整橡皮大小">
                 <span>橡皮</span>
                 <input id="step5-eraser-size" type="range" min="100" max="200" value="100">
@@ -381,12 +384,11 @@
                 <span class="btn-label">AI 语义分块</span>
               </button>
               <button id="step5-btn-confirm-next" class="success compact-action-btn ws-primary" type="button" title="确认标注并构建切层，进入旁白与音频">
-                进入旁白与音频
-                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                进入旁白语音
               </button>
             </div>
           </div>
-          
+
           <div id="step5-thumbs" class="slides-thumbnail-container workflow-tabs"></div>
 
           <div class="workspace-split">
@@ -459,17 +461,17 @@
           <div class="annotation-workspace">
             <div class="annotation-header workflow-header workflow-header--titlebar">
               <h2 class="highlight-title workflow-title">勾画标注</h2>
+              <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
               <div class="annotation-header-actions workflow-toolbar">
+                <button id="annotation-btn-ai-all" class="secondary" type="button">AI 勾画所有页面</button>
                 <label class="annotation-enable-toggle">
                   <input type="checkbox" id="annotation-enabled-toggle">
                   <span class="annotation-switch-slider" aria-hidden="true"></span>
                   <span>视频中启用勾画</span>
                 </label>
-                <button id="annotation-btn-decision" class="secondary compact-action-btn" type="button">本项目不加勾画</button>
                 <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
-                <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
+
                 <button id="step10-btn-next" class="success compact-action-btn ws-primary" type="button" title="进入数字人讲解步骤；数字人为可选步骤">进入数字人讲解
-                  <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </button>
               </div>
             </div>
@@ -483,15 +485,29 @@
             </div>
 
             <div id="annotation-workspace-body" style="display:none;">
+              <ol class="annotation-flow" aria-label="勾画操作流程">
+                <li data-annotation-phase="1"><span class="annotation-flow-number">1</span><div><strong>AI 自动勾画</strong><small>识别文字 · 选择重点 · 匹配语音</small></div></li>
+                <li data-annotation-phase="2"><span class="annotation-flow-number">2</span><div><strong>检查画面与语音</strong><small>选中勾画调整，播放预览检查时机</small></div></li>
+                <li data-annotation-phase="3"><span class="annotation-flow-number">3</span><div><strong>确认本页</strong><small>保存结果，再切换下一页</small></div></li>
+              </ol>
               <div id="annotation-thumb-strip" class="annotation-thumb-strip"></div>
               <div class="annotation-columns">
                 <div class="annotation-canvas-pane card">
+                  <div class="annotation-pane-title annotation-pane-title-row"><span>画面</span><small>点击勾画结果，查看对应位置</small></div>
+                  <div class="annotation-canvas-toolbar annotation-operation-toolbar">
+                    <button id="annotation-btn-detect" class="secondary compact-action-btn" type="button">识别文字</button>
+                    <button id="annotation-btn-align" class="secondary compact-action-btn" type="button">定位音频文字</button>
+
+                    <button id="annotation-btn-undo" class="secondary compact-action-btn" type="button">撤销</button>
+                    <button id="annotation-btn-redo" class="secondary compact-action-btn" type="button">重做</button>
+                    <button id="annotation-btn-preview" class="secondary compact-action-btn" type="button">同步预览</button>
+                  </div>
                   <div class="annotation-canvas-frame" id="annotation-canvas-frame">
                     <img id="annotation-canvas-image" alt="页面图">
                     <svg id="annotation-canvas-overlay" class="annotation-canvas-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
                     <div id="annotation-region-ghost" class="annotation-region-ghost" style="display:none;"></div>
                   </div>
-                  <div class="annotation-canvas-toolbar">
+                  <section class="annotation-manual-tools" aria-labelledby="annotation-manual-title"><h3 id="annotation-manual-title" class="annotation-expanded-title">手动调整勾画</h3><p class="annotation-manual-hint">新增勾画：先在右侧关联讲稿，再框选区域或自由绘制。修改已有勾画：先点右侧对应条目。</p><div class="annotation-canvas-toolbar annotation-drawing-toolbar">
                     <button id="annotation-btn-select" class="secondary compact-action-btn" type="button">选择/编辑</button>
                     <button id="annotation-btn-region" class="secondary compact-action-btn" type="button">框选区域</button>
                     <button id="annotation-btn-freehand" class="secondary compact-action-btn" type="button">自由画笔</button>
@@ -500,7 +516,7 @@
                       <select id="annotation-new-style">
                         <option value="ellipse">手写圈</option>
                         <option value="underline">横线</option>
-                        <option value="highlighter">荧光笔</option>
+                        <option value="highlighter" selected>荧光笔</option>
                       </select>
                     </label>
                     <label class="annotation-tool-style">AI 重点密度
@@ -510,27 +526,26 @@
                         <option value="strong">较多</option>
                       </select>
                     </label>
-                    <button id="annotation-btn-detect" class="secondary compact-action-btn" type="button">识别文字</button>
-                    <button id="annotation-btn-align" class="secondary compact-action-btn" type="button">定位音频文字</button>
-                    <button id="annotation-btn-ai-plan" class="success compact-action-btn" type="button">AI 推荐重点</button>
-                    <button id="annotation-btn-undo" class="secondary compact-action-btn" type="button">撤销</button>
-                    <button id="annotation-btn-redo" class="secondary compact-action-btn" type="button">重做</button>
-                    <button id="annotation-btn-preview" class="secondary compact-action-btn" type="button">同步预览</button>
-                  </div>
+                  </div></section>
+
                 </div>
-                <div class="annotation-narration-pane card">
-                  <div class="annotation-pane-title">讲稿关联</div>
+                <div class="annotation-review-column"><div class="annotation-list-pane card">
+                  <div class="annotation-pane-title annotation-pane-title-row">
+                    <span>勾画结果</span><small id="annotation-result-count"></small>
+                  </div>
+                  <p id="annotation-next-action" class="annotation-next-action"></p>
+                  <div class="annotation-auto-actions"><button id="annotation-btn-ai-plan" class="success compact-action-btn" type="button">AI 勾画本页</button></div>
+                  <div id="annotation-stage-feedback" class="annotation-stage-feedback" role="status" hidden></div>
+                  <div id="annotation-items" class="annotation-items"></div>
+                  <div id="annotation-item-editor" class="annotation-item-editor" style="display:none;"></div>
+                  <div class="annotation-confirm-row"><span id="annotation-confirm-hint">检查预览后确认当前页</span><button id="annotation-btn-confirm-page" class="success compact-action-btn" type="button" disabled>确认本页</button></div>
+                </div>
+                <section class="annotation-narration-pane card" aria-labelledby="annotation-link-title"><h3 id="annotation-link-title" class="annotation-expanded-title">手动关联讲稿与文字</h3><p class="annotation-manual-hint">先选讲稿中的词句，再点画面文字或框选区域。</p>
+                  <div class="annotation-pane-title">本页讲稿</div>
                   <div id="annotation-narration-beats" class="annotation-narration-beats"></div>
                   <div class="annotation-pane-title" style="margin-top:0.8rem;">文字候选</div>
                   <div id="annotation-candidates" class="annotation-candidates"></div>
-                </div>
-                <div class="annotation-list-pane card">
-                  <div class="annotation-pane-title annotation-pane-title-row">
-                    <span>标注列表</span>
-                    <button id="annotation-btn-confirm-page" class="success compact-action-btn" type="button" disabled>确认本页</button>
-                  </div>
-                  <div id="annotation-items" class="annotation-items"></div>
-                  <div id="annotation-item-editor" class="annotation-item-editor" style="display:none;"></div>
+                </section>
                 </div>
               </div>
             </div>
@@ -542,9 +557,7 @@
           <div class="step9-header workflow-header workflow-header--titlebar">
             <h2 class="highlight-title workflow-title">数字人讲解</h2>
             <div class="step9-header-actions workflow-toolbar">
-              <span class="step9-optional-hint">可选步骤 · 不设置也能正常出片</span>
               <button id="step9-btn-skip" class="secondary compact-action-btn ws-primary" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出
-                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
           </div>
@@ -584,9 +597,6 @@
                       <input type="file" id="dh-comfyui-avatar-file" accept="image/*" style="display:none;">
                     </label>
                     <span id="dh-comfyui-avatar-status" class="dh-drag-hint" style="display:block; margin-top:0.3rem;">未上传形象图片</span>
-                    <div class="dh-drag-hint" style="margin-top:0.8rem; font-size:0.8rem; line-height:1.6;">
-                      分辨率、采样步数、CFG 等质量参数请在工作流 JSON 中直接调整，确保不同项目通用。
-                    </div>
                     <button id="dh-btn-generate-all" class="success" style="width:100%; margin-top:0.8rem;">生成全部页数字人</button>
                   </div>
                   <!-- 导入视频模式面板 -->
@@ -666,7 +676,7 @@
                   <div class="dh-audio-export">
                     <div class="dh-field-label">④ 整段语音导出</div>
                     <button id="dh-btn-export-audio" class="secondary" style="width:100%;">导出整段语音（拼接全课程）</button>
-                    <div id="dh-audio-export-status" class="dh-drag-hint">把全部页面旁白拼接为一整段 mp3，供离线数字人生成使用。</div>
+                    <div id="dh-audio-export-status" class="dh-drag-hint"></div>
                   </div>
                 </div>
               </div>
@@ -716,7 +726,6 @@
 
           <div id="step8-result-box" class="step-plain-section" style="display: none;">
             <h3 style="margin-bottom: 0.4rem;">视频输出</h3>
-            <p class="config-editor-note" style="margin:0 0 1.5rem;">此处的 MP4 可按项目设置显示视频内嵌字幕。</p>
             <div id="step8-video-list" class="step8-video-list"></div>
           </div>
 
@@ -824,7 +833,7 @@
         <svg class="icon" viewBox="0 0 24 24" style="margin-right: 0.2rem;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         系统设置
       </h3>
-      
+
       <div class="tabs legacy-settings-tabs" style="display:none" aria-hidden="true">
         <div class="tab-item active" data-tab="tab-llm">
           <svg class="icon" viewBox="0 0 24 24" style="margin-right: 0.2rem;"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
@@ -1482,7 +1491,7 @@
           <h3 id="ip-character-title" class="highlight-title">IP 形象管理</h3>
           <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
         </div>
-        <p class="config-editor-note">为当前项目配置 IP 形象角色（最多 2 个）。生图时以 <strong>上传的参考图</strong> 作为主要载体，文字描述采用固定指引「参考我上传的人物 IP 图」。</p>
+        <p class="config-editor-note">为当前项目配置 IP 形象角色（最多 2 个）。</p>
 
         <div class="ip-character-settings-card">
           <label class="ip-character-toggle-bar">
@@ -1519,7 +1528,7 @@
 
         <details class="ip-character-template-block">
           <summary class="ip-character-advanced-summary">
-            高级选项：自定义 IP 融入提示词模板（普通用户无需修改，留空将使用默认模板）
+            高级选项：自定义 IP 融入提示词模板
           </summary>
           <div class="ip-character-template-header">
             <span class="storyboard-config-field" style="margin-bottom:0;">
@@ -1528,7 +1537,6 @@
             <button id="btn-ip-character-reset-template" class="secondary" type="button" style="margin-left:auto;">恢复默认模板</button>
           </div>
           <textarea id="ip-character-prompt-template" class="ip-character-input" rows="6" spellcheck="false" placeholder="请保持 {characters} 占位符；不要删除 <IPCharacterRequirements> 标记。"></textarea>
-          <p class="config-editor-note">保存后，AI 编辑器、生图 Prompt 预览与批量复制都会自动带上这段 IP 形象融入要求。</p>
         </details>
       </div>
       <div class="config-editor-actions">
@@ -1790,7 +1798,7 @@
   <!-- 主业务 JavaScript 脚本 -->
   <script src="flow.js?v=20260928.1"></script>
   <script src="workflow_state.js?v=20260928.1"></script>
-  <script src="ui_foundation.js?v=20261005.1"></script>
+  <script src="ui_foundation.js?v=20261006.18"></script>
   <script src="api_client.js?v=20261005.1"></script>
   <script src="artifact_repair.js?v=20261005.1"></script>
   <script src="prompt_help.js?v=20261006.2"></script>
@@ -1799,34 +1807,35 @@
   <script src="creation_config_management.js?v=20261006.4"></script>
   <script src="select_menus.js?v=20260906.1"></script>
   <script src="courses.js?v=20261006.2"></script>
-  <script src="article.js?v=20261006.7"></script>
-  <script src="storyboard.js?v=20261006.BCD1"></script>
+  <script src="article.js?v=20261006.17"></script>
+  <script src="storyboard.js?v=20261006.18"></script>
   <script src="storyboard_prompts.js?v=20261006.2"></script>
-  <script src="images.js?v=20261006.6"></script>
+  <script src="images.js?v=20261006.20"></script>
   <script src="image_prompts.js?v=20260801.1"></script>
   <script src="ip_character_manager.js?v=20261005.1"></script>
   <script src="mask_reveal.js?v=20260801.1"></script>
-  <script src="mask_workspace.js?v=20261006.5"></script>
+  <script src="mask_workspace.js?v=20261006.17"></script>
   <script src="mask_editor.js?v=20261006.1"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
-  <script src="narration_audio.js?v=20261006.6"></script>
+  <script src="narration_audio.js?v=20261006.17"></script>
   <script src="annotation_playback.js?v=20260929.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
-  <script src="annotations_workspace.js?v=20261006.CAL2"></script>
+  <script src="annotations_workspace.js?v=20261006.25"></script>
   <script src="annotation_audio_calibration.js?v=20261006.2"></script>
-  <script src="annotations_editor.js?v=20261006.CAL3"></script>
-  <script src="annotation_preview.js?v=20261006.CAL3"></script>
-  <script src="output_render.js?v=20261006.BCD1"></script>
+  <script src="annotations_editor.js?v=20261006.23"></script>
+  <script src="annotation_preview.js?v=20261006.24"></script>
+  <script src="video_controls.js?v=20261006.24"></script>
+  <script src="output_render.js?v=20261006.12"></script>
   <script src="account_management.js?v=20261006.2"></script>
   <script src="workspace_navigation.js?v=20261006.BCD2"></script>
   <script src="generation_controls.js?v=20261005.1"></script>
-  <script src="event_bindings.js?v=20261006.3"></script>
-  <script src="project_profile_extension.js?v=20260917.3"></script>
+  <script src="event_bindings.js?v=20261006.23"></script>
+  <script src="project_profile_extension.js?v=20261006.14"></script>
   <script src="storyboard_background_extension.js?v=20261006.6"></script>
   <script src="style_reference_manager_extension.js?v=20261005.1"></script>
   <script src="ai_mask_auto_state.js?v=20260809.1"></script>
-  <script src="digital_human_panel.js?v=20260928.1"></script>
-  <script src="ai_mask_extension.js?v=20261006.6"></script>
-  <script src="one_click_extension.js?v=20261006.2"></script>
+  <script src="digital_human_panel.js?v=20261006.17"></script>
+  <script src="ai_mask_extension.js?v=20261006.17"></script>
+  <script src="one_click_extension.js?v=20261006.17"></script>
 </body>
 </html>

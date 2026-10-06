@@ -133,6 +133,7 @@
     content.className = 'modal-content project-profile-modal';
     content.innerHTML = `
       <div class="project-profile-scroll">
+        <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
         <h3 class="highlight-title" style="margin-bottom: .8rem;">新建视频项目</h3>
         <div id="create-running-hint" class="project-profile-running-hint" hidden></div>
         <section class="project-profile-section">

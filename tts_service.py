@@ -18,6 +18,9 @@ import tempfile
 import threading
 import time
 import uuid
+_ACTIVE_TTS_SLIDES: set[tuple[str, str]] = set()
+_ACTIVE_TTS_LOCK = threading.Lock()
+
 import generation_control
 from typing import Any, Callable, Dict, List, Optional
 
@@ -1010,6 +1013,16 @@ def synthesize_tts_resumable(
             )
 
             def synthesize_one(job: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+                key = (str(project.id), str(job["slide_id"]))
+                with _ACTIVE_TTS_LOCK:
+                    _ACTIVE_TTS_SLIDES.add(key)
+                try:
+                    return synthesize_one_impl(job)
+                finally:
+                    with _ACTIVE_TTS_LOCK:
+                        _ACTIVE_TTS_SLIDES.discard(key)
+
+            def synthesize_one_impl(job: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
                 generation_control.checkpoint(project.id, 'tts')
                 tts_env = provider_tts_environment(tts_api_key, tts_secret_key)
                 if minimax_poll_interval_sec is not None:
@@ -1273,6 +1286,8 @@ def get_tts_audio_status(project_id: str, db: Session):
                 item["missing_artifacts"].append("voice_config")
     missing = [item["slide_id"] for item in slides if not item["complete"]]
     confirmation = audio_confirmation_status(project.run_dir, slide_ids)
+    with _ACTIVE_TTS_LOCK:
+        active_slide_ids = sorted(sid for pid, sid in _ACTIVE_TTS_SLIDES if pid == str(project_id))
     return {
         "success": True,
         "slides": slides,
@@ -1280,6 +1295,7 @@ def get_tts_audio_status(project_id: str, db: Session):
         "missing": missing,
         "audio_confirmed": bool(confirmation.get("confirmed")),
         "audio_confirmation_reason": confirmation.get("reason"),
+        "active_slide_ids": active_slide_ids,
         "config_stale": confirmation.get("reason") == "config_changed",
         "voice_config_stale": any(item.get("voice_config_stale") for item in slides),
     }

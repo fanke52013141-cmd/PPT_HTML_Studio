@@ -428,21 +428,21 @@ function renderStep7SlideState(stateBadge, slideId, audio) {
   if (!stateBadge) return;
   stateBadge.classList.remove('is-generating', 'is-done', 'is-pending');
   stateBadge.removeAttribute('title');
-  if (step7ActiveTtsSlides.has(slideId)) {
+  if (audio?.generating || step7ActiveTtsSlides.has(slideId)) {
     stateBadge.hidden = false;
     stateBadge.classList.add('is-generating');
-    stateBadge.textContent = '生成中';
+    setUiTaskState(stateBadge, 'running', '生成中');
     return;
   }
   if (audio?.audio_exists && !audio?.stale) {
     stateBadge.hidden = false;
     stateBadge.classList.add('is-done');
-    stateBadge.textContent = '已生成';
+    setUiTaskState(stateBadge, 'done', '已完成');
     return;
   }
   stateBadge.hidden = false;
   stateBadge.classList.add('is-pending');
-  stateBadge.textContent = '待生成';
+  setUiTaskState(stateBadge, 'pending', '待生成');
   stateBadge.title = audio?.voice_config_stale
     ? '语音配置已变更，需重新生成'
     : audio?.stale ? '旁白已修改，需重新生成' : '音频尚未生成';
@@ -480,7 +480,7 @@ async function loadStep7Data() {
   // 响应迟到时若不守卫，会渲染进当前项目（B）的槽位。
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   const hasExistingAudio = (audioStatus.slides || []).some(item => item?.audio_exists);
-  const canLoadAudio = stepAllowsAudio || hasExistingAudio;
+  const canLoadAudio = stepAllowsAudio || hasExistingAudio || (audioStatus.active_slide_ids || []).length > 0;
   synthButton.style.display = canLoadAudio ? 'inline-flex' : 'none';
   if (forceAllButton) forceAllButton.style.display = canLoadAudio ? 'inline-flex' : 'none';
   if (!canLoadAudio) {
@@ -488,7 +488,7 @@ async function loadStep7Data() {
     return;
   }
   if (res.success) {
-    const audioBySlide = new Map((audioStatus.slides || []).map(item => [item.slide_id, item]));
+    const audioBySlide = new Map((audioStatus.slides || []).map(item => [item.slide_id, {...item, generating: (audioStatus.active_slide_ids || []).includes(item.slide_id)}]));
     res.images.forEach(img => {
       const slot = Array.from(document.querySelectorAll('.step6-slide-audio'))
         .find(item => item.dataset.audioSlideId === img.slide_id);
@@ -505,6 +505,8 @@ async function loadStep7Data() {
       } else {
         slot.innerHTML = '';
         slot.classList.remove('has-audio');
+        const busy = audio?.generating || step7ActiveTtsSlides.has(img.slide_id);
+        renderPageTaskState(slot, 'audio', busy ? 'running' : 'pending', busy ? '正在生成本页音频' : '待生成', 'audio');
       }
     });
 
@@ -583,6 +585,7 @@ async function runStep7TTS(options = {}) {
       throw new Error(submitted.message || '无法创建合成任务');
     }
     const jobId = submitted.job.id;
+    step7ActiveTtsSlides = new Set();
 
     const finalJob = await new Promise((resolve, reject) => {
       const started = Date.now();
@@ -595,6 +598,7 @@ async function runStep7TTS(options = {}) {
             { silent: true },
           );
           const job = res.job || {};
+          if (isCurrentWorkspaceProject(projectId, sessionVersion)) await loadStep7Data();
           if (['completed', 'failed', 'interrupted', 'cancelled'].includes(job.status)) {
             resolve(job);
             return;

@@ -4,6 +4,25 @@
 let step2ScriptSaveTimer = null;
 let step2ScriptSavePromise = null;
 
+let step2TaskPhases = {};
+function refreshStep2TaskStates() {
+  const script = step2TaskPhases.script || (state.step2ScriptPlan?.slides?.length ? 'done' : 'pending');
+  const visual = step2TaskPhases.visual || (state.step2VisualExists && !state.step2VisualStale ? 'done' : 'pending');
+  const labels = {running: '生成中', done: '已生成', pending: '待生成', error: '生成失败', paused: '已停止'};
+  setUiTaskState(document.getElementById('step2-script-task-status'), script, labels[script]);
+  setUiTaskState(document.getElementById('step2-visual-task-status'), visual, labels[visual]);
+}
+function setStep2TaskPhase(phase, status) {
+  if (status === 'done') delete step2TaskPhases[phase];
+  else step2TaskPhases[phase] = status;
+  refreshStep2TaskStates();
+  document.getElementById('step-panel-2')?.classList.toggle('is-generating-storyboard', Object.values(step2TaskPhases).includes('running'));
+  renderPageTaskState(document.getElementById('step2-loading'), 'storyboard', status === 'running' && !state.step2ScriptPlan?.slides?.length ? 'running' : null, phase === 'script' ? '正在生成每页演讲稿' : '正在生成画面文字与演讲片段', phase === 'script' ? 'text' : 'mapping');
+  const host = document.getElementById(phase === 'script' ? 'step2-script-slides' : 'step2-script-visuals');
+  const labels = {running: phase === 'script' ? '正在生成每页演讲稿' : '正在生成画面文字与演讲片段', error: '生成失败，请重试', paused: '生成已停止'};
+  renderPageTaskState(host, phase, status === 'done' ? null : status, labels[status], phase === 'script' ? 'text' : 'mapping');
+}
+
 function step2CurrentProjectId() {
   return String(state.currentProject?.id || '');
 }
@@ -23,6 +42,8 @@ function step2VisualButtonReady() {
 }
 
 function resetStep2ScriptState() {
+  document.getElementById("step-panel-2")?.classList.remove("is-generating-storyboard");
+  step2TaskPhases = {};
   if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
   step2ScriptSaveTimer = null;
   state.step2ScriptPlan = null;
@@ -121,7 +142,8 @@ async function generateStep2ScriptPlan(requirement = '') {
   if (scriptButton) scriptButton.disabled = true;
   // 生成演讲稿期间「内容可视化」保持可见但不可点击（UI 规范 §8）。
   if (visualButton) visualButton.disabled = true;
-  if (loading) loading.style.display = 'block';
+  if (loading) loading.style.display = state.step2ScriptPlan?.slides?.length ? 'none' : 'block';
+  setStep2TaskPhase('script', 'running');
   if (loadingText) loadingText.textContent = '第一步：AI 正在根据文章生成每页标题和演讲稿…';
   setStep2GenerationStatus('');
   try {
@@ -136,6 +158,7 @@ async function generateStep2ScriptPlan(requirement = '') {
     );
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
     if (response.cancelled) {
+      setStep2TaskPhase('script', 'paused');
       updateStep2AutosaveStatus(response.message || '演讲稿生成已停止');
       return false;
     }
@@ -148,10 +171,12 @@ async function generateStep2ScriptPlan(requirement = '') {
     state.step2Stage = 'script';
     renderStep2Workspace();
     if (response.workflow_changed) refreshCurrentProjectStatus(2).catch(() => {});
+    setStep2TaskPhase('script', 'done');
     showToast('演讲稿已生成');
     return true;
   } catch (error) {
     if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      setStep2TaskPhase('script', 'error');
       setStep2GenerationStatus(`演讲稿生成失败：${error?.message || error}`, 'error');
     }
     return false;
@@ -228,6 +253,8 @@ function renderStep2ScriptReview() {
   const slideIndex = plan.slides.indexOf(planSlide);
   const pageNumber = Math.min(Math.max(state.activeSlideIndex, 0), step2TabSourceSlides().length - 1) + 1;
   const wordCount = String(planSlide.narration || '').trim().length;
+  const count = document.querySelector('[data-step2-word-count]');
+  if (count) count.textContent = `共 ${wordCount} 字`;
   list.innerHTML = `
     <article class="step2-script-slide" data-script-slide-index="${slideIndex}">
       <label class="step2-script-field step2-script-field--title">
@@ -237,7 +264,7 @@ function renderStep2ScriptReview() {
       <div class="step2-script-field step2-script-field--narration">
         <div class="step2-script-field-head">
           <label><span>演讲稿</span></label>
-          <span class="step2-word-count" data-step2-word-count>共 ${wordCount} 字</span>
+
         </div>
         <textarea rows="1" data-script-field="narration" aria-label="第 ${pageNumber} 页演讲稿">${escHtml(planSlide.narration || '')}</textarea>
       </div>
@@ -264,7 +291,7 @@ function renderStep2ScriptReview() {
       }
       if (input.dataset.scriptField === 'narration') {
         autoResizeNarrationTextarea(input);
-        const count = card?.querySelector('[data-step2-word-count]');
+        const count = document.querySelector('[data-step2-word-count]');
         if (count) count.textContent = `共 ${String(input.value || '').trim().length} 字`;
       }
       updateStep2AutosaveStatus('演讲稿有未保存修改');
@@ -353,12 +380,14 @@ async function generateStep2VisualPlan() {
   const loadingText = document.querySelector('#step2-loading p');
   const oldLoadingText = loadingText?.textContent || '';
   if (button) button.disabled = true;
-  if (loading) loading.style.display = 'block';
+  if (loading) loading.style.display = 'none';
   try {
+    setStep2TaskPhase('visual', 'running');
     if (loadingText) loadingText.textContent = '第二步：AI 正在根据已保存的演讲稿规划可视化…';
     const visual = await API.post(`/api/projects/${projectId}/steps/2/visual/execute`, undefined, { timeoutMs: 900000 });
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
     if (visual.cancelled) {
+      setStep2TaskPhase('visual', 'paused');
       updateStep2AutosaveStatus(visual.message || '内容可视化已停止');
       return false;
     }
@@ -374,10 +403,12 @@ async function generateStep2VisualPlan() {
     state.step2WorkflowPending = false;
     renderStep2Workspace();
     refreshCurrentProjectStatus(2).catch(() => {});
+    setStep2TaskPhase('visual', 'done');
     showToast('可视化已根据当前演讲稿生成。');
     return true;
   } catch (error) {
     if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+      setStep2TaskPhase('visual', 'error');
       setStep2GenerationStatus(`可视化生成失败：${error?.message || error}`, 'error');
     }
     return false;
@@ -739,6 +770,7 @@ async function confirmStep2Generation() {
 }
 
 function renderStep2Workspace() {
+  refreshStep2TaskStates();
   if (state.activeSlideIndex >= step2TabSourceSlides().length) {
     state.activeSlideIndex = Math.max(0, step2TabSourceSlides().length - 1);
   }
@@ -807,7 +839,7 @@ function renderStep2Workspace() {
 
   if (!tabSource.length) {
     thumbsContainer.style.display = 'flex';
-    thumbsContainer.innerHTML = '<div class="step2-empty-storyboard ws-empty" role="status">当前还没有分镜页面。请先生成演讲稿，再执行内容可视化。</div>';
+    thumbsContainer.style.display = 'none';
   }
 
   tabSource.forEach((slide, idx) => {
@@ -1461,7 +1493,7 @@ function resizeStep2MapRows(root) {
       field.style.removeProperty('--step2-field-height');
       field.style.height = 'auto';
     });
-    const height = Math.max(...fields.map(field => field.scrollHeight));
+    const height = Math.max(...fields.map(field => field.scrollHeight + 2));
     fields.forEach(field => field.style.setProperty('--step2-field-height', `${height}px`));
   });
 }
@@ -1618,3 +1650,23 @@ async function saveStep2Contract(options = {}) {
   }
 }
 
+
+// One-click tasks share the same page-level presentation as manual generation.
+let step2OneClickPresenting = false;
+window.syncStoryboardGenerationState = function(status) {
+  const running = status?.status === 'running' && status?.current_stage === 'storyboard';
+  if (!running && !step2OneClickPresenting) return;
+  step2OneClickPresenting = running;
+  const loading = document.getElementById('step2-loading');
+  if (loading) loading.style.display = running ? 'block' : 'none';
+  if (running) {
+    const text = loading?.querySelector('p');
+    if (text) setUiTaskState(text, 'running', '正在生成演讲稿与画面可视化…');
+    setStep2TaskPhase('script', state.step2ScriptPlan?.slides?.length ? 'done' : 'running');
+    setStep2TaskPhase('visual', 'running');
+  } else {
+    setStep2TaskPhase("script", "done");
+    setStep2TaskPhase("visual", "done");
+    refreshStep2TaskStates();
+  }
+};

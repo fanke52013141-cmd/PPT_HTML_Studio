@@ -1249,7 +1249,7 @@ if (!annotationsCss.includes('.annotation-')) {
   throw new Error('annotation stylesheet must scope new panels');
 }
 // 勾画确认/决策/预览闭环:确认接口必须由前端调用,渲染门禁才可通过
-for (const annotationActionId of ['annotation-btn-decision', 'annotation-btn-confirm-page', 'annotation-btn-preview']) {
+for (const annotationActionId of ['annotation-btn-confirm-page', 'annotation-btn-preview']) {
   if (!html.includes(`id="${annotationActionId}"`)) throw new Error(`annotation workspace action ${annotationActionId} is missing`);
 }
 if (!annotationsWorkspace.includes('/confirm')) {
@@ -1265,9 +1265,8 @@ if (!annotationsEditor.includes('function previewAnnotationAnimation(')
   throw new Error('annotation editor must own the animation preview lifecycle');
 }
 if (!eventBindings.includes('previewAnnotationAnimation')
-  || !eventBindings.includes('confirmAnnotationPage')
-  || !eventBindings.includes('requestAnnotationDecision')) {
-  throw new Error('annotation preview/confirm/decision buttons must be bound in event bindings');
+  || !eventBindings.includes('confirmAnnotationPage')) {
+  throw new Error('annotation preview/confirm buttons must be bound in event bindings');
 }
 if (!html.includes('data-creation-config-pause="annotation"')) {
   throw new Error('creation package must expose the annotation manual-pause option');
@@ -1307,3 +1306,12 @@ const calibrationSource = fs.readFileSync(path.join(root, 'static', 'annotation_
 if (!html.includes('annotation_audio_calibration.js') || !calibrationSource.includes('decodeAudioData') || !annotationsEditor.includes('AnnotationAudioCalibration.attach')) throw new Error('audio calibration must own waveform decoding and be wired before the editor');
 if (annotationsEditor.includes('decodeAudioData') || app.includes('decodeAudioData')) throw new Error('waveform decoding belongs to the audio calibration module');
 console.log('frontend quality checks passed');
+
+if (html.includes('id="annotation-btn-decision"') || html.includes('class="step9-optional-hint"')) {
+  throw new Error("Removed redundant workspace controls must not return");
+}
+
+if (!fs.readFileSync(path.join(root, 'static/ui_foundation.js'), 'utf8').includes('function setUiTaskState(')) throw new Error('Shared task presentation must stay in ui_foundation');
+if (app.includes('function setUiTaskState(')) throw new Error('Task presentation must not enter workflow_state');
+
+if (!fs.readFileSync(path.join(root, 'static/index.html'), 'utf8').includes('video_controls.js')) throw new Error('Shared video controls must load explicitly');

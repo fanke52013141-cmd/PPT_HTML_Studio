@@ -522,3 +522,5 @@
   #annotation-sync-preview button { transition: none !important; }
 }
 .annotation-field audio { width: 100%; min-width: 0; }
+
+#annotation-sync-preview { position: fixed !important; inset: 0 !important; margin: auto !important; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); overflow: auto; }

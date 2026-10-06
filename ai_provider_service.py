@@ -25,6 +25,7 @@ from image_generation_errors import (
     ImageGenerationError,
     ImageGenerationErrorInfo,
     classify_image_error,
+    classify_terminal_image_task_failure,
     is_parameter_incompatibility,
 )
 from image_generation_errors import (
@@ -690,21 +691,7 @@ def generate_toapis_image_response(
                     task_id=task_id,
                 )
             if state == "failed":
-                # 任务失败是上游的终态结论（内容拒绝/参数错误居多），
-                # 不自动重试，把原因完整带给上层。
-                raise ImageGenerationError(
-                    ImageGenerationErrorInfo(
-                        code=CODE_INVALID_PARAMETERS,
-                        phase=PHASE_POLL,
-                        retryable=False,
-                        status_code=None,
-                        safe_message=(
-                            "ToAPIs 图片任务失败: "
-                            f"{str((status.get('error') or {}).get('message') or status.get('fail_reason') or '未知错误')[:800]}"
-                        ),
-                        upstream_task_id=task_id,
-                    )
-                )
+                raise ImageGenerationError(classify_terminal_image_task_failure(status, task_id))
             # 指数退避轮询：状态查询同样消耗网关额度，固定 5 秒会把额度吃掉一半。
             retry_after = status_response.headers.get("Retry-After")
             hinted = 0.0

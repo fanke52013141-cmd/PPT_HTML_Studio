@@ -15,11 +15,14 @@ let step8RenderReadiness = { hasContract: false, audioComplete: false, audioConf
 
 function updateStep8LoadingText(stageLabel, elapsedSec, queueAhead) {
   const text = document.getElementById('step8-loading-text');
+  setUiTaskState(text, queueAhead != null ? 'queued' : 'running', text?.textContent || '准备渲染');
   if (!text) return;
   // 排队中的渲染任务：显示全局队列位次（queue_ahead 为前面的同类任务数）。
-  const ahead = Number(queueAhead);
-  if (Number.isFinite(ahead) && ahead > 0) {
-    text.innerText = `排队中，前面还有 ${ahead} 个渲染任务...`;
+  const loading = document.getElementById('step8-loading');
+  if (loading) loading.dataset.taskState = queueAhead != null ? 'queued' : 'running';
+  if (queueAhead != null) {
+    const ahead = Number(queueAhead);
+    text.innerText = Number.isFinite(ahead) && ahead > 0 ? `排队中，前面还有 ${ahead} 个渲染任务` : '排队中，等待渲染';
     return;
   }
   const stage = stageLabel ? stageLabel : '视频渲染中';
@@ -143,6 +146,11 @@ function startStep8RenderPolling(
       }
     } catch (e) {
       console.error('Step 8 status poll failed:', e);
+      if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+        setUiTaskState(document.getElementById('step8-loading-text'), 'reconnecting', '状态连接中断，正在重试');
+        const loading = document.getElementById('step8-loading');
+        if (loading) loading.dataset.taskState = 'reconnecting';
+      }
       // 网络错误不停止轮询，下一轮重试
     }
   };
@@ -401,8 +409,9 @@ function setStep8OutputError(title, message, options = {}) {
 function updateStep8PptxLoading(job) {
   const loading = document.getElementById('step8-pptx-loading');
   const text = document.getElementById('step8-pptx-loading-text');
+  setUiTaskState(text, job?.status === 'queued' ? 'queued' : 'running', text?.textContent || '准备导出');
   const button = document.getElementById('step8-btn-pptx');
-  if (loading) loading.style.display = 'inline-flex';
+  if (loading) { loading.style.display = 'inline-flex'; loading.dataset.taskState = job?.status === 'queued' ? 'queued' : 'running'; }
   if (button) button.disabled = true;
   if (text) {
     // 排队中的导出任务：显示全局队列位次（queue_ahead 为前面的同类任务数）。
@@ -461,6 +470,11 @@ function startStep8PptxPolling(
       }
     } catch (error) {
       console.error('PPTX job polling failed:', error);
+      if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
+        setUiTaskState(document.getElementById('step8-pptx-loading-text'), 'reconnecting', '状态连接中断，正在重试');
+        const loading = document.getElementById('step8-pptx-loading');
+        if (loading) loading.dataset.taskState = 'reconnecting';
+      }
     }
   };
   poll();

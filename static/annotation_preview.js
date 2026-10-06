@@ -61,7 +61,7 @@ async function loadAnnotationPlayer() {
   if (!ANNOTATION_PREVIEW.loading) {
     ANNOTATION_PREVIEW.loading = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = '/annotation_player.bundle.js?v=20261006.2';
+      script.src = '/annotation_player.bundle.js?v=20261006.24';
       script.onload = resolve;
       script.onerror = () => { ANNOTATION_PREVIEW.loading = null; reject(new Error('预览播放器加载失败')); };
       document.head.appendChild(script);
@@ -142,7 +142,7 @@ async function showAnnotationSyncPreview() {
       dialog.setAttribute('aria-labelledby', 'annotation-video-title');
       dialog.innerHTML = `<header class="annotation-video-header">
           <h2 id="annotation-video-title">标注预览</h2>
-          <button id="annotation-video-close" type="button" class="secondary">关闭预览</button>
+          <div class="annotation-preview-header-actions"><button type="button" id="annotation-video-download" class="secondary">下载预览 MP4</button><button id="annotation-video-close" type="button" class="secondary">关闭预览</button></div>
         </header>
         <div class="annotation-video-layout">
           <section class="annotation-video-stage" aria-label="同步视频">
@@ -174,6 +174,15 @@ async function showAnnotationSyncPreview() {
       dialog.addEventListener('close', () => {clearInterval(ANNOTATION_PREVIEW.clockTimer); window.AnnotationPlayer?.stop();});
       document.body.appendChild(dialog);
     }
+    dialog.querySelector('#annotation-video-download').onclick = async event => {
+      const button = event.currentTarget;
+      button.disabled = true; button.textContent = '正在导出 MP4…';
+      try {
+        const exported = await API.post(`${base}/export-preview`, {expected_revision: result.revision, subtitle_style: subtitleSettings.subtitle_style}, {timeoutMs: 660000});
+        const link = document.createElement('a'); link.href = exported.url; link.download = `${slideId}_annotation_preview.mp4`; link.click();
+      } catch (error) { showToast(`预览导出失败：${error.message}`); }
+      finally { button.disabled = false; button.textContent = '下载预览 MP4'; }
+    };
     const [width, height] = timeline.canvas;
     window.AnnotationPlayer.mount(document.getElementById('annotation-player-root'), {
       subtitle_style: subtitleSettings.subtitle_style,
@@ -181,6 +190,8 @@ async function showAnnotationSyncPreview() {
         scene, audio_timeline: result.audio_timeline, animation_timeline: result.animation_timeline,
         audio_file: absolute(result.audio_url), annotation_timeline: timeline}],
     }, timeline.fps, timeline.slide_duration_sec, width, height);
+    dialog.querySelector('.shared-video-tools')?.remove();
+    window.attachVideoTools?.(dialog.querySelector('.annotation-video-screen'), {rate: n => window.AnnotationPlayer.rate(n), media: () => Array.from(dialog.querySelectorAll('audio,video'))});
     document.getElementById('annotation-calibration-audio')?.pause();
     const select = dialog.querySelector('#annotation-video-item');
     select.replaceChildren(...ANNOTATIONS_WS.page.items.filter(item => item.status?.content !== 'disabled').map(item => {

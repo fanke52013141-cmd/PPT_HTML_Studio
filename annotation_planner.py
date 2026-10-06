@@ -14,6 +14,7 @@ from __future__ import annotations
 from annotation_contracts import EMPHASIS_LIMITS
 
 import logging
+from runtime_support import is_timeout_exception
 from dataclasses import dataclass, replace
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -79,16 +80,23 @@ class AnnotationPlanner:
             protected_items=protected,
             emphasis=emphasis,
         )
-        try:
-            raw = self._deps.llm_generate(
-                system_prompt=prompts["system"],
-                user_prompt=prompts["user"],
-                run_dir=run_dir,
-                artifact_prefix=f"annotation_plan_{slide_id}",
-                schema_hint='{"schema_version":"annotation_plan_v2","suggestions":[{"beat_id":"...","range":[0,1],"quote":"...","target_candidate_ids":["..."],"category":"conclusion|contrast|condition|action|evidence|concept","priority":1,"style":"ellipse|underline|highlighter","reason":"...","ambiguous":false}]}',
-            )
-        except Exception as exc:
-            raise AnnotationPlanningError("llm_failed", str(exc)) from exc
+        for attempt in range(2):
+            try:
+                raw = self._deps.llm_generate(
+                    system_prompt=prompts["system"],
+                    user_prompt=prompts["user"],
+                    run_dir=run_dir,
+                    artifact_prefix=f"annotation_plan_{slide_id}",
+                    schema_hint='{"schema_version":"annotation_plan_v2","suggestions":[{"beat_id":"...","range":[0,1],"quote":"...","target_candidate_ids":["..."],"category":"conclusion|contrast|condition|action|evidence|concept","priority":1,"style":"ellipse|underline|highlighter","reason":"...","ambiguous":false}]}',
+                )
+                break
+            except Exception as exc:
+                if is_timeout_exception(exc) and attempt == 0:
+                    logger.warning("Annotation recommendation timed out for %s; retrying once", slide_id)
+                    continue
+                if is_timeout_exception(exc):
+                    raise AnnotationPlanningError("llm_timeout", "AI 重点推荐两次请求均超时，请稍后重试；已有标注已保留。") from exc
+                raise AnnotationPlanningError("llm_failed", str(exc)) from exc
 
         snapshot = {
             "version": 1,
@@ -300,7 +308,7 @@ class AnnotationPlanner:
                         context_before="",
                         context_after="",
                     ),
-                    style=AnnotationStyle(type=style_type, color="#F46A38", opacity=0.85, width=5, padding=8, seed=0),
+                    style=AnnotationStyle(type="highlighter", color="#F6CE46", opacity=0.28, width=5, padding=4, seed=0),
                     timing=AnnotationTiming(
                         trigger_mode="anchor_start", offset_sec=0.0, draw_duration_sec=0.6,
                         hold_mode="beat_end", hold_duration_sec=None, exit_duration_sec=0.15,
