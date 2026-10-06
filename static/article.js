@@ -326,10 +326,14 @@ async function saveStep1Edit() {
     showToast('文章内容不能为空');
     return;
   }
+  // 「保存修改」按钮已按用户要求移除（进入分镜规划即保存），此函数保留给
+  // 后续自动保存复用；按钮引用全部可空化。
   const button = document.getElementById('step1-btn-save-edit');
-  const originalHtml = button.innerHTML;
-  button.disabled = true;
-  button.innerHTML = '保存中...';
+  const originalHtml = button?.innerHTML ?? '';
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = '保存中...';
+  }
   const payload = {
     title: state.currentProject?.name || document.getElementById('step1-res-title').value.trim(),
     summary: document.getElementById('step1-res-summary').value.trim(),
@@ -342,8 +346,10 @@ async function saveStep1Edit() {
     );
     if (result.success) showToast('文章修改已保存');
   } finally {
-    button.disabled = false;
-    button.innerHTML = originalHtml;
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = originalHtml;
+    }
   }
 }
 
