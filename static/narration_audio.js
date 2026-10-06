@@ -490,16 +490,14 @@ async function loadStep7Data() {
       emptyState.innerText = '';
     } else {
       emptyState.style.display = 'none';
-      // 文案跟随数字人启用状态：未启用时下一步是作品输出，而不是数字人讲解。
-      // 完整语义保留在按钮 title 上（ui-consistency-plan P0-4a：标题栏单行化）。
+      // 命名统一为「进入勾画标注」（UI 审查第四轮：进入类按钮不带「确认」）。
+      // 音频未就绪时由后端门控拦截，完整语义保留在按钮 title 上。
       const confirmLabel = document.getElementById('step6-audio-confirm-label');
-      confirmLabel.innerText = state.currentProject.audio_confirmed
-        ? '进入勾画'
-        : '确认进入勾画';
+      confirmLabel.innerText = '进入勾画标注';
       const confirmBtn = document.getElementById('step6-btn-audio-confirm-next');
       if (confirmBtn) confirmBtn.title = state.currentProject.audio_confirmed
         ? '进入勾画标注'
-        : '确认并进入勾画标注';
+        : '确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过';
     }
   }
 }

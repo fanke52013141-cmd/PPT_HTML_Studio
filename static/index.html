@@ -162,8 +162,8 @@
             <div class="step1-heading-actions">
               <button id="step1-btn-system-content" class="secondary" type="button">内容创作prompt</button>
               <button id="step1-btn-save-edit" class="secondary" style="display:none;" type="button">保存修改</button>
-              <button id="step1-btn-submit" class="success ws-primary" type="button">
-                分镜规划
+              <button id="step1-btn-submit" class="success ws-primary" type="button" title="保存文章并进入分镜规划">
+                进入分镜规划
               </button>
             </div>
           </div>
@@ -335,8 +335,8 @@
               <button id="step3-btn-ip-character" class="secondary" type="button">
                 IP 形象
               </button>
-              <button id="step3-btn-confirm" class="success ws-primary" style="display: none;">
-                下一步
+              <button id="step3-btn-confirm" class="success ws-primary" style="display: none;" title="确认全部页面图片并进入 AI Mask 标注">
+                进入 AI Mask 标注
                 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
             </div>
@@ -379,6 +379,10 @@
                 <input id="step5-eraser-size" type="range" min="100" max="200" value="100">
                 <span id="step5-eraser-size-value">100</span>
               </label>
+              <button id="step5-btn-confirm-next" class="success compact-action-btn ws-primary" type="button" title="确认标注并构建切层，进入旁白与音频">
+                进入旁白与音频
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
             </div>
           </div>
           
@@ -409,10 +413,6 @@
                 <!-- 标注盒子表单 -->
               </div>
               <div class="step5-confirm-footer">
-                <button id="step5-btn-confirm-next" class="btn-next-step success ws-primary" style="width: 100%;">
-                  确认标注，进入下一步
-                  <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </button>
                 <div id="step5-confirm-status" class="step5-confirm-status" style="display: none;" role="status" aria-live="polite"></div>
               </div>
             </div>
@@ -445,7 +445,7 @@
               <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="强制重生成全部：忽略缓存，重新生成所有页面音频">强制重生成</button>
               <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="导出整段语音：拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
               <button id="step6-btn-audio-confirm-next" class="secondary compact-action-btn" title="确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过">
-                <span id="step6-audio-confirm-label">确认进入勾画</span>
+                <span id="step6-audio-confirm-label">进入勾画标注</span>
               </button>
             </div>
           </div>
@@ -468,9 +468,10 @@
                   <span class="annotation-switch-slider" aria-hidden="true"></span>
                   <span>视频中启用勾画</span>
                 </label>
+                <button id="annotation-btn-decision" class="secondary compact-action-btn" type="button">本项目不加勾画</button>
                 <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
                 <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
-                <button id="step10-btn-next" class="success compact-action-btn ws-primary" type="button">继续下一步</button>
+                <button id="step10-btn-next" class="success compact-action-btn ws-primary" type="button" title="进入数字人讲解步骤；数字人为可选步骤">进入数字人讲解</button>
               </div>
             </div>
 
@@ -513,6 +514,7 @@
                     <button id="annotation-btn-ai-plan" class="success compact-action-btn" type="button">AI 推荐重点</button>
                     <button id="annotation-btn-undo" class="secondary compact-action-btn" type="button">撤销</button>
                     <button id="annotation-btn-redo" class="secondary compact-action-btn" type="button">重做</button>
+                    <button id="annotation-btn-preview" class="secondary compact-action-btn" type="button">预览动画</button>
                   </div>
                 </div>
                 <div class="annotation-narration-pane card">
@@ -522,7 +524,10 @@
                   <div id="annotation-candidates" class="annotation-candidates"></div>
                 </div>
                 <div class="annotation-list-pane card">
-                  <div class="annotation-pane-title">标注列表</div>
+                  <div class="annotation-pane-title annotation-pane-title-row">
+                    <span>标注列表</span>
+                    <button id="annotation-btn-confirm-page" class="success compact-action-btn" type="button" disabled>确认本页</button>
+                  </div>
                   <div id="annotation-items" class="annotation-items"></div>
                   <div id="annotation-item-editor" class="annotation-item-editor" style="display:none;"></div>
                 </div>
@@ -1789,10 +1794,10 @@
   <script src="image_prompts.js?v=20260801.1"></script>
   <script src="ip_character_manager.js?v=20261005.1"></script>
   <script src="mask_reveal.js?v=20260801.1"></script>
-  <script src="mask_workspace.js?v=20261006.4"></script>
+  <script src="mask_workspace.js?v=20261006.5"></script>
   <script src="mask_editor.js?v=20261006.1"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
-  <script src="narration_audio.js?v=20261006.1"></script>
+  <script src="narration_audio.js?v=20261006.5"></script>
   <script src="annotation_playback.js?v=20260929.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
   <script src="annotations_workspace.js?v=20260928.1"></script>

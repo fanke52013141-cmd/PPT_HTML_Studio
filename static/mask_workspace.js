@@ -982,10 +982,10 @@ function updateStep5ConfirmButton(message = '') {
     return;
   }
 
-  btn.innerHTML = `确认进入下一步 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+  btn.innerHTML = `进入旁白与音频 <svg class="icon" viewBox="0 0 24 24" style="width:14px; height:14px; stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
   btn.title = aiBusy
-    ? '确认标注，进入下一步（AI 标注相关任务正在处理中，请稍候）'
-    : '确认标注，进入下一步';
+    ? '确认标注并构建切层，进入旁白与音频（AI 标注相关任务正在处理中，请稍候）'
+    : '确认标注并构建切层，进入旁白与音频';
 
   if (status) {
     const isMessageError = !!message && /失败|不能确认|漏标/.test(message);
