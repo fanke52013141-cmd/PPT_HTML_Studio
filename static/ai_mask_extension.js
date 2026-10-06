@@ -118,9 +118,10 @@
     if (document.getElementById('step5-btn-ai-mask')) return;
     const settings = button('step5-btn-ai-mask-settings', 'AI 标注参数', 'secondary');
     const run = button('step5-btn-ai-mask', '运行 AI 标注', 'secondary');
-    const anchor = document.getElementById('step5-btn-fullscreen');
+    // 标题栏排序规则（UI 审查第六轮）：运行 AI 标注/AI 标注参数紧邻全屏标注左侧。
+    const anchor = document.getElementById('step5-btn-animation-settings');
     toolbar.insertBefore(settings, anchor || null);
-    toolbar.insertBefore(run, anchor || null);
+    toolbar.insertBefore(run, settings);
     settings.addEventListener('click', openSettings);
     run.addEventListener('click', runAnnotation);
   }

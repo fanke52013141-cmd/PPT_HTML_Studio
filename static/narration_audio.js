@@ -246,7 +246,8 @@ function renderStep6Workspace() {
     slideRow.dataset.slideId = slide.slide_id;
     slideRow.innerHTML = `
       <div class="step6-slide-row-head">
-        <h3>第 ${slideIndex + 1} 页 <small class="step6-slide-id">${escHtml(slide.slide_id)}</small></h3>
+        <h3>第 ${slideIndex + 1} 页</h3>
+        <span class="step6-slide-state" hidden></span>
         <span class="step6-slide-status">${slide.beats.length ? `${slide.beats.length} 条旁白` : '暂无旁白'}</span>
         <button class="secondary compact-action-btn step6-generate-slide" type="button" data-slide-id="${escHtml(slide.slide_id)}" title="只重新生成当前 Slide 的旁白音频" ${slide.beats.length ? '' : 'disabled'}>单独生成</button>
       </div>
@@ -466,15 +467,26 @@ async function loadStep7Data() {
         .find(item => item.dataset.audioSlideId === img.slide_id);
       if (!slot) return;
       const audio = audioBySlide.get(img.slide_id);
-      slot.classList.add('has-audio');
+      // 状态徽章挂在卡片标题行（第 N 页右侧），不再占据整行（UI 审查第六轮）。
+      const stateBadge = slot.closest('.step6-slide-row')?.querySelector('.step6-slide-state');
       if (audio?.audio_exists && !audio?.stale) {
         const audioUrl = `/api/projects/${projectId}/slides/${img.slide_id}/audio?t=${Date.now()}`;
         slot.innerHTML = `<audio controls preload="metadata" src="${audioUrl}" class="step7-audio-player" aria-label="${escHtml(img.slide_id)} 音频"></audio>`;
+        slot.classList.add('has-audio');
+        if (stateBadge) {
+          stateBadge.hidden = true;
+          stateBadge.textContent = '';
+        }
       } else {
         const reason = audio?.voice_config_stale
           ? '语音配置已变更，请重新生成'
           : audio?.stale ? '旁白已修改，请重新生成' : '音频尚未生成';
-        slot.innerHTML = `<div class="step7-audio-missing">${escHtml(reason)}</div>`;
+        slot.innerHTML = '';
+        slot.classList.remove('has-audio');
+        if (stateBadge) {
+          stateBadge.hidden = false;
+          stateBadge.textContent = reason;
+        }
       }
     });
 
@@ -677,7 +689,7 @@ async function confirmStep7Audio() {
     // 确认响应迟到时不得刷新/提示到切换后的项目上。
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return false;
     if (res.success) {
-      showToast('✅ 音频已确认，准备进入作品输出。');
+      showToast('✅ 音频已确认，准备进入勾画标注。');
       await refreshCurrentProjectStatus(6);
       return true;
     }

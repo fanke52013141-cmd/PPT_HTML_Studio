@@ -54,16 +54,11 @@
     const toolbar = document.querySelector('#step-panel-3 .workflow-toolbar');
     if (!toolbar) return;
     const confirmButton = document.getElementById('step3-btn-confirm');
-    let button = document.getElementById('step3-btn-background-settings');
-    if (!button) {
-      button = document.createElement('button');
-      button.id = 'step3-btn-background-settings';
-      button.type = 'button';
-      button.className = 'secondary';
-      button.textContent = '视频背景';
-      toolbar.insertBefore(button, confirmButton || null);
-      button.addEventListener('click', openModal);
-    }
+    // 标题栏排序规则（UI 审查第六轮）：按钮从右往左按工作流排，
+    // 批量删除/视频背景/批量下载依次落在「IP 形象」左侧。
+    const mountPoint = document.getElementById('step3-btn-ip-character')
+      || confirmButton
+      || null;
 
     let deleteAllButton = document.getElementById('step3-btn-delete-all-images');
     if (!deleteAllButton) {
@@ -72,8 +67,22 @@
       deleteAllButton.type = 'button';
       deleteAllButton.className = 'secondary step3-delete-all-images';
       deleteAllButton.textContent = '批量删除';
-      toolbar.insertBefore(deleteAllButton, confirmButton || null);
+      if (mountPoint) mountPoint.before(deleteAllButton);
+      else toolbar.appendChild(deleteAllButton);
       deleteAllButton.addEventListener('click', () => window.deleteAllStep3Images?.());
+    }
+
+    let button = document.getElementById('step3-btn-background-settings');
+    if (!button) {
+      button = document.createElement('button');
+      button.id = 'step3-btn-background-settings';
+      button.type = 'button';
+      button.className = 'secondary';
+      button.textContent = '视频背景';
+      if (deleteAllButton) deleteAllButton.after(button);
+      else if (mountPoint) mountPoint.before(button);
+      else toolbar.appendChild(button);
+      button.addEventListener('click', openModal);
     }
   }
 

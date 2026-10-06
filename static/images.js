@@ -568,10 +568,15 @@ function ensureStep3BatchDownloadButton(deleteAllButton) {
     button.type = 'button';
     button.className = 'secondary step3-download-all-images';
     button.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 3v12"></path></svg> 批量下载`;
-    deleteAllButton.insertAdjacentElement('afterend', button);
+    // 标题栏排序规则（UI 审查第六轮）：批量下载固定在视频背景之后。
+    const bgButton = document.getElementById('step3-btn-background-settings');
+    const anchor = bgButton || deleteAllButton;
+    anchor.insertAdjacentElement('afterend', button);
     button.addEventListener('click', downloadAllStep3Images);
-  } else if (deleteAllButton.nextElementSibling !== button) {
-    deleteAllButton.insertAdjacentElement('afterend', button);
+  } else {
+    const bgButton = document.getElementById('step3-btn-background-settings');
+    const anchor = bgButton || deleteAllButton;
+    if (anchor.nextElementSibling !== button) anchor.insertAdjacentElement('afterend', button);
   }
   button.disabled = disabled;
 }

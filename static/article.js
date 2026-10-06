@@ -309,7 +309,6 @@ async function submitStep1() {
     document.getElementById('step1-res-summary').value = result.brief.summary || '';
     document.getElementById('step1-result-box').style.display = 'none';
     document.getElementById('step1-status-hint').innerText = '文章已保存';
-    document.getElementById('step1-btn-save-edit').style.display = 'inline-flex';
     state.currentProject.current_step = Math.max(state.currentProject.current_step, 2);
     state.currentProject.step_status['1'] = 'completed';
     updateStepperUI(1, state.currentProject.step_status);

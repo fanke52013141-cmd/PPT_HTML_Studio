@@ -6415,3 +6415,30 @@ body.workspace-open #step-panel-3 .step3-image-card .step3-card-identity .step3-
 #modal-creation-config-management .creation-config-concurrency-grid.creation-config-number-grid > label > input {
   --creation-config-concurrency-input-width: 64px;
 }
+
+/* -----------------------------------------------------------------------
+ * 旁白与音频卡片（UI 审查第六轮）：语音状态徽章挂标题行「第 N 页」右侧，
+ * 不再占据整行；无音频时音频槽位整体收起。
+ * -------------------------------------------------------------------- */
+body.workspace-open #step-panel-6 .step6-slide-state {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  background: #fff5f0 !important;
+  border: 1px solid #ffd9cd !important;
+  color: #c9481b !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-state[hidden] {
+  display: none !important;
+}
+body.workspace-open #step-panel-6 .step6-slide-audio:empty {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
