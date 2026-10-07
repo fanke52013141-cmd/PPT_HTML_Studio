@@ -1,0 +1,139 @@
+{
+  "libraryVersion": "0.1.0",
+  "reuseInstances": 14,
+  "rejectedInvalidCases": 6,
+  "frames": [
+    {
+      "time": 0,
+      "sha256": "c4849c09e3521966487b6f39930597b5be4a8f9c1e1e6e86e0634f08499a2998"
+    },
+    {
+      "time": 3000,
+      "sha256": "b5db2fa6ff15d1cf781c720642b267f6ca820a543c4b76806860f1e69a6f344c"
+    },
+    {
+      "time": 7000,
+      "sha256": "6417a20415d14384db235006aec87321be04fc986231629f82fc4f15bc8ea03d"
+    },
+    {
+      "time": 12000,
+      "sha256": "e32652c1947db883671016b8836cf3ecce33ebbd93bc792c5a5702e6207fd5e9"
+    },
+    {
+      "time": 16000,
+      "sha256": "444fb5a5a37ddcac123b8eb8be4b890de35979e8a8786372acae6fc2bc33ab0b"
+    },
+    {
+      "time": 19999,
+      "sha256": "7837af793e6cc9143cf0f0cbaa1aa1437421072ec18a3438ccc648ffb02d2c3a"
+    }
+  ],
+  "geometry": [
+    {
+      "id": "title",
+      "x": 124,
+      "y": 131,
+      "width": 1380,
+      "height": 100,
+      "particles": []
+    },
+    {
+      "id": "sun",
+      "x": 159,
+      "y": 336,
+      "width": 235,
+      "height": 225,
+      "particles": []
+    },
+    {
+      "id": "particles",
+      "x": 609,
+      "y": 336,
+      "width": 360,
+      "height": 285,
+      "particles": [
+        {
+          "id": "particles.particle.0",
+          "x": 72,
+          "y": 45.71287128712872
+        },
+        {
+          "id": "particles.particle.1",
+          "x": 115.20000000000002,
+          "y": 70.77029702970297
+        },
+        {
+          "id": "particles.particle.2",
+          "x": 158.4,
+          "y": 95.82772277227721
+        },
+        {
+          "id": "particles.particle.3",
+          "x": 201.60000000000002,
+          "y": 52.4851485148515
+        },
+        {
+          "id": "particles.particle.4",
+          "x": 244.79999999999998,
+          "y": 77.54257425742574
+        },
+        {
+          "id": "particles.particle.5",
+          "x": 288,
+          "y": 34.199999999999996
+        }
+      ]
+    },
+    {
+      "id": "direction",
+      "x": 1044,
+      "y": 431,
+      "width": 180,
+      "height": 160,
+      "particles": []
+    },
+    {
+      "id": "term",
+      "x": 1222.412353515625,
+      "y": 459.0155029296875,
+      "width": 233.17529296875,
+      "height": 102.968994140625,
+      "particles": []
+    },
+    {
+      "id": "state",
+      "x": 539,
+      "y": 740,
+      "width": 540,
+      "height": 126,
+      "particles": []
+    },
+    {
+      "id": "explanation",
+      "x": 534,
+      "y": 871,
+      "width": 710,
+      "height": 70,
+      "particles": []
+    },
+    {
+      "id": "beaker",
+      "x": 389,
+      "y": 331,
+      "width": 780,
+      "height": 488,
+      "top": 331,
+      "right": 1169,
+      "bottom": 819,
+      "left": 389
+    }
+  ],
+  "textBounds": "passed",
+  "seekOrderPixels": "passed",
+  "actualPlaybackAdvances": "passed",
+  "pause": "passed",
+  "scrub": "passed",
+  "pageErrors": [],
+  "browser": "155.0.8059.12",
+  "userVisualApproval": "pending"
+}

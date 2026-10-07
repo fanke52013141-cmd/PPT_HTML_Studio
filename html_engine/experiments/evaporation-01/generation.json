@@ -1,0 +1,53 @@
+{
+  "tool": "image_gen.imagegen",
+  "model": "not exposed by tool",
+  "postProcessing": "none; original generated PNG preserved",
+  "images": [
+    {
+      "file": "input-effects.png",
+      "sha256": "ad657ee1ac6b87f3fc6ea543fc05a772f08e55e92cf86e0538ee3a23232b35f7",
+      "size": [
+        1600,
+        1200
+      ],
+      "mode": "RGB"
+    },
+    {
+      "file": "design.png",
+      "sha256": "fc49691f1f8fb66fc9e0020698315c55913e143238c9b2693a51ab82ba0b26d9",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB"
+    },
+    {
+      "file": "assets/beaker.png",
+      "sha256": "72f3c9bf6e4e8fd400878a961efba8dc32bd35165a6ba01b3f1ea8770b70a6fa",
+      "size": [
+        1586,
+        992
+      ],
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        201,
+        87,
+        1348,
+        976
+      ],
+      "alpha16Bounds": [
+        244,
+        205,
+        1345,
+        803
+      ]
+    }
+  ],
+  "designReview": "selected with adaptations: title62px, actual geometry repositioning, independent asset gradient retained; exact quantities use code",
+  "assetReview": "Whole beaker visible, true alpha; retains slight water gradient/coarse edge; conditional for this light background, not global production approval",
+  "userVisualApproval": "pending"
+}
