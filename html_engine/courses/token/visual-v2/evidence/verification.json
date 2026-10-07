@@ -1,0 +1,164 @@
+{
+  "revision": 4,
+  "frames": [
+    {
+      "scene": "definition",
+      "localTimeMs": 0,
+      "file": "definition-0.png",
+      "sha256": "79a1f93d9a55e90b8f8bfc647ade6459187e31ca4b4fcb4b6c25ad4fdc92d5f9"
+    },
+    {
+      "scene": "definition",
+      "localTimeMs": 3500,
+      "file": "definition-1.png",
+      "sha256": "92c88f682ff71ca3ae7b19e255e585fa61f0db4dff42b52f5716c534db45a107"
+    },
+    {
+      "scene": "definition",
+      "localTimeMs": 8500,
+      "file": "definition-2.png",
+      "sha256": "c7066620c0dca570929cbd1a199b5fa8eafe36e61cc07942ba8e202a6ed21f0d"
+    },
+    {
+      "scene": "definition",
+      "localTimeMs": 14500,
+      "file": "definition-3.png",
+      "sha256": "b8736f630afb71578fedba62728a18bbb8db02014e7eccdd2dffa51b3b0e95e9"
+    },
+    {
+      "scene": "definition",
+      "localTimeMs": 15999,
+      "file": "definition-4.png",
+      "sha256": "b8736f630afb71578fedba62728a18bbb8db02014e7eccdd2dffa51b3b0e95e9"
+    },
+    {
+      "scene": "splitting",
+      "localTimeMs": 0,
+      "file": "splitting-0.png",
+      "sha256": "f87015028a0acd11a30f4993a8906c46349ffd4a91b46db41b198f71ba7c7d32"
+    },
+    {
+      "scene": "splitting",
+      "localTimeMs": 3500,
+      "file": "splitting-1.png",
+      "sha256": "523ec8476585fb0ffce836475522205136591593da610945e9bde62871851f1e"
+    },
+    {
+      "scene": "splitting",
+      "localTimeMs": 8500,
+      "file": "splitting-2.png",
+      "sha256": "f456b8278e747e7cf6e528128e49701f39f13cec3d87e339f31359f9c946d23e"
+    },
+    {
+      "scene": "splitting",
+      "localTimeMs": 13500,
+      "file": "splitting-3.png",
+      "sha256": "690e2fe5cd062422bb43474f0dff6c28998eb69507a9fbb158cf5b08f9e08193"
+    },
+    {
+      "scene": "splitting",
+      "localTimeMs": 14999,
+      "file": "splitting-4.png",
+      "sha256": "690e2fe5cd062422bb43474f0dff6c28998eb69507a9fbb158cf5b08f9e08193"
+    },
+    {
+      "scene": "billing",
+      "localTimeMs": 0,
+      "file": "billing-0.png",
+      "sha256": "7536a0aa8e6be35aae6f4522613cf5e44f3768547b0b23ca1465e34b6336f3c5"
+    },
+    {
+      "scene": "billing",
+      "localTimeMs": 3500,
+      "file": "billing-1.png",
+      "sha256": "5a66edd0d76aea339c6772e29c826351f3f18cfc7978fe0554a7c1dcb612b2d4"
+    },
+    {
+      "scene": "billing",
+      "localTimeMs": 8500,
+      "file": "billing-2.png",
+      "sha256": "f663d8a59bee8a350542123da5103a9a948108dc4e0083dd510ddfd4450c20a0"
+    },
+    {
+      "scene": "billing",
+      "localTimeMs": 14500,
+      "file": "billing-3.png",
+      "sha256": "febba6ea9b36ce02ce56e5716248972507f7fa2aa1156ec59a421e81660a1e0d"
+    },
+    {
+      "scene": "billing",
+      "localTimeMs": 15999,
+      "file": "billing-4.png",
+      "sha256": "febba6ea9b36ce02ce56e5716248972507f7fa2aa1156ec59a421e81660a1e0d"
+    },
+    {
+      "scene": "context",
+      "localTimeMs": 0,
+      "file": "context-0.png",
+      "sha256": "b7f449333d6d965b105507e6421f831df8d986cf16a8cec6bf4487bbd0b57561"
+    },
+    {
+      "scene": "context",
+      "localTimeMs": 4000,
+      "file": "context-1.png",
+      "sha256": "33e40d5371ef4d7e62a1ce6589918610a7dbaf05deda5032acc5bdead33e1b23"
+    },
+    {
+      "scene": "context",
+      "localTimeMs": 8500,
+      "file": "context-2.png",
+      "sha256": "234840b973b54dd3a46d2818c33a271c3f21d1fb367ca076383cb21cc5948485"
+    },
+    {
+      "scene": "context",
+      "localTimeMs": 14500,
+      "file": "context-3.png",
+      "sha256": "e0499639eb5a81ea3d5fc5ad4d94eafcbaafe26570d0c238872211b573ebc970"
+    },
+    {
+      "scene": "context",
+      "localTimeMs": 17999,
+      "file": "context-4.png",
+      "sha256": "16ef5da979cdfcb256bf0ffbe5be576da135fbfc6e8944798bf183e2873d1530"
+    },
+    {
+      "scene": "takeaways",
+      "localTimeMs": 0,
+      "file": "takeaways-0.png",
+      "sha256": "98ab9d6bd7aff861f759dcff9647077b50b7f20bc0f074a72b3df86d2215513d"
+    },
+    {
+      "scene": "takeaways",
+      "localTimeMs": 3000,
+      "file": "takeaways-1.png",
+      "sha256": "5f9a8d92e27e03244340b7a5c992bfbec4c634808cfefb4a821030fb87265baf"
+    },
+    {
+      "scene": "takeaways",
+      "localTimeMs": 7000,
+      "file": "takeaways-2.png",
+      "sha256": "5fc126de6cd3305b4db6e0a8894b23e08380c6e93322c1275bc8ec9495337dce"
+    },
+    {
+      "scene": "takeaways",
+      "localTimeMs": 12000,
+      "file": "takeaways-3.png",
+      "sha256": "ff065fac433ad7b224f11f6a7dd7b6a17ebe926a4d5ffb3fa49f6b2acae96e4f"
+    },
+    {
+      "scene": "takeaways",
+      "localTimeMs": 13999,
+      "file": "takeaways-4.png",
+      "sha256": "6ab21af0e73a134b69beefb036f5b5b6c664a06ea4042aa0dc8a1ec61f039a52"
+    }
+  ],
+  "seekOrderPixelEquality": "passed",
+  "textBounds": "passed for visible final text",
+  "numericCapacityProportions": "passed",
+  "transientLifecycle": "passed",
+  "chapterBoundary": "passed",
+  "designAndPlayControls": "passed",
+  "browser": "155.0.8059.12",
+  "pageErrors": [],
+  "aestheticApproval": "pending-user"
+}

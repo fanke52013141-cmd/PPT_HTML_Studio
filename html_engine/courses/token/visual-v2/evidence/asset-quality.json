@@ -1,0 +1,80 @@
+[
+  {
+    "file": "billing-core-v1.png",
+    "sha256": "2e04c27aff012b6b4cb31bb0466f5d4a33dbc0f7f2558aa7e1cad11d41bd7ef6",
+    "mode": "RGBA",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "alphaBounds": [
+      288,
+      21,
+      1394,
+      1024
+    ],
+    "alpha16Bounds": [
+      293,
+      88,
+      1287,
+      939
+    ],
+    "review": "Whole object visible on actual pastel background. Soft glow remains; suitability conditional for this experiment, not an approved reusable production asset."
+  },
+  {
+    "file": "brain-v1.png",
+    "sha256": "a28b389b13d6bf2d9fe62b6ccaa2efff3338044b2614ebab342944f6e6cff78d",
+    "mode": "RGBA",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "alphaBounds": [
+      65,
+      38,
+      1424,
+      984
+    ],
+    "alpha16Bounds": [
+      262,
+      80,
+      1301,
+      943
+    ],
+    "review": "Whole object visible on actual pastel background. Soft glow remains; suitability conditional for this experiment, not an approved reusable production asset."
+  },
+  {
+    "file": "core-v1.png",
+    "sha256": "22c1e7ce86cd96480f70822131430950201572e82c8b3b3b978e30ef2e4d9274",
+    "mode": "RGBA",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "alphaBounds": [
+      65,
+      9,
+      1362,
+      1024
+    ],
+    "alpha16Bounds": [
+      369,
+      106,
+      1192,
+      930
+    ],
+    "review": "Whole object visible on actual pastel background. Soft glow remains; suitability conditional for this experiment, not an approved reusable production asset."
+  }
+]

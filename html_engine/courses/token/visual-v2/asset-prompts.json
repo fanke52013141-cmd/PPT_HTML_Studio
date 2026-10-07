@@ -1,0 +1,18 @@
+{
+  "purpose": "Independent transparent assets derived from selected generated design images; original bitmap preserved; no automatic matting.",
+  "transparent_background": true,
+  "tasks": [
+    {
+      "id": "core",
+      "prompt": "Using this SLIDE as a reference ONLY, recreate the CENTRAL transparent pastel AI computation cube as a standalone image asset. Match its dimensional layered ivory/powder-blue/lavender/coral translucent acrylic plates and soft studio shading, elegant rounded cube housing. Output ONLY this cube, front three-quarter view, no text, no digits, no globe, no floating spheres, no trails, no labels, no arrows, no vectors or extra objects. No background scene, no broad shadow glow, true transparent background. All of the cube silhouette and small attached base must be present, centered at 65% of canvas width, with at least 15% completely transparent padding on all sides. Smooth contour. This is an illustrative computational metaphor; exact token IDs and motion are HTML layers outside the asset."
+    },
+    {
+      "id": "billing-core",
+      "prompt": "Use this slide ONLY as a visual reference. Produce ONLY its CENTRAL sculpted white and lavender spherical AI computation device as a separate beautiful transparent asset. Retain premium dimensional spherical ivory housing, translucent lavender-blue central glass core and a few closely attached orbit bands integral to device. REMOVE the letters AI and all typography. NO separate surrounding spheres, flying message cards, particles, outside glow, background, floor, globe or trails. Entire device and attached bands must fit the central 65% of canvas width with at least15% completely transparent padding on each side. True transparent background, clean antialiased contour. This is a conceptual model illustration, not literal hardware. HTML will provide all labels and token traffic separately."
+    },
+    {
+      "id": "brain",
+      "prompt": "Use this complete slide as a style/reference only. Recreate ONLY the CENTRAL exquisite pastel brain sculpture as one standalone transparent image asset. Rounded anatomically suggestive brain lobes, warm peach coral on left, pale lavender and powder blue on right, refined soft 3D ceramic material and gentle studio light. Entire silhouette including small lower brainstem, no words, no labels, no diagrams, no connector lines, no document/chart/database icons, no spheres, no floor, no exterior haze or broad glow. Center with at least15% transparent margin, subject about65% canvas width. True transparent background, smooth clean edges. This is a knowledge metaphor for educational composition, NOT a depiction of an LLM as a biological brain."
+    }
+  ]
+}

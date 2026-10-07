@@ -1,0 +1,81 @@
+{
+  "tasks": [
+    {
+      "selectedFile": "designs/01-definition.png",
+      "sha256": "5207ee7abd10aa9589b4afb1b581618dc2f13cfed5ed46a3e44133b3c9976bfb",
+      "reference": "../../../../docs/styles/science-explainer/references/user-style-reference.png",
+      "transparent_background": false,
+      "tool": "image_gen.imagegen",
+      "model": "not exposed by tool",
+      "postProcessing": "none; original selected PNG copied byte-for-byte"
+    },
+    {
+      "selectedFile": "designs/02-splitting.png",
+      "sha256": "5a75e9c0aa055d69c8f6f2eb9f6f7a4c1d397489092aad2ce243f34b70d368b0",
+      "reference": "../../../../docs/styles/science-explainer/references/user-style-reference.png",
+      "transparent_background": false,
+      "tool": "image_gen.imagegen",
+      "model": "not exposed by tool",
+      "postProcessing": "none; original selected PNG copied byte-for-byte"
+    },
+    {
+      "selectedFile": "designs/03-billing.png",
+      "sha256": "8554950326db466b8d77ab5a03eb85d9570e6279906faddad2463a171776cd69",
+      "reference": "../../../../docs/styles/science-explainer/references/user-style-reference.png",
+      "transparent_background": false,
+      "tool": "image_gen.imagegen",
+      "model": "not exposed by tool",
+      "postProcessing": "none; original selected PNG copied byte-for-byte"
+    },
+    {
+      "selectedFile": "designs/04-context.png",
+      "sha256": "6abaae2338a33f5cbc678298d40ec2835bcde34476fc73b8bc977135b0cd0a29",
+      "reference": "../../../../docs/styles/science-explainer/references/user-style-reference.png",
+      "transparent_background": false,
+      "tool": "image_gen.imagegen",
+      "model": "not exposed by tool",
+      "postProcessing": "none; original selected PNG copied byte-for-byte"
+    },
+    {
+      "selectedFile": "designs/05-takeaways.png",
+      "sha256": "e1616aa8e3a223849fc59aad38e417d78c94b736b9fda116931360c618b27a87",
+      "reference": "../../../../docs/styles/science-explainer/references/user-style-reference.png",
+      "transparent_background": false,
+      "tool": "image_gen.imagegen",
+      "model": "not exposed by tool",
+      "postProcessing": "none; original selected PNG copied byte-for-byte"
+    },
+    {
+      "selectedFile": "assets/billing-core-v1.png",
+      "sha256": "2e04c27aff012b6b4cb31bb0466f5d4a33dbc0f7f2558aa7e1cad11d41bd7ef6",
+      "reference": "designs/03-billing.png",
+      "transparent_background": true,
+      "tool": "image_gen.imagegen",
+      "model": "not exposed by tool",
+      "postProcessing": "none; original selected PNG copied byte-for-byte"
+    },
+    {
+      "selectedFile": "assets/brain-v1.png",
+      "sha256": "a28b389b13d6bf2d9fe62b6ccaa2efff3338044b2614ebab342944f6e6cff78d",
+      "reference": "designs/05-takeaways.png",
+      "transparent_background": true,
+      "tool": "image_gen.imagegen",
+      "model": "not exposed by tool",
+      "postProcessing": "none; original selected PNG copied byte-for-byte"
+    },
+    {
+      "selectedFile": "assets/core-v1.png",
+      "sha256": "22c1e7ce86cd96480f70822131430950201572e82c8b3b3b978e30ef2e4d9274",
+      "reference": "designs/01-definition.png",
+      "transparent_background": true,
+      "tool": "image_gen.imagegen",
+      "model": "not exposed by tool",
+      "postProcessing": "none; original selected PNG copied byte-for-byte"
+    }
+  ],
+  "designReview": "../design-definition.json",
+  "prompts": [
+    "../design-prompts.json",
+    "../asset-prompts.json"
+  ]
+}

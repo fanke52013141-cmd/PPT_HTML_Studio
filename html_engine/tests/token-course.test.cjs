@@ -174,7 +174,7 @@ async function main() {
       evidence.browser.push({ name, frames });
     }
     await page.goto(
-      pathToFileURL(path.join(root, "courses/token/index.html")).href,
+      pathToFileURL(path.join(root, "courses/token/legacy-v1.html")).href,
     );
     await page.locator("#scenes button").nth(4).click();
     const frame = await page.locator("#player").contentFrame();

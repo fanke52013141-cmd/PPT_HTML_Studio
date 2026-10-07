@@ -1,0 +1,238 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #eef0f4;
+  color: #465b73;
+  font-family: "Microsoft YaHei", sans-serif;
+}
+main {
+  max-width: 1664px;
+  margin: 24px auto;
+  padding: 0 24px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 18px;
+}
+header strong {
+  font-size: 22px;
+}
+header span {
+  margin-left: 22px;
+  color: #8998ad;
+  font-size: 14px;
+}
+a {
+  color: #637b9b;
+}
+nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+button,
+select {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid #dce2eb;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 17px;
+  color: #465b73;
+}
+nav button[aria-current="true"] {
+  background: #ffecef;
+  border-color: #f4a5b5;
+  color: #ce627b;
+}
+#frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #fbfaf7;
+  border-radius: 14px;
+  box-shadow: 0 16px 55px #334b7312;
+}
+#stage {
+  position: absolute;
+  width: 1600px;
+  height: 900px;
+  transform-origin: 0 0;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 85% 18%, #e8edfc 0, transparent 43%),
+    radial-gradient(ellipse at 8% 90%, #ffedf0 0, transparent 44%), #fcfbf9;
+}
+.node {
+  position: absolute;
+}
+.text {
+  white-space: nowrap;
+}
+.title {
+  font-weight: 700;
+  font-size: 64px;
+  letter-spacing: -1.5px;
+  line-height: 1.35;
+}
+.accent {
+  color: #f47f94;
+}
+.subtitle {
+  font-size: 26px;
+  color: #8798b0;
+  line-height: 1.6;
+}
+.label {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.body {
+  font-size: 26px;
+  color: #6f829b;
+  line-height: 1.55;
+}
+.small {
+  font-size: 22px;
+  color: #8b9bb0;
+  line-height: 1.5;
+}
+.caption {
+  font-size: 24px;
+  color: #6f829b;
+  text-align: center;
+  line-height: 1.6;
+}
+.chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  font-size: 38px;
+  font-weight: 500;
+  border: 1px solid #ffffffb0;
+  box-shadow:
+    inset 0 1px 0 white,
+    0 10px 24px #4d658a08;
+}
+.coral {
+  background: linear-gradient(140deg, #fff1f4, #ffe0e7);
+  color: #ec768e;
+}
+.blue {
+  background: linear-gradient(140deg, #eef6ff, #dceaff);
+  color: #6a95df;
+}
+.purple {
+  background: linear-gradient(140deg, #f3efff, #e5dcfb);
+  color: #a18cde;
+}
+.mint {
+  background: linear-gradient(140deg, #effaf5, #d9f2e6);
+  color: #78bba0;
+}
+.panel {
+  border: 1px solid #e5e9f0;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #ffffffee, #ffffff92);
+  box-shadow: 0 10px 35px #576b8c08;
+}
+.hero {
+  object-fit: contain;
+}
+.line {
+  background: #dfe5ee;
+}
+.note-band {
+  background: #ffffff9c;
+  border: 1px solid white;
+  border-radius: 30px;
+}
+.metric {
+  font-weight: 700;
+  font-size: 114px;
+  letter-spacing: -4px;
+  line-height: 1.1;
+}
+.token-id {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.svg-layer {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.transport input {
+  flex: 1;
+  min-width: 150px;
+  accent-color: #f47f94;
+}
+output {
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  min-width: 110px;
+}
+#status {
+  font-size: 14px;
+  color: #8291a5;
+}
+details {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin: 16px 0;
+}
+details p {
+  font-size: 15px;
+  line-height: 1.85;
+  white-space: pre-line;
+}
+#reference {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: white;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 900px) {
+  main {
+    padding: 0 12px;
+    margin-top: 14px;
+  }
+  header span {
+    display: block;
+    margin: 6px 0;
+  }
+  nav {
+    overflow: auto;
+  }
+  nav button {
+    white-space: nowrap;
+    font-size: 13px;
+  }
+}
+.svg-layer{width:1600px;height:900px}
