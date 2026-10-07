@@ -237,13 +237,16 @@
         "C04"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "partial",
       "acceptance": [
         "AC11"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "html_action_editing.py",
+        "checks/test_html_action_editing.py"
+      ],
+      "commit": "this-round",
+      "note": "动作编辑契约与服务核已实现并验证：注册动作（enter 显隐入场/exit 退出/emphasize 强调/relation_draw 关系描绘）、通道唯一与时间窗非重叠校验、enter 必备、exit 仅限过渡对象、relation_draw 仅限批注目标、人工覆盖优先且重规划冲突显式返回（不静默覆盖）、AC11 动作证据（对象动作窗口+讲稿映射）。渲染器/Schema 0.3.0 的 exit/emphasize 运行时求值与浏览器边界截图（进入前/过程/退出后不可见/随机 seek）为下一步。"
     },
     {
       "id": "D02",
