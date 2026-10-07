@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "date": "2026-10-08",
   "branch": "html-studio",
-  "published_to": "origin/html-studio",
+  "published_to": "origin/main 23af1f1 (publication form, fast-forward) + origin/html-studio (full source)",
   "plan": "docs/plans/html-backend-development",
   "environment": {
     "os": "Windows 10.0.26200 x64",
@@ -14,17 +14,61 @@
     "run_dir_isolation": "checks/conftest.py (PPT_STUDIO_DB_PATH / PPT_STUDIO_RUNS_DIR)"
   },
   "command_evidence": {
-    "engine_e1": {"cmd": "npm test (html_engine)", "exit": 0, "result": "29 unit cases, 2 scenes, pixel repeatable"},
-    "engine_visual": {"cmd": "npm run test:visual", "exit": 0, "result": "13 checks / 4 scenes / 0 page errors"},
-    "engine_actions_ac11": {"cmd": "node visual/tests/actions.test.cjs", "exit": 0, "result": "5 checks (exit boundaries, emphasize lift, relation tracking, seek determinism)"},
-    "engine_e2": {"cmd": "npm run test:e2", "exit": 0, "result": "10 unit / 3 scenes"},
-    "engine_course": {"cmd": "npm run test:course", "exit": 0, "result": "9 unit / 5 scenes / 25 frames"},
-    "agent_suite": {"cmd": "python -m pytest checks/agent", "exit": 0, "result": "423 passed"},
-    "contract_check": {"cmd": "python scripts/generate_agent_contracts.py --check", "exit": 0, "result": "capability-matrix up to date"},
-    "html_suite": {"cmd": "python -m pytest checks/test_html_*.py checks/test_project_visual_backend.py checks/test_database_migrations.py checks/test_invalidation_service.py", "exit": 0, "result": "64+ passed (planning/design/assets/review/store/binder/runner/actions/backend/migrations/invalidation)"},
-    "frontend": {"cmd": "node checks/test_visible_flow.js && node checks/test_frontend_quality.js", "exit": 0, "result": "all passed"},
-    "live_smoke_video": {"cmd": "node tools/export-slide-video.cjs water-facts + 12s audio", "exit": 0, "result": "1600x900 H.264/AAC, duration 12.000s, zero temp residue"},
-    "live_smoke_pptx": {"cmd": "pytest checks/test_html_pptx_snapshot.py", "exit": 0, "result": "real 16:9 PPTX with exact EMU + manifest"}
+    "engine_e1": {
+      "cmd": "npm test (html_engine)",
+      "exit": 0,
+      "result": "29 unit cases, 2 scenes, pixel repeatable"
+    },
+    "engine_visual": {
+      "cmd": "npm run test:visual",
+      "exit": 0,
+      "result": "13 checks / 4 scenes / 0 page errors"
+    },
+    "engine_actions_ac11": {
+      "cmd": "node visual/tests/actions.test.cjs",
+      "exit": 0,
+      "result": "5 checks (exit boundaries, emphasize lift, relation tracking, seek determinism)"
+    },
+    "engine_e2": {
+      "cmd": "npm run test:e2",
+      "exit": 0,
+      "result": "10 unit / 3 scenes"
+    },
+    "engine_course": {
+      "cmd": "npm run test:course",
+      "exit": 0,
+      "result": "9 unit / 5 scenes / 25 frames"
+    },
+    "agent_suite": {
+      "cmd": "python -m pytest checks/agent",
+      "exit": 0,
+      "result": "423 passed"
+    },
+    "contract_check": {
+      "cmd": "python scripts/generate_agent_contracts.py --check",
+      "exit": 0,
+      "result": "capability-matrix up to date"
+    },
+    "html_suite": {
+      "cmd": "python -m pytest checks/test_html_*.py checks/test_project_visual_backend.py checks/test_database_migrations.py checks/test_invalidation_service.py",
+      "exit": 0,
+      "result": "64+ passed (planning/design/assets/review/store/binder/runner/actions/backend/migrations/invalidation)"
+    },
+    "frontend": {
+      "cmd": "node checks/test_visible_flow.js && node checks/test_frontend_quality.js",
+      "exit": 0,
+      "result": "all passed"
+    },
+    "live_smoke_video": {
+      "cmd": "node tools/export-slide-video.cjs water-facts + 12s audio",
+      "exit": 0,
+      "result": "1600x900 H.264/AAC, duration 12.000s, zero temp residue"
+    },
+    "live_smoke_pptx": {
+      "cmd": "pytest checks/test_html_pptx_snapshot.py",
+      "exit": 0,
+      "result": "real 16:9 PPTX with exact EMU + manifest"
+    }
   },
   "acceptance": {
     "AC01_baseline": "passed",
@@ -52,7 +96,7 @@
     "user AC04 visual verdict on evidence screenshots",
     "user AC20 guided real-course run (import→plan→review→audio→video→PPTX)",
     "bind a live LLM/image provider for C02/C03 real-service evidence",
-    "pptx_service/web route dispatch by visual_backend into the snapshot pipeline",
+    "PowerPoint open-check for AC16 (target software availability)",
     "workspace UI panels for html review/approve (service+routes shipped)"
   ],
   "honesty_notes": "passed 项均为工程验收（可重复命令+退出码+断言）；pending_review/blocked 项不冒充完成；未保存任何密钥或真实用户数据。"
