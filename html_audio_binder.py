@@ -12,6 +12,7 @@ stays reusable.
 from __future__ import annotations
 
 import copy
+import math
 from typing import Any, Iterable
 
 
@@ -33,20 +34,23 @@ def _segments(audio_timeline: dict[str, Any]) -> list[dict[str, Any]]:
     previous_end = 0.0
     for segment in segments:
         if not isinstance(segment, dict):
-            raise AudioBindingError(
-                "AUDIO_TIMESTAMP_INVALID", "音频时间轴段格式不合法"
-            )
+            raise AudioBindingError("AUDIO_TIMESTAMP_INVALID", "音频时间轴段格式不合法")
         start, end = segment.get("start"), segment.get("end")
         text = segment.get("text")
         if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
             raise AudioBindingError(
                 "AUDIO_TIMESTAMP_INVALID", "音频时间轴 start/end 必须是数字"
-        )
+            )
         if not isinstance(text, str) or not text.strip():
             raise AudioBindingError(
                 "AUDIO_BEAT_TEXT_MISSING", "音频时间轴段缺少旁白文本"
             )
-        if start < 0 or end <= start:
+        if (
+            not math.isfinite(start)
+            or not math.isfinite(end)
+            or start < 0
+            or end <= start
+        ):
             raise AudioBindingError(
                 "AUDIO_TIMESTAMP_INVALID",
                 f"音频时间轴段区间不合法：{segment.get('id')}",
@@ -62,9 +66,19 @@ def _segments(audio_timeline: dict[str, Any]) -> list[dict[str, Any]]:
 
 def _audio_duration_sec(audio_timeline: dict[str, Any]) -> float:
     duration = audio_timeline.get("audio_content_duration_sec")
-    if not isinstance(duration, (int, float)) or duration <= 0:
+    if (
+        not isinstance(duration, (int, float))
+        or isinstance(duration, bool)
+        or not math.isfinite(duration)
+        or duration <= 0
+    ):
         duration = audio_timeline.get("duration_sec")
-    if not isinstance(duration, (int, float)) or duration <= 0:
+    if (
+        not isinstance(duration, (int, float))
+        or isinstance(duration, bool)
+        or not math.isfinite(duration)
+        or duration <= 0
+    ):
         raise AudioBindingError(
             "AUDIO_DURATION_MISSING", "audio_timeline 缺少可用的音频时长"
         )
@@ -74,6 +88,7 @@ def _audio_duration_sec(audio_timeline: dict[str, Any]) -> float:
 def bind_scene_to_audio(
     scene: dict[str, Any],
     audio_timeline: dict[str, Any],
+    binding: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a new scene whose duration/beats/motion follow the audio.
 
@@ -90,6 +105,18 @@ def bind_scene_to_audio(
         raise AudioBindingError("SCENE_DURATION_INVALID", "场景时长不合法")
 
     scale = duration_ms / float(scene_duration_ms)
+    windows = {}
+    for segment in segments:
+        beat_id = segment.get("beat_id") or segment.get("id")
+        if not beat_id:
+            raise AudioBindingError("AUDIO_BEAT_ID_MISSING", "音频段缺少稳定语块 ID")
+        start, end = round(segment["start"] * 1000), round(segment["end"] * 1000)
+        if start >= duration_ms or end > duration_ms:
+            raise AudioBindingError("AUDIO_BEAT_OVERFLOW", "语块超过音频内容时长")
+        if beat_id in windows and not segment.get("beat_id"):
+            raise AudioBindingError("AUDIO_BEAT_DUPLICATE", "音频语块 ID 重复")
+        previous = windows.get(beat_id, (start, end))
+        windows[beat_id] = (min(start, previous[0]), max(end, previous[1]))
     bound = copy.deepcopy(scene)
     bound["durationMs"] = duration_ms
     bound["beats"] = [
@@ -108,12 +135,34 @@ def bind_scene_to_audio(
     for action in motions:
         start_ms = action.get("startMs")
         duration = action.get("durationMs")
-        if not isinstance(start_ms, (int, float)) or not isinstance(duration, (int, float)):
+        if not isinstance(start_ms, (int, float)) or not isinstance(
+            duration, (int, float)
+        ):
             raise AudioBindingError(
                 "SCENE_MOTION_INVALID", f"动作时间不合法：{action.get('targetId')}"
             )
-        new_start = int(round(float(start_ms) * scale))
-        new_duration = int(round(float(duration) * scale))
+        link = (
+            (binding or {})
+            .get("actions", {})
+            .get(f"{action['targetId']}:{action['type']}")
+        )
+        if link:
+            if link["beatId"] not in windows:
+                raise AudioBindingError(
+                    "AUDIO_BEAT_MISSING", f"缺少语块 {link['beatId']}"
+                )
+            edge = 1 if link.get("edge") == "end" else 0
+            new_start = windows[link["beatId"]][edge] + int(link.get("offsetMs", 0))
+            new_duration = int(duration)
+            if new_start < 0 or new_start >= duration_ms:
+                raise AudioBindingError("AUDIO_OFFSET_OVERFLOW", "手工偏移越过作品边界")
+        elif binding is not None:
+            # Unbound decorative actions keep their declared absolute timing.
+            new_start, new_duration = int(start_ms), int(duration)
+        else:
+            # Explicit compatibility for old unbound experiments only.
+            new_start = int(round(float(start_ms) * scale))
+            new_duration = int(round(float(duration) * scale))
         # 末帧保持：任何动作都不得越过音频时长。
         new_start = min(new_start, max(duration_ms - 1, 0))
         if new_start + new_duration > duration_ms:
@@ -126,12 +175,20 @@ def bind_scene_to_audio(
     return bound
 
 
-def binding_metadata(scene: dict[str, Any], audio_timeline: dict[str, Any]) -> dict[str, Any]:
+def binding_metadata(
+    scene: dict[str, Any], audio_timeline: dict[str, Any]
+) -> dict[str, Any]:
     """Provenance record for the render/export manifest (not scene input)."""
     segments = audio_timeline.get("segments") or []
-    duration = audio_timeline.get("audio_content_duration_sec") or audio_timeline.get("duration_sec")
+    duration = audio_timeline.get("audio_content_duration_sec") or audio_timeline.get(
+        "duration_sec"
+    )
     scene_duration = scene.get("durationMs") or 0
-    scale = (float(duration) * 1000 / scene_duration) if duration and scene_duration else None
+    scale = (
+        (float(duration) * 1000 / scene_duration)
+        if duration and scene_duration
+        else None
+    )
     return {
         "source": "existing_audio",
         "audioDurationMs": int(round(float(duration) * 1000)) if duration else None,

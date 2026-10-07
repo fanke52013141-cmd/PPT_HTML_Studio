@@ -185,19 +185,26 @@ class VideoRenderService:
     ) -> dict[str, Any]:
         project = self.get_project(db, project_id)
         slide_ids = self._read_contract_slide_ids(project.run_dir)
-        provenance_errors = validate_visual_provenance_set(
-            project.run_dir,
-            slide_ids,
-        )
-        if provenance_errors:
-            details = ", ".join(
-                f"{item['slide_id']}({item['reason']})"
-                for item in provenance_errors
+        if (getattr(project, "visual_backend", "image") or "image") == "html":
+            from html_input_manifest import html_readiness
+            ready = html_readiness(project.run_dir, Path(__file__).resolve().parent, slide_ids)
+            if not ready["ready"]:
+                raise VideoRenderError(409, "HTML 输入或视觉批准未就绪：" +
+                                       "; ".join(x["message"] for x in ready["issues"]))
+        else:
+            provenance_errors = validate_visual_provenance_set(
+                project.run_dir,
+                slide_ids,
             )
-            raise VideoRenderError(
-                409,
-                "图片来源校验未通过，请返回图片步骤处理：" + details,
-            )
+            if provenance_errors:
+                details = ", ".join(
+                    f"{item['slide_id']}({item['reason']})"
+                    for item in provenance_errors
+                )
+                raise VideoRenderError(
+                    409,
+                    "图片来源校验未通过，请返回图片步骤处理：" + details,
+                )
         audio_confirmation = tts_confirmation_status(
             project.run_dir,
             slide_ids,

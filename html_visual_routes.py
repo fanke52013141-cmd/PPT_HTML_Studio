@@ -47,13 +47,9 @@ def _get_db():
 
 
 def _html_project(project_id: str, db: Any):
-    from database import Project
+    from project_path_service import project_or_404
 
-    project = (
-        db.query(Project).filter(Project.id == project_id).first()
-    )
-    if project is None:
-        raise HTTPException(status_code=404, detail="项目不存在")
+    project = project_or_404(db, project_id)
     if (project.visual_backend or "image") != "html":
         raise HTTPException(
             status_code=400,
@@ -74,7 +70,16 @@ def html_visual_status(project_id: str, db: Any = Depends(_get_db)):
 
     run_dir = project_run_dir_or_500(project)
     slide_ids = read_current_slide_ids_or_404(project)
-    return {"success": True, **store.read_status(run_dir, slide_ids)}
+    from html_input_manifest import html_readiness
+    from pathlib import Path
+
+    readiness = html_readiness(run_dir, Path(__file__).resolve().parent, slide_ids)
+    return {
+        "success": True,
+        **store.read_status(run_dir, slide_ids),
+        "ready": readiness["ready"],
+        "issues": readiness["issues"],
+    }
 
 
 @router.get("/api/projects/{project_id}/html-visual/{slide_id}")
@@ -106,7 +111,6 @@ def html_visual_put(
             payload.scene,
             payload.expected_revision,
             lock=_dependencies.artifact_lock,
-            write_json_atomic=_dependencies.write_json_atomic,
         )
     except store.HtmlVisualConflict as exc:
         raise HTTPException(

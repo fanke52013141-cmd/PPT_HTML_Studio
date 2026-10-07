@@ -85,7 +85,7 @@ def test_run_renders_segments_concatenates_and_probes(tmp_path: Path) -> None:
     run_dir = _project_files(tmp_path)
     probe = {
         "streams": [
-            {"codec_type": "video", "codec_name": "h264"},
+            {"codec_type": "video", "codec_name": "h264", "width":1600,"height":900,"pix_fmt":"yuv420p", "r_frame_rate":"30/1", "color_space":"bt709", "color_transfer":"bt709", "color_primaries":"bt709"},
             {"codec_type": "audio", "codec_name": "aac"},
         ],
         "format": {"duration": "20.0"},

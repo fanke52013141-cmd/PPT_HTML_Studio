@@ -30,11 +30,17 @@ class HtmlReviewDependencies:
 
 
 _dependencies: Optional[HtmlReviewDependencies] = None
+_jobs = None
 
 
 def configure_html_review_service(dependencies: HtmlReviewDependencies) -> None:
     global _dependencies
     _dependencies = dependencies
+
+
+def configure_html_jobs(jobs) -> None:
+    global _jobs
+    _jobs = jobs
 
 
 def _service_deps() -> review.HtmlReviewDependencies:
@@ -63,11 +69,9 @@ def _get_db():
 
 
 def _html_project(project_id: str, db: Any):
-    from database import Project
+    from project_path_service import project_or_404
 
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if project is None:
-        raise HTTPException(status_code=404, detail="项目不存在")
+    project = project_or_404(db, project_id)
     if (project.visual_backend or "image") != "html":
         raise HTTPException(
             status_code=400,
@@ -92,6 +96,8 @@ def _stored_scene_or_body(
     project_id: str, slide_id: str, run_dir: Any, body: Optional[SceneBodyRequest]
 ) -> dict:
     if body is not None and body.scene:
+        if body.scene.get("id") != slide_id:
+            raise HTTPException(400, "场景标识必须与 Slide 一致")
         return body.scene
     document = load_scene_with_revision(run_dir, slide_id)
     if document is None:
@@ -147,11 +153,12 @@ def review_scene(
     run_dir = project_run_dir_or_500(project)
     scene = _stored_scene_or_body(project_id, slide_id, run_dir, payload)
     try:
-        report = review.review_scene(
-            scene, run_dir=run_dir, deps=_service_deps()
-        )
+        report = review.review_scene(scene, run_dir=run_dir, deps=_service_deps())
     except review.HtmlReviewError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc))
+    report["screenshot_url"] = (
+        f"/api/projects/{project_id}/html-review/{slide_id}/screenshot"
+    )
     return {"success": True, "review": report}
 
 
@@ -164,10 +171,9 @@ def approve_scene(
 ):
     project = _html_project(project_id, db)
     run_dir = project_run_dir_or_500(project)
-    scene = _stored_scene_or_body(project_id, slide_id, run_dir, payload)
     try:
-        approval = review.approve_scene(
-            scene, run_dir=run_dir, deps=_service_deps()
+        approval = review.approve_stored_scene(
+            run_dir, slide_id, payload.scene, deps=_service_deps()
         )
     except review.HtmlReviewError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc))
@@ -182,7 +188,82 @@ def approval_status(
 ):
     project = _html_project(project_id, db)
     run_dir = project_run_dir_or_500(project)
+    document = load_scene_with_revision(run_dir, slide_id)
     status = review.approval_status(
-        None, run_dir=run_dir, deps=_service_deps(), slide_id=slide_id
+        document["scene"] if document else None,
+        run_dir=run_dir,
+        deps=_service_deps(),
+        slide_id=slide_id,
     )
     return {"success": True, **status}
+
+
+@router.post("/api/projects/{project_id}/html-review/{slide_id}/produce")
+def produce(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
+    project = _html_project(project_id, db)
+    run_dir = project_run_dir_or_500(project)
+    if _jobs is None:
+        raise HTTPException(503, "HTML 生产任务服务未配置")
+    from html_task_store import HtmlTaskError
+
+    try:
+        task = _jobs.submit(db, project, _contract_slide(run_dir, slide_id))
+    except HtmlTaskError as exc:
+        raise HTTPException(exc.status_code, str(exc))
+    return {"success": True, "task": task}
+
+
+def _task(project_id, job_id, db):
+    _html_project(project_id, db)
+    from database import LocalJob
+    from html_task_store import TASK_TYPES
+
+    task = (
+        db.query(LocalJob)
+        .filter(
+            LocalJob.id == job_id,
+            LocalJob.project_id == project_id,
+            LocalJob.job_type.in_(TASK_TYPES),
+        )
+        .first()
+    )
+    if task is None:
+        raise HTTPException(404, "任务不存在")
+    return task
+
+
+@router.get("/api/projects/{project_id}/html-review/tasks/{job_id}")
+def task_status(project_id: str, job_id: str, db: Any = Depends(_get_db)):
+    from html_task_store import _job_to_dict
+
+    return {"success": True, "task": _job_to_dict(_task(project_id, job_id, db))}
+
+
+@router.post("/api/projects/{project_id}/html-review/tasks/{job_id}/cancel")
+def task_cancel(project_id: str, job_id: str, db: Any = Depends(_get_db)):
+    _task(project_id, job_id, db)
+    from html_task_store import cancel_task, HtmlTaskError
+
+    try:
+        return {"success": True, "task": cancel_task(db, job_id)}
+    except HtmlTaskError as exc:
+        raise HTTPException(exc.status_code, str(exc))
+
+
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/screenshot")
+def screenshot(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
+    from fastapi.responses import FileResponse
+    from html_visual_store import validate_slide_id
+    from pathlib import Path
+
+    project = _html_project(project_id, db)
+    path = (
+        Path(project_run_dir_or_500(project))
+        / review.REVIEW_DIR
+        / f"review-{validate_slide_id(slide_id)}.png"
+    )
+    if not path.is_file():
+        raise HTTPException(404, "尚未生成审阅截图")
+    return FileResponse(
+        path, media_type="image/png", headers={"Cache-Control": "no-store"}
+    )

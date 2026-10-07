@@ -38,6 +38,7 @@ class HtmlSnapshotDependencies:
     )
     node_bin: str = "node"
     stage_timeout_sec: float = 300.0
+    run_dir: Path | None = None
 
 
 def render_snapshots(
@@ -70,11 +71,12 @@ def render_snapshots(
         encoding="utf-8",
         errors="replace",
         timeout_sec=deps.stage_timeout_sec,
+        env=__import__("html_visual_review_service").resource_environment(
+            deps.run_dir or out_dir
+        ),
     )
     if result.returncode != 0:
-        raise HtmlSnapshotError(
-            "快照渲染失败：" + (result.stderr or "")[-400:]
-        )
+        raise HtmlSnapshotError("快照渲染失败：" + (result.stderr or "")[-400:])
     paths = [work / f"snapshot-{i:03d}.png" for i in range(len(times_ms))]
     for path in paths:
         if not path.is_file():
@@ -105,7 +107,9 @@ def build_snapshot_pptx(
     for image_path in image_paths:
         slide = presentation.slides.add_slide(blank)
         slide.shapes.add_picture(
-            str(image_path), 0, 0,
+            str(image_path),
+            0,
+            0,
             width=presentation.slide_width,
             height=presentation.slide_height,
         )
@@ -118,7 +122,11 @@ def build_snapshot_pptx(
         "note": "图片式页面：不可逐对象编辑，不含原生动画；分步快照页与时间一一对应。",
         "page_count": len(pages),
         "pages": [
-            {"page": index + 1, "timeMs": page["timeMs"], "label": page.get("label", "")}
+            {
+                "page": index + 1,
+                "timeMs": page["timeMs"],
+                "label": page.get("label", ""),
+            }
             for index, page in enumerate(pages)
         ],
     }

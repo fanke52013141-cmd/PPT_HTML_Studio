@@ -65,9 +65,9 @@ class HtmlReviewDependencies:
 
     repo_root: Path
     json_generator: Callable[..., Dict[str, Any]]
-    run_subprocess_bounded: Callable[..., subprocess.CompletedProcess] = (
-        __import__("runtime_support").run_subprocess_killable
-    )
+    run_subprocess_bounded: Callable[..., subprocess.CompletedProcess] = __import__(
+        "runtime_support"
+    ).run_subprocess_killable
     node_bin: str = "node"
     review_script: Path = REVIEW_SCRIPT
     stage_timeout_sec: float = 240.0
@@ -88,7 +88,23 @@ def _write_json(path: Path, payload: Any) -> None:
 def _registered_capabilities(repo_root: Path) -> Dict[str, Any]:
     catalog = load_template_catalog(repo_root)
     effects = load_effect_registry(repo_root)
-    return {"catalog": catalog, "effects": effects}
+    schema = json.loads(
+        (repo_root / "html_engine/visual/schema.json").read_text(encoding="utf-8")
+    )
+    node_contracts = {
+        item["properties"]["type"]["const"]: {
+            "required": [
+                k for k in item["required"] if k not in ("id", "slot", "type")
+            ],
+            "properties": {
+                k: v
+                for k, v in item["properties"].items()
+                if k not in ("id", "slot", "type")
+            },
+        }
+        for item in schema["$defs"]["node"]["oneOf"]
+    }
+    return {"catalog": catalog, "effects": effects, "node_contracts": node_contracts}
 
 
 def _plan_schema_hint() -> str:
@@ -125,8 +141,16 @@ def build_plan_generation_prompts(
         "槽位与对象上；不得输出 HTML/CSS/JS，不得使用未列出的模板、槽位、图标或"
         "动作。语块映射必须覆盖全部讲稿语块。\n已注册模板与槽位：\n"
         + "\n".join(template_lines)
-        + "\n已注册图标：" + ", ".join(capabilities["catalog"]["icons"])
-        + "\n已注册效果：" + ", ".join(sorted(capabilities["effects"]["effects"]))
+        + "\n已注册图标："
+        + ", ".join(capabilities["catalog"]["icons"])
+        + "\n已注册效果："
+        + ", ".join(sorted(capabilities["effects"]["effects"]))
+        + "\nPromptVersion:html-plan-0.2.0。每个内容槽位必须在 objects 中有一个同 kind 对象，"
+        "beats.target.objectId 只能引用本次对象；同一动作只绑定一个语块。"
+        "图片 assetRef 可引用用户给出的已有资产；需新资产时在 assets 声明 image_asset 和 need，"
+        "只生成独立主体，不生成整页。text 的 runs 每项为{text,emphasis}。"
+        + "\n槽位内容字段契约（kind 对应 type，不输出 id/slot/type）："
+        + json.dumps(capabilities.get("node_contracts", {}), ensure_ascii=False)
     )
     user = json.dumps(
         {
@@ -192,21 +216,25 @@ def generate_scene_plan(
                 capabilities["catalog"],
                 contract_slide=contract_slide,
             )
-            attempts.append({
-                "round": round_index,
-                "response_sha256": response_sha256,
-                "accepted": True,
-            })
+            attempts.append(
+                {
+                    "round": round_index,
+                    "response_sha256": response_sha256,
+                    "accepted": True,
+                }
+            )
             break
         except HtmlScenePlanError as exc:
             last_failure = exc
-            attempts.append({
-                "round": round_index,
-                "response_sha256": response_sha256,
-                "accepted": False,
-                "diagnostic_code": exc.code,
-                "diagnostic": str(exc),
-            })
+            attempts.append(
+                {
+                    "round": round_index,
+                    "response_sha256": response_sha256,
+                    "accepted": False,
+                    "diagnostic_code": exc.code,
+                    "diagnostic": str(exc),
+                }
+            )
     record = {
         "format": "hps.html.plan_generation",
         "version": "0.1.0",
@@ -238,6 +266,17 @@ def generate_scene_plan(
 # ------------------------------------------------------------- static review
 
 
+def resource_environment(run_dir):
+    import os
+
+    env = dict(os.environ)
+    resources = Path(run_dir) / "planning/html_visual/resources.json"
+    env.pop("HPS_HTML_RESOURCES", None)
+    if resources.is_file():
+        env["HPS_HTML_RESOURCES"] = str(resources.resolve())
+    return env
+
+
 def review_scene(
     scene: Dict[str, Any],
     *,
@@ -245,6 +284,12 @@ def review_scene(
     deps: HtmlReviewDependencies,
 ) -> Dict[str, Any]:
     """Compile + measure + screenshot one scene via the shared bundle."""
+    from html_visual_store import validate_slide_id, HtmlVisualError
+
+    try:
+        validate_slide_id(scene.get("id"))
+    except HtmlVisualError as exc:
+        raise HtmlReviewError(str(exc), status_code=400) from exc
     run_dir = Path(run_dir)
     review_dir = run_dir / REVIEW_DIR
     review_dir.mkdir(parents=True, exist_ok=True)
@@ -268,6 +313,7 @@ def review_scene(
         encoding="utf-8",
         errors="replace",
         timeout_sec=deps.stage_timeout_sec,
+        env=resource_environment(run_dir),
     )
     if result.returncode != 0:
         raise HtmlReviewError(
@@ -276,9 +322,7 @@ def review_scene(
             code="REVIEW_SCRIPT_FAILED",
         )
     report = json.loads(report_path.read_text(encoding="utf-8"))
-    report["screenshot"] = str(
-        screenshot_path.relative_to(run_dir)
-    )
+    report["screenshot"] = str(screenshot_path.relative_to(run_dir))
     report["scene_sha256"] = _sha256_bytes(
         json.dumps(scene, ensure_ascii=False, sort_keys=True).encode("utf-8")
     )
@@ -336,6 +380,11 @@ def approve_scene(
         ),
         "reviewer": reviewer,
     }
+    from html_input_manifest import resolved_scene_inputs
+
+    approval["resolved_input_digest"] = resolved_scene_inputs(
+        scene, run_dir, deps.repo_root
+    )["digest"]
     approval["sha256"] = _sha256_bytes(
         json.dumps(approval, ensure_ascii=False, sort_keys=True).encode("utf-8")
     )
@@ -352,12 +401,15 @@ def approval_status(
     slide_id: str,
 ) -> Dict[str, Any]:
     """Recompute approval validity; any related change invalidates it."""
+    from html_visual_store import validate_slide_id
+
+    slide_id = validate_slide_id(slide_id)
     path = Path(run_dir) / f"{APPROVAL_PREFIX}{slide_id}.json"
     if not path.is_file():
         return {"valid": False, "reason": "no_approval"}
     approval = json.loads(path.read_text(encoding="utf-8"))
     if scene is None:
-        return {"valid": True, "approval": approval, "reason": "scene_not_supplied"}
+        return {"valid": False, "approval": approval, "reason": "scene_missing"}
     # Most specific reason first: a theme swap also changes the whole-scene
     # hash, but naming the real cause is what the user needs.
     if scene.get("themeRef") != approval.get("theme"):
@@ -382,4 +434,30 @@ def approval_status(
     )
     if scene_sha256 != approval.get("scene_sha256"):
         return {"valid": False, "reason": "scene_changed", "approval": approval}
+    from html_input_manifest import resolved_scene_inputs
+
+    if resolved_scene_inputs(scene, run_dir, deps.repo_root)["digest"] != approval.get(
+        "resolved_input_digest"
+    ):
+        return {
+            "valid": False,
+            "reason": "resolved_inputs_changed",
+            "approval": approval,
+        }
     return {"valid": True, "approval": approval}
+
+
+def approve_stored_scene(run_dir, slide_id, candidate, *, deps):
+    """Both transports approve the current stored document under the same lock."""
+    from html_visual_store import load_scene_with_revision
+    from pipeline_lifecycle import project_artifact_lock
+
+    with project_artifact_lock(run_dir):
+        document = load_scene_with_revision(run_dir, slide_id)
+        if document is None or (
+            candidate is not None and candidate != document["scene"]
+        ):
+            raise HtmlReviewError(
+                "批准必须对应已保存的当前场景，请先保存并审阅", status_code=409
+            )
+        return approve_scene(document["scene"], run_dir=run_dir, deps=deps)

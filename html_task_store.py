@@ -82,6 +82,9 @@ def submit_task(
         job.status = "queued"
         job.error = None
         job_payload["attempt"] = attempt + 1
+        job_payload.pop("result", None)
+        job.started_at = None
+        job.finished_at = None
         job.payload_json = json_dumps(job_payload)
         job.updated_at = datetime.now()
         db.commit()
@@ -94,11 +97,13 @@ def submit_task(
         job_type=task_type,
         status="queued",
         stage="queued",
-        payload_json=json_dumps({
-            "submission_key": submission_key,
-            "attempt": 1,
-            "input": payload or {},
-        }),
+        payload_json=json_dumps(
+            {
+                "submission_key": submission_key,
+                "attempt": 1,
+                "input": payload or {},
+            }
+        ),
     )
     db.add(job)
     db.commit()
@@ -116,59 +121,96 @@ def json_module():
     return json
 
 
-def mark_running(db, job_id: str) -> Dict[str, Any]:
+def _job(db, job_id, expected_attempt=None):
     from database import LocalJob
 
+    db.expire_all()
     job = db.query(LocalJob).filter(LocalJob.id == job_id).first()
     if job is None:
         raise HtmlTaskError("任务不存在", status_code=404)
-    if job.status not in ACTIVE_STATUSES:
-        raise HtmlTaskError(f"任务处于终态 {job.status}，不能再启动")
-    job.status = "running"
-    job.stage = "running"
-    job.started_at = datetime.now()
+    if (
+        expected_attempt is not None
+        and int(job.get_payload().get("attempt", 1)) != expected_attempt
+    ):
+        raise HtmlTaskError("旧任务尝试已被重试替代", status_code=409)
+    return job
+
+
+def _transition(db, job, allowed, fields):
+    from database import LocalJob
+
+    changed = (
+        db.query(LocalJob)
+        .filter(
+            LocalJob.id == job.id,
+            LocalJob.status.in_(allowed),
+            LocalJob.payload_json == job.payload_json,
+        )
+        .update(fields, synchronize_session=False)
+    )
+    if changed != 1:
+        db.rollback()
+        db.refresh(job)
+        raise HtmlTaskError("任务状态已变化，拒绝迟到的状态更新", status_code=409)
     db.commit()
     db.refresh(job)
     return _job_to_dict(job)
 
 
-def mark_succeeded(db, job_id: str, result: Dict[str, Any]) -> Dict[str, Any]:
-    from database import LocalJob
+def mark_running(db, job_id: str, expected_attempt=None) -> Dict[str, Any]:
+    return _transition(
+        db,
+        _job(db, job_id, expected_attempt),
+        ("queued",),
+        {"status": "running", "stage": "running", "started_at": datetime.now()},
+    )
 
-    job = db.query(LocalJob).filter(LocalJob.id == job_id).first()
-    if job is None:
-        raise HtmlTaskError("任务不存在", status_code=404)
-    job.status = "succeeded"
-    job.stage = "succeeded"
-    job.error = None
-    job.result_artifact_id = None
+
+def mark_succeeded(
+    db, job_id: str, result: Dict[str, Any], expected_attempt=None
+) -> Dict[str, Any]:
+    job = _job(db, job_id, expected_attempt)
     payload = job.get_payload()
     payload["result"] = result
-    job.payload_json = json_dumps(payload)
-    job.finished_at = datetime.now()
-    db.commit()
-    db.refresh(job)
-    return _job_to_dict(job)
+    return _transition(
+        db,
+        job,
+        ("running",),
+        {
+            "status": "succeeded",
+            "stage": "succeeded",
+            "error": None,
+            "result_artifact_id": None,
+            "payload_json": json_dumps(payload),
+            "finished_at": datetime.now(),
+        },
+    )
 
 
-def mark_failed(db, job_id: str, error: str) -> Dict[str, Any]:
-    """Record a failure; the job stays retryable until the attempt budget
-    runs out, in which case the failure is terminal."""
-    from database import LocalJob
-
-    job = db.query(LocalJob).filter(LocalJob.id == job_id).first()
-    if job is None:
-        raise HtmlTaskError("任务不存在", status_code=404)
-    payload = job.get_payload()
-    attempt = int(payload.get("attempt", 1))
-    job.status = "failed"
-    job.stage = "failed"
-    job.error = error[:2000]
-    job.finished_at = datetime.now()
-    db.commit()
-    db.refresh(job)
-    result = _job_to_dict(job)
-    result["retryable"] = attempt < MAX_ATTEMPTS
+def mark_failed(db, job_id: str, error: str, expected_attempt=None) -> Dict[str, Any]:
+    job = _job(db, job_id)
+    if job.status not in ACTIVE_STATUSES or (
+        expected_attempt is not None
+        and int(job.get_payload().get("attempt", 1)) != expected_attempt
+    ):
+        return _job_to_dict(job)
+    try:
+        result = _transition(
+            db,
+            job,
+            ACTIVE_STATUSES,
+            {
+                "status": "failed",
+                "stage": "failed",
+                "error": error[:2000],
+                "finished_at": datetime.now(),
+            },
+        )
+    except HtmlTaskError as exc:
+        if exc.status_code != 409:
+            raise
+        return _job_to_dict(job)
+    result["retryable"] = int(job.get_payload().get("attempt", 1)) < MAX_ATTEMPTS
     return result
 
 
@@ -195,20 +237,10 @@ def recover_interrupted(db) -> int:
 
 
 def cancel_task(db, job_id: str) -> Dict[str, Any]:
-    """Cancel safety: only active tasks can be cancelled; a terminal
-    (succeeded/failed) result is never overwritten by a late cancel."""
-    from database import LocalJob
-
-    job = db.query(LocalJob).filter(LocalJob.id == job_id).first()
-    if job is None:
-        raise HtmlTaskError("任务不存在", status_code=404)
-    if job.status not in ACTIVE_STATUSES:
-        raise HtmlTaskError(
-            f"任务已处于终态 {job.status}，取消无效", status_code=409
-        )
-    job.status = "cancelled"
-    job.stage = "cancelled"
-    job.finished_at = datetime.now()
-    db.commit()
-    db.refresh(job)
-    return _job_to_dict(job)
+    """Atomic cancellation cannot overwrite a success registered concurrently."""
+    return _transition(
+        db,
+        _job(db, job_id),
+        ACTIVE_STATUSES,
+        {"status": "cancelled", "stage": "cancelled", "finished_at": datetime.now()},
+    )

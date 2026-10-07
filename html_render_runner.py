@@ -61,17 +61,13 @@ class HtmlRenderRunner:
     def _scene_path(self, run_dir: str | Path, slide_id: str) -> Path:
         path = Path(run_dir) / "planning" / "html_visual" / f"scene-{slide_id}.json"
         if not path.is_file():
-            raise HtmlRenderError(
-                400, f"页面 {slide_id} 尚未保存 HTML 场景，无法渲染"
-            )
+            raise HtmlRenderError(400, f"页面 {slide_id} 尚未保存 HTML 场景，无法渲染")
         return path
 
     def _audio_path(self, run_dir: str | Path, slide_id: str) -> Path:
         path = Path(run_dir) / "slides" / slide_id / "voice.mp3"
         if not path.is_file():
-            raise HtmlRenderError(
-                400, f"页面 {slide_id} 缺少已确认音频，无法渲染"
-            )
+            raise HtmlRenderError(400, f"页面 {slide_id} 缺少已确认音频，无法渲染")
         return path
 
     def _bound_scene_path(
@@ -88,7 +84,13 @@ class HtmlRenderRunner:
         )
 
         try:
-            bound = bind_scene_to_audio(scene, timeline)
+            binding_path = work_dir.parent / f"binding-{slide_id}.json"
+            binding = (
+                json.loads(binding_path.read_text(encoding="utf-8"))
+                if binding_path.is_file()
+                else None
+            )
+            bound = bind_scene_to_audio(scene, timeline, binding)
         except AudioBindingError as exc:
             raise HtmlRenderError(400, f"页面 {slide_id} 音频绑定失败：{exc}")
         path = work_dir / f"bound-{slide_id}.json"
@@ -97,9 +99,7 @@ class HtmlRenderRunner:
         )
         # Binding provenance is a derived-artifact record, never scene input.
         (work_dir / f"binding-{slide_id}.json").write_text(
-            json.dumps(
-                binding_metadata(scene, timeline), ensure_ascii=False, indent=2
-            ),
+            json.dumps(binding_metadata(scene, timeline), ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         return path
@@ -113,6 +113,7 @@ class HtmlRenderRunner:
         import importlib.util
 
         env = dict(os.environ)
+        env.pop("HPS_HTML_RESOURCES", None)
         spec = importlib.util.spec_from_file_location(
             "hps_media_tools",
             self.dependencies.repo_root / "scripts" / "media_tools.py",
@@ -129,6 +130,11 @@ class HtmlRenderRunner:
         except Exception:
             pass
         return env
+
+    @staticmethod
+    def _resource_env(scene_path):
+        resources = scene_path.parent.parent / "resources.json"
+        return {"HPS_HTML_RESOURCES": str(resources)} if resources.is_file() else {}
 
     def _render_segment(
         self,
@@ -153,13 +159,12 @@ class HtmlRenderRunner:
             encoding="utf-8",
             errors="replace",
             timeout_sec=deps.stage_timeout_sec,
-            env=self._media_env(),
+            env={**self._media_env(), **self._resource_env(scene_path)},
         )
         if result.returncode != 0:
             raise HtmlRenderError(
                 500,
-                "HTML 页面渲染失败："
-                + (result.stderr or result.stdout or "")[-500:],
+                "HTML 页面渲染失败：" + (result.stderr or result.stdout or "")[-500:],
             )
         try:
             return json.loads(result.stdout)
@@ -177,10 +182,14 @@ class HtmlRenderRunner:
             [
                 deps.ffmpeg_bin,
                 "-y",
-                "-f", "concat",
-                "-safe", "0",
-                "-i", str(concat_list),
-                "-c", "copy",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_list),
+                "-c",
+                "copy",
                 str(output_path),
             ],
             capture_output=True,
@@ -191,17 +200,17 @@ class HtmlRenderRunner:
         )
         concat_list.unlink(missing_ok=True)
         if result.returncode != 0:
-            raise HtmlRenderError(
-                500, "视频合成失败：" + (result.stderr or "")[-500:]
-            )
+            raise HtmlRenderError(500, "视频合成失败：" + (result.stderr or "")[-500:])
 
-    def _probe(self, output_path: Path) -> dict[str, Any]:
+    def _probe(self, output_path: Path, fps: int = 30) -> dict[str, Any]:
         deps = self.dependencies
         result = deps.run_subprocess_bounded(
             [
                 deps.ffprobe_bin,
-                "-v", "error",
-                "-print_format", "json",
+                "-v",
+                "error",
+                "-print_format",
+                "json",
                 "-show_format",
                 "-show_streams",
                 str(output_path),
@@ -223,6 +232,24 @@ class HtmlRenderRunner:
             raise HtmlRenderError(500, "渲染结果缺少视频流")
         if not any(s.get("codec_type") == "audio" for s in streams):
             raise HtmlRenderError(500, "渲染结果缺少音轨")
+        video = next(s for s in streams if s.get("codec_type") == "video")
+        from fractions import Fraction
+
+        if (video.get("width"), video.get("height")) != (1600, 900) or video.get(
+            "pix_fmt"
+        ) != "yuv420p":
+            raise HtmlRenderError(500, "视频尺寸或像素格式不符合约定")
+        try:
+            rate = float(Fraction(video.get("r_frame_rate", "0")))
+        except (ValueError, ZeroDivisionError):
+            rate = 0
+        if abs(rate - fps) > 0.01:
+            raise HtmlRenderError(500, "视频帧率不符合约定")
+        if any(
+            video.get(key) != "bt709"
+            for key in ("color_space", "color_transfer", "color_primaries")
+        ):
+            raise HtmlRenderError(500, "视频色彩标签未通过实际探测")
         return probe
 
     # -- entry point -------------------------------------------------
@@ -282,7 +309,7 @@ class HtmlRenderRunner:
             output_path = Path(output_dir) / output_filename
             set_stage("composing")
             self._concat(segments, output_path)
-            probe = self._probe(output_path)
+            probe = self._probe(output_path, fps)
             completed = True
         finally:
             for segment in segments:

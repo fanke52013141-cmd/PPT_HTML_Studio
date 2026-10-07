@@ -123,6 +123,10 @@ def render_input_fingerprint(
         )
 
     components = _component_hashes(root, relative_paths)
+    from html_input_manifest import html_project_inputs
+    html_inputs = html_project_inputs(root)
+    if html_inputs is not None:
+        components["html_resolved_inputs"] = sha256_json(html_inputs)
     digital_config_path = root / "planning" / "digital_human.json"
     digital_config_key = "planning/digital_human.json"
     if digital_config_key in components:
@@ -172,5 +176,10 @@ def presentation_input_fingerprint(run_dir: str | Path) -> dict[str, Any]:
         "slide_ids": slide_ids,
         "components": _component_hashes(root, relative_paths),
     }
+    from html_input_manifest import html_project_inputs
+    html_inputs = html_project_inputs(root)
+    if html_inputs is not None:
+        payload["export_type"] = "html_snapshot_pptx"
+        payload["components"]["html_resolved_inputs"] = sha256_json(html_inputs)
     payload["digest"] = sha256_json(payload)
     return payload

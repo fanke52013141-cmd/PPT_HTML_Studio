@@ -12,6 +12,7 @@ if (!scenePath || !timesPath || !outDir) {
   process.exit(2);
 }
 const root = path.resolve(__dirname, "..");
+const projectResources = require("./project-resources.cjs").loadProjectResources();
 const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
 const times = JSON.parse(fs.readFileSync(timesPath, "utf8"));
 if (!Array.isArray(times) || !times.length) throw new Error("times invalid");
@@ -36,8 +37,9 @@ function resolveChromePath(playwright) {
     });
     await page.goto(pathToFileURL(path.join(root, "visual/preview/index.html")).href);
     await page.waitForFunction(() => window.visualPlayer?.ready, {}, { timeout: 20000 });
+    await page.evaluate((r) => { window.__projectResources = r; }, projectResources);
     const applied = await page.evaluate(
-      async (s) => ({ ok: await window.visualPlayer.apply(s) }),
+      async (s) => ({ ok: await window.visualPlayer.apply(s, window.__projectResources) }),
       scene,
     );
     if (!applied.ok) throw new Error("scene failed to compile/prepare");

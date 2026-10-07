@@ -163,8 +163,9 @@ def test_pptx_service_dispatches_html_projects_to_snapshots(tmp_path, scene) -> 
             pass
 
     result = service._export_html_snapshots(FakeDb(), project)
-    assert result["visual_backend"] == "html" and result["immediate"] is True
-    assert Path(result["file"]).is_file()
-    manifest = result["manifest"]
+    assert result["metadata"]["content_mode"] == "html_snapshot"
+    assert Path(result["path"]).is_file()
+    assert result["fingerprint"]
+    manifest = result["metadata"]["snapshot_manifest"]
     assert manifest["capability"] == "image_only_snapshot"
     assert manifest["pages"][0]["label"].startswith("s1:")

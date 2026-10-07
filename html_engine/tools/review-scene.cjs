@@ -21,6 +21,7 @@ const rangeSpec = rangeSpecPath
   ? JSON.parse(fs.readFileSync(rangeSpecPath, "utf8"))
   : null;
 const root = path.resolve(__dirname, "..");
+const projectResources = require("./project-resources.cjs").loadProjectResources();
 const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
 
 function resolveChromePath(playwright) {
@@ -46,10 +47,11 @@ function resolveChromePath(playwright) {
     page.on("pageerror", (e) => pageErrors.push(e.message));
     await page.goto(pathToFileURL(path.join(root, "visual/preview/index.html")).href);
     await page.waitForFunction(() => window.visualPlayer?.ready, {}, { timeout: 20000 });
+    await page.evaluate((r) => { window.__projectResources = r; }, projectResources);
     const applied = await page.evaluate(
       async (s) => {
         try {
-          return { ok: await window.visualPlayer.apply(s) };
+          return { ok: await window.visualPlayer.apply(s, window.__projectResources) };
         } catch (e) {
           return { ok: false, error: String(e && e.message || e) };
         }
@@ -88,21 +90,20 @@ function resolveChromePath(playwright) {
             if (!el) return { error: "node not found" };
             const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
             const units = [];
-            let node;
-            while ((node = walker.nextNode()))
-              for (const ch of node.data) units.push({ node, ch });
-            let startNode = null, startOffset = 0, endNode = null, endOffset = 0;
-            let codeIndex = 0;
-            for (let i = 0; i < units.length; i += 1) {
-              if (codeIndex === spec.start) { startNode = units[i].node; startOffset = i; }
-              if (codeIndex === spec.end) { endNode = units[i].node; endOffset = i; }
-              codeIndex += 1;
+            let node, last = null;
+            while ((node = walker.nextNode())) {
+              let offset = 0;
+              for (const ch of node.data) {
+                units.push({node,offset}); offset += ch.length;
+              }
+              last = {node,offset};
             }
-            if (startNode === null || endNode === null)
+            if (last) units.push(last);
+            if (!Number.isInteger(spec.start) || !Number.isInteger(spec.end) || spec.start < 0 || spec.end <= spec.start || spec.end >= units.length)
               return { error: "range out of bounds" };
             const range = document.createRange();
-            range.setStart(startNode, startOffset);
-            range.setEnd(endNode, endOffset);
+            range.setStart(units[spec.start].node,units[spec.start].offset);
+            range.setEnd(units[spec.end].node,units[spec.end].offset);
             const rects = [...range.getClientRects()]
               .filter((r) => r.width && r.height)
               .map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height }));
@@ -111,6 +112,7 @@ function resolveChromePath(playwright) {
               .getBoundingClientRect();
             const scale = stage.width / 1600;
             return {
+              selectedText: range.toString(),
               rects,
               canvasRects: rects.map((r) => ({
                 x: (r.x - stage.x) / scale,

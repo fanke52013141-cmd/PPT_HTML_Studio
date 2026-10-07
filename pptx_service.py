@@ -209,10 +209,17 @@ class PptxExportService:
         project_id: str,
     ) -> dict[str, Any]:
         project = self.get_project(db, project_id)
-        mode, payload = self._resolve_export_mode(
-            self.project_run_dir(project)
-        )
+        mode, payload = self._project_export_readiness(project)
         return {"success": True, "export_mode": mode, **payload}
+
+    def _project_export_readiness(self, project: Project):
+        if (getattr(project, "visual_backend", "image") or "image") == "html":
+            from html_input_manifest import html_readiness
+            from visual_contract_service import read_contract_slide_ids
+            run = self.project_run_dir(project)
+            root = self.dependencies.repo_root or Path(__file__).resolve().parent
+            return "html_snapshot", html_readiness(run, root, read_contract_slide_ids(run))
+        return self._resolve_export_mode(self.project_run_dir(project))
 
     def _prepared_export_job(self, project: Project, mode: str) -> LocalJob:
         """首发与重试共用的任务构造(R2-001)。
@@ -234,13 +241,7 @@ class PptxExportService:
         project_id: str,
     ) -> dict[str, Any]:
         project = self.get_project(db, project_id)
-        # E03 分派：HTML 后端项目走共享 bundle 快照管线（同步小任务），
-        # 不进入图片路线的 reveal readiness 检查。
-        if (getattr(project, "visual_backend", "image") or "image") == "html":
-            return self._export_html_snapshots(db, project)
-        mode, readiness = self._resolve_export_mode(
-            self.project_run_dir(project)
-        )
+        mode, readiness = self._project_export_readiness(project)
         if not readiness["ready"]:
             raise PptxServiceError(
                 409,
@@ -339,9 +340,7 @@ class PptxExportService:
                 409,
                 "只有失败或中断的任务可以重试",
             )
-        _, readiness = self._resolve_export_mode(
-            self.project_run_dir(project)
-        )
+        _, readiness = self._project_export_readiness(project)
         if not readiness["ready"]:
             raise PptxServiceError(
                 409,
@@ -361,9 +360,7 @@ class PptxExportService:
                         queue_ahead=self._queued_ahead(db, active),
                     ),
                 }
-            mode, _ = self._resolve_export_mode(
-                self.project_run_dir(project)
-            )
+            mode, _ = self._project_export_readiness(project)
             job = self._prepared_export_job(project, mode)
             db.add(job)
             db.commit()
@@ -470,7 +467,7 @@ class PptxExportService:
             ],
         }
 
-    def _export_html_snapshots(self, db: Session, project: Project) -> dict[str, Any]:
+    def _export_html_snapshots(self, db: Session, project: Project, filename: str | None = None) -> dict[str, Any]:
         """HTML 后端：渲染各页终态并输出一张图片式 PPTX（E03 分派路径）。
 
         快照为同步小任务：页数 = 已存场景数；产物登记进 artifact 记录，
@@ -493,12 +490,13 @@ class PptxExportService:
         run_dir = project_run_dir_or_500(project)
         slide_ids = read_current_slide_ids_or_404(project)
         deps = HtmlSnapshotDependencies(
+            run_dir=Path(run_dir),
             repo_root=(
                 getattr(self.dependencies, "repo_root", None)
                 or self.dependencies.runs_root.parent
             )
         )
-        out_dir = Path(run_dir) / "outputs" / "pptx"
+        out_dir = Path(run_dir) / "presentations"
         out_dir.mkdir(parents=True, exist_ok=True)
         pages: list[dict[str, Any]] = []
         images = []
@@ -508,7 +506,7 @@ class PptxExportService:
                 raise PptxServiceError(
                     409, f"页面 {slide_id} 尚未保存 HTML 场景，无法导出快照"
                 )
-            scene = document["scene"]
+            scene = {**document["scene"], "beats": []}
             plan = snapshot_plan_for_scene(scene)
             slide_dir = out_dir / f"{index:03d}-{slide_id}"
             slide_images = render_snapshots(
@@ -522,24 +520,24 @@ class PptxExportService:
                     "label": f"{slide_id}:{page['label']}",
                 })
                 images.append(image)
-        filename = (
+        filename = filename or (
             "pptx_"
             + datetime.now().strftime("%Y%m%d_%H%M%S")
             + f"_{uuid.uuid4().hex[:6]}.pptx"
         )
         out_path = out_dir / filename
         manifest = build_snapshot_pptx(pages, images, out_path)
-        # Artifact registration joins the artifact-registry integration pass
-        # (remaining item in the acceptance manifest).
-        artifact_id = None
-        db.commit()
+        from pipeline_lifecycle import write_json_atomic
+        fingerprint = presentation_input_fingerprint(run_dir)
+        metadata = {"content_mode":"html_snapshot", "slide_count":len(pages),
+                    "snapshot_manifest":manifest,"source_fingerprint":fingerprint}
+        write_json_atomic(presentation_sidecar(out_path),metadata)
+        out_path.with_suffix(".pptx.manifest.json").unlink(missing_ok=True)
         return {
-            "success": True,
-            "immediate": True,
-            "visual_backend": "html",
-            "file": str(out_path),
-            "manifest": manifest,
-            "artifact_id": artifact_id,
+            "path": str(out_path), "filename": filename,
+            "size_bytes": out_path.stat().st_size,
+            "fingerprint": fingerprint,
+            "metadata": metadata,
         }
 
     def submit(self, job_id: str) -> None:
@@ -637,7 +635,12 @@ class PptxExportService:
             mode = str(payload.get("mode") or "") or self._resolve_export_mode(
                 self.project_run_dir(project)
             )[0]
-            if mode == "reveal":
+            if mode == "html_snapshot":
+                ready = self._project_export_readiness(project)[1]
+                if not ready["ready"]:
+                    raise RuntimeError("HTML 快照输入或批准已失效")
+                result = self._export_html_snapshots(db, project, filename)
+            elif mode == "reveal":
                 try:
                     sync_project_background_color(project)
                 except RuntimeError:

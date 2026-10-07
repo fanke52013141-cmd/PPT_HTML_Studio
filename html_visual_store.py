@@ -151,6 +151,8 @@ def save_scene(
     """
     if not isinstance(scene, dict):
         raise HtmlVisualError("场景必须是 JSON 对象")
+    if scene.get("id") is not None and scene["id"] != slide_id:
+        raise HtmlVisualError("场景标识必须与 Slide 一致")
     path = scene_path(run_dir, slide_id)
     payload = _document_bytes(scene)
     digest = _sha256(payload)
