@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-07",
+  "sourceId": "scene.paper-plane",
+  "sourceRevision": 1,
+  "inputFingerprint": "0d6ed9b095c824c2dc195044c2b46c31f974b900f820f313bc3c843855ce46bf",
+  "engineVersion": "0.1.0",
+  "width": 1280,
+  "height": 720,
+  "fps": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "frameCount": 300,
+  "sourceDurationMs": 10000,
+  "encodedDurationSeconds": 10,
+  "frameTime": "i*1000/30 ms; final still is independently at durationMs",
+  "codec": "H.264",
+  "audio": false,
+  "browser": "155.0.8059.12",
+  "sha256": "a3ee15d9c78beeda3274ed9251325f48921ecab685072399ad162c70dd0a1202",
+  "localOutput": "outputs/e1/scene.paper-plane.mp4",
+  "verification": "ffprobe frame count/size/rate/duration and complete ffmpeg decode passed",
+  "publication": "MP4 stays local, not committed"
+}

@@ -1,0 +1,1039 @@
+[
+  {
+    "format": "hps.e1.compiled",
+    "engineVersion": "0.1.0",
+    "source": {
+      "format": "hps.e1.scene",
+      "schemaVersion": "0.1.0",
+      "contractVersion": "0.7.1",
+      "id": "scene.paper-plane",
+      "revision": 1,
+      "title": "纸飞机穿过云层",
+      "authoringMode": "design-exploration",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "safeInsets": {
+          "top": 40,
+          "right": 40,
+          "bottom": 40,
+          "left": 40
+        }
+      },
+      "durationMs": 10000,
+      "timingMode": "manual",
+      "templateRef": {
+        "id": "layout.open-stage.e1",
+        "version": "0.1.0"
+      },
+      "style": {
+        "id": "style.science-study",
+        "version": "0.1.0",
+        "fontFamily": "Microsoft YaHei",
+        "background": {
+          "base": "#F7F8FC",
+          "leftGlow": "#FFE9E8",
+          "rightGlow": "#E5EDFC"
+        },
+        "colors": {
+          "accent": "#FF8498",
+          "path": "#A5B7D6"
+        },
+        "textRoles": {
+          "title": {
+            "fontSize": 72,
+            "fontWeight": 700,
+            "lineHeight": 1.4,
+            "color": "#42566F",
+            "maxLines": 1,
+            "align": "left"
+          },
+          "subtitle": {
+            "fontSize": 28,
+            "fontWeight": 400,
+            "lineHeight": 1.5,
+            "color": "#8191A8",
+            "maxLines": 1,
+            "align": "left"
+          },
+          "caption": {
+            "fontSize": 32,
+            "fontWeight": 400,
+            "lineHeight": 1.5,
+            "color": "#42566F",
+            "maxLines": 1,
+            "align": "center"
+          }
+        }
+      },
+      "assets": [
+        {
+          "id": "asset.plane",
+          "version": "0.1.0",
+          "kind": "image",
+          "file": {
+            "path": "assets/plane.png",
+            "mimeType": "image/png",
+            "sha256": "906b8006be7d18ff1d7f964c0194b6343f976c01ffe337cd6af95690653a260b"
+          },
+          "intrinsic": {
+            "width": 627,
+            "height": 627
+          },
+          "alphaBounds": {
+            "x": 47,
+            "y": 69,
+            "width": 572,
+            "height": 558
+          },
+          "anchors": [
+            {
+              "id": "frame-center",
+              "x": 0.5,
+              "y": 0.5
+            }
+          ],
+          "provenance": {
+            "kind": "generated",
+            "source": "motion-02 asset-board-v2; fixed quadrant crop; source and limits in asset-evidence.json"
+          },
+          "quality": "conditional-experiment"
+        },
+        {
+          "id": "asset.cloud-large",
+          "version": "0.1.0",
+          "kind": "image",
+          "file": {
+            "path": "assets/cloud-large.png",
+            "mimeType": "image/png",
+            "sha256": "3f979a534686e3d36cf8cce15f6cc8a10758836120dce209a1aeec20cd57cc73"
+          },
+          "intrinsic": {
+            "width": 627,
+            "height": 627
+          },
+          "alphaBounds": {
+            "x": 7,
+            "y": 19,
+            "width": 582,
+            "height": 605
+          },
+          "anchors": [
+            {
+              "id": "frame-center",
+              "x": 0.5,
+              "y": 0.5
+            }
+          ],
+          "provenance": {
+            "kind": "generated",
+            "source": "motion-02 asset-board-v2; fixed quadrant crop; source and limits in asset-evidence.json"
+          },
+          "quality": "conditional-experiment"
+        },
+        {
+          "id": "asset.cloud-small",
+          "version": "0.1.0",
+          "kind": "image",
+          "file": {
+            "path": "assets/cloud-small.png",
+            "mimeType": "image/png",
+            "sha256": "0b34d266a0b81eb652c99ccf1f37fc37ff5a2469fe56bffcc195977228b00e89"
+          },
+          "intrinsic": {
+            "width": 627,
+            "height": 627
+          },
+          "alphaBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 627,
+            "height": 573
+          },
+          "anchors": [
+            {
+              "id": "frame-center",
+              "x": 0.5,
+              "y": 0.5
+            }
+          ],
+          "provenance": {
+            "kind": "generated",
+            "source": "motion-02 asset-board-v2; fixed quadrant crop; source and limits in asset-evidence.json"
+          },
+          "quality": "conditional-experiment"
+        }
+      ],
+      "paths": [
+        {
+          "id": "path.flight",
+          "points": [
+            {
+              "x": 280,
+              "y": 570
+            },
+            {
+              "x": 540,
+              "y": 260
+            },
+            {
+              "x": 940,
+              "y": 650
+            },
+            {
+              "x": 1270,
+              "y": 435
+            }
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": "page.title",
+          "type": "text",
+          "typeVersion": "0.1.0",
+          "zIndex": 100,
+          "initialOpacity": 1,
+          "box": {
+            "x": 100,
+            "y": 80,
+            "width": 1400,
+            "height": 110
+          },
+          "role": "title",
+          "content": {
+            "kind": "static",
+            "text": "让画面动起来"
+          }
+        },
+        {
+          "id": "page.subtitle",
+          "type": "text",
+          "typeVersion": "0.1.0",
+          "zIndex": 100,
+          "initialOpacity": 1,
+          "box": {
+            "x": 104,
+            "y": 190,
+            "width": 1300,
+            "height": 55
+          },
+          "role": "subtitle",
+          "content": {
+            "kind": "static",
+            "text": "一张资产板，组合出一个完整过程"
+          }
+        },
+        {
+          "id": "page.caption",
+          "type": "text",
+          "typeVersion": "0.1.0",
+          "zIndex": 100,
+          "initialOpacity": 1,
+          "box": {
+            "x": 100,
+            "y": 775,
+            "width": 1400,
+            "height": 70
+          },
+          "role": "caption",
+          "content": {
+            "kind": "beat-summary"
+          }
+        },
+        {
+          "id": "cloud.back",
+          "type": "image",
+          "typeVersion": "0.1.0",
+          "zIndex": 10,
+          "initialOpacity": 1,
+          "box": {
+            "x": 900,
+            "y": 220,
+            "width": 420,
+            "height": 420
+          },
+          "assetRef": {
+            "id": "asset.cloud-large",
+            "version": "0.1.0"
+          },
+          "anchorId": "frame-center",
+          "fit": "contain",
+          "rotationDeg": 0
+        },
+        {
+          "id": "trail",
+          "type": "path",
+          "typeVersion": "0.1.0",
+          "zIndex": 20,
+          "initialOpacity": 0,
+          "pathId": "path.flight",
+          "initialProgress": 0,
+          "colorRole": "path",
+          "strokeWidth": 4,
+          "dash": [
+            9,
+            13
+          ]
+        },
+        {
+          "id": "main.object",
+          "type": "image",
+          "typeVersion": "0.1.0",
+          "zIndex": 30,
+          "initialOpacity": 0,
+          "box": {
+            "x": 90,
+            "y": 380,
+            "width": 380,
+            "height": 380
+          },
+          "assetRef": {
+            "id": "asset.plane",
+            "version": "0.1.0"
+          },
+          "anchorId": "frame-center",
+          "fit": "contain",
+          "rotationDeg": -22
+        },
+        {
+          "id": "cloud.front",
+          "type": "image",
+          "typeVersion": "0.1.0",
+          "zIndex": 40,
+          "initialOpacity": 1,
+          "box": {
+            "x": 545,
+            "y": 370,
+            "width": 350,
+            "height": 350
+          },
+          "assetRef": {
+            "id": "asset.cloud-small",
+            "version": "0.1.0"
+          },
+          "anchorId": "frame-center",
+          "fit": "contain",
+          "rotationDeg": 0
+        },
+        {
+          "id": "destination",
+          "type": "ring",
+          "typeVersion": "0.1.0",
+          "zIndex": 15,
+          "initialOpacity": 0,
+          "box": {
+            "x": 1455,
+            "y": 375,
+            "width": 50,
+            "height": 50
+          },
+          "colorRole": "accent",
+          "strokeWidth": 3,
+          "innerRatio": 0.28
+        }
+      ],
+      "beats": [
+        {
+          "id": "beat.enter",
+          "startMs": 0,
+          "endMs": 2000,
+          "text": "纸飞机进入画面。",
+          "screenText": "纸飞机进入画面。",
+          "targetIds": [
+            "main.object"
+          ]
+        },
+        {
+          "id": "beat.fly",
+          "startMs": 2000,
+          "endMs": 8000,
+          "text": "它沿曲线飞过云朵，轨迹提示随后淡出。",
+          "screenText": "它沿曲线飞过云朵，轨迹提示随后淡出。",
+          "targetIds": [
+            "main.object",
+            "trail"
+          ]
+        },
+        {
+          "id": "beat.hold",
+          "startMs": 8000,
+          "endMs": 10000,
+          "text": "最后，飞机停在终点。",
+          "screenText": "最后，飞机停在终点。",
+          "targetIds": [
+            "main.object",
+            "destination"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "act.enter",
+          "type": "opacity",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "main.object",
+            "part": "self"
+          },
+          "startMs": 0,
+          "endMs": 1000,
+          "easing": "smoothstep",
+          "from": 0,
+          "to": 1
+        },
+        {
+          "id": "act.move",
+          "type": "move-path",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "main.object",
+            "part": "self"
+          },
+          "startMs": 1600,
+          "endMs": 7600,
+          "easing": "smoothstep",
+          "pathId": "path.flight",
+          "orientation": {
+            "kind": "tangent",
+            "minDeg": -22,
+            "maxDeg": 22
+          }
+        },
+        {
+          "id": "act.trail.enter",
+          "type": "opacity",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "trail",
+            "part": "self"
+          },
+          "startMs": 1600,
+          "endMs": 1800,
+          "easing": "smoothstep",
+          "from": 0,
+          "to": 1
+        },
+        {
+          "id": "act.trail.progress",
+          "type": "path-progress",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "trail",
+            "part": "self"
+          },
+          "startMs": 1600,
+          "endMs": 7600,
+          "easing": "smoothstep",
+          "from": 0,
+          "to": 1
+        },
+        {
+          "id": "act.trail.exit",
+          "type": "opacity",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "trail",
+            "part": "self"
+          },
+          "startMs": 7000,
+          "endMs": 8200,
+          "easing": "smoothstep",
+          "from": 1,
+          "to": 0
+        },
+        {
+          "id": "act.destination",
+          "type": "opacity",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "destination",
+            "part": "self"
+          },
+          "startMs": 6200,
+          "endMs": 7200,
+          "easing": "smoothstep",
+          "from": 0,
+          "to": 1
+        }
+      ],
+      "keyframes": [
+        {
+          "id": "K0",
+          "tMs": 0,
+          "purpose": "开场与隐藏对象"
+        },
+        {
+          "id": "K1",
+          "tMs": 4600,
+          "purpose": "运动与过渡轨迹"
+        },
+        {
+          "id": "K2",
+          "tMs": 6500,
+          "purpose": "遮挡与终点"
+        },
+        {
+          "id": "K3",
+          "tMs": 10000,
+          "purpose": "终态轨迹消失"
+        }
+      ]
+    },
+    "orderedNodeIds": [
+      "cloud.back",
+      "destination",
+      "trail",
+      "main.object",
+      "cloud.front",
+      "page.caption",
+      "page.subtitle",
+      "page.title"
+    ],
+    "orderedActionIds": [
+      "act.enter",
+      "act.move",
+      "act.trail.enter",
+      "act.trail.progress",
+      "act.destination",
+      "act.trail.exit"
+    ],
+    "timingMode": "manual",
+    "canvasLayers": 1,
+    "inputFingerprint": "0d6ed9b095c824c2dc195044c2b46c31f974b900f820f313bc3c843855ce46bf",
+    "readiness": {
+      "resources": "bytes-hash-decode-dimensions-alpha-verified",
+      "textCapacity": "all-variants-verified",
+      "font": {
+        "family": "Microsoft YaHei",
+        "policy": "explicit-system-font-study",
+        "fontProbe": "measurement-based; per-glyph coverage not proven"
+      }
+    }
+  },
+  {
+    "format": "hps.e1.compiled",
+    "engineVersion": "0.1.0",
+    "source": {
+      "format": "hps.e1.scene",
+      "schemaVersion": "0.1.0",
+      "contractVersion": "0.7.1",
+      "id": "scene.cloud-drift",
+      "revision": 1,
+      "title": "换一个对象与轨迹",
+      "authoringMode": "design-exploration",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "safeInsets": {
+          "top": 40,
+          "right": 40,
+          "bottom": 40,
+          "left": 40
+        }
+      },
+      "durationMs": 8000,
+      "timingMode": "manual",
+      "templateRef": {
+        "id": "layout.open-stage.e1",
+        "version": "0.1.0"
+      },
+      "style": {
+        "id": "style.science-study",
+        "version": "0.1.0",
+        "fontFamily": "Microsoft YaHei",
+        "background": {
+          "base": "#F7F8FC",
+          "leftGlow": "#E6F5EB",
+          "rightGlow": "#E8EBFC"
+        },
+        "colors": {
+          "accent": "#72B9A7",
+          "path": "#9BB9B2"
+        },
+        "textRoles": {
+          "title": {
+            "fontSize": 72,
+            "fontWeight": 700,
+            "lineHeight": 1.4,
+            "color": "#42566F",
+            "maxLines": 1,
+            "align": "left"
+          },
+          "subtitle": {
+            "fontSize": 28,
+            "fontWeight": 400,
+            "lineHeight": 1.5,
+            "color": "#8191A8",
+            "maxLines": 1,
+            "align": "left"
+          },
+          "caption": {
+            "fontSize": 32,
+            "fontWeight": 400,
+            "lineHeight": 1.5,
+            "color": "#42566F",
+            "maxLines": 1,
+            "align": "center"
+          }
+        }
+      },
+      "assets": [
+        {
+          "id": "asset.plane",
+          "version": "0.1.0",
+          "kind": "image",
+          "file": {
+            "path": "assets/plane.png",
+            "mimeType": "image/png",
+            "sha256": "906b8006be7d18ff1d7f964c0194b6343f976c01ffe337cd6af95690653a260b"
+          },
+          "intrinsic": {
+            "width": 627,
+            "height": 627
+          },
+          "alphaBounds": {
+            "x": 47,
+            "y": 69,
+            "width": 572,
+            "height": 558
+          },
+          "anchors": [
+            {
+              "id": "frame-center",
+              "x": 0.5,
+              "y": 0.5
+            }
+          ],
+          "provenance": {
+            "kind": "generated",
+            "source": "motion-02 asset-board-v2; fixed quadrant crop; source and limits in asset-evidence.json"
+          },
+          "quality": "conditional-experiment"
+        },
+        {
+          "id": "asset.cloud-large",
+          "version": "0.1.0",
+          "kind": "image",
+          "file": {
+            "path": "assets/cloud-large.png",
+            "mimeType": "image/png",
+            "sha256": "3f979a534686e3d36cf8cce15f6cc8a10758836120dce209a1aeec20cd57cc73"
+          },
+          "intrinsic": {
+            "width": 627,
+            "height": 627
+          },
+          "alphaBounds": {
+            "x": 7,
+            "y": 19,
+            "width": 582,
+            "height": 605
+          },
+          "anchors": [
+            {
+              "id": "frame-center",
+              "x": 0.5,
+              "y": 0.5
+            }
+          ],
+          "provenance": {
+            "kind": "generated",
+            "source": "motion-02 asset-board-v2; fixed quadrant crop; source and limits in asset-evidence.json"
+          },
+          "quality": "conditional-experiment"
+        },
+        {
+          "id": "asset.cloud-small",
+          "version": "0.1.0",
+          "kind": "image",
+          "file": {
+            "path": "assets/cloud-small.png",
+            "mimeType": "image/png",
+            "sha256": "0b34d266a0b81eb652c99ccf1f37fc37ff5a2469fe56bffcc195977228b00e89"
+          },
+          "intrinsic": {
+            "width": 627,
+            "height": 627
+          },
+          "alphaBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 627,
+            "height": 573
+          },
+          "anchors": [
+            {
+              "id": "frame-center",
+              "x": 0.5,
+              "y": 0.5
+            }
+          ],
+          "provenance": {
+            "kind": "generated",
+            "source": "motion-02 asset-board-v2; fixed quadrant crop; source and limits in asset-evidence.json"
+          },
+          "quality": "conditional-experiment"
+        }
+      ],
+      "paths": [
+        {
+          "id": "path.drift",
+          "points": [
+            {
+              "x": 300,
+              "y": 470
+            },
+            {
+              "x": 500,
+              "y": 600
+            },
+            {
+              "x": 880,
+              "y": 300
+            },
+            {
+              "x": 1250,
+              "y": 520
+            }
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": "page.title",
+          "type": "text",
+          "typeVersion": "0.1.0",
+          "zIndex": 100,
+          "initialOpacity": 1,
+          "box": {
+            "x": 100,
+            "y": 80,
+            "width": 1400,
+            "height": 110
+          },
+          "role": "title",
+          "content": {
+            "kind": "static",
+            "text": "换个对象，继续演示"
+          }
+        },
+        {
+          "id": "page.subtitle",
+          "type": "text",
+          "typeVersion": "0.1.0",
+          "zIndex": 100,
+          "initialOpacity": 1,
+          "box": {
+            "x": 104,
+            "y": 190,
+            "width": 1300,
+            "height": 55
+          },
+          "role": "subtitle",
+          "content": {
+            "kind": "static",
+            "text": "更换资产、轨迹与节奏，使用同一套渲染代码"
+          }
+        },
+        {
+          "id": "page.caption",
+          "type": "text",
+          "typeVersion": "0.1.0",
+          "zIndex": 100,
+          "initialOpacity": 1,
+          "box": {
+            "x": 100,
+            "y": 775,
+            "width": 1400,
+            "height": 70
+          },
+          "role": "caption",
+          "content": {
+            "kind": "beat-summary"
+          }
+        },
+        {
+          "id": "cloud.back",
+          "type": "image",
+          "typeVersion": "0.1.0",
+          "zIndex": 10,
+          "initialOpacity": 1,
+          "box": {
+            "x": 900,
+            "y": 220,
+            "width": 420,
+            "height": 420
+          },
+          "assetRef": {
+            "id": "asset.cloud-large",
+            "version": "0.1.0"
+          },
+          "anchorId": "frame-center",
+          "fit": "contain",
+          "rotationDeg": 0
+        },
+        {
+          "id": "trail",
+          "type": "path",
+          "typeVersion": "0.1.0",
+          "zIndex": 20,
+          "initialOpacity": 0,
+          "pathId": "path.drift",
+          "initialProgress": 0,
+          "colorRole": "path",
+          "strokeWidth": 4,
+          "dash": [
+            9,
+            13
+          ]
+        },
+        {
+          "id": "main.object",
+          "type": "image",
+          "typeVersion": "0.1.0",
+          "zIndex": 30,
+          "initialOpacity": 0,
+          "box": {
+            "x": 110,
+            "y": 280,
+            "width": 380,
+            "height": 380
+          },
+          "assetRef": {
+            "id": "asset.cloud-small",
+            "version": "0.1.0"
+          },
+          "anchorId": "frame-center",
+          "fit": "contain",
+          "rotationDeg": 0
+        },
+        {
+          "id": "cloud.front",
+          "type": "image",
+          "typeVersion": "0.1.0",
+          "zIndex": 40,
+          "initialOpacity": 1,
+          "box": {
+            "x": 545,
+            "y": 480,
+            "width": 230,
+            "height": 230
+          },
+          "assetRef": {
+            "id": "asset.cloud-large",
+            "version": "0.1.0"
+          },
+          "anchorId": "frame-center",
+          "fit": "contain",
+          "rotationDeg": 0
+        },
+        {
+          "id": "destination",
+          "type": "ring",
+          "typeVersion": "0.1.0",
+          "zIndex": 15,
+          "initialOpacity": 0,
+          "box": {
+            "x": 1435,
+            "y": 495,
+            "width": 50,
+            "height": 50
+          },
+          "colorRole": "accent",
+          "strokeWidth": 3,
+          "innerRatio": 0.28
+        }
+      ],
+      "beats": [
+        {
+          "id": "beat.enter",
+          "startMs": 0,
+          "endMs": 1500,
+          "text": "同一张云朵资产，进入画面。",
+          "screenText": "同一张云朵资产，进入画面。",
+          "targetIds": [
+            "main.object"
+          ]
+        },
+        {
+          "id": "beat.fly",
+          "startMs": 1500,
+          "endMs": 6500,
+          "text": "换一条轨迹，也能保持运动与提示同步。",
+          "screenText": "换一条轨迹，也能保持运动与提示同步。",
+          "targetIds": [
+            "main.object",
+            "trail"
+          ]
+        },
+        {
+          "id": "beat.hold",
+          "startMs": 6500,
+          "endMs": 8000,
+          "text": "终态保留对象，移除过程轨迹。",
+          "screenText": "终态保留对象，移除过程轨迹。",
+          "targetIds": [
+            "main.object",
+            "destination"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "act.enter",
+          "type": "opacity",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "main.object",
+            "part": "self"
+          },
+          "startMs": 0,
+          "endMs": 800,
+          "easing": "smoothstep",
+          "from": 0,
+          "to": 1
+        },
+        {
+          "id": "act.move",
+          "type": "move-path",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "main.object",
+            "part": "self"
+          },
+          "startMs": 1200,
+          "endMs": 6000,
+          "easing": "smoothstep",
+          "pathId": "path.drift",
+          "orientation": {
+            "kind": "fixed"
+          }
+        },
+        {
+          "id": "act.turn",
+          "type": "rotate",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "main.object",
+            "part": "self"
+          },
+          "startMs": 1200,
+          "endMs": 6000,
+          "easing": "smoothstep",
+          "fromDeg": 0,
+          "toDeg": 12
+        },
+        {
+          "id": "act.trail.enter",
+          "type": "opacity",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "trail",
+            "part": "self"
+          },
+          "startMs": 1200,
+          "endMs": 1400,
+          "easing": "smoothstep",
+          "from": 0,
+          "to": 1
+        },
+        {
+          "id": "act.trail.progress",
+          "type": "path-progress",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "trail",
+            "part": "self"
+          },
+          "startMs": 1200,
+          "endMs": 6000,
+          "easing": "smoothstep",
+          "from": 0,
+          "to": 1
+        },
+        {
+          "id": "act.trail.exit",
+          "type": "opacity",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "trail",
+            "part": "self"
+          },
+          "startMs": 5600,
+          "endMs": 6800,
+          "easing": "smoothstep",
+          "from": 1,
+          "to": 0
+        },
+        {
+          "id": "act.destination",
+          "type": "opacity",
+          "typeVersion": "0.1.0",
+          "target": {
+            "nodeId": "destination",
+            "part": "self"
+          },
+          "startMs": 5300,
+          "endMs": 6100,
+          "easing": "smoothstep",
+          "from": 0,
+          "to": 1
+        }
+      ],
+      "keyframes": [
+        {
+          "id": "K0",
+          "tMs": 0,
+          "purpose": "开场"
+        },
+        {
+          "id": "K1",
+          "tMs": 3600,
+          "purpose": "不同资源与路径"
+        },
+        {
+          "id": "K2",
+          "tMs": 5800,
+          "purpose": "不同旋转与节奏"
+        },
+        {
+          "id": "K3",
+          "tMs": 8000,
+          "purpose": "终态"
+        }
+      ]
+    },
+    "orderedNodeIds": [
+      "cloud.back",
+      "destination",
+      "trail",
+      "main.object",
+      "cloud.front",
+      "page.caption",
+      "page.subtitle",
+      "page.title"
+    ],
+    "orderedActionIds": [
+      "act.enter",
+      "act.move",
+      "act.trail.enter",
+      "act.trail.progress",
+      "act.turn",
+      "act.destination",
+      "act.trail.exit"
+    ],
+    "timingMode": "manual",
+    "canvasLayers": 1,
+    "inputFingerprint": "91f725897061589d21a0777c78e746354b9819a4937ac00274f01ee318f75cb3",
+    "readiness": {
+      "resources": "bytes-hash-decode-dimensions-alpha-verified",
+      "textCapacity": "all-variants-verified",
+      "font": {
+        "family": "Microsoft YaHei",
+        "policy": "explicit-system-font-study",
+        "fontProbe": "measurement-based; per-glyph coverage not proven"
+      }
+    }
+  }
+]

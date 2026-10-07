@@ -1,6 +1,6 @@
 # PPT HTML Studio
 
-这是 HTML 课程演示与视频系统的独立开发副本。目前运行的是原图片工作流基线；HTML 场景生成、DOM 标注和原生可编辑 PPTX 尚未实现。
+这是 HTML 课程演示与视频系统的独立开发副本。应用目前运行原图片工作流基线；E1 独立数据驱动渲染已实现，应用内 HTML 生成/标注和原生可编辑 PPTX 尚未实现。
 
 ## 本地来源
 
@@ -50,7 +50,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\stop-html-studio.ps1
 [构建方式与归属说明](docs/contracts/html-presentation/01-building-and-ownership.md)；
 修改规则和兼容旧作品依照
 [生产与兼容规则](docs/contracts/html-presentation/04-production-and-compatibility.md)。
-契约包当前为 0.3.0，已作为项目规则登记；HTML 内核和自动校验尚未实现。
+契约包当前为 0.7.1；E1 独立单场景内核已实现，应用内 HTML 后端仍待接入。详见 [E1 交付](docs/plans/e1-data-driven-engine-completion.md)。
 
 ## 实施路线与历史资料
 

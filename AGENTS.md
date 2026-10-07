@@ -3,8 +3,8 @@
 ## HTML Studio Development Scope
 
 The GitHub project is `https://github.com/fanke52013141-cmd/PPT_HTML_Studio`.
-Its initial publication contains project specifications and supporting
-documents. The local development checkout also contains an isolated original
+Its publication contains project specifications, supporting documents, and the
+standalone E1 engine. The local development checkout also contains an isolated original
 image-application baseline; publishing that application source is a separate
 change. Never push this project's updates to the original image-project
 `upstream` remote. The project overview in root `README.md` links the canonical
@@ -95,6 +95,21 @@ For generation allocation, keyframes, process-only objects and asset sheets, fol
 `docs/contracts/html-presentation/framework/08-visual-generation-contract.md` (HPS-026—030).
 Create the shared design definition before generation; visual references do not replace
 object identity or runtime data. These rules are design-review requirements, not implemented APIs.
+
+## Standalone E1 Engine Ownership
+
+`html_engine/` owns the independent E1 design-exploration renderer, not the
+existing application's HTML backend. Read its README and
+`docs/contracts/html-presentation/runtime/e1/README.md` before edits.
+`scene.schema.json` owns fields; `src/compiler.cjs` owns semantic validation;
+`timeline.cjs` owns pure time evaluation; `resources.cjs` owns readiness;
+`geometry.cjs` owns targets; `renderer.cjs` owns DOM/Canvas composition.
+Keep instance content in examples, not renderer/player business branches.
+Run its build and tests for E1 changes; verify export changes with actual ffprobe
+and full decoding. Generated validator, browser bundle and fixture pack are rebuilt
+from source, never edited alone. E1 does not accept P01 input by approximation.
+Application integration must later follow existing migrations, Agent sync and
+downstream-impact rules. No current application/API integration is implied.
 
 ## Research Reuse Policy
 

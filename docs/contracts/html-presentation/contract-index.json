@@ -1,19 +1,20 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.7.0",
+  "contract_version": "0.7.1",
   "effective_date": "2026-10-07",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
-  "runtime_enforcement": "not_implemented",
+  "runtime_enforcement": "partial_e1_standalone",
   "notes": [
     "This index is documentation metadata, not a runtime capability registry or validator.",
     "Normative meaning belongs to the referenced document and section.",
     "Rules apply when defining or implementing the corresponding capability; candidate features remain unimplemented.",
     "P01 specific definitions and fixtures are documented; Schema/runtime/visual/export verification remains unimplemented.",
-    "P01 definition index and fixtures remain pinned to their 0.4.0 creation contract; taxonomy is additive and does not register new runtime capabilities."
+    "P01 definition index and fixtures remain pinned to their 0.4.0 creation contract; taxonomy is additive and does not register new runtime capabilities.",
+    "E1 is a separate runtime format hps.e1.scene 0.1.0. Its scoped prototype does not upgrade pinned P01 definitions or register all taxonomy capabilities."
   ],
   "documents": [
     {
@@ -66,6 +67,21 @@
     },
     {
       "path": "framework/08-visual-generation-contract.md"
+    },
+    {
+      "path": "runtime/e1/README.md"
+    },
+    {
+      "path": "runtime/e1/01-scene.md"
+    },
+    {
+      "path": "runtime/e1/02-primitives-style.md"
+    },
+    {
+      "path": "runtime/e1/03-motion.md"
+    },
+    {
+      "path": "runtime/e1/04-resources-geometry.md"
     }
   ],
   "rules": [
@@ -121,7 +137,8 @@
       "section": "### 2.3 身份的生命周期",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_e1_standalone",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
     },
     {
       "id": "HPS-007",
@@ -130,7 +147,8 @@
       "section": "## 4. 排版、坐标、图层与容量",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_e1_standalone",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
     },
     {
       "id": "HPS-008",
@@ -139,7 +157,8 @@
       "section": "## 5. 讲稿、动作与时间契约",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_e1_standalone",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
     },
     {
       "id": "HPS-009",
@@ -148,7 +167,8 @@
       "section": "## 6. 素材、字体、就绪与可重复渲染",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_e1_standalone",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
     },
     {
       "id": "HPS-010",
@@ -184,7 +204,8 @@
       "section": "## 10. 验证、诊断与美感验收",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_e1_standalone",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
     },
     {
       "id": "HPS-014",
@@ -301,7 +322,8 @@
       "section": "## HPS-026：同一设计定义驱动生图与代码构建",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_e1_standalone",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
     },
     {
       "id": "HPS-027",
@@ -310,7 +332,8 @@
       "section": "## HPS-027：全过程对象与关键帧先于资产生成",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_e1_standalone",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
     },
     {
       "id": "HPS-028",
@@ -342,5 +365,6 @@
   ],
   "definition_index": "definitions/definition-index.json",
   "capability_catalog": "framework/capability-catalog.json",
-  "coverage_matrix": "framework/coverage-matrix.json"
+  "coverage_matrix": "framework/coverage-matrix.json",
+  "runtime_definition_index": "runtime/e1/definition-index.json"
 }

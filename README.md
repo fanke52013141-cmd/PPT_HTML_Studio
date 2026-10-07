@@ -6,7 +6,7 @@
 
 ## 项目规范入口
 
-**当前契约包版本：0.5.0。** 后续设计、开发、素材生产和验收统一依据
+**当前契约包版本：0.7.1。** 后续设计、开发、素材生产和验收统一依据
 [HTML 演示体系契约](docs/contracts/html-presentation/README.md)。
 
 | 文档 | 说明 |
@@ -18,7 +18,7 @@
 | [完整分类与扩展机制](docs/contracts/html-presentation/framework/README.md) | 八层分类、组合/扩展规则、能力覆盖与风格定制流程 |
 | [阶段 1 最小定义卡包](docs/contracts/html-presentation/definitions/README.md) | 19 张具体定义卡、完整场景与边界例、状态和后续项 |
 | [定义卡模板](docs/contracts/html-presentation/05-definition-template.md) | 逐项定义组件、布局、风格、素材和动作的模板 |
-| [规则索引](docs/contracts/html-presentation/contract-index.json) | HPS-001 至 HPS-022 的规范位置与执行状态 |
+| [规则索引](docs/contracts/html-presentation/contract-index.json) | HPS-001 至 HPS-030 的规范位置与执行状态 |
 | [契约变更记录](docs/contracts/html-presentation/CHANGELOG.md) | 规则版本、变更原因与兼容影响 |
 
 [AGENTS.md](AGENTS.md) 规定后续开发读取和维护契约的方式，并保留原项目集成边界。
@@ -34,15 +34,11 @@
 
 ## 当前阶段
 
-本仓库此次初始化发布项目规范、说明、方案与基线记录。本地开发目录已有隔离的
-原图片项目基线；应用源码的完整发布与后续改造另外实施。HTML 内核、正式字段
-Schema、自动校验、风格样板和导出兼容验证尚未完成。
+已发布项目规范、调研与独立 E1 数据驱动场景内核。E1 的两份 JSON 输入共享渲染、时间求值与取帧代码，支持有限原子/动作、资源/容量检查和目标几何；详见 [E1 交付](docs/plans/e1-data-driven-engine-completion.md)。
+本地应用仍运行隔离的原图片工作流，应用源码的完整发布与 HTML 接入另行实施。
 
-阶段 1 已完成最小定义卡、单页字段草案样例和边界处理表，运行/视觉验证仍待实施。
-体系分类与扩展机制已补齐；初始风格为知识科普，用户视觉参考已归档。
-[科普首版样板](docs/styles/science-explainer/samples/index.html)已试制，用户视觉审阅待完成；
-下一步补齐样稿相关定义并实现通用静态内核，再制作可播放样板；随后验证替换内容、
-第二种风格、更多布局、多页和输出，最后接入原项目的公共应用能力。
+P01 最小定义及体系分类已完成；科普原首版样稿未获认可，后续混合视觉和 motion-02 短动画方向已获用户认可。E1 新数据驱动页面仍需独立视觉审阅。
+下一项 E2 完善模板/资产复用，再接现有音频、数字人和输出，最后应用化与 AI 生产。自动排版、完整 P01 运行、多页/镜头、PPTX与生产工作流尚未完成。
 
 ## 实施路线与背景
 
@@ -72,7 +68,7 @@ Schema、自动校验、风格样板和导出兼容验证尚未完成。
 
 ## 视觉实现与生成协议
 
-现行契约包 0.7.0 新增 [视觉实现分工与生成契约](docs/contracts/html-presentation/framework/08-visual-generation-contract.md)：生成前确定代码层、资产层和全过程对象，设计图与 HTML 共用同一设计定义。本次只补协议，资产板与新动画测试留待下一步。
+契约 0.7.0 修订新增 [视觉实现分工与生成契约](docs/contracts/html-presentation/framework/08-visual-generation-contract.md)：生成前确定代码层、资产层和全过程对象，设计图与 HTML 共用同一设计定义。本次只补协议，资产板与新动画测试留待下一步。
 
 ## motion-02 资产与过程验证
 
@@ -81,3 +77,7 @@ Schema、自动校验、风格样板和导出兼容验证尚未完成。
 ## 从实验到工程
 
 用户已认可 motion-02 的混合视觉与短对象动画方向。下一步见 [混合视觉工程流程与实施顺序](docs/plans/hybrid-visual-engineering-workflow.md)：先建设最小数据驱动渲染链，再扩模板/资产复用、音频输出及应用 AI 接入。
+
+## 数据驱动内核 E1
+
+已实现 [独立内核](html_engine/README.md) 与 [预览入口](html_engine/preview/index.html)。纸飞机/云朵两份 JSON 共用渲染代码，支持资源校验、文字容量、目标几何及确定取帧。现行契约包 0.7.1，限定实施记录见 [E1 交付](docs/plans/e1-data-driven-engine-completion.md)。应用仍运行原图片后端；HTML 集成和真实音频接入待后续阶段。

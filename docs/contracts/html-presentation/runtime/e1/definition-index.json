@@ -1,0 +1,48 @@
+{
+  "version": "0.1.0",
+  "contractVersion": "0.7.1",
+  "format": "hps.e1.scene",
+  "scope": "standalone single-scene design exploration",
+  "definitions": [
+    {
+      "id": "E1-SCENE",
+      "version": "0.1.0",
+      "source": "01-scene.md",
+      "definition": "specified",
+      "implementation": "implemented",
+      "verification": "partial",
+      "evidence": "../../../../plans/e1-data-driven-engine-completion.md",
+      "scope": "E1 single-scene design exploration; tested Chromium only; not P01/global capability completion"
+    },
+    {
+      "id": "E1-PRIMITIVES",
+      "version": "0.1.0",
+      "source": "02-primitives-style.md",
+      "definition": "specified",
+      "implementation": "implemented",
+      "verification": "partial",
+      "evidence": "../../../../plans/e1-data-driven-engine-completion.md",
+      "scope": "E1 single-scene design exploration; tested Chromium only; not P01/global capability completion"
+    },
+    {
+      "id": "E1-MOTION",
+      "version": "0.1.0",
+      "source": "03-motion.md",
+      "definition": "specified",
+      "implementation": "implemented",
+      "verification": "partial",
+      "evidence": "../../../../plans/e1-data-driven-engine-completion.md",
+      "scope": "E1 single-scene design exploration; tested Chromium only; not P01/global capability completion"
+    },
+    {
+      "id": "E1-RESOURCES-GEOMETRY",
+      "version": "0.1.0",
+      "source": "04-resources-geometry.md",
+      "definition": "specified",
+      "implementation": "implemented",
+      "verification": "partial",
+      "evidence": "../../../../plans/e1-data-driven-engine-completion.md",
+      "scope": "E1 single-scene design exploration; tested Chromium only; not P01/global capability completion"
+    }
+  ]
+}
