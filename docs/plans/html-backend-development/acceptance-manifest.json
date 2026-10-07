@@ -1,9 +1,8 @@
 {
   "format": "hps.html.acceptance.manifest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "date": "2026-10-08",
   "branch": "html-studio",
-  "published_to": "origin/main 23af1f1 (publication form, fast-forward) + origin/html-studio (full source)",
   "plan": "docs/plans/html-backend-development",
   "environment": {
     "os": "Windows 10.0.26200 x64",
@@ -13,7 +12,34 @@
     "font": "Microsoft YaHei",
     "run_dir_isolation": "checks/conftest.py (PPT_STUDIO_DB_PATH / PPT_STUDIO_RUNS_DIR)"
   },
-  "command_evidence": {
+  "remaining_for_full_signoff": [
+    "真实五页测试覆盖三种模板；完整课程与布局容量边界尚未补齐。",
+    "需用户按原科普参考作视觉评审。",
+    "效果参考 MISS/HIT、真实附件工程检查通过；真实模型未配置密钥。",
+    "beat/对象映射、实际三帧与冻结记录通过；真实模型分镜待验证。",
+    "真实透明 PNG 质量与资源加载通过；真实生图资产质量待验证。",
+    "引擎动作通过；完整产品对象与动作编辑交互待补齐。",
+    "保留已有接口，未完成真实数字人合成。",
+    "实际 PPTX 任务/登记/下载/删除通过；PowerPoint 打开待验证。",
+    "未完成真实模型、真实讲稿音频与用户评审的课程全流程。"
+  ],
+  "honesty_notes": "工程通过不等于视觉通过；模型替身、合成静音、兼容绑定有明确标注。源代码本轮未远端发布。",
+  "blocked_on_service_evidence": {
+    "probe_date": "2026-10-08",
+    "method": "只读本地配置，仅记录是否存在，不输出密钥",
+    "llm_api_key_present": false,
+    "image_api_key_present": false,
+    "llm_model_present": true,
+    "image_model_present": true,
+    "result": "未调用付费模型；配置后执行真实课程闭环。"
+  },
+  "code_revision": "ac823f3efd5853f45f973aaa40a5ecf58fc288d9",
+  "historical_publication_claim": "origin/main 23af1f1 (publication form, fast-forward) + origin/html-studio (full source)",
+  "publication": {
+    "state": "not_published_this_review",
+    "note": "本轮只更新本地；历史远端文字不作为已核验的当前发布证据。"
+  },
+  "historical_command_evidence": {
     "engine_e1": {
       "cmd": "npm test (html_engine)",
       "exit": 0,
@@ -70,7 +96,41 @@
       "result": "real 16:9 PPTX with exact EMU + manifest"
     }
   },
-  "acceptance": {
+  "command_evidence": {
+    "main_regression": {
+      "exit": 0,
+      "result": "524 passed, 1 third-party deprecation warning",
+      "evidence": "docs/reviews/2026-10-08-html-optimization/final-regression-tests.txt"
+    },
+    "legacy_regression": {
+      "exit": 0,
+      "result": "31 passed, 1 third-party deprecation warning",
+      "evidence": "docs/reviews/2026-10-08-html-optimization/legacy-regression-tests.txt"
+    },
+    "browser_panel": {
+      "exit": 0,
+      "result": "6 checks / 0 errors / stable 100 refreshes"
+    },
+    "visual_engine": {
+      "exit": 0,
+      "result": "13 checks / 4 scenes / 0 page errors"
+    },
+    "frontend_contract_lint": {
+      "exit": 0,
+      "result": "visible-flow, frontend-quality, Agent contract check, focused Ruff and whitespace checks passed"
+    },
+    "production_benchmark": {
+      "exit": 0,
+      "result": "5 pages / 3 templates / real renderer / stub model",
+      "evidence": "docs/reviews/2026-10-08-html-optimization/production-benchmark.json"
+    },
+    "video_benchmark": {
+      "exit": 0,
+      "result": "3 pages / 1600x900 / 30fps / H.264/AAC / yuv420p / bt709 all tags; synthetic silence, explicit legacy-binding compatibility",
+      "evidence": "docs/reviews/2026-10-08-html-optimization/video-benchmark.json"
+    }
+  },
+  "historical_acceptance": {
     "AC01_baseline": "passed",
     "AC02_public_style_separation": "passed (engineering)",
     "AC03_layout_capacity": "passed (engineering, 3 structures; real-course T pending C-routes)",
@@ -92,18 +152,107 @@
     "AC19_legacy_regression": "passed (E1/E2/course suites unchanged green)",
     "AC20_real_course_e2e": "pending_review — requires user-driven guided run on a real course"
   },
-  "remaining_for_full_signoff": [
-    "user AC04 visual verdict on evidence screenshots",
-    "user AC20 guided real-course run (import→plan→review→audio→video→PPTX)",
-    "bind a live LLM/image provider for C02/C03 real-service evidence",
-    "PowerPoint open-check for AC16 (target software availability)",
-    "workspace UI panels for html review/approve (service+routes shipped)"
-  ],
-  "honesty_notes": "passed 项均为工程验收（可重复命令+退出码+断言）；pending_review/blocked 项不冒充完成；未保存任何密钥或真实用户数据。",
-  "blocked_on_service_evidence": {
-    "probe_date": "2026-10-08",
-    "probe": "json_llm_service.generate_json_with_configured_llm availability probe",
-    "result": "400: 未配置大模型 API 密钥（原项目凭据按隔离设计未复制）",
-    "unblock_action": "在应用系统设置配置 LLM API 密钥后，运行 plan/generate 与资产生产各一次即补齐 C02/C03 真实服务证据"
-  }
+  "acceptance": {
+    "AC01": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC02": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC03": {
+      "status": "partial",
+      "note": "真实五页测试覆盖三种模板；完整课程与布局容量边界尚未补齐。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC04": {
+      "status": "pending_review",
+      "note": "需用户按原科普参考作视觉评审。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC05": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC06": {
+      "status": "partial",
+      "note": "效果参考 MISS/HIT、真实附件工程检查通过；真实模型未配置密钥。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC07": {
+      "status": "partial",
+      "note": "beat/对象映射、实际三帧与冻结记录通过；真实模型分镜待验证。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC08": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC09": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC10": {
+      "status": "partial",
+      "note": "真实透明 PNG 质量与资源加载通过；真实生图资产质量待验证。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC11": {
+      "status": "partial",
+      "note": "引擎动作通过；完整产品对象与动作编辑交互待补齐。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC12": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC13": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC14": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC15": {
+      "status": "blocked",
+      "note": "保留已有接口，未完成真实数字人合成。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC16": {
+      "status": "partial",
+      "note": "实际 PPTX 任务/登记/下载/删除通过；PowerPoint 打开待验证。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC17": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC18": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC19": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC20": {
+      "status": "not_run",
+      "note": "未完成真实模型、真实讲稿音频与用户评审的课程全流程。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    }
+  },
+  "overall_status": "partial"
 }

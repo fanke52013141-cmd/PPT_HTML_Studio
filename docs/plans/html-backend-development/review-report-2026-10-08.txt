@@ -1,0 +1,196 @@
+========================================================================
+PPT_HTML_Studio HTML 后端开发方案 —— 审核报告
+========================================================================
+审核日期：2026-10-08
+审核对象：docs/plans/html-backend-development/（README.md、tasks.md、
+          acceptance.md、agent-handoff.md、open-source-map.md、
+          task-ledger.json、acceptance-manifest.json、source-evidence.json）
+          以及本轮已提交的实现（commits b32b204..1616bae，2026-10-08
+          01:26–03:33）与当前工作区状态。
+审核方式：通读方案全部 8 份文件；核对账本引用的全部证据文件；实际重跑
+          测试套件；抽查迁移、前端分派、模块边界与远端发布状态。
+
+------------------------------------------------------------------------
+一、总体结论
+------------------------------------------------------------------------
+方案本身质量很高（定义卡先行、版本化契约、公用/主题/模板/实例/派生五层
+边界、逐 AC 验收与证据约定、开源许可映射、失效与 Agent 同步要求齐全），
+本轮工程声明的关键事实全部核实为真。问题不在代码，集中在：
+  1) 文档状态互相矛盾（入口 README 过时）；
+  2) 账本验收状态语义被抬高（passed 与 pending_review 混用）；
+  3) 证据占位符（commit: "this-round"）；
+  4) AGENTS.md 未反映已实施的 HTML 后端。
+剩余实质工作全部是用户侧/环境侧：AC04 视觉结论、AC20 真实课程导览、
+配置 LLM 密钥、PowerPoint 打开核验，外加一个性能验证建议（见第六节）。
+
+------------------------------------------------------------------------
+二、核实通过的部分（测试与证据均实际复核）
+------------------------------------------------------------------------
+1. 测试声明属实（本次审核实际重跑）：
+   - HTML 后端套件 12 个文件：68 passed（10.01s）
+     （test_html_action_editing / annotation_targets / asset_service /
+       audio_binder / design_brief / pptx_snapshot / render_runner /
+       storyboard_planning / task_store / visual_review / visual_store /
+       test_project_visual_backend）
+   - Agent 契约套件：423 passed（6.24s）
+   - 迁移/失效：18 passed
+   - python scripts/generate_agent_contracts.py --check：capability-matrix
+     up to date
+2. 证据文件：task-ledger.json 与 acceptance-manifest.json 引用的 29 个
+   证据路径逐一核对，全部存在（含迁移 0017、12 个 html_*.py 服务、
+   checks/test_html_*.py、html_engine/visual/evidence/*、AC04 自审、
+   基线报告、0.2.0 版本卡、效果注册与缓存 manifest）。
+3. 模块边界合规（Runtime Bridge Policy）：
+   - 所有 html_* 服务模块不 import server、不含 Depends；
+   - html_visual_routes.py / html_visual_review_routes.py 显式持有
+     APIRouter；server.py:657-708 仅做依赖注入与 include_router 组装；
+   - video 渲染经 server.py:994 注入 HtmlRenderRunner，符合分派设计。
+4. B01/B03 关键实现正确：
+   - migrations/0017_project_visual_backend.sql：可回放的
+     ALTER TABLE ... ADD COLUMN ... DEFAULT 'image'，旧项目回填 image，
+     首发禁止已有项目切换后端；
+   - static/flow.js 按 visual_backend 分派（resolveVisualBackend），
+     HTML readiness 用真实 htmlScenesReady 状态，未伪造 Mask 文件骗过
+     旧门槛；checks/test_visible_flow.js 有对应守卫（217-238 行）。
+5. 诚实性符合方案自身要求：
+   - AC04 自审（html_engine/visual/evidence/ac04-agent-self-review.md）
+     明确标注"不是用户审阅结论、维持 pending_review"，且自查出数据页
+     中部留白问题并修复重渲染；
+   - C02/C03 的 blocked-on-service 有真实探测记录（LLM 密钥未配置的
+     400 响应），未冒充真实服务验证；
+   - 开源映射对 AGPL 项目（guizang-ppt-skill）明确标注"不直接移植
+     源码"，所有借鉴均固定提交 pin。
+6. 远端发布与 manifest 声明一致：origin/html-studio = 本地 HEAD
+   （1616bae，0 ahead / 0 behind）；origin/main 上的 23af1f1 为当前
+   main（5d522b4）的祖先，发布链成立。
+
+------------------------------------------------------------------------
+三、发现的问题（按优先级）
+------------------------------------------------------------------------
+P1【高】入口 README 执行进度段过时，且与账本直接矛盾
+  现象：README.md 第 22 行写"C01—C04、D01/D03、E02/E03、F01—F03 本轮
+  未实施（记 not_run）"，但这些任务已于 02:20–03:33 全部实现并提交
+  （git log 可证），task-ledger.json 已记 passed/partial。README 写于
+  01:55 后未再更新。
+  影响：agent-handoff.md 要求执行 Agent 首先读 README，接手者会据此
+  误判进度，可能重做已完成任务或跳过未完成任务。
+  建议：更新该进度段至当前状态；或删除手工进度段，改为声明
+  "进度以 task-ledger.json 与 acceptance-manifest.json 为唯一事实源"
+  （手工维护的进度段已被证明必然滞后）。
+
+P2【高】账本任务状态与方案自身放行规则冲突（状态语义抬高）
+  现象：task-ledger.json 中 F03 记 "passed"，但其 note 自列 4 项放行
+  剩余（用户 AC04 视觉结论、用户 AC20 真实课程导览、真实模型服务绑定、
+  PowerPoint 打开核验），而 acceptance.md 明确"视觉有明确用户审阅结论"
+  是放行条件。F03 应为 partial / pending_review。
+  同类：A02 与 C04 的 acceptance 列表含 AC04（pending_review）却记
+  passed；B03 的 acceptance 列表含 AC20（pending_review）却记 passed。
+  影响：下一个 Agent 读到 "passed" 会把视觉门槛当成已关闭——正是方案
+  明令禁止的"用测试数量替代验收证据"。
+  建议：将状态改为按 AC 分列，例如
+    "acceptance_states": { "AC02": "passed", "AC04": "pending_review" }
+  或至少把含未过 AC 的任务统一降级为 partial，并在 README 约定 status
+  字段仅表示工程实现状态。
+
+P3【中】13 个任务的 "commit": "this-round" 是占位符
+  现象：违反 agent-handoff.md 交付清单要求的"提交 hash"。
+  实际提交均已存在，可直接回填：
+    C01=2fb4fb5  C02=6190105  C03=b31043a  C04=2a5c925
+    D01=aaef8d9+90f9c60  D03=e0a4e14  E02/E03=b11bedb
+    F01=fa8aa6d  F02=f4fa3e7  F03=3259fce  （UI 收尾=09732e0）
+  建议：回填真实短 hash，使证据可追溯。
+
+P4【高】AGENTS.md 已过时，且未登记新模块所有权
+  现象：工作区、本地 HEAD、origin/main 三处的 AGENTS.md 均仍写
+  "The current application still runs the original image workflow;
+  the HTML backend is planned, not implemented"，与实际状态（B01-B03、
+  C01-C04、D01-D03、E01-E03、F01-F02 已实现并注册）不符；模块所有权
+  清单未登记 html_visual_store / html_visual_routes /
+  html_visual_review_service / html_visual_review_routes /
+  html_render_runner / html_task_store / html_action_editing /
+  html_audio_binder / html_annotation_targets / html_pptx_snapshot /
+  html_design_brief / html_asset_service / html_storyboard_planning /
+  static/html_review_panel.js；checks/test_frontend_quality.js 也未给
+  新面板加所有权守卫（AGENTS.md 对新抽取模块的既有惯例）。
+  影响：任何新 Agent 读 AGENTS.md 会认为 HTML 后端不存在，可能绕开
+  既有模块重新造轮子或错误套用 image 门槛。
+  建议：更新 AGENTS.md 的 HTML 后端状态描述；按既有格式补登记
+  html_* 模块所有权；为 html_review_panel.js 补前端所有权守卫。
+
+P5【中】工作区脏状态威胁"按文件范围审查/提交"
+  现象：git status 显示 137 个"改动"文件，其中约 113 个为 CRLF 换行
+  噪音（--ignore-cr-at-eol 后无差异）；其余 24 个文件（约 +1046/−550
+  行）为复制时遗留的真实未提交改动（scripts/build_portable_package.ps1、
+  启动.bat/停止.bat、digital_human_routes.py、README.md 等，记录于
+  docs/baseline/source-snapshot.json）。
+  影响：F03 要求"只审查并提交本轮明确范围文件"，此状态下一次
+  git add -A 即会把遗留改动混入提交。
+  建议：新增 .gitattributes 固定换行策略并一次性 renormalize 消除
+  噪音；遗留改动单独提交到 baseline 记录分支，或明确列入永不提交
+  清单。
+
+P6【低】acceptance-manifest.json 两处小过时
+  a) "published_to" 仍写 "origin/main 23af1f1"；main 已前进至 5d522b4
+     （23af1f1 为其祖先，发布链成立，仅引用过时）。
+  b) "remaining_for_full_signoff" 第 5 项"workspace UI panels"已在
+     03:31 的 09732e0 交付（static/html_review_panel.js 已存在并接入
+     static/index.html:1842），03:33 最后更新 manifest 时未划掉。
+  建议：同步这两条，保持 manifest 与仓库状态一致。
+
+------------------------------------------------------------------------
+四、剩余真实缺口（待办事项，非文档问题）
+------------------------------------------------------------------------
+1. 用户 AC04 视觉审阅：材料已备好（html_engine/visual/evidence/ 下
+   4 页终态截图 + 自审对照表），等待用户查看截图给出
+   pass / change_requested 结论。
+2. 用户 AC20 真实课程 guided 导览：新建 T 课程 → 五场景 → 三种结构 →
+   至少一个对象过程 → 确认音频 → 视频 → 快照 PPTX → 关闭重开验证
+   （无旧缓存、源码版本正确）。
+3. 配置 LLM API 密钥以解除 C02/C03 的 blocked-on-service：在应用系统
+   设置配置密钥后，各运行一次 plan 生成与资产生产即补齐真实服务证据，
+   并回填 manifest 的 blocked_on_service_evidence。
+4. AC16：用实际 PowerPoint（或兼容应用）打开一次快照 PPTX 核验，
+   现仅结构级通过。
+
+------------------------------------------------------------------------
+五、前瞻性建议（方案/流程优化）
+------------------------------------------------------------------------
+1. 账本 schema 增加按 AC 分列的状态层（见 P2），消除"任务 passed 但
+   某 AC 未过"的歧义；建议在 acceptance.md 中固化该字段格式。
+2. README 不再手工维护执行进度段，统一指向 task-ledger.json 与
+   acceptance-manifest.json（见 P1），或约定每轮交付强制同步 README。
+3. 性能风险应前置验证：E01 浏览器逐帧截图方案目前仅有单页 12s 冒烟
+   （1600×900 H.264+AAC）；整门课（数十页 × 长音频）的批量渲染吞吐
+   未测。建议在 AC20 之前先跑一次多页课程渲染计时；若吞吐不可接受，
+   需要在真实课程验收前调整导出策略，而不是验收过程中发现。
+4. 真实服务证据补齐后，记得按方案闭环更新 acceptance-manifest 的
+   blocked_on_service_evidence 与 C02/C03 的 note，避免账本与事实
+   再次脱节。
+
+------------------------------------------------------------------------
+六、审核过程中执行的验证命令与结果
+------------------------------------------------------------------------
+- python -m pytest <12 个 checks/test_html_* 与 test_project_visual_backend> -q
+    → 68 passed in 10.01s
+- python -m pytest checks/agent -q
+    → 423 passed, 1 warning in 6.24s
+- python scripts/generate_agent_contracts.py --check
+    → OK: docs/agent/capability-matrix.md is up to date
+- python -m pytest checks/test_database_migrations.py
+  checks/test_invalidation_service.py -q
+    → 18 passed
+- 证据文件存在性核对：29/29 存在
+- 边界检查：grep 确认 html_* 服务无 server import、无 Depends；
+  APIRouter 显式持有；server.py 仅组装
+- git 核对：origin/html-studio 与 HEAD 同步（0/0）；origin/main 含
+  23af1f1 为祖先；CRLF 噪音 113 项、真实遗留改动 24 文件
+  （+1046/−550）
+
+------------------------------------------------------------------------
+结论重申
+------------------------------------------------------------------------
+开发方案与第一、二轮工程交付可信、可追溯、边界合规；只需完成
+P1–P4 的状态文档修正与 P5/P6 的仓库卫生整理，剩余放行条件即为
+三项用户侧动作（看图给 AC04 结论、跑 AC20 真实课程、配置 LLM 密钥）
+与一项可选核验（PowerPoint 打开）。
+========================================================================

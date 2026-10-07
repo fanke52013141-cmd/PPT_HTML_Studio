@@ -648,3 +648,15 @@ with that registration. Read-only navigation and no-op saves must not invalidate
 artifacts or confirmations. New write paths need a regression check for no-op
 behavior and for the smallest affected scope. Preserve recoverable user work;
 generated caches may be rebuilt, while explicit deletion needs a separate action.
+
+## Integrated HTML Backend Ownership and Acceptance
+
+- html_production_service.py orchestrates registered plans, cached labeled effect references, configured image transport, independent resources, candidate keyframes and scene compilation. It does not generate executable HTML/JavaScript and never automatically approves.
+- html_workflow_jobs.py owns the bounded persistent worker. html_task_store.py owns task state transitions; cancellation/success use database compare-and-set. Startup marks abandoned tasks interrupted. Cancellation is cooperative at stage boundaries; submitted remote requests may finish before the next checkpoint.
+- html_visual_store.py owns documents/revisions/no-op writes. html_visual_review_service.py owns shared review and approval of stored current scenes. Web and Agent enforce project/account access before dispatch.
+- html_input_manifest.py is the shared resolved-input source for freshness and approval. It includes actual definitions, assets, renderer, font bytes and motion binding. Unrelated project assets do not invalidate a page.
+- html_engine/visual owns the production shared renderer; E1/E2 remain separate formats. The soft-science theme owns visual properties, registered templates own slots/capacity, instances own content/references/actions, and derived geometry/audio times stay outside author inputs.
+- html_audio_binder.py resolves explicit beat IDs to confirmed sentence times. Proportional binding exists only for legacy unbound experiments and must not be used by new production scenes.
+- static/html_review_panel.js owns the HTML step-3 panel only. Use API transport, explicit refresh after data loading, and no body MutationObserver. Keep image controls hidden only for HTML projects; preserve image behavior. Extend checks/test_frontend_quality.js and the real-browser panel regression when changing this owner.
+- Video/PPTX gates require current valid approvals. HTML PPTX uses the existing persistent job/artifact/download lifecycle and is image-only; never call it natively editable.
+- Record passed, partial, pending_review, blocked and not_run separately, with per-AC evidence and real commit hashes. Do not reset inherited changes or apply blanket git renormalize as an audit fix. Use focused diff whitespace checks.
