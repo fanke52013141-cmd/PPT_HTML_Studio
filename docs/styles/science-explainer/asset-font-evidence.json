@@ -1,0 +1,41 @@
+{
+  "kind": "local_font_and_original_asset_evidence",
+  "fonts": [
+    {
+      "assetId": "font.host-yahei",
+      "version": "0.1.0",
+      "weight": 400,
+      "family": "Microsoft YaHei",
+      "hostFile": "C:\\Windows\\Fonts\\msyh.ttc",
+      "sha256": "d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f",
+      "delivery": "host-installed; not redistributed; offline export unresolved"
+    },
+    {
+      "assetId": "font.host-yahei",
+      "version": "0.1.0",
+      "weight": 700,
+      "family": "Microsoft YaHei",
+      "hostFile": "C:\\Windows\\Fonts\\msyhbd.ttc",
+      "sha256": "4508821b3dffe01f0ef5e5326a3e60df705a44633858811f67b6982dce3f6ee6",
+      "delivery": "host-installed; not redistributed; offline export unresolved"
+    }
+  ],
+  "assets": [
+    {
+      "path": "samples/assets/condensation.svg",
+      "sha256": "5b11e5b89b9e65e64d8ecc3f0a5ccb51d9e135a1c9dd31c10315746f605f5aa6",
+      "kind": "original-svg-science-schematic",
+      "width": 760,
+      "height": 260,
+      "background": "transparent"
+    },
+    {
+      "path": "samples/assets/evaporation.svg",
+      "sha256": "e06065ab69cabacf4b8cb9a97a1b2df39da491b8981e5d5b656bc12a7feef6b8",
+      "kind": "original-svg-science-schematic",
+      "width": 760,
+      "height": 260,
+      "background": "transparent"
+    }
+  ]
+}
