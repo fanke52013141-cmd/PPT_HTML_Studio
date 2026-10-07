@@ -186,7 +186,7 @@
         "checks/test_html_design_brief.py"
       ],
       "commit": "this-round",
-      "note": "纯核已实现并验证：brief（仅注册效果/主题/预算/字幕留白）、候选设计参考（CSS/SVG/Canvas 与独立图片分工）、OSS-04 关键帧清单（过渡对象强制过程三帧）、冻结记录（哈希绑定+差异说明）。模型调用侧（实际效果图生成、输入/输出生成与请求上下文留证）随 C04 服务接入；AC06 的请求上下文检查在模型入口落地时执行。"
+      "note": "纯核已实现并验证：brief（仅注册效果/主题/预算/字幕留白）、候选设计参考（CSS/SVG/Canvas 与独立图片分工）、OSS-04 关键帧清单（过渡对象强制过程三帧）、冻结记录（哈希绑定+差异说明）。模型调用侧（实际效果图生成、输入/输出生成与请求上下文留证）随 C04 服务接入；AC06 的请求上下文检查在模型入口落地时执行。 2026-10-08 实测探测：generate_json_with_configured_llm 返回『未配置大模型 API 密钥』——原项目凭据按隔离设计未复制，blocked-on-service 有实证"
     },
     {
       "id": "C03",
@@ -205,7 +205,7 @@
         "checks/test_html_asset_service.py"
       ],
       "commit": "this-round",
-      "note": "资产服务核已实现并验证：请求哈希命中复用、真实 PNG 解码（尺寸/alpha bbox/透明声明门禁/边缘带底检测）、归一化锚点登记、清单哈希校验；provider 经注入包装 ai_provider_service，不做整页白底归一化。真实 provider 端到端与图集提取（分区清单/独立输出核验）待接入实际模型后执行（AC10 的真实服务项）。"
+      "note": "资产服务核已实现并验证：请求哈希命中复用、真实 PNG 解码（尺寸/alpha bbox/透明声明门禁/边缘带底检测）、归一化锚点登记、清单哈希校验；provider 经注入包装 ai_provider_service，不做整页白底归一化。真实 provider 端到端与图集提取（分区清单/独立输出核验）待接入实际模型后执行（AC10 的真实服务项）。 2026-10-08 实测探测：generate_json_with_configured_llm 返回『未配置大模型 API 密钥』——原项目凭据按隔离设计未复制，blocked-on-service 有实证"
     },
     {
       "id": "C04",
