@@ -24,12 +24,15 @@
         "A00"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC02"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "docs/contracts/html-presentation/runtime/visual-v1/version-0.2.0.md",
+        "docs/contracts/html-presentation/CHANGELOG.md"
+      ],
+      "commit": "b32b204"
     },
     {
       "id": "A02",
@@ -38,13 +41,18 @@
         "A01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC02",
         "AC04"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_engine/visual/evidence/condensation-final.png",
+        "html_engine/visual/evidence/evaporation-final.png",
+        "html_engine/visual/evidence/verification.json"
+      ],
+      "commit": "b32b204",
+      "note": "engineering passed; AC04 user visual review pending_review"
     },
     {
       "id": "A03",
@@ -53,13 +61,16 @@
         "A02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC03",
         "AC06"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_engine/visual/effects/registry.json",
+        "html_engine/visual/effects/cache/manifest.json"
+      ],
+      "commit": "b32b204"
     },
     {
       "id": "A04",
@@ -68,12 +79,15 @@
         "A02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC05"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_engine/visual/tools/export-frames.cjs",
+        "html_engine/visual/tests/verify.cjs"
+      ],
+      "commit": "b32b204"
     },
     {
       "id": "B01",
