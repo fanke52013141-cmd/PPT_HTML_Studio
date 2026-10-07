@@ -1,0 +1,185 @@
+{
+  "date": "2026-10-07",
+  "scope": "P02 experimental manual template, not generic scene renderer",
+  "browser": "155.0.8059.12",
+  "stages": [
+    {
+      "stage": "overview",
+      "explanations": [
+        "hidden",
+        "hidden"
+      ],
+      "figureRects": [
+        {
+          "x": 228,
+          "y": 347,
+          "width": 760,
+          "height": 640
+        },
+        {
+          "x": 1018,
+          "y": 347,
+          "width": 760,
+          "height": 640
+        }
+      ],
+      "capacity": []
+    },
+    {
+      "stage": "left",
+      "explanations": [
+        "visible",
+        "hidden"
+      ],
+      "figureRects": [
+        {
+          "x": 228,
+          "y": 347,
+          "width": 760,
+          "height": 640
+        },
+        {
+          "x": 1018,
+          "y": 347,
+          "width": 760,
+          "height": 640
+        }
+      ],
+      "capacity": []
+    },
+    {
+      "stage": "both",
+      "explanations": [
+        "visible",
+        "visible"
+      ],
+      "figureRects": [
+        {
+          "x": 228,
+          "y": 347,
+          "width": 760,
+          "height": 640
+        },
+        {
+          "x": 1018,
+          "y": 347,
+          "width": 760,
+          "height": 640
+        }
+      ],
+      "capacity": []
+    }
+  ],
+  "replacement": {
+    "title": "水的两种变化",
+    "capacity": []
+  },
+  "boundary": {
+    "diagnostic": "容量超限：h1。需调整内容、换模板或分页。",
+    "error": "true"
+  },
+  "geometry": [
+    {
+      "target": "page.title",
+      "x": 76,
+      "y": 38,
+      "width": 1180,
+      "height": 132.15625,
+      "inside": true
+    },
+    {
+      "target": "left.figure",
+      "x": 200,
+      "y": 140,
+      "width": 760,
+      "height": 640,
+      "inside": true
+    },
+    {
+      "target": "left.name",
+      "x": 200,
+      "y": 775,
+      "width": 760,
+      "height": 81.59375,
+      "inside": true
+    },
+    {
+      "target": "left.relation",
+      "x": 200,
+      "y": 870.59375,
+      "width": 760,
+      "height": 50.390625,
+      "inside": true
+    },
+    {
+      "target": "left.body",
+      "x": 200,
+      "y": 934.984375,
+      "width": 760,
+      "height": 43.5,
+      "inside": true
+    },
+    {
+      "target": "right.figure",
+      "x": 990,
+      "y": 140,
+      "width": 760,
+      "height": 640,
+      "inside": true
+    },
+    {
+      "target": "right.name",
+      "x": 990,
+      "y": 775,
+      "width": 760,
+      "height": 81.59375,
+      "inside": true
+    },
+    {
+      "target": "right.relation",
+      "x": 990,
+      "y": 870.59375,
+      "width": 760,
+      "height": 50.390625,
+      "inside": true
+    },
+    {
+      "target": "right.body",
+      "x": 990,
+      "y": 934.984375,
+      "width": 760,
+      "height": 43.5,
+      "inside": true
+    },
+    {
+      "target": "page.source",
+      "x": 180,
+      "y": 1011.65625,
+      "width": 1560,
+      "height": 33.34375,
+      "inside": true
+    }
+  ],
+  "bodyFonts": [
+    {
+      "familyName": "Microsoft YaHei",
+      "postScriptName": "MicrosoftYaHei",
+      "isCustomFont": false,
+      "glyphCount": 10
+    }
+  ],
+  "viewer": {
+    "capacity": [],
+    "scrollWidth": 1440,
+    "clientWidth": 1440
+  },
+  "pageErrors": [],
+  "userVisualApproval": "pending",
+  "notVerified": [
+    "cross-topic template reuse",
+    "audio timeline",
+    "MP4/PPTX",
+    "font redistribution",
+    "automatic extraction and reconstruction"
+  ]
+}

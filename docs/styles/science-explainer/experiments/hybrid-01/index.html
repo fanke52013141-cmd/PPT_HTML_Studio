@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>科普混合视觉实验 · 设计稿与 HTML 对照</title><link rel="stylesheet" href="sample.css"></head>
+<body><main>
+<header class="toolbar"><div><strong>科普混合视觉实验</strong><span>先设计，再分层还原 · P02 审阅稿</span></div>
+<nav aria-label="查看方式"><button data-view="html" aria-pressed="true">HTML 还原</button><button data-view="design" aria-pressed="false">AI 设计稿</button><button data-view="compare" aria-pressed="false">左右对照</button></nav></header>
+<section class="controls" aria-label="讲解阶段"><span>讲解阶段</span><button data-stage="overview">双图定位</button><button data-stage="left">讲蒸发</button><button data-stage="both" aria-pressed="true">完整页面</button><label><input id="replacement" type="checkbox"> 替换短标题与说明</label></section>
+<p class="diagnostic" id="diagnostic" role="status">独立 PNG 插画 + HTML 文字与 SVG 箭头；视觉审阅待确认。</p>
+<div class="panels" data-view="html">
+<section class="panel html-panel" aria-label="HTML 还原页"><p class="panel-label">实际 HTML：文字与方向可独立控制</p><div class="viewport"><article class="slide" data-stage="both" aria-label="蒸发与凝结科普页">
+<div class="ambient ambient-left" aria-hidden="true"></div><div class="ambient ambient-right" aria-hidden="true"></div>
+<header class="slide-heading"><h1 data-target="page.title"><span class="pink">蒸发</span><span>与</span><span class="blue">凝结</span></h1><p id="subtitle"></p></header>
+<section class="object left" data-object="left" aria-label="蒸发"><img class="figure" data-target="left.figure" src="evaporation-alpha.png" alt="静置清水的陶瓷碗，水分子示意球从水面上方散开">
+<div class="explanation"><h2 class="pink" data-target="left.name"></h2><p class="relation" data-target="left.relation"><span class="from"></span><svg viewBox="0 0 64 30" role="img" aria-label="变为"><path d="M4 15H55M43 4l12 11-12 11"/></svg><span class="to"></span></p><p class="body" data-target="left.body"></p></div></section>
+<section class="object right" data-object="right" aria-label="凝结"><img class="figure" data-target="right.figure" src="condensation-alpha.png" alt="装冰块和水的透明冷杯，外壁凝结细水滴">
+<div class="explanation"><h2 class="blue" data-target="right.name"></h2><p class="relation" data-target="right.relation"><span class="from"></span><svg viewBox="0 0 64 30" role="img" aria-label="变为"><path d="M4 15H55M43 4l12 11-12 11"/></svg><span class="to"></span></p><p class="body" data-target="right.body"></p></div></section>
+<footer data-target="page.source"></footer>
+</article></div></section>
+<section class="panel design-panel" aria-label="AI 设计稿"><p class="panel-label">AI 整页设计稿：仅作为构图和画风参考</p><div class="design-frame"><img src="design.png" alt="AI 生成的蒸发与凝结完整设计稿"></div></section>
+</div><p class="note">本页验证视觉分层与还原。按钮展示有限讲解状态；音频同步、通用内核和 PPTX 导出尚未实现。</p>
+</main><script src="content.js"></script><script src="sample.js"></script></body></html>

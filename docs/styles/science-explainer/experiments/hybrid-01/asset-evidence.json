@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-07",
+  "qualityAndResolution": "ToAPIs medium/1k; builtin editing uses tool defaults",
+  "assets": [
+    {
+      "path": "design.png",
+      "sha256": "5a4dc68fc6686b90e7a2dee339df52f1fe07ebcaeb901b7f3ad9d0c64f9f88b8",
+      "width": 1536,
+      "height": 864,
+      "mode": "RGB",
+      "status": "design_reference"
+    },
+    {
+      "path": "evaporation.png",
+      "sha256": "3db9b82b0e7f04f014368b5c1dfb0653e7a3156f78ce46ddc08069f00f265508",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGB",
+      "status": "rejected_fake_transparency"
+    },
+    {
+      "path": "condensation.png",
+      "sha256": "bb4b21aac3d18b0958e3feeb471acdda61727711cc108de9a727f6ed2776b1e7",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGB",
+      "status": "rejected_fake_transparency"
+    },
+    {
+      "path": "evaporation-alpha.png",
+      "sha256": "5abb409bda12349a13b14cc1e67cf70941dbb5ff462b0d408964686792d6e17a",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "status": "selected_for_trial",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.6731,
+      "alphaBounds": [
+        57,
+        23,
+        1198,
+        1207
+      ]
+    },
+    {
+      "path": "condensation-alpha.png",
+      "sha256": "b654e4a0c6f599df07d42c7ef3b0a3dacd6de11c822272b2c00871ab6b1ea554",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "status": "selected_for_trial",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.5764,
+      "alphaBounds": [
+        0,
+        39,
+        1192,
+        1254
+      ]
+    }
+  ],
+  "generationHistory": [
+    {
+      "stage": "design",
+      "tool": "toapis-image-gen",
+      "taskId": "tsk_img_01M4AKC8SQFM202EPSK9QQ63V8",
+      "background": "auto",
+      "result": "success"
+    },
+    {
+      "stage": "evaporation",
+      "tool": "toapis-image-gen",
+      "taskId": "tsk_img_01M4AKGHV5J1XPA1DH87XYNDVS",
+      "background": "transparent",
+      "result": "generation_failed; provider reported refunded"
+    },
+    {
+      "stage": "condensation",
+      "tool": "toapis-image-gen",
+      "taskId": "tsk_img_01M4AKGMNJ6D2NFVMZ90Y3FK2X",
+      "background": "transparent",
+      "result": "generation_failed; provider reported refunded"
+    },
+    {
+      "stage": "evaporation",
+      "tool": "toapis-image-gen",
+      "taskId": "tsk_img_01M4AKM5QJ6CE1M66GFJ5N9SEC",
+      "background": "auto",
+      "result": "RGB with painted checkerboard; rejected"
+    },
+    {
+      "stage": "condensation",
+      "tool": "toapis-image-gen",
+      "taskId": "tsk_img_01M4AKM7WE3V9KVT81N1P6JZ1Z",
+      "background": "auto",
+      "result": "RGB with painted checkerboard; rejected"
+    },
+    {
+      "stage": "evaporation-alpha",
+      "tool": "built-in image_gen",
+      "transparent_background": true,
+      "result": "RGBA output; selected; generated model identity not returned"
+    },
+    {
+      "stage": "condensation-alpha",
+      "tool": "built-in image_gen",
+      "transparent_background": true,
+      "result": "RGBA output; selected; generated model identity not returned"
+    }
+  ],
+  "visualReview": "implementation review only; user pending",
+  "limits": [
+    "Alpha existence does not certify perfect edge matting",
+    "Selected subject details have some drift from original design",
+    "No general claim about supplier transparent support or failure cause"
+  ]
+}
