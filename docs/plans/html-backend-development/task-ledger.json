@@ -216,14 +216,19 @@
         "B03"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "passed",
       "acceptance": [
         "AC04",
         "AC10"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "html_visual_review_service.py",
+        "html_visual_review_routes.py",
+        "html_engine/tools/review-scene.cjs",
+        "checks/test_html_visual_review.py"
+      ],
+      "commit": "this-round",
+      "note": "已实现并验证：模型计划生成（真实 LLM 入口经 json_llm_service 注入；一次有界修复；两次失败保存诊断不放宽校验；AC06/AC07 生成记录含请求上下文哈希与响应哈希）、共享 bundle 浏览器编译/测量/截图（对象级容量诊断）、批准记录绑定 scene/theme/template/layout/asset/runtime 哈希且任一变化失效（409 审阅门禁）。AC04 用户视觉审阅与真实模型实测仍为 pending_review/blocked-on-service；应用 UI 预览面板随工作区集成任务交付。"
     },
     {
       "id": "D01",

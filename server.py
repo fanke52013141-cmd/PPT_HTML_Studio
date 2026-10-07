@@ -675,6 +675,32 @@ except Exception as exc:
     raise
 
 try:
+    from html_visual_review_routes import (
+        router as html_review_router,
+        HtmlReviewDependencies,
+        configure_html_review_service,
+    )
+
+    def _html_plan_json_generator(**kwargs):
+        from json_llm_service import generate_json_with_configured_llm
+
+        return generate_json_with_configured_llm(**kwargs)
+
+    configure_html_review_service(
+        HtmlReviewDependencies(
+            repo_root=Path(REPO_ROOT),
+            json_generator=_html_plan_json_generator,
+        )
+    )
+    app.include_router(html_review_router)
+except Exception as exc:
+    logger.exception(
+        "Explicit html review route registration failed: %s",
+        exc,
+    )
+    raise
+
+try:
     from visual_settings_routes import (
         router as visual_settings_router,
     )
