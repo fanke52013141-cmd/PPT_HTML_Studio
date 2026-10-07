@@ -80,6 +80,9 @@ class Project(Base):
     production_mode = Column(String, nullable=False, default="guided")
     # 呈现方式：full_frame=整页展示；reveal=逐元素讲解（仅分步制作按需启用）。
     presentation_mode = Column(String, nullable=False, default="full_frame")
+    # 画面实现后端：image=原图片管线；html=结构化场景 HTML 渲染。创建后不可
+    # 切换（首发约束），与 production_mode/presentation_mode 正交。
+    visual_backend = Column(String, nullable=False, default="image")
     # Immutable creation-configuration source captured when the project is created.
     # The full effective payload lives in the project run directory; these fields
     # keep list/detail queries able to show its origin without reading files.

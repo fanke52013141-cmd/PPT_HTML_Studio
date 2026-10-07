@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.9.0
-- **Contract Hash**: `5a6210a3d5ae1e0b`
+- **Agent API Version**: 1.10.0
+- **Contract Hash**: `c28b289957012390`
 - **Total Capabilities**: 31
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -14,10 +14,10 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `generation.status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/generation/{stage}/status` | `ppt_generation_status` | Yes | `generation status` | `generation_control.status` | No | No |
 | `generation.stop` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/generation/{stage}/stop` | `ppt_generation_stop` | Yes | `generation stop` | `generation_control.request_stop` | No | No |
 | `identity.get` | 1.0 | stable | GET | `/api/agent/v1/identity` | `ppt_identity_get` | Yes | `identity` | `agent_api.auth / account_service` | No | No |
-| `project.create` | 1.5 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
-| `project.list` | 1.3 | stable | GET | `/api/agent/v1/projects` | `ppt_project_list` | Yes | `project list` | `project_service.ProjectService.list` | No | No |
-| `project.get` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}` | `ppt_project_get` | Yes | `project show` | `project_service.ProjectService.get` | No | No |
-| `project.update` | 1.2 | stable | PATCH | `/api/agent/v1/projects/{project_id}` | `ppt_project_update` | Yes | `project update` | `project_service.ProjectService.update` | No | No |
+| `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
+| `project.list` | 1.4 | stable | GET | `/api/agent/v1/projects` | `ppt_project_list` | Yes | `project list` | `project_service.ProjectService.list` | No | No |
+| `project.get` | 1.3 | stable | GET | `/api/agent/v1/projects/{project_id}` | `ppt_project_get` | Yes | `project show` | `project_service.ProjectService.get` | No | No |
+| `project.update` | 1.3 | stable | PATCH | `/api/agent/v1/projects/{project_id}` | `ppt_project_update` | Yes | `project update` | `project_service.ProjectService.update` | No | No |
 | `source.set` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/source` | `ppt_source_set` | Yes | `source set` | `article_service.import_article / generate_article_from_topic` | No | No |
 | `pipeline.run` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/runs` | `ppt_pipeline_run` | Yes | `run start` | `one_click_orchestrator.start_one_click` | Yes | No |
 | `pipeline.status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/runs/latest` | `ppt_pipeline_status` | Yes | `run status` | `one_click_orchestrator.get_one_click_status` | No | No |

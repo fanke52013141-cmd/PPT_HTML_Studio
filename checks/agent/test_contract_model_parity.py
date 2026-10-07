@@ -38,6 +38,7 @@ _CREATE_FIELD_MAP = {
     "mask_enabled": "mask_enabled",
     "production_mode": "production_mode",
     "presentation_mode": "presentation_mode",
+    "visual_backend": "visual_backend",
     "creation_config_package_id": None,  # canonical internal alias; Agent uses short name
     "creation_config_version": None,
     "creation_config_overrides": None,
@@ -67,6 +68,7 @@ _SUMMARY_FIELD_MAP = {
     "mask_enabled": "mask_enabled",
     "production_mode": "production_mode",
     "presentation_mode": "presentation_mode",
+    "visual_backend": "visual_backend",
     "creation_config": "creation_config",
     "course_id": "course_id",
     "chapter_id": "chapter_id",

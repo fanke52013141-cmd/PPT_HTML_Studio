@@ -69,6 +69,11 @@ class PresentationMode(str, Enum):
     reveal = "reveal"
 
 
+class VisualBackend(str, Enum):
+    image = "image"
+    html = "html"
+
+
 class ProjectCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=200, description="项目名称")
     description: str = Field("", max_length=2000, description="项目描述")
@@ -78,6 +83,10 @@ class ProjectCreateRequest(BaseModel):
     mask_enabled: bool = Field(False, description="旧版兼容字段；新项目默认整页展示")
     production_mode: ProductionMode = ProductionMode.guided
     presentation_mode: PresentationMode = PresentationMode.full_frame
+    visual_backend: VisualBackend = Field(
+        VisualBackend.image,
+        description="画面实现后端：image=原图片管线；html=结构化场景渲染（首发仅 guided+16:9，创建后不可切换）",
+    )
     config_package_id: Optional[str] = Field(None, min_length=1, max_length=120, description="创作配置包 ID")
     config_package_version: Optional[int] = Field(None, ge=1, description="创作配置包版本；不填时固定当前最新版本")
     config_overrides: dict[str, Any] = Field(default_factory=dict, description="仅本项目的创作配置覆盖项")
@@ -100,6 +109,7 @@ class ProjectSummary(BaseModel):
     mask_enabled: bool = Field(False, description="旧版渲染兼容标记；由 presentation_mode 同步")
     production_mode: str = Field("guided", description="one_click / guided")
     presentation_mode: str = Field("full_frame", description="full_frame / reveal")
+    visual_backend: str = Field("image", description="image / html；创建后不可切换")
     creation_config: Optional[dict[str, Any]] = Field(None, description="项目固定使用的创作配置包版本摘要")
     course_id: Optional[str] = None
     chapter_id: Optional[str] = None
@@ -134,6 +144,10 @@ class ProjectUpdateRequest(BaseModel):
     ai_mode: Optional[str] = None
     production_mode: Optional[ProductionMode] = None
     presentation_mode: Optional[PresentationMode] = None
+    visual_backend: Optional[VisualBackend] = Field(
+        None,
+        description="首发不可切换：仅接受与当前一致的值，用于显式确认",
+    )
     expected_revision: Optional[int] = Field(None, description="乐观锁：期望的项目版本号")
     idempotency_key: Optional[str] = None
 

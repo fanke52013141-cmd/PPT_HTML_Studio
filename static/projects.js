@@ -184,6 +184,7 @@ async function loadProjects() {
         <p style="color: #666; font-size: 0.95rem; min-height: 40px; margin-bottom: 0.5rem;">${escHtml(project.description || '无项目描述')}</p>
         <div style="font-size: 0.9rem; margin-top: 0.5rem;">
           <div>当前阶段: <strong>第 ${visibleStepNumber(currentVisibleStep)} 步 · ${visibleStepLabel(currentVisibleStep)}</strong></div>
+          ${project.visual_backend === 'html' ? '<div style="color: #4b83c9; font-weight: bold;">HTML 场景后端</div>' : ''}
           ${hasPendingReconfirm ? '<div style="color: #c9a002; font-weight: bold;">有步骤需重做</div>' : ''}
         </div>
       </div>
@@ -216,6 +217,7 @@ async function createProject() {
   const name = document.getElementById('input-project-name').value.trim();
   const description = document.getElementById('input-project-desc').value.trim();
   const canvasProfile = (document.getElementById('input-project-canvas-profile')?.value || 'landscape_16_9').trim();
+  const visualBackend = (document.getElementById('input-project-visual-backend')?.value || 'image').trim();
   const targetDurationValue = document.getElementById('input-project-target-duration')?.value || '';
   const targetDurationSec = targetDurationValue ? Number(targetDurationValue) : null;
 
@@ -238,6 +240,7 @@ async function createProject() {
       name,
       description,
       canvas_profile: canvasProfile,
+      visual_backend: visualBackend,
       target_duration_sec: targetDurationSec,
       ...(creationConfig ? {
         config_package_id: creationConfig.id,

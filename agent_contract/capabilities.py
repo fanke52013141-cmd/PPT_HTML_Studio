@@ -108,7 +108,7 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="project.create",
-        version="1.5",
+        version="1.6",
         status=CapabilityStatus.stable,
         description="Create a project with canvas, production/presentation mode, versioned creation configuration, and optional course/chapter ownership.",
         request_model=ProjectCreateRequest,
@@ -121,7 +121,7 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="project.list",
-        version="1.3",
+        version="1.4",
         status=CapabilityStatus.stable,
         description="List all projects with optional status filter.",
         request_model=ProjectListRequest,
@@ -134,7 +134,7 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="project.get",
-        version="1.2",
+        version="1.3",
         status=CapabilityStatus.stable,
         description="Get project details including article/contract status, slide IDs, and mask mode.",
         request_model=BaseModel,
@@ -147,7 +147,7 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="project.update",
-        version="1.2",
+        version="1.3",
         status=CapabilityStatus.stable,
         description="Update project name, description, AI mode, production mode, or presentation mode.",
         request_model=ProjectUpdateRequest,

@@ -52,6 +52,9 @@ class ProjectCreate(BaseModel):
     mask_enabled: Optional[bool] = False
     production_mode: Optional[str] = "guided"
     presentation_mode: Optional[str] = "full_frame"
+    # 画面实现后端：image=原图片管线；html=结构化场景 HTML 渲染（首发仅
+    # guided+16:9，创建后不可切换）。
+    visual_backend: Optional[str] = "image"
     creation_config_package_id: Optional[str] = None
     creation_config_version: Optional[int] = None
     creation_config_overrides: Optional[dict[str, Any]] = None
@@ -81,6 +84,8 @@ class ProjectUpdate(BaseModel):
     ai_mode: Optional[str] = None
     production_mode: Optional[str] = None
     presentation_mode: Optional[str] = None
+    # 首发不可切换：接受字段以便 Agent/Web 显式表达，但只允许写当前值。
+    visual_backend: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -161,6 +166,16 @@ class ProjectService:
         if production_mode == "one_click":
             presentation_mode = "full_frame"
         mask_enabled = 1 if presentation_mode == "reveal" else 0
+        visual_backend = (payload.visual_backend or "image").strip().lower()
+        if visual_backend not in {"image", "html"}:
+            raise HTTPException(status_code=400, detail="visual_backend 必须为 image 或 html")
+        if visual_backend == "html" and (
+            production_mode != "guided" or canvas_profile != DEFAULT_CANVAS_PROFILE
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="HTML 后端首发仅支持分步制作与 16:9 画布；请选择 guided + landscape_16_9",
+            )
         configured_subtitle_style: dict[str, Any] | None = None
         course_id = str(payload.course_id or "").strip() or None
         chapter_id = str(payload.chapter_id or "").strip() or None
@@ -311,6 +326,7 @@ class ProjectService:
             mask_enabled=mask_enabled,
             production_mode=production_mode,
             presentation_mode=presentation_mode,
+            visual_backend=visual_backend,
             creation_config_package_id=(
                 creation_config.get("package_id") if creation_config else None
             ),
@@ -392,6 +408,7 @@ class ProjectService:
                 "mask_enabled": bool(project.mask_enabled if project.mask_enabled is not None else 1),
                 "production_mode": project.production_mode or "guided",
                 "presentation_mode": project.presentation_mode or "full_frame",
+                "visual_backend": project.visual_backend or "image",
                 "creation_config": self._creation_config_summary(project),
                 "course_id": project.course_id,
                 "chapter_id": project.chapter_id,
@@ -427,6 +444,7 @@ class ProjectService:
                 "mask_enabled": bool(project.mask_enabled if project.mask_enabled is not None else 1),
                 "production_mode": project.production_mode or "guided",
                 "presentation_mode": project.presentation_mode or "full_frame",
+                "visual_backend": project.visual_backend or "image",
                 "creation_config": self._creation_config_summary(project),
                 "course_id": project.course_id,
                 "chapter_id": project.chapter_id,
@@ -456,6 +474,7 @@ class ProjectService:
             "mask_enabled": bool(project.mask_enabled if project.mask_enabled is not None else 1),
             "production_mode": project.production_mode or "guided",
             "presentation_mode": project.presentation_mode or "full_frame",
+            "visual_backend": project.visual_backend or "image",
             "creation_config": self._creation_config_summary(project),
             "course_id": project.course_id,
             "chapter_id": project.chapter_id,
@@ -530,6 +549,13 @@ class ProjectService:
                 raise HTTPException(status_code=400, detail="一键生成仅支持整页展示；请切换到分步制作后启用元素动画")
             project.presentation_mode = presentation_mode
             project.mask_enabled = 1 if presentation_mode == "reveal" else 0
+        if payload.visual_backend is not None:
+            requested = (payload.visual_backend or "").strip().lower()
+            if requested != (project.visual_backend or "image"):
+                raise HTTPException(
+                    status_code=400,
+                    detail="画面实现后端创建后不可切换；HTML 后端请在新建项目时选择",
+                )
         db.commit()
         db.refresh(project)
         return {
@@ -541,6 +567,7 @@ class ProjectService:
                 "ai_mode": project.ai_mode or "auto",
                 "production_mode": project.production_mode or "guided",
                 "presentation_mode": project.presentation_mode or "full_frame",
+                "visual_backend": project.visual_backend or "image",
             },
         }
 

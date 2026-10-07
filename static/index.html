@@ -776,6 +776,16 @@
           <option value="portrait_9_16">竖屏 9:16（1080×1920）</option>
         </select>
       </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">画面后端:</label>
+        <select id="input-project-visual-backend" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: #fff;">
+          <option value="image" selected>图片管线（现有流程）</option>
+          <option value="html">HTML 场景渲染（实验版：仅分步制作 + 16:9）</option>
+        </select>
+        <div style="font-size: 0.85rem; color: var(--muted-color); margin-top: 0.4rem; line-height: 1.5;">
+          HTML 后端使用结构化场景渲染画面；创建后不可切换，仅支持分步制作与 16:9。
+        </div>
+      </div>
       <div id="create-target-duration-section" style="margin-bottom: 1.5rem;">
         <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;" for="input-project-target-duration">目标视频时长:</label>
         <select id="input-project-target-duration" class="project-profile-native-select" data-select-menu-native="true" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: #fff;">
@@ -1796,17 +1806,18 @@
   <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
   <!-- 主业务 JavaScript 脚本 -->
-  <script src="flow.js?v=20260928.1"></script>
-  <script src="workflow_state.js?v=20260928.1"></script>
+  <script src="distribution_profile.js?v=20261007.1"></script>
+  <script src="flow.js?v=20261007.1"></script>
+  <script src="workflow_state.js?v=20261007.1"></script>
   <script src="ui_foundation.js?v=20261006.18"></script>
   <script src="api_client.js?v=20261005.1"></script>
   <script src="artifact_repair.js?v=20261005.1"></script>
   <script src="prompt_help.js?v=20261006.2"></script>
-  <script src="settings.js?v=20260928.1"></script>
+  <script src="settings.js?v=20261007.1"></script>
   <script src="projects.js?v=20260916.1"></script>
-  <script src="creation_config_management.js?v=20261006.4"></script>
+  <script src="creation_config_management.js?v=20261007.1"></script>
   <script src="select_menus.js?v=20260906.1"></script>
-  <script src="courses.js?v=20261006.2"></script>
+  <script src="courses.js?v=20261007.1"></script>
   <script src="article.js?v=20261006.17"></script>
   <script src="storyboard.js?v=20261006.18"></script>
   <script src="storyboard_prompts.js?v=20261006.2"></script>
@@ -1817,7 +1828,7 @@
   <script src="mask_workspace.js?v=20261006.17"></script>
   <script src="mask_editor.js?v=20261006.1"></script>
   <script src="subtitle_settings.js?v=20260801.1"></script>
-  <script src="narration_audio.js?v=20261006.17"></script>
+  <script src="narration_audio.js?v=20261007.1"></script>
   <script src="annotation_playback.js?v=20260929.1"></script>
   <script src="annotations_core.js?v=20260927.1"></script>
   <script src="annotations_workspace.js?v=20261006.25"></script>
@@ -1825,17 +1836,17 @@
   <script src="annotations_editor.js?v=20261006.23"></script>
   <script src="annotation_preview.js?v=20261006.24"></script>
   <script src="video_controls.js?v=20261006.24"></script>
-  <script src="output_render.js?v=20261006.12"></script>
+  <script src="output_render.js?v=20261007.1"></script>
   <script src="account_management.js?v=20261006.2"></script>
   <script src="workspace_navigation.js?v=20261006.BCD2"></script>
   <script src="generation_controls.js?v=20261005.1"></script>
-  <script src="event_bindings.js?v=20261006.23"></script>
+  <script src="event_bindings.js?v=20261007.1"></script>
   <script src="project_profile_extension.js?v=20261006.14"></script>
   <script src="storyboard_background_extension.js?v=20261006.6"></script>
   <script src="style_reference_manager_extension.js?v=20261005.1"></script>
   <script src="ai_mask_auto_state.js?v=20260809.1"></script>
   <script src="digital_human_panel.js?v=20261006.17"></script>
   <script src="ai_mask_extension.js?v=20261006.17"></script>
-  <script src="one_click_extension.js?v=20261006.17"></script>
+  <script src="one_click_extension.js?v=20261007.1"></script>
 </body>
 </html>

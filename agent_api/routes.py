@@ -18,7 +18,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -102,6 +102,7 @@ def _project_summary(project: Project) -> ProjectSummary:
         mask_enabled=bool(getattr(project, "mask_enabled", 0) or 0),
         production_mode=getattr(project, "production_mode", "guided") or "guided",
         presentation_mode=getattr(project, "presentation_mode", "full_frame") or "full_frame",
+        visual_backend=getattr(project, "visual_backend", "image") or "image",
         creation_config=(
             {
                 "package_id": project.creation_config_package_id,
@@ -140,6 +141,17 @@ def _resolve_project(db: Session, project_id: str) -> Project:
     if not project:
         raise ProjectNotFoundError(project_id)
     return project
+
+
+def _require_digital_human_edition() -> None:
+    """发行精简版关闭数字人讲解：Agent 契约保持注册，入口返回可预测的不可用。"""
+    import distribution_profile
+
+    if not distribution_profile.digital_human_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="当前发行版未包含数字人讲解功能，该接口不可用。",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -265,6 +277,7 @@ def agent_create_project(
             mask_enabled=payload.mask_enabled,
             production_mode=payload.production_mode.value if payload.production_mode else "guided",
             presentation_mode=payload.presentation_mode.value if payload.presentation_mode else "full_frame",
+            visual_backend=payload.visual_backend.value if payload.visual_backend else "image",
             config_package_id=payload.config_package_id,
             config_package_version=payload.config_package_version,
             config_overrides=payload.config_overrides,
@@ -385,6 +398,10 @@ def agent_update_project(
                 raise ValidationFailedError("一键生成仅支持整页展示")
             project.presentation_mode = payload.presentation_mode.value
             project.mask_enabled = 1 if project.presentation_mode == "reveal" else 0
+        if payload.visual_backend is not None and payload.visual_backend.value != (
+            project.visual_backend or "image"
+        ):
+            raise ValidationFailedError("画面实现后端创建后不可切换；HTML 后端请在新建项目时选择")
 
         AgentIdempotencyService.bump_revision(db, project)
         db.commit()
@@ -1255,6 +1272,7 @@ def agent_get_digital_human_config(
     db: Session = Depends(get_db),
 ) -> Any:
     """Get the digital-human configuration for a project."""
+    _require_digital_human_edition()
     project = _resolve_project(db, project_id)
     config_path = Path(project.run_dir) / "planning" / "digital_human.json"
     if not config_path.is_file():
@@ -1271,6 +1289,7 @@ def agent_update_digital_human_config(
     db: Session = Depends(get_db),
 ) -> DigitalHumanConfigResult:
     """Update the digital-human configuration."""
+    _require_digital_human_edition()
     project = _resolve_project(db, project_id)
     from digital_human_routes import update_digital_human_config_with_impact
 
@@ -1285,6 +1304,7 @@ def agent_digital_human_health(
     db: Session = Depends(get_db),
 ) -> Any:
     """Check digital-human service availability."""
+    _require_digital_human_edition()
     _resolve_project(db, project_id)
     try:
         from digital_human_client import get_digital_human_client
@@ -1301,6 +1321,7 @@ def agent_digital_human_generate_full(
     db: Session = Depends(get_db),
 ) -> Any:
     """Trigger full digital-human generation for all slides."""
+    _require_digital_human_edition()
     project = _resolve_project(db, project_id)
     from visual_contract_service import read_contract_slide_ids
     slide_ids = read_contract_slide_ids(Path(project.run_dir))

@@ -26,7 +26,7 @@ def test_numbered_migrations_apply_once_and_store_checksums() -> None:
     with tempfile.TemporaryDirectory() as value:
         engine = sqlite_engine(Path(value) / "fresh.db")
 
-        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
         assert run_migrations(engine) == []
         assert {
             "projects", "settings", "artifact_records", "local_jobs",
@@ -41,7 +41,7 @@ def test_numbered_migrations_apply_once_and_store_checksums() -> None:
                 row[1]
                 for row in connection.exec_driver_sql("PRAGMA table_info(projects)").fetchall()
             }
-        assert [row[0] for row in rows] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        assert [row[0] for row in rows] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
         assert [row[1] for row in rows] == [
             "core_schema",
             "project_ai_mode",
@@ -59,6 +59,7 @@ def test_numbered_migrations_apply_once_and_store_checksums() -> None:
             "project_production_and_presentation_modes",
             "project_target_duration",
             "repair_presentation_mode_backfill",
+            "project_visual_backend",
         ]
         assert all(len(row[2]) == 64 for row in rows)
         assert "ai_mode" in project_columns
@@ -88,7 +89,7 @@ def test_known_creative_accounts_legacy_checksum_is_rebased_after_schema_check()
     """A prior 0012 release must not prevent an otherwise valid DB from starting."""
     with tempfile.TemporaryDirectory() as value:
         engine = sqlite_engine(Path(value) / "legacy-0012.db")
-        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
         legacy_checksum = "a99a22439d12b3ab9c84e8ccaf7237882c5dc93ebe0f477db47c5a8e9e6004e6"
         with engine.begin() as connection:
             connection.exec_driver_sql(
@@ -184,7 +185,7 @@ def test_legacy_marker_database_is_adopted_without_losing_data() -> None:
                 """
             )
 
-        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
         with engine.connect() as connection:
             project = connection.exec_driver_sql(
                 "SELECT id, name, ai_mode FROM projects WHERE id = 'kept'"
@@ -210,6 +211,7 @@ def test_legacy_marker_database_is_adopted_without_losing_data() -> None:
                 (14, "project_production_and_presentation_modes"),
                 (15, "project_target_duration"),
                 (16, "repair_presentation_mode_backfill"),
+                (17, "project_visual_backend"),
         ]
         engine.dispose()
 
@@ -260,7 +262,7 @@ def test_failed_migration_rolls_back_schema_and_ledger() -> None:
 def test_production_migration_files_are_consecutive() -> None:
     with tempfile.TemporaryDirectory() as value:
         engine = sqlite_engine(Path(value) / "production-shape.db")
-        assert run_migrations(engine, MIGRATIONS_DIR) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        assert run_migrations(engine, MIGRATIONS_DIR) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
         engine.dispose()
 
 
@@ -289,7 +291,7 @@ def test_add_column_migration_is_idempotent_on_a_prebuilt_schema() -> None:
     with tempfile.TemporaryDirectory() as value:
         engine = sqlite_engine(Path(value) / "prebuilt.db")
         try:
-            assert run_migrations(engine, MIGRATIONS_DIR) == list(range(1, 17))
+            assert run_migrations(engine, MIGRATIONS_DIR) == list(range(1, 18))
 
             # 模拟 create_all/快照带来的状态：列都在，ledger 为空。
             with engine.connect() as connection:
@@ -297,7 +299,7 @@ def test_add_column_migration_is_idempotent_on_a_prebuilt_schema() -> None:
                 connection.commit()
 
             # 修复前这里会因 0014 的 duplicate column name 直接抛 MigrationError。
-            assert run_migrations(engine, MIGRATIONS_DIR) == list(range(1, 17))
+            assert run_migrations(engine, MIGRATIONS_DIR) == list(range(1, 18))
 
             with engine.connect() as connection:
                 columns = {
@@ -312,7 +314,7 @@ def test_add_column_migration_is_idempotent_on_a_prebuilt_schema() -> None:
             assert {"production_mode", "presentation_mode", "target_duration_sec"}.issubset(
                 columns
             )
-            assert applied == 16
+            assert applied == 17
         finally:
             # 断言失败时也必须释放句柄，否则临时目录清理会报文件占用，
             # 掩盖真正的失败原因。
