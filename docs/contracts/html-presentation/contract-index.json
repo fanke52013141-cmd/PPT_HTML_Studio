@@ -1,0 +1,203 @@
+{
+  "index_format_version": 1,
+  "contract_package": "html-presentation",
+  "contract_version": "0.3.0",
+  "effective_date": "2026-10-07",
+  "timezone": "Asia/Shanghai",
+  "status": "active_design_baseline",
+  "entrypoint": "README.md",
+  "scope": "html_backend",
+  "runtime_enforcement": "not_implemented",
+  "notes": [
+    "This index is documentation metadata, not a runtime capability registry or validator.",
+    "Normative meaning belongs to the referenced document and section.",
+    "Rules apply when defining or implementing the corresponding capability; candidate features remain unimplemented."
+  ],
+  "documents": [
+    {
+      "path": "README.md"
+    },
+    {
+      "path": "01-building-and-ownership.md"
+    },
+    {
+      "path": "02-capabilities.md"
+    },
+    {
+      "path": "03-data-and-runtime.md"
+    },
+    {
+      "path": "04-production-and-compatibility.md"
+    },
+    {
+      "path": "05-definition-template.md"
+    },
+    {
+      "path": "CHANGELOG.md"
+    }
+  ],
+  "rules": [
+    {
+      "id": "HPS-001",
+      "title": "公共、风格、实例、派生数据分开",
+      "source": "01-building-and-ownership.md",
+      "section": "## 1. HPS-001：四类数据各有所有者",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-002",
+      "title": "公共组件与配方复用",
+      "source": "01-building-and-ownership.md",
+      "section": "## 3. HPS-002：公共组件的构建层次",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-003",
+      "title": "风格包内容与支持范围",
+      "source": "01-building-and-ownership.md",
+      "section": "## 4. HPS-003：风格包的构建内容",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-004",
+      "title": "呈现变体保留公开目标",
+      "source": "01-building-and-ownership.md",
+      "section": "## 5. HPS-004：呈现变体与稳定目标",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-005",
+      "title": "参数解析与约束所有权",
+      "source": "01-building-and-ownership.md",
+      "section": "## 6. HPS-005：参数解析与约束",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-006",
+      "title": "文档身份与复制删除引用",
+      "source": "03-data-and-runtime.md",
+      "section": "### 2.3 身份的生命周期",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-007",
+      "title": "排版与坐标、图层、容量",
+      "source": "03-data-and-runtime.md",
+      "section": "## 4. 排版、坐标、图层与容量",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-008",
+      "title": "动作状态与确定时间求值",
+      "source": "03-data-and-runtime.md",
+      "section": "## 5. 讲稿、动作与时间契约",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-009",
+      "title": "资源版本、字体与渲染就绪",
+      "source": "03-data-and-runtime.md",
+      "section": "## 6. 素材、字体、就绪与可重复渲染",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-010",
+      "title": "人工编辑与 AI 生成边界",
+      "source": "03-data-and-runtime.md",
+      "section": "## 7. 人工编辑与 AI 生成边界",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-011",
+      "title": "变更影响与任务快照",
+      "source": "03-data-and-runtime.md",
+      "section": "## 8. 版本、编辑影响与任务快照",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-012",
+      "title": "输出支持集及明确降级",
+      "source": "03-data-and-runtime.md",
+      "section": "## 9. 输出能力与合成接口",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-013",
+      "title": "分层校验与视觉审阅",
+      "source": "03-data-and-runtime.md",
+      "section": "## 10. 验证、诊断与美感验收",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-014",
+      "title": "依照固定规则与输入生产",
+      "source": "04-production-and-compatibility.md",
+      "section": "## 1. HPS-014：每次生产携带规则与输入版本",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-015",
+      "title": "规则修订与版本记录",
+      "source": "04-production-and-compatibility.md",
+      "section": "## 3. HPS-015：规则变更流程与版本",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-016",
+      "title": "旧作品兼容与显式升级",
+      "source": "04-production-and-compatibility.md",
+      "section": "## 4. HPS-016：旧作品兼容与升级",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-017",
+      "title": "规范与验证同步",
+      "source": "04-production-and-compatibility.md",
+      "section": "## 5. HPS-017：规则与验证同步",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-018",
+      "title": "具体定义卡的完成标准",
+      "source": "05-definition-template.md",
+      "section": "## 1. HPS-018：定义卡完成条件",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "projects_response": [],
+  "database_path": "D:\\Program Files (x86)\\PPT_HTML_Studio\\data\\projects.db",
+  "database_exists": true,
+  "html_backend_implemented": false,
+  "python_dependency_check": "passed",
+  "remotion_typecheck": "passed",
+  "targeted_baseline_tests": {
+    "passed": 48,
+    "scope": [
+      "database migrations",
+      "invalidation",
+      "distribution profile",
+      "Agent model parity"
+    ]
+  },
+  "app_url": "http://127.0.0.1:8010",
+  "digital_human_inference_tested": false,
+  "real_media_export_tested": false,
+  "canonical_project_path": "D:\\Program Files (x86)\\PPT_HTML_Studio",
+  "desktop_shortcut_path": "C:\\Users\\Administrator\\Desktop\\PPT HTML Studio.lnk",
+  "migration_verification": {
+    "source_manifest_files": 1380,
+    "source_hash_mismatches": [],
+    "customized_manifest_files": [
+      "AGENTS.md"
+    ],
+    "remaining_non_environment_files_verified": 5752,
+    "remaining_hash_mismatches": [],
+    "environment_repaired_at_new_path": true,
+    "original_source_preserved": true,
+    "migration_residue_archive": "C:\\Users\\Administrator\\Desktop\\html动画\\.migration-residue-20261007",
+    "old_runnable_copy_path_exists": false
+  },
+  "launcher_verification_file": "docs/baseline/desktop-launch-verification.json"
+}
