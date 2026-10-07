@@ -28,6 +28,12 @@ const frameCount = Math.ceil((durationMs / 1000) * fps);
 const workDir = fs.mkdtempSync(path.join(os.tmpdir(), "hps-slide-"));
 const framesDir = path.join(workDir, "frames");
 fs.mkdirSync(framesDir);
+// Every exit path (browser, seek, encode, probe) removes the frame tree.
+process.on("exit", () => {
+  try {
+    fs.rmSync(workDir, { recursive: true, force: true });
+  } catch {}
+});
 
 function ffmpeg(args) {
   const result = spawnSync(process.env.FFMPEG_BIN || "ffmpeg", args, { encoding: "utf8" });
@@ -46,12 +52,19 @@ function ffprobeJson(target) {
   return JSON.parse(result.stdout);
 }
 
+function resolveChromePath(playwright) {
+  if (process.env.HPS_CHROME) return process.env.HPS_CHROME;
+  const discovered = playwright.chromium.executablePath();
+  if (discovered && fs.existsSync(discovered)) return discovered;
+  // Validated Chromium on this machine; same fallback as visual/tests/verify.cjs.
+  return "C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1247/chrome-win64/chrome.exe";
+}
+
 (async () => {
-  const { chromium } = require("playwright");
-  const browser = await chromium.launch({
+  const playwright = require("playwright");
+  const browser = await playwright.chromium.launch({
     headless: true,
-    executablePath:
-      process.env.HPS_CHROME || chromium.executablePath(),
+    executablePath: resolveChromePath(playwright),
   });
   const errors = [];
   try {
@@ -80,40 +93,36 @@ function ffprobeJson(target) {
   }
   // No -shortest: the narration tail must never be truncated; the container
   // duration equals the audio length, the last frame holds visually.
-  try {
-    ffmpeg([
-      "-y",
-      "-framerate", String(fps),
-      "-i", path.join(framesDir, "frame-%05d.png"),
-      "-i", audioPath,
-      "-vf", "scale=1600:900",
-      "-c:v", "libx264",
-      "-pix_fmt", "yuv420p",
-      "-colorspace", "bt709",
-      "-color_primaries", "bt709",
-      "-color_trc", "bt709",
-      "-r", String(fps),
-      "-c:a", "aac",
-      "-b:a", "192k",
-      outputPath,
-    ]);
-    const probe = ffprobeJson(outputPath);
-    const video = probe.streams.find((s) => s.codec_type === "video");
-    const audio = probe.streams.find((s) => s.codec_type === "audio");
-    if (!video || !audio) throw new Error("segment missing video or audio stream");
-    console.log(JSON.stringify({
-      format: "hps.visual.slide-video",
-      sceneId: scene.id,
-      frames: frameCount,
-      fps,
-      width: video.width,
-      height: video.height,
-      durationSec: Number(probe.format.duration),
-      audioCodec: audio.codec_name,
-    }));
-  } finally {
-    fs.rmSync(workDir, { recursive: true, force: true });
-  }
+  ffmpeg([
+    "-y",
+    "-framerate", String(fps),
+    "-i", path.join(framesDir, "frame-%05d.png"),
+    "-i", audioPath,
+    "-vf", "scale=1600:900",
+    "-c:v", "libx264",
+    "-pix_fmt", "yuv420p",
+    "-colorspace", "bt709",
+    "-color_primaries", "bt709",
+    "-color_trc", "bt709",
+    "-r", String(fps),
+    "-c:a", "aac",
+    "-b:a", "192k",
+    outputPath,
+  ]);
+  const probe = ffprobeJson(outputPath);
+  const video = probe.streams.find((s) => s.codec_type === "video");
+  const audio = probe.streams.find((s) => s.codec_type === "audio");
+  if (!video || !audio) throw new Error("segment missing video or audio stream");
+  console.log(JSON.stringify({
+    format: "hps.visual.slide-video",
+    sceneId: scene.id,
+    frames: frameCount,
+    fps,
+    width: video.width,
+    height: video.height,
+    durationSec: Number(probe.format.duration),
+    audioCodec: audio.codec_name,
+  }));
 })().catch((e) => {
   console.error(e);
   process.exitCode = 1;
