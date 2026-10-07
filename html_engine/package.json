@@ -8,7 +8,9 @@
     "test": "node tests/engine.test.cjs",
     "build:e2": "node scripts/build-recipes.cjs && node scripts/build.cjs",
     "test:e2": "node tests/recipes.test.cjs",
-    "test:course": "node tests/token-course.test.cjs"
+    "test:course": "node tests/token-course.test.cjs",
+    "build:visual": "node visual/build.cjs",
+    "test:visual": "node visual/tests/verify.cjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",

@@ -1,0 +1,283 @@
+{
+  "format": "hps.visual.stage1.evidence",
+  "checks": [
+    "strict fields and ownership",
+    "references and time",
+    "two contents / assets / layouts",
+    "seek pixel determinism",
+    "transformed anchor / two viewport sizes",
+    "theme preserves semantics and geometry",
+    "text capacity blocks atomic commit",
+    "safe text content",
+    "play and pause",
+    "subtitle 20/32/44 fixed safe zone and empty gap",
+    "asset hash blocks commit",
+    "no page errors"
+  ],
+  "scenes": [
+    {
+      "id": "condensation",
+      "layout": {
+        "id": "object-right",
+        "version": "0.1.0"
+      },
+      "measurements": {
+        "eyebrow": {
+          "lines": 1,
+          "width": 238,
+          "height": 44
+        },
+        "title": {
+          "lines": 1,
+          "width": 1460,
+          "height": 90
+        },
+        "lead": {
+          "lines": 1,
+          "width": 980,
+          "height": 50
+        },
+        "number-1": {
+          "lines": 1,
+          "width": 52,
+          "height": 84
+        },
+        "step-1": {
+          "lines": 1,
+          "width": 600,
+          "height": 46
+        },
+        "body-1": {
+          "lines": 1,
+          "width": 585,
+          "height": 65
+        },
+        "number-2": {
+          "lines": 1,
+          "width": 52,
+          "height": 84
+        },
+        "step-2": {
+          "lines": 1,
+          "width": 600,
+          "height": 46
+        },
+        "body-2": {
+          "lines": 1,
+          "width": 585,
+          "height": 65
+        },
+        "number-3": {
+          "lines": 1,
+          "width": 52,
+          "height": 84
+        },
+        "step-3": {
+          "lines": 1,
+          "width": 600,
+          "height": 46
+        },
+        "body-3": {
+          "lines": 1,
+          "width": 585,
+          "height": 65
+        },
+        "from": {
+          "lines": 1,
+          "width": 118,
+          "height": 64
+        },
+        "to": {
+          "lines": 1,
+          "width": 118,
+          "height": 64
+        },
+        "callout": {
+          "lines": 2,
+          "width": 205,
+          "height": 105
+        },
+        "conclusion": {
+          "lines": 1,
+          "width": 508,
+          "height": 64
+        },
+        "source": {
+          "lines": 1,
+          "width": 600,
+          "height": 24
+        }
+      },
+      "geometry": {
+        "subject": {
+          "box": {
+            "x": 715,
+            "y": 75,
+            "width": 760,
+            "height": 680
+          },
+          "placement": {
+            "scale": 0.5422647527910686,
+            "x": 40,
+            "y": 0,
+            "width": 680,
+            "height": 680,
+            "anchor": {
+              "x": 553.524720893142,
+              "y": 325.35885167464113
+            }
+          },
+          "anchors": {
+            "focus": {
+              "x": 1268.5247208931419,
+              "y": 400.35885167464113
+            }
+          }
+        },
+        "annotation": {
+          "anchor": {
+            "x": 1268.5247208931419,
+            "y": 400.35885167464113
+          },
+          "endpoint": {
+            "x": 1360,
+            "y": 394.5
+          },
+          "radius": 26
+        }
+      }
+    },
+    {
+      "id": "evaporation",
+      "layout": {
+        "id": "object-left",
+        "version": "0.1.0"
+      },
+      "measurements": {
+        "eyebrow": {
+          "lines": 1,
+          "width": 238,
+          "height": 44
+        },
+        "title": {
+          "lines": 1,
+          "width": 1460,
+          "height": 90
+        },
+        "lead": {
+          "lines": 1,
+          "width": 980,
+          "height": 50
+        },
+        "number-1": {
+          "lines": 1,
+          "width": 40,
+          "height": 72
+        },
+        "step-1": {
+          "lines": 1,
+          "width": 640,
+          "height": 45
+        },
+        "body-1": {
+          "lines": 1,
+          "width": 640,
+          "height": 54
+        },
+        "number-2": {
+          "lines": 1,
+          "width": 40,
+          "height": 72
+        },
+        "step-2": {
+          "lines": 1,
+          "width": 640,
+          "height": 45
+        },
+        "body-2": {
+          "lines": 1,
+          "width": 640,
+          "height": 54
+        },
+        "number-3": {
+          "lines": 1,
+          "width": 40,
+          "height": 72
+        },
+        "step-3": {
+          "lines": 1,
+          "width": 640,
+          "height": 45
+        },
+        "body-3": {
+          "lines": 1,
+          "width": 640,
+          "height": 54
+        },
+        "from": {
+          "lines": 1,
+          "width": 118,
+          "height": 64
+        },
+        "to": {
+          "lines": 1,
+          "width": 118,
+          "height": 64
+        },
+        "callout": {
+          "lines": 2,
+          "width": 250,
+          "height": 90
+        },
+        "conclusion": {
+          "lines": 1,
+          "width": 693,
+          "height": 64
+        },
+        "source": {
+          "lines": 1,
+          "width": 1450,
+          "height": 24
+        }
+      },
+      "geometry": {
+        "subject": {
+          "box": {
+            "x": 30,
+            "y": 235,
+            "width": 700,
+            "height": 510
+          },
+          "placement": {
+            "scale": 0.40669856459330145,
+            "x": 95,
+            "y": 0,
+            "width": 510,
+            "height": 510,
+            "anchor": {
+              "x": 351.2200956937799,
+              "y": 284.688995215311
+            }
+          },
+          "anchors": {
+            "focus": {
+              "x": 381.2200956937799,
+              "y": 519.688995215311
+            }
+          }
+        },
+        "annotation": {
+          "anchor": {
+            "x": 381.2200956937799,
+            "y": 519.688995215311
+          },
+          "endpoint": {
+            "x": 310,
+            "y": 675
+          },
+          "radius": 26
+        }
+      }
+    }
+  ]
+}
