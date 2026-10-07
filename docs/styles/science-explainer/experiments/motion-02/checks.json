@@ -1,0 +1,412 @@
+{
+  "date": "2026-10-07",
+  "browser": "155.0.8059.12",
+  "scope": "standalone asset-sheet process experiment",
+  "frames": [
+    {
+      "tMs": 0,
+      "hash": "41628746338a1900919757de87fce88703620ceaebf579d15a2bbf58f10ac7a9",
+      "state": {
+        "tMs": 0,
+        "plane": {
+          "x": 280,
+          "y": 570,
+          "opacity": 0,
+          "angle": -22
+        },
+        "trail": {
+          "u": 0,
+          "opacity": 0
+        },
+        "destination": {
+          "opacity": 0
+        },
+        "caption": "纸飞机进入画面。"
+      },
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.subtitle",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "singleLine": true
+        }
+      ]
+    },
+    {
+      "tMs": 1000,
+      "hash": "e0d1c2f9725b72f3a7b9d1c53de64836c0ed6c56af52d9643a93876f6c61ab3f",
+      "state": {
+        "tMs": 1000,
+        "plane": {
+          "x": 280,
+          "y": 570,
+          "opacity": 1,
+          "angle": -22
+        },
+        "trail": {
+          "u": 0,
+          "opacity": 0
+        },
+        "destination": {
+          "opacity": 0
+        },
+        "caption": "纸飞机进入画面。"
+      },
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.subtitle",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "singleLine": true
+        }
+      ]
+    },
+    {
+      "tMs": 3500,
+      "hash": "46d0d4ffc7093c4086f7ed669448a92cf2699fd02ee30103bcb3a15b8fcb36ff",
+      "state": {
+        "tMs": 3500,
+        "plane": {
+          "x": 485.961303898745,
+          "y": 450.122723919641,
+          "opacity": 1,
+          "angle": -9.251390196867634
+        },
+        "trail": {
+          "u": 0.23732407407407405,
+          "opacity": 1
+        },
+        "destination": {
+          "opacity": 0
+        },
+        "caption": "它沿曲线飞过云朵，轨迹提示随后淡出。"
+      },
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.subtitle",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "singleLine": true
+        }
+      ]
+    },
+    {
+      "tMs": 4600,
+      "hash": "169ee83bddf6e34e040d80c9c02a7e8ecd75a35f3d81d149ff782e154db8a740",
+      "state": {
+        "tMs": 4600,
+        "plane": {
+          "x": 748.75,
+          "y": 466.875,
+          "opacity": 1,
+          "angle": 10.395504272085363
+        },
+        "trail": {
+          "u": 0.5,
+          "opacity": 1
+        },
+        "destination": {
+          "opacity": 0
+        },
+        "caption": "它沿曲线飞过云朵，轨迹提示随后淡出。"
+      },
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.subtitle",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "singleLine": true
+        }
+      ]
+    },
+    {
+      "tMs": 6500,
+      "hash": "5d2ec69b59ae894a8bcd509f55d982c39eea4b83d897820932d2cabe734e4987",
+      "state": {
+        "tMs": 6500,
+        "plane": {
+          "x": 1180.8763247078177,
+          "y": 478.7748138151753,
+          "opacity": 1,
+          "angle": -19.11997838280734
+        },
+        "trail": {
+          "u": 0.9114907407407408,
+          "opacity": 1
+        },
+        "destination": {
+          "opacity": 0.216
+        },
+        "caption": "它沿曲线飞过云朵，轨迹提示随后淡出。"
+      },
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.subtitle",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "singleLine": true
+        }
+      ]
+    },
+    {
+      "tMs": 7600,
+      "hash": "1f4916531a4d6a0a7a8418956b080f97a84fe19fa8e786c1fe686b9d793e5fd1",
+      "state": {
+        "tMs": 7600,
+        "plane": {
+          "x": 1270,
+          "y": 435,
+          "opacity": 1,
+          "angle": -22
+        },
+        "trail": {
+          "u": 1,
+          "opacity": 0.5
+        },
+        "destination": {
+          "opacity": 1
+        },
+        "caption": "它沿曲线飞过云朵，轨迹提示随后淡出。"
+      },
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.subtitle",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "singleLine": true
+        }
+      ]
+    },
+    {
+      "tMs": 8200,
+      "hash": "061a820b1f5e3bb8c5b4843b6b70201ec57f66615a1b3ec06f366be2961e2e17",
+      "state": {
+        "tMs": 8200,
+        "plane": {
+          "x": 1270,
+          "y": 435,
+          "opacity": 1,
+          "angle": -22
+        },
+        "trail": {
+          "u": 1,
+          "opacity": 0
+        },
+        "destination": {
+          "opacity": 1
+        },
+        "caption": "最后，飞机停在终点。"
+      },
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.subtitle",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "singleLine": true
+        }
+      ]
+    },
+    {
+      "tMs": 10000,
+      "hash": "061a820b1f5e3bb8c5b4843b6b70201ec57f66615a1b3ec06f366be2961e2e17",
+      "state": {
+        "tMs": 10000,
+        "plane": {
+          "x": 1270,
+          "y": 435,
+          "opacity": 1,
+          "angle": -22
+        },
+        "trail": {
+          "u": 1,
+          "opacity": 0
+        },
+        "destination": {
+          "opacity": 1
+        },
+        "caption": "最后，飞机停在终点。"
+      },
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.subtitle",
+          "inside": true,
+          "singleLine": true
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "singleLine": true
+        }
+      ]
+    }
+  ],
+  "repeat": [
+    {
+      "tMs": 10000,
+      "same": true
+    },
+    {
+      "tMs": 4600,
+      "same": true
+    },
+    {
+      "tMs": 0,
+      "same": true
+    },
+    {
+      "tMs": 6500,
+      "same": true
+    },
+    {
+      "tMs": 1000,
+      "same": true
+    },
+    {
+      "tMs": 8200,
+      "same": true
+    },
+    {
+      "tMs": 3500,
+      "same": true
+    },
+    {
+      "tMs": 7600,
+      "same": true
+    }
+  ],
+  "pauseStable": true,
+  "reverse": true,
+  "edgeStates": {
+    "initial": {
+      "tMs": 0,
+      "plane": {
+        "x": 280,
+        "y": 570,
+        "opacity": 0,
+        "angle": -22
+      },
+      "trail": {
+        "u": 0,
+        "opacity": 0
+      },
+      "destination": {
+        "opacity": 0
+      },
+      "caption": "纸飞机进入画面。"
+    },
+    "final": {
+      "tMs": 10000,
+      "plane": {
+        "x": 1270,
+        "y": 435,
+        "opacity": 1,
+        "angle": -22
+      },
+      "trail": {
+        "u": 1,
+        "opacity": 0
+      },
+      "destination": {
+        "opacity": 1
+      },
+      "caption": "最后，飞机停在终点。"
+    },
+    "invalid": [
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "viewport": {
+    "width": 1366,
+    "scrollWidth": 1366
+  },
+  "fonts": [
+    {
+      "familyName": "Microsoft YaHei",
+      "postScriptName": "MicrosoftYaHei",
+      "isCustomFont": false,
+      "glyphCount": 18
+    }
+  ],
+  "pageErrors": [],
+  "userVisualReview": "pending",
+  "notVerified": [
+    "automatic segmentation",
+    "production template reuse",
+    "PPTX",
+    "audio alignment",
+    "digital human",
+    "cross-browser rendering",
+    "asset generation cost comparison"
+  ]
+}

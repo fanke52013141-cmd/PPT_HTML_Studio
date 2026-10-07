@@ -1,0 +1,406 @@
+{
+  "definitionVersion": "0.3.0-experiment",
+  "contractVersion": "0.7.0",
+  "id": "trial.paper-plane.01",
+  "durationMs": 10000,
+  "canvas": {
+    "width": 1600,
+    "height": 900
+  },
+  "status": "design_exploration",
+  "template": {
+    "id": "experimental.open-stage",
+    "version": "0.1.0",
+    "productionApproved": false
+  },
+  "style": {
+    "direction": "science-explainer pastel 3D",
+    "version": "motion-02-study-01",
+    "font": "Microsoft YaHei",
+    "background": "#F7F8FC",
+    "ink": "#42566F",
+    "accent": "#FF8498"
+  },
+  "purpose": "验证资产板、关键帧与代码运动的混合流程；内容为动作演示，不解释飞行物理。",
+  "narration": [
+    {
+      "id": "beat.enter",
+      "text": "纸飞机进入画面。",
+      "window": [
+        0,
+        2000
+      ]
+    },
+    {
+      "id": "beat.fly",
+      "text": "它沿曲线飞过云朵，轨迹提示随后淡出。",
+      "window": [
+        2000,
+        8000
+      ]
+    },
+    {
+      "id": "beat.hold",
+      "text": "最后，飞机停在终点。",
+      "window": [
+        8000,
+        10000
+      ]
+    }
+  ],
+  "audio": "not_requested; time windows provisional; no TTS replacement",
+  "objects": [
+    {
+      "id": "page.title",
+      "role": "title",
+      "implementation": "HTML",
+      "text": "让画面动起来",
+      "geometry": [
+        100,
+        80,
+        1400,
+        90
+      ],
+      "layer": 100,
+      "window": [
+        0,
+        10000
+      ],
+      "beat": "all",
+      "control": [
+        "editable_text"
+      ],
+      "asset": null,
+      "coordinates": "screen"
+    },
+    {
+      "id": "page.subtitle",
+      "role": "explanation",
+      "implementation": "HTML",
+      "text": "一张资产板，组合出一个完整过程",
+      "geometry": [
+        104,
+        190,
+        1300,
+        50
+      ],
+      "layer": 100,
+      "window": [
+        0,
+        10000
+      ],
+      "beat": "all",
+      "control": [
+        "editable_text"
+      ],
+      "asset": null,
+      "coordinates": "screen"
+    },
+    {
+      "id": "page.caption",
+      "role": "narration_summary",
+      "implementation": "HTML",
+      "geometry": [
+        100,
+        775,
+        1400,
+        64
+      ],
+      "layer": 100,
+      "window": [
+        0,
+        10000
+      ],
+      "beat": "current",
+      "control": [
+        "text_switch"
+      ],
+      "asset": null,
+      "coordinates": "screen"
+    },
+    {
+      "id": "scene.background",
+      "role": "decorative",
+      "implementation": "CSS",
+      "geometry": [
+        0,
+        0,
+        1600,
+        900
+      ],
+      "layer": 0,
+      "window": [
+        0,
+        10000
+      ],
+      "beat": null,
+      "control": [],
+      "asset": null,
+      "coordinates": "scene"
+    },
+    {
+      "id": "cloud.back",
+      "role": "decorative",
+      "implementation": "raster",
+      "geometry": [
+        900,
+        220,
+        420,
+        420
+      ],
+      "layer": 10,
+      "window": [
+        0,
+        10000
+      ],
+      "beat": null,
+      "control": [
+        "static_place"
+      ],
+      "asset": "asset.cloud.large.v1",
+      "coordinates": "scene"
+    },
+    {
+      "id": "trail",
+      "role": "temporary_motion_hint",
+      "implementation": "Canvas",
+      "geometry": "cubic path shared with plane",
+      "layer": 20,
+      "window": [
+        1600,
+        8200
+      ],
+      "beat": "beat.fly",
+      "control": [
+        "path_reveal",
+        "fade"
+      ],
+      "asset": null,
+      "coordinates": "scene",
+      "controlGeometry": "explicit path or circle coordinates from time evaluator; no DOM target implied"
+    },
+    {
+      "id": "plane",
+      "role": "main_object",
+      "implementation": "raster",
+      "geometry": "380x380 square sprite frame; center anchor .5,.5",
+      "layer": 30,
+      "window": [
+        0,
+        10000
+      ],
+      "beat": "all",
+      "control": [
+        "fade",
+        "translate",
+        "rotate"
+      ],
+      "asset": "asset.plane.v1",
+      "coordinates": "scene"
+    },
+    {
+      "id": "cloud.front",
+      "role": "occluder_decorative",
+      "implementation": "raster",
+      "geometry": [
+        545,
+        370,
+        350,
+        350
+      ],
+      "layer": 40,
+      "window": [
+        0,
+        10000
+      ],
+      "beat": null,
+      "control": [
+        "static_place"
+      ],
+      "asset": "asset.cloud.small.v1",
+      "coordinates": "scene"
+    },
+    {
+      "id": "destination",
+      "role": "motion_target_hint",
+      "implementation": "Canvas",
+      "geometry": [
+        1455,
+        375,
+        50,
+        50
+      ],
+      "layer": 15,
+      "window": [
+        6200,
+        10000
+      ],
+      "beat": "beat.hold",
+      "control": [
+        "fade"
+      ],
+      "asset": null,
+      "coordinates": "scene",
+      "controlGeometry": "explicit path or circle coordinates from time evaluator; no DOM target implied"
+    }
+  ],
+  "motion": {
+    "path": {
+      "points": [
+        [
+          280,
+          570
+        ],
+        [
+          540,
+          260
+        ],
+        [
+          940,
+          650
+        ],
+        [
+          1270,
+          435
+        ]
+      ],
+      "startMs": 1600,
+      "endMs": 7600,
+      "easing": "smoothstep",
+      "orientation": "2D tangent; limit -22..22 degrees; asset remains same view"
+    },
+    "enter": {
+      "startMs": 0,
+      "endMs": 1000,
+      "opacity": [
+        0,
+        1
+      ]
+    },
+    "trail": {
+      "reveal": [
+        1600,
+        7600
+      ],
+      "fade": [
+        7000,
+        8200
+      ],
+      "finalOpacity": 0
+    },
+    "destination": {
+      "fade": [
+        6200,
+        7200
+      ]
+    },
+    "camera": "fixed; no world/screen transform",
+    "conflictPolicy": "one writer per object property",
+    "initial": "plane invisible; clouds present; trail hidden",
+    "final": "plane at endpoint; trail hidden; clouds and destination present"
+  },
+  "keyframes": [
+    {
+      "id": "K0",
+      "tMs": 0,
+      "purpose": "initial composition; visible clouds; plane absent"
+    },
+    {
+      "id": "K1",
+      "tMs": 4600,
+      "purpose": "flight and partial trail"
+    },
+    {
+      "id": "K2",
+      "tMs": 6500,
+      "purpose": "occlusion and near destination"
+    },
+    {
+      "id": "K3",
+      "tMs": 10000,
+      "purpose": "final hold; plane and destination visible; trail absent"
+    }
+  ],
+  "assetBoard": {
+    "id": "board.paper-plane.v1",
+    "layout": "2x2",
+    "coordinateSpace": "normalized top-left",
+    "slots": [
+      {
+        "id": "slot.plane",
+        "assetId": "asset.plane.v1",
+        "rect": [
+          0,
+          0,
+          0.5,
+          0.5
+        ],
+        "expected": "single pale blue folded paper airplane pointing right"
+      },
+      {
+        "id": "slot.large-cloud",
+        "assetId": "asset.cloud.large.v1",
+        "rect": [
+          0.5,
+          0,
+          0.5,
+          0.5
+        ],
+        "expected": "large rounded pastel cloud"
+      },
+      {
+        "id": "slot.small-cloud",
+        "assetId": "asset.cloud.small.v1",
+        "rect": [
+          0,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "expected": "small rounded pastel cloud"
+      },
+      {
+        "id": "slot.empty",
+        "assetId": null,
+        "rect": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "expected": "empty transparent"
+      }
+    ],
+    "background": "true alpha preferred; verify actual",
+    "gutter": "subject within middle 70% of each cell; shadows cannot cross cells",
+    "extraction": "deterministic rectangular slot crop, retain full slot transparent padding; no subject normalization",
+    "anchor": "center of preserved slot frame; not tip anchor",
+    "selectedResource": "board.paper-plane.v2"
+  },
+  "output": {
+    "HTML": "planned standalone experiment",
+    "video": "planned no audio",
+    "PPTX": "not tested"
+  },
+  "gates": {
+    "G1": "experiment plan completed; no production registry",
+    "G2": "generated reference available; agent review usable; user aesthetic review pending",
+    "G3": "partial: three correctly identified cropped RGBA assets; strict padding and source-edge criteria not passed",
+    "G4": "standalone composition complete; real text and control geometry retained; perceptual fidelity differences recorded",
+    "G5": "8 frames and repeated seeks, reverse/pause, invalid time and end-state checks passed in recorded Chromium",
+    "G6": "10s 1280x720 30fps 300 frame H264 no-audio video verified with ffprobe and full ffmpeg decode; PPTX excluded"
+  },
+  "revisions": [
+    {
+      "from": "0.1.0-experiment",
+      "reason": "preserve square slot aspect ratio; use one CPU Canvas for consistent raster/vector compositing; representative midpoint frame at 4600ms",
+      "semanticChanges": "none; separate object IDs and exact geometry retained",
+      "originalSaved": "design-definition-v1.json"
+    },
+    {
+      "from": "0.2.0-experiment",
+      "reason": "final frame revealed destination ring occluded by airplane; move marker to (1480,400), radius25, preserve full visibility",
+      "originalSaved": "design-definition-v2.json"
+    }
+  ]
+}

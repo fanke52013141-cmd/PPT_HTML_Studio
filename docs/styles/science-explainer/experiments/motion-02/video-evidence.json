@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-07",
+  "durationSeconds": 10,
+  "fps": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "frames": 300,
+  "width": 1280,
+  "height": 720,
+  "codec": "H.264",
+  "audio": false,
+  "browser": "155.0.8059.12",
+  "frameTime": "i * 1000 / 30 milliseconds, i=0..299",
+  "localOutput": "outputs/motion-02/paper-plane.mp4",
+  "publication": "video stays local; not committed",
+  "status": "ffprobe frame count and complete ffmpeg decode verified",
+  "sha256": "05e247b5c7556f1cacc19a823fe0b544032cb94c9ed6568f510bb003fcbd83b4",
+  "actualProbe": {
+    "width": 1280,
+    "height": 720,
+    "frames": 300,
+    "fps": "30/1",
+    "durationSeconds": 10.0
+  }
+}

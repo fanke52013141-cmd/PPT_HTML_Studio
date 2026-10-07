@@ -73,3 +73,7 @@ Schema、自动校验、风格样板和导出兼容验证尚未完成。
 ## 视觉实现与生成协议
 
 现行契约包 0.7.0 新增 [视觉实现分工与生成契约](docs/contracts/html-presentation/framework/08-visual-generation-contract.md)：生成前确定代码层、资产层和全过程对象，设计图与 HTML 共用同一设计定义。本次只补协议，资产板与新动画测试留待下一步。
+
+## motion-02 资产与过程验证
+
+[实验记录](docs/styles/science-explainer/experiments/motion-02/README.md) 已形成对象/运动清单、设计参照、三个透明资产、实际 HTML 和验证证据。资产留边与源尺寸边缘质量仅部分通过，用户视觉审阅待进行；不作为生产模板或资产库发布。
