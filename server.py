@@ -906,6 +906,10 @@ try:
         VideoRenderDependencies,
         configure_video_render_service,
     )
+    from html_render_runner import (
+        HtmlRenderRunner,
+        HtmlRenderRunnerDependencies,
+    )
     from video_routes import router as video_router
 
     video_render_config = VideoRenderConfig(
@@ -954,6 +958,12 @@ try:
             session_factory=VideoSessionLocal,
             artifact_service=video_artifact_service,
             remotion_runner=remotion_runner,
+            html_runner=HtmlRenderRunner(
+                HtmlRenderRunnerDependencies(
+                    repo_root=Path(REPO_ROOT),
+                    read_slide_ids=read_contract_slide_ids,
+                )
+            ),
             config=video_render_config,
             max_concurrent_renders=get_bounded_int_setting("max_concurrent_renders", default=1, min_value=1, max_value=3),
         )

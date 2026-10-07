@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 
 from artifact_fingerprint import sha256_json
 from database import LocalJob, Project, utc_now_naive
+import distribution_profile
 import invalidation_service
 from remotion_runner import RemotionRunner
 from scripts.media_tools import resolve_media_tool
@@ -79,6 +80,9 @@ class VideoRenderDependencies:
     session_factory: Callable[[], Session]
     artifact_service: VideoArtifactService
     remotion_runner: RemotionRunner
+    # Optional until the html backend is configured; html projects fail
+    # with a clear error instead of silently using the image pipeline.
+    html_runner: Any | None = None
     config: VideoRenderConfig
     # Global cross-project render concurrency.  Extra submissions stay queued
     # as persistent "queued" jobs until a worker slot frees up.
@@ -671,7 +675,12 @@ class VideoRenderService:
                     project.run_dir, affected=("output",)
                 )
                 render_started = time.time()
-                result = self.runner.run(
+                runner = self.runner
+                if (getattr(project, "visual_backend", "image") or "image") == "html":
+                    if self.dependencies.html_runner is None:
+                        raise RuntimeError("HTML 渲染后端未配置")
+                    runner = self.dependencies.html_runner
+                result = runner.run(
                     project,
                     output_dir=self.project_video_dir(project),
                     set_stage=lambda stage: self._controlled_stage(project_id, task_id, stage),
@@ -809,6 +818,10 @@ class VideoRenderService:
         返回 (result, composited)：composited=True 时 result.color_validation
         已经是合成后成片的重新校验结果（审查 M-07）。
         """
+        # 发行精简版关闭数字人讲解：读取/校验旧数字人素材之前直接退出，
+        # 旧 digital_human.json 既不触发合成，也不允许阻塞导出。
+        if not distribution_profile.digital_human_enabled():
+            return result, False
         cfg_path = (
             Path(project.run_dir) / "planning" / "digital_human.json"
         )
