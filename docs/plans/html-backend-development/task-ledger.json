@@ -317,13 +317,17 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "partial",
       "acceptance": [
         "AC15"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "checks/test_html_pptx_snapshot.py",
+        "html_render_runner.py",
+        "video_render_service.py"
+      ],
+      "commit": "this-round",
+      "note": "接口级验证通过：html 渲染结果（HtmlRenderResult）与 RemotionRenderResult 同字段（output_path/filename/color_validation），共享 worker 的 _apply_digital_human_composite 对两种后端一致消费；关闭即无占位。真实数字人服务未部署，实测合成 blocked-on-service（AC15 记录）。"
     },
     {
       "id": "E03",
@@ -332,13 +336,17 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "passed",
       "acceptance": [
         "AC16"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "html_pptx_snapshot.py",
+        "html_engine/tools/export-snapshots.cjs",
+        "checks/test_html_pptx_snapshot.py"
+      ],
+      "commit": "this-round",
+      "note": "快照/分步 PPTX 核已实现并验证：共享 bundle 渲染显式时间点 → 16:9 图片式 PPTX（精确 12192000x6858000 EMU），manifest 明示 image_only_snapshot 能力边界与页→时间映射；字幕可选，默认演示稿快照不带视频字幕；末 beat 与终态同刻自动去重。pptx_service 路由分派（按 visual_backend）随应用链路任务接入；PowerPoint 实际打开核验待目标软件可用（AC16 记录）。"
     },
     {
       "id": "E04",
