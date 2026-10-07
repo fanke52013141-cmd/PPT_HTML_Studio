@@ -1,0 +1,145 @@
+{
+  "format": "hps.html.scene-plan.ac07",
+  "version": "0.1.0",
+  "date": "2026-10-08",
+  "catalog_sha256": "8b83ea3515f5bc029c5d252caacf4e0ee8490a10163753162ee750c1a0be0511",
+  "structures": [
+    {
+      "slide_id": "s_explain",
+      "structure": "explanation-cards"
+    },
+    {
+      "slide_id": "s_relation",
+      "structure": "data-relation"
+    },
+    {
+      "slide_id": "s_process",
+      "structure": "process-stage"
+    }
+  ],
+  "slides": [
+    {
+      "slide_id": "s_explain",
+      "templateRef": {
+        "id": "explanation-cards-v1",
+        "version": "0.1.0"
+      },
+      "structure": "explanation-cards",
+      "beat_map": {
+        "s_explain_beat_001": {
+          "objectId": "headline",
+          "action": "emphasize"
+        },
+        "s_explain_beat_002": {
+          "objectId": "card-1",
+          "action": "enter"
+        },
+        "s_explain_beat_003": {
+          "objectId": "card-2",
+          "action": "enter"
+        },
+        "s_explain_beat_004": {
+          "objectId": "annotation",
+          "action": "enter"
+        },
+        "s_explain_beat_005": {
+          "objectId": "summary",
+          "action": "enter"
+        }
+      },
+      "objects_total": 11,
+      "transitional_objects": [],
+      "asset_table": [
+        {
+          "id": "cold-cup",
+          "render_owner": "image_asset",
+          "need": "冷杯表面凝结插画"
+        },
+        {
+          "id": "copy",
+          "render_owner": "code",
+          "need": null
+        }
+      ],
+      "catalog_sha256": "8b83ea3515f5bc029c5d252caacf4e0ee8490a10163753162ee750c1a0be0511"
+    },
+    {
+      "slide_id": "s_relation",
+      "templateRef": {
+        "id": "data-relation-v1",
+        "version": "0.1.0"
+      },
+      "structure": "data-relation",
+      "beat_map": {
+        "s_relation_beat_001": {
+          "objectId": "stat-1",
+          "action": "enter"
+        },
+        "s_relation_beat_002": {
+          "objectId": "stat-3",
+          "action": "enter"
+        },
+        "s_relation_beat_003": {
+          "objectId": "summary",
+          "action": "enter"
+        },
+        "s_relation_beat_004": {
+          "narration_only": true
+        }
+      },
+      "objects_total": 6,
+      "transitional_objects": [],
+      "asset_table": [
+        {
+          "id": "copy",
+          "render_owner": "code",
+          "need": null
+        }
+      ],
+      "catalog_sha256": "8b83ea3515f5bc029c5d252caacf4e0ee8490a10163753162ee750c1a0be0511"
+    },
+    {
+      "slide_id": "s_process",
+      "templateRef": {
+        "id": "process-stage-v1",
+        "version": "0.1.0"
+      },
+      "structure": "process-stage",
+      "beat_map": {
+        "s_process_beat_001": {
+          "objectId": "subject",
+          "action": "enter"
+        },
+        "s_process_beat_002": {
+          "objectId": "vapor-fragment",
+          "action": "enter"
+        },
+        "s_process_beat_003": {
+          "objectId": "arrow",
+          "action": "enter"
+        },
+        "s_process_beat_004": {
+          "objectId": "summary",
+          "action": "enter"
+        }
+      },
+      "objects_total": 11,
+      "transitional_objects": [
+        "vapor-fragment"
+      ],
+      "asset_table": [
+        {
+          "id": "bowl",
+          "render_owner": "image_asset",
+          "need": "水面蒸发示意插画"
+        },
+        {
+          "id": "copy",
+          "render_owner": "code",
+          "need": null
+        }
+      ],
+      "catalog_sha256": "8b83ea3515f5bc029c5d252caacf4e0ee8490a10163753162ee750c1a0be0511"
+    }
+  ]
+}

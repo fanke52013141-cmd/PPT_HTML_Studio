@@ -156,13 +156,17 @@
         "A03"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "passed",
       "acceptance": [
         "AC07"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "html_storyboard_planning.py",
+        "checks/test_html_storyboard_planning.py",
+        "html_engine/evidence/html-scene-plans/ac07-plan-evidence.json"
+      ],
+      "commit": "this-round",
+      "note": "纯规划层：注册能力门禁（模板/版本/槽位/图标）、beat→动作映射完整性、过渡对象保留、资产归属校验、AC07 证据（三结构）。storyboard_service 编排接入随 C02/C04 的模型调用入口落地。"
     },
     {
       "id": "C02",
