@@ -1,5 +1,7 @@
 # 阶段一：共享视觉定义与统一渲染
 
+> 2026-10-08：用户明确否定本预览的简化视觉，状态 changes_requested。技术结果保留；柔和彩色科普风格并未完成。请先查看[按原参考补齐的实际风格样板](style-review/index.html)，不得依据此工程稿直接扩展生产流程。
+
 已实现独立格式 0.1.0；[定义卡](../../docs/contracts/html-presentation/runtime/visual-v1/README.md)是本模块的归属契约。预览：[打开两个复用案例](preview/index.html)。这不是应用级 HTML 后端，原图片路线与 E1/E2 保持原样。
 
 ## 哪些公用，哪些属于风格

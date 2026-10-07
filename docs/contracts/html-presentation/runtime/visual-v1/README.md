@@ -1,5 +1,7 @@
 # V1 共享视觉定义：阶段一实施卡
 
+> 2026-10-08：用户否定V1科普预览的简化风格；此卡的公共/风格分离和技术范围保留，视觉生产批准未通过。视觉纠偏见[参考特征检查](../../../../styles/science-explainer/reference-fidelity-review.md)。渐变/图标/面板样板不自动成为本格式的新增字段。
+
 格式 `hps.visual.scene` / `hps.visual.theme` / `hps.visual.layout`，各为 0.1.0。
 细化 HPS-001—005、007、013、026—030、033—037；独立作者与运行格式，不扩写 E1/E2。
 

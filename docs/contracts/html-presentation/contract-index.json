@@ -17,7 +17,8 @@
     "E1 is a separate runtime format hps.e1.scene 0.1.0. Its scoped prototype does not upgrade pinned P01 definitions or register all taxonomy capabilities.",
     "E2 constrained recipes 0.1.0 compile into unchanged E1 scene format; two templates and asset tools tested, visual production approval pending.",
     "E2 catalog 0.2.0 adds hero-steps recipe; user Token course tested with hps.e2.recipe 0.1.0 and unchanged E1 format. Visual and audio approval pending.",
-    "Visual V1 is a separate hps.visual.scene/theme/layout 0.1.0 format. Scoped public/theme/layout/content separation, capacity, anchor, subtitle and resource checks implemented; application backend integration and new visual approval remain pending."
+    "Visual V1 is a separate hps.visual.scene/theme/layout 0.1.0 format. Scoped public/theme/layout/content separation, capacity, anchor, subtitle and resource checks implemented; application backend integration and new visual approval remain pending.",
+    "2026-10-08 user review rejected the simplified V1 science appearance. Its technical checks remain valid, but visual production approval is changes_requested. Reference-fidelity style study requires separate visual review; its icons/gradients/panels do not widen V1 0.1.0."
   ],
   "documents": [
     {

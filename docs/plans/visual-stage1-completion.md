@@ -1,5 +1,7 @@
 # 共享视觉定义工程阶段一交付
 
+> 2026-10-08用户审阅：V1视觉偏离指定参考，changes_requested。阶段一技术检查通过，视觉交付未通过；暂停以该简化样式为基础扩展生产流程。依据[参考特征检查](../styles/science-explainer/reference-fidelity-review.md)和[实际样板](../../html_engine/visual/style-review/README.md)先纠正风格，再登记能力。
+
 2026-10-07；用户授权阶段一，并要求明确公共层和风格属性集合。
 
 完成[定义卡](../contracts/html-presentation/runtime/visual-v1/README.md)与[可运行模块](../../html_engine/visual/README.md)：独立严格Schema、编译器、共享CSS/SVG渲染、资源哈希与资产坐标锚点、容量检查、固定字幕区、作品时钟和原子应用。继承E1的资源加载/校验、contain映射和缓动计算，不扩写旧格式。主题、布局、内容与资产均为独立源文件。
