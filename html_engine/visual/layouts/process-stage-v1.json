@@ -1,0 +1,124 @@
+{
+  "format": "hps.visual.layout",
+  "version": "0.2.0",
+  "id": "process-stage-v1",
+  "name": "对象过程舞台 / 单主体",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "contentBottom": 800,
+    "subtitleHeight": 100
+  },
+  "slots": {
+    "header": {
+      "box": {
+        "x": 58,
+        "y": 48,
+        "width": 1477,
+        "height": 77
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "figure": {
+      "box": {
+        "x": 280,
+        "y": 140,
+        "width": 700,
+        "height": 520
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 1
+    },
+    "subject": {
+      "box": {
+        "x": 330,
+        "y": 160,
+        "width": 600,
+        "height": 480
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "arrow": {
+      "box": {
+        "x": 1030,
+        "y": 430,
+        "width": 150,
+        "height": 60
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "badge-1": {
+      "box": {
+        "x": 1220,
+        "y": 350,
+        "width": 160,
+        "height": 64
+      },
+      "maxLines": 1,
+      "align": "center",
+      "z": 2
+    },
+    "badge-2": {
+      "box": {
+        "x": 1220,
+        "y": 450,
+        "width": 160,
+        "height": 64
+      },
+      "maxLines": 1,
+      "align": "center",
+      "z": 2
+    },
+    "result": {
+      "box": {
+        "x": 1210,
+        "y": 560,
+        "width": 330,
+        "height": 70
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "anchor-label": {
+      "box": {
+        "x": 120,
+        "y": 540,
+        "width": 150,
+        "height": 90
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 6
+    },
+    "summary": {
+      "box": {
+        "x": 58,
+        "y": 680,
+        "width": 1477,
+        "height": 100
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "annotation": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 5
+    }
+  }
+}

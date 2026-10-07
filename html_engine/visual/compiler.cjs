@@ -2,6 +2,17 @@
 const validators = require("./generated/validators.cjs");
 const { EngineError, diagnostic } = require("../src/registry.cjs");
 const { imagePlacement } = require("../src/timeline.cjs");
+const icons = require("./icons.cjs");
+
+const SCENE_VERSIONS = ["0.1.0", "0.2.0"];
+const DEFINITION_VERSION = "0.2.0";
+const EXTENDED_TEXT_ROLES = [
+  "headline",
+  "cardTitle",
+  "cardBody",
+  "caption",
+  "summary",
+];
 
 function fail(code, path, message) {
   throw new EngineError([diagnostic(code, path, message)]);
@@ -28,15 +39,115 @@ function freeze(value) {
   }
   return value;
 }
+function toRGB(hex) {
+  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(" ");
+}
+// Registered defaults for optional 0.2.0 theme fields. A 0.1.0-era theme or a
+// 0.2.0 theme that omits them stays valid; the renderer consumes the resolved
+// shape only, so defaults live in exactly one place.
+function normalizeTheme(theme) {
+  const colors = theme.colors;
+  const resolved = {
+    colors: {
+      paper: colors.paper ?? colors.panel,
+      purple: colors.purple ?? colors.muted,
+      yellow: colors.yellow ?? colors.accent,
+      pink: colors.pink ?? colors.accent,
+      ...colors,
+    },
+    gradients: {},
+    text: {
+      headline: theme.text.headline ?? theme.text.lead,
+      intro: theme.text.intro ?? theme.text.body,
+      cardTitle: theme.text.cardTitle ?? theme.text.stepTitle,
+      cardBody: theme.text.cardBody ?? theme.text.body,
+      caption: theme.text.caption ?? theme.text.body,
+      summary: theme.text.summary ?? theme.text.conclusion,
+      ...theme.text,
+    },
+    shapes: {
+      cardRadius: theme.shapes.cardRadius ?? theme.shapes.labelRadius,
+      figureRadius: theme.shapes.figureRadius ?? theme.shapes.labelRadius,
+      iconRadius: theme.shapes.iconRadius ?? theme.shapes.badgeRadius,
+      iconStroke: theme.shapes.iconStroke ?? theme.shapes.strokeWidth,
+      shadowRGB: theme.shapes.shadowRGB ?? toRGB(colors.ink),
+      ...theme.shapes,
+    },
+  };
+  for (const tone of ["pink", "blue", "green", "purple", "yellow"])
+    if (theme.gradients?.[tone]) resolved.gradients[tone] = theme.gradients[tone];
+  return { ...theme, ...resolved };
+}
+// Explicit adapter: 0.1.0 scene documents are upgraded to the 0.2.0 shape.
+// Their node vocabulary is a strict subset; only definition reference
+// versions move to the registered 0.2.0 catalog. The adaptation is recorded
+// on the compiled snapshot.
+function adaptScene(scene) {
+  if (scene.version === "0.2.0") return { scene, adaptedFrom: null };
+  if (scene.version !== "0.1.0")
+    fail("UNSUPPORTED_VERSION", "/version", scene.version);
+  return {
+    scene: {
+      ...scene,
+      version: DEFINITION_VERSION,
+      themeRef: { ...scene.themeRef, version: DEFINITION_VERSION },
+      layoutRef: { ...scene.layoutRef, version: DEFINITION_VERSION },
+    },
+    adaptedFrom: "0.1.0",
+  };
+}
+function validateTemplate(scene, layout, catalog) {
+  if (!scene.templateRef) return null;
+  const template = resolve(catalog.templates, scene.templateRef, "/templateRef");
+  validate("template", template);
+  if (
+    template.layoutRef.id !== layout.id ||
+    template.layoutRef.version !== layout.version
+  )
+    fail("TEMPLATE_LAYOUT_MISMATCH", "/templateRef", template.id);
+  const occupied = new Map();
+  for (const node of scene.nodes) {
+    const rule = template.slots[node.slot];
+    if (!rule) fail("TEMPLATE_SLOT_KIND", "/nodes", `${node.id}:${node.slot}`);
+    if (!rule.kinds.includes(node.type))
+      fail(
+        "TEMPLATE_SLOT_KIND",
+        "/nodes",
+        `${node.id}: ${node.type} not allowed in ${node.slot}`,
+      );
+    occupied.set(node.slot, node.type);
+  }
+  for (const [slot, rule] of Object.entries(template.slots))
+    if (rule.required && !occupied.has(slot))
+      fail("TEMPLATE_SLOT_REQUIRED", "/templateRef", slot);
+  return template;
+}
+function checkIcon(name, path) {
+  if (!icons.isRegistered(name)) fail("UNKNOWN_ICON", path, name);
+}
 function compile(input, catalog) {
-  const scene = JSON.parse(JSON.stringify(input));
+  const { scene, adaptedFrom } = adaptScene(
+    JSON.parse(JSON.stringify(input)),
+  );
   validate("scene", scene);
-  const theme = resolve(catalog.themes, scene.themeRef, "/themeRef");
-  const layout = resolve(catalog.layouts, scene.layoutRef, "/layoutRef");
+  const theme = normalizeTheme(
+    structuredClone(resolve(catalog.themes, scene.themeRef, "/themeRef")),
+  );
+  const layout = structuredClone(
+    resolve(catalog.layouts, scene.layoutRef, "/layoutRef"),
+  );
   validate("theme", theme);
   validate("layout", layout);
   if (!theme.compatibleLayouts.includes(layout.id))
     fail("INCOMPATIBLE_THEME_LAYOUT", "/layoutRef", layout.id);
+  for (const node of scene.nodes) {
+    if (node.type === "card") checkIcon(node.icon, `/nodes/${node.id}/icon`);
+    if (node.type === "figure")
+      for (const caption of [node.tag, node.note])
+        if (caption) checkIcon(caption.icon, `/nodes/${node.id}/icon`);
+    if (node.type === "summary" && node.heading)
+      checkIcon(node.heading.icon, `/nodes/${node.id}/icon`);
+  }
   const ids = new Set(),
     slots = new Set(),
     assets = new Map();
@@ -64,6 +175,7 @@ function compile(input, catalog) {
       "/nodes",
       "This version allows one image subject",
     );
+  const template = validateTemplate(scene, layout, catalog);
   for (const n of scene.nodes.filter((n) => n.type === "annotation")) {
     const target = scene.nodes.find((v) => v.id === n.targetId);
     const label = scene.nodes.find((v) => v.id === n.labelId);
@@ -150,9 +262,11 @@ function compile(input, catalog) {
   }
   return freeze({
     source: scene,
-    theme: structuredClone(theme),
-    layout: structuredClone(layout),
+    theme,
+    layout,
     assets: [...assets.values()].map((a) => structuredClone(a)),
+    template: template ? structuredClone(template) : null,
+    adaptedFrom,
   });
 }
-module.exports = { compile, validate, fail };
+module.exports = { compile, validate, fail, normalizeTheme };

@@ -1,0 +1,79 @@
+{
+  "format": "hps.visual.template",
+  "version": "0.1.0",
+  "id": "explanation-cards-v1",
+  "name": "图文讲解：三知识卡+主体插图",
+  "structure": "explanation-cards",
+  "layoutRef": {
+    "id": "science-explanation-v1",
+    "version": "0.2.0"
+  },
+  "slots": {
+    "header": {
+      "kinds": [
+        "header"
+      ],
+      "required": true
+    },
+    "headline": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "intro": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "card-1": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "card-2": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "card-3": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "figure": {
+      "kinds": [
+        "figure"
+      ],
+      "required": true
+    },
+    "subject": {
+      "kinds": [
+        "image"
+      ],
+      "required": true
+    },
+    "anchor-label": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "summary": {
+      "kinds": [
+        "summary"
+      ],
+      "required": true
+    },
+    "annotation": {
+      "kinds": [
+        "annotation"
+      ],
+      "required": true
+    }
+  }
+}

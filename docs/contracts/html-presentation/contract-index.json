@@ -453,6 +453,7 @@
   "coverage_matrix": "framework/coverage-matrix.json",
   "runtime_definition_index": "runtime/e1/definition-index.json",
   "visual_runtime_definition": "runtime/visual-v1/README.md",
+  "visual_runtime_version_0_2_0": "runtime/visual-v1/version-0.2.0.md",
   "visual_runtime_enforcement": "partial_v1_standalone",
   "visual_runtime_formats": [
     "hps.visual.scene@0.1.0",

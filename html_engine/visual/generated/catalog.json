@@ -2,7 +2,7 @@
   "themes": [
     {
       "format": "hps.visual.theme",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "id": "neutral-science",
       "name": "中性科普（主题切换测试，待视觉批准）",
       "font": {
@@ -21,7 +21,11 @@
         "pinkWash": "#e8edfa",
         "blueWash": "#e8f1fb",
         "greenWash": "#e7f3ec",
-        "line": "#a3b5cc"
+        "line": "#a3b5cc",
+        "paper": "#f4f4f2",
+        "purple": "#9a9a9a",
+        "yellow": "#b8b0a4",
+        "pink": "#8a8a8a"
       },
       "text": {
         "eyebrow": {
@@ -32,7 +36,7 @@
           "color": "body"
         },
         "title": {
-          "size": 66,
+          "size": 46,
           "weight": 700,
           "lineHeight": 1.3,
           "letterSpacing": 0,
@@ -100,6 +104,48 @@
           "lineHeight": 1.5,
           "letterSpacing": 0,
           "color": "ink"
+        },
+        "headline": {
+          "size": 32,
+          "weight": 700,
+          "lineHeight": 1.4,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "cardTitle": {
+          "size": 29,
+          "weight": 700,
+          "lineHeight": 1.35,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "cardBody": {
+          "size": 22,
+          "weight": 400,
+          "lineHeight": 1.55,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "caption": {
+          "size": 19,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "summary": {
+          "size": 26,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "intro": {
+          "size": 23,
+          "weight": 400,
+          "lineHeight": 1.65,
+          "letterSpacing": 0,
+          "color": "body"
         }
       },
       "shapes": {
@@ -110,17 +156,47 @@
           "y": 2,
           "blur": 6,
           "opacity": 0.04
-        }
+        },
+        "cardRadius": 12,
+        "figureRadius": 12,
+        "iconRadius": 12,
+        "iconStroke": 1.7,
+        "shadowRGB": "60 60 60"
       },
       "compatibleLayouts": [
+        "data-relation-v1",
+        "object-left",
         "object-right",
-        "object-left"
+        "process-stage-v1",
+        "science-explanation-v1"
       ],
-      "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。"
+      "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。",
+      "gradients": {
+        "pink": [
+          "#c9c9c9",
+          "#a8a8a8"
+        ],
+        "blue": [
+          "#c4c4c4",
+          "#9e9e9e"
+        ],
+        "green": [
+          "#c2c8c4",
+          "#9aa39d"
+        ],
+        "purple": [
+          "#cfcfcf",
+          "#ababab"
+        ],
+        "yellow": [
+          "#d6d2c8",
+          "#b3ada0"
+        ]
+      }
     },
     {
       "format": "hps.visual.theme",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "id": "soft-science",
       "name": "柔和彩色科普",
       "font": {
@@ -139,7 +215,11 @@
         "pinkWash": "#fbe8ed",
         "blueWash": "#e8f1fb",
         "greenWash": "#e7f3ec",
-        "line": "#a3b5cc"
+        "line": "#a3b5cc",
+        "paper": "#ffffff",
+        "purple": "#b1a1ec",
+        "yellow": "#ffc66a",
+        "pink": "#f4819b"
       },
       "text": {
         "eyebrow": {
@@ -150,7 +230,7 @@
           "color": "body"
         },
         "title": {
-          "size": 66,
+          "size": 46,
           "weight": 700,
           "lineHeight": 1.3,
           "letterSpacing": 0,
@@ -218,6 +298,48 @@
           "lineHeight": 1.5,
           "letterSpacing": 0,
           "color": "ink"
+        },
+        "headline": {
+          "size": 32,
+          "weight": 700,
+          "lineHeight": 1.4,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "cardTitle": {
+          "size": 29,
+          "weight": 700,
+          "lineHeight": 1.35,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "cardBody": {
+          "size": 22,
+          "weight": 400,
+          "lineHeight": 1.55,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "caption": {
+          "size": 19,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "summary": {
+          "size": 26,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "intro": {
+          "size": 23,
+          "weight": 400,
+          "lineHeight": 1.65,
+          "letterSpacing": 0,
+          "color": "body"
         }
       },
       "shapes": {
@@ -228,19 +350,129 @@
           "y": 2,
           "blur": 6,
           "opacity": 0.04
-        }
+        },
+        "cardRadius": 20,
+        "figureRadius": 24,
+        "iconRadius": 24,
+        "iconStroke": 1.7,
+        "shadowRGB": "69 91 121"
       },
       "compatibleLayouts": [
+        "data-relation-v1",
+        "object-left",
         "object-right",
-        "object-left"
+        "process-stage-v1",
+        "science-explanation-v1"
       ],
-      "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。"
+      "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。",
+      "gradients": {
+        "pink": [
+          "#ffadc0",
+          "#f57c99"
+        ],
+        "blue": [
+          "#bfd4fe",
+          "#82a7eb"
+        ],
+        "green": [
+          "#b6e7cb",
+          "#7ecba0"
+        ],
+        "purple": [
+          "#ded4ff",
+          "#b5a1ec"
+        ],
+        "yellow": [
+          "#ffe6a9",
+          "#ffc45f"
+        ]
+      }
     }
   ],
   "layouts": [
     {
       "format": "hps.visual.layout",
-      "version": "0.1.0",
+      "version": "0.2.0",
+      "id": "data-relation-v1",
+      "name": "数据与关系说明 / 三数据位",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "stat-1": {
+          "box": {
+            "x": 58,
+            "y": 280,
+            "width": 480,
+            "height": 140
+          },
+          "maxLines": 2,
+          "align": "center",
+          "z": 2
+        },
+        "stat-2": {
+          "box": {
+            "x": 560,
+            "y": 280,
+            "width": 480,
+            "height": 140
+          },
+          "maxLines": 2,
+          "align": "center",
+          "z": 2
+        },
+        "stat-3": {
+          "box": {
+            "x": 1062,
+            "y": 280,
+            "width": 480,
+            "height": 140
+          },
+          "maxLines": 2,
+          "align": "center",
+          "z": 2
+        },
+        "caption": {
+          "box": {
+            "x": 58,
+            "y": 490,
+            "width": 1477,
+            "height": 64
+          },
+          "maxLines": 2,
+          "align": "center",
+          "z": 2
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 660,
+            "width": 1477,
+            "height": 110
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
       "id": "object-left",
       "name": "单主体在左 / 三步在右",
       "canvas": {
@@ -474,7 +706,7 @@
     },
     {
       "format": "hps.visual.layout",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "id": "object-right",
       "name": "单主体在右 / 三步在左",
       "canvas": {
@@ -703,6 +935,468 @@
           "maxLines": 2,
           "align": "left",
           "z": 2
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "process-stage-v1",
+      "name": "对象过程舞台 / 单主体",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "figure": {
+          "box": {
+            "x": 280,
+            "y": 140,
+            "width": 700,
+            "height": 520
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "subject": {
+          "box": {
+            "x": 330,
+            "y": 160,
+            "width": 600,
+            "height": 480
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "arrow": {
+          "box": {
+            "x": 1030,
+            "y": 430,
+            "width": 150,
+            "height": 60
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "badge-1": {
+          "box": {
+            "x": 1220,
+            "y": 350,
+            "width": 160,
+            "height": 64
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 2
+        },
+        "badge-2": {
+          "box": {
+            "x": 1220,
+            "y": 450,
+            "width": 160,
+            "height": 64
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 2
+        },
+        "result": {
+          "box": {
+            "x": 1210,
+            "y": 560,
+            "width": 330,
+            "height": 70
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "anchor-label": {
+          "box": {
+            "x": 120,
+            "y": 540,
+            "width": 150,
+            "height": 90
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 6
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 680,
+            "width": 1477,
+            "height": 100
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "annotation": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 5
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "science-explanation-v1",
+      "name": "科普图文讲解 / 三知识卡",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "headline": {
+          "box": {
+            "x": 58,
+            "y": 161,
+            "width": 860,
+            "height": 48
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "intro": {
+          "box": {
+            "x": 58,
+            "y": 220,
+            "width": 850,
+            "height": 52
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-1": {
+          "box": {
+            "x": 58,
+            "y": 294,
+            "width": 850,
+            "height": 102
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-2": {
+          "box": {
+            "x": 58,
+            "y": 411,
+            "width": 850,
+            "height": 102
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-3": {
+          "box": {
+            "x": 58,
+            "y": 528,
+            "width": 850,
+            "height": 102
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "figure": {
+          "box": {
+            "x": 954,
+            "y": 206,
+            "width": 581,
+            "height": 438
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "subject": {
+          "box": {
+            "x": 1015,
+            "y": 156,
+            "width": 490,
+            "height": 490
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "anchor-label": {
+          "box": {
+            "x": 1438,
+            "y": 349,
+            "width": 126,
+            "height": 84
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 6
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 677,
+            "width": 1477,
+            "height": 91
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "annotation": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 5
+        }
+      }
+    }
+  ],
+  "templates": [
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "data-relation-v1",
+      "name": "数据关系：三数据位+关系条",
+      "structure": "data-relation",
+      "layoutRef": {
+        "id": "data-relation-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "stat-1": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "stat-2": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "stat-3": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "caption": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        }
+      }
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "explanation-cards-v1",
+      "name": "图文讲解：三知识卡+主体插图",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "science-explanation-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "headline": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "intro": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-3": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "figure": {
+          "kinds": [
+            "figure"
+          ],
+          "required": true
+        },
+        "subject": {
+          "kinds": [
+            "image"
+          ],
+          "required": true
+        },
+        "anchor-label": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        },
+        "annotation": {
+          "kinds": [
+            "annotation"
+          ],
+          "required": true
+        }
+      }
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "process-stage-v1",
+      "name": "对象过程舞台：单主体过程",
+      "structure": "process-stage",
+      "layoutRef": {
+        "id": "process-stage-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "figure": {
+          "kinds": [
+            "figure"
+          ],
+          "required": true
+        },
+        "subject": {
+          "kinds": [
+            "image"
+          ],
+          "required": true
+        },
+        "arrow": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": true
+        },
+        "badge-1": {
+          "kinds": [
+            "badge"
+          ],
+          "required": true
+        },
+        "badge-2": {
+          "kinds": [
+            "badge"
+          ],
+          "required": true
+        },
+        "result": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "anchor-label": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        },
+        "annotation": {
+          "kinds": [
+            "annotation"
+          ],
+          "required": true
         }
       }
     }
