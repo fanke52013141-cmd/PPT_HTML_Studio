@@ -62,3 +62,7 @@ preview/engine.js、fixtures.js 和 src/generated 是可重建发布产物，不
 ## E2 扩展
 
 [受约束配方](recipes/README.md) 已实现两个配方、三份新输入；运行 `npm run build:e2` 更新全部预览，`npm run test:e2` 验证。原 E1 运行格式不变。见 [E2 记录](../docs/plans/e2-constrained-template-completion.md)，资产/视觉仍待确认。
+
+## 共享视觉定义V1
+
+[新模块](visual/README.md)用独立作者格式0.1.0实现主题/布局/实例分离的CSS/SVG渲染，复用E1资源和contain工具；[预览](visual/preview/index.html)。不扩写本页所述旧E1格式。

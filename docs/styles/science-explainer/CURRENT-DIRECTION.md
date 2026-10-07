@@ -35,3 +35,7 @@
 ## 状态与后续执行
 
 已完成风格准入与职责确定；[单主体解释页](../../../html_engine/experiments/soft-science-01/index.html)和[对照记录](../../../html_engine/experiments/soft-science-01/README.md)已制作并完成限定技术验证，用户视觉审阅待完成。最初参考图中的具体字体、插画质感与排版不能承诺逐像素复刻，最终以实际HTML成片验收。旧手绘作品仅保留为历史实验。
+
+### 阶段一工程化
+
+用户对冷杯复刻给出“还OK”的限定反馈并授权开始共享定义工程。[V1两个复用样例](../../../html_engine/visual/preview/index.html)已实现并通过运行检查，公共/风格归属见[定义卡](../../contracts/html-presentation/runtime/visual-v1/README.md)。该反馈不升级全部主题/布局为生产批准；新样例需单独视觉审阅。

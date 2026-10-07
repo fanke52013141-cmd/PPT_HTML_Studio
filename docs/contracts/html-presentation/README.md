@@ -74,3 +74,7 @@
 [E2 定义卡](runtime/e2/README.md) 注册独立作者配方层 0.1.0，派生为现有 E1；未改变旧运行字段。两个受约束配方和资产工具已实现，视觉认可/生产批准仍待审阅，见 [交付](../../plans/e2-constrained-template-completion.md)。
 
 新增 [三步讲解定义卡](runtime/e2/hero-steps.md)，[用户 Token 课程](../../plans/e2-token-course-validation.md) 完成结构/运行验证；不改变旧格式，不等同生产视觉批准。
+
+## 共享视觉定义阶段一
+
+[独立V1定义卡](runtime/visual-v1/README.md)将公共组件、布局包、风格外观属性、实例与资产分开；[运行模块](../../../html_engine/visual/README.md)已实现两个内容/布局的统一渲染与限定验证。不改变旧E1/E2/P01格式，完整应用集成仍待实施。

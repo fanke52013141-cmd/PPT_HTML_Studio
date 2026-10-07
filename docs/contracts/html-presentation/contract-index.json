@@ -16,7 +16,8 @@
     "P01 definition index and fixtures remain pinned to their 0.4.0 creation contract; taxonomy is additive and does not register new runtime capabilities.",
     "E1 is a separate runtime format hps.e1.scene 0.1.0. Its scoped prototype does not upgrade pinned P01 definitions or register all taxonomy capabilities.",
     "E2 constrained recipes 0.1.0 compile into unchanged E1 scene format; two templates and asset tools tested, visual production approval pending.",
-    "E2 catalog 0.2.0 adds hero-steps recipe; user Token course tested with hps.e2.recipe 0.1.0 and unchanged E1 format. Visual and audio approval pending."
+    "E2 catalog 0.2.0 adds hero-steps recipe; user Token course tested with hps.e2.recipe 0.1.0 and unchanged E1 format. Visual and audio approval pending.",
+    "Visual V1 is a separate hps.visual.scene/theme/layout 0.1.0 format. Scoped public/theme/layout/content separation, capacity, anchor, subtitle and resource checks implemented; application backend integration and new visual approval remain pending."
   ],
   "documents": [
     {
@@ -96,6 +97,9 @@
     },
     {
       "path": "framework/11-visual-reconstruction.md"
+    },
+    {
+      "path": "runtime/visual-v1/README.md"
     }
   ],
   "rules": [
@@ -445,5 +449,12 @@
   "definition_index": "definitions/definition-index.json",
   "capability_catalog": "framework/capability-catalog.json",
   "coverage_matrix": "framework/coverage-matrix.json",
-  "runtime_definition_index": "runtime/e1/definition-index.json"
+  "runtime_definition_index": "runtime/e1/definition-index.json",
+  "visual_runtime_definition": "runtime/visual-v1/README.md",
+  "visual_runtime_enforcement": "partial_v1_standalone",
+  "visual_runtime_formats": [
+    "hps.visual.scene@0.1.0",
+    "hps.visual.theme@0.1.0",
+    "hps.visual.layout@0.1.0"
+  ]
 }
