@@ -1,0 +1,29 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>水滴汇集 · 对象过程动画</title><link rel="stylesheet" href="style.css"></head>
+<body><main><header class="review-header"><div><strong>对象过程动画 · 水滴汇集</strong><p>12 秒动态实验 · 位图插画 + SVG 对象 + HTML 文字</p></div><a href="../hybrid-01/index.html">返回静态混合实验</a></header>
+<div class="viewport"><article class="stage" aria-label="水滴汇集的示意动画">
+<div class="glow" aria-hidden="true"></div>
+<header class="heading"><p>观察身边的变化</p><h1 data-target="page.title">从<span>小水滴</span>，到大水滴</h1></header>
+<div class="world"><canvas class="raster" width="1920" height="1080" aria-label="冷杯外壁水滴插画"></canvas>
+
+<svg class="drawing" viewBox="0 0 1920 1080" aria-label="三个小水滴靠近并汇集的放大示意">
+<defs>
+<radialGradient id="water" cx=".32" cy=".24" r=".9"><stop stop-color="#effaff"/><stop offset=".36" stop-color="#b5e6f4"/><stop offset=".75" stop-color="#61b8d7"/><stop offset="1" stop-color="#4488b9"/></radialGradient>
+<radialGradient id="shadow"><stop stop-color="#6a98bc" stop-opacity=".22"/><stop offset="1" stop-color="#6a98bc" stop-opacity="0"/></radialGradient>
+<linearGradient id="surface"><stop stop-color="#edf6fc" stop-opacity="0"/><stop offset=".5" stop-color="#dcecf8" stop-opacity=".55"/><stop offset="1" stop-color="#edf6fc" stop-opacity="0"/></linearGradient>
+<symbol id="droplet" viewBox="-80 -105 160 210"><path d="M0 -88C-14 -51 -66 -12 -66 35C-66 78 -35 96 0 96C35 96 66 78 66 35C66 -12 14 -51 0 -88Z" fill="url(#water)" stroke="#87c2db" stroke-width="1.7"/><path d="M-20 -30C-33 -12 -45 5 -45 24" fill="none" stroke="white" stroke-width="9" stroke-linecap="round" opacity=".8"/><ellipse cx="21" cy="67" rx="27" ry="8" fill="#eafaff" opacity=".5"/></symbol>
+</defs>
+<g class="scene-world">
+<ellipse cx="1250" cy="715" rx="380" ry="105" fill="url(#surface)"/>
+<path class="guide" d="M675 540 C770 540 760 330 900 330"/><circle cx="685" cy="540" r="8" fill="#97b4c9"/>
+<text x="895" y="290" fill="#687c93" font-size="27" font-family="ScienceSans,Microsoft YaHei,sans-serif">杯壁水滴 · 放大示意</text>
+<g class="small-drop" data-target="drop-a"><ellipse cx="0" cy="105" rx="80" ry="19" fill="url(#shadow)"/><use href="#droplet" x="-80" y="-105" width="160" height="210"/></g>
+<g class="small-drop" data-target="drop-b"><ellipse cx="0" cy="105" rx="80" ry="19" fill="url(#shadow)"/><use href="#droplet" x="-80" y="-105" width="160" height="210"/></g>
+<g class="small-drop" data-target="drop-c"><ellipse cx="0" cy="105" rx="80" ry="19" fill="url(#shadow)"/><use href="#droplet" x="-80" y="-105" width="160" height="210"/></g>
+<g data-target="merged-drop"><ellipse cx="0" cy="168" rx="150" ry="27" fill="url(#shadow)"/><use href="#droplet" x="-120" y="-158" width="240" height="315"/></g>
+</g></svg></div>
+<div class="explanation"><span class="phase-mark" aria-hidden="true"></span><p data-target="page.caption"></p></div>
+<footer data-target="page.note">示意动画：轨迹、时长及水滴大小不代表真实流动、速率或比例。</footer>
+</article></div>
+<section class="player" aria-label="动画控制"><button id="play" disabled>播放</button><button id="restart" disabled>重播</button><label>方向<select id="direction"><option value="1">正放</option><option value="-1">倒放</option></select></label><label>速度<select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select></label><output id="time">0.00 / 12.00 秒</output><input id="scrub" aria-label="动画时间" type="range" min="0" max="12000" step="1" value="0" disabled></section>
+<nav class="chapters" aria-label="跳转阶段"><button data-time="0" disabled>定位</button><button data-time="3000" disabled>靠近</button><button data-time="6100" disabled>汇集</button><button data-time="10000" disabled>聚焦</button></nav><p id="status" role="status">正在加载图片与字体…</p>
+</main><script src="motion.js"></script><script src="player.js"></script></body></html>

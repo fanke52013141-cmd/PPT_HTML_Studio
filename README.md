@@ -67,3 +67,5 @@ Schema、自动校验、风格样板和导出兼容验证尚未完成。
 
 内容可视化范围延伸到场景动画，PPT 作为其中一种模式与输出；当前扩展提案见
 [动画项目借鉴与能力缺口](docs/research/2026-10-07-huashu-art-motion/analysis-and-adoption.md)。
+
+已完成 [12 秒对象过程动画实验](docs/styles/science-explainer/experiments/motion-01/README.md)：水滴路径、汇集、镜头聚焦及逐帧 MP4；用户视觉审阅待确认。

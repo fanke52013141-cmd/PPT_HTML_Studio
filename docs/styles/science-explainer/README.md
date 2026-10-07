@@ -52,3 +52,8 @@
 
 已执行 [整页设计到 HTML 还原实验](experiments/hybrid-01/README.md)，可打开 [对照页面](experiments/hybrid-01/index.html)。
 独立 PNG 与 HTML/SVG 分层成立；用户视觉审阅待确认，尚非已批准模板。首版历史状态保留。
+
+## 对象过程动画实验
+
+[水滴汇集 · 12 秒动画](experiments/motion-01/README.md) 已制作并验证播放/拖动/倒放/取帧；
+[直接观看](experiments/motion-01/index.html)。这是独立动态实验，不代表通用内核或生产模板已发布。
