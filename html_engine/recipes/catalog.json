@@ -1,6 +1,6 @@
 {
   "format": "hps.e2.catalog",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "templates": [
     {
       "id": "recipe.open-process",
@@ -30,6 +30,23 @@
         "body": 28
       },
       "slots": 2
+    },
+    {
+      "id": "recipe.hero-steps",
+      "version": "0.1.0",
+      "visualStatus": "pending-user-review",
+      "variants": [
+        "sequential"
+      ],
+      "budgets": {
+        "title": 18,
+        "subtitle": 38,
+        "label": 18,
+        "detail": 30,
+        "narration": 1000,
+        "summary": 38
+      },
+      "slots": 3
     }
   ],
   "basisSha256": {

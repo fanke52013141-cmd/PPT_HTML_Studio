@@ -1,0 +1,23 @@
+{
+  "id": "course.token",
+  "version": "0.1.0",
+  "source": "用户在本次对话提供的 Token 讲稿",
+  "timing": "manual design preview; not audio timing",
+  "scenes": [
+    {
+      "recipe": "token-01"
+    },
+    {
+      "recipe": "token-02"
+    },
+    {
+      "recipe": "token-03"
+    },
+    {
+      "recipe": "token-04"
+    },
+    {
+      "recipe": "token-05"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "format": "hps.e2.recipe",
+  "version": "0.1.0",
+  "id": "scene.token-03",
+  "revision": 1,
+  "template": "recipe.hero-steps",
+  "variant": "sequential",
+  "title": "Token 如何影响费用",
+  "subtitle": "仅用文字请求示意；不套用固定价格",
+  "source": "https://developers.openai.com/api/docs/concepts ; https://developers.openai.com/api/docs/guides/conversation-state ; https://developers.openai.com/api/reference/python/resources/responses/methods/create",
+  "heroAsset": "assets/knowledge-book-v2.png",
+  "steps": [
+    {
+      "label": "输入用量",
+      "detail": "问题、历史及其他输入都可能计入。",
+      "narration": "很多文本模型 API 按 token 用量计费。输入不仅是新问题，还可能包括系统指令、历史消息和工具定义等。具体统计和计价以服务说明为准。",
+      "summary": "输入不是只有这一次提问。"
+    },
+    {
+      "label": "输出用量",
+      "detail": "回答也计量，单价可能与输入不同。",
+      "narration": "模型输出的回答通常也按 token 计量。不同服务对缓存、推理和工具调用等可能有不同规则，输入与输出单价也可能不同，所以不能只把两个数量相加后乘同一价格。",
+      "summary": "输入与输出分别核对计价规则。"
+    },
+    {
+      "label": "按规则计算",
+      "detail": "费用示意：输入量×单价＋输出量×单价",
+      "narration": "简单文字请求的费用，可以用输入数量乘输入单价，加输出数量乘输出单价理解。这只是基础示意，不提供实时价格，也不涵盖所有缓存和推理计费情形。",
+      "summary": "知道用量，也要知道对应单价。"
+    }
+  ]
+}

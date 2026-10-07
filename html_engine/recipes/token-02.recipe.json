@@ -1,0 +1,32 @@
+{
+  "format": "hps.e2.recipe",
+  "version": "0.1.0",
+  "id": "scene.token-02",
+  "revision": 1,
+  "template": "recipe.hero-steps",
+  "variant": "sequential",
+  "title": "分词：用实测代替猜测",
+  "subtitle": "本例固定 cl100k_base；不代表所有模型",
+  "source": "https://developers.openai.com/api/docs/concepts ; https://developers.openai.com/api/docs/guides/conversation-state ; https://developers.openai.com/api/reference/python/resources/responses/methods/create",
+  "heroAsset": "assets/knowledge-book-v2.png",
+  "steps": [
+    {
+      "label": "Hello world!",
+      "detail": "Hello ｜␠world ｜! → 3 Token",
+      "narration": "使用 cl100k_base，Hello world! 被编码为三个 token：Hello，带前导空格的 world，以及感叹号。画面中的空格符号用于教学展示，原文实际是一个空格。",
+      "summary": "␠ 表示原文中的一个空格。"
+    },
+    {
+      "label": "人工智能很有趣",
+      "detail": "7 个汉字 → 本编码下 10 Token",
+      "narration": "相同编码下，人工智能很有趣共有七个汉字，却得到十个 token。有些 token 只承载一个字符的部分 UTF-8 字节，不能假设每个 token 都能独立显示成一个完整汉字。",
+      "summary": "中文字符数不等于 Token 数。"
+    },
+    {
+      "label": "unhappiness",
+      "detail": "un ｜h ｜appiness → 3 Token",
+      "narration": "同一编码实测，unhappiness 切成 un、h 和 appiness，共三个 token。因此原稿中的 un 加 happiness 可以作为假设示意，但不能当作本编码的实测结果。换模型或编码，要重新计算。",
+      "summary": "准确数量必须指定分词器。"
+    }
+  ]
+}

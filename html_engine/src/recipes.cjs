@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const { PNG } = require("pngjs");
 const { compile } = require("./compiler.cjs");
 const catalog = require("../recipes/catalog.json");
+const { compileHeroSteps } = require("./hero-steps.cjs");
 const root = path.resolve(__dirname, "..");
 function fail(code, field, message) {
   const error = new Error(`${code} ${field}: ${message}`);
@@ -93,6 +94,8 @@ function compileRecipe(input) {
       "variant",
       "title",
       "subtitle",
+      "steps",
+      "heroAsset",
       "concepts",
       "mainAsset",
       "narration",
@@ -108,10 +111,20 @@ function compileRecipe(input) {
   text(input.title, recipe.budgets.title, "title");
   text(input.subtitle, recipe.budgets.subtitle, "subtitle");
   text(input.source, 1000, "source");
-  if (input.template === "recipe.dual-concept" && input.mainAsset !== undefined)
-    fail("RECIPE_FIELD", "mainAsset", "not a dual-concept slot");
-  if (input.template === "recipe.open-process" && input.concepts !== undefined)
-    fail("RECIPE_FIELD", "concepts", "not an open-process slot");
+  const extraFields = {
+    "recipe.dual-concept": ["concepts"],
+    "recipe.open-process": ["mainAsset", "narration"],
+    "recipe.hero-steps": ["heroAsset", "steps"],
+  }[input.template];
+  for (const field of [
+    "concepts",
+    "mainAsset",
+    "narration",
+    "heroAsset",
+    "steps",
+  ])
+    if (input[field] !== undefined && !extraFields.includes(field))
+      fail("RECIPE_FIELD", field, "field not accepted by this recipe");
   const basisName = input.variant === "drift" ? "cloud-drift" : "paper-plane";
   const basisBytes = fs.readFileSync(
     path.join(root, "examples", basisName + ".scene.json"),
@@ -147,6 +160,8 @@ function compileRecipe(input) {
       base.beats[i].text = text(b.text, 1000, "narration.text");
       base.beats[i].screenText = text(b.screenText, 38, "narration.screenText");
     });
+  } else if (input.template === "recipe.hero-steps") {
+    compileHeroSteps(input, base, recipe, { keys, text, asset, fail });
   } else {
     if (input.narration !== undefined)
       fail("RECIPE_FIELD", "narration", "use concepts.narration");

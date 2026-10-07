@@ -85,3 +85,7 @@ P01 最小定义及体系分类已完成；科普原首版样稿未获认可，�
 ## E2 受约束配方
 
 [交付记录](docs/plans/e2-constrained-template-completion.md)：两个配方、课程复用和资产质量检查已实现；视觉和生产批准待审阅。查看 [预览](html_engine/preview/index.html) 或 [资产对照](html_engine/preview/e2-assets.html)。
+
+## 用户 Token 课程
+
+[课程预览](html_engine/courses/token/index.html) 和 [实施记录](docs/plans/e2-token-course-validation.md)：五场景复用一个公共三步配方，包含事实修订与实际分词证据。无音频，视觉待审阅。

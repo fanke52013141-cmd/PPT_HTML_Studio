@@ -1,0 +1,32 @@
+{
+  "format": "hps.e2.recipe",
+  "version": "0.1.0",
+  "id": "scene.token-05",
+  "revision": 1,
+  "template": "recipe.hero-steps",
+  "variant": "sequential",
+  "title": "记住这三个实用结论",
+  "subtitle": "数字、表情、空格和换行都可能影响用量",
+  "source": "https://developers.openai.com/api/docs/concepts ; https://developers.openai.com/api/docs/guides/conversation-state ; https://developers.openai.com/api/reference/python/resources/responses/methods/create",
+  "heroAsset": "assets/knowledge-book-v2.png",
+  "steps": [
+    {
+      "label": "不等于一个字",
+      "detail": "一个字符可能一个、多个或部分 Token。",
+      "narration": "Token 可以表示词、片段、标点或字节片段。数字、表情、空格和换行也会影响编码数量，但不能假设每个空格或表情固定占一个 token。",
+      "summary": "不要用字数替代精确 Token 统计。"
+    },
+    {
+      "label": "按编码实测",
+      "detail": "固定模型与分词器，再测同一段文字。",
+      "narration": "分词规则因模型或编码而异；也有不同模型共享同一编码。统计时要记下文本、编码名称及版本。本课保留原文、实测编号和完整解码往返证据，避免把猜测当真实分词。",
+      "summary": "本课数字只适用于注明的编码。"
+    },
+    {
+      "label": "训练也使用 Token",
+      "detail": "文本训练通常围绕 Token 序列学习。",
+      "narration": "语言模型在文本训练中也以 token 序列为基础学习。用一句话理解：Token 是模型处理文本的基本单位。实际计费和上下文能力还要结合模型与服务规则，不能从这个比喻推断永久记忆。",
+      "summary": "练习：换一段文本，用指定分词器计数。"
+    }
+  ]
+}

@@ -68,3 +68,5 @@
 ## E2 配方实施补充
 
 [E2 定义卡](runtime/e2/README.md) 注册独立作者配方层 0.1.0，派生为现有 E1；未改变旧运行字段。两个受约束配方和资产工具已实现，视觉认可/生产批准仍待审阅，见 [交付](../../plans/e2-constrained-template-completion.md)。
+
+新增 [三步讲解定义卡](runtime/e2/hero-steps.md)，[用户 Token 课程](../../plans/e2-token-course-validation.md) 完成结构/运行验证；不改变旧格式，不等同生产视觉批准。

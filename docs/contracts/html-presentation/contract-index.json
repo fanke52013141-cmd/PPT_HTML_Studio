@@ -15,7 +15,8 @@
     "P01 specific definitions and fixtures are documented; Schema/runtime/visual/export verification remains unimplemented.",
     "P01 definition index and fixtures remain pinned to their 0.4.0 creation contract; taxonomy is additive and does not register new runtime capabilities.",
     "E1 is a separate runtime format hps.e1.scene 0.1.0. Its scoped prototype does not upgrade pinned P01 definitions or register all taxonomy capabilities.",
-    "E2 constrained recipes 0.1.0 compile into unchanged E1 scene format; two templates and asset tools tested, visual production approval pending."
+    "E2 constrained recipes 0.1.0 compile into unchanged E1 scene format; two templates and asset tools tested, visual production approval pending.",
+    "E2 catalog 0.2.0 adds hero-steps recipe; user Token course tested with hps.e2.recipe 0.1.0 and unchanged E1 format. Visual and audio approval pending."
   ],
   "documents": [
     {
@@ -86,6 +87,9 @@
     },
     {
       "path": "runtime/e2/README.md"
+    },
+    {
+      "path": "runtime/e2/hero-steps.md"
     }
   ],
   "rules": [

@@ -33,6 +33,11 @@ async function main() {
     "course-water",
     "course-everyday",
     "e2-cloud",
+    "token-01",
+    "token-02",
+    "token-03",
+    "token-04",
+    "token-05",
   ].map((name) =>
     JSON.parse(
       fs.readFileSync(

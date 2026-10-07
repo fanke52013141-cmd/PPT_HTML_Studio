@@ -1,0 +1,453 @@
+{
+  "format": "hps.e1.scene",
+  "schemaVersion": "0.1.0",
+  "contractVersion": "0.7.1",
+  "id": "scene.token-05",
+  "revision": 1,
+  "title": "记住这三个实用结论",
+  "authoringMode": "design-exploration",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "safeInsets": {
+      "top": 40,
+      "right": 40,
+      "bottom": 40,
+      "left": 40
+    }
+  },
+  "durationMs": 18000,
+  "timingMode": "manual",
+  "templateRef": {
+    "id": "layout.open-stage.e1",
+    "version": "0.1.0"
+  },
+  "style": {
+    "id": "style.science-study",
+    "version": "0.1.0",
+    "fontFamily": "Microsoft YaHei",
+    "background": {
+      "base": "#F7F8FC",
+      "leftGlow": "#FFE9E8",
+      "rightGlow": "#E5EDFC"
+    },
+    "colors": {
+      "accent": "#FF8498",
+      "path": "#A5B7D6"
+    },
+    "textRoles": {
+      "title": {
+        "fontSize": 64,
+        "fontWeight": 700,
+        "lineHeight": 1.4,
+        "color": "#42566F",
+        "maxLines": 1,
+        "align": "left"
+      },
+      "subtitle": {
+        "fontSize": 26,
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "color": "#8191A8",
+        "maxLines": 1,
+        "align": "left"
+      },
+      "caption": {
+        "fontSize": 38,
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "color": "#42566F",
+        "maxLines": 1,
+        "align": "left"
+      }
+    }
+  },
+  "assets": [
+    {
+      "id": "asset.knowledge-book-v2",
+      "version": "0.1.0",
+      "kind": "image",
+      "file": {
+        "path": "assets/knowledge-book-v2.png",
+        "mimeType": "image/png",
+        "sha256": "334e828a93cf2ec5f3246b572cb0505116a2e1b53c2e0a71ea0a988827fb8ef7"
+      },
+      "intrinsic": {
+        "width": 1536,
+        "height": 1024
+      },
+      "alphaBounds": {
+        "x": 65,
+        "y": 77,
+        "width": 1373,
+        "height": 947
+      },
+      "anchors": [
+        {
+          "id": "frame-center",
+          "x": 0.5,
+          "y": 0.5
+        }
+      ],
+      "provenance": {
+        "kind": "generated",
+        "source": "E2 asset manifest; original generation and quality review retained"
+      },
+      "quality": "conditional-experiment"
+    }
+  ],
+  "paths": [
+    {
+      "id": "path.flight",
+      "points": [
+        {
+          "x": 280,
+          "y": 570
+        },
+        {
+          "x": 540,
+          "y": 260
+        },
+        {
+          "x": 940,
+          "y": 650
+        },
+        {
+          "x": 1270,
+          "y": 435
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "page.title",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 1,
+      "box": {
+        "x": 100,
+        "y": 65,
+        "width": 1400,
+        "height": 100
+      },
+      "role": "title",
+      "content": {
+        "kind": "static",
+        "text": "记住这三个实用结论"
+      }
+    },
+    {
+      "id": "page.subtitle",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 1,
+      "box": {
+        "x": 104,
+        "y": 175,
+        "width": 1390,
+        "height": 55
+      },
+      "role": "subtitle",
+      "content": {
+        "kind": "static",
+        "text": "数字、表情、空格和换行都可能影响用量"
+      }
+    },
+    {
+      "id": "page.caption",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 1,
+      "box": {
+        "x": 100,
+        "y": 805,
+        "width": 1400,
+        "height": 55
+      },
+      "role": "subtitle",
+      "content": {
+        "kind": "beat-summary"
+      }
+    },
+    {
+      "id": "hero",
+      "type": "image",
+      "typeVersion": "0.1.0",
+      "zIndex": 10,
+      "initialOpacity": 1,
+      "box": {
+        "x": 70,
+        "y": 260,
+        "width": 560,
+        "height": 560
+      },
+      "assetRef": {
+        "id": "asset.knowledge-book-v2",
+        "version": "0.1.0"
+      },
+      "anchorId": "frame-center",
+      "fit": "contain",
+      "rotationDeg": 0
+    },
+    {
+      "id": "step.1.label",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 730,
+        "y": 285,
+        "width": 800,
+        "height": 64
+      },
+      "role": "caption",
+      "content": {
+        "kind": "static",
+        "text": "01  不等于一个字"
+      }
+    },
+    {
+      "id": "step.1.detail",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 730,
+        "y": 355,
+        "width": 800,
+        "height": 55
+      },
+      "role": "subtitle",
+      "content": {
+        "kind": "static",
+        "text": "一个字符可能一个、多个或部分 Token。"
+      }
+    },
+    {
+      "id": "step.2.label",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 730,
+        "y": 455,
+        "width": 800,
+        "height": 64
+      },
+      "role": "caption",
+      "content": {
+        "kind": "static",
+        "text": "02  按编码实测"
+      }
+    },
+    {
+      "id": "step.2.detail",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 730,
+        "y": 525,
+        "width": 800,
+        "height": 55
+      },
+      "role": "subtitle",
+      "content": {
+        "kind": "static",
+        "text": "固定模型与分词器，再测同一段文字。"
+      }
+    },
+    {
+      "id": "step.3.label",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 730,
+        "y": 625,
+        "width": 800,
+        "height": 64
+      },
+      "role": "caption",
+      "content": {
+        "kind": "static",
+        "text": "03  训练也使用 Token"
+      }
+    },
+    {
+      "id": "step.3.detail",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 730,
+        "y": 695,
+        "width": 800,
+        "height": 55
+      },
+      "role": "subtitle",
+      "content": {
+        "kind": "static",
+        "text": "文本训练通常围绕 Token 序列学习。"
+      }
+    }
+  ],
+  "beats": [
+    {
+      "id": "beat.1",
+      "startMs": 0,
+      "endMs": 6000,
+      "text": "Token 可以表示词、片段、标点或字节片段。数字、表情、空格和换行也会影响编码数量，但不能假设每个空格或表情固定占一个 token。",
+      "screenText": "不要用字数替代精确 Token 统计。",
+      "targetIds": [
+        "step.1.label",
+        "step.1.detail"
+      ]
+    },
+    {
+      "id": "beat.2",
+      "startMs": 6000,
+      "endMs": 12000,
+      "text": "分词规则因模型或编码而异；也有不同模型共享同一编码。统计时要记下文本、编码名称及版本。本课保留原文、实测编号和完整解码往返证据，避免把猜测当真实分词。",
+      "screenText": "本课数字只适用于注明的编码。",
+      "targetIds": [
+        "step.2.label",
+        "step.2.detail"
+      ]
+    },
+    {
+      "id": "beat.3",
+      "startMs": 12000,
+      "endMs": 18000,
+      "text": "语言模型在文本训练中也以 token 序列为基础学习。用一句话理解：Token 是模型处理文本的基本单位。实际计费和上下文能力还要结合模型与服务规则，不能从这个比喻推断永久记忆。",
+      "screenText": "练习：换一段文本，用指定分词器计数。",
+      "targetIds": [
+        "step.3.label",
+        "step.3.detail"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "show.step.1.label",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "step.1.label",
+        "part": "self"
+      },
+      "startMs": 0,
+      "endMs": 400,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.step.1.detail",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "step.1.detail",
+        "part": "self"
+      },
+      "startMs": 500,
+      "endMs": 900,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.step.2.label",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "step.2.label",
+        "part": "self"
+      },
+      "startMs": 6000,
+      "endMs": 6400,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.step.2.detail",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "step.2.detail",
+        "part": "self"
+      },
+      "startMs": 6500,
+      "endMs": 6900,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.step.3.label",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "step.3.label",
+        "part": "self"
+      },
+      "startMs": 12000,
+      "endMs": 12400,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.step.3.detail",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "step.3.detail",
+        "part": "self"
+      },
+      "startMs": 12500,
+      "endMs": 12900,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    }
+  ],
+  "keyframes": [
+    {
+      "id": "K0",
+      "tMs": 0,
+      "purpose": "开场"
+    },
+    {
+      "id": "K1",
+      "tMs": 2500,
+      "purpose": "第一步"
+    },
+    {
+      "id": "K2",
+      "tMs": 8500,
+      "purpose": "第二步"
+    },
+    {
+      "id": "K3",
+      "tMs": 14500,
+      "purpose": "第三步"
+    },
+    {
+      "id": "K4",
+      "tMs": 18000,
+      "purpose": "终态"
+    }
+  ]
+}

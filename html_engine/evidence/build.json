@@ -1,7 +1,7 @@
 {
   "engineVersion": "0.1.0",
   "schemaSha256": "2cb6ef3d5443d647ff9ce0fa424175bc902e4b138feb6bd64024c1ff0c54f09c",
-  "sceneCount": 5,
+  "sceneCount": 10,
   "assets": [
     {
       "path": "assets/plane.png",
@@ -91,6 +91,21 @@
         "y": 212,
         "width": 1131,
         "height": 1000
+      }
+    },
+    {
+      "path": "assets/knowledge-book-v2.png",
+      "hash": "334e828a93cf2ec5f3246b572cb0505116a2e1b53c2e0a71ea0a988827fb8ef7",
+      "sizeBytes": 1302833,
+      "intrinsic": {
+        "width": 1536,
+        "height": 1024
+      },
+      "alphaBounds": {
+        "x": 65,
+        "y": 77,
+        "width": 1373,
+        "height": 947
       }
     }
   ],

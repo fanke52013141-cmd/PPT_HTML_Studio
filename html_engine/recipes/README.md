@@ -28,3 +28,7 @@
 `node scripts/asset-tool.cjs crop manifest.json` 只执行明确矩形提取；manifest 为 `{version:"0.1.0",source:"assets/board.png",slots:[{id:"plane",output:"assets/plane-new.png",rect:{x:0,y:0,width:627,height:627}}]}`。输入限 assets 直属 PNG；输出不覆盖已有文件，槽位与输出唯一。返回裁切偏移及新资源审计，锚点为裁切画框中心；这不是自动语义命名/抠图，人物关节等语义锚点须另行定义。多文件写入遇到磁盘故障可能留下已生成的部分文件，尚未接任务事务。
 
 `src/recipe-diagnostics.cjs` 提供 visibleContent/rects 包围框重叠提示；本轮由检查工具调用，尚未接浏览器侧栏，不替代逐帧美术审阅。
+
+## 真实用户课程扩展
+
+新增 [hero-steps 定义](../../docs/contracts/html-presentation/runtime/e2/hero-steps.md)，恰好三项 steps(label/detail/narration/summary) 和 heroAsset。新配方不接受旧概念/运动槽位，旧配方也拒绝新字段；hps.e2.recipe 格式仍0.1.0，目录扩为0.2.0。见 [Token 课程](../courses/token/README.md)。
