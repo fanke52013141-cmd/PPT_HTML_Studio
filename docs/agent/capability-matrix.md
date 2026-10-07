@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.10.0
-- **Contract Hash**: `c28b289957012390`
-- **Total Capabilities**: 31
+- **Agent API Version**: 1.11.0
+- **Contract Hash**: `7b434fee45bbcbb7`
+- **Total Capabilities**: 38
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -15,6 +15,13 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `generation.stop` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/generation/{stage}/stop` | `ppt_generation_stop` | Yes | `generation stop` | `generation_control.request_stop` | No | No |
 | `identity.get` | 1.0 | stable | GET | `/api/agent/v1/identity` | `ppt_identity_get` | Yes | `identity` | `agent_api.auth / account_service` | No | No |
 | `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
+| `html_visual.status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/status` | `ppt_html_visual_status` | Yes | `html status` | `html_visual_store.read_status` | No | No |
+| `html_visual.scene_read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_read` | Yes | `html scene-read` | `html_visual_store.load_scene_with_revision` | No | No |
+| `html_visual.scene_write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_write` | Yes | `html scene-write` | `html_visual_store.save_scene` | No | No |
+| `html_review.plan_generate` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/plan/generate` | `ppt_html_plan_generate` | Yes | `html plan-generate` | `html_visual_review_service.generate_scene_plan` | No | No |
+| `html_review.review` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/review` | `ppt_html_review` | Yes | `html review` | `html_visual_review_service.review_scene` | No | No |
+| `html_review.approve` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/approve` | `ppt_html_approve` | Yes | `html approve` | `html_visual_review_service.approve_scene` | No | No |
+| `html_review.approval_status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/approval` | `ppt_html_approval_status` | Yes | `html approval-status` | `html_visual_review_service.approval_status` | No | No |
 | `project.list` | 1.4 | stable | GET | `/api/agent/v1/projects` | `ppt_project_list` | Yes | `project list` | `project_service.ProjectService.list` | No | No |
 | `project.get` | 1.3 | stable | GET | `/api/agent/v1/projects/{project_id}` | `ppt_project_get` | Yes | `project show` | `project_service.ProjectService.get` | No | No |
 | `project.update` | 1.3 | stable | PATCH | `/api/agent/v1/projects/{project_id}` | `ppt_project_update` | Yes | `project update` | `project_service.ProjectService.update` | No | No |
@@ -56,12 +63,19 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **26** stable tools:
+The MCP server exposes **33** stable tools:
 
 - `ppt_generation_status` — Read the active cooperative generation control for a project stage. Controls are process-local; durable TTS/video results remain in their job APIs.
 - `ppt_generation_stop` — Request a safe-boundary stop for the exact active operation ID. In-flight provider requests and render stages finish before stopping.
 - `ppt_identity_get` — Return the creative account and scopes associated with this Agent connection.
 - `ppt_project_create` — Create a project with canvas, production/presentation mode, versioned creation configuration, and optional course/chapter ownership.
+- `ppt_html_visual_status` — Read per-slide html scene readiness for an html-backend project (revision, present/expected counts).
+- `ppt_html_scene_read` — Read one slide's stored html scene document with its revision and content hash.
+- `ppt_html_scene_write` — Write one slide's html scene document with expected-revision optimistic concurrency (409 on conflict); html-backend projects only.
+- `ppt_html_plan_generate` — Generate a constrained scene plan for one slide through the configured LLM (registered templates/slots/icons only) and record AC06/AC07 evidence.
+- `ppt_html_review` — Compile, measure, and screenshot one html scene through the shared bundle; returns object-level diagnostics.
+- `ppt_html_approve` — Approve one html scene; the record binds scene/theme/template/layout/asset/runtime hashes and fails on any static-review error.
+- `ppt_html_approval_status` — Read the current approval validity and invalidation reason for one slide.
 - `ppt_project_list` — List all projects with optional status filter.
 - `ppt_project_get` — Get project details including article/contract status, slide IDs, and mask mode.
 - `ppt_project_update` — Update project name, description, AI mode, production mode, or presentation mode.

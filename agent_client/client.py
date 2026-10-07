@@ -353,3 +353,61 @@ class AgentClient:
 
     def generate_digital_human(self, project_id: str) -> dict[str, Any]:
         return self._request("POST", f"/api/agent/v1/projects/{project_id}/digital-human/generate-full")
+
+
+    # ------------------------------------------------------------------
+    # HTML visual backend operations (F01)
+    # ------------------------------------------------------------------
+
+    def get_html_visual_status(self, project_id: str) -> dict[str, Any]:
+        return self._request(
+            "GET", f"/projects/{project_id}/html-visual/status"
+        )
+
+    def get_html_scene(self, project_id: str, slide_id: str) -> dict[str, Any]:
+        return self._request(
+            "GET", f"/projects/{project_id}/html-visual/{slide_id}"
+        )
+
+    def put_html_scene(
+        self, project_id: str, slide_id: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        return self._request(
+            "PUT",
+            f"/projects/{project_id}/html-visual/{slide_id}",
+            body=payload,
+        )
+
+    def post_html_plan_generate(
+        self, project_id: str, slide_id: str
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/projects/{project_id}/html-review/{slide_id}/plan/generate",
+            json={},
+        )
+
+    def post_html_review(
+        self, project_id: str, slide_id: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/projects/{project_id}/html-review/{slide_id}/review",
+            body=payload,
+        )
+
+    def post_html_approve(
+        self, project_id: str, slide_id: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/projects/{project_id}/html-review/{slide_id}/approve",
+            body=payload,
+        )
+
+    def get_html_approval_status(
+        self, project_id: str, slide_id: str
+    ) -> dict[str, Any]:
+        return self._request(
+            "GET", f"/projects/{project_id}/html-review/{slide_id}/approval"
+        )

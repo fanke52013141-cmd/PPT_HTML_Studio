@@ -364,3 +364,58 @@ class DiagnosticsResult(BaseModel):
     application_version: str = ""
     capabilities: list[str] = Field(default_factory=list)
     checks: dict[str, Any] = Field(default_factory=dict)
+
+
+class HtmlVisualStatusResult(BaseModel):
+    project_id: str
+    revision: int = Field(0, description="场景修订计数")
+    scenes_present: int
+    scenes_expected: int
+    slides: dict[str, Any] = Field(default_factory=dict)
+
+
+class HtmlSceneDocumentResult(BaseModel):
+    project_id: str
+    slide_id: str
+    scene: dict[str, Any]
+    sha256: str
+    revision: int
+
+
+class HtmlSceneSaveRequest(BaseModel):
+    scene: dict[str, Any]
+    expected_revision: int = Field(..., description="乐观锁：当前场景修订号")
+
+
+class HtmlSceneSaveResult(BaseModel):
+    project_id: str
+    slide_id: str
+    revision: int
+    changed: bool
+    sha256: str
+
+
+class HtmlSceneBodyRequest(BaseModel):
+    scene: Optional[dict[str, Any]] = Field(None, description="缺省时使用已保存场景")
+
+
+class HtmlReviewReportResult(BaseModel):
+    project_id: str
+    slide_id: str
+    passed: bool
+    report: dict[str, Any]
+
+
+class HtmlApprovalResult(BaseModel):
+    project_id: str
+    slide_id: str
+    valid: bool
+    reason: Optional[str] = None
+    approval: Optional[dict[str, Any]] = None
+
+
+class HtmlPlanGenerationResult(BaseModel):
+    project_id: str
+    slide_id: str
+    plan: dict[str, Any]
+    evidence: dict[str, Any]

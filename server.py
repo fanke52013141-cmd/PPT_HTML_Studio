@@ -700,6 +700,14 @@ except Exception as exc:
     )
     raise
 
+
+def html_review_service_deps() -> HtmlReviewDependencies:
+    """Agent-facing accessor for the configured html review dependencies."""
+    return HtmlReviewDependencies(
+        repo_root=Path(REPO_ROOT),
+        json_generator=_html_plan_json_generator,
+    )
+
 try:
     from visual_settings_routes import (
         router as visual_settings_router,

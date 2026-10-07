@@ -371,13 +371,20 @@
         "E03"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "passed",
       "acceptance": [
         "AC17"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "agent_contract/capabilities.py",
+        "agent_contract/models.py",
+        "agent_api/routes.py",
+        "agent_client/client.py",
+        "mcp_server/tools.py",
+        "docs/agent/capability-matrix.md"
+      ],
+      "commit": "this-round",
+      "note": "HTML 操作面注册完成：7 项能力（html_visual.status/scene_read/scene_write、html_review.plan_generate/review/approve/approval_status）在 capabilities/models/Agent API 路由/MCP 分发/CLI 命令同源注册；场景写带 expected_revision（409 冲突语义与 Web 相同）；AGENT_API_VERSION 1.11.0；capability-matrix 重生成；checks/agent 423 项全过。"
     },
     {
       "id": "F02",

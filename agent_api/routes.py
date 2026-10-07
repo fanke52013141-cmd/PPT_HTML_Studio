@@ -25,7 +25,17 @@ from sqlalchemy.orm import Session
 from database import get_db, Project, ArtifactRecord
 from account_context import get_current_account_id
 
+import html_visual_review_service as html_review
+import html_visual_store as html_scene_store
 from agent_contract.models import (
+    HtmlApprovalResult,
+    HtmlPlanGenerationResult,
+    HtmlReviewReportResult,
+    HtmlSceneBodyRequest,
+    HtmlSceneDocumentResult,
+    HtmlSceneSaveRequest,
+    HtmlSceneSaveResult,
+    HtmlVisualStatusResult,
     ProjectCreateRequest, ProjectCreateResult, ProjectSummary,
     ProjectListResult, ProjectGetResult,
     ProjectUpdateRequest, ProjectUpdateResult,
@@ -152,6 +162,244 @@ def _require_digital_human_edition() -> None:
             status_code=403,
             detail="当前发行版未包含数字人讲解功能，该接口不可用。",
         )
+
+
+# ---------------------------------------------------------------------------
+# HTML visual backend operations (F01)
+# ---------------------------------------------------------------------------
+
+def _html_project_or_404(project_id: str, db: Session) -> Project:
+    project = (
+        db.query(Project)
+        .filter(
+            Project.id == project_id,
+            Project.account_id == get_current_account_id(),
+        )
+        .first()
+    )
+    if project is None:
+        raise HTTPException(status_code=404, detail="项目不存在")
+    if (project.visual_backend or "image") != "html":
+        raise HTTPException(
+            status_code=400, detail="该项目使用图片管线；HTML 操作仅适用于 HTML 后端项目"
+        )
+    return project
+
+
+def _contract_slide_or_404(run_dir: str, slide_id: str) -> dict:
+    import json as _json
+    from pathlib import Path as _Path
+
+    contract_path = _Path(run_dir) / "planning" / "visual_contract.json"
+    if not contract_path.is_file():
+        raise HTTPException(status_code=400, detail="分镜契约尚未生成")
+    contract = _json.loads(contract_path.read_text(encoding="utf-8"))
+    for slide in contract.get("slides") or []:
+        if isinstance(slide, dict) and str(slide.get("slide_id")) == str(slide_id):
+            return slide
+    raise HTTPException(status_code=404, detail="契约中不存在该 Slide")
+
+
+@router.get(
+    "/projects/{project_id}/html-visual/status",
+    response_model=HtmlVisualStatusResult,
+)
+def agent_html_visual_status(project_id: str, db: Session = Depends(get_db)):
+    project = _html_project_or_404(project_id, db)
+    from project_path_service import project_run_dir_or_500, read_current_slide_ids_or_404
+
+    run_dir = project_run_dir_or_500(project)
+    status = html_scene_store.read_status(run_dir, read_current_slide_ids_or_404(project))
+    return HtmlVisualStatusResult(project_id=project_id, **status)
+
+
+@router.get(
+    "/projects/{project_id}/html-visual/{slide_id}",
+    response_model=HtmlSceneDocumentResult,
+)
+def agent_html_scene_read(project_id: str, slide_id: str, db: Session = Depends(get_db)):
+    project = _html_project_or_404(project_id, db)
+    from project_path_service import project_run_dir_or_500
+
+    document = html_scene_store.load_scene_with_revision(
+        project_run_dir_or_500(project), slide_id
+    )
+    if document is None:
+        raise HTTPException(status_code=404, detail="该页尚未保存 HTML 场景")
+    return HtmlSceneDocumentResult(
+        project_id=project_id,
+        slide_id=slide_id,
+        scene=document["scene"],
+        sha256=document["sha256"],
+        revision=document["revision"],
+    )
+
+
+@router.put(
+    "/projects/{project_id}/html-visual/{slide_id}",
+    response_model=HtmlSceneSaveResult,
+)
+def agent_html_scene_write(
+    project_id: str,
+    slide_id: str,
+    payload: HtmlSceneSaveRequest,
+    db: Session = Depends(get_db),
+):
+    project = _html_project_or_404(project_id, db)
+    from pipeline_lifecycle import project_artifact_lock
+    from project_path_service import project_run_dir_or_500
+
+    try:
+        result = html_scene_store.save_scene(
+            project_run_dir_or_500(project),
+            slide_id,
+            payload.scene,
+            payload.expected_revision,
+            lock=project_artifact_lock,
+        )
+    except html_scene_store.HtmlVisualConflict as conflict:
+        raise HTTPException(status_code=409, detail=str(conflict))
+    except html_scene_store.HtmlVisualError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    if result["changed"]:
+        from invalidation_service import html_scene_changed
+
+        html_scene_changed(project, [slide_id])
+        db.commit()
+    return HtmlSceneSaveResult(project_id=project_id, slide_id=slide_id, **result)
+
+
+def _agent_review_deps() -> html_review.HtmlReviewDependencies:
+    from server import html_review_service_deps
+
+    return html_review_service_deps()
+
+
+@router.post(
+    "/projects/{project_id}/html-review/{slide_id}/review",
+    response_model=HtmlReviewReportResult,
+)
+def agent_html_review(
+    project_id: str,
+    slide_id: str,
+    payload: HtmlSceneBodyRequest,
+    db: Session = Depends(get_db),
+):
+    project = _html_project_or_404(project_id, db)
+    from project_path_service import project_run_dir_or_500
+
+    run_dir = project_run_dir_or_500(project)
+    if payload.scene is not None:
+        scene = payload.scene
+    else:
+        document = html_scene_store.load_scene_with_revision(run_dir, slide_id)
+        if document is None:
+            raise HTTPException(status_code=404, detail="该页尚未保存 HTML 场景")
+        scene = document["scene"]
+    try:
+        report = html_review.review_scene(
+            scene, run_dir=run_dir, deps=_agent_review_deps()
+        )
+    except html_review.HtmlReviewError as error:
+        raise HTTPException(status_code=error.status_code, detail=str(error))
+    return HtmlReviewReportResult(
+        project_id=project_id,
+        slide_id=slide_id,
+        passed=bool(report.get("passed")),
+        report=report,
+    )
+
+
+@router.post(
+    "/projects/{project_id}/html-review/{slide_id}/approve",
+    response_model=HtmlApprovalResult,
+)
+def agent_html_approve(
+    project_id: str,
+    slide_id: str,
+    payload: HtmlSceneBodyRequest,
+    db: Session = Depends(get_db),
+):
+    project = _html_project_or_404(project_id, db)
+    from project_path_service import project_run_dir_or_500
+
+    run_dir = project_run_dir_or_500(project)
+    if payload.scene is not None:
+        scene = payload.scene
+    else:
+        document = html_scene_store.load_scene_with_revision(run_dir, slide_id)
+        if document is None:
+            raise HTTPException(status_code=404, detail="该页尚未保存 HTML 场景")
+        scene = document["scene"]
+    try:
+        approval = html_review.approve_scene(
+            scene, run_dir=run_dir, deps=_agent_review_deps()
+        )
+    except html_review.HtmlReviewError as error:
+        raise HTTPException(status_code=error.status_code, detail=str(error))
+    return HtmlApprovalResult(
+        project_id=project_id,
+        slide_id=slide_id,
+        valid=True,
+        approval=approval,
+    )
+
+
+@router.get(
+    "/projects/{project_id}/html-review/{slide_id}/approval",
+    response_model=HtmlApprovalResult,
+)
+def agent_html_approval_status(
+    project_id: str, slide_id: str, db: Session = Depends(get_db)
+):
+    project = _html_project_or_404(project_id, db)
+    from project_path_service import project_run_dir_or_500
+
+    status = html_review.approval_status(
+        None,
+        run_dir=project_run_dir_or_500(project),
+        deps=_agent_review_deps(),
+        slide_id=slide_id,
+    )
+    return HtmlApprovalResult(
+        project_id=project_id,
+        slide_id=slide_id,
+        valid=status["valid"],
+        reason=status.get("reason"),
+        approval=status.get("approval"),
+    )
+
+
+@router.post(
+    "/projects/{project_id}/html-review/{slide_id}/plan/generate",
+    response_model=HtmlPlanGenerationResult,
+)
+def agent_html_plan_generate(
+    project_id: str, slide_id: str, db: Session = Depends(get_db)
+):
+    project = _html_project_or_404(project_id, db)
+    from project_path_service import project_run_dir_or_500
+
+    run_dir = project_run_dir_or_500(project)
+    contract_slide = _contract_slide_or_404(run_dir, slide_id)
+    deps = _agent_review_deps()
+    try:
+        plan = html_review.generate_scene_plan(
+            contract_slide,
+            run_dir=run_dir,
+            repo_root=deps.repo_root,
+            json_generator=deps.json_generator,
+        )
+    except html_review.HtmlReviewError as error:
+        raise HTTPException(status_code=error.status_code, detail=str(error))
+    from html_storyboard_planning import plan_evidence
+
+    return HtmlPlanGenerationResult(
+        project_id=project_id,
+        slide_id=slide_id,
+        plan=plan,
+        evidence=plan_evidence(plan),
+    )
 
 
 # ---------------------------------------------------------------------------

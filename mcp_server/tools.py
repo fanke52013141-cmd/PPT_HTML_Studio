@@ -226,6 +226,33 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
         pid = args.get("project_id", "")
         return client.generate_digital_human(pid)
 
+    if cap_id == "html_visual.status":
+        return client.get_html_visual_status(args.get("project_id", ""))
+    if cap_id == "html_visual.scene_read":
+        return client.get_html_scene(
+            args.get("project_id", ""), args.get("slide_id", "")
+        )
+    if cap_id == "html_visual.scene_write":
+        return client.put_html_scene(
+            args.get("project_id", ""), args.get("slide_id", ""), args
+        )
+    if cap_id == "html_review.plan_generate":
+        return client.post_html_plan_generate(
+            args.get("project_id", ""), args.get("slide_id", "")
+        )
+    if cap_id == "html_review.review":
+        return client.post_html_review(
+            args.get("project_id", ""), args.get("slide_id", ""), args
+        )
+    if cap_id == "html_review.approve":
+        return client.post_html_approve(
+            args.get("project_id", ""), args.get("slide_id", ""), args
+        )
+    if cap_id == "html_review.approval_status":
+        return client.get_html_approval_status(
+            args.get("project_id", ""), args.get("slide_id", "")
+        )
+
     raise ValueError(f"Unknown capability for dispatch: {cap_id}")
 
 
