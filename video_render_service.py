@@ -80,13 +80,13 @@ class VideoRenderDependencies:
     session_factory: Callable[[], Session]
     artifact_service: VideoArtifactService
     remotion_runner: RemotionRunner
-    # Optional until the html backend is configured; html projects fail
-    # with a clear error instead of silently using the image pipeline.
-    html_runner: Any | None = None
     config: VideoRenderConfig
     # Global cross-project render concurrency.  Extra submissions stay queued
     # as persistent "queued" jobs until a worker slot frees up.
     max_concurrent_renders: int = 1
+    # Optional until the html backend is configured; html projects fail
+    # with a clear error instead of silently using the image pipeline.
+    html_runner: Any | None = None
 
 
 class VideoRenderService:

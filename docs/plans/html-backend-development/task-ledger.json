@@ -96,12 +96,16 @@
         "A01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC08"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "migrations/0017_project_visual_backend.sql",
+        "checks/test_project_visual_backend.py",
+        "docs/agent/capability-matrix.md"
+      ],
+      "commit": "6001290"
     },
     {
       "id": "B02",
@@ -111,13 +115,18 @@
         "A04"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC09",
         "AC18"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_visual_store.py",
+        "html_visual_routes.py",
+        "checks/test_html_visual_store.py",
+        "docs/downstream-impact.md"
+      ],
+      "commit": "5bbb08b"
     },
     {
       "id": "B03",
@@ -127,13 +136,17 @@
         "B02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC08",
         "AC20"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "static/flow.js",
+        "checks/test_visible_flow.js",
+        "static/workspace_navigation.js"
+      ],
+      "commit": "3e0abe0"
     },
     {
       "id": "C01",
@@ -143,12 +156,13 @@
         "A03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC07"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "C02",
@@ -158,13 +172,14 @@
         "A03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC06",
         "AC07"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "C03",
@@ -174,12 +189,13 @@
         "B02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC10"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "C04",
@@ -190,13 +206,14 @@
         "B03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC04",
         "AC10"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "D01",
@@ -205,12 +222,13 @@
         "C04"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC11"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "D02",
@@ -220,12 +238,15 @@
         "B02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC12"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_audio_binder.py",
+        "checks/test_html_audio_binder.py"
+      ],
+      "commit": "5956ad5"
     },
     {
       "id": "D03",
@@ -235,12 +256,13 @@
         "D02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC13"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "E01",
@@ -251,12 +273,17 @@
         "D03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC14"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_render_runner.py",
+        "html_engine/tools/export-slide-video.cjs",
+        "checks/test_html_render_runner.py"
+      ],
+      "commit": "5956ad5",
+      "note": "runner + engine export verified by live smoke (water-facts + 12s audio -> h264/aac 12.000s); persistent job-store integration and full-course render still pending_review"
     },
     {
       "id": "E02",
@@ -265,12 +292,13 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC15"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "E03",
@@ -279,12 +307,13 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC16"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "E04",
@@ -309,12 +338,13 @@
         "E03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC17"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "F02",
@@ -325,12 +355,13 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC18"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     },
     {
       "id": "F03",
@@ -358,7 +389,7 @@
         "F02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "not_run",
       "acceptance": [
         "AC01",
         "AC02",
@@ -382,7 +413,8 @@
         "AC20"
       ],
       "evidence": [],
-      "commit": null
+      "commit": null,
+      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
     }
   ]
 }
