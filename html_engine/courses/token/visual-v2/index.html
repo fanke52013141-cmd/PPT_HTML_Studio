@@ -21,17 +21,17 @@
         <img id="reference" alt="当前场景生成设计参考图" hidden />
       </div>
       <div class="transport">
-        <button id="play">播放本场景</button><button id="all">播放整段</button
-        ><button id="pause">暂停</button><button id="reset">回到开场</button
-        ><input id="scrub" type="range" min="0" step="1" /><output
+        <button id="play" disabled>播放本场景</button><button id="all" disabled>播放整段</button
+        ><button id="pause">暂停</button><button id="reset" disabled>回到开场</button
+        ><input id="scrub" type="range" min="0" step="1" disabled /><output
           id="clock"
         ></output
-        ><select id="mode" aria-label="对照模式">
+        ><select id="mode" aria-label="对照模式" disabled>
           <option value="actual">实际 HTML 动画</option>
           <option value="design">生图设计参考</option>
         </select>
       </div>
-      <p id="status">正在准备字体和资产…</p>
+      <p id="status" role="status" aria-live="polite">正在准备字体和资产…</p>
       <details>
         <summary>当前讲稿与实现分工</summary>
         <p id="transcript"></p>
@@ -42,6 +42,6 @@
       </details>
     </main>
     <script src="definition.js"></script>
-    <script src="player.js"></script>
+    <script src="player.js?v=20261007-clock-fix"></script>
   </body>
 </html>

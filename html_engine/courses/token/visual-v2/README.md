@@ -44,6 +44,7 @@
 
 ```powershell
 node courses/token/visual-v2/build-definition.cjs
+node courses/token/visual-v2/playback-clock.test.cjs
 node courses/token/visual-v2/verify-export.cjs
 node courses/token/visual-v2/verify-export.cjs --export
 ```
@@ -53,3 +54,9 @@ Chromium由Playwright提供，可通过 `HPS_CHROME` 指定已有Chrome路径。
 ## 下一阶段的入口条件
 
 本轮只提交可观看的完整视觉实验。用户判断画面、构图与动作是否达到预期后，再决定是否把这些布局固化为可复用模板并接入现有音频时间轴。语音合成和数字人继续用现有方案。当前没有变更E1/E2格式、应用服务、Agent接口、数据库或原有TTS/视频管线。
+
+## 播放无响应修复
+
+用户报告“播放整段”无反应后，隔离执行真实播放器时钟函数，复现首个requestAnimationFrame时间戳早于点击时performance.now的情况：旧计算产生-5ms，时间范围校验抛错，后续帧未调度。修复为只累积非负时间差，并保持时间基准单调；时间范围校验仍然保留。增加资源就绪前禁用按钮、播放失败提示和脚本版本参数。
+
+回归测试覆盖早到首帧、后续时间推进、暂停、单场景终点、整段终点、未就绪和渲染失败反馈。它直接执行源文件中的时钟函数，不替代用户浏览器的点击验证。浏览器操作工具拒绝访问file协议，因此本次未宣称已在用户当前标签页完成点击验证。画面与纯时间导出没有变化，已有无声视频无需重导出。

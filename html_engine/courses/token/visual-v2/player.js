@@ -808,9 +808,16 @@
   }
   function tick(now) {
     if (!playing) return;
-    const next = Math.min(playLimit, time + now - last);
-    last = now;
-    renderAtCourse(next);
+    // A frame timestamp may predate a click in the same rendering cycle.
+    const next = Math.min(playLimit, time + Math.max(0, now - last));
+    last = Math.max(last, now);
+    try {
+      renderAtCourse(next);
+    } catch (error) {
+      pause();
+      document.querySelector("#status").textContent = "播放失败：" + error.message;
+      return;
+    }
     if (next >= playLimit) {
       pause();
       return;
@@ -818,7 +825,10 @@
     raf = requestAnimationFrame(tick);
   }
   function play(all = false) {
-    if (!ready) return;
+    if (!ready) {
+      document.querySelector("#status").textContent = "字体和资产尚未准备完成，请稍候。";
+      return;
+    }
     pause();
     mode.value = "actual";
     setMode();
@@ -849,6 +859,7 @@
       String(i + 1).padStart(2, "0") +
       " " +
       ["处理链", "分词对照", "用量流", "容量预算", "总结"][i];
+    b.disabled = true;
     b.onclick = () => {
       pause();
       mode.value = "actual";
@@ -917,6 +928,8 @@
     if (probe.measureText("Wim012科学").width === baseline)
       throw new Error("Microsoft YaHei not available");
     ready = true;
+    document.querySelectorAll("#chapters button, #play, #all, #reset, #scrub, #mode")
+      .forEach((control) => (control.disabled = false));
     setMode();
     renderAtCourse(prefixes[1] - 1);
     return snapshot();
