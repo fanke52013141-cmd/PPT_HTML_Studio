@@ -64,3 +64,6 @@ Schema、自动校验、风格样板和导出兼容验证尚未完成。
 按 [P02 重制任务书](docs/styles/science-explainer/visual-production-revision.md) 继续；尚无已批准生产模板。
 
 已制作 [科普混合视觉实验与对照页](docs/styles/science-explainer/experiments/hybrid-01/README.md)，展示整页设计稿、独立资产、HTML 还原及真实失败记录；视觉审阅待确认。
+
+内容可视化范围延伸到场景动画，PPT 作为其中一种模式与输出；当前扩展提案见
+[动画项目借鉴与能力缺口](docs/research/2026-10-07-huashu-art-motion/analysis-and-adoption.md)。

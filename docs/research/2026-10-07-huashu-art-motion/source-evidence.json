@@ -1,0 +1,93 @@
+{
+  "researchId": "RES-20261007-03",
+  "date": "2026-10-07",
+  "repository": "https://github.com/alchaincyf/huashu-art-motion",
+  "commit": "26dba25b2b495c2138848c29a2c90df356a20325",
+  "inspection": "read-only source checkout; not installed as skill; upstream code/assets not imported into production; no upstream rendering tests run",
+  "sources": [
+    {
+      "path": "README.md",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/README.md",
+      "sha256": "141e2260f8bcde223bbb0bb3d5a25d377c944890378d18bf8b32587d393cbe6d"
+    },
+    {
+      "path": "LICENSE",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/LICENSE",
+      "sha256": "fd164d60e753fd14343e54d03b0c104a292546761bc5866e371de4a02035659c"
+    },
+    {
+      "path": "references/03-一帧先行四条路线.md",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/references/03-一帧先行四条路线.md",
+      "sha256": "611142a44f27be70eaec8b41bfbf74b930f3808962f6b07d79d92216324d2581"
+    },
+    {
+      "path": "references/09-视频动画语法.md",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/references/09-视频动画语法.md",
+      "sha256": "6c9b7dfb30d680e1c24d46faf7743f494af894d24d0592780eb8fac36ba9f9aa"
+    },
+    {
+      "path": "references/10-角色.md",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/references/10-角色.md",
+      "sha256": "cebd147397c031a238ee5a6f584d3e3794f98d85697da62d5013275383c178ea"
+    },
+    {
+      "path": "references/12-口播整片与经验回流.md",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/references/12-口播整片与经验回流.md",
+      "sha256": "c4c0c3f085b235c9dda10e6351973d6a286c064ded29ba67de7ae88ab011dd5e"
+    },
+    {
+      "path": "references/动画语法/y6_presenter_explainer.md",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/references/动画语法/y6_presenter_explainer.md",
+      "sha256": "66456865967ae2b266679b8a4d3ebbe5a13a4569a1e4a5348ccf879eb79d3508"
+    },
+    {
+      "path": "scripts/engine/engine.js",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/engine/engine.js",
+      "sha256": "b7fd70575868b889cc07b2a080236b2373284044be3f9e9b66711babd3e6b041"
+    },
+    {
+      "path": "scripts/engine/clip.js",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/engine/clip.js",
+      "sha256": "cb9f77868f0a4a57dc8e39a2d1d294e3497cae900643c162aaa5b0ed3c384f57"
+    },
+    {
+      "path": "scripts/engine/render.py",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/engine/render.py",
+      "sha256": "ca20f5d23470955d71e9ef58c8d899561497b6e4cc1fb43280ede66721eb324b"
+    },
+    {
+      "path": "scripts/engine/lib/motion.js",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/engine/lib/motion.js",
+      "sha256": "fd90ddedbc80221f046f06a6c8c6d2c97c0edb1ab2d8f007c63c2720e60c7655"
+    },
+    {
+      "path": "scripts/engine/lib/camera.js",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/engine/lib/camera.js",
+      "sha256": "8ebf92f37dcdff9cac953f64e2e17b2b7d4be10c0e9f742b34868e643de7f692"
+    },
+    {
+      "path": "scripts/engine/reference_films/spacex/README.md",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/engine/reference_films/spacex/README.md",
+      "sha256": "3563af5878d8dcb75bf026bf468f931e667cacc816097bee23815973714dc0e3"
+    },
+    {
+      "path": "scripts/engine/reference_films/spacex/spacex_lin/common.js",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/engine/reference_films/spacex/spacex_lin/common.js",
+      "sha256": "2df78005a48c1e90e19b5a402f5f068259fb0171853a7f68e0b25254d74a9225"
+    },
+    {
+      "path": "scripts/engine/reference_films/spacex/spacex_lin/scenes/s05.js",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/engine/reference_films/spacex/spacex_lin/scenes/s05.js",
+      "sha256": "0c8c5879df92510a15ccdad1639b11fd0593003f74cd7d50500128514b88e031"
+    },
+    {
+      "path": "scripts/qa.py",
+      "url": "https://github.com/alchaincyf/huashu-art-motion/blob/26dba25b2b495c2138848c29a2c90df356a20325/scripts/qa.py",
+      "sha256": "d16f415e17c2ad56cd03d1dfb11b899629cc75bd2b09fbbd88dfb3efe09a84f1"
+    }
+  ],
+  "userReference": {
+    "file": "user-motion-reference.png",
+    "sha256": "8036641975bfa7d4a221197b434749013f5ed458fde6da2c803245e924d2bbef"
+  }
+}
