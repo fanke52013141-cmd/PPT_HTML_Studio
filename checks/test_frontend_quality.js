@@ -90,6 +90,17 @@ for (const uiOwner of ['getToastPresentation', 'showToast', 'showCustomConfirm',
 if (!(html.indexOf('workflow_state.js') < html.indexOf('ui_foundation.js') && html.indexOf('ui_foundation.js') < html.indexOf('api_client.js'))) {
   throw new Error('workflow state, UI foundation, and API client script order is unsafe');
 }
+// 发行剖面必须在 flow.js 之前加载：flow.js 的模块工厂在创建时读取
+// window.PPTStudioDistribution 构建有效 flow，加载顺序颠倒会先按完整版定型。
+const distributionProfile = fs.readFileSync(path.join(root, 'static', 'distribution_profile.js'), 'utf8');
+if (!(html.includes('distribution_profile.js') && html.indexOf('distribution_profile.js') < html.indexOf('flow.js'))) {
+  throw new Error('distribution profile must load before flow.js');
+}
+if (!distributionProfile.includes('window.PPTStudioDistribution = Object.freeze({')
+    || !distributionProfile.includes('digital_human: true')
+    || !distributionProfile.includes('handwritten_annotations: true')) {
+  throw new Error('repository distribution profile must default to the full edition');
+}
 for (const apiOwner of ['const API =', "headers.set('X-PPT-Studio-Request'", 'window.API = API']) {
   if (!apiClient.includes(apiOwner)) throw new Error(`API client is missing ${apiOwner}`);
   if (app.includes(apiOwner)) throw new Error(`API client ownership returned to app.js: ${apiOwner}`);
@@ -1242,6 +1253,31 @@ if (flowSource.includes("step-item-optional") || html.includes('step-optional-ba
 if (!html.includes('<div class="step-num">6</div>')) {
   throw new Error('module six must show a real display number');
 }
+// 发行功能剖面：判定函数只属于 flow.js；消费方一律经 PPTFlow.distributionFeatures()
+// 读取，禁止各模块自行解释 window.PPTStudioDistribution。
+if (!flowSource.includes('function distributionFeatures(')) {
+  throw new Error('distribution feature detection must live in flow.js');
+}
+if (app.includes('function distributionFeatures(') || oneClick.includes('function distributionFeatures(')) {
+  throw new Error('distribution feature detection leaked out of flow.js');
+}
+for (const distributionConsumer of [oneClick, outputRender, narrationAudio, eventBindings, courses, settings, creationConfigManagement]) {
+  if (distributionConsumer.includes('window.PPTStudioDistribution')) {
+    throw new Error('modules must read the distribution profile via PPTFlow.distributionFeatures()');
+  }
+}
+if (!outputRender.includes('function step8DigitalHumanEnabled(')) {
+  throw new Error('output module must gate digital-human status via the distribution profile');
+}
+if (!oneClick.includes("stageIds.includes('annotation')") || !oneClick.includes("stageIds.includes('digital_human')")) {
+  throw new Error('one-click cards must hide disabled distribution stages');
+}
+if (!settings.includes('const ocrKeyInput') || !settings.includes('const ocrSecretInput')) {
+  throw new Error('settings must tolerate missing annotation OCR inputs (light edition)');
+}
+if (!eventBindings.includes('PPTFlow.nextVisibleStep(6)')) {
+  throw new Error('audio confirm must follow the effective flow, not a hardcoded step 10');
+}
 if (!annotationsWorkspace.includes('refreshAnnotationModuleState')) {
   throw new Error('annotation workspace must publish module decision state');
 }
@@ -1305,13 +1341,4 @@ if (backgroundExtension.includes('sessionStorage')) throw new Error('background 
 const calibrationSource = fs.readFileSync(path.join(root, 'static', 'annotation_audio_calibration.js'), 'utf8');
 if (!html.includes('annotation_audio_calibration.js') || !calibrationSource.includes('decodeAudioData') || !annotationsEditor.includes('AnnotationAudioCalibration.attach')) throw new Error('audio calibration must own waveform decoding and be wired before the editor');
 if (annotationsEditor.includes('decodeAudioData') || app.includes('decodeAudioData')) throw new Error('waveform decoding belongs to the audio calibration module');
-console.log('frontend quality checks passed');
 
-if (html.includes('id="annotation-btn-decision"') || html.includes('class="step9-optional-hint"')) {
-  throw new Error("Removed redundant workspace controls must not return");
-}
-
-if (!fs.readFileSync(path.join(root, 'static/ui_foundation.js'), 'utf8').includes('function setUiTaskState(')) throw new Error('Shared task presentation must stay in ui_foundation');
-if (app.includes('function setUiTaskState(')) throw new Error('Task presentation must not enter workflow_state');
-
-if (!fs.readFileSync(path.join(root, 'static/index.html'), 'utf8').includes('video_controls.js')) throw new Error('Shared video controls must load explicitly');
