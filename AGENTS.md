@@ -66,6 +66,18 @@ downstream-impact requirements still apply when the corresponding feature is
 implemented. Routine compatible fixes within user authorization do not require
 an extra approval step solely because a contract is being updated.
 
+## Research Reuse Policy
+
+Before relevant architecture or technology selection, consult
+`docs/research/README.md` and the applicable archived analysis. Research is
+non-normative: distinguish adopted design ideas, candidate dependencies,
+unverified claims, and completed experiments. Preserve original sources and
+record stable research/borrowing IDs, affected HPS rules, evidence, limitations,
+and verification plans. Append experiment results and decision reasons instead
+of silently replacing previous conclusions. Promote findings into production
+contracts through HPS-015 and HPS-017; do not treat a report as implemented
+capability or an automatic framework choice.
+
 ## Production Pipeline
 
 `storyboard_planning.py` owns pure Step 2 plan normalization, narration-to-

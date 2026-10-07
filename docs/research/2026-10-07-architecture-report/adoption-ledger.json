@@ -1,0 +1,290 @@
+{
+  "format_version": 1,
+  "research_id": "RES-20261007-01",
+  "review_date": "2026-10-07",
+  "contract_baseline": "0.3.0",
+  "normative": false,
+  "status": "document_review_completed_experiments_not_run",
+  "source_checks_path": "source-checks.md",
+  "items": [
+    {
+      "id": "BOR-01",
+      "title": "结构化语义场景",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第二部分 PPTist；第五部分第一阶段"
+      },
+      "decision": "adopt_pattern",
+      "priority": "P0",
+      "contract_rules": [
+        "HPS-001",
+        "HPS-005",
+        "HPS-010",
+        "HPS-013"
+      ],
+      "evidence_sources": [
+        "S07"
+      ],
+      "experiments": [
+        "EXP-01"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "Schema 外仍需引用、容量与视觉校验；不直接复制坐标数据模型。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-02",
+      "title": "公共插槽布局",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第二部分 Slidev"
+      },
+      "decision": "adopt_pattern",
+      "priority": "P0",
+      "contract_rules": [
+        "HPS-002",
+        "HPS-003",
+        "HPS-007"
+      ],
+      "evidence_sources": [
+        "S05"
+      ],
+      "experiments": [
+        "EXP-02"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "少量布局不保证任意内容都能排下；首个样板先左右布局。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-03",
+      "title": "占位式渐进显示",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第二部分 v-click；第五部分第三阶段"
+      },
+      "decision": "adopt_pattern",
+      "priority": "P0",
+      "contract_rules": [
+        "HPS-004",
+        "HPS-007",
+        "HPS-008"
+      ],
+      "evidence_sources": [
+        "S06"
+      ],
+      "experiments": [
+        "EXP-02",
+        "EXP-03"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "点击步序需映射音频；位图内部对象仍需独立素材或区域定义。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-04",
+      "title": "指定时间求值与渲染适配",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第一部分；第五部分第四阶段"
+      },
+      "decision": "adopt_pattern_engine_candidate",
+      "priority": "P0/P1",
+      "contract_rules": [
+        "HPS-008",
+        "HPS-012"
+      ],
+      "evidence_sources": [
+        "S01",
+        "S03",
+        "S04"
+      ],
+      "experiments": [
+        "EXP-03",
+        "EXP-05"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "Remotion/HyperFrames 未选定；不能用等值事件代替时间求值。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-05",
+      "title": "渲染就绪与环境快照",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第一部分；第五部分第四阶段"
+      },
+      "decision": "adopt_pattern",
+      "priority": "P0",
+      "contract_rules": [
+        "HPS-009",
+        "HPS-011",
+        "HPS-014"
+      ],
+      "evidence_sources": [
+        "S02",
+        "S04"
+      ],
+      "experiments": [
+        "EXP-05"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "跨环境像素一致未经验证，资源和字体需固定。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-06",
+      "title": "真实音频与讲稿锚点",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第三部分；第五部分第二阶段"
+      },
+      "decision": "adopt_pattern_provider_candidate",
+      "priority": "P1",
+      "contract_rules": [
+        "HPS-006",
+        "HPS-008",
+        "HPS-011"
+      ],
+      "evidence_sources": [
+        "S08",
+        "S09",
+        "S10",
+        "S11",
+        "S12"
+      ],
+      "experiments": [
+        "EXP-04"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "先复用原服务；对齐精度需测量，不能解决图像切分。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-07",
+      "title": "人工编辑结构化回写",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第二部分人工编辑描述"
+      },
+      "decision": "adopt_pattern_named_plugin_unverified",
+      "priority": "P1",
+      "contract_rules": [
+        "HPS-001",
+        "HPS-010",
+        "HPS-016"
+      ],
+      "evidence_sources": [],
+      "experiments": [
+        "EXP-06"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "slidev-addon-studio 具体能力未确认；保留人工覆盖与迁移诊断。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-08",
+      "title": "数字人独立生成与可选媒体轨道",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第四部分；第五部分第五阶段"
+      },
+      "decision": "adopt_pattern_deferred_integration",
+      "priority": "P2",
+      "contract_rules": [
+        "HPS-009",
+        "HPS-011",
+        "HPS-012"
+      ],
+      "evidence_sources": [
+        "S13",
+        "S14"
+      ],
+      "experiments": [
+        "EXP-07"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "先复用原服务；不假设透明输出、通用 CSS 抠像或本机实时性能。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-09",
+      "title": "视素驱动卡通角色",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第四部分 Rhubarb"
+      },
+      "decision": "candidate",
+      "priority": "P2",
+      "contract_rules": [
+        "HPS-003",
+        "HPS-008",
+        "HPS-012"
+      ],
+      "evidence_sources": [
+        "S15"
+      ],
+      "experiments": [
+        "EXP-07"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "中文识别与素材口型需验证，不等同于仿真人物。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    },
+    {
+      "id": "BOR-10",
+      "title": "资源打包与分片渲染",
+      "source_report": {
+        "path": "source-report.txt",
+        "section": "第五部分第四阶段"
+      },
+      "decision": "adopt_pattern_packaging_candidate",
+      "priority": "P1",
+      "contract_rules": [
+        "HPS-009",
+        "HPS-011",
+        "HPS-014"
+      ],
+      "evidence_sources": [
+        "S03",
+        "S04"
+      ],
+      "experiments": [
+        "EXP-05"
+      ],
+      "implementation_status": "not_implemented_by_this_research",
+      "experiment_status": "planned",
+      "result_paths": [],
+      "caveat": "内联、本地打包和并行按实测决定；不承诺十倍速。",
+      "analysis_path": "analysis-and-adoption.md",
+      "verification_path": "verification-and-experiments.md"
+    }
+  ]
+}
