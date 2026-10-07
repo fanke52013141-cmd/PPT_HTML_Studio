@@ -329,6 +329,24 @@ def mask_content_changed(project: Any) -> InvalidationReport:
     )
 
 
+def html_scene_changed(project: Any, slide_ids: Iterable[str]) -> InvalidationReport:
+    """A changed HTML scene document invalidates that slide's HTML preview
+    and output composition. Audio confirmation and narration inputs stay
+    reusable: theme or wording changes never retrigger TTS (AC09)."""
+    normalized_ids = tuple(dict.fromkeys(str(value).strip() for value in slide_ids if str(value).strip()))
+    removed = _existing_removals(project.run_dir, clear_audio=False, clear_props=True)
+    statuses = project.get_step_status()
+    mark_selected_stale(statuses, (8,))
+    project.set_step_status(statuses)
+    _record_content_impact(project, "html_scene_changed", normalized_ids)
+    return InvalidationReport(
+        reason="html_scene_changed",
+        affected_steps=(8,),
+        slide_ids=normalized_ids,
+        removed_paths=tuple(removed),
+    )
+
+
 def annotation_content_changed(project: Any, slide_ids: Iterable[str]) -> InvalidationReport:
     """Keep annotation inputs and existing exports; require a new MP4 composition."""
     normalized_ids = tuple(dict.fromkeys(str(value).strip() for value in slide_ids if str(value).strip()))

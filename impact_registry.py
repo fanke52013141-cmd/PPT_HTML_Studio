@@ -40,4 +40,7 @@ IMPACT_RULES: dict[str, ImpactRule] = {
     "annotation_changed": ImpactRule("annotation content", "slide", ("output",), "recompose"),
     "digital_human_changed": ImpactRule("digital human configuration or media", "project", ("output",), "recompose"),
     "digital_human_audio_changed": ImpactRule("presenter lip-sync audio", "slide", ("digital human media", "output"), "review"),
+    "html_scene_changed": ImpactRule("HTML scene definition", "slide", ("html preview", "html output"), "review"),
+    "html_theme_changed": ImpactRule("HTML theme", "project", ("html preview", "html output"), "rebuild"),
+    "html_asset_changed": ImpactRule("HTML independent asset", "slide", ("html preview", "html output"), "review"),
 }

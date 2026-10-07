@@ -654,6 +654,28 @@ except Exception as exc:
     raise
 
 try:
+    from html_visual_routes import (
+        router as html_visual_router,
+        HtmlVisualDependencies,
+        configure_html_visual_service,
+    )
+    from pipeline_lifecycle import project_artifact_lock
+
+    configure_html_visual_service(
+        HtmlVisualDependencies(
+            artifact_lock=project_artifact_lock,
+            write_json_atomic=write_json_atomic,
+        )
+    )
+    app.include_router(html_visual_router)
+except Exception as exc:
+    logger.exception(
+        "Explicit html-visual route registration failed: %s",
+        exc,
+    )
+    raise
+
+try:
     from visual_settings_routes import (
         router as visual_settings_router,
     )
