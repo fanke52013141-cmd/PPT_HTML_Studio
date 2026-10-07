@@ -416,9 +416,9 @@
         "stat-1": {
           "box": {
             "x": 58,
-            "y": 280,
+            "y": 300,
             "width": 480,
-            "height": 140
+            "height": 96
           },
           "maxLines": 2,
           "align": "center",
@@ -427,9 +427,9 @@
         "stat-2": {
           "box": {
             "x": 560,
-            "y": 280,
+            "y": 300,
             "width": 480,
-            "height": 140
+            "height": 96
           },
           "maxLines": 2,
           "align": "center",
@@ -438,9 +438,9 @@
         "stat-3": {
           "box": {
             "x": 1062,
-            "y": 280,
+            "y": 300,
             "width": 480,
-            "height": 140
+            "height": 96
           },
           "maxLines": 2,
           "align": "center",
@@ -449,7 +449,7 @@
         "caption": {
           "box": {
             "x": 58,
-            "y": 490,
+            "y": 440,
             "width": 1477,
             "height": 64
           },

@@ -118,7 +118,94 @@
             "x": 1438,
             "y": 391
           },
-          "radius": 21
+          "radius": 21,
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          }
+        },
+        "header": {
+          "kind": "header",
+          "box": {
+            "x": 58,
+            "y": 60,
+            "width": 1477,
+            "height": 77
+          }
+        },
+        "headline": {
+          "kind": "text",
+          "box": {
+            "x": 58,
+            "y": 173,
+            "width": 860,
+            "height": 48
+          }
+        },
+        "intro": {
+          "kind": "text",
+          "box": {
+            "x": 58,
+            "y": 232,
+            "width": 850,
+            "height": 52
+          }
+        },
+        "card-1": {
+          "kind": "card",
+          "box": {
+            "x": 58,
+            "y": 306,
+            "width": 850,
+            "height": 102
+          }
+        },
+        "card-2": {
+          "kind": "card",
+          "box": {
+            "x": 58,
+            "y": 423,
+            "width": 850,
+            "height": 102
+          }
+        },
+        "card-3": {
+          "kind": "card",
+          "box": {
+            "x": 58,
+            "y": 540,
+            "width": 850,
+            "height": 102
+          }
+        },
+        "figure": {
+          "kind": "figure",
+          "box": {
+            "x": 954,
+            "y": 218,
+            "width": 581,
+            "height": 438
+          }
+        },
+        "summary": {
+          "kind": "summary",
+          "box": {
+            "x": 58,
+            "y": 689,
+            "width": 1477,
+            "height": 91
+          }
+        },
+        "anchor-label": {
+          "kind": "text",
+          "box": {
+            "x": 1438,
+            "y": 349,
+            "width": 126,
+            "height": 84
+          }
         }
       }
     },
@@ -214,7 +301,85 @@
             "x": 270,
             "y": 585
           },
-          "radius": 21
+          "radius": 21,
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          }
+        },
+        "header": {
+          "kind": "header",
+          "box": {
+            "x": 58,
+            "y": 60,
+            "width": 1477,
+            "height": 77
+          }
+        },
+        "figure": {
+          "kind": "figure",
+          "box": {
+            "x": 280,
+            "y": 152,
+            "width": 700,
+            "height": 520
+          }
+        },
+        "arrow": {
+          "kind": "arrow",
+          "box": {
+            "x": 1050,
+            "y": 430,
+            "width": 150,
+            "height": 60
+          }
+        },
+        "badge-1": {
+          "kind": "badge",
+          "box": {
+            "x": 1220,
+            "y": 362,
+            "width": 160,
+            "height": 64
+          }
+        },
+        "badge-2": {
+          "kind": "badge",
+          "box": {
+            "x": 1220,
+            "y": 462,
+            "width": 160,
+            "height": 64
+          }
+        },
+        "result": {
+          "kind": "text",
+          "box": {
+            "x": 1210,
+            "y": 572,
+            "width": 330,
+            "height": 70
+          }
+        },
+        "anchor-label": {
+          "kind": "text",
+          "box": {
+            "x": 120,
+            "y": 540,
+            "width": 150,
+            "height": 90
+          }
+        },
+        "summary": {
+          "kind": "summary",
+          "box": {
+            "x": 58,
+            "y": 692,
+            "width": 1477,
+            "height": 100
+          }
         }
       }
     },
@@ -320,7 +485,94 @@
             "x": 1438,
             "y": 391
           },
-          "radius": 21
+          "radius": 21,
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          }
+        },
+        "header": {
+          "kind": "header",
+          "box": {
+            "x": 58,
+            "y": 60,
+            "width": 1477,
+            "height": 77
+          }
+        },
+        "headline": {
+          "kind": "text",
+          "box": {
+            "x": 58,
+            "y": 173,
+            "width": 860,
+            "height": 48
+          }
+        },
+        "intro": {
+          "kind": "text",
+          "box": {
+            "x": 58,
+            "y": 232,
+            "width": 850,
+            "height": 52
+          }
+        },
+        "card-1": {
+          "kind": "card",
+          "box": {
+            "x": 58,
+            "y": 306,
+            "width": 850,
+            "height": 102
+          }
+        },
+        "card-2": {
+          "kind": "card",
+          "box": {
+            "x": 58,
+            "y": 423,
+            "width": 850,
+            "height": 102
+          }
+        },
+        "card-3": {
+          "kind": "card",
+          "box": {
+            "x": 58,
+            "y": 540,
+            "width": 850,
+            "height": 102
+          }
+        },
+        "figure": {
+          "kind": "figure",
+          "box": {
+            "x": 954,
+            "y": 218,
+            "width": 581,
+            "height": 438
+          }
+        },
+        "summary": {
+          "kind": "summary",
+          "box": {
+            "x": 58,
+            "y": 689,
+            "width": 1477,
+            "height": 91
+          }
+        },
+        "anchor-label": {
+          "kind": "text",
+          "box": {
+            "x": 1438,
+            "y": 349,
+            "width": 126,
+            "height": 84
+          }
         }
       }
     },
@@ -343,17 +595,17 @@
         "stat-1": {
           "lines": 1,
           "width": 480,
-          "height": 140
+          "height": 96
         },
         "stat-2": {
           "lines": 1,
           "width": 480,
-          "height": 140
+          "height": 96
         },
         "stat-3": {
           "lines": 1,
           "width": 480,
-          "height": 140
+          "height": 96
         },
         "caption": {
           "lines": 1,
@@ -371,7 +623,62 @@
           "height": 52.99998527795226
         }
       },
-      "geometry": {}
+      "geometry": {
+        "header": {
+          "kind": "header",
+          "box": {
+            "x": 58,
+            "y": 60,
+            "width": 1477,
+            "height": 77
+          }
+        },
+        "stat-1": {
+          "kind": "text",
+          "box": {
+            "x": 58,
+            "y": 312,
+            "width": 480,
+            "height": 96
+          }
+        },
+        "stat-2": {
+          "kind": "text",
+          "box": {
+            "x": 560,
+            "y": 312,
+            "width": 480,
+            "height": 96
+          }
+        },
+        "stat-3": {
+          "kind": "text",
+          "box": {
+            "x": 1062,
+            "y": 312,
+            "width": 480,
+            "height": 96
+          }
+        },
+        "caption": {
+          "kind": "text",
+          "box": {
+            "x": 58,
+            "y": 452,
+            "width": 1477,
+            "height": 64
+          }
+        },
+        "summary": {
+          "kind": "summary",
+          "box": {
+            "x": 58,
+            "y": 672,
+            "width": 1477,
+            "height": 110
+          }
+        }
+      }
     }
   ]
 }
