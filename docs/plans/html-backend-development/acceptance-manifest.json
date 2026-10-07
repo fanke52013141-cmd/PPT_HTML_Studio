@@ -74,7 +74,7 @@
     "AC01_baseline": "passed",
     "AC02_public_style_separation": "passed (engineering)",
     "AC03_layout_capacity": "passed (engineering, 3 structures; real-course T pending C-routes)",
-    "AC04_visual_review": "pending_review — materials: html_engine/visual/evidence/*-final.png vs docs/styles/science-explainer/references/user-style-reference.png; user verdict required",
+    "AC04_visual_review": "agent self-review recorded (5/6 pass, 1 change_requested: data-relation page mid-band whitespace — layout-layer fix); user verdict still pending_review. Materials: html_engine/visual/evidence/*-final.png + ac04-agent-self-review.md vs docs/styles/science-explainer/references/user-style-reference.png",
     "AC05_time_runtime": "passed (engineering)",
     "AC06_effect_cache_prompts": "passed (cache miss→hit verified); model request-context live capture blocked-on-service",
     "AC07_storyboard_keyframes": "passed (beat→action maps + transitional objects + freeze records; live model run blocked-on-service)",
