@@ -1,0 +1,9 @@
+{
+  "course": "course.token",
+  "version": "0.1.0",
+  "visualStatus": "changes_requested",
+  "reviewer": "user",
+  "reason": "每页同一布局、同一结构；没有遵循设计图→明确HTML/资产分工→组合还原流程；不接受把简单模板填充当作课程视觉设计",
+  "technicalEvidence": "Existing runtime tests retained; do not imply visual acceptance",
+  "next": "Return to G1 design planning and G2 image-based visual exploration before further implementation"
+}
