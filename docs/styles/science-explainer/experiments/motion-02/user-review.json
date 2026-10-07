@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-07",
+  "reviewer": "user",
+  "source": "current conversation",
+  "quote": "我觉得这个实验还是 OK 的。",
+  "decision": "accepted_experiment_direction",
+  "scope": [
+    "motion-02 mixed image/code visual result",
+    "short object-process motion direction",
+    "continue engineering workflow definition"
+  ],
+  "notImplied": [
+    "asset source-edge and strict padding approval",
+    "production template approval",
+    "general renderer implemented",
+    "audio/digital-human/PPTX acceptance",
+    "all styles or contents verified"
+  ],
+  "reviewedDefinitionVersion": "0.3.0-experiment",
+  "engineeringChecks": "checks.json",
+  "remainingIssues": "validation-report.md"
+}

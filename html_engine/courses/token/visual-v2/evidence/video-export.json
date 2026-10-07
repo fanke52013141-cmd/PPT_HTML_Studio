@@ -1,0 +1,13 @@
+{
+  "file": "token-visual-v2-bb4d46db-1195-44d7-a497-0c68e1ba09a7.mp4",
+  "localOutputDirectory": "outputs/token-visual-v2",
+  "fps": 24,
+  "frames": 1896,
+  "durationSeconds": 79,
+  "width": 1280,
+  "height": 720,
+  "audio": false,
+  "sha256": "bed14da2535ceb8b9a5c5a456f2645422b62bb4a9c65fa02725e5def42b43a6d",
+  "decode": "passed",
+  "revision": 4
+}

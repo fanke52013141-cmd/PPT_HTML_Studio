@@ -1,0 +1,100 @@
+{
+  "checked_on": "2026-10-07",
+  "scope": "selected_primary_files_only",
+  "repositories": [
+    {
+      "repository": "lewislulu/html-ppt-skill",
+      "files": [
+        {
+          "path": "assets/base.css",
+          "sha256": "786791775484fbec5e4e74b3c3280ad8955a848251520008fb9c9d0d5669a9a4",
+          "url": "https://raw.githubusercontent.com/lewislulu/html-ppt-skill/fd1629067909ff55b36b905476de4e5f26062a1f/assets/base.css",
+          "status": "read"
+        },
+        {
+          "path": "assets/themes/swiss-grid.css",
+          "sha256": "b7118adf9e4f5180e90a4076746f5b0328c578ba248981e0a16cd9d195b0cbcc",
+          "url": "https://raw.githubusercontent.com/lewislulu/html-ppt-skill/fd1629067909ff55b36b905476de4e5f26062a1f/assets/themes/swiss-grid.css",
+          "status": "read"
+        },
+        {
+          "path": "references/authoring-guide.md",
+          "sha256": "14eb413f6d8575db8229e60c0876dd02f7b9c386fb6a7d58f552470b8652a12e",
+          "url": "https://raw.githubusercontent.com/lewislulu/html-ppt-skill/fd1629067909ff55b36b905476de4e5f26062a1f/references/authoring-guide.md",
+          "status": "read"
+        }
+      ],
+      "commit": "fd1629067909ff55b36b905476de4e5f26062a1f"
+    },
+    {
+      "repository": "op7418/guizang-ppt-skill",
+      "files": [
+        {
+          "path": "scripts/validate-swiss-deck.mjs",
+          "sha256": "86735de23bb91cc3b4d9bfc5d9f956b5b02bdc0f14c96da2010617b4e660d4d5",
+          "url": "https://raw.githubusercontent.com/op7418/guizang-ppt-skill/c91369c449d34755d320a8b81d0734000d99d1ab/scripts/validate-swiss-deck.mjs",
+          "status": "read"
+        },
+        {
+          "path": "scripts/check-presenter-runtime-sync.mjs",
+          "sha256": "53d14553b2853c835c99d55732972059b183bc68fccc5b7897691db78ee08d79",
+          "url": "https://raw.githubusercontent.com/op7418/guizang-ppt-skill/c91369c449d34755d320a8b81d0734000d99d1ab/scripts/check-presenter-runtime-sync.mjs",
+          "status": "read"
+        },
+        {
+          "path": "references/swiss-layout-lock.md",
+          "sha256": "5eeadd9648fade569e305d6928a4dfb93b841a4fb38eda249a5ad380c3abe217",
+          "url": "https://raw.githubusercontent.com/op7418/guizang-ppt-skill/c91369c449d34755d320a8b81d0734000d99d1ab/references/swiss-layout-lock.md",
+          "status": "read"
+        }
+      ],
+      "commit": "c91369c449d34755d320a8b81d0734000d99d1ab"
+    },
+    {
+      "repository": "hugohe3/ppt-master",
+      "files": [
+        {
+          "path": "docs/powerpoint-svg-mapping.md",
+          "sha256": "5cef41b64592f37bacca7d5482aee4986500935e8b9a81f3d1d11e6a6eedc134",
+          "url": "https://raw.githubusercontent.com/hugohe3/ppt-master/2d72da616cf9fa40d4dcaf59fd4c980ecf534b7d/docs/powerpoint-svg-mapping.md",
+          "status": "read"
+        },
+        {
+          "path": "workflows/routing.md",
+          "status": "unavailable",
+          "error": "HTTPError"
+        }
+      ],
+      "commit": "2d72da616cf9fa40d4dcaf59fd4c980ecf534b7d"
+    },
+    {
+      "repository": "zarazhangrui/frontend-slides",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "832994fe1dfcce2aa7ceca9a1b7b708eca94becef242713999855f4e946cf4d5",
+          "url": "https://raw.githubusercontent.com/zarazhangrui/frontend-slides/9906a34d640d2111f724544cbc50f7f130569ae1/SKILL.md",
+          "status": "read"
+        }
+      ],
+      "commit": "9906a34d640d2111f724544cbc50f7f130569ae1"
+    },
+    {
+      "repository": "presenton/presenton",
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "62d9e8a7476261eafc7215f465f3f808c5e09fb838a024b1d73c9bbbc260a792",
+          "url": "https://raw.githubusercontent.com/presenton/presenton/35bf44290f821323e003da854f78ffcb0e918167/README.md",
+          "status": "read"
+        }
+      ],
+      "commit": "35bf44290f821323e003da854f78ffcb0e918167"
+    }
+  ],
+  "notes": [
+    "Read-only retrieval. No external implementation code installed or committed.",
+    "Some GitHub tree API calls were rate-limited. Unavailable paths are not audited evidence.",
+    "Additional official documentation and papers are linked in source-checks.md; mutable links need version verification before implementation."
+  ]
+}

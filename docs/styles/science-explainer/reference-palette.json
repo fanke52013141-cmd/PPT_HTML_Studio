@@ -1,0 +1,74 @@
+{
+  "kind": "reference-color-labels-not-runtime-style",
+  "referenceId": "ref.science.user-board.001",
+  "selectionState": "pending_sample_design",
+  "colors": [
+    {
+      "label": "标注主色/浅灰",
+      "hex": "#E8E8E8",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.23
+    },
+    {
+      "label": "粉色",
+      "hex": "#EFC4C7",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.57
+    },
+    {
+      "label": "米色",
+      "hex": "#EBCFA8",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.5
+    },
+    {
+      "label": "黄色",
+      "hex": "#E7DE78",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.39
+    },
+    {
+      "label": "绿色",
+      "hex": "#B9D8B1",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.55
+    },
+    {
+      "label": "蓝色",
+      "hex": "#BECBE9",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.63
+    },
+    {
+      "label": "紫色",
+      "hex": "#C7B6E8",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.86
+    },
+    {
+      "label": "正文",
+      "hex": "#5F6B7A",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 5.43
+    },
+    {
+      "label": "次级文字",
+      "hex": "#9AA3AF",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 2.55
+    },
+    {
+      "label": "页面背景",
+      "hex": "#F7F6F3",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.08
+    },
+    {
+      "label": "卡片背景",
+      "hex": "#FFFFFF",
+      "source": "image_printed_label",
+      "contrastAgainstWhite": 1.0
+    }
+  ],
+  "note": "只记录输入色板和计算值；浅色优先作为背景/分区，正文颜色需按实际字号与背景验证，未创建正式风格 tokens。"
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "condensation",
+    "version": "0.1.0",
+    "path": "docs/styles/science-explainer/experiments/hybrid-01/condensation-alpha.png",
+    "sha256": "b654e4a0c6f599df07d42c7ef3b0a3dacd6de11c822272b2c00871ab6b1ea554",
+    "anchors": [
+      {
+        "id": "focus",
+        "x": 947,
+        "y": 600
+      }
+    ],
+    "source": "复用 hybrid-01 原资产；来源与条件性实验状态见该目录 README.md 和资产记录。"
+  },
+  {
+    "id": "evaporation",
+    "version": "0.1.0",
+    "path": "docs/styles/science-explainer/experiments/hybrid-01/evaporation-alpha.png",
+    "sha256": "5abb409bda12349a13b14cc1e67cf70941dbb5ff462b0d408964686792d6e17a",
+    "anchors": [
+      {
+        "id": "focus",
+        "x": 630,
+        "y": 700
+      }
+    ],
+    "source": "复用 hybrid-01 原资产；来源与条件性实验状态见该目录 README.md 和资产记录。"
+  }
+]

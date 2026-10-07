@@ -1,0 +1,261 @@
+{
+  "styleId": "style.science-soft",
+  "version": "0.1.0",
+  "label": "柔和彩色科普 · 试制版",
+  "definitionState": "draft",
+  "use": "product",
+  "tokens": {
+    "colors": {
+      "background": "#F7F6F3",
+      "surface": "#FFFFFF",
+      "ink": "#405574",
+      "muted": "#68768B",
+      "accent": "#D94870",
+      "highlight": "#FFF0F3"
+    },
+    "typography": {
+      "slide-title": {
+        "fontRef": {
+          "id": "font.host-yahei",
+          "version": "0.1.0"
+        },
+        "weight": 700,
+        "size": 54,
+        "lineHeight": 1.3,
+        "letterSpacing": 0,
+        "colorRole": "ink"
+      },
+      "concept-title": {
+        "fontRef": {
+          "id": "font.host-yahei",
+          "version": "0.1.0"
+        },
+        "weight": 700,
+        "size": 36,
+        "lineHeight": 1.3,
+        "letterSpacing": 0,
+        "colorRole": "ink"
+      },
+      "body": {
+        "fontRef": {
+          "id": "font.host-yahei",
+          "version": "0.1.0"
+        },
+        "weight": 400,
+        "size": 28,
+        "lineHeight": 1.6,
+        "letterSpacing": 0,
+        "colorRole": "ink"
+      },
+      "caption": {
+        "fontRef": {
+          "id": "font.host-yahei",
+          "version": "0.1.0"
+        },
+        "weight": 400,
+        "size": 20,
+        "lineHeight": 1.3,
+        "letterSpacing": 0,
+        "colorRole": "ink"
+      }
+    },
+    "spacing": {
+      "padding": 32,
+      "titleGap": 20,
+      "columnGap": 36,
+      "innerGap": 20
+    },
+    "stroke": {
+      "width": 3,
+      "radius": 28
+    },
+    "concept": {
+      "figureRatio": 0.42
+    },
+    "readability": {
+      "minTextSize": 20,
+      "maxBodyLines": 5,
+      "maxTitleLines": 2
+    },
+    "motion": {
+      "revealDurationMs": 400,
+      "highlightDurationMs": 200,
+      "drawDurationMs": 800,
+      "easing": "linear"
+    }
+  },
+  "fonts": [
+    {
+      "assetRef": {
+        "id": "font.host-yahei",
+        "version": "0.1.0"
+      },
+      "weight": 400
+    },
+    {
+      "assetRef": {
+        "id": "font.host-yahei",
+        "version": "0.1.0"
+      },
+      "weight": 700
+    }
+  ],
+  "support": {
+    "components": [
+      {
+        "id": "atom.text",
+        "version": "0.1.0"
+      },
+      {
+        "id": "atom.image",
+        "version": "0.1.0"
+      },
+      {
+        "id": "atom.vector",
+        "version": "0.1.0"
+      },
+      {
+        "id": "atom.group",
+        "version": "0.1.0"
+      },
+      {
+        "id": "component.concept",
+        "version": "0.1.0"
+      }
+    ],
+    "variants": {
+      "component.concept": [
+        "above",
+        "side",
+        "text-only"
+      ]
+    },
+    "layouts": [
+      {
+        "id": "layout.two-column",
+        "version": "0.1.0"
+      }
+    ],
+    "recipes": [
+      {
+        "id": "recipe.two-concept-contrast",
+        "version": "0.1.0"
+      }
+    ],
+    "actions": [
+      {
+        "id": "action.reveal",
+        "version": "0.1.0"
+      },
+      {
+        "id": "action.highlight",
+        "version": "0.1.0"
+      },
+      {
+        "id": "action.annotate",
+        "version": "0.1.0"
+      }
+    ]
+  },
+  "assetPolicy": {
+    "illustrationDescription": "柔和体积感科学示意，主体居中，独立透明SVG，文字标签由HTML表达，注明非实际比例",
+    "iconDescription": "简洁线性或轻填充，不承载未核验科学含义",
+    "paletteRoles": [
+      "surface",
+      "muted",
+      "accent"
+    ],
+    "background": "transparent",
+    "controlGranularity": "one-object-per-asset"
+  },
+  "assetRefs": [],
+  "defaults": [
+    {
+      "path": "concept.variant",
+      "value": "above"
+    },
+    {
+      "path": "layout.columnRatio",
+      "value": 0.5
+    }
+  ],
+  "overrideRules": {
+    "layout.columnRatio": {
+      "min": 0.4,
+      "max": 0.6
+    },
+    "layout.columnGap": {
+      "min": 32,
+      "max": 64
+    },
+    "layout.titleGap": {
+      "min": 16,
+      "max": 48
+    },
+    "concept.variant": {
+      "allowed": [
+        "above",
+        "side",
+        "text-only"
+      ]
+    },
+    "concept.figureRatio": {
+      "min": 0.3,
+      "max": 0.5
+    },
+    "text.align": {
+      "allowed": [
+        "start",
+        "center",
+        "end"
+      ]
+    },
+    "text.colorRole": {
+      "allowed": [
+        "ink",
+        "muted",
+        "accent"
+      ]
+    },
+    "stroke.width": {
+      "min": 2,
+      "max": 5
+    }
+  },
+  "references": [
+    {
+      "referenceId": "ref.science.initial",
+      "sceneRef": "samples/index.html",
+      "stage": "initial",
+      "reviewState": "pending"
+    },
+    {
+      "referenceId": "ref.science.first",
+      "sceneRef": "samples/index.html",
+      "stage": "intermediate",
+      "reviewState": "pending"
+    },
+    {
+      "referenceId": "ref.science.compare",
+      "sceneRef": "samples/index.html",
+      "stage": "intermediate",
+      "reviewState": "pending"
+    },
+    {
+      "referenceId": "ref.science.final",
+      "sceneRef": "samples/index.html",
+      "stage": "final",
+      "reviewState": "pending"
+    },
+    {
+      "referenceId": "ref.science.long",
+      "sceneRef": "samples/index.html",
+      "stage": "boundary",
+      "reviewState": "pending"
+    }
+  ],
+  "compositionRules": {
+    "forbiddenCombinations": [],
+    "fallbacks": []
+  }
+}

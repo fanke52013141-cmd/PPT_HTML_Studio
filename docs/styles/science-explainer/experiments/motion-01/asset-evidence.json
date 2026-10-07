@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-07",
+  "bitmap": {
+    "path": "../hybrid-01/condensation-alpha.png",
+    "sha256": "b654e4a0c6f599df07d42c7ef3b0a3dacd6de11c822272b2c00871ab6b1ea554",
+    "source": "selected generated PNG from hybrid-01; no new image model invocation",
+    "versionEvidence": "../hybrid-01/asset-evidence.json"
+  },
+  "vectors": "original gradient SVG droplet symbol reused by three small objects and one large object",
+  "fonts": "host Microsoft YaHei, actual font recorded in checks.json; not bundled",
+  "renderer": "SVG moving objects + CPU Canvas high-quality bitmap sampling + HTML screen labels",
+  "alpha": "inherited genuine RGBA; not reprocessed"
+}

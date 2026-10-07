@@ -1,0 +1,1375 @@
+{
+  "matrixVersion": "0.1.0",
+  "contractVersion": "0.5.0",
+  "caseMeaning": "代表性设计覆盖，不是运行通过；输出字段表达需求，实际支持须另评估",
+  "cases": [
+    {
+      "caseId": "COV-01",
+      "title": "有标题，两概念对比",
+      "needs": {
+        "C": [
+          "C-TERM"
+        ],
+        "R": [
+          "R-CONTRAST"
+        ],
+        "N": [
+          "N-CONTRAST"
+        ],
+        "E": [
+          "E-TEXT",
+          "E-CONCEPT",
+          "E-IMAGE"
+        ],
+        "L": [
+          "L-P01",
+          "L-SAFE"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-BINDING",
+          "T-REVEAL",
+          "T-HIGHLIGHT",
+          "T-ANNOTATE"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "p01_limited",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "P01 定义直接覆盖，运行待实现"
+    },
+    {
+      "caseId": "COV-02",
+      "title": "无标题，两概念对比",
+      "needs": {
+        "C": [
+          "C-TERM"
+        ],
+        "R": [
+          "R-CONTRAST"
+        ],
+        "N": [
+          "N-CONTRAST"
+        ],
+        "E": [
+          "E-CONCEPT",
+          "E-IMAGE"
+        ],
+        "L": [
+          "L-REGIONS",
+          "L-SPLIT"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-REVEAL"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "区域/配方定义缺口；不能删旧布局必填标题"
+    },
+    {
+      "caseId": "COV-03",
+      "title": "上标题、下方三点要点",
+      "needs": {
+        "C": [
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-PARALLEL"
+        ],
+        "N": [
+          "N-DIRECT"
+        ],
+        "E": [
+          "E-TEXT",
+          "E-LIST"
+        ],
+        "L": [
+          "L-REGIONS",
+          "L-STACK"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-REVEAL"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "列表子项与堆叠定义"
+    },
+    {
+      "caseId": "COV-04",
+      "title": "上图下文的科普解释",
+      "needs": {
+        "C": [
+          "C-TERM",
+          "C-MEDIA"
+        ],
+        "R": [
+          "R-MAPPING"
+        ],
+        "N": [
+          "N-DIRECT"
+        ],
+        "E": [
+          "E-CONCEPT",
+          "E-IMAGE"
+        ],
+        "L": [
+          "L-REGIONS",
+          "L-SPLIT"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-REVEAL",
+          "T-ANNOTATE"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "通用纵向区域/图文配方"
+    },
+    {
+      "caseId": "COV-05",
+      "title": "左文右图、侧标题",
+      "needs": {
+        "C": [
+          "C-TERM",
+          "C-MEDIA"
+        ],
+        "R": [
+          "R-MAPPING"
+        ],
+        "N": [
+          "N-DIRECT"
+        ],
+        "E": [
+          "E-TEXT",
+          "E-IMAGE"
+        ],
+        "L": [
+          "L-REGIONS",
+          "L-SPLIT"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-HIGHLIGHT"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "侧标题区域与配方"
+    },
+    {
+      "caseId": "COV-06",
+      "title": "左说明，右侧上流程下结论",
+      "needs": {
+        "C": [
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-SEQUENCE"
+        ],
+        "N": [
+          "N-PROCEDURE"
+        ],
+        "E": [
+          "E-TEXT",
+          "E-STEPS"
+        ],
+        "L": [
+          "L-SPLIT",
+          "L-NESTING",
+          "L-STACK"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-STEP"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "嵌套区域与步骤语义/时间"
+    },
+    {
+      "caseId": "COV-07",
+      "title": "单页总分结构",
+      "needs": {
+        "C": [
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-PARTWHOLE"
+        ],
+        "N": [
+          "N-TOTALPART"
+        ],
+        "E": [
+          "E-CONCEPT",
+          "E-LIST"
+        ],
+        "L": [
+          "L-REGIONS",
+          "L-STACK"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-REVEAL"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "阶段/部分关系/列表"
+    },
+    {
+      "caseId": "COV-08",
+      "title": "单页分总结构",
+      "needs": {
+        "C": [
+          "C-EVIDENCE",
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-ARGUMENT"
+        ],
+        "N": [
+          "N-PARTTOTAL"
+        ],
+        "E": [
+          "E-LIST",
+          "E-CONCEPT"
+        ],
+        "L": [
+          "L-STACK"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-REVEAL"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "分总阶段与证据映射"
+    },
+    {
+      "caseId": "COV-09",
+      "title": "多页总分总",
+      "needs": {
+        "C": [
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-PARTWHOLE"
+        ],
+        "N": [
+          "N-TOTALPARTTOTAL"
+        ],
+        "E": [
+          "E-CONCEPT",
+          "E-LIST"
+        ],
+        "L": [
+          "L-REGIONS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-BINDING",
+          "T-TRANSITION"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "跨页阶段身份与时间分配"
+    },
+    {
+      "caseId": "COV-10",
+      "title": "横向四步骤",
+      "needs": {
+        "C": [
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-SEQUENCE"
+        ],
+        "N": [
+          "N-PROCEDURE"
+        ],
+        "E": [
+          "E-STEPS"
+        ],
+        "L": [
+          "L-GRAPH"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-STEP",
+          "T-EDGE"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "步骤/边/排列及动态当前状态"
+    },
+    {
+      "caseId": "COV-11",
+      "title": "竖向操作流程",
+      "needs": {
+        "C": [
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-SEQUENCE"
+        ],
+        "N": [
+          "N-PROCEDURE"
+        ],
+        "E": [
+          "E-STEPS"
+        ],
+        "L": [
+          "L-GRAPH"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-STEP"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "同语义的竖向公共变体"
+    },
+    {
+      "caseId": "COV-12",
+      "title": "三选一决策分支",
+      "needs": {
+        "C": [
+          "C-QUESTION"
+        ],
+        "R": [
+          "R-BRANCH"
+        ],
+        "N": [
+          "N-QUESTIONANSWER"
+        ],
+        "E": [
+          "E-FLOW"
+        ],
+        "L": [
+          "L-GRAPH"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-STEP",
+          "T-EDGE"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "条件边、分支汇合与公开目标"
+    },
+    {
+      "caseId": "COV-13",
+      "title": "反馈循环",
+      "needs": {
+        "C": [
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-CYCLE"
+        ],
+        "N": [
+          "N-PROCEDURE"
+        ],
+        "E": [
+          "E-FLOW"
+        ],
+        "L": [
+          "L-GRAPH"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-EDGE"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "回路语义，不等于圆形装饰"
+    },
+    {
+      "caseId": "COV-14",
+      "title": "分类树",
+      "needs": {
+        "C": [
+          "C-TERM"
+        ],
+        "R": [
+          "R-HIERARCHY"
+        ],
+        "N": [
+          "N-TOTALPART"
+        ],
+        "E": [
+          "E-TREE"
+        ],
+        "L": [
+          "L-GRAPH"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-REVEAL"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "稳定父子身份与树排布"
+    },
+    {
+      "caseId": "COV-15",
+      "title": "多父关联网络",
+      "needs": {
+        "C": [
+          "C-TERM"
+        ],
+        "R": [
+          "R-NETWORK"
+        ],
+        "N": [
+          "N-ZOOM"
+        ],
+        "E": [
+          "E-NETWORK"
+        ],
+        "L": [
+          "L-GRAPH"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-EDGE",
+          "T-HIGHLIGHT"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "多父图与连线，不得强制树化"
+    },
+    {
+      "caseId": "COV-16",
+      "title": "机制的因果解释",
+      "needs": {
+        "C": [
+          "C-STATEMENT",
+          "C-EVIDENCE"
+        ],
+        "R": [
+          "R-CAUSE"
+        ],
+        "N": [
+          "N-PHENOMENON"
+        ],
+        "E": [
+          "E-FLOW",
+          "E-QUOTE"
+        ],
+        "L": [
+          "L-GRAPH",
+          "L-NESTING"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-EDGE"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "证据与因果边语义"
+    },
+    {
+      "caseId": "COV-17",
+      "title": "多方案多维对比",
+      "needs": {
+        "C": [
+          "C-TABLE"
+        ],
+        "R": [
+          "R-CONTRAST"
+        ],
+        "N": [
+          "N-CONTRAST"
+        ],
+        "E": [
+          "E-COMPARE",
+          "E-TABLE"
+        ],
+        "L": [
+          "L-REGIONS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-HIGHLIGHT"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "行列/对象维度对齐"
+    },
+    {
+      "caseId": "COV-18",
+      "title": "前后变化",
+      "needs": {
+        "C": [
+          "C-MEDIA",
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-EVOLUTION"
+        ],
+        "N": [
+          "N-CHRONOLOGY"
+        ],
+        "E": [
+          "E-BEFOREAFTER"
+        ],
+        "L": [
+          "L-SPLIT"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-REVEAL"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "状态对应身份，不仅两张独立图"
+    },
+    {
+      "caseId": "COV-19",
+      "title": "时间线与里程碑",
+      "needs": {
+        "C": [
+          "C-TEMPORAL"
+        ],
+        "R": [
+          "R-EVOLUTION"
+        ],
+        "N": [
+          "N-CHRONOLOGY"
+        ],
+        "E": [
+          "E-TIMELINE"
+        ],
+        "L": [
+          "L-AXIS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-STEP"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "事件区间与真实刻度"
+    },
+    {
+      "caseId": "COV-20",
+      "title": "数值指标与单位",
+      "needs": {
+        "C": [
+          "C-SCALAR"
+        ],
+        "R": [
+          "R-QUANTITY"
+        ],
+        "N": [
+          "N-DIRECT"
+        ],
+        "E": [
+          "E-METRIC"
+        ],
+        "L": [
+          "L-GRID"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-HIGHLIGHT"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "真实值单位及指标组件"
+    },
+    {
+      "caseId": "COV-21",
+      "title": "柱状图比较",
+      "needs": {
+        "C": [
+          "C-SERIES"
+        ],
+        "R": [
+          "R-QUANTITY"
+        ],
+        "N": [
+          "N-CONTRAST"
+        ],
+        "E": [
+          "E-CHART"
+        ],
+        "L": [
+          "L-AXIS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE",
+          "S-ENCODING"
+        ],
+        "T": [
+          "T-DATA"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "数据/轴/图例，不从定性文本伪造数值"
+    },
+    {
+      "caseId": "COV-22",
+      "title": "趋势与误差范围",
+      "needs": {
+        "C": [
+          "C-SERIES"
+        ],
+        "R": [
+          "R-DISTRIBUTION"
+        ],
+        "N": [
+          "N-CHRONOLOGY"
+        ],
+        "E": [
+          "E-CHART"
+        ],
+        "L": [
+          "L-AXIS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE",
+          "S-ENCODING"
+        ],
+        "T": [
+          "T-DATA"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "不确定性与数轴模型"
+    },
+    {
+      "caseId": "COV-23",
+      "title": "整体局部放大、器官标注",
+      "needs": {
+        "C": [
+          "C-SPATIAL",
+          "C-MEDIA"
+        ],
+        "R": [
+          "R-SPATIAL"
+        ],
+        "N": [
+          "N-ZOOM"
+        ],
+        "E": [
+          "E-ANNOTATED"
+        ],
+        "L": [
+          "L-ANCHORED",
+          "L-OVERLAY"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-CAMERA",
+          "T-ANNOTATE"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "锚点标签/局部视口与坐标链"
+    },
+    {
+      "caseId": "COV-24",
+      "title": "截图操作讲解",
+      "needs": {
+        "C": [
+          "C-MEDIA"
+        ],
+        "R": [
+          "R-SEQUENCE"
+        ],
+        "N": [
+          "N-PROCEDURE"
+        ],
+        "E": [
+          "E-ANNOTATED",
+          "E-IMAGE"
+        ],
+        "L": [
+          "L-ANCHORED"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-ANNOTATE",
+          "T-CAMERA"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "安全裁切/截图不可拉伸，聚焦动作候选"
+    },
+    {
+      "caseId": "COV-25",
+      "title": "问题停顿后揭晓",
+      "needs": {
+        "C": [
+          "C-QUESTION"
+        ],
+        "R": [
+          "R-MAPPING"
+        ],
+        "N": [
+          "N-RETRIEVAL"
+        ],
+        "E": [
+          "E-QA"
+        ],
+        "L": [
+          "L-STACK"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-REVEAL",
+          "T-INTERACTION"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "问题反馈状态；视频固定停顿"
+    },
+    {
+      "caseId": "COV-26",
+      "title": "公式与符号解释",
+      "needs": {
+        "C": [
+          "C-SYMBOLIC"
+        ],
+        "R": [
+          "R-MAPPING"
+        ],
+        "N": [
+          "N-DIRECT"
+        ],
+        "E": [
+          "E-FORMULA",
+          "E-ANNOTATED"
+        ],
+        "L": [
+          "L-SPLIT"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-HIGHLIGHT"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "公式结构、符号目标与输出"
+    },
+    {
+      "caseId": "COV-27",
+      "title": "代码执行逐行说明",
+      "needs": {
+        "C": [
+          "C-SYMBOLIC"
+        ],
+        "R": [
+          "R-SEQUENCE"
+        ],
+        "N": [
+          "N-PROCEDURE"
+        ],
+        "E": [
+          "E-CODE"
+        ],
+        "L": [
+          "L-REGIONS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-STEP",
+          "T-HIGHLIGHT"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "代码行身份/文本修改锚点"
+    },
+    {
+      "caseId": "COV-28",
+      "title": "视频中暂停讲解",
+      "needs": {
+        "C": [
+          "C-MEDIA"
+        ],
+        "R": [
+          "R-EVOLUTION"
+        ],
+        "N": [
+          "N-PROCEDURE"
+        ],
+        "E": [
+          "E-MEDIA"
+        ],
+        "L": [
+          "L-OVERLAY"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-BINDING",
+          "T-INTERACTION"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "媒体时钟/冻结帧/导出同步"
+    },
+    {
+      "caseId": "COV-29",
+      "title": "地理分布与地图",
+      "needs": {
+        "C": [
+          "C-SPATIAL",
+          "C-SCALAR"
+        ],
+        "R": [
+          "R-SPATIAL",
+          "R-QUANTITY"
+        ],
+        "N": [
+          "N-DIRECT"
+        ],
+        "E": [
+          "E-MAP"
+        ],
+        "L": [
+          "L-REGIONS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE",
+          "S-ENCODING"
+        ],
+        "T": [
+          "T-HIGHLIGHT"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "投影/地理来源/数据编码"
+    },
+    {
+      "caseId": "COV-30",
+      "title": "参数可调的科学模拟",
+      "needs": {
+        "C": [
+          "C-SCALAR",
+          "C-STATEMENT"
+        ],
+        "R": [
+          "R-CAUSE"
+        ],
+        "N": [
+          "N-CASEPRINCIPLE"
+        ],
+        "E": [
+          "E-SIMULATION"
+        ],
+        "L": [
+          "L-REGIONS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-INTERACTION",
+          "T-BINDING"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "状态/确定回放/模型含义与输出剧本"
+    },
+    {
+      "caseId": "COV-31",
+      "title": "竖屏科普＋字幕＋数字人",
+      "needs": {
+        "C": [
+          "C-TERM",
+          "C-MEDIA"
+        ],
+        "R": [
+          "R-MAPPING"
+        ],
+        "N": [
+          "N-DIRECT"
+        ],
+        "E": [
+          "E-CONCEPT",
+          "E-IMAGE"
+        ],
+        "L": [
+          "L-ASPECT",
+          "L-SAFE",
+          "L-REGIONS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-BINDING"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "竖屏重新排版与现有合成安全区"
+    },
+    {
+      "caseId": "COV-32",
+      "title": "密集表格含来源与脚注",
+      "needs": {
+        "C": [
+          "C-TABLE",
+          "C-SOURCE"
+        ],
+        "R": [
+          "R-QUANTITY"
+        ],
+        "N": [
+          "N-ARGUMENT"
+        ],
+        "E": [
+          "E-TABLE",
+          "E-TEXT"
+        ],
+        "L": [
+          "L-REGIONS"
+        ],
+        "S": [
+          "S-COLOR",
+          "S-TYPE",
+          "S-SPACING",
+          "S-COVERAGE",
+          "S-REFERENCE"
+        ],
+        "T": [
+          "T-HIGHLIGHT"
+        ],
+        "O": [
+          "O-PREVIEW",
+          "O-VIDEO",
+          "O-PPTIMAGE"
+        ]
+      },
+      "classificationResult": "classified",
+      "definitionCoverage": "requires_additional_definitions",
+      "implementationState": "not_implemented",
+      "verificationState": "not_verified",
+      "gap": "来源区域与表格容量；必要时拆页"
+    }
+  ]
+}

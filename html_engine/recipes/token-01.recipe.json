@@ -1,0 +1,32 @@
+{
+  "format": "hps.e2.recipe",
+  "version": "0.1.0",
+  "id": "scene.token-01",
+  "revision": 1,
+  "template": "recipe.hero-steps",
+  "variant": "sequential",
+  "title": "Token 是什么",
+  "subtitle": "文本先切分，再映射成编号与向量",
+  "source": "https://developers.openai.com/api/docs/concepts ; https://developers.openai.com/api/docs/guides/conversation-state ; https://developers.openai.com/api/reference/python/resources/responses/methods/create",
+  "heroAsset": "assets/knowledge-book-v2.png",
+  "steps": [
+    {
+      "label": "文本切分",
+      "detail": "分词器决定边界，不是按字或词硬切。",
+      "narration": "Token 是模型处理文本所用的基本单位。分词器先把文本编码为一串 token；边界由分词规则决定，并不等同于人类语言里的单词。",
+      "summary": "Token 是分词器定义的文本单元。"
+    },
+    {
+      "label": "映射编号",
+      "detail": "每个 Token 对应词表中的一个编号。",
+      "narration": "切分后，每个 token 都有词表中的编号。模型的输入是这些编号，而不是把整句话直接作为一个不可分的对象处理。",
+      "summary": "文本 → Token 编号。"
+    },
+    {
+      "label": "进入计算",
+      "detail": "编号经嵌入层映射为向量表示。",
+      "narration": "模型通过嵌入层把 token 编号映射为向量，再结合上下文进行计算。文本、编号与向量是不同层次，不能把 token 和向量视为同一个东西。",
+      "summary": "Token 编号 → 向量 → 模型计算。"
+    }
+  ]
+}

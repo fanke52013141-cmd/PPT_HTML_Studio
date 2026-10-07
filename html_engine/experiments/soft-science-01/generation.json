@@ -1,0 +1,20 @@
+{
+  "designGenerationCalls": 1,
+  "assetGenerationCalls": 0,
+  "runtimeImageSubjects": 1,
+  "design": "design.png",
+  "inputs": [
+    "../../../docs/styles/science-explainer/references/user-style-reference.png",
+    "input-effects.png",
+    "../../../docs/styles/science-explainer/experiments/hybrid-01/condensation-alpha.png"
+  ],
+  "designSha256": "69db72251a164a31d12f6a29a8fe05e9c145a6ea779da083c4e1180199fa214c",
+  "reusedAssetSha256": "b654e4a0c6f599df07d42c7ef3b0a3dacd6de11c822272b2c00871ab6b1ea554",
+  "designUse": "review reference only; never runtime background",
+  "limitations": [
+    "AI redrew glass details; runtime preserves original asset",
+    "design source text close to subtitle zone; runtime moves it into content area",
+    "font/scale/shadows differ; user visual approval pending"
+  ],
+  "revisionNote": "Revision 2 runtime alignment changes do not modify original generation inputs."
+}

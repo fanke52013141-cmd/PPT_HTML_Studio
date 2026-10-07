@@ -1,0 +1,364 @@
+{
+  "indexFormatVersion": 1,
+  "contractVersion": "0.4.0",
+  "definitionVersion": "0.1.0",
+  "date": "2026-10-07",
+  "runtimeRegistry": false,
+  "notes": [
+    "Documentation index only; partial verification means document and fixture consistency, not rendered behavior."
+  ],
+  "definitions": [
+    {
+      "definitionId": "DEF-SCENE",
+      "typeId": "scene.document",
+      "version": "0.1.0",
+      "path": "01-scene.md",
+      "ruleIds": [
+        "HPS-001",
+        "HPS-006",
+        "HPS-010",
+        "HPS-011",
+        "HPS-014",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-TEXT",
+      "typeId": "atom.text",
+      "version": "0.1.0",
+      "path": "02-atoms.md",
+      "ruleIds": [
+        "HPS-001",
+        "HPS-002",
+        "HPS-004",
+        "HPS-007",
+        "HPS-009",
+        "HPS-012",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-IMAGE",
+      "typeId": "atom.image",
+      "version": "0.1.0",
+      "path": "02-atoms.md",
+      "ruleIds": [
+        "HPS-001",
+        "HPS-002",
+        "HPS-004",
+        "HPS-007",
+        "HPS-009",
+        "HPS-012",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-VECTOR",
+      "typeId": "atom.vector",
+      "version": "0.1.0",
+      "path": "02-atoms.md",
+      "ruleIds": [
+        "HPS-001",
+        "HPS-002",
+        "HPS-004",
+        "HPS-007",
+        "HPS-009",
+        "HPS-012",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-GROUP",
+      "typeId": "atom.group",
+      "version": "0.1.0",
+      "path": "02-atoms.md",
+      "ruleIds": [
+        "HPS-001",
+        "HPS-002",
+        "HPS-004",
+        "HPS-007",
+        "HPS-009",
+        "HPS-012",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-CONCEPT",
+      "typeId": "component.concept",
+      "version": "0.1.0",
+      "path": "03-concept.md",
+      "ruleIds": [
+        "HPS-001",
+        "HPS-002",
+        "HPS-004",
+        "HPS-005",
+        "HPS-007",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-LAYOUT",
+      "typeId": "layout.two-column",
+      "version": "0.1.0",
+      "path": "04-layout-recipe.md",
+      "ruleIds": [
+        "HPS-002",
+        "HPS-003",
+        "HPS-005",
+        "HPS-007",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-RECIPE",
+      "typeId": "recipe.two-concept-contrast",
+      "version": "0.1.0",
+      "path": "04-layout-recipe.md",
+      "ruleIds": [
+        "HPS-002",
+        "HPS-003",
+        "HPS-005",
+        "HPS-007",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-STYLE",
+      "typeId": "style.pack",
+      "version": "0.1.0",
+      "path": "05-style-resolution.md",
+      "ruleIds": [
+        "HPS-001",
+        "HPS-003",
+        "HPS-004",
+        "HPS-005",
+        "HPS-009",
+        "HPS-013",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-PARAMETERS",
+      "typeId": "parameters.resolve",
+      "version": "0.1.0",
+      "path": "05-style-resolution.md",
+      "ruleIds": [
+        "HPS-001",
+        "HPS-003",
+        "HPS-004",
+        "HPS-005",
+        "HPS-009",
+        "HPS-013",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-ASSET",
+      "typeId": "asset.version",
+      "version": "0.1.0",
+      "path": "06-assets.md",
+      "ruleIds": [
+        "HPS-003",
+        "HPS-007",
+        "HPS-009",
+        "HPS-011",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-TARGET",
+      "typeId": "target.resolve",
+      "version": "0.1.0",
+      "path": "07-target-geometry.md",
+      "ruleIds": [
+        "HPS-004",
+        "HPS-006",
+        "HPS-007",
+        "HPS-009",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-TIMELINE",
+      "typeId": "timeline.resolve",
+      "version": "0.1.0",
+      "path": "08-timeline-actions.md",
+      "ruleIds": [
+        "HPS-004",
+        "HPS-008",
+        "HPS-009",
+        "HPS-011",
+        "HPS-012",
+        "HPS-014",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-REVEAL",
+      "typeId": "action.reveal",
+      "version": "0.1.0",
+      "path": "08-timeline-actions.md",
+      "ruleIds": [
+        "HPS-004",
+        "HPS-008",
+        "HPS-009",
+        "HPS-011",
+        "HPS-012",
+        "HPS-014",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-HIGHLIGHT",
+      "typeId": "action.highlight",
+      "version": "0.1.0",
+      "path": "08-timeline-actions.md",
+      "ruleIds": [
+        "HPS-004",
+        "HPS-008",
+        "HPS-009",
+        "HPS-011",
+        "HPS-012",
+        "HPS-014",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-ANNOTATE",
+      "typeId": "action.annotate",
+      "version": "0.1.0",
+      "path": "08-timeline-actions.md",
+      "ruleIds": [
+        "HPS-004",
+        "HPS-008",
+        "HPS-009",
+        "HPS-011",
+        "HPS-012",
+        "HPS-014",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-READINESS",
+      "typeId": "readiness.report",
+      "version": "0.1.0",
+      "path": "09-readiness-diagnostics.md",
+      "ruleIds": [
+        "HPS-005",
+        "HPS-007",
+        "HPS-009",
+        "HPS-013",
+        "HPS-017",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-EDIT",
+      "typeId": "edit.proposal",
+      "version": "0.1.0",
+      "path": "10-edit-output.md",
+      "ruleIds": [
+        "HPS-006",
+        "HPS-010",
+        "HPS-011",
+        "HPS-012",
+        "HPS-014",
+        "HPS-015",
+        "HPS-016",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    },
+    {
+      "definitionId": "DEF-OUTPUT",
+      "typeId": "output.intent",
+      "version": "0.1.0",
+      "path": "10-edit-output.md",
+      "ruleIds": [
+        "HPS-006",
+        "HPS-010",
+        "HPS-011",
+        "HPS-012",
+        "HPS-014",
+        "HPS-015",
+        "HPS-016",
+        "HPS-018"
+      ],
+      "definitionState": "specified",
+      "implementationState": "not_implemented",
+      "verificationState": "partial",
+      "evidenceRef": "../../../plans/p01-definition-completion.md"
+    }
+  ]
+}

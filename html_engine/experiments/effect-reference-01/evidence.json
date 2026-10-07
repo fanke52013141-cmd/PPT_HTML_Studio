@@ -1,0 +1,20 @@
+{
+  "tool": "image_gen.imagegen",
+  "model": "not exposed",
+  "seed": "not exposed",
+  "results": [
+    {
+      "file": "atlas.png",
+      "sha256": "020315b273cda74911e7d8d9530f2e71692ca2da9048ba573ce05a627a0e9123"
+    },
+    {
+      "file": "A-text-only.png",
+      "sha256": "b3dd5a38cb7cb54ccec93431f5fe3d9d5bdf9be390f9991c3dd8e9a822230ec9"
+    },
+    {
+      "file": "B-image-and-text.png",
+      "sha256": "22bd53ac4611e5fc282ed4cc5a34a9dd6b658741f6360402c60afe526efe5584"
+    }
+  ],
+  "approval": "exploratory; both generated designs have deviations"
+}

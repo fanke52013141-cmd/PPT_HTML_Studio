@@ -1,0 +1,66 @@
+{
+  "encoding": "cl100k_base",
+  "libraryVersion": "0.13.0",
+  "model": null,
+  "examples": [
+    {
+      "text": "Hello world!",
+      "ids": [
+        9906,
+        1917,
+        0
+      ],
+      "count": 3,
+      "tokenBytesHex": [
+        "48656c6c6f",
+        "20776f726c64",
+        "21"
+      ],
+      "roundTrip": true
+    },
+    {
+      "text": "人工智能很有趣",
+      "ids": [
+        17792,
+        49792,
+        45114,
+        118,
+        27327,
+        17599,
+        230,
+        19361,
+        50266,
+        96
+      ],
+      "count": 10,
+      "tokenBytesHex": [
+        "e4baba",
+        "e5b7a5",
+        "e699",
+        "ba",
+        "e883bd",
+        "e5be",
+        "88",
+        "e69c89",
+        "e8b6",
+        "a3"
+      ],
+      "roundTrip": true
+    },
+    {
+      "text": "unhappiness",
+      "ids": [
+        359,
+        71,
+        67391
+      ],
+      "count": 3,
+      "tokenBytesHex": [
+        "756e",
+        "68",
+        "617070696e657373"
+      ],
+      "roundTrip": true
+    }
+  ]
+}

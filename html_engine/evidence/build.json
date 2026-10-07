@@ -1,0 +1,115 @@
+{
+  "engineVersion": "0.1.0",
+  "schemaSha256": "2cb6ef3d5443d647ff9ce0fa424175bc902e4b138feb6bd64024c1ff0c54f09c",
+  "sceneCount": 10,
+  "assets": [
+    {
+      "path": "assets/plane.png",
+      "hash": "906b8006be7d18ff1d7f964c0194b6343f976c01ffe337cd6af95690653a260b",
+      "sizeBytes": 114288,
+      "intrinsic": {
+        "width": 627,
+        "height": 627
+      },
+      "alphaBounds": {
+        "x": 47,
+        "y": 69,
+        "width": 572,
+        "height": 558
+      }
+    },
+    {
+      "path": "assets/cloud-large.png",
+      "hash": "3f979a534686e3d36cf8cce15f6cc8a10758836120dce209a1aeec20cd57cc73",
+      "sizeBytes": 162696,
+      "intrinsic": {
+        "width": 627,
+        "height": 627
+      },
+      "alphaBounds": {
+        "x": 7,
+        "y": 19,
+        "width": 582,
+        "height": 605
+      }
+    },
+    {
+      "path": "assets/cloud-small.png",
+      "hash": "0b34d266a0b81eb652c99ccf1f37fc37ff5a2469fe56bffcc195977228b00e89",
+      "sizeBytes": 108142,
+      "intrinsic": {
+        "width": 627,
+        "height": 627
+      },
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 627,
+        "height": 573
+      }
+    },
+    {
+      "path": "assets/evaporation-v1.png",
+      "hash": "5abb409bda12349a13b14cc1e67cf70941dbb5ff462b0d408964686792d6e17a",
+      "sizeBytes": 928825,
+      "intrinsic": {
+        "width": 1254,
+        "height": 1254
+      },
+      "alphaBounds": {
+        "x": 57,
+        "y": 23,
+        "width": 1141,
+        "height": 1184
+      }
+    },
+    {
+      "path": "assets/condensation-v1.png",
+      "hash": "b654e4a0c6f599df07d42c7ef3b0a3dacd6de11c822272b2c00871ab6b1ea554",
+      "sizeBytes": 1478799,
+      "intrinsic": {
+        "width": 1254,
+        "height": 1254
+      },
+      "alphaBounds": {
+        "x": 0,
+        "y": 39,
+        "width": 1192,
+        "height": 1215
+      }
+    },
+    {
+      "path": "assets/cloud-small-v2.png",
+      "hash": "0c4880b12e2f40b837774d3eb925786be3f8406d7abae4f890a1276d6644c934",
+      "sizeBytes": 519529,
+      "intrinsic": {
+        "width": 1254,
+        "height": 1254
+      },
+      "alphaBounds": {
+        "x": 97,
+        "y": 212,
+        "width": 1131,
+        "height": 1000
+      }
+    },
+    {
+      "path": "assets/knowledge-book-v2.png",
+      "hash": "334e828a93cf2ec5f3246b572cb0505116a2e1b53c2e0a71ea0a988827fb8ef7",
+      "sizeBytes": 1302833,
+      "intrinsic": {
+        "width": 1536,
+        "height": 1024
+      },
+      "alphaBounds": {
+        "x": 65,
+        "y": 77,
+        "width": 1373,
+        "height": 947
+      }
+    }
+  ],
+  "validator": "Ajv 8.20.0",
+  "bundler": "esbuild 0.28.1",
+  "imageAudit": "pngjs 7.0.0"
+}

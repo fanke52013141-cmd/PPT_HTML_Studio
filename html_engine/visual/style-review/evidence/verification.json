@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-08",
+  "status": "technical-checks-passed; user-visual-review-pending",
+  "newImageGenerations": 0,
+  "scenes": [
+    {
+      "id": "condensation",
+      "codeIconCount": 3,
+      "imageSubjects": 1
+    },
+    {
+      "id": "evaporation",
+      "codeIconCount": 3,
+      "imageSubjects": 1
+    }
+  ],
+  "checks": [
+    "two content substitutions",
+    "actual reference loaded",
+    "seek pixel repeatability",
+    "asset anchor follows entry and viewport scale",
+    "fixed subtitle zone with 20/32/44 font",
+    "play pause and resume",
+    "no page errors"
+  ]
+}

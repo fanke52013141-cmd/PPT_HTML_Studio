@@ -1,0 +1,74 @@
+[
+  {
+    "file": "assets/knowledge-book-v1.png",
+    "sha256": "492fdcd44803cb88a2393df8857001ca5da5e1d28d4a0b0843766511141763f1",
+    "intrinsic": {
+      "width": 1536,
+      "height": 1024
+    },
+    "alphaNonzero": {
+      "x": 57,
+      "y": 21,
+      "width": 1459,
+      "height": 907,
+      "opaqueFraction": 0.42096900939941406
+    },
+    "alpha16": {
+      "x": 109,
+      "y": 195,
+      "width": 1332,
+      "height": 651,
+      "opaqueFraction": 0.4126993815104167
+    },
+    "marginRatio": {
+      "left": 0.07096354166666667,
+      "top": 0.1904296875,
+      "right": 0.061848958333333336,
+      "bottom": 0.173828125
+    },
+    "edgeTouches": false,
+    "reviewStatus": "conditional-experiment",
+    "anchor": {
+      "id": "frame-center",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "limitations": "Metrics do not establish clean contour, correct science or aesthetic approval"
+  },
+  {
+    "file": "assets/knowledge-book-v2.png",
+    "sha256": "334e828a93cf2ec5f3246b572cb0505116a2e1b53c2e0a71ea0a988827fb8ef7",
+    "intrinsic": {
+      "width": 1536,
+      "height": 1024
+    },
+    "alphaNonzero": {
+      "x": 65,
+      "y": 77,
+      "width": 1373,
+      "height": 947,
+      "opaqueFraction": 0.340030034383138
+    },
+    "alpha16": {
+      "x": 169,
+      "y": 229,
+      "width": 1195,
+      "height": 583,
+      "opaqueFraction": 0.3347880045572917
+    },
+    "marginRatio": {
+      "left": 0.11002604166666667,
+      "top": 0.2236328125,
+      "right": 0.11197916666666667,
+      "bottom": 0.20703125
+    },
+    "edgeTouches": true,
+    "reviewStatus": "conditional-experiment",
+    "anchor": {
+      "id": "frame-center",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "limitations": "Metrics do not establish clean contour, correct science or aesthetic approval"
+  }
+]

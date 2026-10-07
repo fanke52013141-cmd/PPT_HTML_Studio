@@ -1,0 +1,20 @@
+{
+  "calls": [
+    {
+      "kind": "builtin-imagegen-generate",
+      "transparent_background": true,
+      "output": "assets/knowledge-book-v1.png",
+      "prompt": "Create one standalone premium science-education illustration asset: an open book viewed from gentle three-quarter angle, floating without any ground plane. Warm ivory blank paper pages, soft pale coral cover, subtle lavender and slate-blue shadows, refined sculpted 3D ceramic/paper material, calm soft studio light. Elegant broad readable silhouette. True transparent background. Center entire book in canvas, roughly 65 percent width, at least 12 percent empty transparent margin on every side. No letters, numbers, glyphs, diagrams, sparkle particles, dots, arrows, background, checkerboard or shadow outside book. This is a reusable general knowledge hero asset for HTML courses; all labels and exact learning diagrams will be drawn separately in HTML. Deliver clean antialiased contour with no isolated white fringe or scattered pixels.",
+      "selection": "rejected production margin; retained reference"
+    },
+    {
+      "kind": "builtin-imagegen-edit",
+      "transparent_background": true,
+      "input": "assets/knowledge-book-v1.png",
+      "output": "assets/knowledge-book-v2.png",
+      "prompt": "Edit this open book as a strict clean sprite asset. Keep the beautiful blank ivory pages and pale coral 3D cover intact. REMOVE ALL glowing mist, aura, bloom, shadow haze and pixels outside the book silhouette. True transparent background everywhere outside the actual book, with smooth clean antialiasing only immediately on contour. No ambient halo at all. Important composition change: reduce the ENTIRE book to about 65% of canvas width and center it, leaving at least 15% completely transparent margin on left and right and top and bottom. Nothing near canvas edges. Transparent PNG isolated book, no text or additional objects. All labels will be added by HTML later.",
+      "selection": "conditional-experiment; still has halo and low alpha boundary noise"
+    }
+  ],
+  "productionApproved": false
+}

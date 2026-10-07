@@ -1,0 +1,72 @@
+{
+  "id": "science-explanation-card-study",
+  "version": "0.1.0",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "contentBottom": 800,
+    "subtitleHeight": 100
+  },
+  "header": {
+    "x": 58,
+    "y": 48,
+    "width": 1477,
+    "height": 77
+  },
+  "headline": {
+    "x": 58,
+    "y": 161,
+    "width": 860,
+    "height": 48
+  },
+  "intro": {
+    "x": 58,
+    "y": 220,
+    "width": 850,
+    "height": 52
+  },
+  "rows": [
+    {
+      "x": 58,
+      "y": 294,
+      "width": 850,
+      "height": 102
+    },
+    {
+      "x": 58,
+      "y": 411,
+      "width": 850,
+      "height": 102
+    },
+    {
+      "x": 58,
+      "y": 528,
+      "width": 850,
+      "height": 102
+    }
+  ],
+  "figure": {
+    "x": 954,
+    "y": 206,
+    "width": 581,
+    "height": 438
+  },
+  "subject": {
+    "x": 1015,
+    "y": 156,
+    "width": 490,
+    "height": 490
+  },
+  "anchorLabel": {
+    "x": 1438,
+    "y": 349,
+    "width": 126,
+    "height": 84
+  },
+  "summary": {
+    "x": 58,
+    "y": 677,
+    "width": 1477,
+    "height": 91
+  }
+}

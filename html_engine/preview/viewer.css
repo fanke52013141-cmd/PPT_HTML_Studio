@@ -1,0 +1,131 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #e9edf4;
+  color: #42566f;
+  font-family: "Microsoft YaHei", sans-serif;
+}
+main {
+  max-width: 1640px;
+  margin: 24px auto;
+  padding: 0 20px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+header p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: #7b8ba3;
+}
+button,
+select,
+.file-label {
+  font: inherit;
+  border: 1px solid #d3dae7;
+  border-radius: 9px;
+  padding: 8px 12px;
+  background: white;
+  color: #42566f;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #f7f8fc;
+  box-shadow: 0 14px 40px #42566f14;
+}
+.transport,
+.tools,
+#keyframes {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.transport {
+  margin-top: 16px;
+  font-size: 14px;
+}
+#scrub {
+  flex: 1;
+  min-width: 120px;
+  accent-color: #ff8498;
+}
+#clock {
+  font-variant-numeric: tabular-nums;
+  min-width: 130px;
+}
+#status {
+  min-height: 22px;
+  white-space: pre-wrap;
+  font-size: 13px;
+}
+#status[data-error="true"] {
+  color: #a12e48;
+}
+details {
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #f8faff;
+  margin-top: 20px;
+}
+summary {
+  cursor: pointer;
+}
+details p,
+.note {
+  font-size: 13px;
+  color: #718299;
+}
+textarea {
+  width: 100%;
+  height: 300px;
+  font:
+    13px/1.5 Consolas,
+    monospace;
+  border: 1px solid #d3dae7;
+  border-radius: 8px;
+  padding: 12px;
+  resize: vertical;
+}
+.tools {
+  margin-top: 10px;
+  font-size: 13px;
+}
+.file-label input {
+  display: none;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  max-height: 420px;
+  overflow: auto;
+}
+@media (max-width: 700px) {
+  main {
+    margin: 12px auto;
+    padding: 0 10px;
+  }
+  header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .transport {
+    font-size: 12px;
+  }
+}

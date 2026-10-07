@@ -1,0 +1,16 @@
+{
+  "referenceId": "ref.science.user-board.001",
+  "kind": "user-provided-visual-reference",
+  "file": "references/user-style-reference.png",
+  "sha256": "0ae52db934f5543acc8fba0372910356f717ba3da308ab88c3fed06b35b63542",
+  "width": 1672,
+  "height": 941,
+  "receivedDate": "2026-10-07",
+  "scope": "演示内容风格参考，不替换应用工作台 UI 规范",
+  "status": "direction_reference_not_product_acceptance",
+  "notes": [
+    "文字与数值为参考图内容，未作为科学事实核验或课程素材采用",
+    "原图保留，不从拼图裁切素材充当组件资产",
+    "图中色值按标签转录，非像素测量或最终配色决定"
+  ]
+}

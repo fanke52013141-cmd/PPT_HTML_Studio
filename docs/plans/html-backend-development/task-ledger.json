@@ -1,0 +1,372 @@
+{
+  "version": "1.0.0",
+  "date": "2026-10-08",
+  "note": "Plan only. Acceptance.md remains authoritative; visual approval is separate.",
+  "tasks": [
+    {
+      "id": "A00",
+      "title": "源码、环境与基线",
+      "depends_on": [],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC01"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "A01",
+      "title": "契约与版本",
+      "depends_on": [
+        "A00"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC02"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "A02",
+      "title": "科普风格进入公共组件",
+      "depends_on": [
+        "A01"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC02",
+        "AC04"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "A03",
+      "title": "受约束模板与效果图缓存",
+      "depends_on": [
+        "A02"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC03",
+        "AC06"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "A04",
+      "title": "共享离线播放器接口",
+      "depends_on": [
+        "A02"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC05"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "B01",
+      "title": "后端类型入库与项目配置",
+      "depends_on": [
+        "A01"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC08"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "B02",
+      "title": "HTML 存储、版本与失效",
+      "depends_on": [
+        "B01",
+        "A04"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC09",
+        "AC18"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "B03",
+      "title": "按后端分派原流程",
+      "depends_on": [
+        "B01",
+        "B02"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC08",
+        "AC20"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "C01",
+      "title": "语义分镜适配",
+      "depends_on": [
+        "B02",
+        "A03"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC07"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "C02",
+      "title": "设计参考与关键帧冻结",
+      "depends_on": [
+        "C01",
+        "A03"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC06",
+        "AC07"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "C03",
+      "title": "独立资产生产与质量",
+      "depends_on": [
+        "C02",
+        "B02"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC10"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "C04",
+      "title": "编译、静态审阅与诊断",
+      "depends_on": [
+        "C03",
+        "A04",
+        "B03"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC04",
+        "AC10"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "D01",
+      "title": "对象和动作编辑",
+      "depends_on": [
+        "C04"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC11"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "D02",
+      "title": "已有音频时间轴绑定与字幕",
+      "depends_on": [
+        "D01",
+        "B02"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC12"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "D03",
+      "title": "HTML 精确批注",
+      "depends_on": [
+        "D01",
+        "D02"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC13"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "E01",
+      "title": "视频导出后端",
+      "depends_on": [
+        "A04",
+        "D02",
+        "D03"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC14"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "E02",
+      "title": "数字人继续沿用",
+      "depends_on": [
+        "E01"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC15"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "E03",
+      "title": "快照与分步 PPTX",
+      "depends_on": [
+        "E01"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC16"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "E04",
+      "title": "有限可编辑 PPTX（后续）",
+      "depends_on": [
+        "E03"
+      ],
+      "scope": "optional_followup",
+      "status": "planned",
+      "acceptance": [
+        "AC16"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "F01",
+      "title": "Agent 与 Web 等价操作",
+      "depends_on": [
+        "C04",
+        "D03",
+        "E03"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC17"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "F02",
+      "title": "持久化任务、恢复与局部重试",
+      "depends_on": [
+        "B02",
+        "C04",
+        "E01"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC18"
+      ],
+      "evidence": [],
+      "commit": null
+    },
+    {
+      "id": "F03",
+      "title": "总验收与交付",
+      "depends_on": [
+        "A00",
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "B01",
+        "B02",
+        "B03",
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "D01",
+        "D02",
+        "D03",
+        "E01",
+        "E02",
+        "E03",
+        "F01",
+        "F02"
+      ],
+      "scope": "initial_release",
+      "status": "planned",
+      "acceptance": [
+        "AC01",
+        "AC02",
+        "AC03",
+        "AC04",
+        "AC05",
+        "AC06",
+        "AC07",
+        "AC08",
+        "AC09",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15",
+        "AC16",
+        "AC17",
+        "AC18",
+        "AC19",
+        "AC20"
+      ],
+      "evidence": [],
+      "commit": null
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "format": "hps.e2.recipe",
+  "version": "0.1.0",
+  "id": "scene.e2-cloud",
+  "revision": 1,
+  "template": "recipe.open-process",
+  "variant": "drift",
+  "title": "一朵云的旅程",
+  "subtitle": "同一对象绑定路径，资产可以独立替换",
+  "mainAsset": "assets/cloud-small-v2.png",
+  "source": "运动复用演示，不作为气象物理模型",
+  "narration": [
+    {
+      "text": "云朵进入画面。",
+      "screenText": "云朵进入画面。"
+    },
+    {
+      "text": "沿预设轨迹移动。",
+      "screenText": "沿预设轨迹移动。"
+    },
+    {
+      "text": "移除过程轨迹，保留终态。",
+      "screenText": "移除过程轨迹，保留终态。"
+    }
+  ]
+}

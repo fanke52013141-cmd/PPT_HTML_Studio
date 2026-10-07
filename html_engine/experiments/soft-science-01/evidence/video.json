@@ -1,0 +1,19 @@
+{
+  "file": "soft-science-cc4e5ec4-f8b1-4657-be77-c546bfb9265f.mp4",
+  "directory": "outputs/soft-science-01",
+  "sceneRevision": 2,
+  "durationSeconds": 18,
+  "fps": 24,
+  "frames": 432,
+  "width": 1280,
+  "height": 720,
+  "audio": false,
+  "subtitleZone": {
+    "top": 800,
+    "height": 100,
+    "logicalCanvas": "1600x900"
+  },
+  "subtitleFont": 32,
+  "sha256": "1d906c5012e3140cb42f9c44623df8efa1eff0bbc359cd0d3f36865a81605b3b",
+  "decode": "passed"
+}

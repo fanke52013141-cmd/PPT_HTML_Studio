@@ -1,0 +1,9 @@
+{
+  "kind": "builtin-imagegen-edit",
+  "transparent_background": true,
+  "input": "assets/cloud-small.png",
+  "output": "assets/cloud-small-v2.png",
+  "prompt": "Edit this isolated cloud asset for a polished educational HTML animation asset library. Keep its soft sculpted 3D puffy cloud identity, warm ivory lobes, coral blush on right and lavender-blue shadows. Rebuild clean smooth antialiased silhouette: REMOVE all white jagged artifacts, isolated pixels, cut edges and background remnants. Deliver exactly one cloud with true transparent background, no shadow plane, no text, no lines, no checkerboard. Composition crucial: entire cloud centered occupying about 65 percent of canvas width and 45 percent height, at least 15 percent transparent margin on all four sides. Nothing touching canvas boundaries. Match calm premium science illustration aesthetic. This is an asset only; title labels and motion trail are drawn separately in HTML.",
+  "review": "improved margin; residual fringe and low alpha noise; conditional-experiment",
+  "reusedCourseAssetsOrigin": "docs/styles/science-explainer/experiments/hybrid-01/asset-evidence.json"
+}

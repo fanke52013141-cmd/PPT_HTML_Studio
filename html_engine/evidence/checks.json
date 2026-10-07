@@ -1,0 +1,1498 @@
+{
+  "date": "2026-10-07",
+  "scope": "E1 standalone prototype",
+  "unit": [
+    {
+      "name": "Both inputs compile without modifying source",
+      "passed": true
+    },
+    {
+      "name": "Analytical Bezier midpoint and exact final state",
+      "passed": true
+    },
+    {
+      "name": "Time evaluation independent of access order and fractions",
+      "passed": true
+    },
+    {
+      "name": "Second input changes resource, path and timing without renderer edits",
+      "passed": true
+    },
+    {
+      "name": "Zero-duration action takes final value at its start",
+      "passed": true
+    },
+    {
+      "name": "Adjacent opacity tracks keep then replace state",
+      "passed": true
+    },
+    {
+      "name": "Reordering source arrays preserves state by stable ID",
+      "passed": true
+    },
+    {
+      "name": "Unknown document version",
+      "passed": true
+    },
+    {
+      "name": "Unknown root field",
+      "passed": true
+    },
+    {
+      "name": "Unknown node capability",
+      "passed": true
+    },
+    {
+      "name": "Unknown style CSS is rejected",
+      "passed": true
+    },
+    {
+      "name": "Duplicate object identity",
+      "passed": true
+    },
+    {
+      "name": "Missing image reference",
+      "passed": true
+    },
+    {
+      "name": "Missing anchor",
+      "passed": true
+    },
+    {
+      "name": "Normalized resource path prevents traversal",
+      "passed": true
+    },
+    {
+      "name": "Opacity overlap",
+      "passed": true
+    },
+    {
+      "name": "Tangent move and rotation collide on shared channel",
+      "passed": true
+    },
+    {
+      "name": "Discontinuous motion path",
+      "passed": true
+    },
+    {
+      "name": "Discontinuous opacity",
+      "passed": true
+    },
+    {
+      "name": "Out of range action",
+      "passed": true
+    },
+    {
+      "name": "Narration overlap",
+      "passed": true
+    },
+    {
+      "name": "Missing final keyframe",
+      "passed": true
+    },
+    {
+      "name": "Text layout outside reading safe area",
+      "passed": true
+    },
+    {
+      "name": "Wrong target type",
+      "passed": true
+    },
+    {
+      "name": "Nonfinite input is rejected, not JSON-normalized away",
+      "passed": true
+    },
+    {
+      "name": "Asset bounds are actual resource coordinates",
+      "passed": true
+    },
+    {
+      "name": "Resource pixel budget prevents oversized decode sets",
+      "passed": true
+    },
+    {
+      "name": "Canvas layer budget prevents unbounded raster allocations",
+      "passed": true
+    },
+    {
+      "name": "Ring stroke must fit declared geometry",
+      "passed": true
+    }
+  ],
+  "browser": {
+    "version": "155.0.8059.12",
+    "frames": [
+      {
+        "index": 0,
+        "frames": [
+          {
+            "id": "K0",
+            "tMs": 0,
+            "hash": "586f769ae5079ee75d74ba0217d01636cb1bf32afbca95b70bffdf5e03079aa7",
+            "state": {
+              "timeMs": 0,
+              "beatId": "beat.enter",
+              "nodes": {
+                "cloud.back": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1110,
+                    "y": 430
+                  },
+                  "rotationDeg": 0
+                },
+                "destination": {
+                  "opacity": 0
+                },
+                "trail": {
+                  "opacity": 0,
+                  "progress": 0
+                },
+                "main.object": {
+                  "opacity": 0,
+                  "position": {
+                    "x": 280,
+                    "y": 570
+                  },
+                  "rotationDeg": -22
+                },
+                "cloud.front": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 720,
+                    "y": 545
+                  },
+                  "rotationDeg": 0
+                },
+                "page.caption": {
+                  "opacity": 1,
+                  "text": "纸飞机进入画面。"
+                },
+                "page.subtitle": {
+                  "opacity": 1,
+                  "text": "一张资产板，组合出一个完整过程"
+                },
+                "page.title": {
+                  "opacity": 1,
+                  "text": "让画面动起来"
+                }
+              }
+            },
+            "geometry": {
+              "target": {
+                "nodeId": "main.object",
+                "part": "self"
+              },
+              "coordinateSpace": "canvas",
+              "opacity": 0,
+              "localRect": {
+                "x": 0,
+                "y": 0,
+                "width": 380,
+                "height": 380
+              },
+              "localToCanvas": [
+                0.9271838545667874,
+                -0.374606593415912,
+                0.374606593415912,
+                0.9271838545667874,
+                32.65981488328711,
+                465.0103203813336
+              ],
+              "polygons": [
+                [
+                  {
+                    "x": 32.65981488328711,
+                    "y": 465.0103203813336
+                  },
+                  {
+                    "x": 384.9896796186663,
+                    "y": 322.659814883287
+                  },
+                  {
+                    "x": 527.3401851167129,
+                    "y": 674.9896796186663
+                  },
+                  {
+                    "x": 175.01032038133368,
+                    "y": 817.3401851167127
+                  }
+                ]
+              ],
+              "rects": [
+                {
+                  "x": 32.65981488328711,
+                  "y": 322.659814883287,
+                  "width": 494.6803702334257,
+                  "height": 494.6803702334257
+                }
+              ],
+              "resourceRef": {
+                "id": "asset.plane",
+                "version": "0.1.0"
+              },
+              "anchor": {
+                "x": 280,
+                "y": 570
+              },
+              "visibleContent": {
+                "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+                "polygons": [
+                  [
+                    {
+                      "x": 74.73587313197616,
+                      "y": 493.1128513356127
+                    },
+                    {
+                      "x": 396.1596093817958,
+                      "y": 363.24923228476314
+                    },
+                    {
+                      "x": 522.844748246086,
+                      "y": 676.8059540109858
+                    },
+                    {
+                      "x": 201.42101199626643,
+                      "y": 806.6695730618353
+                    }
+                  ]
+                ],
+                "rects": [
+                  {
+                    "x": 74.73587313197616,
+                    "y": 363.24923228476314,
+                    "width": 448.1088751141099,
+                    "height": 443.42034077707217
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "K1",
+            "tMs": 4600,
+            "hash": "66fe69c3e751df6ce28476d253ebaaeac79d188290bf0cda395b56db3c7f4d0b",
+            "state": {
+              "timeMs": 4600,
+              "beatId": "beat.fly",
+              "nodes": {
+                "cloud.back": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1110,
+                    "y": 430
+                  },
+                  "rotationDeg": 0
+                },
+                "destination": {
+                  "opacity": 0
+                },
+                "trail": {
+                  "opacity": 1,
+                  "progress": 0.5
+                },
+                "main.object": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 748.75,
+                    "y": 466.875
+                  },
+                  "rotationDeg": 10.395504272085363
+                },
+                "cloud.front": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 720,
+                    "y": 545
+                  },
+                  "rotationDeg": 0
+                },
+                "page.caption": {
+                  "opacity": 1,
+                  "text": "它沿曲线飞过云朵，轨迹提示随后淡出。"
+                },
+                "page.subtitle": {
+                  "opacity": 1,
+                  "text": "一张资产板，组合出一个完整过程"
+                },
+                "page.title": {
+                  "opacity": 1,
+                  "text": "让画面动起来"
+                }
+              }
+            },
+            "geometry": {
+              "target": {
+                "nodeId": "main.object",
+                "part": "self"
+              },
+              "coordinateSpace": "canvas",
+              "opacity": 1,
+              "localRect": {
+                "x": 0,
+                "y": 0,
+                "width": 380,
+                "height": 380
+              },
+              "localToCanvas": [
+                0.9835856322662001,
+                0.18044196850926694,
+                -0.18044196850926694,
+                0.9835856322662001,
+                596.1527038861826,
+                245.70975585266123
+              ],
+              "polygons": [
+                [
+                  {
+                    "x": 596.1527038861826,
+                    "y": 245.70975585266123
+                  },
+                  {
+                    "x": 969.9152441473386,
+                    "y": 314.2777038861827
+                  },
+                  {
+                    "x": 901.3472961138173,
+                    "y": 688.0402441473387
+                  },
+                  {
+                    "x": 527.5847558526611,
+                    "y": 619.4722961138173
+                  }
+                ]
+              ],
+              "rects": [
+                {
+                  "x": 527.5847558526611,
+                  "y": 245.70975585266123,
+                  "width": 442.3304882946775,
+                  "height": 442.3304882946775
+                }
+              ],
+              "resourceRef": {
+                "id": "asset.plane",
+                "version": "0.1.0"
+              },
+              "anchor": {
+                "x": 748.75,
+                "y": 466.875
+              },
+              "visibleContent": {
+                "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+                "polygons": [
+                  [
+                    {
+                      "x": 616.624236546408,
+                      "y": 291.9813807898148
+                    },
+                    {
+                      "x": 957.6005890653576,
+                      "y": 354.534596539694
+                    },
+                    {
+                      "x": 896.5783960785873,
+                      "y": 687.1653739969908
+                    },
+                    {
+                      "x": 555.6020435596378,
+                      "y": 624.6121582471116
+                    }
+                  ]
+                ],
+                "rects": [
+                  {
+                    "x": 555.6020435596378,
+                    "y": 291.9813807898148,
+                    "width": 401.9985455057198,
+                    "height": 395.18399320717594
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "K2",
+            "tMs": 6500,
+            "hash": "22155894321ea4d349f80524be9cfa7c719db666e96d674c8ff63df0a02dc1e8",
+            "state": {
+              "timeMs": 6500,
+              "beatId": "beat.fly",
+              "nodes": {
+                "cloud.back": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1110,
+                    "y": 430
+                  },
+                  "rotationDeg": 0
+                },
+                "destination": {
+                  "opacity": 0.216
+                },
+                "trail": {
+                  "opacity": 1,
+                  "progress": 0.9114907407407408
+                },
+                "main.object": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1180.8763247078177,
+                    "y": 478.7748138151753
+                  },
+                  "rotationDeg": -19.11997838280734
+                },
+                "cloud.front": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 720,
+                    "y": 545
+                  },
+                  "rotationDeg": 0
+                },
+                "page.caption": {
+                  "opacity": 1,
+                  "text": "它沿曲线飞过云朵，轨迹提示随后淡出。"
+                },
+                "page.subtitle": {
+                  "opacity": 1,
+                  "text": "一张资产板，组合出一个完整过程"
+                },
+                "page.title": {
+                  "opacity": 1,
+                  "text": "让画面动起来"
+                }
+              }
+            },
+            "geometry": {
+              "target": {
+                "nodeId": "main.object",
+                "part": "self"
+              },
+              "coordinateSpace": "canvas",
+              "opacity": 1,
+              "localRect": {
+                "x": 0,
+                "y": 0,
+                "width": 380,
+                "height": 380
+              },
+              "localToCanvas": [
+                0.9448347575769023,
+                -0.3275473719549531,
+                0.3275473719549531,
+                0.9448347575769023,
+                939.1237200967652,
+                361.49021054700495
+              ],
+              "polygons": [
+                [
+                  {
+                    "x": 939.1237200967652,
+                    "y": 361.49021054700495
+                  },
+                  {
+                    "x": 1298.160927975988,
+                    "y": 237.02220920412276
+                  },
+                  {
+                    "x": 1422.6289293188702,
+                    "y": 596.0594170833456
+                  },
+                  {
+                    "x": 1063.5917214396472,
+                    "y": 720.5274184262278
+                  }
+                ]
+              ],
+              "rects": [
+                {
+                  "x": 939.1237200967652,
+                  "y": 237.02220920412276,
+                  "width": 483.505209222105,
+                  "height": 483.505209222105
+                }
+              ],
+              "resourceRef": {
+                "id": "asset.plane",
+                "version": "0.1.0"
+              },
+              "anchor": {
+                "x": 1180.8763247078177,
+                "y": 478.7748138151753
+              },
+              "visibleContent": {
+                "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+                "polygons": [
+                  [
+                    {
+                      "x": 979.7346305640416,
+                      "y": 391.67134496574647
+                    },
+                    {
+                      "x": 1307.2773465240343,
+                      "y": 278.121589354696
+                    },
+                    {
+                      "x": 1418.047912312437,
+                      "y": 597.6475255534302
+                    },
+                    {
+                      "x": 1090.505196352444,
+                      "y": 711.1972811644807
+                    }
+                  ]
+                ],
+                "rects": [
+                  {
+                    "x": 979.7346305640416,
+                    "y": 278.121589354696,
+                    "width": 438.3132817483953,
+                    "height": 433.0756918097847
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "K3",
+            "tMs": 10000,
+            "hash": "75d5514010bce0acc0ad5c3a2bd792c58fe324176b3c51533a5f9218d61558ba",
+            "state": {
+              "timeMs": 10000,
+              "beatId": "beat.hold",
+              "nodes": {
+                "cloud.back": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1110,
+                    "y": 430
+                  },
+                  "rotationDeg": 0
+                },
+                "destination": {
+                  "opacity": 1
+                },
+                "trail": {
+                  "opacity": 0,
+                  "progress": 1
+                },
+                "main.object": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1270,
+                    "y": 435
+                  },
+                  "rotationDeg": -22
+                },
+                "cloud.front": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 720,
+                    "y": 545
+                  },
+                  "rotationDeg": 0
+                },
+                "page.caption": {
+                  "opacity": 1,
+                  "text": "最后，飞机停在终点。"
+                },
+                "page.subtitle": {
+                  "opacity": 1,
+                  "text": "一张资产板，组合出一个完整过程"
+                },
+                "page.title": {
+                  "opacity": 1,
+                  "text": "让画面动起来"
+                }
+              }
+            },
+            "geometry": {
+              "target": {
+                "nodeId": "main.object",
+                "part": "self"
+              },
+              "coordinateSpace": "canvas",
+              "opacity": 1,
+              "localRect": {
+                "x": 0,
+                "y": 0,
+                "width": 380,
+                "height": 380
+              },
+              "localToCanvas": [
+                0.9271838545667874,
+                -0.374606593415912,
+                0.374606593415912,
+                0.9271838545667874,
+                1022.6598148832873,
+                330.0103203813337
+              ],
+              "polygons": [
+                [
+                  {
+                    "x": 1022.6598148832873,
+                    "y": 330.0103203813337
+                  },
+                  {
+                    "x": 1374.9896796186665,
+                    "y": 187.65981488328714
+                  },
+                  {
+                    "x": 1517.340185116713,
+                    "y": 539.9896796186663
+                  },
+                  {
+                    "x": 1165.0103203813337,
+                    "y": 682.340185116713
+                  }
+                ]
+              ],
+              "rects": [
+                {
+                  "x": 1022.6598148832873,
+                  "y": 187.65981488328714,
+                  "width": 494.6803702334257,
+                  "height": 494.68037023342583
+                }
+              ],
+              "resourceRef": {
+                "id": "asset.plane",
+                "version": "0.1.0"
+              },
+              "anchor": {
+                "x": 1270,
+                "y": 435
+              },
+              "visibleContent": {
+                "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+                "polygons": [
+                  [
+                    {
+                      "x": 1064.7358731319764,
+                      "y": 358.1128513356128
+                    },
+                    {
+                      "x": 1386.159609381796,
+                      "y": 228.24923228476328
+                    },
+                    {
+                      "x": 1512.8447482460863,
+                      "y": 541.8059540109859
+                    },
+                    {
+                      "x": 1191.4210119962665,
+                      "y": 671.6695730618354
+                    }
+                  ]
+                ],
+                "rects": [
+                  {
+                    "x": 1064.7358731319764,
+                    "y": 228.24923228476328,
+                    "width": 448.1088751141099,
+                    "height": 443.42034077707217
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "repeated": [
+          {
+            "tMs": 10000,
+            "same": true
+          },
+          {
+            "tMs": 6500,
+            "same": true
+          },
+          {
+            "tMs": 4600,
+            "same": true
+          },
+          {
+            "tMs": 0,
+            "same": true
+          }
+        ]
+      },
+      {
+        "index": 1,
+        "frames": [
+          {
+            "id": "K0",
+            "tMs": 0,
+            "hash": "91a0141828c23c8d6e89ade5d5c4058ac51d7a2581c59878043b3f88eeaacd99",
+            "state": {
+              "timeMs": 0,
+              "beatId": "beat.enter",
+              "nodes": {
+                "cloud.back": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1110,
+                    "y": 430
+                  },
+                  "rotationDeg": 0
+                },
+                "destination": {
+                  "opacity": 0
+                },
+                "trail": {
+                  "opacity": 0,
+                  "progress": 0
+                },
+                "main.object": {
+                  "opacity": 0,
+                  "position": {
+                    "x": 300,
+                    "y": 470
+                  },
+                  "rotationDeg": 0
+                },
+                "cloud.front": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 660,
+                    "y": 595
+                  },
+                  "rotationDeg": 0
+                },
+                "page.caption": {
+                  "opacity": 1,
+                  "text": "同一张云朵资产，进入画面。"
+                },
+                "page.subtitle": {
+                  "opacity": 1,
+                  "text": "更换资产、轨迹与节奏，使用同一套渲染代码"
+                },
+                "page.title": {
+                  "opacity": 1,
+                  "text": "换个对象，继续演示"
+                }
+              }
+            },
+            "geometry": {
+              "target": {
+                "nodeId": "main.object",
+                "part": "self"
+              },
+              "coordinateSpace": "canvas",
+              "opacity": 0,
+              "localRect": {
+                "x": 0,
+                "y": 0,
+                "width": 380,
+                "height": 380
+              },
+              "localToCanvas": [
+                1,
+                0,
+                0,
+                1,
+                110,
+                280
+              ],
+              "polygons": [
+                [
+                  {
+                    "x": 110,
+                    "y": 280
+                  },
+                  {
+                    "x": 490,
+                    "y": 280
+                  },
+                  {
+                    "x": 490,
+                    "y": 660
+                  },
+                  {
+                    "x": 110,
+                    "y": 660
+                  }
+                ]
+              ],
+              "rects": [
+                {
+                  "x": 110,
+                  "y": 280,
+                  "width": 380,
+                  "height": 380
+                }
+              ],
+              "resourceRef": {
+                "id": "asset.cloud-small",
+                "version": "0.1.0"
+              },
+              "anchor": {
+                "x": 300,
+                "y": 470
+              },
+              "visibleContent": {
+                "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+                "polygons": [
+                  [
+                    {
+                      "x": 110,
+                      "y": 280
+                    },
+                    {
+                      "x": 490,
+                      "y": 280
+                    },
+                    {
+                      "x": 490,
+                      "y": 627.2727272727273
+                    },
+                    {
+                      "x": 110,
+                      "y": 627.2727272727273
+                    }
+                  ]
+                ],
+                "rects": [
+                  {
+                    "x": 110,
+                    "y": 280,
+                    "width": 380,
+                    "height": 347.27272727272725
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "K1",
+            "tMs": 3600,
+            "hash": "d845b605924eafae06de9555a3802a05e47cf68b4058ec29a3944e1a308dbfd7",
+            "state": {
+              "timeMs": 3600,
+              "beatId": "beat.fly",
+              "nodes": {
+                "cloud.back": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1110,
+                    "y": 430
+                  },
+                  "rotationDeg": 0
+                },
+                "destination": {
+                  "opacity": 0
+                },
+                "trail": {
+                  "opacity": 1,
+                  "progress": 0.5
+                },
+                "main.object": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 711.25,
+                    "y": 461.25
+                  },
+                  "rotationDeg": 6
+                },
+                "cloud.front": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 660,
+                    "y": 595
+                  },
+                  "rotationDeg": 0
+                },
+                "page.caption": {
+                  "opacity": 1,
+                  "text": "换一条轨迹，也能保持运动与提示同步。"
+                },
+                "page.subtitle": {
+                  "opacity": 1,
+                  "text": "更换资产、轨迹与节奏，使用同一套渲染代码"
+                },
+                "page.title": {
+                  "opacity": 1,
+                  "text": "换个对象，继续演示"
+                }
+              }
+            },
+            "geometry": {
+              "target": {
+                "nodeId": "main.object",
+                "part": "self"
+              },
+              "coordinateSpace": "canvas",
+              "opacity": 1,
+              "localRect": {
+                "x": 0,
+                "y": 0,
+                "width": 380,
+                "height": 380
+              },
+              "localToCanvas": [
+                0.9945218953682733,
+                0.10452846326765346,
+                -0.10452846326765346,
+                0.9945218953682733,
+                542.1512479008823,
+                252.43043185917392
+              ],
+              "polygons": [
+                [
+                  {
+                    "x": 542.1512479008823,
+                    "y": 252.43043185917392
+                  },
+                  {
+                    "x": 920.069568140826,
+                    "y": 292.15124790088225
+                  },
+                  {
+                    "x": 880.3487520991177,
+                    "y": 670.069568140826
+                  },
+                  {
+                    "x": 502.43043185917395,
+                    "y": 630.3487520991177
+                  }
+                ]
+              ],
+              "rects": [
+                {
+                  "x": 502.43043185917395,
+                  "y": 252.43043185917392,
+                  "width": 417.6391362816521,
+                  "height": 417.6391362816521
+                }
+              ],
+              "resourceRef": {
+                "id": "asset.cloud-small",
+                "version": "0.1.0"
+              },
+              "anchor": {
+                "x": 711.25,
+                "y": 461.25
+              },
+              "visibleContent": {
+                "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+                "polygons": [
+                  [
+                    {
+                      "x": 542.1512479008823,
+                      "y": 252.43043185917392
+                    },
+                    {
+                      "x": 920.069568140826,
+                      "y": 292.15124790088225
+                    },
+                    {
+                      "x": 883.769683624241,
+                      "y": 637.5215788378645
+                    },
+                    {
+                      "x": 505.85136338429714,
+                      "y": 597.8007627961562
+                    }
+                  ]
+                ],
+                "rects": [
+                  {
+                    "x": 505.85136338429714,
+                    "y": 252.43043185917392,
+                    "width": 414.2182047565289,
+                    "height": 385.0911469786905
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "K2",
+            "tMs": 5800,
+            "hash": "35ac8c0219148b9f669448e7782d643877b27cadaeeb49dc124a5f3ad0379117",
+            "state": {
+              "timeMs": 5800,
+              "beatId": "beat.fly",
+              "nodes": {
+                "cloud.back": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1110,
+                    "y": 430
+                  },
+                  "rotationDeg": 0
+                },
+                "destination": {
+                  "opacity": 0.68359375
+                },
+                "trail": {
+                  "opacity": 0.9259259259259259,
+                  "progress": 0.9949363425925927
+                },
+                "main.object": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1244.3785957277037,
+                    "y": 516.6978621446208
+                  },
+                  "rotationDeg": 11.939236111111112
+                },
+                "cloud.front": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 660,
+                    "y": 595
+                  },
+                  "rotationDeg": 0
+                },
+                "page.caption": {
+                  "opacity": 1,
+                  "text": "换一条轨迹，也能保持运动与提示同步。"
+                },
+                "page.subtitle": {
+                  "opacity": 1,
+                  "text": "更换资产、轨迹与节奏，使用同一套渲染代码"
+                },
+                "page.title": {
+                  "opacity": 1,
+                  "text": "换个对象，继续演示"
+                }
+              }
+            },
+            "geometry": {
+              "target": {
+                "nodeId": "main.object",
+                "part": "self"
+              },
+              "coordinateSpace": "canvas",
+              "opacity": 1,
+              "localRect": {
+                "x": 0,
+                "y": 0,
+                "width": 380,
+                "height": 380
+              },
+              "localToCanvas": [
+                0.978367547189991,
+                0.20687421928660146,
+                -0.20687421928660146,
+                0.978367547189991,
+                1097.7948634260597,
+                291.50192651406826
+              ],
+              "polygons": [
+                [
+                  {
+                    "x": 1097.7948634260597,
+                    "y": 291.50192651406826
+                  },
+                  {
+                    "x": 1469.5745313582563,
+                    "y": 370.1141298429768
+                  },
+                  {
+                    "x": 1390.9623280293476,
+                    "y": 741.8937977751734
+                  },
+                  {
+                    "x": 1019.1826600971511,
+                    "y": 663.2815944462648
+                  }
+                ]
+              ],
+              "rects": [
+                {
+                  "x": 1019.1826600971511,
+                  "y": 291.50192651406826,
+                  "width": 450.39187126110517,
+                  "height": 450.39187126110517
+                }
+              ],
+              "resourceRef": {
+                "id": "asset.cloud-small",
+                "version": "0.1.0"
+              },
+              "anchor": {
+                "x": 1244.3785957277037,
+                "y": 516.6978621446208
+              },
+              "visibleContent": {
+                "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+                "polygons": [
+                  [
+                    {
+                      "x": 1097.7948634260597,
+                      "y": 291.50192651406826
+                    },
+                    {
+                      "x": 1469.5745313582563,
+                      "y": 370.1141298429768
+                    },
+                    {
+                      "x": 1397.7327570241819,
+                      "y": 709.8744962307737
+                    },
+                    {
+                      "x": 1025.9530890919855,
+                      "y": 631.2622929018652
+                    }
+                  ]
+                ],
+                "rects": [
+                  {
+                    "x": 1025.9530890919855,
+                    "y": 291.50192651406826,
+                    "width": 443.62144226627083,
+                    "height": 418.37256971670547
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "K3",
+            "tMs": 8000,
+            "hash": "e11a398c3c24426e4e1a81e8377d5e70256e4ff7e16ef7d9669ce6337586df81",
+            "state": {
+              "timeMs": 8000,
+              "beatId": "beat.hold",
+              "nodes": {
+                "cloud.back": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1110,
+                    "y": 430
+                  },
+                  "rotationDeg": 0
+                },
+                "destination": {
+                  "opacity": 1
+                },
+                "trail": {
+                  "opacity": 0,
+                  "progress": 1
+                },
+                "main.object": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 1250,
+                    "y": 520
+                  },
+                  "rotationDeg": 12
+                },
+                "cloud.front": {
+                  "opacity": 1,
+                  "position": {
+                    "x": 660,
+                    "y": 595
+                  },
+                  "rotationDeg": 0
+                },
+                "page.caption": {
+                  "opacity": 1,
+                  "text": "终态保留对象，移除过程轨迹。"
+                },
+                "page.subtitle": {
+                  "opacity": 1,
+                  "text": "更换资产、轨迹与节奏，使用同一套渲染代码"
+                },
+                "page.title": {
+                  "opacity": 1,
+                  "text": "换个对象，继续演示"
+                }
+              }
+            },
+            "geometry": {
+              "target": {
+                "nodeId": "main.object",
+                "part": "self"
+              },
+              "coordinateSpace": "canvas",
+              "opacity": 1,
+              "localRect": {
+                "x": 0,
+                "y": 0,
+                "width": 380,
+                "height": 380
+              },
+              "localToCanvas": [
+                0.9781476007338057,
+                0.20791169081775931,
+                -0.20791169081775931,
+                0.9781476007338057,
+                1103.6551771159511,
+                294.64873460520266
+              ],
+              "polygons": [
+                [
+                  {
+                    "x": 1103.6551771159511,
+                    "y": 294.64873460520266
+                  },
+                  {
+                    "x": 1475.3512653947973,
+                    "y": 373.65517711595123
+                  },
+                  {
+                    "x": 1396.3448228840489,
+                    "y": 745.3512653947973
+                  },
+                  {
+                    "x": 1024.6487346052027,
+                    "y": 666.3448228840489
+                  }
+                ]
+              ],
+              "rects": [
+                {
+                  "x": 1024.6487346052027,
+                  "y": 294.64873460520266,
+                  "width": 450.7025307895947,
+                  "height": 450.7025307895947
+                }
+              ],
+              "resourceRef": {
+                "id": "asset.cloud-small",
+                "version": "0.1.0"
+              },
+              "anchor": {
+                "x": 1250,
+                "y": 520
+              },
+              "visibleContent": {
+                "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+                "polygons": [
+                  [
+                    {
+                      "x": 1103.6551771159511,
+                      "y": 294.64873460520266
+                    },
+                    {
+                      "x": 1475.3512653947973,
+                      "y": 373.65517711595123
+                    },
+                    {
+                      "x": 1403.14920549263,
+                      "y": 713.3391620980547
+                    },
+                    {
+                      "x": 1031.4531172137838,
+                      "y": 634.3327195873062
+                    }
+                  ]
+                ],
+                "rects": [
+                  {
+                    "x": 1031.4531172137838,
+                    "y": 294.64873460520266,
+                    "width": 443.89814818101354,
+                    "height": 418.690427492852
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "repeated": [
+          {
+            "tMs": 8000,
+            "same": true
+          },
+          {
+            "tMs": 5800,
+            "same": true
+          },
+          {
+            "tMs": 3600,
+            "same": true
+          },
+          {
+            "tMs": 0,
+            "same": true
+          }
+        ]
+      }
+    ],
+    "failures": [
+      {
+        "scenario": "capacity",
+        "accepted": false,
+        "code": "CONTENT_CAPACITY_EXCEEDED",
+        "preserved": true,
+        "stages": 1
+      },
+      {
+        "scenario": "dynamic-capacity",
+        "accepted": false,
+        "code": "CONTENT_CAPACITY_EXCEEDED",
+        "preserved": true,
+        "stages": 1
+      },
+      {
+        "scenario": "missing-bytes",
+        "accepted": false,
+        "code": "ASSET_UNAVAILABLE",
+        "preserved": true,
+        "stages": 1
+      },
+      {
+        "scenario": "hash",
+        "accepted": false,
+        "code": "ASSET_HASH_MISMATCH",
+        "preserved": true,
+        "stages": 1
+      },
+      {
+        "scenario": "dimensions",
+        "accepted": false,
+        "code": "ASSET_DIMENSION_MISMATCH",
+        "preserved": true,
+        "stages": 1
+      },
+      {
+        "scenario": "alpha-bounds",
+        "accepted": false,
+        "code": "ASSET_ALPHA_BOUNDS_MISMATCH",
+        "preserved": true,
+        "stages": 1
+      }
+    ],
+    "rotatedGeometry": {
+      "target": {
+        "nodeId": "main.object",
+        "part": "self"
+      },
+      "coordinateSpace": "canvas",
+      "opacity": 1,
+      "localRect": {
+        "x": 0,
+        "y": 0,
+        "width": 380,
+        "height": 380
+      },
+      "localToCanvas": [
+        6.123233995736766e-17,
+        1,
+        -1,
+        6.123233995736766e-17,
+        470,
+        380
+      ],
+      "polygons": [
+        [
+          {
+            "x": 470,
+            "y": 380
+          },
+          {
+            "x": 470,
+            "y": 760
+          },
+          {
+            "x": 90,
+            "y": 760
+          },
+          {
+            "x": 90,
+            "y": 380
+          }
+        ]
+      ],
+      "rects": [
+        {
+          "x": 90,
+          "y": 380,
+          "width": 380,
+          "height": 380
+        }
+      ],
+      "resourceRef": {
+        "id": "asset.plane",
+        "version": "0.1.0"
+      },
+      "anchor": {
+        "x": 280,
+        "y": 570
+      },
+      "visibleContent": {
+        "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+        "polygons": [
+          [
+            {
+              "x": 428.1818181818182,
+              "y": 408.4848484848485
+            },
+            {
+              "x": 428.1818181818182,
+              "y": 755.1515151515152
+            },
+            {
+              "x": 90,
+              "y": 755.1515151515152
+            },
+            {
+              "x": 90,
+              "y": 408.4848484848485
+            }
+          ]
+        ],
+        "rects": [
+          {
+            "x": 90,
+            "y": 408.4848484848485,
+            "width": 338.1818181818182,
+            "height": 346.66666666666674
+          }
+        ]
+      }
+    },
+    "race": {
+      "results": [
+        {
+          "status": "rejected",
+          "code": "LOAD_SUPERSEDED"
+        },
+        {
+          "status": "fulfilled"
+        }
+      ],
+      "current": "scene.cloud-drift",
+      "stages": 1
+    },
+    "pauseStable": true,
+    "reverse": true,
+    "editorApply": "DOM textarea and apply button verified",
+    "textInjection": "rendered literally; no image/script nodes",
+    "platformFonts": [
+      {
+        "id": "page.title",
+        "fonts": [
+          {
+            "familyName": "Microsoft YaHei",
+            "postScriptName": "MicrosoftYaHei-Bold",
+            "isCustomFont": false,
+            "glyphCount": 6
+          }
+        ]
+      },
+      {
+        "id": "page.caption",
+        "fonts": [
+          {
+            "familyName": "Microsoft YaHei",
+            "postScriptName": "MicrosoftYaHei",
+            "isCustomFont": false,
+            "glyphCount": 18
+          }
+        ]
+      }
+    ],
+    "scaledGeometryStable": true,
+    "viewport": {
+      "width": 1366,
+      "scrollWidth": 1366
+    },
+    "pageErrors": []
+  },
+  "visualReview": "new data-driven renderer pending; motion-02 acceptance not automatically inherited"
+}

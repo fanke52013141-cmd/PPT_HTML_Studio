@@ -1,0 +1,187 @@
+{
+  "date": "2026-10-07",
+  "board": {
+    "path": "asset-board-v2.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "sha256": "4bfe292ec9c292a8526de679bad7a65d05f84201715c274a55693c1bc6ad4c75",
+    "emptySlotAlphaMaximum": 1
+  },
+  "original": {
+    "path": "asset-board.png",
+    "sha256": "ed3e281a13b34eaebf5d5647568a4a8a8bb4fac8fb55f5c7643af4769848d8d7",
+    "decision": "changes_requested: ragged edge pixels and subjects exceed intended padding"
+  },
+  "repair": {
+    "path": "asset-board-v2.png",
+    "decision": "selected_for_trial; not library approved",
+    "method": "image generation edit; same identity; shrink and antialias request"
+  },
+  "assets": [
+    {
+      "assetId": "asset.plane.v1",
+      "sourceBoard": "board.paper-plane.v2",
+      "sourceSha256": "4bfe292ec9c292a8526de679bad7a65d05f84201715c274a55693c1bc6ad4c75",
+      "slotRect": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "cropRect": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "cropOffset": [
+        0,
+        0
+      ],
+      "size": [
+        627,
+        627
+      ],
+      "alphaMode": "RGBA",
+      "transparentFraction": 0.8141933055053175,
+      "visibleBoundsAlphaGt24": [
+        88,
+        220,
+        566,
+        529
+      ],
+      "anchorInCrop": [
+        313.5,
+        313.5
+      ],
+      "anchorNormalized": [
+        0.5,
+        0.5
+      ],
+      "method": "deterministic rectangular crop; retained full slot; no matting or contour modification",
+      "output": "assets/plane.png",
+      "sha256": "906b8006be7d18ff1d7f964c0194b6343f976c01ffe337cd6af95690653a260b",
+      "review": "identity and light/dark/target background inspected; usable at tested display size; full-resolution edge and strict padding not approved",
+      "subjectExtentFraction": [
+        0.7623604465709729,
+        0.49282296650717705
+      ],
+      "withinRequestedMiddle70Percent": false
+    },
+    {
+      "assetId": "asset.cloud.large.v1",
+      "sourceBoard": "board.paper-plane.v2",
+      "sourceSha256": "4bfe292ec9c292a8526de679bad7a65d05f84201715c274a55693c1bc6ad4c75",
+      "slotRect": [
+        627,
+        0,
+        1254,
+        627
+      ],
+      "cropRect": [
+        627,
+        0,
+        1254,
+        627
+      ],
+      "cropOffset": [
+        627,
+        0
+      ],
+      "size": [
+        627,
+        627
+      ],
+      "alphaMode": "RGBA",
+      "transparentFraction": 0.6441117292288282,
+      "visibleBoundsAlphaGt24": [
+        75,
+        173,
+        585,
+        552
+      ],
+      "anchorInCrop": [
+        313.5,
+        313.5
+      ],
+      "anchorNormalized": [
+        0.5,
+        0.5
+      ],
+      "method": "deterministic rectangular crop; retained full slot; no matting or contour modification",
+      "output": "assets/cloud-large.png",
+      "sha256": "3f979a534686e3d36cf8cce15f6cc8a10758836120dce209a1aeec20cd57cc73",
+      "review": "identity and light/dark/target background inspected; usable at tested display size; full-resolution edge and strict padding not approved",
+      "subjectExtentFraction": [
+        0.8133971291866029,
+        0.6044657097288676
+      ],
+      "withinRequestedMiddle70Percent": false
+    },
+    {
+      "assetId": "asset.cloud.small.v1",
+      "sourceBoard": "board.paper-plane.v2",
+      "sourceSha256": "4bfe292ec9c292a8526de679bad7a65d05f84201715c274a55693c1bc6ad4c75",
+      "slotRect": [
+        0,
+        627,
+        627,
+        1254
+      ],
+      "cropRect": [
+        0,
+        627,
+        627,
+        1254
+      ],
+      "cropOffset": [
+        0,
+        627
+      ],
+      "size": [
+        627,
+        627
+      ],
+      "alphaMode": "RGBA",
+      "transparentFraction": 0.7721613007435219,
+      "visibleBoundsAlphaGt24": [
+        114,
+        185,
+        534,
+        477
+      ],
+      "anchorInCrop": [
+        313.5,
+        313.5
+      ],
+      "anchorNormalized": [
+        0.5,
+        0.5
+      ],
+      "method": "deterministic rectangular crop; retained full slot; no matting or contour modification",
+      "output": "assets/cloud-small.png",
+      "sha256": "0b34d266a0b81eb652c99ccf1f37fc37ff5a2469fe56bffcc195977228b00e89",
+      "review": "identity and light/dark/target background inspected; usable at tested display size; full-resolution edge and strict padding not approved",
+      "subjectExtentFraction": [
+        0.6698564593301436,
+        0.46570972886762363
+      ],
+      "withinRequestedMiddle70Percent": false
+    }
+  ],
+  "limits": [
+    "full slot center is author-defined anchor; tip not automatically recognized",
+    "no automatic segmentation or object recognition",
+    "edge quality still requires compositing review",
+    "no claim of cost superiority over independent generation"
+  ],
+  "review": {
+    "alpha": "RGBA confirmed; empty cell max alpha 1/255, not perfectly zero",
+    "padding": "requested middle 70% not met for all objects; no slot crossing at selected crop",
+    "edge": "better at actual display scale, but tiny fringe/noise persists at source scale; requires library-quality cleanup before production",
+    "decision": "conditional experimental use only; G3 partial, no asset library release"
+  }
+}

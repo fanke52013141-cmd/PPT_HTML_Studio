@@ -1,0 +1,1399 @@
+================================================================================
+          「HTML → PPT / 短视频」SKILL 生态专项调研报告
+          —— 含前两轮报告的数据勘误与整合
+
+  报告日期：2026-10-07
+  调研范围：Agent Skill 形态的 PPT/HTML 生成项目（2025-10 之后仍活跃）
+  星数来源：GitHub 仓库页直接核实（2026-10-07），非二手目录站
+  触发原因：用户指出前两轮调研「项目太老、停更、没参考价值」，
+            要求转向 skill 形态，并点名「PPT master skill」「HTML to PPT」
+
+================================================================================
+
+
+################################################################################
+                    第 0 章  先认错：前两轮的问题出在哪
+################################################################################
+
+你批评得对。具体错在哪，我列清楚。
+
+--------------------------------------------------------------------------------
+0.1  你说的「太老」—— 核实成立
+--------------------------------------------------------------------------------
+
+  我第一份报告推荐的候选里，确实有一批是死项目，我当时标注了但没剔除：
+
+  项目              星数     真相
+  ──────────────────────────────────────────────────────────────
+  mdx-deck          11,497★npm 最后发布 2020-03，已弃养
+  shower4,876★    npm 停更 2019-11
+  reveal.js         72,384★ 2011 年项目（但仍极活跃，另说）
+  impress.js        38,154★ 低频维护（近12 个月 2 commits）
+  WebSlides          6,324★ 2022-12停更
+  spectacle-renderer   10★   已 archived
+
+  → 我的错误不是「调研了老项目」，是【把死的和活的并列推荐】，
+    没有在第一层就把它们筛掉。这是筛选标准的问题。
+
+--------------------------------------------------------------------------------
+0.2  你说的「方向偏」—— 也成立
+--------------------------------------------------------------------------------
+
+  我前两轮的重心全在「框架」（reveal.js / Slidev / Spectacle 这些浏览器
+  演示库），而不是「skill 生态」。而你要做的是内容→课件的自动化流水线，
+  真正对口的是 skill 形态的项目——它们已经把「怎么让LLM 输出稳定」这个
+  问题解决在代码里了，我却在查别人怎么用CSS 做动画。
+
+  更具体的错：★ 我第一份报告推荐了 guizang-ppt-skill 并写了 27,308★，
+  实际只有 1,632★。而真正的 56k★ 项目（ppt-master）我完全没找到。
+  → 这说明我当时是按「印象 + 二手目录站数据」在列项目，没有逐个核实。
+
+--------------------------------------------------------------------------------
+0.3  【数据勘误】前两份报告的错误，请以本报告为准
+--------------------------------------------------------------------------------
+
+  错误                我写的        实际              性质
+  ────────────────────────────────────────────────────────────────────
+  reveal.js 仓库      revealjs/      hakimel/          仓库名错误，404
+  guizang-ppt-skill   27,308★       1,632★           ★ 星数错 17 倍
+  guizang 许可证      （未写）      AGPL-3.0（5-28 从MIT 改）★ 商用风险
+  ppt-master          未收录        57,912★★         ★★ 最大遗漏
+  html-ppt-skill      未收录        8,588★           ★ 遗漏
+  frontend-slides     未收录        30,215★★         ★★ 最大遗漏
+
+  另：anthropics/skills 的 179,927★ 是仓库总星数，
+  不是 pptx skill 本身的星数。我第一份报告把它当成 skill 的星数了，
+  这个数字有误导性。pptx skill 本身没有独立星数。
+
+  → 所以本报告的做法：★【每个项目的星数和最后提交时间，都从 GitHub
+    仓库页直接核实】。二次核实不了的，明确标"未核实"，不填数。
+
+
+################################################################################
+          第 1 章  核心发现：ppt-master（57,912★）
+################################################################################
+
+  你说的「PPT master skill」就是它。★ 这是本轮最重要的发现，
+  也是我前两轮完全漏掉的项目。
+
+--------------------------------------------------------------------------------
+1.1  基础数据（已核实）
+--------------------------------------------------------------------------------
+
+  仓库        github.com/hugohe3/ppt-master
+  ★57,912（2026-09-25 同步，持续增长中；52k@08-04， 54k@09-12）
+  Fork        4,471
+  创建        2025-12-10（★ 不到 1 年做到 5.8 万星）
+  最后提交    2026-10-05（两天前）
+  版本节奏    v4.7.0(08-13) → v4.8.0(08-16) → v5.0.0(08-24)
+              → v6.4.0(09-12) → v6.6.0(09-19)
+  许可证      MIT
+  主语言      Python 3.10+
+  Open issues 2–5 个（★ triage 比例极端，说明质量高）
+  仓库规模    13,271 个文件
+  作者        Hugo He（CPA · CPV · 咨询工程师）
+  示例仓库    hugohe3/ppt-master-examples（12★，很新；
+              README 说的 15 示例/229 页未核实）
+
+  ★ 一句话定位：
+    【把文档变成真正原生的 PowerPoint 对象】——
+    原生形状（带可拖调节柄的连接线）、数据驱动的图表与表格、
+    真实的 slide master 与 layout 继承、OMML 公式、PPTX 内嵌字体。
+
+--------------------------------------------------------------------------------
+1.2  ★ 我必须纠正自己之前的一个误判
+--------------------------------------------------------------------------------
+
+  我在给子agent 的指令里写「ppt-master 不走 HTML，直接生成原生 PPTX，
+  和用户方向相反」——★【这个判断是错的】。
+
+  它的真实架构（目录树实证）：
+
+    源材料 → source_to_md.py → 规划 → 手写 SVG → svg_to_pptx/ → DrawingML → .pptx
+                                            ↑                ↓
+                                      svg_finalize/ ←── pptx_to_svg/（反向投影）
+
+  ★ 【SVG 就是它的中间表示，而且  双向的】：
+    svg_to_pptx/  40 个模块（drawingml/ 12 + native_objects/ 20 + pptx_package/ 9）
+    pptx_to_svg/  30 个模块（converter / shape_walker / txbody_to_svg /
+                custgeom_to_svg / prstgeom_to_svg / chart_to_svg /
+                chartex_to_svg / tbl_to_svg / notes_import / animation_import /
+                transition_import …）
+
+  官方映射指南开篇原话：
+    "The main route compiles **project-canonical SVG**, not general browser SVG"
+    "PowerPoint intent ↔ project-canonical SVG or an explicit sidecar
+     ↔ DrawingML / PPTX package semantics"
+
+  → 所以不是「不做 HTML」，而是【它用 SVG 而不是 HTML 做 IR】。
+    这对你极重要：SVG-as-IR 和 HTML-as-IR 是**同一层抽象的两种选择**，
+    而它在 OOXML 输出层（pptx_package/、native_objects/、pptx_ooxml/）
+    与你的方向完全无关，可以 100% 借鉴。
+
+--------------------------------------------------------------------------------
+1.3  完整工作流（已核实，六条route 的步骤骨架）
+--------------------------------------------------------------------------------
+
+  【加载序列 —— SKILL.md 强制，逐字核实】
+    1. 读 SKILL.md
+    2. python3 "${SKILL_DIR}/scripts/attribution_guard.py"
+       （非零即停，★ 明令禁止检查/修复/绕过）
+    3. 读 workflows/routing.md
+    4. 选恰好一条 route + profile
+    5. ★ 只读该 route 的 runtime authority
+       （Image-to-PPTX 与 Beautify互斥，永不同时加载）
+
+  路径必须在命令前展开（${SKILL_DIR}，禁止 cd / CWD）——
+    Windows 下 python3 不可用时改用 python。
+
+  【六条 route 实际内容】
+  ┌──────────────────┬────────────────────────────┬────────┬──────────────────────┐
+  │ Route/Profile    │ runtime 文件                │ 字节   │ 步骤骨架              │
+  ├──────────────────┼────────────────────────────┼────────┼──────────────────────┤
+  │ Generate普通│ workflows/generate-pptx.md    │45,917  │ S1源处理 → S2项目初始化 │
+  │                  │                            │        │ → S3模板候选 →        │
+  │                  │                            │        │ ★S4 Strategist        │
+  │                  │                            │        │ (含两阶段BLOCKING)     │
+  │                  │                            │        │ → S5图像获取 →        │
+  │                  │                            │        │ → S6 Executor →        │
+  │                  │                            │        │ → S7后处理导出+Revision│
+  ├──────────────────┼────────────────────────────┼────────┼──────────────────────┤
+  │ Generate Quick   │ workflows/profiles/         │37,051  │ §1边界 → §2源与资源 → │
+  │                  │   quick-generate.md        │        │ §3★直接手写 SVG →      │
+  │                  │                            │        │ §4导出                │
+  ├──────────────────┼────────────────────────────┼────────┼──────────────────────┤
+  │ Image to PPTX    │ workflows/profiles/         │15,001  │ §1路由边界 →           │
+  │                  │   image-to-pptx.md         │        │ §2图像归一化为页 →     │
+  │                  │                            │        │ §3按内容族重建 →       │
+  │                  │                            │        │ §4最小图层栈 →         │
+  │                  │                            │        │ §5无Quick计划的源证据→ │
+  │                  │                            │        │ §6图像准备 →           │
+  │                  │                            │        │ §7 SVG作者化+发布门    │
+  ├──────────────────┼────────────────────────────┼────────┼──────────────────────┤
+  │ Beautify│ workflows/profiles/         │20,444  │ §3建工作区 →            │
+  │                  │   beautify-pptx.md         │        │ §4beautify_identity.py │
+  │                  │                            │        │   +beautify_inventory │
+  │                  │                            │        │ → §5决策(Quick/Default │
+  │                  │                            │        │   +BLOCKING) → §6作者化│
+  │                  │                            │        │ → §7验证              │
+  ├──────────────────┼────────────────────────────┼────────┼──────────────────────┤
+  │ ★ Create Template│ workflows/create-template.md│40,828  │ S1参考Intake(A–E) →   │
+  │                  │                            │        │ S2事实简报 →           │
+  │                  │                            │        │ ★S3[TEMPLATE_BRIEF_    │
+  │                  │                            │        │   CONFIRMED]门 →       │
+  │                  │                            │        │ S4 preflight+派发子流程│
+  │                  │                            │        │ → S5验证(含原型评审轮) │
+  │                  │                            │        │ → S6多Master门 →       │
+  │                  │                            │        │ → S7注册库索引 →       │
+  │                  │                            │        │ → S8输出确认          │
+  ├──────────────────┼────────────────────────────┼────────┼──────────────────────┤
+  │ Edit Native PPTX │ workflows/edit-native-pptx.md│19,664 │ §3导入往返工作区 →     │
+  │                  │                            │        │ §4★页面计划(BLOCKING) │
+  │                  │                            │        │ → §5编辑页 →§6备注/   │
+  │                  │                            │        │   旁白/动效 → §7导出验证│
+  └──────────────────┴────────────────────────────┴────────┴──────────────────────┘
+
+  共享 stage（按需触发，stages/ 下 10 个）：
+    apply-template-workspace、generate-audio、live-preview、refine-spec、
+    customize-animations、visual-review、topic-research、verify-charts、
+    web-image-review、resume-execute
+
+  ★ SKILL.md 本身只有 9,955 字节（约 9.8KB），★【纯路由，不含任何步骤】。
+    所有内容按需加载——这是标准的渐进式披露做到极致。
+
+--------------------------------------------------------------------------------
+1.4  ★★ Create Template：你的 pptx 怎么变成模板工作区
+--------------------------------------------------------------------------------
+
+  这是对你最直接相关的一节（你手里有 IDML / pptx 模板资产）。
+
+  【两种 scope，硬规则：只改父路径/spec 文件名/注册方式，
+    schema 与资产路由完全不变】
+    library（默认）→ skills/ppt-master/templates/<kind_dir>/<template_id>/
+      写 templates/design_spec.md，Step 7 用 register_template.py 注册索引
+    project        → <target_project>/（project_manager.py init 初始化）
+      写 templates/design_spec.<kind>.<id>.md，★ 不注册
+
+  【统一工作区形状】
+    <template_workspace>/
+    ├── templates/design_spec.md + *.svg
+    ├── images/          可选，SVG href 用 ../images/<name>
+    ├── icons/imported/  可选，导入矢量唯一副本，data-icon="imported/<name>"
+    └── exports/         可选，评审证据；多 Master 时强制；library scope git-ignored
+
+  【★ 三种处理策略 —— AI 从自然语言意图+证据自行判定，从不问用户选模式】
+
+  策略        证据要求         行为
+  ────────────────────────────────────────────────────────────────────
+  standard任意通道      审全部源结构，再写一个紧凑的、
+                         每个保留 Layout 一个 Slide 的原型
+  fidelity    需 A/B 页证据  同上但roster 更宽
+  mirror      ★仅 A（.pptx） 直接发布导入器输出，
+                         ★每个源 Slide 一个完整原型，
+                         保留其可达 Layout/Master 血缘
+
+  【工具链】
+    pptx_template_import.py "<ref.pptx>" -o "<import_workspace>"
+      → analysis/manifest.json, native_structure.json, sources/source.pptx,
+        validation/conversion-report.json
+        （分层 IR：manifest 打包给编译器但从不加载）
+    mirror 模式走 template-tools.md#mirror-publication
+      + mirror_template_materialize.py
+    复杂 SVG 图片归一化：extract_svg_pictures.py --select "<group_id>" --inplace
+    文档/URL：source_to_md.py "<file_or_URL_or_dir>" -o "<workspace>"
+    评审证据：template_preview_pptx.py → exports/<id>_template_preview.pptx
+    注册：register_template.py（读 design_spec.md 的 YAML frontmatter）
+    应用：apply_template.py（模板态checker）
+
+  【★ 四种 workspace 的确切语义 —— 这是解你「模板要可扩展」的答案】
+
+  Kind      写出什么                              不写什么
+  ────────────────────────────────────────────────────────────────
+  Brand brands/<id>/      仅身份段：色/字/Logo/语气/图标风格  无画布、无页面结构、
+  （21 个内置）           ★只覆盖身份                       无 SVG roster
+
+  Style styles/<id>/      可移植方法：沟通法、页面角色词表、  无身份真相、无应用
+  （14 个内置）            证据表达、视觉默认、图像/图标方向  契约、无画布、
+                          建议性评审焦点                       无 roster
+
+  Layout layouts/<id>/    品牌中立结构段：画布/页面语法/语义  无品牌身份、
+  （7 个内置）            文本角色/页面类型/★SVG roster       无周期性应用
+
+  Deck decks/<id>/        周期性演示家族：描述性应用上下文    （品牌化结构系统
+  （2 个内置）            + 整合身份 + 结构 + roster           或带场景的内容语法）
+
+  ★【关键判断矩阵 —— 怎么给一份规范分类】
+    只有一个组织的"身份"           → Brand
+    有方法、无身份、无原型        → Style
+    品牌中立的骨架                 → Layout
+    品牌化结构系统 / 带场景的内容语法 → Deck
+
+  内置 21 个 brands 含 huawei / tencent / 中国电信 / 中国电建 / 中汽研 /
+  alibaba / nvidia / microsoft…
+  7 个 layouts：presentation_core / presentation_core_43 / report_core /
+  editorial_bleed / story_vertical / moments_square / xiaohongshu_post
+  ★★【注意 moments_square 和 xiaohongshu_post —— 它内置了小红书和竖屏版式】
+
+--------------------------------------------------------------------------------
+1.5  ★★ 它怎么解决「靠文档约束不稳定」—— 治你病根的三件事
+--------------------------------------------------------------------------------
+
+  ★ 你说「靠文档规定设计风格，每次生成不稳定，必须堆模板」。
+  ppt-master 的解法不是「写更详细的文档」，而是：
+  【把文档降级为提案，把约束降级为可执行锁】。
+
+  ───────────────────────────────────────────────────────────────────
+  【第一件】三层收敛：提案 → 人类签字 → 执行锁
+  ───────────────────────────────────────────────────────────────────
+
+  1. design_spec.md —— 提案
+     用四级 provenance 标注来源，来源可追：
+       [fact] / [suggested] / [decision] / [derived]
+
+  2. ★ BLOCKING 门 —— 人类签字
+     ★【原文："No final template directory, template SVG, or Design Spec
+       may be written until [TEMPLATE_BRIEF_CONFIRMED] is emitted"】
+     ★ 签字前禁止写任何模板目录 / SVG / spec 文件
+
+  3. spec_lock.md —— 执行锁（★ 核心设计）
+
+  spec_lock.md 的关键设计（已核实）：
+    · 首行必须是 <!-- ppt-master-schema: spec-lock/v1 -->
+    · ★【只允许 ## 段和 - key: value 行】（## forbidden 例外）
+      → 机械可解析，★ 不许抄指导性段落进锁
+    · 段：
+        canvas画布
+        communication     沟通策略
+        mode              模式
+        visual_style      视觉风格
+        colors            ★语义角色，非具体色值
+        typography        排版
+        icons             图标
+        page_rhythm       每页 P<NN> 行：anchor / dense / breathing
+        pptx_structure    PPTX 结构
+        forbidden         禁令
+    · ★【forbidden 段的每一条用户禁令必须逐字引用原话并以 (user) 结尾】
+      project_manager.py validate 会拒绝未标注的非基线行。
+      技术基线行不带标签。
+    · ★ 分工明确：Strategist 起草的方向性指导（哪怕已确认）属于
+      visual_style_behavior 散文，★【不是禁令，不投影进 lock】。
+      这条把「设计建议」和「硬约束」物理隔开。
+
+  ───────────────────────────────────────────────────────────────────
+  【第二件】⭐ BLOCKING 硬门 —— 让"确认"无法被绕过
+  ───────────────────────────────────────────────────────────────────
+
+  ★ 原文："Blocking means stop — 等显式确认，不得替用户决定"
+  具体规则：
+    · ⛔ 每个阻塞门必须停下等用户显式确认，禁止替用户决定
+    · ⛔ 禁止跨未闭合门打包多阶段执行
+    · ⛔ ★【"从文件/文本/IDE 打开的内容静默推断即违规"】
+    · 允许显式委托，但须记录理由
+
+  ★ 这条正好治你的病：
+    之前你的「可视化描述」是模型一次生成的，中间没有签字点。
+    现在拆成：设计简报 → ★你确认 → 生成 → 原型评审 → ★你确认 → 导出。
+    模型不能自己往下跑。
+
+  ───────────────────────────────────────────────────────────────────
+  【第三件】★ 渲染前契约 checker + 诚实降级七档 + 公开映射表
+  ───────────────────────────────────────────────────────────────────
+
+  ① 独立校验层级（不在导出时崩溃，在作者化时就拒）
+     svg_quality/ 包（checker.py、slot_capacity.py、svg_contracts.py）
+     + svg_authoring_contract.py
+     + svg_compatibility.py
+     + svg_to_pptx/pptx_shapes/registry.py + semantic_hash.py + semantics.py
+
+  ② ★【诚实降级七档】—— 这是我认为最值得抄的一份契约
+     docs/powerpoint-svg-mapping.md（55,996 字节 / 14 节）
+     按 **PowerPoint 能力索引**（而不是按 SVG 元素）组织：
+       Native-stable        原生稳定
+       Native-normalized    原生但归一化
+       Approximate近似
+       Bake-required        必须烘成位图
+       Sidecar-package      走 sidecar 包
+       Direct preservation  直接保留
+       Unsupported          不支持
+     ★ 原文："A feature not listed here is not implicitly supported"
+       ——没列出来的，默认不支持
+
+  ③ 换算与约束（已核实）
+     1 SVG px = 9,525 EMU @ 96 DPI
+     viewBox 必须是 0 0 W H、有限值、原点为零、禁止根 transform
+     Z 序 = SVG 源序
+     一个 SVG 文本节点可产出多个 PowerPoint run
+     native chart marker group 可塌缩成一个 p:graphicFrame
+
+  ④ 187 个 Office preset 轮廓
+     通过 preset_shape_svg.py 走 prst 轮廓，
+     命中注册 preset 时用「紧凑规范 <g>」；改几何或涂装必须重新渲染。
+     另有 Boolean 合并、连接线、freeform。
+
+  ⑤ 原生对象实现路径（目录实证）
+     图表→ native_objects/chart_xml.py + chart_data.py + workbook.py
+           ★ 真 Excel 工作簿，支持「Edit Data」
+     表格   → native_objects/table.py + semantic_table.py（16.0KB）
+     公式   → formula_parser.py → formula_ast.py → formula_compiler.py
+             → formula_omml.py → OMML（PowerPoint 2010+，行内+块）
+     形状   → pptx_shapes/registry.py（187 preset 注册表）
+
+  ★【这套「公开映射表 + 诚实分级 + unlisted means unsupported」是
+    极低成本的高效契约，比「尽量支持」强得多。你完全可以照抄这个格式，
+    做成你的 HTML→短视频的能力索引表：哪些 CSS 能保真、哪些必须降级、
+    哪些要烘成图片。】
+
+--------------------------------------------------------------------------------
+1.6  ★ pptx_structure.mode —— 全项目最关键的架构约束
+--------------------------------------------------------------------------------
+
+  文档原文（已核实）：
+    "Free-design and brand-only projects … remain on
+     pptx_structure.mode: flat from planning through export;
+     ★ flat is not a provisional state awaiting an exporter upgrade.
+     Repeated logos, footers, or layouts ★never cause export to switch to
+     structured, promote content into Master/Layout, infer placeholders,
+     or deduplicate objects."
+
+  → 想要真Master/Layout，★【必须在建模板工作区时进入】。
+    这是「约束不靠自动优化、靠显式前置」的典范。
+
+  【段所有权 —— 一段由一个 kind 整段覆盖，不逐字段合并】
+  Identity色板/字体/Logo/语气/图标风格        → brand
+  Direction/method  沟通法/页面角色词表/…       → style
+    （从属，且永远让位于用户确认与身份/结构段）
+  Structure    画布/页面类型元数据/结构签名规则/
+               SVG roster/★Master/Layout/slot 契约 → layout
+  Application  复现场景/受众结果/交付假设/…      → 仅 deck
+
+  ★ "A resolved segment is applied whole"（整段应用）
+
+  【★ 主题 = 投影，不是模板种类】
+    原文："Theme is therefore an implementation projection of resolved
+            identity … not another template kind"
+    Brand → theme colors/fonts/effects
+    Layout → Master/Layout/Placeholder 拓扑 + 语义文本角色 + 空间 slot 行为
+
+  【Slot 契约】
+    每个 Layout/Deck SVG 都是完整预览，含：
+      root Master/Layout key、原子 Master/Layout 元素、顶层语义 slot 组
+    slot 有正向设计区边界 + 恰好一个兼容 carrier
+    复合 object 区用显式代理绑定
+    零 slot Layout 合法
+    ★ 这些专用标记是权威的，data-pptx-role 只是无法表达时的补充提示
+
+--------------------------------------------------------------------------------
+1.7  ★ attribution_guard.py —— 我必须纠正的描述
+--------------------------------------------------------------------------------
+
+  ★ 我之前说它是「49.4KB 输出完整性闸门」——★【两处都错】。
+  实测 7,652 字节 / 224 行，纯标准库。
+
+  它实际校验五件事：
+  1. SKILL.md frontmatter 精确值
+     _EXACT_METADATA_VALUES 逐字比对 copyright / license /
+     official_repository（必须是 "Copyright (c) 2025-2026 Hugo He"、
+     "MIT"、官方仓库 URL）
+     _REQUIRED_METADATA_FIELDS = ("sponsors",)
+  2. 署名文件存在：LICENSE、SPONSORS.md、SPONSORS_CN.md
+  3. LICENSE SHA-256 =
+     80cefc234c1ec12a8cece4344f16300c634fa03df7891686fcf979e3828f0921
+  4. ★ 执行门未被拆除：9 个文件必须仍含调用标记
+     python3 "${SKILL_DIR}/scripts/attribution_guard.py"
+     （console_encoding.py、project_manager.py、svg_quality_checker.py、
+       svg_to_pptx.py、register_template.py、template_preview_pptx.py 等）
+  5. 二级门：console_encoding.py 内须存在
+     _require_official_distribution_identity
+
+  规范化细节：拒绝 UTF-8 BOM，CRLF/CR→LF 归一化（防跨平台 hash 漂移）
+
+  ★【它与「设计约束」无关，是「分发治理 + 署名防剥离」机制】。
+    作者 MIT 但要求完整官方分发不得移除署名文件，用 fail-closed + hash
+    + AST 级引用检查确保二次分装者不能抹掉作者。
+
+  ★【但这个机制对你有另一个用途值得学】：内容指纹 + 归一化 + 门禁。
+    你可以把你的「课程视觉规范」也做一个 hash 门禁，
+    任何人改动 design.tokens.json 或 spec_lock.md 都要通过校验脚本
+    才能生效。—— 这比靠 review 可靠。
+
+--------------------------------------------------------------------------------
+1.8  短视频 / 视频能力 —— 这是它最弱的一环（★ 你的机会）
+--------------------------------------------------------------------------------
+
+  全部核实自 docs/audio-narration.md（31,829 字节）。
+
+  【TTS 链路】
+    默认 edge-tts（MIT 依赖）。可选 ElevenLabs / MiniMax / Qwen TTS /
+    CosyVoice（tts_backends/ 下 6 个文件逐个对应）
+    声音克隆：ElevenLabs / MiniMax / CosyVoice 支持；
+              ★ Qwen 仅音频（其 API 不返回时间戳）
+
+  【★ 字幕时间戳能力分层 —— 这个设计值得抄】
+    Edge / ElevenLabs / MiniMax / 带时间戳的 CosyVoice
+      → 由同一次合成返回的 provider timing 生成页内 SRT
+    Qwen 与显式 audio-only 的 CosyVoice
+      → ★ 只有音频，没有时间戳
+    SRT 用页内时间线，原点 00:00:00,000
+
+  【执行脚本】
+    notes_to_audio.py（35.2KB）    ← notes → 音频
+    narration_sync.py              ← SRT cue → narration_animations.json
+    sound_sync.py / video_sound_mix.py
+    video_motion_plan.py（22.7KB）
+    video_subtitles.py             ← 对齐冻结旁白与实际音轨
+    powerpoint_video.py（11.6KB）← 委托 Windows PowerPoint 导出
+
+  产物：
+    <project_path>/audio/01_cover.mp3、01_cover.srt、manifest.json
+    ★ manifest.json 只记 provider/model/格式/voice 设置 +
+      ★ SHA-256 指纹而非原始云端 voice ID，无逐页清单、无 API key、
+      正常生成时不加载
+    → 这个「不落敏感信息、只存指纹」的做法值得抄。
+
+  【★ 「自跑视频」的真相 —— 必须纠正预期】
+    两条嵌入路径：
+      --recorded-narration audio
+        用 PowerPoint 录音时间轴，写每页自动换页时间，
+        产出 exports/<name>_<ts>_narrated.pptx
+        ★ 旁白绝不在页面切换完成前开始
+      --narration-audio-dir audio
+        低层嵌入，允许部分覆盖，测试/手工收尾用
+
+    ★ 视频导出机制（原文）：
+      "powerpoint_video.py delegates the final narrated PPTX to
+       PowerPoint 2016+ and waits until its native MP4 encoder succeeds
+       or fails… PPT Master does not embed them into the PPTX or burn them
+       into the MP4. Automatic video export delegates to installed Windows
+       PowerPoint; ★ it is not a separate renderer."
+
+    →★★ 【它不导出 mp4 给非 Windows 用户。依赖已装 PowerPoint 2016+。】
+      另：该原生路径"does not reliably include native transition or
+      object-animation sounds in its audio track"
+      补救链：video_sound_mix.py 产出独立 float SFX WAV + 最终混音 MP4
+      + JSON 收据（证明 stem 真的进了最终音轨、视频流未变）；
+      或桌面 PowerPoint 全屏播放 + 录屏采集（此时必须跳过 sound_sync）
+
+  【★ 没有 Remotion/GSAP 式帧驱动时间轴】
+    未发现任何 Remotion / GSAP / Playwright / CEDEC 依赖。
+    它的「时间轴」是三件套：
+      1. animations.json（项目规范动画 sidecar）+ animation_config.py
+         + pptx_animations.py → 写 PPTX 原生动画/转场（p:timing 树），
+         ★ 不是逐帧
+      2. narration_animations.json → 把对象动画绑定到字幕 cue，
+         做成免点击（click-free）
+      3. 播放/导出交给 PowerPoint 自己
+    另有一层 AI 图像动效（非帧驱动）：video_motion_plan.py，
+    README 提到示例含 "Morph and 8-bit sound cues"
+
+  ★★【结论：视频能力是它最弱的一环，也正是你的机会。
+    它把「帧驱动确定性渲染」这块完全让出来了——
+    你上一份报告里 GSAP + Playwright 逐帧那条路线，正好补这个缺口。】
+
+--------------------------------------------------------------------------------
+1.9  中文支持（已核实）
+--------------------------------------------------------------------------------
+
+  BCP-47 规范化：scripts/language_tags.py（8,295 字节）
+    别名表："中文"/"汉语"/"漢語"/"普通话"/"简体"/"簡體"/"简体中文"/"简中"
+        → zh-Hans
+    繁体变体 → zh-Hant
+    ★ zh（无 script/region）与 und、en--US、x-private 一律拒绝
+    language_uses_rtl()：ar-Arab-SA→True，
+      ★ ar-Latn-SA→False（脚本子标签优先于区域）
+
+  多语言冒烟测试（scripts/docs/multilingual-text-smoke.md）：
+    zh-Hans / ja-JP / ko-KR / th-TH / hi-IN / ar-SA / he-IL / ru-RU /
+    es-ES / en-US 全样本，含 RTL 集合断言
+    覆盖 Confirm UI、drawingml/converter.py、native_objects chart/table、
+    pptx_package/builder.py、notes.create_notes_slide_xml
+    ★ 无自动测试套件，是手工 smoke
+
+  字体：★ pptx_embedded_fonts.py（14,102 字节）
+    导入 PPTX 的内嵌字体作为 sidecar
+    （native-payloads/embedded-fonts/manifest.json，
+      content-type application/x-fontdata，
+      四种 style tag：regular/bold/italic/boldItalic）
+    随 SVG 工作区 travels，★ 不展平为字形轮廓
+    校验过期/不全/路径逃逸
+    另有 svg_to_pptx/drawingml/theme_fonts.py 与 text_measure.py
+
+  中文正文：内置 templates/brands/中国电信、中国电建、中汽研（含 deck）
+  ★ docs/zh/ 有 15 篇中文文档镜像
+
+  ⚠ 未核实：是否内置/推荐思源黑体。
+    我未在任何已读文档中见到该字体名；
+    language_tags.py 与多语言文档均未提及具体中文字族。
+    drawingml/text_baseline.py + text_measure.py 暗示有 CJK 基线处理，
+    但机制细节未读到。
+
+  ★★【注意这个对比：ppt-master 处理中文靠「语言标签 + 字体 sidecar +
+    PPTX 内嵌字体」，而你第一份报告里我强调的「容器装 Noto CJK +
+    fc-cache + 注入 lang="zh-CN" + 行高 1.6~1.75」是【渲染侧】方案。
+    两者管的不是一件事，可以并存：渲染侧管出片正确性，
+    交付侧管对方机器上的显示。】
+
+
+################################################################################
+          第 2 章  HTML PPT Skill 生态全景（★ 已按活跃度筛过）
+################################################################################
+
+--------------------------------------------------------------------------------
+2.1  已核实元数据（2026-10-07，全部从 GitHub 仓库页直接读）
+--------------------------------------------------------------------------------
+
+  项目                ★push       创建        语言    许可       形态
+  ─────────────────────────────────────────────────────────────────────────
+  hugohe3/ppt-master  57,912  2026-10-05  2025-12-10  Python  MIT    skill +
+                        （57,912  两天前）  不到1年            13,271 文件
+                                                                          +完整工具链
+  zarazhangrui/       30,215  2026-06-23  2026-01-28  JS      MIT    skill，
+  frontend-slides            （3个月前）  8个月                       纯 Web 幻灯片
+                                                                          ★不碰 PPTX
+  lewislulu/           8,5882026-09-14  2026-04-15  HTML    MIT    AgentSkill
+  html-ppt-skill                  （3周前）    6个月                         HTML PPT
+                                                                          Studio
+  presenton/presenton  10,973  2026-10-05  2025-05-10  TSApache-2.0 Web 应用
+                                            （昨天活跃）              + API
+  op7418/guizang-      1,632   2026-08-07  2026-02     —AGPL-3.0 skill
+  ppt-skill                     （2个月）                                  双风格+
+                                                                          校验器
+  wentorai/Research-    858   2026-08-20  2026-03-09  TS    未声明    ★ 集成壳
+  Claw                                                              ppt-master
+                                                                          是其壳
+  aviz85/html-to-        48    2026-07-08  —          —      —        单脚本CLI
+  pptx（skill）                （3个月）                                ★ 技术栈老
+  tfriedel/claude-      822    2026-04-01  —          —      开源     skill
+  office-skills/pptx            （6个月，活跃边缘）                    依赖很重
+
+  ★★【筛选标准说明 —— 这条是你这次批评的直接回应】
+    本表只收录 2025-10 之后仍有提交的项目。
+    已剔除：mdx-deck（npm停更 2020）、shower（npm 停更 2019）、
+    WebSlides（2022-12 停更）、spectacle-renderer（archived）、
+    aviz85 的技术栈（见 3.1）。
+
+--------------------------------------------------------------------------------
+2.2  ★ lewislulu/html-ppt-skill（8,588★）—— 最接近你方向的 skill
+--------------------------------------------------------------------------------
+
+  ★ 这是**唯一和你「HTML 为唯一载体」方向完全一致且高星**的 skill。
+  （ppt-master 是 SVG-as-IR，frontend-slides 也只出 HTML）
+
+  【实测数据（★ 这里有个文档漂移要说）】
+    ★ 仓库 description 至今仍写「24 themes / 31 layouts / 20+ animations」
+      而 README 和磁盘实际是：
+      ★ 36 themes / 15 full-deck templates / 36 single-page layouts /
+        47 animations（27 CSS + 20 canvas FX）
+      15 和 36 是 2026-09-14 那次提交刚修正的。
+      → ★【看 skill 类项目要注意「description 没更新」这个坑，
+         README 和磁盘才是真的。】
+
+  【目录结构（已核实）】
+    SKILL.md
+    assets/base.css                共享 token + 基础组件
+    assets/runtime.js              键盘导航 + 演讲者模式 + 总览
+    assets/themes/*.css            ★ 36 个主题（纯 CSS token 文件）
+    assets/animations/animations.css  27 个具名 CSS 动画
+    assets/animations/fx-runtime.js   [data-fx] 自动初始化
+    assets/animations/fx/*.js         20 个 canvas FX 模块
+    templates/full-decks/<name>/    15 套多页 deck（scoped .tpl- CSS）
+    templates/single-page/*.html    36 个布局文件
+    scripts/new-deck.sh           脚手架 + 引用路径自检
+    scripts/render.sh             ★ headless Chrome → PNG
+    scripts/verify-output/         56 张验证截图
+    references/{themes,layouts,animations,full-decks,presenter-mode,
+               authoring-guide}.md
+
+  【★ 它的 design token 做法 —— 这是本报告最值得抄的「约束工程」细节】
+    ★★ 仓库里有一段硬核 token 工作流（已核实原文）：
+      把 36 个主题的 --accent 全部按 WCAG 算对比度，
+      292 个采样里最低 4.54:1，
+      并据此把 :root 的 --accent 回退值从 #ffffff 改成 #000000。
+
+      原文：“The floor across all 292, at either threshold, is 4.54:1.
+      The :root fallback is #000000, not #ffffff.
+      Against the default --accent #3b6cff, white measures 4.40:1 — below AA
+      for normal text, and tighter than any of the 36 themes — while black
+      measures 4.77:1.”
+
+    →★★★【这是「用脚本算出来的约束」，不是写在文档里的口号。
+       ★ 你之前「靠文档规定设计规范会飘」的病，
+       这里给出了正解：把规范做成可计算的指标（WCAG 对比度），
+       然后用脚本批量验证所有 token，而不是指望模型记住。
+
+       具体做法：36 个主题 × 若干组件 × 前景/背景组合 = 292 个采样，
+       全部过 WCAG 公式，低于 4.5:1 就改 token。
+       这个流程你可以直接复制到自己的 design token 上。】
+
+  【约束机制】
+    · 36 个 theme = 真正的 design token 文件，纯 CSS 自定义属性，
+      换 <link> 即整份换皮
+    · 31/36 个 layout 用 ★ data-layout 属性（不是 class）——
+      和 guizang 一致。属性比 class 更容易被校验脚本解析
+    · 动画：class="animate-on-enter zoom-pop" + style="--delay:0.4s"
+      做 stagger，纯 CSS 变量驱动
+    · canvas FX：data-fx="starfield"，fx-runtime.js 在 slide 进入时自动挂载
+
+  【★ 校验脚本：没有】
+    scripts/ 里只有 new-deck.sh（脚手架 + 引用路径自检，
+    发现 15 套 deck 共 68 个本地引用）和 render.sh（截图导出）
+    →约束靠三处：★ ① token 文件的对比度计算
+                ② 模板类名自检
+                ③ references/ 文档
+    → 也就是说它是「文档 + token」派，不是「脚本校验」派。
+      ★ 这是它与 guizang / ppt-master 的最大区别（见 2.4 对比表）。
+
+  【导出能力】
+    PPTX：★ 不能（README 未提供任何 PPTX 路径）
+    PDF：★ 无
+    PNG：★ 能，render.sh 走 headless Chrome
+    视频：无
+    演讲者模式：S 键 / ?preview=N，含逐字稿提词器 + 计时器
+
+  【其他值得注意的工程细节（已核实）】
+    · Iframe 隔离预览：theme/layout/full-deck showcase 都用 <iframe>
+      per slide，让每个预览都是真实独立渲染
+    · 零构建：纯静态 HTML/CSS/JS，CDN 只用于 webfont / highlight.js /
+      chart.js（可选）
+    · ★ 中英双first-class：Noto Sans SC / Noto Serif SC 预导入
+      →★★【这一点直接解决你的中文字体问题，而且是「预导入」不是「靠系统」。
+        这是目前所有 skill 里对中文最友好的设计。】
+    · ★ 打印修复（2026-09-13 提交，值得抄的坑）：
+      「Hide the element in print and paint the logo per slide instead —
+      in print one .slide is exactly one page.」
+      验证方式：★「by rasterising the PDF and counting logo pixels per page」
+      → ★【把 PDF 栅格化后数像素来验证效果，这是个很硬的验证方法】
+    · 有一个 commit 专门修正文档与磁盘不一致（image-grid.html /
+      image-hero.html 其实是渐变占位墙、零 <img>）
+      → ★【这个 commit 本身说明维护者在意文档准确性，可信度信号】
+
+
+--------------------------------------------------------------------------------
+2.3  ★ zarazhangrui/frontend-slides（30,215★）—— 星数第二高
+--------------------------------------------------------------------------------
+
+  【已核实元数据】
+    ★ 30,215（我给子agent 的 28-30k 偏低）
+    最后 push 2026-06-23（★ 约 3 个月前，活跃边缘）
+    ★ 创建 2026-01-28（8 个月）
+    主语言 JavaScript，MIT
+    ★★ 【它不碰 PPTX，产出 HTML】—— 所以它不是你的 PPT 方案
+
+  【已核实的关键设计】
+    · SKILL.md 183 行 + 34 套 bold 模板 + 12 presets
+      ★「34 套模板」这句我未能从 README 核实，仅二手来源，待核实
+    · ★ v2.1.0（2026-05-26）：把 SKILL.md 里的 Claude 专属工具名全部移除，
+      做成 ★ agent-neutral
+    · ★ v2.0.0：把 skill 内容从 1625 行压到 1059 行
+      → 【上下文降约 89%】。这是 skill 设计的核心取舍：
+        ★ SKILL.md 不是越长越好，是「只写路由，细节拆 references」
+    · ★ 核心约束：固定 1920×1080 舞台整体缩放，
+      ★ 禁止 reflow、禁止 display:none 切页
+      （用 visibility / opacity / pointer-events）
+      → ★★【这条和你第二份报告的结论一致：固定视口尺寸是可复现的前提。
+        而且它用了 visibility 而非 display:none，
+        因为 display:none 会让 Playwright 量测失效。这是个很实际的坑。】
+    · 设计哲学偏「Show, Don't Tell」：
+      ★ 先生成 3 个真实渲染预览让用户选，而不是描述颜色
+      → ★ 这与 ppt-master 的 BLOCKING 门是同一种思路：
+        让模型把「不确定的东西」显式化给人看，而不是自己拍板。
+
+
+--------------------------------------------------------------------------------
+2.4  ★ op7418/guizang-ppt-skill（★ 1,632★，不是我说的 27,308★）
+--------------------------------------------------------------------------------
+
+  【★ 重要更正 + 一个商业风险】
+    实际星数 1,632★（我第一份报告写成 27,308★，★ 错 17 倍）
+    ★★ 许可证：AGPL-3.0（2026-05-28 从 MIT 改）
+       →★★【如果你要商用，这是必须评估的风险点。
+          AGPL 传染性比 MIT 强得多。我第一份报告完全没提这件事。】
+
+  【已核实元数据】
+    最后 push 2026-08-07（约 2 个月，活跃边缘）
+    最后实质提交 2026-08-07（harden presenter runtime lifecycle），
+    之后只有赞助商 README 改动（07-22）
+    → 不算停更，但已明显慢于 html-ppt-skill（3 周前还在提交）
+
+  【★ validate-swiss-deck.mjs 到底校验什么 —— 我读了源码，这是本轮
+    最有工程价值的发现】
+  ★ 它分两层，这是设计上很聪明的地方：
+
+  ── 第一层：静态规则（纯正则，零依赖）──
+    · data-layout 必须存在，且在 24 个白名单内
+      （S01–S22 + SWISS-COVER-ASCII / SWISS-CLOSING-ASCII）
+    · 禁用实验版式 P23/P24
+    · 非 statement 页禁止标题 text-align:center / align-self:center
+    · ★★ SVG 内禁止 <text> —— 文字必须走 HTML grid/caption，
+      SVG 只画几何
+      → ★【这条规则太对了：文字走 HTML，几何走 SVG，各用其长。
+        和我第二份报告里「文字一律走 DOM/SVG 层」的结论一致，
+        而且它用脚本强制执行了。】
+    · 每张 <img src="images/..."> 必须绑定 data-image-slot
+      （如 s22-hero-21x9）
+    · S15/S16 的 21:9 图必须用 .frame-img.r-21x9 + aspect-ratio，
+      禁止 fit-contain、禁止固定 vh 高度
+    · S22 禁止 object-position:top center（会切脸）
+
+  ── 第二层：渲染测量（M1/M2，Playwright）──
+    · ★ 尝试解析 Playwright，★解析不到就降级为 warning 而非 failure
+      →★★【这个降级策略很务实：校验器不能因为依赖缺失就整个跑不起来。
+        你的校验脚本也应该这样设计。】
+    · Chromium 以 --use-angle=swiftshader 启动，1600×900 视口
+      （★ swiftshader = 软件光栅化，无需GPU，CI 友好）
+    · M1 溢出：scrollHeight 溢出、视觉顶/底溢出（阈值 4px）
+    · M1 导航安全线：内容底边超过 height × 0.93 告警
+    · M1 底部留白：bottomGap > 170px 且 activeRatio < 0.74 告警
+      （防过度纠偏）
+    · M2 标题间距：标题到下一个有意义元素的 gap，
+      主标题最小 32px，.h-md/h3 最小 14px
+    · ★ 溢出量给的是修复阶梯：
+      ≤40px 挪内容 / ≤90px 压缩间距 / ≤160px 缩标题 / 更高换版式
+      ★ 明确禁止「删内容」
+      →★★★【这是最值得抄的一点：校验器不该只说「溢出了」，
+        该说「怎么修」。而且明确禁止删内容——
+        模型最常用的降级手段就是偷偷删内容。】
+
+  scripts/ 仅 3 个：
+    validate-swiss-deck.mjs
+    check-presenter-runtime-sync.mjs（★ CI 拦截两份模板 CSS/JS 漂移）
+    validate-presenter-mode.mjs
+
+  【★ 贡献规范本身就体现了它的约束哲学（已核实原文）】
+    在 template.html 里补类，不要让 layouts.md 使用未定义的类
+    在 template-swiss.html 里补类时，
+      同步更新 layouts-swiss.md 和 swiss-layout-lock.md
+    瑞士风新增规则后，同步更新 scripts/validate-swiss-deck.mjs
+    演讲者运行时必须同时更新两套模板，并运行
+      check-presenter-runtime-sync.mjs；★ CI 会拦截两份模板的漂移
+    把踩过的坑写到 checklist.md 对应的 P0/P1/P2/P3 级别
+
+  【★ 它的 FAQ 里两条对你直接有用】
+    Q: 可以导出 PPTX 吗？
+       ★「当前核心交付是 HTML。你可以用浏览器演示、截图或录屏。
+         如果需要 PPTX，建议把 HTML 页面作为视觉稿再转换，
+         但这不是当前主流程。」
+    Q: 为什么不允许自定义颜色？
+       ★「这个 Skill 的重点是稳定产出。★ 自由选色很容易破坏整体风格，
+         所以只允许从预设主题里选。」
+       →★★★【这正是你之前的痛点（自由约束=不稳定）的直接答案：
+         它的做法是【收窄选择空间】到 5 套预设主题，不允许自定义。
+         这与我第一份报告里Marp 的「_class 枚举」、
+         Spectacle 的「刻度式间距」是同一个手法。】
+
+  【★ 它内置的校验维度清单（可以直接抄做检查表）】
+    ① 版式白名单（枚举，不许自由发挥）
+    ② 对齐禁忌（statement 页外不许居中）
+    ③ 分层职责（SVG 不许写字）
+    ④ 图片槽位绑定（每张图必须声明属于哪个槽位）
+    ⑤ 比例约束（21:9 图必须用特定类 + aspect-ratio）
+    ⑥ 裁切禁忌（禁止会切脸的 object-position）
+    ⑦ 溢出测量（scrollHeight + 视觉溢出 4px 阈值）
+    ⑧ 安全区（内容底边 ≤ 0.93 × 高）
+    ⑨ 留白合理性（bottomGap 与 activeRatio 联合判断）
+    ⑩ 最小间距（标题到下元素 ≥ 14/32px）
+    ⑪ CI 防漂移（两份模板的 CSS/JS 必须同步）
+
+  【references/ 结构值得抄的部分】
+    layouts.md               10 种页面布局骨架（可直接粘贴）
+    layouts-swiss.md         22 种瑞士风锁定版式
+    swiss-layout-lock.md     ★★ 瑞士风还原度和版式硬约束
+    themes.md                5 套主题色预设（只能选不能自定义）
+    themes-swiss.md          4 套瑞士风锚点色
+    checklist.md             ★ 质量检查清单（P0/P1/P2/P3 分级）
+    presenter-mode.md        演讲备注契约
+    components.md            组件手册
+
+
+--------------------------------------------------------------------------------
+2.5  ★★ 四大 skill 的约束机制横向对比（本报告核心表）
+--------------------------------------------------------------------------------
+
+  维度            ppt-master      html-ppt-skill   guizang-ppt-skill  frontend-slides
+  ──────────────────────────────────────────────────────────────────────────────
+  ★★           57,912★         8,588★          1,632★           30,215★
+  最后push        2天前           3周前            2个月            3个月
+  许可证         MIT             MIT              ★AGPL-3.0         MIT
+  载体          SVG-as-IR       ★纯HTML          纯HTML            纯HTML
+  出PPTX        ✅原生可编辑     ❌               ❌（FAQ明确说）    ❌
+  出视频        ⚠委托Windows     ❌               ❌❌
+                PowerPoint
+
+  ── 约束机制（★ 这是你最该看的列）─────────────────────────────
+  规范载体        ★spec_lock.md   ★36个theme      ★5套预设主题     34套模板
+                  （可机械解析）    token文件       （不许自定义）    12presets
+  约束执行层      ★BLOCKING硬门    ★WCAG脚本计算    ★正则静态规则    ★禁止reflow
+                  +SVG契约checker  （292采样）      +Playwright测量   固定1920×1080
+  校验脚本        ★svg_quality/    ✘ 无validate    ★3个mjs         未核实
+                  +authoring_
+                  contract.py
+  校验依赖降级    未核实           —               ★Playwright解析   —
+                                    到就降warning     失败即降级
+  修复建议        契约+降级七档    —               ★溢出给修复阶梯  —
+  防漂移          spec_lock哈希    —               ★CI拦截两份模板 —
+  人工签字        ★每道BLOCKING门  ✘               ✘               ★3个预览让人选
+                  都要停
+  模板可扩展      ★4 workspace     ★36主题+36布局  ★22锁定版式     34模板
+                  (Brand/Style/                    +可扩展但要同步
+                   Layout/Deck)                                    4处文档
+
+  ★★【从这张表能读出三条结论】
+  1. ★ 约束分两种流派：
+     「token 派」（html-ppt-skill：用 WCAG 公式把规范变成可计算的指标）
+     「lock 派」（ppt-master：把规范变成只允许 ## 段和 key:value 的锁文件）
+     两种都比「写文档让人遵守」强。
+  2. ★ 校验器必须能优雅降级（guizang：Playwright 解析不到就降warning）。
+     否则第一次在没装 Playwright 的机器上跑就全线崩。
+  3. ★ 所有成熟项目都有「防漂移」机制——
+     guizang 用 CI 拦截两份模板同步，
+     ppt-master 用 LICENSE hash + spec_lock schema 版本号。
+     你如果做多模板，一定要一开始就加防漂移检查。
+
+
+################################################################################
+              第 3 章  HTML → PPTX 的技术方案（限定活跃方案）
+################################################################################
+
+  用户既有诉求：HTML 为唯一载体 → 要可编辑 PPTX + 要中文。
+
+--------------------------------------------------------------------------------
+3.1  ⚠ PptxGenJS 底层库已 16 个月没发新版（一条重要预警）
+--------------------------------------------------------------------------------
+
+  仓库    gitbrent/PptxGenJS
+  ★npm 最新版 4.0.1，发布于 2025-06-26
+  ★ 距今约 16 个月没发新版
+
+  ★★【本报告最该警惕的一条】
+    上层 skill 生态异常活跃（ppt-master 2026-09 还在发 v6.6.0、
+    guizang、html-ppt-skill 都在更新），
+    但底层库一年半没动——
+    →★ 说明大家是在 4.0.1 之上自己封装，★ 不是等上游。
+    → 你的计划里要把「fork + 自维护」当成一个选项。
+
+  它自带的 HTML 能力其实很窄：
+    只有 pptx.tableToSlides("tableElementId")，★ 只处理 <table>，
+    不是通用 HTML→PPTX。
+
+--------------------------------------------------------------------------------
+3.2  四条HTML → PPTX 路线（活跃度已核实）
+--------------------------------------------------------------------------------
+
+  ★★【注意命名陷阱】
+    npm i html2pptx 会装到 2023-05-07 的 0.0.5，
+    ★ 同名不同物、已停更、别装错。
+    Anthropic 官方的 @ant/html2pptx ★ 不以独立 npm 包发布
+    （只以 html2pptx.tgz 随Claude 桌面版 skills 分发）。
+
+  ── 路线 A：DOM 复用型（可编辑度高，保真度中）──
+    实现：Anthropic @ant/html2pptx（最成熟的 DOM 复用实现）
+      核心签名：
+        const { slide, placeholders } =
+          await html2pptx(htmlFile, pptx, { tmpDir, slide });
+      依赖 pptxgenjs + playwright + sharp
+    tfriedel/pptx skill 基本是它的文档镜像
+
+    ★★【tfriedel 的版式尺寸设计值得抄】
+      body { width: 720pt; height: 405pt; }
+      对应 pptx.layout = 'LAYOUT_16x9'
+      ★ 1pt = 1px @96dpi，720×405 正是 16:9 且等于
+        LAYOUT_16x9 的 10in × 5.625in
+      →★ 所有内边距/圆角/阴影全部用 pt 单位书写
+        （margin: 30pt; border-radius: 8pt）
+        ★★【这样 HTML 里的数值可直接 1:1 搬进 PPTX，不用换算】
+          这是整个 HTML→PPTX 领域最实用的一个小技巧。
+
+    ★★【占位符机制 —— 最聪明的设计，也是「可编辑 PPTX」的现实解法】
+      HTML 里放一个 <div id="chart">，
+      转换器返回 { slide, placeholders: [{ id, x, y, w, h }] }，
+      你拿到坐标后调
+        slide.addChart(pptx.charts.BAR, data, placeholders[0])
+      塞原生图表。
+      →★【静态文字走 HTML 还原，动态数据走占位符插原生图表】
+        这就是路线A 的正确用法：不要指望全 DOM 转换，
+        数据可视化部分用占位符补真图表。
+
+    三条硬约束（校验器会报错）：
+      1. ★ 文本必须在 <p> 标签里（裸文本节点无法映射）
+      2. ★ 背景/边框/阴影只允许在 div 上，禁止在文本元素上
+      3. ★ CSS 渐变不支持，必须先用 sharp 把 SVG 渐变栅格化成 PNG
+
+    ★ 自动校验：收集全部错误后一次性抛出，不逐个打断
+      （和我第二份报告里Anthropic html2pptx.js 的做法一致）
+    ★ thumbnail.py 生成缩略图网格用于人眼 QA 文字截断
+      → 「机器校验 + 视觉校验」双轨
+
+  ── 路线 B：截图 + 文本框叠加（保真度高，可编辑度中）──
+    ★★【这是最省事、依赖最轻、活跃度最高的折中，推荐你优先考虑】
+    实现：fredliu168/html_to_editable_ppt_skill（★ 未核实星数/push）
+      --mode editable：底层一张设计好的截图保证视觉不走样，
+      ★ 上层叠加精确对应 HTML 原始位置的文本框
+      → 双击文字可改，改完视觉纹丝不动
+      实测 289KB PPTX 含 2 张底图
+      命令：
+        node scripts/html_to_ppt.mjs --html in.html --out out.pptx \
+             --mode editable --slides 2 --chrome <path> \
+             --width 1600 --height 900
+      ★ 依赖极轻（playwright-core + pptxgenjs，不下载 Chromium，
+        用本机 Chrome）
+
+    同类：lovstudio/skills 的 html2pptx（未核实星数）
+      1920×1080 @2×，Chromium，整页满幅嵌入（纯截图）
+      ★ SKILL.md 触发词值得抄——中英双语并列，
+        且包含口语化触发：「用 html 做 ppt」「把这个 html 导出成幻灯片」
+      ★ SKILL.md 182 行/ ~1.6k tokens
+      另有 edit_html.py 提供浏览器内 live editor（改完一键 Export PPTX），
+      依赖 playwright + python-pptx，
+      ★ 不装 Chromium 就明确告诉用户装
+
+    SenseTime-FVG/sensenova-claw 的 ppt-export-pptx（未核实星数）
+      html_to_pptx.mjs：截图 + DOM 驱动重建原生元素（pptxgenjs）
+      ★ 有 preflight：校验 review.json、motif data-layer 标记、
+        真实照片槽位
+      ★★ 单页失败则插入空白页继续，最后输出 converted/failed JSON 摘要
+        → 【这个「优雅降级 + 报告」模式对批量课件生产很重要，
+          你批量跑 50 页课时需要知道哪几页失败了】
+
+  ── 路线 C：绕开 HTML，直接生成原生 PPTX（可编辑度最高）──
+    ★ hugohe3/ppt-master（57,912★，两天前提交）
+      ★ 唯一做到真 OOXML 原生的项目
+    详见第 1 章
+
+  ── 路线 D：SVG 为中间表示 ──
+    ★ hugohe3/ppt-master 实际就是这个（见 1.2）
+      55,996 字节的公开映射文档 + 诚实降级七档
+
+--------------------------------------------------------------------------------
+3.3  ★★ 路线对比（针对「HTML唯一载体 + 可编辑 PPTX + 中文」）
+--------------------------------------------------------------------------------
+
+  路线A DOM 复用     可编辑 ★★★★   保真 ★★★    活跃 ★★★
+                     占位符补图表    复杂版式易崩  上游16个月没更新需自维护
+
+  路线 B 截图+文本框  可编辑 ★★★    保真 ★★★★★  活跃 ★★★★
+  ★★推荐首选       够用于改字     视觉100%保住  依赖最轻
+
+  路线 C 原生 PPTX    可编辑 ★★★★★  保真 ★★★★    活跃 ★★★★★
+  ppt-master         真母版继承/公式  需重写导出器  方向与HTML 相反
+
+  路线 D SVG-as-IR    可编辑 ★★★★   保真 ★★★★    活跃 ★★★★★
+  ppt-master 实际路线  真图表工作簿    需自建SVG管线
+
+  ★★【诚实判断】
+    你的「HTML 为唯一载体」和 ppt-master 的路线不是对立而是互补：
+    ·它要写 tspan_flattener.py / flatten_tspan.py / shape_boolean_svg.py
+      / custgeom_to_svg.py / text_baseline.py / text_measure.py
+      / text_outline.py 来补 SVG 的文本排版缺陷
+      → ★★【这正是 HTML 的强项：浏览器已有完整文本流/换行/基线对齐。
+        所以 HTML-as-IR 在文本排版上比 SVG-as-IR 有优势。】
+    ·它有 HTML 没有的：真实 slide master 继承、OMML 公式、
+      原生 chart 工作簿、prst 几何、连接线调节柄
+      → 这些 HTML 没有对应物，只能靠 CSS/JS 模拟或接受降级
+    ·★【建议把 ppt-master 当作「HTML→PPTX 导出器」这个难题的
+      参考实现库，尤其pptx_package/、native_objects/、pptx_ooxml/
+      （OOXML 安全读写、edit_safety.py、xml_safety.py）
+      —— 这些是纯 Python OOXML 工程，与 IR 无关，可 100% 借鉴】
+
+  →★【我的建议】
+    主链路走路线 B（截图 + 文本框叠加：视觉 100% 保住、改字够用、
+    依赖最轻、活跃度高）
+    需要真图表/真表格时用路线 A 的占位符机制补
+    只有当客户明确要「原生形状 + 母版继承」时才上路线 C/D
+
+
+################################################################################
+          第 4 章  怎么找这类 skill（你自己查的工具）
+################################################################################
+
+  这次摸清了 skill 生态的检索方法，这部分你可以长期用。
+
+--------------------------------------------------------------------------------
+4.1  五个 skill 目录站（已核实定位）
+--------------------------------------------------------------------------------
+
+  站点              定位                数据来源          能查安装量？
+  ─────────────────────────────────────────────────────────────────────
+  ★ skills.sh唯一官方安装渠道      自有榜单        ★唯一权威
+   （Vercel Labs，2026-01/02      （npx skills           但跨48个
+     上线，npx skills CLI）        的注册表）          agent累加⚠
+  ★★skillselion.com  ★数据最全的聚合目录            ★可以
+                 （自称 58.8k skills /   抓 skills.sh
+                  12.6k marketplaces /    + GitHub
+                  8.4k MCP，每日同步
+                  skills.sh）
+  claudeskills.info  分类目录，实时拉 GitHub   能核对frontmatter
+                 SKILL.md 原文，并显示      原文和许可证★
+                  license / 安装命令
+  claudepluginhub.com 插件视角，★额外给出       不能
+                 token 开销拆解
+                 （每会话~66 tokens
+                  vs 调用时 ~825 tokens）
+  skillsmp.com      数量最大但多为 fork/镜像    不能
+
+--------------------------------------------------------------------------------
+4.2  ★ 筛选活项目的标准（这次教训换来的）
+--------------------------------------------------------------------------------
+
+  ★★【目录站只能用来「发现」，不能用来「信任」】
+
+  唯一可靠路径：★ 直接开 GitHub 看最后 push 时间。
+
+  快速筛活项目的命令：
+    npx skills find <关键词>              # 在任意 agent 内搜 skills.sh
+    gh api repos/<owner>/<repo> --jq '{stars:.stargazers_count,pushed:.pushed_at}'
+
+  ★★【四条筛选规则，按重要性排序】
+    1. ★★★ 看最后 push 时间，不看星数。
+       ppt-master 57,912★ 两天前提交 vs mdx-deck 11,497★ 已死
+    2. ★★★ skill 类项目要看★ npm 发布日 / 依赖版本，
+       不只看 GitHub 提交（shower GitHub 活但 npm 停更 2019）
+    3. ★★ 看许可证★（guizang 是 AGPL-3.0 不是 MIT，商用要评估）
+    4. ★★ 看 repository description 和 README 是否一致
+       ★（html-ppt-skill 的 description 还写着 24 themes，
+         实际已是 36——文档漂移说明维护节奏不稳）
+
+  ★ 注意：★ skills.sh 的安装量是跨 agent 累加的
+    （Cursor 用户会 inflate Claude 视角），
+    用它判断「Claude Code 里好不好用」会失真。
+
+--------------------------------------------------------------------------------
+4.3  一个额外发现：你本机就装了一个 HTML→PPTX skill
+--------------------------------------------------------------------------------
+
+  ★ 我检查了本机环境，发现已装：
+    tencent-pptx（v20260904，Workbuddy 内置 skill 插件）
+
+  【★ 它的设计对你有直接参考价值 —— 因为它是「DSL + lint」的思路】
+
+  目录结构：
+    SKILL.md
+    references/
+      component-animation.md   component-box.md      component-chart.md
+      component-codeblock.md   component-diagram.md  component-faicon.md
+      component-hyperlink.md   component-image.md     component-math.md
+      component-qrcode.md      component-slide.md     component-svg.md
+      component-table.md       component-text.md
+      create-from-material.md  create-from-scratch.md
+      design-principle.md      human-alignment.md    story-principle.md
+      designs/
+        design-principle.academic.md
+        design-principle.consulting.md
+        design-principle.redgold.md
+    scripts/
+      doc_image_extractor.py
+      pptx2image.py
+
+  ★★★【它最值得抄的三点】
+
+  1. ★★【DSL 作为中间表示 + lint 校验 —— 这是解你病根的另一种解法】
+     每个 PPT 对应一个 project_dir：
+       <workspace_dir>/
+       └── <project_dir>/                    # 目录名 = pptx 文件名去后缀
+           ├── DESIGN.md                   # PPT 视觉设计文档
+           ├── STORY.md                    # PPT 内容叙事文档
+           ├── assets/                     # 页面引用的静态资源
+           ├── slides/                     # ★ SlideDSL 源文件（每页一个 .slide）
+           │   ├── 01.slide
+           │   └── 02.slide
+           └── <pptx_name>.pptx
+
+     命令：
+       slidep create <file>                              # 创建空白 PPTX
+       slidep upsert-dsl <file> --dsl-file <path> \
+              [--page-index N]                # 插入或替换 DSL 页
+       slidep lint <file> --dsl-file <path># ★ 校验语法与溢出检测
+     ★★ 【slidep lint 做「语法与溢出检测」——
+        这正是 guizang 用 Playwright 做的事，但它做成了 DSL 级lint。
+        对你的启示：★★【把你的幻灯片定义成 DSL/JSON，
+        就能在生成后、渲染前做机器校验，而不必等到截图才发现问题】】
+
+  2. ★★【组件手册按类型分文件 —— 渐进式披露的教科书】
+     每个 component-* 是一个组件类型的完整规范：
+       component-text.md / component-image.md / component-chart.md /
+       component-table.md / component-svg.md / component-math.md /
+       component-codeblock.md / component-diagram.md / component-animation.md
+     → ★★★【共 19 个 component 文件 + 3 个 design-principle 文件。
+       触发时才加载对应组件的规范，既不占context 又精确。
+       ★ 这比「一份大规范文档让模型自己找对应段落」有效得多。】
+
+  3. ★【DESIGN.md 与 STORY.md 分离】
+     DESIGN.md = 视觉设计文档
+     STORY.md  = 内容叙事文档
+     ★★★【视觉与叙事分离 —— 这解决了你之前的一个隐含困惑：
+        「内容」和「设计」是两条独立的轴，混在一起必然互相干扰。
+        这与我第一份报告说的「版式交给代码、内容交给 IR」是同一个道理，
+        但它的分离方式更彻底：连文档都是分开的两个文件。】
+     另有 design-principle.{academic,consulting,redgold}.md
+     ★ 预设风格分支（学术/咨询/红金）
+
+  ★ 两条硬规则（值得抄）：
+    ★「基于参考材料生成 PPT 时，★ 严格使用本SKILL 的材料解析能力，
+       避免寻求外部解析能力」
+      → 强制走自己的管线，避免 LLM 临时发挥
+    ★「PPTX 文件完全生成后，所有后续的内容修改/编辑
+       ★ 禁止回退到 SlideDSL 源文件进行修改」
+      → 生成与编辑分离。编辑走另一个 skill（tencent-local-office-edit）
+    ★ 需求澄清：★ 只问缺失的，文字提问 ≤ 3 个，一轮问完，禁止多轮追问
+    ★ 沟通术语统一用「页/封面/目录/这一页」，不暴露内部实现
+
+
+################################################################################
+                    第 5 章  给你的落地建议
+################################################################################
+
+--------------------------------------------------------------------------------
+5.1  ★ 先纠正我第一份报告里的一个结论
+--------------------------------------------------------------------------------
+
+  我第一份报告第 3.2 节给了「稳定性手段有效性排序」，其中第 11、12 位是：
+    11 切图做元素级关联★☆☆☆☆（建议放弃）
+    12 靠提示词写设计规范★☆☆☆☆（你已经踩过这个坑）
+
+  ★★【这个排序本身没错，但我在报告里说的是「淘汰的做法」，
+    没有给出「那应该怎么做」的正向答案。
+    这次的 skill 调研正好补上了这块 —— 四个项目给出了四种正向解法：】
+
+  项目            正向解法
+  ──────────────────────────────────────────────────────
+  ppt-master  ★ 把文档降级为提案（design_spec.md）
+                ★ 签字变成物理前置（BLOCKING 门，签前禁止写产物）
+                ★ 约束变成可解析的锁（spec_lock.md，只允许 ## 段 + kv）
+                ★ 能力边界写成公开契约（诚实降级七档）
+
+  html-ppt-skill 把规范变成可计算的指标（36主题 × WCAG = 292 采样）
+                ★ 用脚本算而不是让人记
+
+  guizang-ppt ★ 把自由收窄到枚举（5 套主题，FAQ 明确说不许自定义）
+               ★ 校验器给修复阶梯而非只报错（≤40挪/≤90压/≤160缩/换版式）
+               ★ 明确禁止「删内容」（模型最常用的偷偷降级手段）
+               ★ 校验依赖可降级（Playwright 解析不到 → warning）
+
+  frontend-      ★ SKILL.md 从 1625 行压到 1059 行（上下文降 89%）
+  slides          ★ agent-neutral，移除工具名绑定
+                 ★ 固定 1920×1080 禁reflow，用 visibility 而非 display:none
+
+--------------------------------------------------------------------------------
+5.2  ★★ 你可以立刻抄的五件事（按投入产出排序）
+--------------------------------------------------------------------------------
+
+  ┌──┬─────────────────────────────────────────────────────────────────┐
+  │1 │ ★★★ 把幻灯片定义成 DSL/JSON，然后 lint它                        │
+  │  │证据：tencent-pptx 的 slidep lint（语法+溢出检测）│
+  │  │      guizang 的 validate-swiss-deck.mjs（静态+渲染双层）         │
+  │  │ 做：先落 SlideSpec JSON（版式枚举 + 槽位 maxLen/maxItems）        │
+  │  │     再写 validate_slide.py：溢出/超字/缺槽/版式白名单│
+  │  │ 收益：最大的改动、最大的确定性提升。                            │
+  │  │     ★ 这一步做了，「靠文档约束」就不再需要了。                  │
+  ├─────────────────────────────────────────────────────────────────┤
+  │2 │ ★★★ 视觉规范写成可计算的指标                                      │
+  │  │ 证据：html-ppt-skill 用 WCAG 算 292 个 --accent 采样，│
+  │  │      最低 4.54:1，据此把回退值从 #fff 改成 #000│
+  │  │ 做：design.tokens.json + 脚本批量算对比度（和字号行高）           │
+  │  │     低于阈值就 build 失败                                          │
+  │  │ 收益：约束从「模型要记住」变成「机器保证」。                      │
+  ├─────────────────────────────────────────────────────────────────┤
+  │3 │ ★★★ 校验器要给修复阶梯，且禁止删内容                              │
+  │  │ 证据：guizang 的溢出修复阶梯 + 「明确禁止删内容」              │
+  │  │ 做：validate 输出形如                                        │
+  │  │     "溢出 60px：可①压缩间距 ②缩标题 ③换版式；✘ 禁止删内容"     │
+  │  │ 收益：模型不会偷偷降级内容。这是稳定性最隐蔽的失来源。            │
+  ├─────────────────────────────────────────────────────────────────┤
+  │4 │ ★★ 给 SPEC 加 BLOCKING 签字门+ 防漂移校验                         │
+  │  │ 证据：ppt-master 的 spec_lock.md + LICENSE hash门│
+  │  │      guizang 的 check-presenter-runtime-sync.mjs│
+  │  │ 做：改spec_lock.md 或 design.tokens.json 必须过校验脚本          │
+  │  │     CI 拦截多模板漂移│
+  │  │ 收益：多人/多模板协作时不会越改越歪。                            │
+  ├─────────────────────────────────────────────────────────────────┤
+  │5 │ ★★ 校验依赖可降级                                                │
+  │  │ 证据：guizang 的 Playwright 解析不到 → warning 而非 failure     │
+  │  │ 做：validate_slide.py 里 try: import playwright except: warning  │
+  │  │ 收益：不会在没装依赖的机器上一跑就崩。                            │
+  └─────────────────────────────────────────────────────────────────┘
+
+--------------------------------------------------------------------------------
+5.3  ★★ 我建议你重读本机的 tencent-pptx skill
+--------------------------------------------------------------------------------
+
+  它就在你机器上：
+    ~/.workbuddy/plugins/cache/workbuddy-builtin/tencent-pptx/.../skills/tencent-pptx/
+  ★ 它是「DSL + lint + 组件手册拆分 + DESIGN/STORY 分离」的完整实现，
+  而且是同一套 skill 体系里的东西，接口能对齐。
+
+  ★★【它可能是你最快能落地的一条路 —— 因为它已经在你机器上，
+  而且它的设计正好治你的病：
+    · DSL 作为中间表示（你可以定义自己的 SlideSpec）
+    · slidep lint 做语法与溢出检测（你只要换成 lint 自己的 DSL）
+    · 19 个 component-*.md 按需加载（不用自己重新组织上下文）
+    · DESIGN.md / STORY.md 分离（视觉与叙事解耦）
+    · 「只问缺失的，≤3 个，一轮问完」（需求澄清范式）
+    · 「禁止回退到 DSL 源文件修改」（生成与编辑分离）
+
+  ★ 这条路的成本远低于「从零搭一套 DSL + lint」。
+  建议下一步：读它的 references/create-from-scratch.md 和
+  component-text.md，看它的 DSL 长什么样、lint 检查哪些项。
+
+--------------------------------------------------------------------------------
+5.4★★ 关于 HTML 作为唯一载体：一句诚实的判断
+--------------------------------------------------------------------------------
+
+  你三次强调「HTML 为唯一载体」，这个判断有道理（文本排版、浏览器免费、
+  中文字体好处理），但也有一个盲区要提醒：
+
+  ★ ppt-master 用 SVG-as-IR 而不用 HTML-as-IR 的原因，
+  不是它不知道 HTML 好，
+  而是★「目标格式的能力边界」不同：
+    · HTML 做不到真 slide master 继承
+    · HTML 做不到 OMML 公式
+    · HTML 做不到原生 chart 工作簿（Edit Data）
+    · HTML 做不到 prst 几何 + 连接线调节柄
+    · HTML 做不到 PPTX 内嵌字体
+
+  ★★【所以纯 HTML 路线能做到的最好结果，是「视觉100% 还原 +
+    文字可改」的 PPTX（路线 B），不是「原生可编辑 PPTX」。
+    如果你的交付要求是后者，HTML 只能是中间表示之一，
+    最终一定要有一个 OOXML 写入层。
+
+  → 这不是劝你放弃 HTML，而是：
+    ★ HTML 负责「好看和正确」，OOXML 写入层负责「可编辑和能被 PowerPoint 认」。
+    ppt-master 的 pptx_package/ + native_objects/ 就是那个写入层，
+    ★★ 【而且它是 MIT、纯 Python、可直接读源码借鉴的。】
+
+--------------------------------------------------------------------------------
+5.5  ★ 一份诚实的能力边界自检（落地前先对照）
+--------------------------------------------------------------------------------
+
+  用之前先明确你要交付什么，对照选择：
+
+  交付要求                你的选择              能达到吗
+  ──────────────────────────────────────────────────────────────
+  只出 HTML 课件            html-ppt-skill /      ✅够用
+                          frontend-slides
+  HTML + 截图 PNG            render.sh /          ✅ 稳
+                          decktape
+  HTML + 可改文字的 PPTX     路线B 截图+文本框叠加    ✅够用
+  HTML + 真图表可编辑        路线A 占位符插原生图表   ✅可做
+  真母版继承 + 公式+SmartArt ppt-master /        ⚠ 要么换路线
+                          OOXML 写入层            （成本高）
+  同一 IR 出课件 + 短视频    需自建（两条链路共用IR）★ 没人做全
+                                                          ★ 你的机会
+
+  ★★【最后一行是重点】
+    没有任何一个项目做到「一份中间表示 → 课件 + 短视频」双端产出。
+    ppt-master 的视频要委托 Windows PowerPoint；
+    html-ppt-skill / frontend-slides / guizang 全都止步 HTML。
+    → ★ 你的「一稿两出」目标目前没有现成方案，这是你真正的护城河，
+      也意味着你必须自己做两条渲染链路——这也正是我第一份报告
+      （Remotion / GSAP + Playwright 那条线）的价值所在。
+
+--------------------------------------------------------------------------------
+5.6  ★ 三条风险提醒（必须提前知道）
+--------------------------------------------------------------------------------
+
+  风险 1｜★ PptxGenJS 4.0.1 已 16 个月未发新版
+    所有上层 skill 都锁它。要么锁定版本自己维护，要么fork。
+    → 计划里把「fork + 自维护」列为一个选项。
+
+  风险 2｜★ guizang-ppt-skill 是 AGPL-3.0（不是 MIT）
+    ★★ 商用前必须评估。MIT → AGPL 的传染性变化很实质。
+    这条我第一份报告完全没提，是我的疏漏。
+
+  风险 3｜★ npm i html2pptx 会装到 2023 年的废弃包
+    Anthropic 官方的只以 tgz 分发。同名不同物。
+
+  补充风险｜license 归属
+    ppt-master 是 MIT，但它的 attribution_guard.py 强制要求
+    完整官方分发不得移除署名文件（LICENSE hash 校验）。
+    → 你 fork 或二次封装时，要保留它的 LICENSE / SPONSORS 文件，
+      否则脚本会 fail-closed。
+
+
+################################################################################
+                          第 6 章  待验证项
+################################################################################
+
+  本轮未能一手核实的条目（不要当结论用）：
+  □ lewislulu/html-ppt-skill 的 star 数（我用网页核实了 8,588 与
+    36/15/36/47 各计数，但 GitHub API 当时限流，未做二次交叉）
+  □ zarazhangrui/frontend-slides 的「34 套模板 / 12 presets」
+    （未从 README 核实到该细节）
+  □ lovstudio/skills 的 star 数与 push 时间
+  □ SenseTime-FVG/sensenova-claw 的 star / push
+  □ fredliu168/html_to_editable_ppt_skill 的 star / push
+  □ tfriedel/claude-office-skills 的 star 数（822★ 为二手来源）
+  □ ppt-master 是否内置/推荐思源黑体（读到的文档里没见到该字体名）
+  □ ppt-master 的 svg_quality/ 具体检查项清单
+  □ ppt-master 的 BLOCKING 门在各 route 里的确切数量
+  □ hugohe3/ppt-master-examples 的体量（12★，README 说15 示例/229 页未核实）
+  □ pptxgenjs 4.0.1 之后的 fork 生态（是否有社区维护分支）
+
+  ★ 说明：本轮 GitHub REST API 大部分时间返回 403（未认证 IP 限流），
+  数据主要靠 WebFetch 直接读仓库页 + 多个 subagent 交叉验证。
+  ★ 报告中标注「已核实」的项是多方交叉过的；标「未核实」的请自行验证。
+
+
+################################################################################
+                            附：这次的三句话
+################################################################################
+
+  1. 你说「项目太老」——对。我前两轮把死的和活的并列推荐，
+     星数还查错了（guizang 实际 1,632★，我写 27,308★），
+     而且完全漏掉了 57,912★ 的 ppt-master。
+     这次全部项目都按「最后 push 时间」筛过，标准写在 4.2。
+
+  2. 你说的「PPT master skill」= hugohe3/ppt-master（57,912★，
+     两天前提交，MIT）。它是 SVG-as-IR，不是 HTML-as-IR——
+     但它的 OOXML 写入层（pptx_package/、native_objects/）
+     可以 100% 借鉴，这正是「HTML→可编辑 PPTX」最难的那部分。
+
+  3. ★ 解你病根的四个正向答案（我前一份报告只说「淘汰什么」，
+     这次补「该做什么」）：
+     ppt-master把文档降级为提案 + 签字变成物理前置
+     html-ppt-skill 把规范变成可计算的指标（WCAG 292 采样）
+     guizang      把自由收窄到枚举 + 校验给修复阶梯
+     frontend-     SKILL.md 压到 1059 行 + 固定舞台禁 reflow
+     你的 tencent-pptx skill 本机就有，用的是 DSL + lint 范式，
+     ★★ 【这条可能是你最快能落地的路，别从零搭 DSL。】
+
+================================================================================
+                              报告结束
+================================================================================

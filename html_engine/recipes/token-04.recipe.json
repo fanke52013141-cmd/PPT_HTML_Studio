@@ -1,0 +1,32 @@
+{
+  "format": "hps.e2.recipe",
+  "version": "0.1.0",
+  "id": "scene.token-04",
+  "revision": 1,
+  "template": "recipe.hero-steps",
+  "variant": "sequential",
+  "title": "上下文是一份容量预算",
+  "subtitle": "4k 只作教学假设，不指某个当前模型",
+  "source": "https://developers.openai.com/api/docs/concepts ; https://developers.openai.com/api/docs/guides/conversation-state ; https://developers.openai.com/api/reference/python/resources/responses/methods/create",
+  "heroAsset": "assets/knowledge-book-v2.png",
+  "steps": [
+    {
+      "label": "输入占用",
+      "detail": "系统指令、历史与新问题共同占用。",
+      "narration": "上下文窗口表示一次请求可使用的 token 容量。系统指令、历史和新提问等输入都可能占用它。它不是一个永久记忆仓库，而是当前计算可用的上下文范围。",
+      "summary": "上下文窗口不等于永久记忆。"
+    },
+    {
+      "label": "给输出留位置",
+      "detail": "假设总窗口 4k，输出也需预留空间。",
+      "narration": "假设一个模型的总窗口是四千 token。输入若已接近上限，就不能再假设模型还能输出任意长的回答。部分模型还需要考虑推理 token 等预算，具体规则要查对应模型。",
+      "summary": "输入与输出预算需要一起考虑。"
+    },
+    {
+      "label": "超限处理",
+      "detail": "可能报错、截断，或由应用压缩历史。",
+      "narration": "超过上限不必然自动删除最早对话。例如 OpenAI Responses 的默认禁用截断模式会让超限请求报错，开启自动截断才会移除较早的输入项目。应用也可能摘要压缩历史，所以所谓遗忘与具体策略有关。",
+      "summary": "超限行为取决于接口与应用策略。"
+    }
+  ]
+}

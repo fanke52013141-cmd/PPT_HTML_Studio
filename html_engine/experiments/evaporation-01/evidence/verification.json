@@ -1,0 +1,147 @@
+{
+  "libraryVersion": "0.1.0",
+  "sceneRevision": 2,
+  "subtitleChecks": {
+    "fontsFit": true,
+    "contentClear": true,
+    "invalidRejected": true,
+    "layoutStable": true,
+    "zoneHeight": 100
+  },
+  "reuseInstances": 14,
+  "rejectedInvalidCases": 6,
+  "frames": [
+    {
+      "time": 0,
+      "sha256": "fba2c8a9a030321ce158f841502a2f24549984fb4bc1ae9e17215f2f2c76e59f"
+    },
+    {
+      "time": 3000,
+      "sha256": "e3af060df15c527e960f00629c37a91b5c77a75cd5477540298d6a16c37122e5"
+    },
+    {
+      "time": 7000,
+      "sha256": "9917e825638bc94ae9debc0d17e7f8740e5dbda27b216ee382947e0afea5b876"
+    },
+    {
+      "time": 12000,
+      "sha256": "b0f406cc2fb86b701b49b7d6be20b8b6eafc99d96a37447bb42b5b5b54565a76"
+    },
+    {
+      "time": 16000,
+      "sha256": "b9a9ffbd9c2f1c9f2ea969434b386031274e28a95d6d73ee827f8902c8e73855"
+    },
+    {
+      "time": 19999,
+      "sha256": "56c60745525eecebbabed9360d99cbb1b809f5a71a623ae8f8fc6a137d4c55c6"
+    }
+  ],
+  "geometry": [
+    {
+      "id": "title",
+      "x": 124,
+      "y": 131,
+      "width": 1380,
+      "height": 100,
+      "particles": []
+    },
+    {
+      "id": "sun",
+      "x": 159,
+      "y": 336,
+      "width": 235,
+      "height": 225,
+      "particles": []
+    },
+    {
+      "id": "particles",
+      "x": 609,
+      "y": 336,
+      "width": 360,
+      "height": 285,
+      "particles": [
+        {
+          "id": "particles.particle.0",
+          "x": 72,
+          "y": 45.71287128712872
+        },
+        {
+          "id": "particles.particle.1",
+          "x": 115.20000000000002,
+          "y": 70.77029702970297
+        },
+        {
+          "id": "particles.particle.2",
+          "x": 158.4,
+          "y": 95.82772277227721
+        },
+        {
+          "id": "particles.particle.3",
+          "x": 201.60000000000002,
+          "y": 52.4851485148515
+        },
+        {
+          "id": "particles.particle.4",
+          "x": 244.79999999999998,
+          "y": 77.54257425742574
+        },
+        {
+          "id": "particles.particle.5",
+          "x": 288,
+          "y": 34.199999999999996
+        }
+      ]
+    },
+    {
+      "id": "direction",
+      "x": 1044,
+      "y": 431,
+      "width": 180,
+      "height": 160,
+      "particles": []
+    },
+    {
+      "id": "term",
+      "x": 1222.412353515625,
+      "y": 459.0155029296875,
+      "width": 233.17529296875,
+      "height": 102.968994140625,
+      "particles": []
+    },
+    {
+      "id": "state",
+      "x": 539,
+      "y": 706,
+      "width": 540,
+      "height": 126,
+      "particles": []
+    },
+    {
+      "id": "explanation",
+      "x": 1094,
+      "y": 626,
+      "width": 400,
+      "height": 110,
+      "particles": []
+    },
+    {
+      "id": "beaker",
+      "x": 389,
+      "y": 311,
+      "width": 780,
+      "height": 488,
+      "top": 311,
+      "right": 1169,
+      "bottom": 799,
+      "left": 389
+    }
+  ],
+  "textBounds": "passed",
+  "seekOrderPixels": "passed",
+  "actualPlaybackAdvances": "passed",
+  "pause": "passed",
+  "scrub": "passed",
+  "pageErrors": [],
+  "browser": "155.0.8059.12",
+  "userVisualApproval": "pending"
+}

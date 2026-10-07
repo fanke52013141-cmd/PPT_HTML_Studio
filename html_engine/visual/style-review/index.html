@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  />
+  <title>柔和彩色科普 · 参考风格还原样板</title>
+  <link rel="stylesheet" href="components.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font:
+        14px "Microsoft YaHei",
+        sans-serif;
+      background: #eef1f6;
+      color: #455b79;
+    }
+    main {
+      max-width: 1648px;
+      margin: auto;
+      padding: 20px 24px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    p {
+      margin: 7px 0;
+      color: #6d7e96;
+    }
+    select,
+    button {
+      font: inherit;
+      border: 1px solid #d7dfe9;
+      background: white;
+      color: #455b79;
+      padding: 8px 13px;
+      border-radius: 8px;
+    }
+    button {
+      cursor: pointer;
+    }
+    #viewport {
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 8px 36px #455b791a;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 14px 0;
+      flex-wrap: wrap;
+    }
+    #seek {
+      flex: 1;
+      min-width: 220px;
+    }
+    #status {
+      min-height: 20px;
+    }
+    details {
+      margin-top: 20px;
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+    }
+    details img {
+      width: 100%;
+      display: block;
+      margin-top: 16px;
+    }
+    a {
+      color: #567db3;
+    }
+  </style>
+  <main>
+    <header>
+      <div>
+        <h1>柔和彩色科普 · 参考风格还原样板</h1>
+        <p>按你提供的参考补齐视觉层次。当前为实际渲染样板，等待视觉审阅。</p>
+      </div>
+      <select id="scene" aria-label="示例内容"></select>
+    </header>
+    <div id="viewport"></div>
+    <div class="controls">
+      <button id="play">播放讲解</button><button id="end">查看完整画面</button
+      ><input
+        id="seek"
+        type="range"
+        min="0"
+        max="18000"
+        value="18000"
+        aria-label="播放进度"
+      /><span id="time">18.0 s</span>
+    </div>
+    <div class="controls">
+      <label
+        >字幕字号
+        <input id="font" type="range" min="20" max="44" value="32" /><span
+          id="font-value"
+          >32</span
+        ></label
+      ><label><input id="reduced" type="checkbox" />减弱位移动画</label
+      ><span id="status" role="status">正在加载…</span>
+    </div>
+    <details>
+      <summary>对照你指定的原参考图</summary>
+      <p>
+        重点对应原图中间的内容讲解页：标题分隔、图标知识条、插画区域、柔和材质与结论区。参考板里的封面/图表页尚未在本样板实现。
+      </p>
+      <img
+        src="../../../docs/styles/science-explainer/references/user-style-reference.png"
+        alt="用户指定的柔和彩色科普视觉参考"
+      />
+    </details>
+  </main>
+  <script src="../preview/data.js"></script>
+  <script src="sample.js"></script>
+</html>

@@ -1,0 +1,504 @@
+{
+  "format": "hps.e1.scene",
+  "schemaVersion": "0.1.0",
+  "contractVersion": "0.7.1",
+  "id": "scene.course-water",
+  "revision": 1,
+  "title": "蒸发与凝结",
+  "authoringMode": "design-exploration",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "safeInsets": {
+      "top": 40,
+      "right": 40,
+      "bottom": 40,
+      "left": 40
+    }
+  },
+  "durationMs": 12000,
+  "timingMode": "manual",
+  "templateRef": {
+    "id": "layout.open-stage.e1",
+    "version": "0.1.0"
+  },
+  "style": {
+    "id": "style.science-study",
+    "version": "0.1.0",
+    "fontFamily": "Microsoft YaHei",
+    "background": {
+      "base": "#F7F8FC",
+      "leftGlow": "#FFE9E8",
+      "rightGlow": "#E5EDFC"
+    },
+    "colors": {
+      "accent": "#FF8498",
+      "path": "#A5B7D6"
+    },
+    "textRoles": {
+      "title": {
+        "fontSize": 64,
+        "fontWeight": 700,
+        "lineHeight": 1.4,
+        "color": "#42566F",
+        "maxLines": 1,
+        "align": "left"
+      },
+      "subtitle": {
+        "fontSize": 28,
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "color": "#8191A8",
+        "maxLines": 1,
+        "align": "left"
+      },
+      "caption": {
+        "fontSize": 36,
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "color": "#42566F",
+        "maxLines": 1,
+        "align": "left"
+      }
+    }
+  },
+  "assets": [
+    {
+      "id": "asset.evaporation-v1",
+      "version": "0.1.0",
+      "kind": "image",
+      "file": {
+        "path": "assets/evaporation-v1.png",
+        "mimeType": "image/png",
+        "sha256": "5abb409bda12349a13b14cc1e67cf70941dbb5ff462b0d408964686792d6e17a"
+      },
+      "intrinsic": {
+        "width": 1254,
+        "height": 1254
+      },
+      "alphaBounds": {
+        "x": 57,
+        "y": 23,
+        "width": 1141,
+        "height": 1184
+      },
+      "anchors": [
+        {
+          "id": "frame-center",
+          "x": 0.5,
+          "y": 0.5
+        }
+      ],
+      "provenance": {
+        "kind": "generated",
+        "source": "E2 asset manifest; original generation and quality review retained"
+      },
+      "quality": "conditional-experiment"
+    },
+    {
+      "id": "asset.condensation-v1",
+      "version": "0.1.0",
+      "kind": "image",
+      "file": {
+        "path": "assets/condensation-v1.png",
+        "mimeType": "image/png",
+        "sha256": "b654e4a0c6f599df07d42c7ef3b0a3dacd6de11c822272b2c00871ab6b1ea554"
+      },
+      "intrinsic": {
+        "width": 1254,
+        "height": 1254
+      },
+      "alphaBounds": {
+        "x": 0,
+        "y": 39,
+        "width": 1192,
+        "height": 1215
+      },
+      "anchors": [
+        {
+          "id": "frame-center",
+          "x": 0.5,
+          "y": 0.5
+        }
+      ],
+      "provenance": {
+        "kind": "generated",
+        "source": "E2 asset manifest; original generation and quality review retained"
+      },
+      "quality": "conditional-experiment"
+    }
+  ],
+  "paths": [
+    {
+      "id": "path.flight",
+      "points": [
+        {
+          "x": 280,
+          "y": 570
+        },
+        {
+          "x": 540,
+          "y": 260
+        },
+        {
+          "x": 940,
+          "y": 650
+        },
+        {
+          "x": 1270,
+          "y": 435
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "page.title",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 1,
+      "box": {
+        "x": 100,
+        "y": 65,
+        "width": 1400,
+        "height": 100
+      },
+      "role": "title",
+      "content": {
+        "kind": "static",
+        "text": "蒸发与凝结"
+      }
+    },
+    {
+      "id": "page.subtitle",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 1,
+      "box": {
+        "x": 104,
+        "y": 175,
+        "width": 1390,
+        "height": 55
+      },
+      "role": "subtitle",
+      "content": {
+        "kind": "static",
+        "text": "方向恰好相反 · 小球为分子示意，水蒸气通常不可见"
+      }
+    },
+    {
+      "id": "left.illustration",
+      "type": "image",
+      "typeVersion": "0.1.0",
+      "zIndex": 10,
+      "initialOpacity": 0,
+      "box": {
+        "x": 195,
+        "y": 255,
+        "width": 450,
+        "height": 450
+      },
+      "assetRef": {
+        "id": "asset.evaporation-v1",
+        "version": "0.1.0"
+      },
+      "anchorId": "frame-center",
+      "fit": "contain",
+      "rotationDeg": 0
+    },
+    {
+      "id": "left.name",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 130,
+        "y": 700,
+        "width": 570,
+        "height": 58
+      },
+      "role": "caption",
+      "content": {
+        "kind": "static",
+        "text": "蒸发"
+      }
+    },
+    {
+      "id": "left.relation",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 130,
+        "y": 760,
+        "width": 570,
+        "height": 58
+      },
+      "role": "caption",
+      "content": {
+        "kind": "static",
+        "text": "液态 → 气态"
+      }
+    },
+    {
+      "id": "left.body",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 130,
+        "y": 815,
+        "width": 650,
+        "height": 45
+      },
+      "role": "subtitle",
+      "content": {
+        "kind": "static",
+        "text": "水不沸腾，也会蒸发。"
+      }
+    },
+    {
+      "id": "right.illustration",
+      "type": "image",
+      "typeVersion": "0.1.0",
+      "zIndex": 10,
+      "initialOpacity": 0,
+      "box": {
+        "x": 935,
+        "y": 255,
+        "width": 450,
+        "height": 450
+      },
+      "assetRef": {
+        "id": "asset.condensation-v1",
+        "version": "0.1.0"
+      },
+      "anchorId": "frame-center",
+      "fit": "contain",
+      "rotationDeg": 0
+    },
+    {
+      "id": "right.name",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 870,
+        "y": 700,
+        "width": 570,
+        "height": 58
+      },
+      "role": "caption",
+      "content": {
+        "kind": "static",
+        "text": "凝结"
+      }
+    },
+    {
+      "id": "right.relation",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 870,
+        "y": 760,
+        "width": 570,
+        "height": 58
+      },
+      "role": "caption",
+      "content": {
+        "kind": "static",
+        "text": "气态 → 液态"
+      }
+    },
+    {
+      "id": "right.body",
+      "type": "text",
+      "typeVersion": "0.1.0",
+      "zIndex": 100,
+      "initialOpacity": 0,
+      "box": {
+        "x": 870,
+        "y": 815,
+        "width": 650,
+        "height": 45
+      },
+      "role": "subtitle",
+      "content": {
+        "kind": "static",
+        "text": "冷杯外的水滴，来自空气中的水蒸气。"
+      }
+    }
+  ],
+  "beats": [
+    {
+      "id": "beat.left",
+      "startMs": 0,
+      "endMs": 6000,
+      "text": "液态水变成水蒸气，叫蒸发。蒸发可以在没有沸腾时发生。插画中的小球仅为分子示意，水蒸气通常不可见。",
+      "screenText": "水不沸腾，也会蒸发。",
+      "targetIds": [
+        "left.illustration",
+        "left.name",
+        "left.relation",
+        "left.body"
+      ]
+    },
+    {
+      "id": "beat.right",
+      "startMs": 6000,
+      "endMs": 12000,
+      "text": "水蒸气变成液态水，叫凝结。冷杯外的水滴来自空气中的水蒸气，并非杯里的水漏了出来。",
+      "screenText": "冷杯外的水滴，来自空气中的水蒸气。",
+      "targetIds": [
+        "right.illustration",
+        "right.name",
+        "right.relation",
+        "right.body"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "show.left.illustration",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "left.illustration",
+        "part": "self"
+      },
+      "startMs": 0,
+      "endMs": 400,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.left.name",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "left.name",
+        "part": "self"
+      },
+      "startMs": 250,
+      "endMs": 650,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.left.relation",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "left.relation",
+        "part": "self"
+      },
+      "startMs": 500,
+      "endMs": 900,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.left.body",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "left.body",
+        "part": "self"
+      },
+      "startMs": 750,
+      "endMs": 1150,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.right.illustration",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "right.illustration",
+        "part": "self"
+      },
+      "startMs": 6000,
+      "endMs": 6400,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.right.name",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "right.name",
+        "part": "self"
+      },
+      "startMs": 6250,
+      "endMs": 6650,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.right.relation",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "right.relation",
+        "part": "self"
+      },
+      "startMs": 6500,
+      "endMs": 6900,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    },
+    {
+      "id": "show.right.body",
+      "type": "opacity",
+      "typeVersion": "0.1.0",
+      "target": {
+        "nodeId": "right.body",
+        "part": "self"
+      },
+      "startMs": 6750,
+      "endMs": 7150,
+      "easing": "smoothstep",
+      "from": 0,
+      "to": 1
+    }
+  ],
+  "keyframes": [
+    {
+      "id": "K0",
+      "tMs": 0,
+      "purpose": "开场"
+    },
+    {
+      "id": "K1",
+      "tMs": 1600,
+      "purpose": "左概念"
+    },
+    {
+      "id": "K2",
+      "tMs": 7600,
+      "purpose": "双概念"
+    },
+    {
+      "id": "K3",
+      "tMs": 12000,
+      "purpose": "终态"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "file": "assets/beaker-calm.png",
+  "sha256": "94197197ba7db973d5390d0381cfd2ccb98a6cd3d36bfc61777c44e06c1e745d",
+  "role": "independent transparent watercolor illustration",
+  "generation": "built-in imagegen, 2026-10-07",
+  "accepted_prompt_summary": "front-view glass beaker with calm half-full water; colored pencil and watercolor; no bubbles, steam, droplets, text or background",
+  "rejected_iteration": "first generated beaker showed bubbles and droplets; not used because misleading for evaporation",
+  "visual_constraints": "do not add captions, arrows or moving process cues inside raster asset"
+}

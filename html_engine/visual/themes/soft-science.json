@@ -1,0 +1,115 @@
+{
+  "format": "hps.visual.theme",
+  "version": "0.1.0",
+  "id": "soft-science",
+  "name": "柔和彩色科普",
+  "font": {
+    "family": "Microsoft YaHei",
+    "platform": "Windows"
+  },
+  "colors": {
+    "background": "#fbfaf8",
+    "ink": "#405574",
+    "body": "#52647c",
+    "accent": "#dc527d",
+    "blue": "#4b83c9",
+    "green": "#4b987d",
+    "muted": "#7d8ba1",
+    "panel": "#ffffff",
+    "pinkWash": "#fbe8ed",
+    "blueWash": "#e8f1fb",
+    "greenWash": "#e7f3ec",
+    "line": "#a3b5cc"
+  },
+  "text": {
+    "eyebrow": {
+      "size": 20,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "title": {
+      "size": 66,
+      "weight": 700,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "lead": {
+      "size": 28,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "stepTitle": {
+      "size": 32,
+      "weight": 700,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "body": {
+      "size": 24,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "phase": {
+      "size": 30,
+      "weight": 700,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "callout": {
+      "size": 25,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "conclusion": {
+      "size": 26,
+      "weight": 700,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "source": {
+      "size": 16,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "subtitle": {
+      "size": 32,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "number": {
+      "size": 32,
+      "weight": 700,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "ink"
+    }
+  },
+  "shapes": {
+    "badgeRadius": 22,
+    "labelRadius": 32,
+    "strokeWidth": 2.5,
+    "shadow": {
+      "y": 2,
+      "blur": 6,
+      "opacity": 0.04
+    }
+  },
+  "compatibleLayouts": ["object-right", "object-left"],
+  "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。"
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Token · 图像设计与可控动画</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <strong>Token · 视觉重制</strong
+          ><span>五种知识结构 / 生图 × HTML / 无声动画预演</span>
+        </div>
+        <a href="../legacy-v1.html">旧版对照</a>
+      </header>
+      <nav id="chapters"></nav>
+      <div id="frame">
+        <div id="stage"></div>
+        <img id="reference" alt="当前场景生成设计参考图" hidden />
+      </div>
+      <div class="transport">
+        <button id="play" disabled>播放本场景</button><button id="all" disabled>播放整段</button
+        ><button id="pause">暂停</button><button id="reset" disabled>回到开场</button
+        ><input id="scrub" type="range" min="0" step="1" disabled /><output
+          id="clock"
+        ></output
+        ><select id="mode" aria-label="对照模式" disabled>
+          <option value="actual">实际 HTML 动画</option>
+          <option value="design">生图设计参考</option>
+        </select>
+      </div>
+      <p id="status" role="status" aria-live="polite">正在准备字体和资产…</p>
+      <details>
+        <summary>当前讲稿与实现分工</summary>
+        <p id="transcript"></p>
+        <p>
+          文字、Token编号、箭头、容量和运动由HTML/SVG实现；模型装置与脑形插图是独立生图资产。当前为设计探索，时间暂定，尚未接旁白音频。
+        </p>
+        <a href="comparison.html">五页设计与实际对照</a> · <a href="README.md">设计与还原记录</a>
+      </details>
+    </main>
+    <script src="definition.js"></script>
+    <script src="player.js?v=20261007-clock-fix"></script>
+  </body>
+</html>

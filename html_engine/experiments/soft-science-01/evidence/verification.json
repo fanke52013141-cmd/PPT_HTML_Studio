@@ -1,0 +1,48 @@
+{
+  "effectVersion": "0.1.0",
+  "sceneRevision": 2,
+  "anchorChecks": [
+    true,
+    true
+  ],
+  "frames": [
+    {
+      "timeMs": 0,
+      "sha256": "fdf0cedaf2869e3dbc5be694d3bd5a432f63ec8a93ab9b69b6ed811f737cbc4c"
+    },
+    {
+      "timeMs": 3500,
+      "sha256": "0891d95168c9a1158fd37c07ff6ce0e76ff23cfbcd8163f28bc4c1b64dd60e5c"
+    },
+    {
+      "timeMs": 7000,
+      "sha256": "e69dad3f7cff354e5da45edf3bfb392f4990f9031d0acd84f79059baf461741d"
+    },
+    {
+      "timeMs": 12500,
+      "sha256": "1858c096cf6b0a0aacb48b69add003f26bbea1825d9156cc4a3e83ad89cddc52"
+    },
+    {
+      "timeMs": 18000,
+      "sha256": "3868e6318ac1be34661ecc9635e33a980fe6da27203fb2e6f412e061c71f9966"
+    }
+  ],
+  "zones": {
+    "contentHeight": 800,
+    "subtitleTop": 800,
+    "subtitleHeight": 100,
+    "noOverlap": true,
+    "objectsClear": true,
+    "assetLoaded": true
+  },
+  "subtitleSizes": [
+    20,
+    32,
+    44
+  ],
+  "realPlayback": "passed",
+  "pause": "passed",
+  "pageErrors": [],
+  "browser": "155.0.8059.12",
+  "visualReview": "user_changes_requested; revision 2 method evidence only"
+}

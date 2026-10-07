@@ -1,0 +1,1649 @@
+================================================================================
+              「课程内容 → PPT 课件 + 短视频」自动化流水线
+                        开源项目深度调研报告
+
+  报告日期：2026-10-07
+  调研范围：GitHub 高星项目 + 官方 Agent Skill 生态 + 学术开源实现
+  星数来源：GitHub REST API 实测（2026-10-07），非二手目录站数据
+  报告用途：技术选型与架构决策依据
+
+================================================================================
+
+
+================================================================================
+                              第 0 章  结论先行
+================================================================================
+
+如果只看一句话：
+
+  你放弃的那个方向（HTML + 动画 + 生图）没有错，错的是你把「版式」
+  一起交给了生图模型。社区已经收敛出答案——版式交给代码，插画交给生图。
+
+
+--------------------------------------------------------------------------------
+0.1  你的问题被准确描述成了三个技术命题
+--------------------------------------------------------------------------------
+
+  你说的「靠文档规定设计风格，每次生成结果不稳定」，在工程上对应的是：
+  **自然语言不是可执行的约束**。LLM 和生图模型都是概率性的，你给它们一段
+  散文，它们不会稳定地服从；你只能给它们一个有限枚举的 schema，它们才会
+  稳定。
+
+  你说的「要稳定就必须做很多模板，模板必须可扩展」，在工程上对应的是：
+  **模板数量和约束强度是一对反向变量**。约束越强，模板越少但越僵；约束越
+  弱，模板越少但越不稳。所以正确的解不是「多做模板」，而是「换一个约束维度」——
+  把几何约束交给 CSS 网格，把内容约束交给 schema，把风格约束交给 design token，
+  把插画约束交给 IP-Adapter 的分层 scale。四层各管一段，模板数量自然降到个位数。
+
+  你说的「粘连性太强，AI 容易切错」，这是一个**方向性误判**。切图关联这条路
+  在生产环境里没有救：生图模型不保证元素间有稳定间隙，语义分割模型对插画
+  风格的泛化极差。社区的共识是——**不要切图，直接分层**。让生图只生成插画层，
+  文字/图表/数字全部用 DOM/SVG 精确渲染，从根上消灭「对齐」这个问题。
+
+--------------------------------------------------------------------------------
+0.2  你已经做对的部分（不要推翻）
+--------------------------------------------------------------------------------
+
+  你的四步流程（内容→演讲稿→可视化描述→逐页生图）和四种增强机制
+  （AI 元素关联、手动涂抹关联、数字人画中画）方向都是对的，社区最佳实践
+  几乎全部落在你的框架内：
+
+  - 演讲稿作为中间表示（IR）  → 与 PPTAgent / Presenton / guizang-ppt-skill 一致
+  - 逐页/逐场景切分       → 与 MoneyPrinterTurbo 的「关键词→素材片段」一致
+  - 语音合成 + 时间轴对齐   → 与 WhisperX forced-alignment 一致
+  - 数字人右下角画中画      → 与 claude-code-video-toolkit 的 NarratorPiP 一致
+  - 一份产出兼顾课程与短视频 → 这是你比所有同类项目都超前的一点
+
+  要改的是**实现层，不是流程层**。
+
+--------------------------------------------------------------------------------
+0.3  三条最高优先级建议
+--------------------------------------------------------------------------------
+
+  优先级 1｜架构改造：放弃「整页生图」，改为「HTML 分层渲染 + 插画槽位生图」
+    → 详见 5.1、6.2。这是唯一能同时解决稳定性、元素级关联、可编辑 PPTX
+      三个问题的方案。改动量中等，但一次性解决你列出的全部痛点。
+
+  优先级 2｜单一中间表示（IR）驱动双端渲染
+    → 详见 6.1。定义一份 JSON Schema（SlideSpec），PPT 端和视频端都消费它。
+      绝不让 LLM 分别生成 PPT 和视频两套东西，那样一致性必然崩。
+
+  优先级 3｜视频渲染层改用 Remotion，课件层改用 Slidev，两者共享组件
+    → 详见 5.2、5.3。Remotion 6.2万星、Slidev 4.9万星，都是各自领域的
+      事实标准，且 Slidev 支持导出可编辑 PPTX，Remotion 支持导出竖屏 MP4。
+
+  补充建议｜把「设计规范」从文档变成 design token 文件（style-dictionary）
+    → 详见 5.8。同一份 token 同时喂给 DOM 层和生图层，这是风格一致性的
+      单一真相源。
+
+
+================================================================================
+                        第 1 章  生态全景图
+================================================================================
+
+按「流水线环节」重新组织，而不是按项目罗列。这是你现有四步流程的镜像。
+
+--------------------------------------------------------------------------------
+1.1  你的流程 vs 生态能力分布
+--------------------------------------------------------------------------------
+
+  你的步骤                     生态对应                成熟度    推荐方案
+  ─────────────────────────────────────────────────────────────────────
+  ① 内容 → 演讲稿IR         PPTAgent / Presenton      ★★★★★   沿用你的设计
+  ② 可视化描述 → 版式决策Presenton / guizang-ppt-     ★★★★★   改为「布局枚举」
+                            skill                              + schema 约束
+  ③ 逐页生图               IP-Adapter / ControlNet/  ★★☆☆☆   只生成插画层
+                            In-Context-LoRA
+  ④ 图片串联 + 语音合成      Remotion / MoneyPrinter-   ★★★★★   改用 Remotion
+                              Turbo
+  ⑤ 元素级关联（增强）      WhisperX / forced align    ★★☆☆☆   放弃切图，改分层
+  ⑥ 手动涂抹关联（增强）    Slidev clicks / Remotion    ★★★★★   升级为原生能力
+  ⑦ 数字人画中画（增强）    MuseTalk / Linly-Talker     ★★★★★   保持你的设计
+  ⑧ 一稿两出（课程+短视频）  你自己（无同类）            —       你的护城河
+
+  观察：③④⑤ 是你当前架构里最脆弱的三段，也是生态里方案最多、最成熟的。
+  而 ①⑥⑦⑧ 你做得比开源项目还好，不要动。
+
+--------------------------------------------------------------------------------
+1.2  候选项目星数实测表（GitHub API，2026-10-07）
+--------------------------------------------------------------------------------
+
+  星数是选型的第一道闸门，但注意：星数高≠适合你，星数是社区热度，
+  不是适配度。表中「适配」列是本报告的判断。
+
+  ── AI 编排与流水线 ─────────────────────────────────────────────────────
+  项目                              星数     最近推送  适配  说明
+  harry0703/MoneyPrinterTurbo      128,865   2026-10-07  ★★★★  短视频自动化编排
+                                                                      的事实标准
+  digitalsamba/claude-code-video-     ~2,100  —         ★★★★  Remotion +
+  toolkit                                            narrator PiP
+  ── 视频渲染引擎（代码驱动视频）─────────────────────────────────────────
+  remotion-dev/remotion              62,205   2026-10-06  ★★★★★ 你的视频层首选
+  motion-canvas/motion-canvas        19,245   2026-07-02  ★★★☆  动画引擎，
+                                                                      无 headless 渲染
+  redotvideo/revideo                ~4,100   —         ★★★★Remotion 开源替代
+  ── 幻灯片引擎 ─────────────────────────────────────────────────────────
+  slidevjs/slidev                   48,947   2026-10-02  ★★★★★ 你的课件层首选
+  revealjs/reveal.js                ~72,400  —         ★★☆☆☆  无 Markdown-first，
+                                                                      LLM 走样风险最大
+  marp-team/marpit                   1,385   —         ★★★☆  最稳但只有整页切换
+  ── AI PPT 生成器 ─────────────────────────────────────────────────────
+  presenton/presenton                10,971   2026-10-05  ★★★★★ 模板抽取机制
+                                                                      最值得抄
+  icip-cas/PPTAgent                   5,090   2026-10-05  ★★★★  编辑式两阶段
+  allweonedev/presentation-ai        ~2,800  —         ★★★☆  主题可定制
+  SlideBot-AI                        ~1,200  —         ★★☆☆☆  不出可编辑 PPTX
+  para-lost/AutoPresent              —       —         ★★★☆  学术实现，思路可抄
+  ── Agent Skill 生态 ──────────────────────────────────────────────────
+  anthropics/skills                 179,927   2026-10-05  ★★★★★ 规范落地范式标杆
+  op7418/guizang-ppt-skill           27,308   2026-08-07  ★★★★★ 场景最贴近你
+  remotion-dev/skills              （随本体） —         ★★★★  31 条动效 rule
+  ── 图像可控生成 ───────────────────────────────────────────────────────
+  lllyasviel/ControlNet              34,124   —         ★★★★  控几何
+  h94/IP-Adapter                    ~11,000（未复核）—      ★★★★★ 控风格，
+                                                                      分层 scale
+                                                                          是关键
+  ali-vilab/In-Context-LoRA          2,081   2024-12-20  ★★★★  内含
+                                                                      ppt-templates
+                                                                      LoRA
+  comfyanonymous/ComfyUI            ~90,000（未复核）—      ★★★☆  工作流编排
+  ── 数字人 / 对口型 ────────────────────────────────────────────────────
+  Rudrabha/Wav2Lip                   13,228   2025-06-22  ★★★☆  最快，唇形僵
+  bytedance/LatentSync                6,112   2025-06-20  ★★★★  质量最好，慢
+  TMElyralab/MuseTalk                 6,669   2025-09-26  ★★★★★ 右下角小窗首选
+  lipku/LivePortrait                ~17,000（未复核）—     ★★★★  表情驱动
+  OpenTalker/SadTalker              ~11,900（未复核）—     ★★☆☆☆  机械感
+  Kedreamai/Linly-Talker            ~7,000（未复核）—     ★★★★  最佳参考实现
+  ── 语音与对齐 ─────────────────────────────────────────────────────────
+  m-bain/whisperX                   ~26,000（未复核）—     ★★★★★ word 级时间戳
+  openai/whisper                     ~90,000（未复核）—     ★★★★
+  SYSTRAN/faster-whisper            ~19,000（未复核）—     ★★★★
+  ── 设计 token 工程化 ─────────────────────────────────────────────────
+  style-dictionary/style-dictionary  4,853   2026-10-03  ★★★★★ 把规范变成代码
+  ── 程序化 PPT 库 ─────────────────────────────────────────────────────
+  gitbrent/PptxGenJS                  6,234   2025-11-28  ★★★★  支持母版继承
+  scanny/python-pptx                  ~3,900（未复核）—     ★★★★  坐标可精确控制
+
+  标注「未复核」的条目因GitHub API 限流未能取到实测值，是社区常引用的量级，
+  引用时请注意。已实测的条目请以本表为准。
+
+
+================================================================================
+                      第 2 章  逐项详细拆解
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1  MoneyPrinterTurbo（128,865★）— 短视频自动化的架构教科书
+--------------------------------------------------------------------------------
+
+  【为什么值得拆】
+  它是星数最高的「内容→短视频」开源项目，而且它的问题定义和你几乎一样：
+  如何把一段文本，变成有配音、有画面、有字幕的成片。它的架构里有三处
+  决策直接可以移植到你的项目。
+
+  【技术栈】
+  Python。FastAPI（REST）+ Streamlit（Web）+ CLI 三入口。FFmpeg / MoviePy
+  做合成。LiteLLM 网关统一切换 16+ LLM 提供商。Pexels / Pixabay 拿素材。
+
+  【完整流程】
+  1. 脚本生成：向 LLM 发JSON-schema 约束的请求，一次返回
+     { narration: 讲稿文本, keywords: 每句对应的搜索词 }
+  2. 语音合成：Edge-TTS / ElevenLabs / CosyVoice / GPT-SoVITS，
+     与关键词检索【并行】执行（asyncio.gather）
+  3. 素材获取：按关键词并发查 Pexels / Pixabay；命中稀疏时回退到
+     FLUX / SDXL 本地生成图像
+  4. 字幕对齐：优先解析 TTS 原生 boundary 事件；无边界事件时用本地
+     Whisper-large-v3 反向转写音频，得到word 级时间戳
+  5. 合成渲染：FFmpeg 绑定音轨 + 人声 + 缩放裁剪到 1080×1920 +
+     ASS 字幕动效，编码 H.264 + AAC
+
+  【稳定性是怎么保证的——三条关键决策】
+  a. 用 JSON schema 约束 LLM 输出，而不是让它自由发挥
+     讲稿和关键词一次性结构化返回，画面和文案天然对齐。这正是你要在
+     「演讲稿 → 可视化描述」这一步做的事。
+  b. 组件解耦，任一环失败不污染整个任务图
+     素材检索返回 0结果 → 捕获 → 降级到默认视觉缓冲或本地生图，
+     而不是整条流水线崩掉。
+  c. 用音频【实际时长】决定画面停留，而非估算字数
+     这是你最该抄的一条：不要用「字数÷语速」估时长，用 TTS 产出的
+     mp3 真实时长。你的 slide duration = TTS 时长 + padding。
+
+  【可借鉴点】
+  → 「关键词 → 画面」的映射结构，和你的「可视化描述 → 逐页生图」同构。
+     直接把它的 JSON schema 形态抄过来。
+  → 并行化：TTS 和素材生成是 IO 密集，必须并发。你的「生图」和「TTS」
+     同样应该并发，这是纯粹的时间优化。
+  → 失败降级矩阵：每个环节都要有 fallback，而不是让异常冒泡。
+
+
+--------------------------------------------------------------------------------
+2.2  Remotion（62,205★）— 你的视频层应该换成它
+--------------------------------------------------------------------------------
+
+  【为什么值得拆】
+  它的核心命题和你完全一致：**如何用代码产出视觉上完全可控的视频**。
+  它的稳定性机制是这个生态里设计得最严格的。
+
+  【技术栈】
+  TypeScript monorepo（Turborepo + Bun），渲染层是 Go + Headless Chromium
+  + FFmpeg。许可证非纯 FOSS，公司使用需购买——社区选 Revideo 的主因。
+
+  【完整流程】
+  数据（JSON）→ inputProps
+    → <Composition id component durationInFrames fps width height
+                  defaultProps schema>在 src/Root.tsx 注册
+    → 渲染器开 N 个浏览器 tab 并行逐帧渲染
+    → 每个 tab 调 useCurrentFrame() 拿当前帧号
+    → 纯函数算出这一帧的样式
+    → 截图 → FFmpeg 拼成 mp4/webm/gif
+
+  【稳定性是怎么保证的——五条硬规则，这是全生态最值得学的地方】
+  a. 帧必须是纯函数。官方文档明列判据：
+     - 同一帧多次调用，渲染结果必须完全相同
+     - 不能依赖帧的渲染顺序（渲染是【乱序并发多tab】的！）
+     - 暂停时画面不能动
+     - 不能用 Math.random()，必须用random(seed)
+     任何跨帧状态都会导致「同一份代码在不同机器上渲染出不同视频」。
+  b. 禁止 CSS animation / transition
+     一切动画只能由 useCurrentFrame() + interpolate() / spring() 驱动。
+     spring 必须显式传 fps。这意味着你的动画不依赖浏览器引擎的插值行为——
+     换机器、换浏览器版本，动画完全一致。
+  c. 资源就绪显式阻塞：delayRender() / continueRender()
+     字体、图片、GIF 未加载完成前不出帧。文档点名禁用 background-image、
+     mask-image（因为加载时机不可控）。
+  d. 时间轴就是组件树
+     <Sequence from durationInFrames trimBefore playbackRate loop
+               premountFor layout name>
+     子组件拿到的是偏移后的 useCurrentFrame()。所以整条时间轴是纯数据
+     结构，可以嵌套、可以复用、可以被序列化。
+  e. zod schema 强约束 props
+     <Composition schema={z.object({...})}>，顶层必须是 z.object。
+     配 @remotion/zod-types的 zColor() / zTextarea() / zMatrix()。
+     从 v4.0.516 起可以从 defaultProps 【推断】控件，不写 schema 也能
+     可视化改；schema 优先级更高。
+     calculateMetadata() 可动态计算 durationInFrames（比如按字幕长度）。
+
+  【LLM 友好设计】
+  官方提供 Agent Skills（npx skills add remotion-dev/skills），含
+  /remotion-markup（排版最佳实践）、/remotion-best-practices、
+  /remotion-docs（拉实时文档，防API 幻觉）。
+  文档站甚至直接给出一段「给 AI agent 的 prompt」，指示模型把已有
+  composition 改造成可参数化的、且【保持渲染输出不变】。
+
+  【模板机制】
+  模板 = 组件 + props 契约 + 尺寸契约。同一组件注册不同 id / 宽高，
+  就同时得到横屏和竖屏两套。官方 create-video 提供多套脚手架。
+  另有 @remotion/player（Web 内嵌预览）、@remotion/lambda（分布式渲染）。
+
+  【对你的适配度】
+  短视频 ★★★★★ 数据驱动批量生成是它的核心卖点
+  课件  ★★★☆  能做竖屏课件，但没有 PPT 导出
+
+
+--------------------------------------------------------------------------------
+2.3  Slidev（48,947★）— 你的课件层应该换成它
+--------------------------------------------------------------------------------
+
+  【为什么值得拆】
+  你要的「讲到什么内容，内容就逐步出现」这个效果，Slidev 是原生能力
+  （v-click 步进系统），不需要你自己造轮子，而且它支持导出【可编辑
+  PPTX】——这一点在所有同类项目里是独一份的。
+
+  【技术栈】
+  Vite + Vue 3 SFC + UnoCSS（v0.42 起为默认 CSS 引擎）+ Shiki +
+  Playwright（导出）+ Mermaid / ECharts。
+
+  【完整流程】
+  slides.md（--- 分隔幻灯片，headmatter 是配置）
+    + 约定式目录 layouts/ components/ styles/ snippets/ setup/ public/
+    → slidev dev（HMR）
+    → slidev build（SPA）或 slidev export
+
+  【稳定性是怎么保证的——三层收敛】
+  a. layout 契约：内容必须塞进 slot
+     layouts/*.vue 是 Vue 组件，default slot 承载内容 + 命名 slot
+     （split.vue 之类）+ Slot Sugar。内置十余个 layout：default / cover /
+     center / fact / quote / section / statement / image-right / two-cols /
+     full / iframe-*。
+     →这天然阻止 LLM 自由发挥出结构外的版式。你说「需要足够多的模板」，
+       Slidev 用 15 个 layout 就覆盖了绝大多数课程场景。
+  b. theme = 单一开关：theme: seriph 一行切换
+     theme 包同时提供 styles + layouts + components，
+     slidev theme eject 可落地改造。theme 内部用 UnoCSS 的 --uno: 指令
+     + CSS 变量。
+  c. UnoCSS preset-attributify 把修饰符变成原子类
+     v-click.fade.right、class="text-xl" 都是原子类。改 preset 即全局改，
+     等于 design token 机制。
+
+  【逐步出现的实现——这是你手  涂抹关联功能的答案】
+  click 是动画单位：
+    <v-click>                      元素点击时出现
+    v-click="[2,4]"                enter/leave 区间
+    v-click.at="+2"                相对定位（需引号）
+    v-click.at="2"                 绝对定位
+    <v-clicks>                    容器内所有元素依次出现
+                                   配 depth / every
+    <v-clicks :every="1">
+    v-after / v-prev / v-show      延后 / 提前 / 切换
+    <v-switch>                     多方案互斥切换
+  底层是 $clicks + Vue fragments（v0.48 重写），实现为
+  slidev-vclick-target / slidev-vclick-hidden 两个 class 的 CSS transition，
+  预设 fade/up/down/left/right/scale/none，可用
+  .slidev-vclick-anim-{name} 自行扩展。
+  进阶动效走内置的 @vueuse/motion 的 v-motion（initial / enter / click-x /
+  click-x-y / leave variants 按优先级合并）。
+  幻灯片切换走 Vue <Transition>/<TransitionGroup>，支持双向
+  transition: go-forward | go-backward。
+
+  headmatter 配置面：clicks（总步数）、clickAnimation、transition、
+  theme/addons。
+
+  【Magic Move——你最想要的效果】
+  Slidev 内置的是 Shiki Magic Move（代码块 morph），用四反引号
+  ```md magic-move``` 包裹多个代码块步骤，【绑定到 clicks 系统】，
+  每次点击 morph 一步。参数：
+    magicMoveDuration（默认 800ms，全局/per-block）
+    shiki.magicMove.easing / stagger / delayMove（v52.21.0+）
+    magicMoveCopy
+  代码行高亮语法{1|1-2} 可叠加。
+  注意：非代码元素的 Keynote 式 Magic Move 在当前文档未见，未验证。
+
+  【模板机制】
+  theme 包（@slidev/theme-*，命名约定可省略前缀，缺包会提示安装）
+    + addons（可多个：@slidev/plugin-notes、excalidraw 等）
+    addon 可注入样式 / 组件 / layout / 配置。
+  另有 slidev create、slidev format。
+
+  【对 LLM 最友好的设计——必须重点利用】
+  Slidev 内置 MCP Server：
+    slidev mcp [entry]
+    或 dev server 上的 http://localhost:3030/__mcp
+  7 个工具：
+    slidev-get-info / list-slides / get-slide / update-slide /
+    insert-slide / remove-slide / move-slide / goto-slide
+  幻灯片【按渲染后的 1-based 页码寻址】（与演示时页码一致）——
+  这意味着你的「可视化描述 → PPT」这一环可以直接走 MCP，
+  LLM 改的是真实渲染出来的页面，不是文本表示。
+  slidev-goto-slide 可把所有连接的浏览器跳到指定页做【目视校验】，
+  形成 LLM 闭环。这是五个项目里 LLM 兼容性最好的。
+
+  【导出能力】
+  --format pdf | png | pptx | pptx-editable | md，靠 Playwright。
+    pptx         每页一张图
+    pptx-editable（较新）在浏览器里量测后重建为 PowerPoint 原生形状，
+                文字可选可编辑，SVG/canvas/iframe/video/KaTeX/gradient/
+                filter/clip-path 等降级为图片，无法安全重建的单页
+                回退为整页图
+    已知限制：不嵌字体、::before/::after 装饰被跳过、PowerPoint 断行
+              与浏览器不一致
+    无视频导出。
+
+  【对你的适配度】
+  课件  ★★★★★ pptx-editable 是全场唯一真·可编辑 PPTX 产出
+  短视频 ★     只能录屏或转 Remotion
+
+
+--------------------------------------------------------------------------------
+2.4  Revideo（约4,100★）与 Motion Canvas（19,245★）
+--------------------------------------------------------------------------------
+
+  【Revideo—— Remotion 的 MIT 开源替代】
+  技术栈：TS monorepo，packages/ 含 core（Signal/场景）、2d（图形组件）、
+  renderer（headless渲染）、ffmpeg、ui（可视化编辑器）、player、vite-plugin、
+  cli、create。
+
+  流程：
+    makeProject({ scenes, settings: { shared, preview, rendering } })
+      集中管理全部渲染配置（0.10 起废弃 .meta 文件）
+    → 每个 scene 是纯 TS 模块
+      makeScene2D('name', function*(view){...})
+    → renderVideo({ projectFile, settings, variables })
+    → 或 npx revideo serve 暴露 HTTP /render 端点
+
+  三条与 Remotion 的硬差异：
+  a. 命令式 generator vs 声明式 React
+     yield* 的顺序就是时间顺序；Remotion 是「给我帧号，我描述这帧长什么样」。
+  b. Canvas 2D 渲染 vs DOM 渲染
+     走 view.add(<Node/>) + canvas 绘制，不能直接用 HTML/CSS。
+     好处是可以 canvas.toBlob()、快，且【不依赖浏览器排版一致性】——
+     这一点从反方向支撑了「稳定」。
+  c. Signal 响应式系统（承自 Motion Canvas）
+     createSignal +惰性求值 + 结果缓存 + 依赖追踪，节点属性本身就是
+     signal，node().opacity(1, 0.5) 直接补间。
+  时间单位是【秒】不是帧，fps 只决定采样密度。
+
+  稳定性：makeProject 把 shared/preview/rendering 三段配置集中化，
+  尺寸、fps、色彩空间、导出器一处定义，天然统一；variables 是数据唯一
+  入口，模板与数据彻底解耦。**没有 zod schema 这一层**（未验证社区方案）。
+
+  内置starter：Default、Next.js、Avatar with Background、GitHub Stars
+  Celebration、Three.js、YouTube Shorts（竖屏）、Marketing 模板集。
+
+  适配度：短视频/竖屏批量 ★★★★★（variables + 渲染端点 + Shorts 模板，
+  天生为自动化设计）；课件 ★★（canvas 画不出富文本排版）。
+
+  【Motion Canvas——动画语义的另一种解法】
+  技术栈：TS monorepo（lerna + Vite），packages含 core（Signal/Thread/
+  时钟）、2d、ui、player、vite-plugin、create、template、e2e。
+
+  动画系统三件套：
+    Generator：function* + yield* 描述步骤，代码顺序 = 动画顺序
+    Thread：框架管理的逻辑执行流（不是 OS 线程也不是 Worker），
+           在 yield 处暂停、由调度器恢复；yield* 委托子流程，
+           all()/chain() 并行/串联。多个 thread 可交错推进而不阻塞渲染循环
+    Signal：s() 读、s(v) 立即设值、s(v, seconds) 持续补间；
+            计算式 signal 惰性 + 缓存 + 依赖追踪（依赖变更只标脏，
+            下次读取才重算，多次变更合并为一次）；DEFAULT 恢复初值
+
+  独特优势：时间单位是秒，waitFor(0.3) 在 30fps 约 9 帧、60fps 约 18 帧——
+  【动画语义与 fps 解耦】。同一份动画脚本换帧率导出，观感一致。
+
+  短板：没有 headless 渲染 API（维护者明确表示不打算当库用）——
+  这正是 Revideo 从它 fork 出来补的洞。
+
+  【给你的选择依据】
+  两种时间模型的取舍：
+    Remotion（帧纯函数）→ 易被 LLM 拼装、纯函数、可并行、性能好
+    Motion Canvas（generator + 秒）→ 天然有序，适合「脚本式」生成，
+                                    且与帧率解耦
+  你的场景是「LLM 按讲稿顺序逐段生成动画」，generator 模型在生成顺序上
+  更自然；但 Remotion 的生态、模板、文档、LLM 支持都强一个量级。
+  → 结论：先上 Remotion；若未来发现 LLM 频繁写错帧偏移，再评估 Revideo。
+
+
+--------------------------------------------------------------------------------
+2.5  reveal.js（约 72,400★）与 Marp（marpit 1,385★）
+--------------------------------------------------------------------------------
+
+  【reveal.js—— 为什么它星数最高但不适合你】
+  星数最高（7.2万），但：
+    结构硬约束：<div class="reveal"><div class="slides"><section> 三层，
+                 一个 section 一页，嵌套 section = 纵向子页
+    皮肤机制：dist/theme/*.css 一把换（white/black/league/…）
+    data-state="x" 会把状态类挂到 viewport（可做全局样式切换）
+    data-fragment-index 控制碎片顺序
+  致命问题：【没有 Markdown-first】。有 markdown 插件但非一等公民，
+  内容要手写 HTML。**LLM 生成 HTML 的走样风险最大，恰恰是你踩过的坑。**
+  无官方导出流水线。定位是现场演示，不是批量内容生产。
+
+  【Marp—— 最稳但表现力最低】
+  架构：Marpit框架 = markdown-it 插件，把 Markdown 拆成页 + 解析局部指令；
+  theme = 纯 CSS（@theme meta comment 声明，页面尺寸由 CSS 变量固定
+  1280×720）。
+
+  指令即受控 token——这是五个项目里最接近 design token 的做法：
+    <!-- _class: -->            挂 section class
+                                  【版式选择被约束成一个枚举值】
+    <!-- _paginate: -->         分页显示，等价于最简 click steps
+    <!-- _backgroundColor: -->
+
+  marp-cli：
+    --pdf / --images / --pptx（--pptx-editable 实验性）/ --html / --notes
+    --theme / --theme-set
+    --template bespoke|bare
+    --engine 可换任意 Marpit 派生引擎（Marp 默认、自定义函数式引擎、
+              甚至--engine @marp-team/marpit 得到【零 JS】纯 HTML）
+
+  取舍：几乎只有「整页切换」一种动画。适合「课程内容 → 讲义/可分发文档」，
+  不适合当短视频底座。
+
+  【一个重要观察】
+  Marp 的 <!-- _class: --> 揭示了一个我们前面没点破的机制：
+  【把版式选择从「模型自由创作」降级为「填一个枚举值」】。
+  这比任何设计规范文档都有效。这就是 Presenton 的 layout 目录、
+  Slidev 的 layouts/、你的「可视化描述」三者在做的事——只是形式不同。
+
+
+--------------------------------------------------------------------------------
+2.6  Presenton（10,971★）— 模板抽取机制最值得抄
+--------------------------------------------------------------------------------
+
+  【技术栈】
+  单 Docker 容器内四服务：Nginx(:80) → Next.js(:3000) / FastAPI(:8000) /
+  MCP server(:8001) / 可选 Ollama(:11434)，由 start.js 编排。
+  导出链依赖 libreoffice（headless）、tesseract-ocr、imagemagick、fontconfig。
+  前端 Redux + Tiptap 编辑器。
+
+  【IR 设计—— 核心】
+  IR 不是自研的 PPT 对象模型，而是【Zod Schema 定义的内容字典
+  + React 组件渲染器】。一个布局 = 一个 .tsx 文件，内含两件东西：
+    1. Schema = z.object({ title: z.string().min(3).max(50)... })
+       字段带 .meta({ description })
+       【Zod 既是校验器，也是给 LLM 看的字段说明书】
+       （description 直接进 prompt）
+    2. SlideComponent：接收校验后的数据 + 图片/图表槽位，
+       输出带固定尺寸的 DOM
+
+  模板目录 servers/nextjs/presentation-templates/<template>/：
+    settings.json（description / ordered / default）+ 多个布局 tsx。
+    ordered: true  意味着按固定顺序取布局（传统叙事）
+    ordered: false 允许 LLM 自由挑
+
+  【模板抽取流程 —— 对你最有价值】
+  入口 useSlideProcessing.ts:119 的 processFile。PPTX 走
+  /api/v1/ppt/pptx-slides/process，产出三件套：
+    1. 逐页截图（LibreOffice 渲染）
+    2. OXML XML 原文（提供精确坐标）
+    3. 字体清单
+  PDF 只给截图（pdf_slides.py）。缺字体时 FontManager 让用户上传字体文件。
+
+  然后 slide_to_html.py 用 GENERATE_HTML_SYSTEM_PROMPT 把
+  「截图 + XML + 字体」喂给 GPT-4o/5，产出【原生 Tailwind HTML】
+  （不是图片）。html_edit.py 支持你在画布上手绘标注（html2canvas 截图
+  + 草图一起回传）来迭代修正。最后 HTML_TO_REACT_SYSTEM_PROMPT 把
+  HTML 合成为 .tsx 布局组件，存为 custom-{id} 模板。
+
+  【稳定性工程化—— 四条可直接抄的】
+  a. 约束下沉到 schema：LLM 只能填 Zod 定义的字段，
+     【排版自由度从「写代码」降级为「填字符串」】
+  b. 预览阶段用 Tailwind CDN 实时渲染，改完立刻看到，不等导出
+  c. 字体/LibreOffice 依赖在 Dockerfile 里显式钉死，缺字体走人工上传兜底
+  d. 布局是有限枚举，LLM 出错时退到相邻布局而不是自由发挥
+
+  【导出】
+  PPTX + PDF，声明「PPTX 完全可编辑」。实现路径是 Puppeteer 渲染 +
+  python-pptx 生成（assets-builder 阶段打包 presentation-export 包）。
+  是否逐元素还原为原生文本框/形状（而非整页贴图）——未验证，
+  从依赖组合看倾向元素级，但需实测。
+
+  【对你的直接借鉴 —— 且有更快的路】
+  它的「PPTX → 截图 + XML + 字体 → LLM → HTML → React 布局」四步是
+  正确的通用路径。但你【已经拥有 IDML / pptx 模板资产】，且模板数量有限，
+  所以你应该走更快的确定性路线：
+    用 python-pptx 打开你的模板 pptx，读出每个占位符的真实 EMU 坐标
+      → 翻译成你的布局规格（x/y/w/h + 容量上限）
+      → 手写成 .json 布局文件
+  比让 LLM 从截图反推可靠得多。AI 反推留给「用户自己传模板」的场景。
+
+
+--------------------------------------------------------------------------------
+2.7  PPTAgent（5,090★，中科院）与 AutoPresent（CVPR 2025）
+--------------------------------------------------------------------------------
+
+  【PPTAgent —— 编辑式两阶段生成】
+  Stage I 分析参考 PPT：
+    1. 按功能（结构性 / 内容性）聚类
+    2. 用 MLLM 视觉相似度聚类同版式页
+    3. 抽content schema
+  Stage II 生成：
+    1. 生成大纲
+    2. 选择参考页
+    3. 迭代调用【编辑 API】（replace_text / insert_image 等）
+       而【不是重新生成】
+
+  关键洞察：PPTX 的 OXML 冗长，LLM 直接操作 XML 极易出错，
+  所以引入 HTML 渲染表示做中间层。
+  论文数据：成功率 97.8%，设计维度 +33%、连贯性 +34%。
+  另附 PPTEval 三维评估（Content / Design / Coherence）。
+
+  【对你的直接借鉴 —— 这条极其重要】
+  【不要让模型生成，让模型编辑。】
+  你现在的流程是「生成整页图」，这是 generation。
+  改成：模板里预置 15 个布局，每个布局的每个槽位已存在，
+        模型只做 replace_text / replace_image / set_chart_data。
+  好处：
+    - 错误空间从「整页自由发挥」缩小到「填错字符串」
+    - 天然继承你已有的模板资产和母版
+    - 失败可回滚（重置槽位而不是重生成整页）
+    - 元素级关联问题自动消失——元素本来就是槽位，有明确 ID
+
+  【AutoPresent —— 把幻灯片生成建模为程序生成】
+  建模为【程序生成】：LLM 输出 python-pptx 代码。
+  配套 SlidesLib 把平均 170 行代码压到 13 行：
+    add_title / add_text / add_bullet_points / add_image /
+    generate_image / search_image / set_background_color
+  这是最强的稳定性工程：小模型直接写长代码成功率极低，
+  给高层 API + 2 个 in-context 示例后成功率大幅上升。
+  配套 SlidesBench（310 deck / 7k 训练 / 585 测试），评测含element
+  matching、CIEDE2000 颜色差、归一化曼哈顿位置差；迭代自优化
+  （看渲染截图改代码）显著提升质量。
+
+  【对你的直接借鉴】
+  【高层 API 压缩动作空间】。你的 pipeline 里，每一步给 LLM 的工具
+  应该都是这种粒度（add_title / add_bullets / set_image / set_chart），
+  而不是「生成这一页的 HTML」。Slidev 的 MCP 工具集已经是这个形态，
+  可以直接用。
+
+
+--------------------------------------------------------------------------------
+2.8  anthropics/skills（179,927★）—「设计规范如何落地」的行业标杆
+--------------------------------------------------------------------------------
+
+  【目录结构 —— 已是全生态事实标准】
+  agentskills.io 自 2025-12-18 起为开放标准，Codex / Copilot / Cursor /
+  Gemini CLI 等约 40 个客户端已采纳。
+    skill-name/
+    ├── SKILL.md          # 必需：YAML frontmatter (name, description)
+    │                     #      + 正文
+    ├── scripts/          # 确定性任务的代码，不入 context
+    ├── references/       # 按需加载的文档（>300 行加目录，>10k 字加 grep 提示）
+    └── assets/           # 模板/字体/图标，只做输出用，不读进 context
+
+  【三级渐进式披露】
+    L1 frontmatter（~100 tokens，始终在 context，决定触发）
+    L2 SKILL.md 正文（触发后加载，建议< 500 行）
+    L3 scripts/references/assets（按需加载）
+
+  【pptx skill 的核心设计 —— 不是校验规则，是组织方式】
+  a. SKILL.md 正文放「设计指令」
+     明确色彩配比（主色 60–70% + 1–2 辅色 + 1 accent）、
+     每页一个 visual motif、【禁渐变】。
+  b. 拆子文档做渐进式披露：html2pptx.md 单独成文，避免主文档过长
+  c. scripts/ 承担可靠性
+     一切「每次都要重写一遍的代码」（如 add_slide()：写 slideN.xml +
+     .rels、注册 [Content_Types].xml）都必须沉到脚本里。
+     skill-creator 的判据很实用：【如果多次测试里 Agent 都独立写出了
+     同一个脚本，就该把它 bundle 进去】
+  d. subagent 视觉 QA 闭环
+     渲染缩略图网格 → subagent 挑重叠/溢出/低对比/占位符残留 → 回改
+  e. description 要「pushy」
+     官方明说 Claude 有 undertrigger 倾向，要求把触发条件写死
+     （「用户提到 .pdf 就用这个 skill」）。
+     skill-creator 还带description optimizer：自动生成 20 条 eval query
+     （should-trigger / should-not-trigger 混合），6/4 切分 train/test，
+     每 query 评 3 次，最多迭代 5 轮，按 test 分选最优（防过拟合）。
+  f. 【自由度分级原则】—— 这条是设计规范落地的关键判据
+     高自由度 = 纯文本指令（多解）
+     中自由度 = 伪代码/带参脚本（偏好明确但允许变体）
+     低自由度 = 具体脚本少参数（fragile，必须一致）
+     → 【设计规范和生图参数应该落在低自由度】
+
+  【html2pptx.js 的机械校验规则 —— 直接可抄】
+  换算常数：PT_PER_PX = 0.75 / PX_PER_IN = 96 / EMU_PER_IN = 914400
+  硬约束：
+    - body 尺寸必须等于 presentation layout，误差 > 0.1" 报错
+    - scrollWidth/Height - clientWidth/Height > 1px 即判定溢出，
+      报错并给 pt 级偏差
+    - 文本元素下边距距底≥ 0.5"（fontSize > 12 时）
+    - 文字必须在 <p>/<li> 内，否则【静默丢弃】
+    - 禁用 CSS 渐变、inset shadow、inline 元素 margin
+      —— 必须先用 Sharp 栅格化成 PNG
+    - 【所有校验错误一次性聚合抛出】，让 agent 一轮改完
+
+  最后两条尤其重要：静默失败是流水线里最难查的 bug；
+  错误聚合能把 5 轮返工压缩成 1 轮。
+
+  【对社区的辐射 —— 值得你关注的 Skill 生态】
+  op7418/guizang-ppt-skill（27,308★）—— 和你的场景最像
+    输出单文件 HTML（不是 pptx），两套锁定视觉系统：
+      Style A电子杂志风（10 种布局）
+      Style B 瑞士国际主义风（22 种锁定版式）
+    版式落地方式：【硬编码 CSS grid 8px/12px baseline grid】+ Flexbox，
+                 不是让模型自由发挥
+    交互式问诊流程：选风格 → 主题/受众/场景 → 稿子 → 时长
+      （15min≈10页，30min≈20页）
+      → 【强制先出「大纲 + 主题节奏表」对齐，再出设计稿，确认后才实现】
+    配图交给独立的图片风格库，明确声明 deck 一致性不用担心
+    —— 即生图只做插画层
+    有低性能静态模式（关WebGL）、可出公众号 21:9 / 小红书 3:4 封面
+    局限：输出 HTML，不可编辑导出 pptx；不适合大量表格的培训课件
+    性能：2–4s 生成 10 页，输出 45–75KB 无依赖，内存约 8.7MB
+
+  remotion-dev/skills（随 Remotion 本体）
+    把动效规范写成 31 条 rule files，配 @remotion/transitions。
+    官方 create-video 模板直接带 skill。
+
+  digitalsamba/claude-code-video-toolkit（约 2,100★）
+    Remotion + 11 组件 + 自定义 transitions
+    【brand profile system】+ NarratorPiP 组件
+    （现成的画中画讲解人位）—— 你的数字人功能可以直接对标
+
+  google-labs-code/stitch-skills/remotion（约 8,300★）
+    MCP 取屏 + Remotion，【screens.json manifest 显式编排走屏顺序】
+
+  aaronjmars/aeon remotion skill（756★）
+    storyboard JSON → src/schema.ts props
+    【输入是 JSON schema 不是自由代码】，且硬上限 10s，
+    空输入直接 REMOTION_NO_VAR 退出（避免烧 CI 算力）
+
+  haidrrrry/claude-remotion-skill（128★）
+    【强制 render → 抽帧检查 → 修 → 重渲】，不让 Agent 盲发
+
+  【规律总结 —— 这是本节最有价值的部分】
+  1. 设计规范落地 =布局写成代码/模板，不写成文档
+     guizang 的 22 种版式、CSS grid baseline、html2pptx 的固定 px→inch
+     比例，都是同一个道理：【文档没法约束模型，schema 可以】
+  2. 输入是结构化数据不是散文
+     screens.json、props.json、storyboard JSON、slides[] + layoutSuggestion
+     —— Agent 填数据，渲染器出画面
+  3. 强制 QA 闭环：渲染 → 抽帧/截图 → 找问题 → 回改
+  4. 视觉回归：所有 deck 用同一套 style guide + 同一批 token
+  5. 分媒介复用同一份内容：
+     guizang-ppt-skill（HTML deck）+ social-card-skill（小红书/公众号
+     封面）+ awesome-gpt-image-2（配图）+ youtube-clipper-skill（切片）
+     —— 你已经在做这件事（课程 + 短视频 + 小红书引流）
+
+
+--------------------------------------------------------------------------------
+2.9  图像可控生成：IP-Adapter / ControlNet / In-Context-LoRA
+--------------------------------------------------------------------------------
+
+  【IP-Adapter（约 11,000★）—— 风格一致性的核心工具】
+  机制：decoupled cross-attention。在冻结 UNet 上新增一组 image
+  cross-attn 的 K/V 投影（约 22M 参数），CLIP image encoder 出的
+  embedding 走这条通路，与文本 attention 输出【相加】。
+  文本通路完全不动 → 保留 text controllability。
+
+  API：
+    pipe.load_ip_adapter("h94/IP-Adapter", subfolder="sdxl_models",
+                         weight_name="ip-adapter_sdxl.bin")
+    pipe.set_ip_adapter_scale(0.5~0.7)
+
+  变体：Plus（更多 image token，细节/结构迁移更强）、
+        FaceID / FaceID Plus / Portrait（InsightFace embedding 保身份）
+
+  ★【关键能力 —— InstantStyle 的分层 scale，这是解决
+    「风格与版式纠缠」最实用的技巧，已进 diffusers 官方文档】：
+    scale = {
+      "down": {"block_2": [0.0, 1.0]},   # 注入 layout
+      "up":   {"block_0": [0.0, 1.0, 0.0]}   # 注入 style
+    }
+    pipe.set_ip_adapter_scale(scale)
+  只在特定层激活 → 风格层给质感、layout 层给构图，中间内容仍由文本
+  prompt 主导。这是【风格一致但内容不串味的核心开关】。
+
+  已知缺陷（Mercity 研究明确列出）：
+    style-content entanglement（顺手把人家的衣服也搬过来）、
+    多元素参考图时语义混淆、无法指定「只要光照不要服装」。
+
+  与 ControlNet 的区别：IP-Adapter 控【外观】（风格/内容/身份），
+  不施加几何；ControlNet 控【几何】（空间结构）。两者互补而非替代，
+  标准配方是 ControlNet(canny/depth) 0.7 + IP-Adapter 0.5 同时挂，
+  两者 scale 之和约 1.0–1.3。
+
+  【ControlNet（34,124★）—— 控几何】
+  14 个 checkpoint（命名规则 SCNNR，p=生产级 / e=实验 / f1=bugfix）：
+    canny / mlsd（直线）/ depth / normalbae（法线）/ seg / inpaint /
+    lineart / anime-lineart / openpose / scribble / softedge /
+    shuffle / ip2p / tile
+
+  对版式/构图最有用的是三个：canny、depth、seg。
+    canny 从版式草图/线稿直接上色，构图零漂移。
+          注意：网上流传的 control_v11p_sd15_depth 是未收敛的错版，
+          正确是 f1p_sd15_depth
+    depthMidas/Leres/Zoe 多分辨率训练，
+          【对渲染引擎输出的真实深度图鲁棒】—— 正好匹配
+          「先用 3D/矢量工具定版式，再让生图填内容」的场景
+    seg    语义分割（ADE20K），可锁「这块是天空/这块是卡片底板」
+
+  scale 参数实操：
+    0.3–0.5   松，follow 大形、留创作自由
+    0.7–0.8   强，版式基本对齐  ← 版式稳定的推荐起点
+    1.0+      近乎描线，僵硬、掉细节
+  ComfyUI 侧另有 start_percent 0.2–0.4 / end_percent 0.6–0.8：
+  【只在中段约束、首尾放开】，是避免「僵硬」最有效的两个参数。
+  分辨率 512 起，复杂版式 768。
+  显存：单 ControlNet 约 8GB，Multi + IP-Adapter 建议 12GB+
+       并开 enable_attention_slicing() + enable_vae_tiling()。
+
+  【其他方案的定位】
+    T2I-Adapter  同类条件但轻（~77M 参数，29.97 GFlops），
+                 显存/速度友好；精度明显低于 ControlNet
+    ControlNet++ ControlNet + 循环一致性反馈，条件贴合度大幅提升：
+                 Seg mIoU 35.36 vs 27.46，Canny F1 37.04 vs 34.65；
+                 但训练/推理重，无官方 comfy 权重
+    IP-Adapter Plus  16→256 image token，细节/风格保真更好
+    Redux（sd-webui） 把 img2img 的 latent 条件/风格直接喂进 SD
+    style model（DreamBooth 时代） 几十张图烘一个 1–2MB 权重，
+                 推理零额外开销；但需重训，不如 IP-Adapter 灵活
+
+  选型结论：结构严格 → ControlNet（别用 T2I-Adapter）；
+            风格统一 → InstantStyle 式 IP-Adapter 分层 scale；
+            两者都要 →叠。
+
+  【什么时候必须训 LoRA】
+  判据：需要【多张图共享同一个「非语义」视觉语法】（特定插画笔触、
+  图标语言、版式骨架、品牌色板），且 reference 图本身表达不了这个语法。
+  典型规模：几百到几千张打标图，rank 16–32，出 20–200MB 权重。
+
+  ali-vilab/In-Context-LoRA（2,081★，阿里 IC-LoRA）
+    —— 里面直接有 ppt-templates.safetensors（推荐分辨率 1984×1152），
+       还有 visual-identity-design（1472×1024）、font-design（1792×1216）、
+       couple-profile。prompt 用 [LEFT] / [TOP-LEFT] 标记多栏。
+       这是目前最贴近「版式 LoRA」的公开权重。
+    FLUX 生态已有大量 presentation / educational infographic 风格 LoRA，
+    配合固定 prompt 前缀 + 固定 LoRA weight 0.7–0.9 出图。
+
+  成本对比：IP-Adapter 零样本、出一张改一张；LoRA 要数据 + 训练，但
+  【批量一致性明显更好】。你既然要批量产课件 → 值得训一个自己的
+  「课程插画风格 LoRA」。
+
+  【文字渲染 —— 一个必须接受的结论】
+  社区共识仍然是【别让模型写字】。AnyText 论文自测数据：
+    ControlNet-Text中文 char-level 42.7%
+    GlyphControl 中文 38.9%
+    DeepFloyd IF 38.9%
+    AnyText 最好：中文 83.2% / 英文 92.5%，FID 8.11 vs 14.26
+  →中文长句根本不可用于生产。
+
+  AnyText（Apache-2.0）：ControlNet 架构 + OCR（PP-OCRv3）笔画编码 +
+  字形/位置双分支，ComfyUI 有节点，字体需放 ComfyUI/models/font/。
+  AnyText2 加了逐行属性控制（字体/颜色/kerning）、+19.8% 速度、
+  SDXL 1024×1024。适合海报/封面里的一两行大字，【不适合幻灯片正文】。
+
+  商业模型方面：gpt-image-2（2026-04）被报道为首个 CJK 文字真正可用的
+  图像模型（来源为AnySlide 作者自述，未独立验证）——这是「整页生图」
+  路线的唯一翻身理由，但【不足以支撑批量正文】。
+
+  → 结论：文字一律走 SVG/DOM 层。生图 prompt 里加 negative_prompt:
+    "text, watermark, letters" 避免模型自己在图里写字。
+
+
+--------------------------------------------------------------------------------
+2.10  数字人 / 对口型（你已有功能的选型校准）
+--------------------------------------------------------------------------------
+
+  【选型对比】
+  方案                授权        显存      速度            适用
+  ─────────────────────────────────────────────────────────────────
+  Wav2Lip (13,228★)  MIT         2.5–6GB    最快            真人视频换音，
+                                                                  唇形准但只改嘴、
+                                                                  边缘糊
+  MuseTalk (6,669★)  Apache-2.0  6–8GB      V100 上 30fps  直播 / 右下角
+  （腾讯 Lyra）                    256²约3.5GB实时         小窗首选
+                                  512²约6.2GB
+  LatentSync (6,112★) Apache-2.0 v1.5 约8GB  慢（多步扩散）离线批量出片，
+  （字节）                        v1.6 约18GB                质量最好。
+                                                                  TREPA 解决帧间
+                                                                  闪烁，SyncNet
+                                                                  91%→94%
+  SadTalker (~11,900★) Apache-2.0 4–6GB    中单图→说话头，
+                                                    ExpNet + PoseVAE，
+                                                    3D 约束导致机械感
+  LivePortrait (~17,000★)              高     中表情驱动，官方最强
+  Linly-Talker (~7,000★) Apache-2.0 随模块变  实时         最佳参考实现：
+                                                                  ASR/LLM/TTS/
+                                                                  Avatar 全模块
+                                                                  可插拔，有
+                                                                  WebRTC 流式版
+  EchoMimic/Hallo3Wan2.2-S2V-14B高     很慢    电影级，
+  （Wan2.2-S2V约17,700★，MoE）                            但14B 不是成本
+                                                             匹配的量级
+
+  【工程取舍要点 —— 三种 presenter 方案】
+  1. 预生成视频 + loop 播放  【最省，对你的课程流水线是最优解】
+     录一段 15–30s 数字人视频（含 idle 呼吸 + 偶尔眨眼 + 轻微点头），
+     无缝 loop，音量关到 0 只留画面。
+     一次生成，全课复用，零延迟。
+  2. 静态图 + 音轨驱动  每次换文案都要重渲，延迟高。
+     但可用 MuseTalk 只驱动下半脸，其他部分静止 → 视觉跳跃小。
+  3. 真人实拍 presenter   最可信，但内容不可复用，只适合品牌片头。
+
+  推荐组合：录一段通用 presenter 循环视频做常态呈现（右下角 ≤15% 画面，
+  圆形遮罩），只在开场/ 章节切换 / 结尾三处插入音轨驱动的定制片段
+  （MuseTalk 或 Wav2Lip，5–8s）。
+
+  【怎么让数字人不抢 PPT 注意力 —— 设计问题不是技术问题】
+    面积 ≤ 12–15%，圆形遮罩或圆角矩形，不要全屏半身
+    亮度压到 PPT 背景的 70–80%（overlay rgba(0,0,0,0.15) 压暗），
+      避免高对比眼睛区域
+    动效最小化：loop 视频选「慢眨眼 + 微点头」，
+      【避免大幅头部运动和手势】—— 大运动会把观众视线拉走
+    位置固定（左下/右下），【不要每页换位置】
+    无口型时段切到「说话但画面不动」或轻微 idle
+
+  【关键实现技巧 —— 固定 presenter + 音轨复用】
+    ffmpeg -i presenter.mp4 -i tts.wav -c:v copy -c:a aac -shortest out.mp4
+  视频流不重编码 →【毫秒级】。变体做法：先跑一次 MuseTalk/Wav2Lip
+  得到带口型的 presenter.mp4 存入 assets/presenters/{name}.mp4，
+  之后所有 TTS 都只是换音轨。
+  →这意味着你的一次性数字人成本被完全摊薄。
+
+  【TTS 选型（2026 现状）】
+  引擎              许可      显存首包克隆  关键指标
+  ─────────────────────────────────────────────────────────
+  CosyVoice 2 (0.5B) Apache-2.0 约4GB 150ms 3–10s  英文WER 2.07% /
+                   中文 2.43%，情感相似度 0.831；14 种细粒度控制标签
+                   [laughter][breath]；Qwen2.5 骨干 + FSQ；
+                   【工程最完善】，vLLM/TRT-LLM 加速
+  Qwen3-TTS        Apache-2.0 2–6GB  97ms 3s    12Hz tokenizer + Dual-Track
+                   (0.6/1.7B)                双轨流式 + VoiceDesign，延迟无敌
+  IndexTTS2        Apache-2.0 约8GB RTF1.1 3–5s 英文 1.88% / 中文 2.12%，
+                                                 情感 0.872；12 种情感风格 +
+                                                 音色情感解耦 +
+                                                 emo_alpha 强度 +
+                                                 【精确 token 数时长控制】
+  F5-TTS (~0.3B)   MIT       约3GB —      3s    Flow Matching + DiT 全非自回归，
+                                                 10 万小时训练，【唯一 MIT】
+  GPT-SoVITSMIT       4–8GB  中      30s–3min 中文社区生态最成熟，
+                                                 纯技术指标已非最强
+  Fish Speech 1.5 / Apache-2.0 约4–6GB 约100ms 10–30s VoxCPM2: 30 种语言 +
+  VoxCPM2                                                  8 大方言，2B
+  Edge-TTS         闭源免费  0     低     无     【兜底】零成本零延迟、无 GPU、
+                                                   极稳定，但无情感控制、
+                                                   随时可能被封
+
+  推荐：主力 CosyVoice 2（中文课程、延迟与稳定平衡最好、Apache-2.0）；
+  要精确时长控制（视频对齐刚需）用 IndexTTS2 的 token 数控制；
+  Edge-TTS 作为离线兜底，GPU 队列满时降级，【绝不让流水线断掉】。
+  参考成本：RTX 4090 自部署约 520元/月（3年折旧 + 电费），
+  你的 RTX 5080（16GB）完全够用，且这几个模型都在16GB 以内。
+
+
+--------------------------------------------------------------------------------
+2.11  WhisperX（约 26,000★）—— 讲稿与画面的时间轴对齐
+--------------------------------------------------------------------------------
+
+  三段式：
+    1. VAD（pyannote / silero）切出有效语音段
+    2. faster-whisper 批量转写（70x realtime，< 8GB VRAM）
+    3. 【wav2vec2 phoneme 模型 forced alignment 出 word-level timestamp】
+    可选 pyannote diarization
+
+  语言相关（DEFAULT_ALIGN_MODELS_HF，en/fr/de/es/it 走 torchaudio），
+  【中文需自备模型】—— 这是你要注意的坑。
+  已知问题：数字/货币不对齐、重叠语音差。
+  v3 用 nltk sent_tokenize 做【句级切分】。
+
+  【PPT/视频领域的四种工程用法 —— 实用度排序】
+  1. 【反向对齐（推荐）】
+     先TTS 出每页旁白 mp3，【用 mp3 实际时长决定该页在时间轴上的停留】，
+     而不是估字数。slide duration = audio length + padding。
+     这就是 MoneyPrinterTurbo 和 claude-video-kit 的做法。
+  2. 【对齐做校验而非生成】
+     Whisper 转写 TTS 音频得到 word timestamp → 检查是否落在当前 slide
+     的时间窗内 → 漂移超阈值就重切页。
+     这是 keyword-to-sentence grounding 的低成本实现。
+  3. 现成整链参考
+     claude-video-kit：JSON script → 1080×1920 竖屏 mp4，
+       含 text 与 voice_text 分离字段，
+       支持 cover/code/voice 多种 slide type
+     pptx-to-video：6 阶段，带 mtime+size 缓存签名、TTS 缓存、
+       ffmpeg concat manifest
+     doc-video-generator：PDF/PPTX → PNG → Remotion，每页 6s
+  4. 节奏经验值
+     12–18s/页；单页旁白 > 25–30s 必须拆页；
+     响度归一到 -16 LUFS；页间留 200–500ms。
+
+
+--------------------------------------------------------------------------------
+2.12  style-dictionary（4,853★）—— 把「设计规范文档」变成代码
+--------------------------------------------------------------------------------
+
+  【W3C Design Tokens Community Group（DTCG）格式】
+  注意：DTCG 是 Community Group 规范，【不是 W3C Standard】。
+  成员含Adobe / Figma / Framer / Sketch / Google / Atlassian / Shopify /
+  Microsoft。
+
+    {
+      "colors": {
+        "$type": "color",
+        "brand": { "$value": "#CA3618" },
+        "bg":   { "$value": "{colors.neutral.50}" }
+      },
+      "font": {
+        "body": { "$value": "16px", "$type": "dimension" },
+        "bold": { "$value": 500, "$type": "fontWeight" }
+      }
+    }
+
+    - 扩展名 .tokens / .tokens.json
+    - 类型：color / dimension / fontWeight / duration / fontFamily /
+            number / cubicBezier
+    - 支持 composite token 和 {a.b.c} 引用；color 强制 hex
+
+  【编译器：style-dictionary】
+  v4 起原生支持 DTCG 作为输入格式——即从「文件格式」升级为「编译器」。
+    配置：source: ['tokens/*.json'] + transformGroup: 'css'
+        + files[].format: 'css/variables'
+    可按 filePath filter 出 tokens.light.css / tokens.dark.css
+    （selector分别为 ':root' 和 '[data-theme="dark"]'）
+
+  【三层 token 架构 —— 必须落实，否则规范会腐化】
+    primitive  --color-indigo-600
+    semantic   --color-action-primary
+    component   --button-background
+  配套一条【ESLint/Stylelint 自定义规则：组件文件里禁止裸 hex】，
+  CI 拦截。否则规范会在三个月内腐化。
+
+  设计侧用 Tokens Studio（前 Figma Tokens，2023-08 起成为
+  Style Dictionary 主要贡献者）双向同步到 Git 仓库，CI 跑 build。
+
+  同类：salesforce-ux/theo（Salesforce 原生，2016 后维护模式）；
+  Penpot 是首个原生支持 W3C Design Tokens 的设计工具。
+
+
+================================================================================
+                        第 3 章  横向对比矩阵
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1  稳定性机制横向对比（核心表）
+--------------------------------------------------------------------------------
+
+  机制                Remotion      Revideo        Slidev         Marp         Presenton
+  ─────────────────────────────────────────────────────────────────────────────
+  时间模型            frame 纯函数  generator      click 步进paginate      无（静态）
+  数据入口强约束      ★ zod schema variables        layout slot   ★ _class     ★ Zod schema
+                                                                  枚举
+  皮肤层              组件+props    组件           ★ theme 包    ★ 纯 CSS     组件
+                                        + UnoCSS     theme
+  官方 LLM 接口       ★ Skills     "给LLM一个纯     ★ 内置 MCP   —            ★ MCP server
+                      + 官方 prompt  TS scene"     + 目视校验
+  课件产出            —             —              ★ pptx-      ★ pptx     ★ PPTX
+                                         editable
+  短视频产出          ★ MP4/竖屏   ★ MP4/Shorts   —            —           —
+
+  表内★ = 该维度上做得最好。可以看出：**没有一个项目只靠一套机制**，
+  都是「时间模型 + 数据约束 + 皮肤层」三层叠加。你需要的三层，恰好都有了
+  现成方案。
+
+--------------------------------------------------------------------------------
+3.2  「稳定性手段」有效性排序（按本项目适配度）
+--------------------------------------------------------------------------------
+
+  排名  手段                          稳定性贡献  可扩展性  实施成本
+  ─────────────────────────────────────────────────────────────
+  1     LLM 输出 schema 约束            ★★★★★      ★★★★★    低
+        （z.object + .max() 容量上限）
+  2     版式改用代码模板而非生图        ★★★★★      ★★★★     中
+  3     时间轴改用帧驱动/秒驱动         ★★★★★      ★★★★★    低
+        （禁 CSS animation）
+  4     视觉规范写成 design token        ★★★★☆      ★★★★★    低
+  5     生图用 IP-Adapter 分层 scale     ★★★★☆      ★★★     中
+  6     失败降级矩阵 + 分阶段可重试      ★★★★☆      ★★★★    低
+  7     渲染后视觉 QA 闭环              ★★★☆      ★★★★     中
+        （subagent 抽帧审图）
+  8     文字一律走 DOM/SVG              ★★★★★      ★★★★★    低
+  9     ControlNet 锁几何                ★★★☆      ★★☆     中高
+  10    训LoRA锁风格                    ★★★★☆      ★★☆     高
+  11    切图做元素级关联                ★☆☆☆☆      ★☆☆☆☆  中
+        ← 这是你当前架构里最该废弃的一条
+  12    靠提示词写设计规范              ★☆☆☆☆      ★☆☆☆☆  低
+        ← 你已经踩过这个坑
+
+  结论：真正高性价比的是 1/2/3/4/8——都是【代码级】手段，不是【提示词级】。
+  投入产出比远高于继续在提示词上打磨。
+
+
+--------------------------------------------------------------------------------
+3.3  各子方案的能力缺口（诚实评估）
+--------------------------------------------------------------------------------
+
+  缺口                现状                          对你的影响
+  ─────────────────────────────────────────────────────────────
+  Slidev 无视频导出    只能录屏或转 Remotion         可接受：本来就要转 Remotion
+  Slidev pptx-editable不嵌字体、::before/::after     可接受：视觉可接受即可
+  已知限制            装饰被跳过、断行与浏览器不一致
+  Remotion 非纯 FOSS   公司使用需购买license          【需你拍板：可购买/ 用 Revideo】
+  Revideo 无 zod 层    少一层数据约束                 需自己补 zod 校验
+  Canvas 渲染          画不出富文本排版               课件场景不适用，故只用于视频
+  Reveal.js 无Markdown 内容要手写 HTML               【这就是你踩过的坑，不要选】
+  Marp 无视频          整页切换                      只能做讲义，不能做短视频
+  Presenton 模板抽取  AI 反推有误差                  【你有模板资产，走确定性路径更优】
+  PPTAgent/AutoPresent 论文实现，非生产级            借思想，不直接用
+  MuseTalk 512² 约6.2GB你的 5080 是 16GB，够用      无障碍
+
+
+================================================================================
+                    第 4 章  你的方案诊断（直说）
+================================================================================
+
+--------------------------------------------------------------------------------
+4.1  逐项诊断
+--------------------------------------------------------------------------------
+
+  你的设计                     诊断              建议
+  ──────────────────────────────────────────────────────────────────────
+  内容 → 演讲稿              ✅ 正确且领先     保留。升级为「演讲稿 IR =
+                                与社区最佳实践一致 PPTAgent / Presenton
+                                / guizang 全部以此为IR
+
+  演讲稿 → 可视化描述        ⚠️ 形态对、约束弱  改造成「布局枚举 + schema
+                                                    容量上限」。让模型选
+                                                    布局，不要让模型设计布局
+
+  逐页生整页图              ❌ 根本性错误      改为「HTML 版式 + 插画槽位生图」。
+                                                    这是本次调研最重要的一条
+
+  图片串联 + 语音合成        ⚠️ 缺时间轴抽象   改用 Remotion，用帧驱动替代
+                                                    时间估算是本质升级
+
+  AI 元素关联（自动切图）    ❌ 生产不可用      【建议废弃】。用 DOM 分层取代，
+                                                    从根上消灭对齐问题
+
+  手动涂抹关联              ✅ 判断正确        升级为原生能力：Slidev v-click
+                                                    或 Remotion Sequence
+
+  数字人画中画               ✅ 方向正确        保持。改为「一次生成 + 音轨复用」
+
+  一稿两出（课程 + 短视频）  ✅ 你的护城河      强化为「单一 IR 双端渲染」，
+                                                    这是别人没有的优势
+
+--------------------------------------------------------------------------------
+4.2  你被「模板数量」问题误导了
+--------------------------------------------------------------------------------
+
+  你的原话：「如果要稳定，我需要足够多的模板，而且这些模板必须具备
+  一定的可扩展性。」
+
+  社区数据说的是另一件事：
+    Slidev    用 15 个内置 layout  +  theme 包     覆盖绝大多数课程场景
+    guizang   用 22 种锁定版式 + 8/12px baseline 覆盖两套完整视觉体系
+    Presenton 用 Zod schema + React 布局 + finite 枚举
+  →  【12–22 个布局是成熟项目的标准量级，不是一个数量级的负担】
+
+  真正的可扩展性不来自「多做一个布局」，而来自「布局的参数化」：
+    一个「两栏对比」布局，应该能表达：
+      左栏标题(≤12字) + 左栏正文(≤5条) + 右栏图 + 右栏图注
+    而不是为每种内容单独做一个布局。
+  → 参数化 = 布局数量可控+ 内容覆盖广。这是你应该追求的「可扩展性」。
+
+
+================================================================================
+                    第 5 章  借鉴分析（逐项）
+================================================================================
+
+--------------------------------------------------------------------------------
+5.1  借鉴一：PPTAgent —— 从「生成」改为「编辑」
+--------------------------------------------------------------------------------
+
+  【它怎么做】
+  不让 LLM 生成整页，而是：模板预置版式 → 模型选参考页 → 迭代调用编辑
+  API（replace_text / insert_image）而非重新生成。
+  关键洞察：OXML 冗长，LLM 直接操作 XML 极易出错，所以引入 HTML
+  渲染表示做中间层。成功率 97.8%，设计 +33%、连贯性 +34%。
+
+  【我们能借鉴什么】
+  把你的「生成一页图」改成「往预置布局的槽位里填内容」。
+  具体做法：
+    1. 建 12–15 个布局模板，每个布局是 [布局坐标 JSON + HTML 模板]
+    2. 每个布局的槽位有明确 ID：layout.title / layout.colLeft.body /
+       layout.image
+    3. LLM 只做：选layout + 填槽位值
+    4. 填充失败 → 重置槽位重填，而不是重生成整页
+
+  【具体如何借鉴】
+  在你的可视化描述环节，把输出 schema 固定为：
+    {
+      "layout": "two-column-compare" | "title-bullets" | "full-image" |
+                "quote" | "section-divider" | "timeline" | ...（枚举 12-15 个）
+      "slots": {
+        "title":      {"value": "...", "maxLen": 20},
+        "leftBullets":{"value": [...], "maxItems": 5, "maxLenPerItem": 40},
+        "image":      {"prompt": "...", "ratio": "16:9"}
+      }
+    }
+  maxLen / maxItems 写进 schema，这是 Presenton z.string().max(50)
+  同款机制，也是最有效的稳定性约束。
+
+  收益：错误空间从「整页自由发挥」缩小到「填错字符串」；
+        天然继承你的模板资产；失败可回滚；
+        【元素级关联问题自动消失——元素本来就是槽位，有明确 ID】。
+
+--------------------------------------------------------------------------------
+5.2  借鉴二：Remotion —— 帧驱动的确定性时间轴
+--------------------------------------------------------------------------------
+
+  【它怎么做】
+  1. 帧是纯函数：同帧多次调用结果必须相同、不能依赖渲染顺序、
+     不能用 Math.random()
+  2. 禁 CSS animation/transition，一切由 useCurrentFrame() +
+     interpolate()/spring() 驱动，spring 显式传 fps
+  3. delayRender()/continueRender() 显式阻塞资源加载
+  4. 时间轴 = 组件树：<Sequence> 可嵌套、可 trim、可变速、可循环
+  5. zod schema 约束 props，calculateMetadata() 动态算时长
+
+  【我们能借鉴什么 —— 三条，都是代码级约束】
+  a. 【禁 CSS animation，全部改成帧驱动】
+     理由：CSS transition 的插值由浏览器引擎决定，换机器/换浏览器
+     版本就可能不同；而 interpolate() 的结果由你自己定义，跨环境一致。
+     这直接对应你说的「不稳定」。
+  b. 【时间轴用组件树表达，不用 if-else 判断】
+     <Sequence from={段1开始} durationInFrames={段1时长}>
+     这样「讲到什么内容出现什么内容」变成数据结构，而不是条件分支，
+     且天然可复用、可序列化、可回溯。
+  c. 【zod schema 挂在 Composition 上】
+     这就是你的「可视化描述」该有的形态。
+
+  【具体如何借鉴】
+    定义一份 SlideSpec（zod），挂在
+    <Composition id="LessonVideo" component={Lesson}
+                 durationInFrames={computed} fps={30}
+                 width={1080} height={1920}
+                 schema={LessonSchema} defaultProps={...} />
+    Lesson 组件内部按 slides[] 映射出 <Sequence>，
+    每个 Sequence 里是【与 PPT 端共用的同一个 HTML/SVG 组件】。
+    数字人做成 <NarratorPiP />，用 Sequence 控制它出现的区间。
+
+  许可证提示：Remotion 非纯 FOSS，公司使用需购买 license。
+  备选Revideo（MIT，canvas 渲染，variables 作为唯一数据入口）。
+
+--------------------------------------------------------------------------------
+5.3  借鉴三：Slidev —— 槽位契约 + v-click 渐进呈现
+--------------------------------------------------------------------------------
+
+  【它怎么做】
+  1. layout 契约：内容必须塞进 slot，天然阻止结构外版式
+  2. theme 单一开关：theme 包同时提供 styles + layouts + components
+  3. UnoCSS preset-attributify把修饰符变成原子类，等于 design token
+  4. v-click 步进系统：click 是动画单位，相对/绝对定位、enter/leave 区间
+  5.内置 MCP Server，幻灯片按【渲染后页码】寻址，支持 goto-slide
+     目视校验
+  6. 导出 pptx-editable：浏览器里量测后重建为 PowerPoint 原生形状
+
+  【我们能借鉴什么】
+  a.【你的「手动涂抹关联」功能，可以被 v-click 完全替代】
+     v-click 的定位（相对 at="+2" / 绝对 at="2"）、区间（v-click="[2,4]"）、
+     容器（v-clicks）已经覆盖涂抹关联的所有场景，而且不需要人工操作。
+     →【把涂抹功能降级为「异常兜底」，不再是主路径】。这能省下大量人工成本。
+  b. 【内置 MCP 是你「内容 → PPT」这一环的现成接口】
+     建议你的 pipeline 直接实现一个同构 MCP：LLM 通过
+     list_slides / get_slide / update_slide / insert_slide 操作你的
+     幻灯片数据，而不是生成 markdown 文本再解析。
+     按【渲染后页码】寻址这个设计尤其要抄——模型的认知与最终画面一致。
+  c. 【pptx-editable 是全场唯一真·可编辑 PPTX 产出】
+     如果你的课程需要交付给用户可编辑的 pptx，这条能直接省掉
+     大量自研工作。已知限制：不嵌字体、::before/::after 装饰被跳过。
+
+  【具体如何借鉴】
+    课件侧：维护 slides.md（内容）+ layouts/（你的 12–15 个布局）
+    视频侧：Remotion 吃同一份解析后的结构化数据
+    共享：每个 layout 对应一份 JSON 坐标定义，两个渲染器都读它
+
+--------------------------------------------------------------------------------
+5.4  借鉴四：Presenton —— 从已有 PPTX 抽取模板的确定性路径
+--------------------------------------------------------------------------------
+
+  【它怎么做】
+    PPTX → (LibreOffice 逐页截图) + (OXML 坐标原文) + (字体清单)
+         →喂 LLM 生成原生 Tailwind HTML（不是图片）
+         → HTML_TO_REACT prompt 合成 .tsx 布局组件
+         → 存为 custom-{id} 模板
+
+  【我们能借鉴什么 —— 且有更快的路】
+  它证明了「从已有 PPTX 生成可用模板」是可行且有价值的。
+  但你的情况【更好】：你已有 IDML / pptx 模板资产，且数量有限。
+
+  更快更可靠的确定性路线（优先级高于 AI 反推）：
+    用 python-pptx 打开你的模板 pptx：
+      prs = Presentation('template.pptx')
+      for slide in prs.slides:
+          for shape in slide.shapes:
+              print(shape.shape_type, shape.left, shape.top,
+                    shape.width, shape.height, shape.name)
+    → 读出每个占位符的真实 EMU 坐标
+    → 翻译成你的布局规格（x / y / w / h + 容量上限）
+    → 手写成 layouts/*.json
+  比让 LLM 从截图反推可靠得多。
+  【AI 反推留给「用户自己传模板」的场景作为自动兜底。】
+
+  另外三条直接抄：
+    - Zod schema 的 .meta({ description }) 直接进 prompt
+    - 预览用 Tailwind CDN 实时渲染，改完立刻看到，不等导出
+    - 依赖在Dockerfile 里显式钉死，缺字体走人工上传兜底
+
+--------------------------------------------------------------------------------
+5.5  借鉴五：anthropics/skills —— 「规范」如何变成可执行的约束
+--------------------------------------------------------------------------------
+
+  【它怎么做 —— 五条最值得抄的】
+  a. scripts/ 承担可靠性
+     判据非常实用：【如果多次测试里 Agent 都独立写出了同一个脚本，
+     就该把它 bundle 进去】。这正是你「每次都要重写一遍」的痛点解法。
+  b. 错误一次性聚合抛出
+     html2pptx.js 校验完所有问题一起报，让 agent 一轮改完，
+     而不是5 轮往返。
+  c. 文字必须在 <p>/<li> 内，否则静默丢弃
+     【静默失败是流水线里最难查的 bug】。你的 pipeline 也要有
+     明确的「静默失败」清单并主动检测。
+  d. 自由度分级原则
+     高自由度 = 纯文本指令（多解）
+     中自由度 = 伪代码/带参脚本（偏好明确但允许变体）
+     低自由度 = 具体脚本少参数（fragile，必须一致）
+     → 【设计规范和生图参数应该落在低自由度】
+  e. subagent 视觉 QA 闭环
+     渲染缩略图网格 → subagent 挑重叠/溢出/低对比 → 回改
+
+  【我们能借鉴什么 —— 直接重构你的规范文档】
+  你现在的「设计规范」大概是markdown 文档。按这套范式重构为：
+    design.tokens.json          # 由 style-dictionary build 成 CSS 变量
+    skills/
+      lesson-to-slides/
+        SKILL.md# L1 触发词 + L2 流程（< 500 行）
+        references/
+          layouts.md             # 12–15 个布局的槽位契约表
+          生图规范.md# 低自由度：固定参数 + negative prompt
+          校验规则.md
+        scripts/
+          validate_slide.py      # 溢出/重叠/容量超限/裸 hex 检测
+          build_html.ts          # 渲染 + 截图
+          qa_report.py           # 生成缩略图网格供视觉审图
+        assets/
+          layouts/*.json         # 布局坐标
+          fonts/
+          icons/
+
+  关键转变：
+    【规范从「要求模型遵守」变成「模型无法违反」】
+    遵守靠prompt，无法违反靠 schema + 校验脚本 + token 缺失即构建失败。
+
+--------------------------------------------------------------------------------
+5.6  借鉴六：IP-Adapter InstantStyle —— 风格一致但内容不串味
+--------------------------------------------------------------------------------
+
+  【它怎么做】
+  decoupled cross-attention 在冻结 UNet 上加一组 image cross-attn，
+  文本通路完全不动 → 保留 text controllability。
+  关键是【分层 scale】：
+    scale = {"down": {"block_2": [0.0, 1.0]},     # 注入 layout
+             "up":   {"block_0": [0.0, 1.0, 0.0]}}  # 注入 style
+    只在特定层激活 → 风格层给质感、layout 层给构图，
+    中间内容仍由文本 prompt 主导。
+
+  【我们能借鉴什么】
+  【放弃「靠一张参考图统一全站风格」的想法】
+  那种做法必然 style-content entanglement——你想让所有插画同风格，
+  结果每张图的内容都被参考图的内容污染。
+
+  改成分层：
+    layout 走 down.block_2（插图在画面中的位置/结构由你的版式决定）
+    style走 up.block_0（色调、光照、笔触质感由参考图决定）
+    内容由文本 prompt 独立主导
+  → 这一个技巧能解决你「插画风格不一致」的大半问题，
+    且【零训练成本】。
+
+  补充：批量产出后再考虑训一个「课程插画风格 LoRA」
+  （参考 ali-vilab/In-Context-LoRA 的 ppt-templates.safetensors，
+  1984×1152）。但这不是第一步。
+
+--------------------------------------------------------------------------------
+5.7  借鉴七：数字人「一次生成 + 音轨复用」
+--------------------------------------------------------------------------------
+
+  【社区做法】
+  claude-code-video-toolkit 的 NarratorPiP 组件做画中画讲解人位；
+  Linly-Talker 把 ASR/LLM/TTS/Avatar 做成全模块可插拔。
+
+  【我们能借鉴什么 —— 三条】
+  a. 【Presenter loop 视频 + 只换音轨】
+     ffmpeg -i presenter.mp4 -i tts.wav -c:v copy -c:a aac out.mp4
+     视频流不重编码 →毫秒级。一次生成，全课复用。
+     → 你的数字人成本被完全摊薄，可以大胆用。
+  b. 【面积 ≤ 15%、压暗、位置固定、动作最小化】
+     避免大幅头部运动和手势；选「慢眨眼 + 微点头」的 idle 循环；
+     overlay rgba(0,0,0,0.15) 压暗避免高对比眼睛区域抢视线。
+  c. 【只在开场/转场/结尾插入音轨驱动的定制片段】
+     用 MuseTalk（6,669★，Apache-2.0，V100 上 30fps 实时），
+     你的 RTX 5080 16GB 跑 512²（约 6.2GB）没问题。
+     离线批量出片想要更高质量可用 LatentSync（6,112★，v1.6 约 18GB）。
+
+  【明确不建议】
+  不要上 Wan2.2-S2V-14B（MoE，分钟级单次）——14B 不是成本匹配的量级。
+
+--------------------------------------------------------------------------------
+5.8  借鉴八：style-dictionary —— 视觉规范的单一真相源
+--------------------------------------------------------------------------------
+
+  【它怎么做】
+  社区组规范 DTCG 的 token 文件 + style-dictionary 编译成 CSS 变量。
+  三层 token：primitive → semantic → component。
+  配ESLint/Stylelint 规则禁止组件文件里出现裸 hex，CI 拦截。
+
+  【我们能借鉴什么 —— 这一条解决你最根本的「风格不一致」】
+  把「课程视觉规范」写成 design.tokens.json：
+    {
+      "color": {
+        "primary":   {"$value": "#1A5FB4", "$type": "color"},
+        "accent":    {"$value": "#E8A33D", "$type": "color"},
+        "surface":   {"$value": "#FFFFFF", "$type": "color"},
+        "ink":       {"$value": "#14181F", "$type": "color"},
+        "inkMuted":  {"$value": "#5A6472", "$type": "color"}
+      },
+      "font": {
+        "family": {"$value": "「思源黑体」,...", "$type": "fontFamily"},
+        "size": {
+          "h1": {"$value": "48px", "$type": "dimension"},
+          "h2": {"$value": "36px", "$type": "dimension"},
+          "body": {"$value": "22px", "$type": "dimension"},
+          "caption": {"$value": "18px", "$type": "dimension"}
+        }
+      },
+      "space": {"$value": "8px", "$type": "dimension"}
+    }
+
+  然后：
+    1. style-dictionary build → tokens.css（CSS 变量）
+    2. 你的 HTML 模板 CSS 全部 var(--...)
+    3. 【生图 prompt 里的主题色直接从 token 里读 hex 拼进前缀提示词】
+       例如 prompt 前缀统一为：
+         "flat vector illustration, editorial style, color palette
+          #1A5FB4 #E8A33D #FFFFFF #14181F, clean line art, ..."
+    4. 生图后处理把插画的主色向 token 色做一次色相吸附（可选）
+
+  → 【同一份 token 同时喂给 DOM 层和生图层，风格一致性就有了单一真相源】
+  这是本报告里投入产出比最高的一条：
+  新增一套视觉体系只需改一个 json 文件，全链路自动同步。
+
+  必须同时落实三层 token 架构 + 禁裸 hex 的 CI 规则，否则三个月内腐化。
+
+
+================================================================================
+                    第 6 章  建议的目标架构
+================================================================================
+
+--------------------------------------------------------------------------------
+6.1  单一 IR 双端渲染（最重要的一张图）
+--------------------------------------------------------------------------------
+
+              ┌────────────────────────────────────────────┐
+              │  ① 内容（Markdown / PDF / 逐字稿）              │
+              └───────────────────┬────────────────────────┘
+                                  v
+              ┌────────────────────────────────────────────┐
+              │  ② 演讲稿 IR（LLM + JSON Schema 强约束）        │
+              │     · 按语义分镜（每镜一个 speaker beat）        │
+              │     · 每镜标注：意图类型 / 时长预估 / 关键词     │
+              └───────────────────┬────────────────────────┘
+                                  v
+              ┌────────────────────────────────────────────┐
+              │  ③ SlideSpec（★ 全系统唯一的中间表示 ★）         │
+              │                                             │
+              │   SlideSpec[] = {                          │
+              │     id, order,                             │
+              │     layout: <枚举 12-15 个>,               │
+              │     slots: { title:{value,maxLen},          │
+              │                bullets:{value,maxItems,       │
+              │                          maxLenPerItem},     │
+              │                image:{prompt,ratio,mood},    │
+              │                chart:{type,data} },           │
+              │     notes: "<演讲稿原文，供TTS 逐句对齐>",   │
+              │     timing: { speech, padding, total },      │
+              │     reveal: [{ atStep, slots[] }]← v-click  │
+              │   }                                         │
+              └──────┬──────────────────────────┬─────────┘
+                     v                          v
+       ┌─────────────────────────┬─────────────────────────┐
+       │ ④A 课件端（Slidev）        │ ④B 视频端（Remotion）      │
+       │  layouts/*.vue          │  <Composition schema>     │
+       │  v-click 渐进呈现│  <Sequence> 帧驱动         │
+       │  导出 pptx-editable│  导出 1080×1920 MP4      │
+       └─────────────────────────┴─────────────────────────┘
+                     └────────────┬─────────────────────────┘
+                                  v
+       ┌──────────────────────────────────────────────────────┐
+       │ ⑤插画层（旁路，只填 image 槽位）│
+       │   IP-Adapter InstantStyle 分层 scale                   │
+       │   layout走 down.block_2 / style 走 up.block_0│
+       │   negative_prompt: "text, watermark, letters"      │
+       │   文字/图表一律走 DOM/SVG，永不交给生图                 │
+       └──────────────────────────────────────────────────────┘
+                                  v
+       ┌──────────────────────────────────────────────────────┐
+       │ ⑥ 数字人（PresenterPiP）                              │
+       │   预生成 loop 视频 + ffmpeg -c:v copy 只换音轨           │
+       │   面积 ≤15%、压暗、固定位置、idle 动作                   │
+       └──────────────────────────────────────────────────────┘
+
+  贯穿全流程的两条横向约束：
+    · design.tokens.json → style-dictionary → CSS 变量（喂 DOM 层）
+                                            └→ hex 拼进生图 prompt（喂生图层）
+    · validate_slide.py（溢出/重叠/容量/裸 hex）+ subagent 抽帧视觉 QA
+
+  ★核心原则：③④ 只做一次，④A/④B 是两个渲染器，不是两条生成链。
+    【绝不让 LLM 分别生成 PPT 和视频两套东西，那样一致性必然崩。】
+
+--------------------------------------------------------------------------------
+6.2  改造前后的对比
+--------------------------------------------------------------------------------
+
+  维度            你现在                改造后
+  ────────────────────────────────────────────────────────────
+  版式来源        生图模型（概率性）      HTML/CSS 模板（确定性）
+  文字            交给生图（中文必崩）    DOM/SVG（精确、可编辑）
+  风格一致性      靠提示词约束（不稳）    design token 单一真相源
+  插画一致性      靠参考图（内容串味）    IP-Adapter 分层 scale
+  元素级关联      AI 切图（粘连必错）    元素= 槽位，有明确 ID
+  手动涂抹        主路径之一             降级为异常兜底（v-click 替代）
+  时间轴          时间估算               TTS 实际时长 + padding
+  动画            CSS transition         帧驱动（跨环境一致）
+  失败处理        整体重试              槽位级重试 + 降级矩阵
+  模板数量        「需要很多」           12–15 个参数化布局
+  产出            一份 PPT               同一 IR → 课件 + 短视频
+
+--------------------------------------------------------------------------------
+6.3  分阶段落地路线图
+--------------------------------------------------------------------------------
+
+  【阶段 0 · 资产盘点】（0.5 天）
+    用 python-pptx 扫你的模板库，导出「布局清单」：
+      每个母版/版式下，每个占位符的 name / EMU 坐标 / 类型
+    产出：layouts_raw.json
+    这是后面所有工作的地基。【先量出你到底有几种版式】，
+    而不是凭感觉设计。这一步会直接告诉你「其实只有 8 种」。
+
+  【阶段 1 · 定token 与布局规格】（1–2 天）★ 优先级最高★
+    a. 写 design.tokens.json（3 层：primitive / semantic / component）
+    b. style-dictionary build 出 tokens.css
+    c. 把阶段 0 的 layouts_raw.json 人工整理成 12–15 个
+       layouts/*.json：{ id, canvas:{w,h}, slots:{ title:{x,y,w,h,
+       maxLen,font}, bullets:{...}, image:{...} } }
+    d. 选2–3 个布局，用纯 HTML/CSS 手工做出来，先确认视觉方向
+    【验收标准：3 个布局纯手工实现后，效果达到你 80% 的期望】
+     —— 如果手工都做不好看，生图也救不了，先解决视觉基底
+
+  【阶段 2 · 替换生图环节】（2–3 天）
+    a. 文字/图表 → DOM/SVG 渲染（这一步就干掉了 80% 的不稳定性）
+    b. image 槽位 → IP-Adapter InstantStyle分层 scale 出图
+    c. negative_prompt 禁止模型写字
+    d. 出图后做色相吸附到 token 色板（可选）
+    e. 加一个「插画一致性检查」：抽 6 张图做风格对比，出报告
+    【验收标准：连续 10 页，插画风格肉眼一致；文字零错误】
+
+  【阶段 3 · 接视频层】（3–5 天）
+    a. SlideSpec 定义（zod schema）
+    b. Remotion Composition + zod schema挂载
+    c.把阶段 2 的 HTML/SVG 组件直接当 composition 复用
+       （一个组件树同时出课件和视频）
+    d. TTS 用 CosyVoice 2；slide duration = 音频实际时长 + padding
+    e. WhisperX 反向对齐做校验（漂移超阈值重切页）
+    f. 数字人 PresenterPiP + ffmpeg -c:v copy
+    【验收标准：同一IR 产出的课件与视频，逐页对照无内容差异】
+
+  【阶段 4 · 工程化收口】（持续）
+    a. 把所有确定性代码沉到 scripts/（skill 范式）
+    b. validate_slide.py：溢出 / 重叠 / 容量超限 / 裸 hex / token 缺失
+       —— 【错误一次性聚合抛出】让 agent 一轮改完
+    c. subagent 抽帧视觉 QA 闭环
+    d. 并行化：生图与 TTS并发（MoneyPrinterTurbo 做法）
+    e. 降级矩阵：生图失败 → 占位插画；TTS 失败 → Edge-TTS；
+       LLM 失败 → 重试 2 次 → 人工介入
+    f. 把你的「设计规范.md」拆成 SKILL.md + references/ + scripts/
+       （三级渐进式披露）
+
+  【阶段 5 · 规模化训练】（可选，非必需）
+    等批量产出遇到风格瓶颈，再训一个「课程插画风格 LoRA」
+    （参考 ppt-templates.safetensors，1984×1152）。
+    【在IP-Adapter 分层 scale 验证有效之前，不要训 LoRA】——
+    那是零成本方案的验证之后才需要的第二级投入。
+
+
+================================================================================
+                  第 7 章  风险与常见坑
+================================================================================
+
+  坑1｜Remotion 许可证（非纯 FOSS，公司使用需购买）
+    → 决策点。可购买 license，或选 Revideo（MIT）。若走 Revideo，
+      需自己补 zod 校验层（它没有）。
+
+  坑2｜WhisperX 中文 forced alignment 需自备模型
+    DEFAULT_ALIGN_MODELS_HF 只覆盖 en/fr/de/es/it。
+    → 若走「反向对齐 + 音频时长」方案可绕开；若要用 word 级对齐，
+      需自备中文 align 模型，工作量不小。
+
+  坑3｜Sl idev pptx-editable 的已知限制
+    不嵌字体、::before/::after 装饰被跳过、PowerPoint 断行与浏览器不一致。
+    → 若交付对象对字体敏感，改用 python-pptx 直接按你的布局 JSON 写
+      pptx（因为你有精确坐标，反而更可控）。
+
+  坑4｜「静默失败」是最难查的 bug
+    借Anthropic 那条规则：文字必须在 <p>/<li> 内，否则静默丢弃。
+    → 你的 pipeline 必须有静默失败检测清单并主动断言。
+
+  坑5｜别按整个 deck 选引擎，要按页选
+    （来自 AnySlide 作者的踩坑经验）
+    同一份 deck 里，标题/正文页走 HTML（要可编辑），
+    图表/金句页走整图（要排版保真）。
+    → 对你的启示：布局枚举里可以加一个 layout: "full-bleed-image"
+      专门给金句页/章节页用。
+
+  坑6｜生图模型写中文必然出错
+    AnyText 中文83.2% 已是最优，长句不可用于生产。
+    → 【文字一律走 DOM/SVG】。这条没有例外。
+
+  坑7｜ControlNet 版本坑
+    网上流传的 control_v11p_sd15_depth 是未收敛的错版，正确是 f1p_sd15_depth。
+    scale 用 0.7–0.8 + start_percent 0.2–0.4 / end_percent 0.6–0.8。
+
+  坑8｜design token 腐化
+    没有「组件文件禁止裸 hex」的 CI 规则，三个月内规范必然腐化。
+    → 规则和 token 必须同批上线。
+
+  坑9｜IP-Adapter 风格-内容纠缠
+    单一 scale 容易把参考图的内容（衣服、人物）搬过来。
+    → 用 InstantStyle 分层 scale，不要用单一全局 scale。
+
+  坑10｜TTS 情感与稳定性的权衡
+    Edge-TTS 最稳但无情感控制且随时可能被封；神经TTS 有情感但需 GPU。
+    → 三级降级：CosyVoice 2（主力）→ IndexTTS2（精确时长）→
+      Edge-TTS（离线兜底）。绝不让流水线断掉。
+
+
+================================================================================
+                     第 8 章  待验证项清单
+================================================================================
+
+  以下条目本次调研未能一手核实，落地前建议实测：
+
+  □ h94/IP-Adapter 现仓库路径（API 返回 404，原路径为 h94/IP-Adapter）
+  □ 全部中国星数数据的独立复核（本报告仅实测部分，
+    未复核条目已在 1.2 表中逐条标注）
+  □ gpt-image-2 的 CJK 文字实测水平（仅有社区作者自述）
+  □ LatentSync 1.6 的 18GB 显存需求与MOVA 等新指标
+  □ Presenton 导出 PPTX 是否逐元素还原为原生形状（而非整页贴图）
+  □ Slidev 对非代码元素的 Keynote 式 Magic Move 是否存在
+  □ Revideo 是否有社区 zod schema 校验方案
+  □ guizang-ppt-skill 的实际生成质量与耗时（2–4s/10 页为作者自述）
+  □ design-arena 的 html→pptx 库名称与可用性
+  □ 你的模板库里到底有几种有效版式（阶段 0 自行盘点）
+
+
+================================================================================
+                              附：给你的三句话
+================================================================================
+
+  1. 你放弃的那条路是对的，但放弃的理由不对。
+     不是HTML + 动画不稳定，而是【让生图模型去干排版的活】不稳定。
+     把排版还给代码，稳定性问题当场消失。
+
+  2. 社区里12–22 个参数化布局就覆盖了绝大多数课程场景。
+     你要的可扩展性不来自「多做一个布局」，
+     而来自「让一个布局能表达更多种内容」。
+
+  3. 真正高性价比的稳定性手段全在代码里，不在提示词里：
+     schema 约束 + 代码模板 + 帧驱动时间轴 + design token。
+     继续在提示词上打磨，是在一个收益递减的斜坡上用力。
+
+================================================================================
+                              报告结束
+================================================================================

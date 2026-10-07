@@ -1,0 +1,197 @@
+{
+  "course": "course.token",
+  "unit": [
+    {
+      "name": "Five scenes reuse one recipe without mutating author input",
+      "passed": true
+    },
+    {
+      "name": "Fourth step rejected",
+      "passed": true
+    },
+    {
+      "name": "Long detail rejected",
+      "passed": true
+    },
+    {
+      "name": "Free position rejected",
+      "passed": true
+    },
+    {
+      "name": "Wrong template slot rejected",
+      "passed": true
+    },
+    {
+      "name": "Old recipe rejects new steps field",
+      "passed": true
+    },
+    {
+      "name": "Narration stays separate and each step reveals in sequence",
+      "passed": true
+    },
+    {
+      "name": "Data-driven language examples match saved tokenizer evidence",
+      "passed": true
+    },
+    {
+      "name": "Same recipe supports water process content without geometry or renderer changes",
+      "passed": true
+    }
+  ],
+  "browser": [
+    {
+      "name": "token-01",
+      "frames": [
+        {
+          "id": "K0",
+          "tMs": 0,
+          "repeat": true
+        },
+        {
+          "id": "K1",
+          "tMs": 2500,
+          "repeat": true
+        },
+        {
+          "id": "K2",
+          "tMs": 8500,
+          "repeat": true
+        },
+        {
+          "id": "K3",
+          "tMs": 14500,
+          "repeat": true
+        },
+        {
+          "id": "K4",
+          "tMs": 18000,
+          "repeat": true
+        }
+      ]
+    },
+    {
+      "name": "token-02",
+      "frames": [
+        {
+          "id": "K0",
+          "tMs": 0,
+          "repeat": true
+        },
+        {
+          "id": "K1",
+          "tMs": 2500,
+          "repeat": true
+        },
+        {
+          "id": "K2",
+          "tMs": 8500,
+          "repeat": true
+        },
+        {
+          "id": "K3",
+          "tMs": 14500,
+          "repeat": true
+        },
+        {
+          "id": "K4",
+          "tMs": 18000,
+          "repeat": true
+        }
+      ]
+    },
+    {
+      "name": "token-03",
+      "frames": [
+        {
+          "id": "K0",
+          "tMs": 0,
+          "repeat": true
+        },
+        {
+          "id": "K1",
+          "tMs": 2500,
+          "repeat": true
+        },
+        {
+          "id": "K2",
+          "tMs": 8500,
+          "repeat": true
+        },
+        {
+          "id": "K3",
+          "tMs": 14500,
+          "repeat": true
+        },
+        {
+          "id": "K4",
+          "tMs": 18000,
+          "repeat": true
+        }
+      ]
+    },
+    {
+      "name": "token-04",
+      "frames": [
+        {
+          "id": "K0",
+          "tMs": 0,
+          "repeat": true
+        },
+        {
+          "id": "K1",
+          "tMs": 2500,
+          "repeat": true
+        },
+        {
+          "id": "K2",
+          "tMs": 8500,
+          "repeat": true
+        },
+        {
+          "id": "K3",
+          "tMs": 14500,
+          "repeat": true
+        },
+        {
+          "id": "K4",
+          "tMs": 18000,
+          "repeat": true
+        }
+      ]
+    },
+    {
+      "name": "token-05",
+      "frames": [
+        {
+          "id": "K0",
+          "tMs": 0,
+          "repeat": true
+        },
+        {
+          "id": "K1",
+          "tMs": 2500,
+          "repeat": true
+        },
+        {
+          "id": "K2",
+          "tMs": 8500,
+          "repeat": true
+        },
+        {
+          "id": "K3",
+          "tMs": 14500,
+          "repeat": true
+        },
+        {
+          "id": "K4",
+          "tMs": 18000,
+          "repeat": true
+        }
+      ]
+    }
+  ],
+  "visualStatus": "pending-user-review",
+  "audio": "not attached; manual timing",
+  "courseNavigation": "five scene links and last transcript verified",
+  "pageErrors": []
+}

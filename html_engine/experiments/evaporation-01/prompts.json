@@ -1,0 +1,14 @@
+{
+  "tool": "image_gen.imagegen",
+  "mode": "built-in",
+  "design": {
+    "prompt": "Create one premium 16:9 hand-drawn science explainer slide reference for “水为什么会蒸发？”. Supplied image is the effect library, NOT layout to copy. Use warm flat #FFFAF0 background, dark #343C49 type and lines, coral #D86856 emphasis, blue #8BC7D0 water, yellow #FFDF87 label. Actual scene layout1600x900: large title at x100,y60. Eight-ray simple sun upper left x180,y260. Large independent simple hand-drawn beaker half full of blue water at center-left x570,y420 approximately420x270. Six blue symbolic particles rise from water to x660..940,y280..400 on thin dashed curved trails. A fine curved arrow points right toward yellow paper label “蒸发” x1100,y400. At bottom center below beaker “液态 → 气态” within single coral irregular oval, y700. Small line “水变成水蒸气，进入空气。” at bottom y805. Subtitle “不需要沸腾，也可以蒸发” below heading. Spacious, precise hierarchy, restrained flat vector-like aesthetic matching library. Illustration beaker dark line, blue flat water, no fog, no boiling bubbles, no highgloss3D. Required implementation second constraint: title/explanation=A06 CSS, label=A01 CSS hard6pxoffset darkshadow, arrow=A02 SVG single4pxstroke, oval=A03 SVG single4pxcoral, sun=A04 SVG exactly8rays noface, particles=A05 Canvas exactly6 plain blue dots plus dashed paths, beaker=independent raster asset. Match actual preview effect shapes closely. Labels and lines are code layers; draw only required scene text, never A01 identifiers/CSS/SVG/Canvas/library captions. No decorative textures, symbols, extra paragraphs, gradients, glass material, glare or unrelated dots. Include ALL title/subtitle/state-change/explanation text. Design reference only, no frame or UI.",
+    "reference": "input-effects.png",
+    "transparent_background": false
+  },
+  "asset": {
+    "prompt": "Generate ONE standalone transparent beaker illustration matching the beaker in the supplied science slide reference. The input is design/style reference only. Whole wide squat hand-drawn glass beaker, approximatelywidth450height280 ratio1.6, dark #343C49 clean thin outlines4px, slightly irregular rim elliptical opening, small spout on upper-left, three small vertical markings on left wall. Beaker half filled with flat pale-blue #8BC7D0 water, slight uneven water surface. Face-on2D, flat hand-drawn aesthetic, no realistic glass, no glossy reflections, no gradients, no shadow, no background. Entire object complete with15% transparent padding. Remove ALL particles/trails/sun/arrows/labels/text/coraloval, those will be separate CSS/SVG/Canvas layers. Only beaker outline and blue water. True alpha background not checkerboard. Do not include boiling bubbles or steam.",
+    "reference": "design.png",
+    "transparent_background": true
+  }
+}

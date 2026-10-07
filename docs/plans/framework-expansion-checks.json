@@ -1,0 +1,1019 @@
+{
+  "recordVersion": 1,
+  "date": "2026-10-07",
+  "contractVersion": "0.5.0",
+  "scope": "taxonomy_composition_extension_and_reference_document_review",
+  "summary": {
+    "checksPassed": 177,
+    "checksFailed": 0,
+    "layers": 8,
+    "catalogItems": 108,
+    "limitedDefinedItems": 29,
+    "candidateItems": 79,
+    "coverageCases": 32,
+    "rules": 22,
+    "referenceColorLabels": 11
+  },
+  "checks": [
+    {
+      "check": "eight_layers",
+      "status": "passed",
+      "scope": "C/R/N/E/L/S/T/O"
+    },
+    {
+      "check": "catalog_ids_unique_and_owned",
+      "status": "passed",
+      "scope": "108 items"
+    },
+    {
+      "check": "state_counts",
+      "status": "passed",
+      "scope": "29 limited P01 definitions + 79 candidates"
+    },
+    {
+      "check": "no_runtime_support_claim",
+      "status": "passed",
+      "scope": "all items"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "C-TERM"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "C-MEDIA"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "C-SOURCE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "R-CONTRAST"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "N-CONTRAST"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "E-TEXT"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "E-IMAGE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "E-VECTOR"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "E-GROUP"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "E-CONCEPT"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "L-OVERLAY"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "L-SAFE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "L-P01"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "S-COLOR"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "S-TYPE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "S-SPACING"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "S-SURFACE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "S-VARIANT"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "S-COVERAGE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "S-REFERENCE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "T-BINDING"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "T-REVEAL"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "T-HIGHLIGHT"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "T-ANNOTATE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "O-PREVIEW"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "O-VIDEO"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "O-PPTIMAGE"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "O-PPTSTEPS"
+    },
+    {
+      "check": "definition_source_exists",
+      "status": "passed",
+      "scope": "O-PPTNATIVE"
+    },
+    {
+      "check": "catalog_is_not_registry",
+      "status": "passed",
+      "scope": "catalog metadata"
+    },
+    {
+      "check": "case_count_unique",
+      "status": "passed",
+      "scope": "coverage cases"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-01"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-02"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-03"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-04"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-05"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-06"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-07"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-08"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-09"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-10"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-11"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-12"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-13"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-14"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-15"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-16"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-17"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-18"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-19"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-20"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-21"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-22"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-23"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-24"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-25"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-26"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-27"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-28"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-29"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-30"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-31"
+    },
+    {
+      "check": "case_eight_axis_references",
+      "status": "passed",
+      "scope": "COV-32"
+    },
+    {
+      "check": "case_status_not_runtime",
+      "status": "passed",
+      "scope": "32 design cases"
+    },
+    {
+      "check": "package_versions",
+      "status": "passed",
+      "scope": "three indexes"
+    },
+    {
+      "check": "rule_count",
+      "status": "passed",
+      "scope": "HPS-001..022"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-001"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-002"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-003"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-004"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-005"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-006"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-007"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-008"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-009"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-010"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-011"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-012"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-013"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-014"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-015"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-016"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-017"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-018"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-019"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-020"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-021"
+    },
+    {
+      "check": "rule_location",
+      "status": "passed",
+      "scope": "HPS-022"
+    },
+    {
+      "check": "preserved_p01_source_version",
+      "status": "passed",
+      "scope": "P01 stays pinned"
+    },
+    {
+      "check": "reference_hash",
+      "status": "passed",
+      "scope": "references/user-style-reference.png"
+    },
+    {
+      "check": "reference_dimensions",
+      "status": "passed",
+      "scope": "PNG unchanged"
+    },
+    {
+      "check": "reference_color_labels",
+      "status": "passed",
+      "scope": "labels, not final palette"
+    },
+    {
+      "check": "palette_pending",
+      "status": "passed",
+      "scope": "no fabricated product style"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "标注主色/浅灰"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "粉色"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "米色"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "黄色"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "绿色"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "蓝色"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "紫色"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "正文"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "次级文字"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "页面背景"
+    },
+    {
+      "check": "color_contrast_arithmetic",
+      "status": "passed",
+      "scope": "卡片背景"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/01-building-and-ownership.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/02-capabilities.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/03-data-and-runtime.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/04-production-and-compatibility.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/framework/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/definitions/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/05-definition-template.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/contract-index.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/contracts/html-presentation/CHANGELOG.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> AGENTS.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/styles/science-explainer/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/plans/html-studio-implementation-plan.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/research/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/research/2026-10-07-skill-and-workflow-reports/adaptation-guide.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/research/2026-10-07-architecture-report/analysis-and-adoption.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/plans/html-foundation-roadmap.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/plans/html-studio-adaptation.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> docs/plans/html-foundation-review-20261007.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "README.md -> README_HTML_STUDIO.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/html-studio-implementation-plan.md -> p01-definition-completion.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/html-studio-implementation-plan.md -> framework-expansion-completion.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/html-studio-implementation-plan.md -> ../contracts/html-presentation/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/html-studio-implementation-plan.md -> ../research/2026-10-07-skill-and-workflow-reports/implementation-cards.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/html-studio-implementation-plan.md -> ../contracts/html-presentation/definitions/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/html-studio-implementation-plan.md -> ../contracts/html-presentation/05-definition-template.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/html-studio-implementation-plan.md -> ../styles/science-explainer/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/framework-expansion-completion.md -> ../contracts/html-presentation/framework/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/framework-expansion-completion.md -> ../styles/science-explainer/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/plans/framework-expansion-completion.md -> framework-expansion-checks.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/01-building-and-ownership.md -> framework/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/02-capabilities.md -> README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/02-capabilities.md -> 01-building-and-ownership.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/02-capabilities.md -> 04-production-and-compatibility.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/02-capabilities.md -> framework/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/03-data-and-runtime.md -> README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/03-data-and-runtime.md -> 01-building-and-ownership.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/03-data-and-runtime.md -> 04-production-and-compatibility.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/03-data-and-runtime.md -> definitions/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/CHANGELOG.md -> ../../plans/framework-expansion-completion.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/CHANGELOG.md -> ../../plans/p01-definition-completion.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> 01-building-and-ownership.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> 02-capabilities.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> 03-data-and-runtime.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> 04-production-and-compatibility.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> 05-definition-template.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> framework/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> definitions/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> contract-index.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> CHANGELOG.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/README.md -> ../../research/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/03-extension.md -> ../05-definition-template.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/04-coverage.md -> coverage-matrix.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/04-coverage.md -> capability-catalog.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> 01-taxonomy.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> 02-composition.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> 03-extension.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> 04-coverage.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> 05-style-workflow.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> 06-composition-examples.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> capability-catalog.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> coverage-matrix.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/contracts/html-presentation/framework/README.md -> ../../../styles/science-explainer/README.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/styles/science-explainer/README.md -> reference-analysis.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/styles/science-explainer/README.md -> references/user-style-reference.png"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/styles/science-explainer/README.md -> reference-palette.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/styles/science-explainer/README.md -> ../../contracts/html-presentation/framework/05-style-workflow.md"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/styles/science-explainer/reference-analysis.md -> reference-metadata.json"
+    },
+    {
+      "check": "local_link",
+      "status": "passed",
+      "scope": "docs/styles/science-explainer/reference-analysis.md -> reference-palette.json"
+    }
+  ],
+  "notVerified": [
+    "generic region/schema/renderer implementation",
+    "automatic layout and target geometry",
+    "actual product font files",
+    "generated science artwork",
+    "style sample and visual acceptance",
+    "animation/seek/audio integration",
+    "video and PPTX output"
+  ],
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "0210e7f92f2abaa7211b430671b5e219be558b796edccce0e0e6f6faa2a283c4"
+    },
+    {
+      "path": "docs/contracts/html-presentation/01-building-and-ownership.md",
+      "sha256": "43e82118d9b3af76bcbf8d9cf3277f96dcc9132da4d9ec2507c01b5a917f8c76"
+    },
+    {
+      "path": "docs/contracts/html-presentation/02-capabilities.md",
+      "sha256": "e5e7deab94d1aed5939bd086475c12c277e9e783f546893822cae5135c8ac99b"
+    },
+    {
+      "path": "docs/contracts/html-presentation/03-data-and-runtime.md",
+      "sha256": "1567846daf6ebe265e7c43950d0790a5f80f20108840644e2bbe021fba0c9056"
+    },
+    {
+      "path": "docs/contracts/html-presentation/04-production-and-compatibility.md",
+      "sha256": "7b049e93378b8dd4e0c27b93b5094caf39ad82c8c97a94f997b0642f88ed6b8f"
+    },
+    {
+      "path": "docs/contracts/html-presentation/05-definition-template.md",
+      "sha256": "c2217a176c7323bea80e074b1145f3a45d46865f46480f21065b8e59ea7428ae"
+    },
+    {
+      "path": "docs/contracts/html-presentation/CHANGELOG.md",
+      "sha256": "afa85fbfb3aacfdfe3081c5444fb9808ca273389462db5f73c3157935b2fb38c"
+    },
+    {
+      "path": "docs/contracts/html-presentation/contract-index.json",
+      "sha256": "1c40938df7b464728dcca1a54570bce217068d1b36c252ec1dbdc160454f6a16"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/01-taxonomy.md",
+      "sha256": "b9127c4c0cd737023fb194c90faf2e009fa16257985b5405c437d27837bb47dc"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/02-composition.md",
+      "sha256": "70dd35bcbc3ba3d4440b4b842514214a2ff0edb5f5119efaadb0eac3842d599f"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/03-extension.md",
+      "sha256": "e7327ed5a5331f7947d2785677213a4a036bd0d151c087fd26fa8a1c462db967"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/04-coverage.md",
+      "sha256": "945c0da0eaae46d8200ee76deeaa3319c3ba841a3bf37b7f947b8dbf2ef63b9d"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/05-style-workflow.md",
+      "sha256": "827e84683c12f3e53401d855c3a7ea36e5f9a04256c1d5364bfc30c8eea15bdb"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/06-composition-examples.md",
+      "sha256": "27ce64d31aa1bf893919558526412d16ef00fc154c87dd9ddec9ed894c3ce785"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/capability-catalog.json",
+      "sha256": "9ec93f9046d8d2733dc1d03d65001fcf441ffe5944860f982b500f1bcbcbe259"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/coverage-matrix.json",
+      "sha256": "ea45d306c7c43932f45e0fc5a30b920a0b503d616659762daaad283fa03ccedf"
+    },
+    {
+      "path": "docs/contracts/html-presentation/framework/README.md",
+      "sha256": "f2a4bc42c5a6f3480b4f271c4f4e9568bb2d08b270405950c56df5e515585ba9"
+    },
+    {
+      "path": "docs/contracts/html-presentation/README.md",
+      "sha256": "ba18cedb4fb877e71169b695e396d1845620a48e18f68cf704eda31a65aae8ce"
+    },
+    {
+      "path": "docs/plans/framework-expansion-completion.md",
+      "sha256": "6b439acb267788fc62b3e15ab56850db857b3bb910f72c83e099294b8793ff75"
+    },
+    {
+      "path": "docs/plans/html-studio-implementation-plan.md",
+      "sha256": "5e73bcc3ef878641c9bb3df52da0e25bdf4585c05f8be6e9e12b1642e11e37be"
+    },
+    {
+      "path": "docs/styles/science-explainer/README.md",
+      "sha256": "1286a37ee1952ef76b4128bca25421769cb3c1d00bdec50bab9d46231144b9a7"
+    },
+    {
+      "path": "docs/styles/science-explainer/reference-analysis.md",
+      "sha256": "b61504524b394bcb8a74e5723d0f56d0c601e435be8eb97aed1cade42d4611eb"
+    },
+    {
+      "path": "docs/styles/science-explainer/reference-metadata.json",
+      "sha256": "ca08ffb97e2bccebeb6abfcb57cab13b0665dc70632160da6a00d45e7b3ef8bd"
+    },
+    {
+      "path": "docs/styles/science-explainer/reference-palette.json",
+      "sha256": "fba3e11d759d381a99617f96773aa5ce7cf9d7c9e8c0ab4fae1e0b640dc6340a"
+    },
+    {
+      "path": "docs/styles/science-explainer/references/user-style-reference.png",
+      "sha256": "0ae52db934f5543acc8fba0372910356f717ba3da308ab88c3fed06b35b63542"
+    },
+    {
+      "path": "README.md",
+      "sha256": "abb97e56c8b5fef23f226cc1ebf677f8b387097ba89b4ae6f373f50e3cf4be27"
+    }
+  ]
+}

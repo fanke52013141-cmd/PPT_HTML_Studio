@@ -1,0 +1,18 @@
+{
+  "file": "evaporation-ba75b7ab-5eae-4a5b-babb-21a1bf14a119.mp4",
+  "directory": "outputs/evaporation-01",
+  "sceneRevision": 2,
+  "subtitleFont": 32,
+  "subtitleZone": {
+    "top": 800,
+    "height": 100
+  },
+  "durationSeconds": 20,
+  "fps": 24,
+  "frames": 480,
+  "width": 1280,
+  "height": 720,
+  "audio": false,
+  "sha256": "e2dc4560e5b1b2c499bfbadab5bf84442dfb093f255ab607889337fb15e850d8",
+  "decode": "passed"
+}

@@ -1,0 +1,27 @@
+{
+  "format": "hps.e2.recipe",
+  "version": "0.1.0",
+  "id": "scene.course-everyday",
+  "revision": 1,
+  "template": "recipe.dual-concept",
+  "variant": "sequential",
+  "title": "生活里的水循环",
+  "subtitle": "湿衣服变干，冷杯外出现水滴 · 小球仅为分子示意",
+  "source": "https://www.usgs.gov/water-science-school/science/evaporation-and-water-cycle ; https://www.usgs.gov/water-science-school/science/condensation-and-water-cycle",
+  "concepts": [
+    {
+      "name": "湿衣服变干",
+      "relation": "液态 → 气态",
+      "body": "水进入空气，并没有凭空消失。",
+      "asset": "assets/evaporation-v1.png",
+      "narration": "湿衣服里的水通过蒸发进入空气。这里用水容器说明相同的相变机制，并不是衣物实物图。"
+    },
+    {
+      "name": "冷杯外水滴",
+      "relation": "气态 → 液态",
+      "body": "空气中的水蒸气，遇冷形成水滴。",
+      "asset": "assets/condensation-v1.png",
+      "narration": "水蒸气变成液态水，叫凝结。冷杯外的水滴来自空气中的水蒸气，并非杯里的水漏了出来。"
+    }
+  ]
+}

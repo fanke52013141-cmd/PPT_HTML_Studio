@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-07",
+  "sourceId": "scene.cloud-drift",
+  "taskId": "31ea3633-6953-40c2-b99f-0c3da328c8f3",
+  "publicationPolicy": "new versioned file per export; staging promoted only after verification",
+  "sourceRevision": 1,
+  "inputFingerprint": "91f725897061589d21a0777c78e746354b9819a4937ac00274f01ee318f75cb3",
+  "engineVersion": "0.1.0",
+  "width": 1280,
+  "height": 720,
+  "fps": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "frameCount": 240,
+  "sourceDurationMs": 8000,
+  "encodedDurationSeconds": 8,
+  "frameTime": "i*1000/30 ms; final still is independently at durationMs",
+  "codec": "H.264",
+  "audio": false,
+  "browser": "155.0.8059.12",
+  "sha256": "939c0b7c81421cfca56999c6c9d5d374df76b04fab727f03c6c0ded88de2423a",
+  "localOutput": "outputs/e1/scene.cloud-drift.r1.31ea3633.mp4",
+  "verification": "ffprobe frame count/size/rate/duration and complete ffmpeg decode passed",
+  "publication": "MP4 stays local, not committed"
+}

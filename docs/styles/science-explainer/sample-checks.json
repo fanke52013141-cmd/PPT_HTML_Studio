@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-07",
+  "scope": "P02 standalone design sample; not scene renderer or audio playback",
+  "browser": "155.0.8059.12",
+  "checks": [
+    {
+      "stage": "initial",
+      "visible": [
+        "hidden",
+        "hidden",
+        "hidden"
+      ],
+      "footerBottom": 1064.375,
+      "slideBottom": 1181,
+      "images": true
+    },
+    {
+      "stage": "first",
+      "visible": [
+        "visible",
+        "hidden",
+        "hidden"
+      ],
+      "footerBottom": 1064.375,
+      "slideBottom": 1181,
+      "images": true
+    },
+    {
+      "stage": "compare",
+      "visible": [
+        "visible",
+        "visible",
+        "hidden"
+      ],
+      "footerBottom": 1064.375,
+      "slideBottom": 1181,
+      "images": true
+    },
+    {
+      "stage": "final",
+      "visible": [
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "footerBottom": 1064.375,
+      "slideBottom": 1181,
+      "images": true
+    }
+  ],
+  "longCopy": [
+    {
+      "scrollHeight": 134,
+      "clientHeight": 134,
+      "bottom": 854.953125,
+      "cardBottom": 908.375
+    },
+    {
+      "scrollHeight": 134,
+      "clientHeight": 134,
+      "bottom": 854.953125,
+      "cardBottom": 908.375
+    }
+  ],
+  "bodyFonts": [
+    {
+      "familyName": "Microsoft YaHei",
+      "postScriptName": "MicrosoftYaHei",
+      "isCustomFont": false,
+      "glyphCount": 26
+    }
+  ],
+  "pageErrors": [],
+  "userVisualApproval": "pending",
+  "notVerified": [
+    "generic schema/rendering",
+    "audio sync",
+    "MP4/PPTX",
+    "font portability",
+    "AI illustration generation"
+  ]
+}

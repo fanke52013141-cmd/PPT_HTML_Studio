@@ -1,0 +1,22 @@
+{
+  "name": "hps-e1-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone data-driven mixed visual scene prototype",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "test": "node tests/engine.test.cjs",
+    "build:e2": "node scripts/build-recipes.cjs && node scripts/build.cjs",
+    "test:e2": "node tests/recipes.test.cjs",
+    "test:course": "node tests/token-course.test.cjs",
+    "build:visual": "node visual/build.cjs",
+    "test:visual": "node visual/tests/verify.cjs"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "esbuild": "0.28.1",
+    "playwright": "1.62.1",
+    "pngjs": "7.0.0",
+    "prettier": "3.8.1"
+  }
+}

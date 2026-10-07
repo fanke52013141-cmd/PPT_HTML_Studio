@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>数据驱动场景 · E1 / E2</title>
+    <link rel="stylesheet" href="viewer.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <strong>数据驱动场景 · E1 / E2</strong>
+          <p>同一套渲染代码，读取不同内容与运动</p>
+        </div>
+        <select id="scene" aria-label="场景实例"></select>
+      </header>
+      <div id="frame" aria-live="off"></div>
+      <div class="transport">
+        <button id="play" disabled>播放</button
+        ><button id="restart" disabled>重播</button>
+        <select id="direction" aria-label="方向">
+          <option value="1">正放</option>
+          <option value="-1">倒放</option>
+        </select>
+        <input
+          id="scrub"
+          type="range"
+          min="0"
+          value="0"
+          step="1"
+          aria-label="时间"
+        /><output id="clock">0.00 秒</output>
+        <div id="keyframes"></div>
+      </div>
+      <p id="status" role="status">正在准备场景…</p>
+      <details id="editor-panel">
+        <summary>查看或修改场景输入</summary>
+        <p>
+          修改标题、图片引用、路径或时间后应用。场景字段和资源引用会经过校验；失败保留上一份有效画面。
+        </p>
+        <textarea
+          id="editor"
+          spellcheck="false"
+          aria-label="场景 JSON"
+        ></textarea>
+        <div class="tools">
+          <button id="apply">应用输入</button
+          ><button id="download">保存输入 JSON</button
+          ><label class="file-label"
+            >打开 JSON<input
+              id="file"
+              type="file"
+              accept=".json,application/json" /></label
+          ><button id="snapshot">编译快照</button
+          ><select id="target" aria-label="目标对象"></select
+          ><button id="geometry">查看当前几何</button>
+        </div>
+        <pre id="result" aria-live="polite"></pre>
+      </details>
+      <p class="note">
+        独立单场景原型 · 设计探索模式 · 暂定时间，无音频 · Microsoft YaHei
+        系统字体 · 图片资产沿用实验质量限制
+      </p>
+    </main>
+    <script src="engine.js"></script>
+    <script src="fixtures.js"></script>
+    <script src="viewer.js"></script>
+  </body>
+</html>

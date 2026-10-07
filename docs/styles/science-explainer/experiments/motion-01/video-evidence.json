@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-07",
+  "durationSeconds": 12,
+  "fps": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "frames": 360,
+  "width": 1280,
+  "height": 720,
+  "codec": "H.264",
+  "audio": false,
+  "browser": "155.0.8059.12",
+  "frameTime": "i * 1000 / 30 milliseconds, i=0..359",
+  "localOutput": "outputs/motion-01/water-drops.mp4",
+  "publication": "video stays local; not committed",
+  "status": "encoded and entire file decoded successfully",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "30/1",
+        "nb_read_frames": "360"
+      }
+    ],
+    "format": {
+      "duration": "12.000000"
+    }
+  },
+  "sha256": "58bcf81117a64d1f454525efad80f1f8d0e19ad3619d213f1ce205eae4e2332c",
+  "bytes": 433649
+}

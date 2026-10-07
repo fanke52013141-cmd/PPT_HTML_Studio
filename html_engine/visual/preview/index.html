@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>共享视觉定义 · 阶段一</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #edf0f4;
+      color: #30425d;
+      font:
+        14px "Microsoft YaHei",
+        sans-serif;
+    }
+    main {
+      max-width: 1640px;
+      margin: auto;
+      padding: 18px 24px;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 12px;
+    }
+    .tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    select,
+    button {
+      font: inherit;
+      border: 1px solid #c6d0dd;
+      border-radius: 7px;
+      padding: 8px;
+      background: white;
+      color: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+    #viewport {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px #34445c16;
+    }
+    #seek {
+      flex: 1;
+      min-width: 200px;
+    }
+    #status {
+      min-height: 24px;
+      margin: 12px 0;
+    }
+    details {
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    textarea {
+      display: block;
+      margin: 12px 0;
+      width: 100%;
+      height: 300px;
+      font: 13px monospace;
+    }
+    .hint {
+      color: #687a90;
+      line-height: 1.7;
+    }
+  </style>
+  <main>
+    <h1>共享视觉定义 · 工程验证稿</h1>
+    <p
+      style="
+        padding: 12px;
+        background: #fff3f5;
+        color: #8c455e;
+        border-radius: 8px;
+      "
+    >
+      此页的简化视觉未通过用户审阅。请查看
+      <a href="../style-review/index.html">按原参考补齐的科普风格样板</a
+      >；运行检查通过不代表风格完成。
+    </p>
+    <div class="tools">
+      <label
+        >内容
+        <select id="scene"></select></label
+      ><label
+        >风格
+        <select id="theme"></select></label
+      ><span class="hint">两个实例共用组件，引用两种布局；没有逐页 HTML。</span>
+    </div>
+    <div id="viewport"></div>
+    <p id="status" role="status">正在校验资源…</p>
+    <div class="tools">
+      <button id="play">播放</button><button id="end">查看终态</button
+      ><input
+        id="seek"
+        type="range"
+        min="0"
+        max="18000"
+        value="0"
+        aria-label="播放进度"
+      /><span id="time">0.0 s</span>
+    </div>
+    <div class="tools">
+      <label
+        >字幕字号
+        <input id="font" type="range" min="20" max="44" value="32" /><span
+          id="font-value"
+          >32</span
+        ></label
+      ><label
+        ><input id="reduced" type="checkbox" />减弱运动（保留出现顺序）</label
+      >
+    </div>
+    <details>
+      <summary>查看与修改实例定义</summary>
+      <p class="hint">
+        可改内容与登记引用。无效定义不会替换当前画面。样式和布局分别维护在主题包与布局包内。
+      </p>
+      <textarea id="definition" aria-label="场景 JSON"></textarea
+      ><button id="apply">校验并应用</button>
+    </details>
+  </main>
+  <script src="data.js"></script>
+  <script src="player.js"></script>
+</html>

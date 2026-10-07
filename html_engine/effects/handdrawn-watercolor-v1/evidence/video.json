@@ -1,0 +1,18 @@
+{
+  "file": "watercolor-82cbb37f-c017-4970-a9c1-2616ee8885d2.mp4",
+  "directory": "outputs/handdrawn-watercolor-v1",
+  "durationSeconds": 12,
+  "fps": 24,
+  "frames": 288,
+  "width": 1280,
+  "height": 720,
+  "audio": false,
+  "subtitleZone": {
+    "top": 800,
+    "height": 100,
+    "logicalCanvas": "1600x900"
+  },
+  "subtitleFont": 32,
+  "sha256": "4c01b2ebf368c95ada91ad5ebdfdcbaf043fea8ae6e7a42cbd359ddfdfab7946",
+  "decode": "passed"
+}

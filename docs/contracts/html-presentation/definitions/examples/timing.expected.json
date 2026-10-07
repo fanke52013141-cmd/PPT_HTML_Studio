@@ -1,0 +1,85 @@
+{
+  "kind": "documented-expectation-not-runtime-output",
+  "unit": "ms",
+  "pageDurationMs": 13000,
+  "actions": [
+    {
+      "actionId": "action.reveal-html",
+      "startMs": 0,
+      "activeEndMs": 400,
+      "effectEndMs": 13000,
+      "channel": "visibility.opacity"
+    },
+    {
+      "actionId": "action.reveal-image",
+      "startMs": 4000,
+      "activeEndMs": 4400,
+      "effectEndMs": 13000,
+      "channel": "visibility.opacity"
+    },
+    {
+      "actionId": "action.highlight-html",
+      "startMs": 8000,
+      "activeEndMs": 12000,
+      "effectEndMs": 12000,
+      "channel": "emphasis"
+    },
+    {
+      "actionId": "action.highlight-image",
+      "startMs": 8000,
+      "activeEndMs": 12000,
+      "effectEndMs": 12000,
+      "channel": "emphasis"
+    },
+    {
+      "actionId": "action.annotate-control",
+      "startMs": 8500,
+      "drawEndMs": 9300,
+      "activeEndMs": 9300,
+      "effectEndMs": 12000,
+      "channel": "annotation"
+    }
+  ],
+  "checkpoints": [
+    {
+      "timeMs": 0,
+      "state": "标题可见，两概念 alpha=0"
+    },
+    {
+      "timeMs": 400,
+      "state": "HTML 概念完整出现，插图概念隐藏"
+    },
+    {
+      "timeMs": 4000,
+      "state": "插图概念开始出现，起点 alpha=0"
+    },
+    {
+      "timeMs": 4400,
+      "state": "两概念都完整可见"
+    },
+    {
+      "timeMs": 8000,
+      "state": "两概念强调开始，覆盖起点 alpha=0"
+    },
+    {
+      "timeMs": 8200,
+      "state": "两概念强调完整，无勾画"
+    },
+    {
+      "timeMs": 8500,
+      "state": "勾画开始，起点无笔画"
+    },
+    {
+      "timeMs": 9300,
+      "state": "勾画完整并保持，两概念强调仍在"
+    },
+    {
+      "timeMs": 12000,
+      "state": "强调恢复、勾画移除，两概念仍可见"
+    },
+    {
+      "timeMs": 13000,
+      "state": "明确静态最终状态：标题与两概念可见，无强调/勾画"
+    }
+  ]
+}

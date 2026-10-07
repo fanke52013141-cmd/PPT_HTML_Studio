@@ -1,0 +1,264 @@
+{
+  "date": "2026-10-07",
+  "scope": "standalone time-driven object process trial",
+  "browser": "155.0.8059.12",
+  "frames": [
+    {
+      "tMs": 0,
+      "hash": "9634fe142d4d9a6b99f0756f73cee1d11d9064f0d8baa7b5da94486af08227d3",
+      "camera": {
+        "x": 960,
+        "y": 540,
+        "z": 1
+      },
+      "phase": 0,
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "lines": 0.999968998015873
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "lines": 0.9999396718146719
+        },
+        {
+          "id": "page.note",
+          "inside": true,
+          "lines": 0.9996118012422359
+        }
+      ]
+    },
+    {
+      "tMs": 3000,
+      "hash": "7e0567214e45294f7d0b393c9656c9d1e9096014021e23f2f017afe217db45ce",
+      "camera": {
+        "x": 960,
+        "y": 540,
+        "z": 1
+      },
+      "phase": 1,
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "lines": 0.999968998015873
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "lines": 0.9999396718146719
+        },
+        {
+          "id": "page.note",
+          "inside": true,
+          "lines": 0.9996118012422359
+        }
+      ]
+    },
+    {
+      "tMs": 5400,
+      "hash": "2af5b178331652d47677fd13e722c538161adc96285d297033139a44a13a707f",
+      "camera": {
+        "x": 960,
+        "y": 540,
+        "z": 1
+      },
+      "phase": 2,
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "lines": 0.999968998015873
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "lines": 0.9999396718146719
+        },
+        {
+          "id": "page.note",
+          "inside": true,
+          "lines": 0.9996118012422359
+        }
+      ]
+    },
+    {
+      "tMs": 6100,
+      "hash": "cf90432b7a55a137601cd54619b2da1e15ed07b16093b691f6bf9e94a0f48d4a",
+      "camera": {
+        "x": 960,
+        "y": 540,
+        "z": 1
+      },
+      "phase": 2,
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "lines": 0.999968998015873
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "lines": 0.9999396718146719
+        },
+        {
+          "id": "page.note",
+          "inside": true,
+          "lines": 0.9996118012422359
+        }
+      ]
+    },
+    {
+      "tMs": 7000,
+      "hash": "cf0b57b3bc8750e97f8a315136173c82e0929538df92ca824c98b8c749a94c1a",
+      "camera": {
+        "x": 960,
+        "y": 540,
+        "z": 1
+      },
+      "phase": 2,
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "lines": 0.999968998015873
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "lines": 0.9999396718146719
+        },
+        {
+          "id": "page.note",
+          "inside": true,
+          "lines": 0.9996118012422359
+        }
+      ]
+    },
+    {
+      "tMs": 9000,
+      "hash": "cb0ba1db77e27f0d03ee0be119016ad117b68720ca21a602aeeb421fcc8d4275",
+      "camera": {
+        "x": 1024.8,
+        "y": 549.72,
+        "z": 1.0972
+      },
+      "phase": 3,
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "lines": 0.999968998015873
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "lines": 0.9999396718146719
+        },
+        {
+          "id": "page.note",
+          "inside": true,
+          "lines": 0.9996118012422359
+        }
+      ]
+    },
+    {
+      "tMs": 12000,
+      "hash": "7e47fd511cd033b5c2e499786112a70663a6f68bd23a237f1a524380a9d28aef",
+      "camera": {
+        "x": 1060,
+        "y": 555,
+        "z": 1.15
+      },
+      "phase": 3,
+      "geometry": [
+        {
+          "id": "page.title",
+          "inside": true,
+          "lines": 0.999968998015873
+        },
+        {
+          "id": "page.caption",
+          "inside": true,
+          "lines": 0.9999396718146719
+        },
+        {
+          "id": "page.note",
+          "inside": true,
+          "lines": 0.9996118012422359
+        }
+      ]
+    }
+  ],
+  "seekChecks": [
+    {
+      "tMs": 12000,
+      "same": true
+    },
+    {
+      "tMs": 3000,
+      "same": true
+    },
+    {
+      "tMs": 0,
+      "same": true
+    },
+    {
+      "tMs": 9000,
+      "same": true
+    },
+    {
+      "tMs": 6100,
+      "same": true
+    },
+    {
+      "tMs": 7000,
+      "same": true
+    },
+    {
+      "tMs": 5400,
+      "same": true
+    }
+  ],
+  "playPause": {
+    "paused": 3214.8000000238417,
+    "afterPause": 3214.8000000238417,
+    "stable": true
+  },
+  "reverse": {
+    "start": 3214.8000000238417,
+    "end": 3000.399999976158,
+    "movedBack": true
+  },
+  "invalidTimes": [
+    true,
+    true,
+    true,
+    true
+  ],
+  "bodyFonts": [
+    {
+      "familyName": "Microsoft YaHei",
+      "postScriptName": "MicrosoftYaHei-Bold",
+      "isCustomFont": false,
+      "glyphCount": 7
+    }
+  ],
+  "viewport": {
+    "scrollWidth": 1366,
+    "width": 1366
+  },
+  "pageErrors": [],
+  "userVisualReview": "pending",
+  "notVerified": [
+    "audio alignment",
+    "generic schema or motion registry",
+    "physical fluid simulation",
+    "digital human",
+    "PPTX",
+    "font portability"
+  ]
+}
