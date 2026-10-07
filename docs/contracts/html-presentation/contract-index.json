@@ -93,6 +93,9 @@
     },
     {
       "path": "framework/10-visual-capability-boundaries.md"
+    },
+    {
+      "path": "framework/11-visual-reconstruction.md"
     }
   ],
   "rules": [

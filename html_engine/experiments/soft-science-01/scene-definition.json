@@ -79,5 +79,36 @@
     "imageSubjects": 1,
     "newAssetGenerations": 0
   },
-  "status": "design exploration; visual review pending"
+  "status": "revision 2 alignment correction; user visual changes requested",
+  "revision": 2,
+  "geometry": {
+    "cupFrame": {
+      "x": 715,
+      "y": 75,
+      "width": 760,
+      "height": 680
+    },
+    "assetNaturalSize": {
+      "width": 1254,
+      "height": 1254
+    },
+    "assetOpaqueBounds": {
+      "x": 276,
+      "y": 128,
+      "width": 716,
+      "height": 953,
+      "alphaThreshold": 200
+    },
+    "dropletAnchor": {
+      "assetX": 947,
+      "assetY": 600,
+      "radius": 26
+    },
+    "callout": {
+      "x": 1360,
+      "y": 352,
+      "width": 210
+    },
+    "binding": "anchor in original image pixels, mapped through contain fit and current scene transform"
+  }
 }

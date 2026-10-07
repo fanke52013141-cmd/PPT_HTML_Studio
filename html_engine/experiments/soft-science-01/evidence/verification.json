@@ -1,25 +1,30 @@
 {
   "effectVersion": "0.1.0",
+  "sceneRevision": 2,
+  "anchorChecks": [
+    true,
+    true
+  ],
   "frames": [
     {
       "timeMs": 0,
-      "sha256": "e0b8af813a9712a41103a4f6ad61efef96820b79ec6e961ca385ac17ea02b6c3"
+      "sha256": "fdf0cedaf2869e3dbc5be694d3bd5a432f63ec8a93ab9b69b6ed811f737cbc4c"
     },
     {
       "timeMs": 3500,
-      "sha256": "81367243236f09b2e397087557b8ed9a1b52ebd2e0ef6673c56dc5869c2f1506"
+      "sha256": "0891d95168c9a1158fd37c07ff6ce0e76ff23cfbcd8163f28bc4c1b64dd60e5c"
     },
     {
       "timeMs": 7000,
-      "sha256": "0e25e2ceb3ae2b1d93f9c1d4e9abeb8b7ef82b03b0706f165ef263d5a91de809"
+      "sha256": "e69dad3f7cff354e5da45edf3bfb392f4990f9031d0acd84f79059baf461741d"
     },
     {
       "timeMs": 12500,
-      "sha256": "1dcd5a238e7532110a363b4dd611a97e04d999f75ff62ab41bc1f29a6ceecf5e"
+      "sha256": "1858c096cf6b0a0aacb48b69add003f26bbea1825d9156cc4a3e83ad89cddc52"
     },
     {
       "timeMs": 18000,
-      "sha256": "a9a64294da8dfdee45beb409ecbc31ac6b16e88a1b5f019f6c9e5fbabcb47297"
+      "sha256": "3868e6318ac1be34661ecc9635e33a980fe6da27203fb2e6f412e061c71f9966"
     }
   ],
   "zones": {
@@ -39,5 +44,5 @@
   "pause": "passed",
   "pageErrors": [],
   "browser": "155.0.8059.12",
-  "visualReview": "agent-inspected; user review pending"
+  "visualReview": "user_changes_requested; revision 2 method evidence only"
 }
