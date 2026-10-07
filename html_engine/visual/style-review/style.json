@@ -1,0 +1,73 @@
+{
+  "id": "soft-science-reference-study",
+  "version": "0.1.0",
+  "status": "visual-review",
+  "font": "Microsoft YaHei",
+  "colors": {
+    "background": "#fafbfc",
+    "paper": "#ffffff",
+    "ink": "#455b79",
+    "body": "#6d7e96",
+    "muted": "#91a0b7",
+    "line": "#e4e9f1",
+    "pink": "#f4819b",
+    "blue": "#85a9f1",
+    "green": "#87cba6",
+    "purple": "#b1a1ec",
+    "yellow": "#ffc66a"
+  },
+  "gradients": {
+    "pink": ["#ffadc0", "#f57c99"],
+    "blue": ["#bfd4fe", "#82a7eb"],
+    "green": ["#b6e7cb", "#7ecba0"],
+    "purple": ["#ded4ff", "#b5a1ec"],
+    "yellow": ["#ffe6a9", "#ffc45f"]
+  },
+  "typography": {
+    "title": {
+      "size": 46,
+      "weight": 700,
+      "height": 1.3
+    },
+    "headline": {
+      "size": 32,
+      "weight": 700,
+      "height": 1.4
+    },
+    "intro": {
+      "size": 23,
+      "weight": 400,
+      "height": 1.65
+    },
+    "cardTitle": {
+      "size": 29,
+      "weight": 700,
+      "height": 1.35
+    },
+    "cardBody": {
+      "size": 22,
+      "weight": 400,
+      "height": 1.55
+    },
+    "caption": {
+      "size": 19,
+      "weight": 400,
+      "height": 1.5
+    },
+    "summary": {
+      "size": 26,
+      "weight": 700,
+      "height": 1.5
+    }
+  },
+  "shapes": {
+    "cardRadius": 20,
+    "figureRadius": 24,
+    "iconRadius": 24,
+    "strokeWidth": 1.8,
+    "iconStroke": 1.7,
+    "shadowY": 6,
+    "shadowBlur": 26,
+    "shadowAlpha": 0.045
+  }
+}
