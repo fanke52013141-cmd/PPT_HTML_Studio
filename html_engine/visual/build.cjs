@@ -30,6 +30,7 @@ async function main() {
         scene: "hps.visual.v1#/$defs/scene",
         theme: "hps.visual.v1#/$defs/theme",
         layout: "hps.visual.v1#/$defs/layout",
+        template: "hps.visual.v1#/$defs/template",
         assetRecords: "hps.visual.v1#/$defs/assetRecords",
       }),
   );
@@ -94,15 +95,17 @@ async function main() {
   const catalog = {
     themes: folder("themes"),
     layouts: folder("layouts"),
+    templates: folder("templates"),
     assets,
   };
   const scenes = folder("scenes");
-  for (const items of [catalog.themes, catalog.layouts, scenes]) {
+  for (const items of [catalog.themes, catalog.layouts, catalog.templates, scenes]) {
     if (new Set(items.map((v) => `${v.id}@${v.version}`)).size !== items.length)
       throw new Error("Duplicate registered definition");
   }
   catalog.themes.forEach((v) => validate("theme", v));
   catalog.layouts.forEach((v) => validate("layout", v));
+  catalog.templates.forEach((v) => validate("template", v));
   scenes.forEach((s) => compile(s, catalog));
   const data = { catalog, scenes, pack };
   fs.writeFileSync(

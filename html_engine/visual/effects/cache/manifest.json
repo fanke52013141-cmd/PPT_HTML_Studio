@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "entries": {
+    "bee71487dd4fdbb45984d72abddb648b": {
+      "file": "references-bee71487dd4fdbb45984d72abddb648b.png",
+      "inputs": {
+        "theme": "soft-science@0.2.0",
+        "layout": "science-explanation-v1",
+        "font": "Microsoft YaHei",
+        "effects": "3c87bb3d9f083684",
+        "renderer": "64c01fc8e6dd695b"
+      },
+      "createdAt": "2026-10-07T17:24:03.953Z"
+    }
+  }
+}

@@ -2,6 +2,100 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "hps.visual.v1",
   "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+    },
+    "version": {
+      "const": "0.2.0"
+    },
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "version": { "const": "0.2.0" }
+      }
+    },
+    "assetRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "version": { "const": "0.1.0" }
+      }
+    },
+    "templateRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "version": { "const": "0.1.0" }
+      }
+    },
+    "hexColor": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    },
+    "textStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "weight", "lineHeight", "letterSpacing", "color"],
+      "properties": {
+        "size": { "type": "number", "minimum": 12, "maximum": 80 },
+        "weight": { "enum": [400, 700] },
+        "lineHeight": { "type": "number", "minimum": 1, "maximum": 1.8 },
+        "letterSpacing": { "type": "number", "minimum": -1, "maximum": 3 },
+        "color": {
+          "enum": [
+            "background",
+            "ink",
+            "body",
+            "accent",
+            "blue",
+            "green",
+            "muted",
+            "panel",
+            "pinkWash",
+            "blueWash",
+            "greenWash",
+            "line",
+            "paper",
+            "purple",
+            "yellow",
+            "pink"
+          ]
+        }
+      }
+    },
+    "textRole": {
+      "type": "string",
+      "enum": [
+        "eyebrow",
+        "title",
+        "lead",
+        "intro",
+        "stepTitle",
+        "body",
+        "phase",
+        "callout",
+        "conclusion",
+        "source",
+        "subtitle",
+        "number",
+        "headline",
+        "cardTitle",
+        "cardBody",
+        "caption",
+        "summary"
+      ]
+    },
+    "tone": {
+      "enum": ["blue", "green", "pink", "purple", "yellow"]
+    },
     "scene": {
       "type": "object",
       "additionalProperties": false,
@@ -19,49 +113,13 @@
         "source"
       ],
       "properties": {
-        "format": {
-          "const": "hps.visual.scene"
-        },
-        "version": {
-          "const": "0.1.0"
-        },
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 60
-        },
-        "themeRef": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["id", "version"],
-          "properties": {
-            "id": {
-              "type": "string",
-              "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-            },
-            "version": {
-              "const": "0.1.0"
-            }
-          }
-        },
-        "layoutRef": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["id", "version"],
-          "properties": {
-            "id": {
-              "type": "string",
-              "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-            },
-            "version": {
-              "const": "0.1.0"
-            }
-          }
-        },
+        "format": { "const": "hps.visual.scene" },
+        "version": { "const": "0.3.0" },
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "themeRef": { "$ref": "#/$defs/ref" },
+        "layoutRef": { "$ref": "#/$defs/ref" },
+        "templateRef": { "$ref": "#/$defs/templateRef" },
         "durationMs": {
           "type": "number",
           "minimum": 1000,
@@ -71,294 +129,254 @@
           "type": "array",
           "minItems": 1,
           "maxItems": 40,
-          "items": {
-            "oneOf": [
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["id", "slot", "type", "role", "runs"],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "slot": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "type": {
-                    "const": "text"
-                  },
-                  "role": {
-                    "enum": [
-                      "eyebrow",
-                      "title",
-                      "lead",
-                      "stepTitle",
-                      "body",
-                      "phase",
-                      "callout",
-                      "conclusion",
-                      "source",
-                      "subtitle",
-                      "number"
-                    ]
-                  },
-                  "runs": {
-                    "type": "array",
-                    "minItems": 1,
-                    "maxItems": 8,
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": ["text", "emphasis"],
-                      "properties": {
-                        "text": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 300
-                        },
-                        "emphasis": {
-                          "type": "boolean"
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["id", "slot", "type", "text", "tone"],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "slot": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "type": {
-                    "const": "badge"
-                  },
-                  "text": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 3
-                  },
-                  "tone": {
-                    "enum": ["blue", "green", "accent"]
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["id", "slot", "type", "text", "role", "tone"],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "slot": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "type": {
-                    "const": "label"
-                  },
-                  "text": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 40
-                  },
-                  "role": {
-                    "enum": ["eyebrow", "phase", "conclusion"]
-                  },
-                  "tone": {
-                    "enum": ["blue", "green", "accent"]
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["id", "slot", "type", "assetRef", "anchorId"],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "slot": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "type": {
-                    "const": "image"
-                  },
-                  "assetRef": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": ["id", "version"],
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                      },
-                      "version": {
-                        "const": "0.1.0"
-                      }
-                    }
-                  },
-                  "anchorId": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["id", "slot", "type"],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "slot": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "type": {
-                    "const": "arrow"
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "id",
-                  "slot",
-                  "type",
-                  "targetId",
-                  "anchorId",
-                  "radius",
-                  "labelId"
-                ],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "slot": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "type": {
-                    "const": "annotation"
-                  },
-                  "targetId": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "anchorId": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  },
-                  "radius": {
-                    "type": "number",
-                    "minimum": 4,
-                    "maximum": 60
-                  },
-                  "labelId": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                  }
-                }
-              }
-            ]
-          }
+          "items": { "$ref": "#/$defs/node" }
         },
         "motion": {
           "type": "array",
           "minItems": 1,
           "maxItems": 40,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "targetId",
-              "type",
-              "startMs",
-              "durationMs",
-              "offsetX",
-              "offsetY"
-            ],
-            "properties": {
-              "targetId": {
-                "type": "string",
-                "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-              },
-              "type": {
-                "const": "enter"
-              },
-              "startMs": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 120000
-              },
-              "durationMs": {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 10000
-              },
-              "offsetX": {
-                "type": "number",
-                "minimum": -100,
-                "maximum": 100
-              },
-              "offsetY": {
-                "type": "number",
-                "minimum": -100,
-                "maximum": 100
-              }
-            }
-          }
+          "items": { "$ref": "#/$defs/motion" }
         },
         "beats": {
           "type": "array",
           "minItems": 0,
           "maxItems": 60,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["startMs", "endMs", "text"],
-            "properties": {
-              "startMs": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 120000
-              },
-              "endMs": {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 120000
-              },
-              "text": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 300
+          "items": { "$ref": "#/$defs/beat" }
+        },
+        "source": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    },
+    "node": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type", "role", "runs"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "text" },
+            "role": { "$ref": "#/$defs/textRole" },
+            "runs": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["text", "emphasis"],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "emphasis": { "type": "boolean" }
+                }
               }
             }
           }
         },
-        "source": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type", "text", "tone"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "badge" },
+            "text": { "type": "string", "minLength": 1, "maxLength": 3 },
+            "tone": { "enum": ["blue", "green", "accent"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type", "text", "role", "tone"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "label" },
+            "text": { "type": "string", "minLength": 1, "maxLength": 40 },
+            "role": { "enum": ["eyebrow", "phase", "conclusion"] },
+            "tone": { "enum": ["blue", "green", "accent"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type", "assetRef", "anchorId"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "image" },
+            "assetRef": { "$ref": "#/$defs/assetRef" },
+            "anchorId": { "$ref": "#/$defs/id" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "arrow" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "targetId",
+            "anchorId",
+            "radius",
+            "labelId"
+          ],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "annotation" },
+            "targetId": { "$ref": "#/$defs/id" },
+            "anchorId": { "$ref": "#/$defs/id" },
+            "radius": { "type": "number", "minimum": 4, "maximum": 60 },
+            "labelId": { "$ref": "#/$defs/id" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type", "number", "title"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "header" },
+            "number": { "type": "string", "minLength": 1, "maxLength": 4 },
+            "title": { "type": "string", "minLength": 1, "maxLength": 40 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type", "tone", "icon", "title", "body"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "card" },
+            "tone": { "$ref": "#/$defs/tone" },
+            "icon": { "$ref": "#/$defs/iconName" },
+            "title": { "type": "string", "minLength": 1, "maxLength": 40 },
+            "body": { "type": "string", "minLength": 1, "maxLength": 120 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "figure" },
+            "tag": { "$ref": "#/$defs/caption" },
+            "note": { "$ref": "#/$defs/caption" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type", "from", "to", "term", "takeaway"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "summary" },
+            "heading": { "$ref": "#/$defs/caption" },
+            "from": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["text", "tone"],
+              "properties": {
+                "text": { "type": "string", "minLength": 1, "maxLength": 8 },
+                "tone": { "$ref": "#/$defs/tone" }
+              }
+            },
+            "to": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["text", "tone"],
+              "properties": {
+                "text": { "type": "string", "minLength": 1, "maxLength": 8 },
+                "tone": { "$ref": "#/$defs/tone" }
+              }
+            },
+            "term": { "type": "string", "minLength": 1, "maxLength": 24 },
+            "takeaway": { "type": "string", "minLength": 1, "maxLength": 40 }
+          }
         }
+      ]
+    },
+    "caption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["icon", "text"],
+      "properties": {
+        "icon": { "$ref": "#/$defs/iconName" },
+        "text": { "type": "string", "minLength": 1, "maxLength": 40 }
+      }
+    },
+    "iconName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,31}$"
+    },
+    "motion": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["targetId", "type", "startMs", "durationMs", "offsetX", "offsetY"],
+          "properties": {
+            "targetId": { "$ref": "#/$defs/id" },
+            "type": { "const": "enter" },
+            "startMs": { "type": "number", "minimum": 0, "maximum": 120000 },
+            "durationMs": { "type": "number", "minimum": 1, "maximum": 10000 },
+            "offsetX": { "type": "number", "minimum": -100, "maximum": 100 },
+            "offsetY": { "type": "number", "minimum": -100, "maximum": 100 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["targetId", "type", "startMs", "durationMs"],
+          "properties": {
+            "targetId": { "$ref": "#/$defs/id" },
+            "type": { "const": "exit" },
+            "startMs": { "type": "number", "minimum": 0, "maximum": 120000 },
+            "durationMs": { "type": "number", "minimum": 1, "maximum": 10000 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["targetId", "type", "startMs", "durationMs"],
+          "properties": {
+            "targetId": { "$ref": "#/$defs/id" },
+            "type": { "const": "emphasize" },
+            "startMs": { "type": "number", "minimum": 0, "maximum": 120000 },
+            "durationMs": { "type": "number", "minimum": 1, "maximum": 10000 }
+          }
+        }
+      ]
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startMs", "endMs", "text"],
+      "properties": {
+        "startMs": { "type": "number", "minimum": 0, "maximum": 120000 },
+        "endMs": { "type": "number", "minimum": 1, "maximum": 120000 },
+        "text": { "type": "string", "minLength": 1, "maxLength": 300 }
       }
     },
     "theme": {
@@ -377,32 +395,17 @@
         "illustrationPolicy"
       ],
       "properties": {
-        "format": {
-          "const": "hps.visual.theme"
-        },
-        "version": {
-          "const": "0.1.0"
-        },
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 60
-        },
+        "format": { "const": "hps.visual.theme" },
+        "version": { "const": "0.2.0" },
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
         "font": {
           "type": "object",
           "additionalProperties": false,
           "required": ["family", "platform"],
           "properties": {
-            "family": {
-              "enum": ["Microsoft YaHei"]
-            },
-            "platform": {
-              "const": "Windows"
-            }
+            "family": { "enum": ["Microsoft YaHei"] },
+            "platform": { "const": "Windows" }
           }
         },
         "colors": {
@@ -423,54 +426,33 @@
             "line"
           ],
           "properties": {
-            "background": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "ink": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "body": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "accent": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "blue": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "green": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "muted": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "panel": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "pinkWash": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "blueWash": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "greenWash": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            },
-            "line": {
-              "type": "string",
-              "pattern": "^#[0-9a-fA-F]{6}$"
-            }
+            "background": { "$ref": "#/$defs/hexColor" },
+            "ink": { "$ref": "#/$defs/hexColor" },
+            "body": { "$ref": "#/$defs/hexColor" },
+            "accent": { "$ref": "#/$defs/hexColor" },
+            "blue": { "$ref": "#/$defs/hexColor" },
+            "green": { "$ref": "#/$defs/hexColor" },
+            "muted": { "$ref": "#/$defs/hexColor" },
+            "panel": { "$ref": "#/$defs/hexColor" },
+            "pinkWash": { "$ref": "#/$defs/hexColor" },
+            "blueWash": { "$ref": "#/$defs/hexColor" },
+            "greenWash": { "$ref": "#/$defs/hexColor" },
+            "line": { "$ref": "#/$defs/hexColor" },
+            "paper": { "$ref": "#/$defs/hexColor" },
+            "purple": { "$ref": "#/$defs/hexColor" },
+            "yellow": { "$ref": "#/$defs/hexColor" },
+            "pink": { "$ref": "#/$defs/hexColor" }
+          }
+        },
+        "gradients": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pink": { "$ref": "#/$defs/gradientPair" },
+            "blue": { "$ref": "#/$defs/gradientPair" },
+            "green": { "$ref": "#/$defs/gradientPair" },
+            "purple": { "$ref": "#/$defs/gradientPair" },
+            "yellow": { "$ref": "#/$defs/gradientPair" }
           }
         },
         "text": {
@@ -490,523 +472,23 @@
             "number"
           ],
           "properties": {
-            "eyebrow": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "title": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "lead": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "stepTitle": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "body": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "phase": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "callout": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "conclusion": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "source": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "subtitle": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            },
-            "number": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "size",
-                "weight",
-                "lineHeight",
-                "letterSpacing",
-                "color"
-              ],
-              "properties": {
-                "size": {
-                  "type": "number",
-                  "minimum": 12,
-                  "maximum": 80
-                },
-                "weight": {
-                  "enum": [400, 700]
-                },
-                "lineHeight": {
-                  "type": "number",
-                  "minimum": 1,
-                  "maximum": 1.8
-                },
-                "letterSpacing": {
-                  "type": "number",
-                  "minimum": -1,
-                  "maximum": 3
-                },
-                "color": {
-                  "enum": [
-                    "background",
-                    "ink",
-                    "body",
-                    "accent",
-                    "blue",
-                    "green",
-                    "muted",
-                    "panel",
-                    "pinkWash",
-                    "blueWash",
-                    "greenWash",
-                    "line"
-                  ]
-                }
-              }
-            }
+            "eyebrow": { "$ref": "#/$defs/textStyle" },
+            "title": { "$ref": "#/$defs/textStyle" },
+            "lead": { "$ref": "#/$defs/textStyle" },
+            "intro": { "$ref": "#/$defs/textStyle" },
+            "stepTitle": { "$ref": "#/$defs/textStyle" },
+            "body": { "$ref": "#/$defs/textStyle" },
+            "phase": { "$ref": "#/$defs/textStyle" },
+            "callout": { "$ref": "#/$defs/textStyle" },
+            "conclusion": { "$ref": "#/$defs/textStyle" },
+            "source": { "$ref": "#/$defs/textStyle" },
+            "subtitle": { "$ref": "#/$defs/textStyle" },
+            "number": { "$ref": "#/$defs/textStyle" },
+            "headline": { "$ref": "#/$defs/textStyle" },
+            "cardTitle": { "$ref": "#/$defs/textStyle" },
+            "cardBody": { "$ref": "#/$defs/textStyle" },
+            "caption": { "$ref": "#/$defs/textStyle" },
+            "summary": { "$ref": "#/$defs/textStyle" }
           }
         },
         "shapes": {
@@ -1014,41 +496,25 @@
           "additionalProperties": false,
           "required": ["badgeRadius", "labelRadius", "strokeWidth", "shadow"],
           "properties": {
-            "badgeRadius": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 40
-            },
-            "labelRadius": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 60
-            },
-            "strokeWidth": {
-              "type": "number",
-              "minimum": 1,
-              "maximum": 5
+            "badgeRadius": { "type": "number", "minimum": 0, "maximum": 40 },
+            "labelRadius": { "type": "number", "minimum": 0, "maximum": 60 },
+            "strokeWidth": { "type": "number", "minimum": 1, "maximum": 5 },
+            "cardRadius": { "type": "number", "minimum": 0, "maximum": 40 },
+            "figureRadius": { "type": "number", "minimum": 0, "maximum": 40 },
+            "iconRadius": { "type": "number", "minimum": 0, "maximum": 40 },
+            "iconStroke": { "type": "number", "minimum": 0.5, "maximum": 4 },
+            "shadowRGB": {
+              "type": "string",
+              "pattern": "^[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}$"
             },
             "shadow": {
               "type": "object",
               "additionalProperties": false,
               "required": ["y", "blur", "opacity"],
               "properties": {
-                "y": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 8
-                },
-                "blur": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 20
-                },
-                "opacity": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 0.15
-                }
+                "y": { "type": "number", "minimum": 0, "maximum": 8 },
+                "blur": { "type": "number", "minimum": 0, "maximum": 26 },
+                "opacity": { "type": "number", "minimum": 0, "maximum": 0.15 }
               }
             }
           }
@@ -1058,10 +524,7 @@
           "minItems": 1,
           "maxItems": 8,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-          }
+          "items": { "$ref": "#/$defs/id" }
         },
         "illustrationPolicy": {
           "type": "string",
@@ -1070,53 +533,37 @@
         }
       }
     },
+    "gradientPair": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/hexColor" }
+    },
     "layout": {
       "type": "object",
       "additionalProperties": false,
       "required": ["format", "version", "id", "name", "canvas", "slots"],
       "properties": {
-        "format": {
-          "const": "hps.visual.layout"
-        },
-        "version": {
-          "const": "0.1.0"
-        },
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 60
-        },
+        "format": { "const": "hps.visual.layout" },
+        "version": { "const": "0.2.0" },
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
         "canvas": {
           "type": "object",
           "additionalProperties": false,
           "required": ["width", "height", "contentBottom", "subtitleHeight"],
           "properties": {
-            "width": {
-              "const": 1600
-            },
-            "height": {
-              "const": 900
-            },
-            "contentBottom": {
-              "const": 800
-            },
-            "subtitleHeight": {
-              "const": 100
-            }
+            "width": { "const": 1600 },
+            "height": { "const": 900 },
+            "contentBottom": { "const": 800 },
+            "subtitleHeight": { "const": 100 }
           }
         },
         "slots": {
           "type": "object",
           "minProperties": 1,
           "maxProperties": 40,
-          "propertyNames": {
-            "type": "string",
-            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-          },
+          "propertyNames": { "$ref": "#/$defs/id" },
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
@@ -1127,26 +574,10 @@
                 "additionalProperties": false,
                 "required": ["x", "y", "width", "height"],
                 "properties": {
-                  "x": {
-                    "type": "number",
-                    "minimum": 0,
-                    "maximum": 1600
-                  },
-                  "y": {
-                    "type": "number",
-                    "minimum": 0,
-                    "maximum": 1600
-                  },
-                  "width": {
-                    "type": "number",
-                    "minimum": 1,
-                    "maximum": 1600
-                  },
-                  "height": {
-                    "type": "number",
-                    "minimum": 1,
-                    "maximum": 1600
-                  }
+                  "x": { "type": "number", "minimum": 0, "maximum": 1600 },
+                  "y": { "type": "number", "minimum": 0, "maximum": 1600 },
+                  "width": { "type": "number", "minimum": 1, "maximum": 1600 },
+                  "height": { "type": "number", "minimum": 1, "maximum": 1600 }
                 }
               },
               "maxLines": {
@@ -1154,14 +585,65 @@
                 "minimum": 1,
                 "maximum": 6
               },
-              "align": {
-                "enum": ["left", "center", "right"]
+              "align": { "enum": ["left", "center", "right"] },
+              "z": { "type": "integer", "minimum": 0, "maximum": 20 }
+            }
+          }
+        }
+      }
+    },
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "version",
+        "id",
+        "name",
+        "structure",
+        "layoutRef",
+        "slots"
+      ],
+      "properties": {
+        "format": { "const": "hps.visual.template" },
+        "version": { "const": "0.1.0" },
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "structure": {
+          "enum": ["explanation-cards", "data-relation", "process-stage"]
+        },
+        "layoutRef": { "$ref": "#/$defs/ref" },
+        "slots": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 40,
+          "propertyNames": { "$ref": "#/$defs/id" },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kinds", "required"],
+            "properties": {
+              "kinds": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 6,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "text",
+                    "badge",
+                    "label",
+                    "image",
+                    "arrow",
+                    "annotation",
+                    "header",
+                    "card",
+                    "figure",
+                    "summary"
+                  ]
+                }
               },
-              "z": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 20
-              }
+              "required": { "type": "boolean" }
             }
           }
         }
@@ -1176,21 +658,13 @@
         "additionalProperties": false,
         "required": ["id", "version", "path", "sha256", "anchors", "source"],
         "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-          },
-          "version": {
-            "const": "0.1.0"
-          },
+          "id": { "$ref": "#/$defs/id" },
+          "version": { "const": "0.1.0" },
           "path": {
             "type": "string",
             "pattern": "^[a-zA-Z0-9_./-]+\\.png$"
           },
-          "sha256": {
-            "type": "string",
-            "pattern": "^[0-9a-f]{64}$"
-          },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
           "anchors": {
             "type": "array",
             "minItems": 1,
@@ -1200,26 +674,13 @@
               "additionalProperties": false,
               "required": ["id", "x", "y"],
               "properties": {
-                "id": {
-                  "type": "string",
-                  "pattern": "^[a-z][a-z0-9.-]{0,63}$"
-                },
-                "x": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "y": {
-                  "type": "integer",
-                  "minimum": 0
-                }
+                "id": { "$ref": "#/$defs/id" },
+                "x": { "type": "integer", "minimum": 0 },
+                "y": { "type": "integer", "minimum": 0 }
               }
             }
           },
-          "source": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 500
-          }
+          "source": { "type": "string", "minLength": 1, "maxLength": 500 }
         }
       }
     }

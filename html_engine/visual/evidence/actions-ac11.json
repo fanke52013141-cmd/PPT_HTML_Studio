@@ -1,0 +1,11 @@
+{
+  "format": "hps.visual.actions.ac11",
+  "version": "0.1.0",
+  "checks": [
+    "apply-with-exit-and-emphasize",
+    "exit boundary: hidden before / visible / fade / gone",
+    "emphasize bounded lift",
+    "relation line tracks emphasized target",
+    "random seek pixel equality with actions"
+  ]
+}

@@ -2,8 +2,9 @@
   "format": "hps.visual.stage1.evidence",
   "checks": [
     "strict fields and ownership",
-    "references and time",
-    "two contents / assets / layouts",
+    "references, icons, templates and time",
+    "legacy 0.1.0 adapter",
+    "four contents / three structures / two themes",
     "seek pixel determinism",
     "transformed anchor / two viewport sizes",
     "theme preserves semantics and geometry",
@@ -18,266 +19,359 @@
     {
       "id": "condensation",
       "layout": {
-        "id": "object-right",
+        "id": "science-explanation-v1",
+        "version": "0.2.0"
+      },
+      "template": {
+        "id": "explanation-cards-v1",
         "version": "0.1.0"
       },
       "measurements": {
-        "eyebrow": {
+        "header": {
           "lines": 1,
-          "width": 238,
-          "height": 44
+          "width": 1477,
+          "height": 77
         },
-        "title": {
+        "headline": {
           "lines": 1,
-          "width": 1460,
-          "height": 90
+          "width": 860,
+          "height": 48
         },
-        "lead": {
+        "intro": {
           "lines": 1,
-          "width": 980,
-          "height": 50
+          "width": 850,
+          "height": 52
         },
-        "number-1": {
+        "card-1": {
           "lines": 1,
-          "width": 52,
-          "height": 84
-        },
-        "step-1": {
-          "lines": 1,
-          "width": 600,
+          "width": 850,
           "height": 46
         },
-        "body-1": {
+        "card-2": {
           "lines": 1,
-          "width": 585,
-          "height": 65
-        },
-        "number-2": {
-          "lines": 1,
-          "width": 52,
-          "height": 84
-        },
-        "step-2": {
-          "lines": 1,
-          "width": 600,
+          "width": 850,
           "height": 46
         },
-        "body-2": {
+        "card-3": {
           "lines": 1,
-          "width": 585,
-          "height": 65
-        },
-        "number-3": {
-          "lines": 1,
-          "width": 52,
-          "height": 84
-        },
-        "step-3": {
-          "lines": 1,
-          "width": 600,
+          "width": 850,
           "height": 46
         },
-        "body-3": {
+        "figure:tag": {
           "lines": 1,
-          "width": 585,
-          "height": 65
+          "width": 581,
+          "height": 40
         },
-        "from": {
+        "figure:note": {
           "lines": 1,
-          "width": 118,
-          "height": 64
+          "width": 581,
+          "height": 40
         },
-        "to": {
+        "summary:takeaway": {
           "lines": 1,
-          "width": 118,
-          "height": 64
+          "width": 540,
+          "height": 91
         },
-        "callout": {
+        "anchor-label": {
           "lines": 2,
-          "width": 205,
-          "height": 105
+          "width": 126,
+          "height": 84
         },
-        "conclusion": {
+        "summary": {
           "lines": 1,
-          "width": 508,
-          "height": 64
-        },
-        "source": {
-          "lines": 1,
-          "width": 600,
-          "height": 24
+          "width": 857,
+          "height": 52.99998527795226
         }
       },
       "geometry": {
         "subject": {
           "box": {
-            "x": 715,
-            "y": 75,
-            "width": 760,
-            "height": 680
+            "x": 1015,
+            "y": 156,
+            "width": 490,
+            "height": 490
           },
           "placement": {
-            "scale": 0.5422647527910686,
-            "x": 40,
+            "scale": 0.39074960127591707,
+            "x": 0,
             "y": 0,
-            "width": 680,
-            "height": 680,
+            "width": 490,
+            "height": 490,
             "anchor": {
-              "x": 553.524720893142,
-              "y": 325.35885167464113
+              "x": 370.0398724082935,
+              "y": 234.44976076555025
             }
           },
           "anchors": {
             "focus": {
-              "x": 1268.5247208931419,
-              "y": 400.35885167464113
+              "x": 1385.0398724082934,
+              "y": 390.44976076555025
             }
           }
         },
         "annotation": {
           "anchor": {
-            "x": 1268.5247208931419,
-            "y": 400.35885167464113
+            "x": 1385.0398724082934,
+            "y": 390.44976076555025
           },
           "endpoint": {
-            "x": 1360,
-            "y": 394.5
+            "x": 1438,
+            "y": 391
           },
-          "radius": 26
+          "radius": 21
+        }
+      }
+    },
+    {
+      "id": "evaporation-process",
+      "layout": {
+        "id": "process-stage-v1",
+        "version": "0.2.0"
+      },
+      "template": {
+        "id": "process-stage-v1",
+        "version": "0.1.0"
+      },
+      "measurements": {
+        "header": {
+          "lines": 1,
+          "width": 1477,
+          "height": 77
+        },
+        "figure:tag": {
+          "lines": 1,
+          "width": 700,
+          "height": 40
+        },
+        "figure:note": {
+          "lines": 1,
+          "width": 700,
+          "height": 40
+        },
+        "badge-1": {
+          "lines": 1,
+          "width": 128,
+          "height": 64
+        },
+        "badge-2": {
+          "lines": 1,
+          "width": 128,
+          "height": 64
+        },
+        "result": {
+          "lines": 1,
+          "width": 330,
+          "height": 70
+        },
+        "anchor-label": {
+          "lines": 2,
+          "width": 150,
+          "height": 90
+        },
+        "summary:takeaway": {
+          "lines": 1,
+          "width": 540,
+          "height": 100
+        },
+        "summary": {
+          "lines": 1,
+          "width": 857,
+          "height": 53.00004661981784
+        }
+      },
+      "geometry": {
+        "subject": {
+          "box": {
+            "x": 330,
+            "y": 160,
+            "width": 600,
+            "height": 480
+          },
+          "placement": {
+            "scale": 0.3827751196172249,
+            "x": 60,
+            "y": 0,
+            "width": 480,
+            "height": 480,
+            "anchor": {
+              "x": 301.14832535885165,
+              "y": 267.9425837320574
+            }
+          },
+          "anchors": {
+            "focus": {
+              "x": 631.1483253588517,
+              "y": 427.9425837320574
+            }
+          }
+        },
+        "annotation": {
+          "anchor": {
+            "x": 631.1483253588517,
+            "y": 427.9425837320574
+          },
+          "endpoint": {
+            "x": 270,
+            "y": 585
+          },
+          "radius": 21
         }
       }
     },
     {
       "id": "evaporation",
       "layout": {
-        "id": "object-left",
+        "id": "science-explanation-v1",
+        "version": "0.2.0"
+      },
+      "template": {
+        "id": "explanation-cards-v1",
         "version": "0.1.0"
       },
       "measurements": {
-        "eyebrow": {
+        "header": {
           "lines": 1,
-          "width": 238,
-          "height": 44
+          "width": 1477,
+          "height": 77
         },
-        "title": {
+        "headline": {
           "lines": 1,
-          "width": 1460,
-          "height": 90
+          "width": 860,
+          "height": 48
         },
-        "lead": {
+        "intro": {
           "lines": 1,
-          "width": 980,
-          "height": 50
+          "width": 850,
+          "height": 52
         },
-        "number-1": {
+        "card-1": {
           "lines": 1,
-          "width": 40,
-          "height": 72
+          "width": 850,
+          "height": 46
         },
-        "step-1": {
+        "card-2": {
           "lines": 1,
-          "width": 640,
-          "height": 45
+          "width": 850,
+          "height": 46
         },
-        "body-1": {
+        "card-3": {
           "lines": 1,
-          "width": 640,
-          "height": 54
+          "width": 850,
+          "height": 46
         },
-        "number-2": {
+        "figure:tag": {
           "lines": 1,
-          "width": 40,
-          "height": 72
+          "width": 581,
+          "height": 40
         },
-        "step-2": {
+        "figure:note": {
           "lines": 1,
-          "width": 640,
-          "height": 45
+          "width": 581,
+          "height": 40
         },
-        "body-2": {
+        "summary:takeaway": {
           "lines": 1,
-          "width": 640,
-          "height": 54
+          "width": 540,
+          "height": 91
         },
-        "number-3": {
-          "lines": 1,
-          "width": 40,
-          "height": 72
-        },
-        "step-3": {
-          "lines": 1,
-          "width": 640,
-          "height": 45
-        },
-        "body-3": {
-          "lines": 1,
-          "width": 640,
-          "height": 54
-        },
-        "from": {
-          "lines": 1,
-          "width": 118,
-          "height": 64
-        },
-        "to": {
-          "lines": 1,
-          "width": 118,
-          "height": 64
-        },
-        "callout": {
+        "anchor-label": {
           "lines": 2,
-          "width": 250,
-          "height": 90
+          "width": 126,
+          "height": 84
         },
-        "conclusion": {
+        "summary": {
           "lines": 1,
-          "width": 693,
-          "height": 64
-        },
-        "source": {
-          "lines": 1,
-          "width": 1450,
-          "height": 24
+          "width": 857,
+          "height": 52.99998527795226
         }
       },
       "geometry": {
         "subject": {
           "box": {
-            "x": 30,
-            "y": 235,
-            "width": 700,
-            "height": 510
+            "x": 1015,
+            "y": 156,
+            "width": 490,
+            "height": 490
           },
           "placement": {
-            "scale": 0.40669856459330145,
-            "x": 95,
+            "scale": 0.39074960127591707,
+            "x": 0,
             "y": 0,
-            "width": 510,
-            "height": 510,
+            "width": 490,
+            "height": 490,
             "anchor": {
-              "x": 351.2200956937799,
-              "y": 284.688995215311
+              "x": 246.17224880382773,
+              "y": 273.52472089314193
             }
           },
           "anchors": {
             "focus": {
-              "x": 381.2200956937799,
-              "y": 519.688995215311
+              "x": 1261.1722488038276,
+              "y": 429.52472089314193
             }
           }
         },
         "annotation": {
           "anchor": {
-            "x": 381.2200956937799,
-            "y": 519.688995215311
+            "x": 1261.1722488038276,
+            "y": 429.52472089314193
           },
           "endpoint": {
-            "x": 310,
-            "y": 675
+            "x": 1438,
+            "y": 391
           },
-          "radius": 26
+          "radius": 21
         }
       }
+    },
+    {
+      "id": "water-facts",
+      "layout": {
+        "id": "data-relation-v1",
+        "version": "0.2.0"
+      },
+      "template": {
+        "id": "data-relation-v1",
+        "version": "0.1.0"
+      },
+      "measurements": {
+        "header": {
+          "lines": 1,
+          "width": 1477,
+          "height": 77
+        },
+        "stat-1": {
+          "lines": 1,
+          "width": 480,
+          "height": 140
+        },
+        "stat-2": {
+          "lines": 1,
+          "width": 480,
+          "height": 140
+        },
+        "stat-3": {
+          "lines": 1,
+          "width": 480,
+          "height": 140
+        },
+        "caption": {
+          "lines": 1,
+          "width": 1477,
+          "height": 64
+        },
+        "summary:takeaway": {
+          "lines": 1,
+          "width": 540,
+          "height": 110
+        },
+        "summary": {
+          "lines": 1,
+          "width": 857,
+          "height": 52.99998527795226
+        }
+      },
+      "geometry": {}
     }
   ]
 }

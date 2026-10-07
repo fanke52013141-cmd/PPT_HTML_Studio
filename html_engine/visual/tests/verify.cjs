@@ -8,8 +8,14 @@ const { compile } = require("../compiler.cjs");
 const root = path.resolve(__dirname, ".."),
   read = (p) => JSON.parse(fs.readFileSync(path.join(root, p), "utf8"));
 const catalog = read("generated/catalog.json"),
-  cup = read("scenes/condensation.json"),
-  bowl = read("scenes/evaporation.json");
+  scenes = fs
+    .readdirSync(path.join(root, "scenes"))
+    .filter((p) => p.endsWith(".json"))
+    .sort()
+    .map((p) => read(`scenes/${p}`)),
+  byId = Object.fromEntries(scenes.map((s) => [s.id, s])),
+  cup = byId.condensation,
+  facts = byId["water-facts"];
 const clone = (v) => structuredClone(v);
 function rejected(change, code) {
   const s = clone(cup);
@@ -17,10 +23,15 @@ function rejected(change, code) {
   assert.throws(() => compile(s, catalog), new RegExp(code));
 }
 async function main() {
+  // Node-side structural checks (no browser required).
   assert(Object.isFrozen(compile(cup, catalog).source));
-  compile(bowl, catalog);
+  for (const s of scenes) compile(s, catalog);
+  // Legacy 0.1.0 documents stay readable through the explicit adapter.
+  for (const name of ["condensation", "evaporation"])
+    compile(read(`fixtures/legacy-0.1.0/${name}.json`), catalog);
   rejected((s) => (s.style = { color: "red" }), "INVALID_VISUAL_DEFINITION");
   rejected((s) => (s.themeRef.id = "missing"), "UNRESOLVED_REFERENCE");
+  rejected((s) => (s.version = "9.9.9"), "UNSUPPORTED_VERSION");
   rejected((s) => (s.nodes[0].slot = "missing"), "UNRESOLVED_SLOT");
   rejected((s) => (s.nodes[0].slot = "constructor"), "UNRESOLVED_SLOT");
   rejected((s) => (s.nodes[1].id = s.nodes[0].id), "DUPLICATE_TARGET");
@@ -28,16 +39,45 @@ async function main() {
     (s) => (s.nodes.find((n) => n.type === "annotation").anchorId = "missing"),
     "UNRESOLVED_ANCHOR",
   );
-  rejected((s) => (s.motion[0].startMs = 18000), "INVALID_TIME");
+  rejected((s) => (s.motion[0].startMs = s.durationMs), "INVALID_TIME");
   rejected((s) => (s.motion[0].offsetX = -100), "CONTENT_SAFE_ZONE");
   rejected((s) => (s.beats[1].startMs = 0), "INVALID_TIME");
+  rejected(
+    (s) => (s.nodes.find((n) => n.type === "card").icon = "rocket"),
+    "UNKNOWN_ICON",
+  );
+  rejected((s) => (s.templateRef = { id: "missing", version: "0.1.0" }), "UNRESOLVED_REFERENCE");
+  rejected(
+    (s) => (s.templateRef = { id: "process-stage-v1", version: "0.1.0" }),
+    "TEMPLATE_LAYOUT_MISMATCH",
+  );
+  const kindSwap = clone(facts);
+  const caption = kindSwap.nodes.find((n) => n.id === "caption");
+  const captionText = caption.runs.map((r) => r.text).join("");
+  delete caption.runs;
+  caption.type = "label";
+  caption.role = "phase";
+  caption.tone = "blue";
+  caption.text = captionText;
+  assert.throws(() => compile(kindSwap, catalog), /TEMPLATE_SLOT_KIND/);
+  const withoutCard = clone(cup);
+  withoutCard.nodes = withoutCard.nodes.filter((n) => n.id !== "card-2");
+  withoutCard.motion = withoutCard.motion.filter((a) => a.targetId !== "card-2");
+  assert.throws(
+    () => compile(withoutCard, catalog),
+    /TEMPLATE_SLOT_REQUIRED/,
+  );
+  const withTemplate = clone(facts);
+  delete withTemplate.templateRef;
+  compile(withTemplate, catalog);
   rejected((s) => {
-    s.nodes = s.nodes.filter((n) => n.id !== "lead");
-    s.motion = s.motion.filter((a) => a.targetId !== "lead");
+    delete s.templateRef;
+    s.nodes = s.nodes.filter((n) => n.id !== "headline");
+    s.motion = s.motion.filter((a) => a.targetId !== "headline");
     s.nodes.push({
       ...clone(s.nodes.find((n) => n.type === "image")),
       id: "second",
-      slot: "lead",
+      slot: "headline",
     });
     s.motion.push({
       targetId: "second",
@@ -57,6 +97,7 @@ async function main() {
   incompatible.themes.find((t) => t.id === cup.themeRef.id).compatibleLayouts =
     ["object-left"];
   assert.throws(() => compile(cup, incompatible), /INCOMPATIBLE_THEME_LAYOUT/);
+  // Browser checks share one page across every registered scene.
   const browser = await chromium.launch({
     headless: true,
     executablePath:
@@ -87,12 +128,15 @@ async function main() {
         true,
         await page.locator("#status").innerText(),
       );
-    for (const s of [cup, bowl]) {
+    for (const s of scenes) {
       await apply(s);
-      const final = await page.evaluate(() => window.visualPlayer.seek(18000));
+      const final = await page.evaluate(
+        (t) => window.visualPlayer.seek(t),
+        s.durationMs,
+      );
       const first = await page.locator(".visual-stage").screenshot();
-      await page.evaluate(() => window.visualPlayer.seek(5000));
-      await page.evaluate(() => window.visualPlayer.seek(18000));
+      await page.evaluate((t) => window.visualPlayer.seek(t), Math.floor(s.durationMs / 3));
+      await page.evaluate((t) => window.visualPlayer.seek(t), s.durationMs);
       assert(
         first.equals(await page.locator(".visual-stage").screenshot()),
         "Random seeking must return identical pixels",
@@ -102,6 +146,7 @@ async function main() {
       evidence.scenes.push({
         id: s.id,
         layout: s.layoutRef,
+        template: s.templateRef ?? null,
         measurements: final.measurements,
         geometry: final.geometry,
       });
@@ -162,17 +207,22 @@ async function main() {
     await apply(cup);
     const themed = clone(cup);
     themed.themeRef.id = "neutral-science";
-    const before = await page.evaluate(() => window.visualPlayer.seek(18000));
+    const before = await page.evaluate(
+      (t) => window.visualPlayer.seek(t),
+      cup.durationMs,
+    );
     await apply(themed);
-    const after = await page.evaluate(() => window.visualPlayer.seek(18000));
+    const after = await page.evaluate(
+      (t) => window.visualPlayer.seek(t),
+      cup.durationMs,
+    );
     assert.deepEqual(before.geometry, after.geometry);
     assert.deepEqual(before.measurements, after.measurements);
     assert.deepEqual(themed.nodes, cup.nodes);
     const old = await page.evaluate(() => window.visualPlayer.scene.id);
     const long = clone(cup);
-    long.nodes.find((n) => n.id === "title").runs[0].text = "超长内容".repeat(
-      40,
-    );
+    long.nodes.find((n) => n.id === "headline").runs[0].text =
+      "超长内容".repeat(40);
     assert.equal(
       await page.evaluate((s) => window.visualPlayer.apply(s), long),
       false,
@@ -183,11 +233,11 @@ async function main() {
       /CONTENT_CAPACITY_EXCEEDED/,
     );
     const malicious = clone(cup);
-    malicious.nodes.find((n) => n.id === "step-1").runs[0].text =
+    malicious.nodes.find((n) => n.id === "intro").runs[0].text =
       "<img src=x onerror=alert(1)>";
     await apply(malicious);
     assert.equal(
-      await page.locator('[data-object-id="step-1"] img').count(),
+      await page.locator('[data-object-id="intro"] img').count(),
       0,
     );
     await apply(cup);
@@ -224,8 +274,9 @@ async function main() {
     assert.deepEqual(errors, []);
     evidence.checks = [
       "strict fields and ownership",
-      "references and time",
-      "two contents / assets / layouts",
+      "references, icons, templates and time",
+      "legacy 0.1.0 adapter",
+      "four contents / three structures / two themes",
       "seek pixel determinism",
       "transformed anchor / two viewport sizes",
       "theme preserves semantics and geometry",
@@ -243,7 +294,7 @@ async function main() {
     console.log(
       JSON.stringify({
         passed: evidence.checks.length,
-        scenes: 2,
+        scenes: scenes.length,
         pageErrors: 0,
       }),
     );

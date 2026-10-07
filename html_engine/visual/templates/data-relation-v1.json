@@ -1,0 +1,49 @@
+{
+  "format": "hps.visual.template",
+  "version": "0.1.0",
+  "id": "data-relation-v1",
+  "name": "数据关系：三数据位+关系条",
+  "structure": "data-relation",
+  "layoutRef": {
+    "id": "data-relation-v1",
+    "version": "0.2.0"
+  },
+  "slots": {
+    "header": {
+      "kinds": [
+        "header"
+      ],
+      "required": true
+    },
+    "stat-1": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "stat-2": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "stat-3": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "caption": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "summary": {
+      "kinds": [
+        "summary"
+      ],
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+ "ink_version": "annotation_ink_v1",
+ "cases": [
+  {
+   "label": "日期圈注",
+   "phrase": "9月30日",
+   "token_count": 5,
+   "style": "ellipse",
+   "variants": {
+    "V0": {
+     "ink_pixels": 3831,
+     "intrusion_rate": 0.1086,
+     "neighbor_rate": 0.0,
+     "enclosure_rate": 1.0,
+     "centroid_offset_px": 1.89
+    },
+    "V1": {
+     "ink_pixels": 2080,
+     "intrusion_rate": 0.0019,
+     "neighbor_rate": 0.0,
+     "enclosure_rate": 0.8875,
+     "centroid_offset_px": 0.8
+    },
+    "V2": {
+     "ink_pixels": 2265,
+     "intrusion_rate": 0.0049,
+     "neighbor_rate": 0.0,
+     "enclosure_rate": 0.8875,
+     "centroid_offset_px": 1.28
+    }
+   },
+   "crop": [
+    144,
+    156,
+    744,
+    494
+   ]
+  },
+  {
+   "label": "百分比圈注",
+   "phrase": "23.5",
+   "token_count": 4,
+   "style": "ellipse",
+   "variants": {
+    "V0": {
+     "ink_pixels": 2971,
+     "intrusion_rate": 0.4228,
+     "neighbor_rate": 0.0,
+     "enclosure_rate": 1.0,
+     "centroid_offset_px": 0.57
+    },
+    "V1": {
+     "ink_pixels": 1324,
+     "intrusion_rate": 0.0,
+     "neighbor_rate": 0.0,
+     "enclosure_rate": 0.9062,
+     "centroid_offset_px": 0.45
+    },
+    "V2": {
+     "ink_pixels": 1462,
+     "intrusion_rate": 0.0041,
+     "neighbor_rate": 0.0,
+     "enclosure_rate": 0.9062,
+     "centroid_offset_px": 1.03
+    }
+   },
+   "crop": [
+    152,
+    317,
+    752,
+    655
+   ]
+  },
+  {
+   "label": "英文横线",
+   "phrase": "Online",
+   "token_count": 6,
+   "style": "underline",
+   "variants": {
+    "V0": {
+     "coverage_x": 1.0,
+     "baseline_rate": 1.0,
+     "intrusion_rate": 0.0,
+     "neighbor_rate": 0.0,
+     "ink_pixels": 566
+    },
+    "V1": {
+     "coverage_x": 1.0,
+     "baseline_rate": 1.0,
+     "intrusion_rate": 0.0,
+     "neighbor_rate": 0.0,
+     "ink_pixels": 582
+    },
+    "V2": {
+     "coverage_x": 1.0,
+     "baseline_rate": 1.0,
+     "intrusion_rate": 0.0,
+     "neighbor_rate": 0.0,
+     "ink_pixels": 640
+    }
+   },
+   "crop": [
+    0,
+    411,
+    473,
+    748
+   ]
+  }
+ ]
+}

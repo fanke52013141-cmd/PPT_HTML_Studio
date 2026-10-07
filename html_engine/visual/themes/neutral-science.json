@@ -1,6 +1,6 @@
 {
   "format": "hps.visual.theme",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "id": "neutral-science",
   "name": "中性科普（主题切换测试，待视觉批准）",
   "font": {
@@ -19,7 +19,11 @@
     "pinkWash": "#e8edfa",
     "blueWash": "#e8f1fb",
     "greenWash": "#e7f3ec",
-    "line": "#a3b5cc"
+    "line": "#a3b5cc",
+    "paper": "#f4f4f2",
+    "purple": "#9a9a9a",
+    "yellow": "#b8b0a4",
+    "pink": "#8a8a8a"
   },
   "text": {
     "eyebrow": {
@@ -30,7 +34,7 @@
       "color": "body"
     },
     "title": {
-      "size": 66,
+      "size": 46,
       "weight": 700,
       "lineHeight": 1.3,
       "letterSpacing": 0,
@@ -98,6 +102,48 @@
       "lineHeight": 1.5,
       "letterSpacing": 0,
       "color": "ink"
+    },
+    "headline": {
+      "size": 32,
+      "weight": 700,
+      "lineHeight": 1.4,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "cardTitle": {
+      "size": 29,
+      "weight": 700,
+      "lineHeight": 1.35,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "cardBody": {
+      "size": 22,
+      "weight": 400,
+      "lineHeight": 1.55,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "caption": {
+      "size": 19,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "summary": {
+      "size": 26,
+      "weight": 700,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "intro": {
+      "size": 23,
+      "weight": 400,
+      "lineHeight": 1.65,
+      "letterSpacing": 0,
+      "color": "body"
     }
   },
   "shapes": {
@@ -108,8 +154,41 @@
       "y": 2,
       "blur": 6,
       "opacity": 0.04
-    }
+    },
+    "cardRadius": 12,
+    "figureRadius": 12,
+    "iconRadius": 12,
+    "iconStroke": 1.7,
+    "shadowRGB": "60 60 60"
   },
-  "compatibleLayouts": ["object-right", "object-left"],
-  "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。"
+  "compatibleLayouts": [
+    "data-relation-v1",
+    "object-left",
+    "object-right",
+    "process-stage-v1",
+    "science-explanation-v1"
+  ],
+  "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。",
+  "gradients": {
+    "pink": [
+      "#c9c9c9",
+      "#a8a8a8"
+    ],
+    "blue": [
+      "#c4c4c4",
+      "#9e9e9e"
+    ],
+    "green": [
+      "#c2c8c4",
+      "#9aa39d"
+    ],
+    "purple": [
+      "#cfcfcf",
+      "#ababab"
+    ],
+    "yellow": [
+      "#d6d2c8",
+      "#b3ada0"
+    ]
+  }
 }

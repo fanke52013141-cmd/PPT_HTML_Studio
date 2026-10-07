@@ -1,0 +1,56 @@
+{
+  "format": "hps.visual.effects",
+  "version": "0.1.0",
+  "note": "已注册视觉效果目录。组件按 ID 消费效果；场景与模型输出不得引用未注册效果。backend 限定 CSS/SVG/Canvas2D。",
+  "effects": [
+    {
+      "id": "card-surface-gradient",
+      "backend": "CSS",
+      "purpose": "知识卡纸面渐变与轻阴影",
+      "params": ["gradients.pink 存在时启用；fallback panel 平色"],
+      "usedBy": ["card"]
+    },
+    {
+      "id": "icon-bubble-gradient",
+      "backend": "CSS",
+      "purpose": "图标气泡对角渐变与内高光",
+      "params": ["tone → gradients[tone]；fallback colors[tone] 平色"],
+      "usedBy": ["card"]
+    },
+    {
+      "id": "figure-panel-gradient",
+      "backend": "CSS",
+      "purpose": "插图容器三段渐变与光环",
+      "params": ["gradients.blue[0]/paper/gradients.purple[0]"],
+      "usedBy": ["figure"]
+    },
+    {
+      "id": "state-flow-strip",
+      "backend": "CSS",
+      "purpose": "关系条：状态胶囊+箭头+术语+结论",
+      "params": ["from.tone/to.tone → gradients blue/green"],
+      "usedBy": ["summary"]
+    },
+    {
+      "id": "leader-line-draw",
+      "backend": "SVG",
+      "purpose": "批注引线随讲解进度描绘（stroke-dashoffset）",
+      "params": ["确定性时间：annotation enter 进度 p → offset=1-p"],
+      "usedBy": ["annotation"]
+    },
+    {
+      "id": "enter-smoothstep",
+      "backend": "CSS",
+      "purpose": "统一入场：透明度+位移，smoothstep 缓动",
+      "params": ["startMs/durationMs/offsetX/offsetY，纯时间求值"],
+      "usedBy": ["全部节点"]
+    },
+    {
+      "id": "soft-shadow",
+      "backend": "CSS",
+      "purpose": "统一柔和投影",
+      "params": ["shadow.y/blur/opacity/shadowRGB"],
+      "usedBy": ["card", "figure", "label", "badge"]
+    }
+  ]
+}

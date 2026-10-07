@@ -10,7 +10,9 @@
     "test:e2": "node tests/recipes.test.cjs",
     "test:course": "node tests/token-course.test.cjs",
     "build:visual": "node visual/build.cjs",
-    "test:visual": "node visual/tests/verify.cjs"
+    "test:visual": "node visual/tests/verify.cjs",
+    "effects:cache": "node visual/tools/effect-cache.cjs",
+    "export:frames": "node visual/tools/export-frames.cjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",

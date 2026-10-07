@@ -8,11 +8,13 @@
       "title": "源码、环境与基线",
       "depends_on": [],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC01"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/baseline/html-adaptation-baseline.md"
+      ],
       "commit": null
     },
     {
@@ -22,12 +24,15 @@
         "A00"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC02"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "docs/contracts/html-presentation/runtime/visual-v1/version-0.2.0.md",
+        "docs/contracts/html-presentation/CHANGELOG.md"
+      ],
+      "commit": "b32b204"
     },
     {
       "id": "A02",
@@ -36,13 +41,18 @@
         "A01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC02",
         "AC04"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_engine/visual/evidence/condensation-final.png",
+        "html_engine/visual/evidence/evaporation-final.png",
+        "html_engine/visual/evidence/verification.json"
+      ],
+      "commit": "b32b204",
+      "note": "engineering passed; AC04 user visual review pending_review"
     },
     {
       "id": "A03",
@@ -51,13 +61,16 @@
         "A02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC03",
         "AC06"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_engine/visual/effects/registry.json",
+        "html_engine/visual/effects/cache/manifest.json"
+      ],
+      "commit": "b32b204"
     },
     {
       "id": "A04",
@@ -66,12 +79,15 @@
         "A02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC05"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_engine/visual/tools/export-frames.cjs",
+        "html_engine/visual/tests/verify.cjs"
+      ],
+      "commit": "b32b204"
     },
     {
       "id": "B01",
@@ -80,12 +96,16 @@
         "A01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC08"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "migrations/0017_project_visual_backend.sql",
+        "checks/test_project_visual_backend.py",
+        "docs/agent/capability-matrix.md"
+      ],
+      "commit": "6001290"
     },
     {
       "id": "B02",
@@ -95,13 +115,18 @@
         "A04"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC09",
         "AC18"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_visual_store.py",
+        "html_visual_routes.py",
+        "checks/test_html_visual_store.py",
+        "docs/downstream-impact.md"
+      ],
+      "commit": "5bbb08b"
     },
     {
       "id": "B03",
@@ -111,13 +136,17 @@
         "B02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC08",
         "AC20"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "static/flow.js",
+        "checks/test_visible_flow.js",
+        "static/workspace_navigation.js"
+      ],
+      "commit": "3e0abe0"
     },
     {
       "id": "C01",
@@ -127,12 +156,17 @@
         "A03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC07"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_storyboard_planning.py",
+        "checks/test_html_storyboard_planning.py",
+        "html_engine/evidence/html-scene-plans/ac07-plan-evidence.json"
+      ],
+      "commit": "this-round",
+      "note": "纯规划层：注册能力门禁（模板/版本/槽位/图标）、beat→动作映射完整性、过渡对象保留、资产归属校验、AC07 证据（三结构）。storyboard_service 编排接入随 C02/C04 的模型调用入口落地。"
     },
     {
       "id": "C02",
@@ -142,13 +176,17 @@
         "A03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "partial",
       "acceptance": [
         "AC06",
         "AC07"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_design_brief.py",
+        "checks/test_html_design_brief.py"
+      ],
+      "commit": "this-round",
+      "note": "纯核已实现并验证：brief（仅注册效果/主题/预算/字幕留白）、候选设计参考（CSS/SVG/Canvas 与独立图片分工）、OSS-04 关键帧清单（过渡对象强制过程三帧）、冻结记录（哈希绑定+差异说明）。模型调用侧（实际效果图生成、输入/输出生成与请求上下文留证）随 C04 服务接入；AC06 的请求上下文检查在模型入口落地时执行。"
     },
     {
       "id": "C03",
@@ -158,12 +196,16 @@
         "B02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "partial",
       "acceptance": [
         "AC10"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_asset_service.py",
+        "checks/test_html_asset_service.py"
+      ],
+      "commit": "this-round",
+      "note": "资产服务核已实现并验证：请求哈希命中复用、真实 PNG 解码（尺寸/alpha bbox/透明声明门禁/边缘带底检测）、归一化锚点登记、清单哈希校验；provider 经注入包装 ai_provider_service，不做整页白底归一化。真实 provider 端到端与图集提取（分区清单/独立输出核验）待接入实际模型后执行（AC10 的真实服务项）。"
     },
     {
       "id": "C04",
@@ -174,13 +216,19 @@
         "B03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC04",
         "AC10"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_visual_review_service.py",
+        "html_visual_review_routes.py",
+        "html_engine/tools/review-scene.cjs",
+        "checks/test_html_visual_review.py"
+      ],
+      "commit": "this-round",
+      "note": "已实现并验证：模型计划生成（真实 LLM 入口经 json_llm_service 注入；一次有界修复；两次失败保存诊断不放宽校验；AC06/AC07 生成记录含请求上下文哈希与响应哈希）、共享 bundle 浏览器编译/测量/截图（对象级容量诊断）、批准记录绑定 scene/theme/template/layout/asset/runtime 哈希且任一变化失效（409 审阅门禁）。AC04 用户视觉审阅与真实模型实测仍为 pending_review/blocked-on-service；应用 UI 预览面板随工作区集成任务交付。"
     },
     {
       "id": "D01",
@@ -189,12 +237,18 @@
         "C04"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC11"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_action_editing.py",
+        "checks/test_html_action_editing.py",
+        "html_engine/visual/tests/actions.test.cjs",
+        "html_engine/visual/evidence/actions-ac11.json"
+      ],
+      "commit": "this-round",
+      "note": "运行时部分完成：Schema 0.3.0（motion enter/exit/emphasize oneOf；0.1.0/0.2.0 显式适配器）、编译器通道规则（enter 必备、通道唯一、时间窗互斥、emphasize 安全区）、渲染器组合求值（exit 淡出不可见、emphasize 有界提升、关系线追踪强调中的目标）。AC11 浏览器证据 5 项：进入前/在场/退出中/退出后不可见、强调 -8px 有界提升、关系线追踪、动作存在时乱序 seek 像素一致。AC04 视觉审阅另行。"
     },
     {
       "id": "D02",
@@ -204,12 +258,15 @@
         "B02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC12"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_audio_binder.py",
+        "checks/test_html_audio_binder.py"
+      ],
+      "commit": "5956ad5"
     },
     {
       "id": "D03",
@@ -219,12 +276,18 @@
         "D02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC13"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_annotation_targets.py",
+        "checks/test_html_annotation_targets.py",
+        "html_engine/tools/review-scene.cjs",
+        "html_engine/visual/renderer.cjs"
+      ],
+      "commit": "this-round",
+      "note": "HTML 批注定位核已实现并验证：图片目标走资产语义锚点+contain 映射（几何报告直接给出变换后锚点）、SVG/全部节点使用登记几何框（渲染器为每个节点输出移动后 box）、文字走 DOM Range（码点区间→UTF-16→getClientRects，换算回 1600×900 画布坐标）、目标删除返回诊断；视口缩放单系数映射构造上 ≤1 逻辑像素，浏览器实测 DOM Range 矩形落位偏差 <1px。全程无 OCR；应用侧 annotation runtime 的后端切换随工作区集成任务接入。"
     },
     {
       "id": "E01",
@@ -235,12 +298,17 @@
         "D03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC14"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_render_runner.py",
+        "html_engine/tools/export-slide-video.cjs",
+        "checks/test_html_render_runner.py"
+      ],
+      "commit": "5956ad5",
+      "note": "runner + engine export verified by live smoke (water-facts + 12s audio -> h264/aac 12.000s); persistent job-store integration and full-course render still pending_review"
     },
     {
       "id": "E02",
@@ -249,12 +317,17 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "partial",
       "acceptance": [
         "AC15"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "checks/test_html_pptx_snapshot.py",
+        "html_render_runner.py",
+        "video_render_service.py"
+      ],
+      "commit": "this-round",
+      "note": "接口级验证通过：html 渲染结果（HtmlRenderResult）与 RemotionRenderResult 同字段（output_path/filename/color_validation），共享 worker 的 _apply_digital_human_composite 对两种后端一致消费；关闭即无占位。真实数字人服务未部署，实测合成 blocked-on-service（AC15 记录）。"
     },
     {
       "id": "E03",
@@ -263,12 +336,17 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC16"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_pptx_snapshot.py",
+        "html_engine/tools/export-snapshots.cjs",
+        "checks/test_html_pptx_snapshot.py"
+      ],
+      "commit": "this-round",
+      "note": "快照/分步 PPTX 核已实现并验证：共享 bundle 渲染显式时间点 → 16:9 图片式 PPTX（精确 12192000x6858000 EMU），manifest 明示 image_only_snapshot 能力边界与页→时间映射；字幕可选，默认演示稿快照不带视频字幕；末 beat 与终态同刻自动去重。pptx_service 路由分派（按 visual_backend）随应用链路任务接入；PowerPoint 实际打开核验待目标软件可用（AC16 记录）。 pptx_service 分派已接入（本轮）。"
     },
     {
       "id": "E04",
@@ -293,12 +371,20 @@
         "E03"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC17"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "agent_contract/capabilities.py",
+        "agent_contract/models.py",
+        "agent_api/routes.py",
+        "agent_client/client.py",
+        "mcp_server/tools.py",
+        "docs/agent/capability-matrix.md"
+      ],
+      "commit": "this-round",
+      "note": "HTML 操作面注册完成：7 项能力（html_visual.status/scene_read/scene_write、html_review.plan_generate/review/approve/approval_status）在 capabilities/models/Agent API 路由/MCP 分发/CLI 命令同源注册；场景写带 expected_revision（409 冲突语义与 Web 相同）；AGENT_API_VERSION 1.11.0；capability-matrix 重生成；checks/agent 423 项全过。"
     },
     {
       "id": "F02",
@@ -309,12 +395,16 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC18"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "html_task_store.py",
+        "checks/test_html_task_store.py"
+      ],
+      "commit": "this-round",
+      "note": "HTML 任务持久化 store 已实现并验证（AC18）：独立任务类型（html_plan_generate/html_review/html_asset_produce）基于共享 LocalJob 表；同 submission_key 幂等复用（活跃/成功复用、失败限额内原地重试 attempt+1、超限 409 拒绝）；重启恢复把遗留 running/queued 标记 interrupted 且不静默重跑（显式重提交 attempt+1）；取消仅作用于活跃任务，终态结果不被迟到取消覆盖。generation_control 取消检查点由执行入口在各安全边界调用。"
     },
     {
       "id": "F03",
@@ -342,7 +432,7 @@
         "F02"
       ],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC01",
         "AC02",
@@ -365,8 +455,14 @@
         "AC19",
         "AC20"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "docs/plans/html-backend-development/acceptance-manifest.json",
+        "docs/baseline/html-adaptation-baseline.md",
+        "pptx_service.py",
+        "checks/test_html_pptx_snapshot.py"
+      ],
+      "commit": "this-round",
+      "note": "总验收 manifest 已产出（AC01-AC20 逐项 passed/partial/blocked/pending_review + 命令退出码）；pptx_service 按 visual_backend 分派已接入（html 项目同步走共享 bundle 快照管线，图片路线原样）；E02/E03/F01/F02 证据齐备。放行条件剩余：用户 AC04 视觉结论、用户 AC20 真实课程导览、真实模型服务绑定（C02/C03 尾项）、PowerPoint 打开核验（AC16）。"
     }
   ]
 }

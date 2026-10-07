@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>勾画笔迹 A/B 对比(R2)</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #f3f4f6; margin: 0; padding: 16px; }
+  h1 { font-size: 20px; } h2 { font-size: 15px; margin: 8px 0 4px; }
+  .card { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 16px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .panel { flex: 1 1 320px; }
+  .frame { position: relative; width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .frame img, .frame svg { display: block; width: 100%; height: auto; }
+  .frame svg { position: absolute; inset: 0; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; margin-bottom: 4px; }
+  .old { background: #fee2e2; color: #991b1b; }
+  .new { background: #dcfce7; color: #166534; }
+</style>
+</head>
+<body>
+<h1>勾画笔迹 A/B 对比 — 冻结样本真实 OCR 字框</h1>
+<div id="root"></div>
+<script src="annotation_playback.js"></script>
+<script src="ab-strokes-data.js"></script>
+<script>
+function outlineD(stroke, progress) {
+  // 编辑态 = 绘制完成:progress=1;经由与导出完全相同的采样器
+  const ev = { annotation_id: 'x', start_sec: 0, draw_end_sec: 1, hold_end_sec: 1, exit_end_sec: 1,
+               style: { color: '#F46A38', opacity: 0.85, width: 5 }, strokes: [stroke] };
+  const shapes = AnnotationsPlayback.renderScene([ev], 0.5, 30);
+  return shapes.length ? shapes[0] : null;
+}
+function midD(stroke) {
+  const ev = { annotation_id: 'x', start_sec: 0, draw_end_sec: 1, hold_end_sec: 1, exit_end_sec: 1,
+               style: { color: '#F46A38', opacity: 0.85, width: 5 }, strokes: [stroke] };
+  // 半程:用 strokeProgress 语义直接取局部进度 0.55
+  const shapes = AnnotationsPlayback.renderScene(
+    [{ ...ev, start_sec: 0, draw_end_sec: 0.55, hold_end_sec: 0.55, exit_end_sec: 0.55 }], 0.5, 30);
+  return shapes.length ? shapes[0] : null;
+}
+function svgFor(view, items) {
+  // 画布 1920x1080,按面板裁剪目标附近区域
+  const [cx, cy] = view.center, half = view.half;
+  const vb = `${cx - half} ${cy - half * 9 / 16} ${half * 2} ${half * 2 * 9 / 16}`;
+  return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">
+    ${items.join('\n')}
+  </svg>`;
+}
+const root = document.getElementById('root');
+for (const c of AB_DATA) {
+  const [x1, y1, x2, y2] = c.box;
+  const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+  const half = Math.max(320, (x2 - x1) * 1.1);
+  const view = { center: [cx, cy], half };
+  const sections = [];
+
+  // 旧版规则椭圆
+  if (c.old) {
+    const d = 'M ' + c.old.map(p => p.join(' ')).join(' L ');
+    sections.push(['旧版:规则椭圆(整体缩放)', 'old', `<path d="${d}" fill="none" stroke="#F46A38" stroke-width="5" stroke-linecap="round"/>`]);
+  }
+  // 新版:完整 + 半程 + 换笔迹
+  c.new.forEach((variant, index) => {
+    const full = outlineD(variant.stroke, 1);
+    const mid = midD(variant.stroke);
+    const label = index === 0 ? '新版:手写模板 + 笔宽曲线(完成)' : `新版:换一种笔迹(seed ${variant.seed})`;
+    sections.push([label, 'new', full ? `<path d="${full.d}" fill="${full.closed ? '#F46A38' : 'none'}" fill-opacity="${full.closed ? 0.06 : 0}" stroke="#F46A38" stroke-width="2.6" stroke-linejoin="round"/>` : '']);
+    if (index === 0 && mid) {
+      sections.push(['新版:行笔半程(笔尖推进)', 'new', `<path d="${mid.d}" fill="${mid.closed ? '#F46A38' : 'none'}" fill-opacity="${mid.closed ? 0.06 : 0}" stroke="#F46A38" stroke-width="2.6" stroke-linejoin="round"/>`]);
+    }
+  });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'card';
+  wrap.innerHTML = `<h2>${c.label} — "${c.phrase}"(${c.token_count} 个字框)</h2>
+    <div class="row">` +
+    sections.map(([tag, cls, content]) =>
+      `<div class="panel"><span class="tag ${cls}">${tag}</span>
+       <div class="frame"><img src="sample_slide.png"><svg viewBox="0 0 1920 1080" style="position:absolute;inset:0;width:100%;height:100%">
+         <g>${content}</g></svg></div></div>`).join('') +
+    `</div>`;
+  root.appendChild(wrap);
+}
+</script>
+</body>
+</html>

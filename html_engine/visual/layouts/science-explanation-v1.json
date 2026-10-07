@@ -1,0 +1,135 @@
+{
+  "format": "hps.visual.layout",
+  "version": "0.2.0",
+  "id": "science-explanation-v1",
+  "name": "科普图文讲解 / 三知识卡",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "contentBottom": 800,
+    "subtitleHeight": 100
+  },
+  "slots": {
+    "header": {
+      "box": {
+        "x": 58,
+        "y": 48,
+        "width": 1477,
+        "height": 77
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "headline": {
+      "box": {
+        "x": 58,
+        "y": 161,
+        "width": 860,
+        "height": 48
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "intro": {
+      "box": {
+        "x": 58,
+        "y": 220,
+        "width": 850,
+        "height": 52
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "card-1": {
+      "box": {
+        "x": 58,
+        "y": 294,
+        "width": 850,
+        "height": 102
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "card-2": {
+      "box": {
+        "x": 58,
+        "y": 411,
+        "width": 850,
+        "height": 102
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "card-3": {
+      "box": {
+        "x": 58,
+        "y": 528,
+        "width": 850,
+        "height": 102
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "figure": {
+      "box": {
+        "x": 954,
+        "y": 206,
+        "width": 581,
+        "height": 438
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 1
+    },
+    "subject": {
+      "box": {
+        "x": 1015,
+        "y": 156,
+        "width": 490,
+        "height": 490
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "anchor-label": {
+      "box": {
+        "x": 1438,
+        "y": 349,
+        "width": 126,
+        "height": 84
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 6
+    },
+    "summary": {
+      "box": {
+        "x": 58,
+        "y": 677,
+        "width": 1477,
+        "height": 91
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "annotation": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 5
+    }
+  }
+}

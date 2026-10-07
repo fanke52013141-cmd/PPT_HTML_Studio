@@ -1,6 +1,6 @@
 # 阶段一：共享视觉定义与统一渲染
 
-> 2026-10-08：用户明确否定本预览的简化视觉，状态 changes_requested。技术结果保留；柔和彩色科普风格并未完成。请先查看[按原参考补齐的实际风格样板](style-review/index.html)，不得依据此工程稿直接扩展生产流程。
+> 2026-10-08（0.2.0）：按 html-backend 计划 A01—A04，style-review 的实际科普视觉已收编进共享渲染器——新增 header/card/figure/summary 公共组件、图标注册表、渐变/扩展排版主题字段、三个受约束模板（图文讲解/数据关系/对象过程舞台）、效果注册与参考图缓存、帧导出 harness；0.1.0 场景经显式适配器读取。工程验证 13 项通过（4 场景/3 结构/2 主题/乱序 seek 像素一致）；**视觉验收仍 pending_review**，以[0.2.0 版本卡](../../../docs/contracts/html-presentation/runtime/visual-v1/version-0.2.0.md)为准。下方 0.1.0 历史说明保留：用户当时否定的是旧简化视觉，不是本模块的归属模型。
 
 已实现独立格式 0.1.0；[定义卡](../../docs/contracts/html-presentation/runtime/visual-v1/README.md)是本模块的归属契约。预览：[打开两个复用案例](preview/index.html)。这不是应用级 HTML 后端，原图片路线与 E1/E2 保持原样。
 

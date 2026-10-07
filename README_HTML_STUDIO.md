@@ -59,6 +59,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\stop-html-studio.ps1
 保留，审查依据见 [基础体系审查记录](docs/plans/html-foundation-review-20261007.md)。模块复用边界见
 [HTML 改造与复用方案](docs/plans/html-studio-adaptation.md)。现有界面品牌仍是原项目基线；新名称用于开发副本与启动入口，产品界面将在确定实施方案后统一调整。
 
+## HTML 后端改造进展（2026-10-08 第一轮）
+
+按 [html-backend-development 方案包](docs/plans/html-backend-development/README.md) 完成 A00–F03 全部任务的工程实施：
+科普风格进入共享渲染器（schema 0.3.0，三结构模板/效果缓存/帧导出）、visual_backend 字段贯通与 Agent 能力注册（7 项）、
+场景存储/修订冲突/失效、语义分镜/设计 brief/资产服务/静态审阅（真实 LLM 入口）、音频绑定、视频导出（真实冒烟
+1600×900 H.264/AAC）、快照/分步 PPTX、HTML 批注定位（无 OCR）、任务持久化与总验收 manifest
+（[acceptance-manifest.json](docs/plans/html-backend-development/acceptance-manifest.json)）。
+视觉验收（AC04）与真实课程验收（AC20）为 pending_review，待用户审阅；真实模型端到端待服务绑定。
+
 ## E2 进展
 
 两个受约束配方和资产工具已实现，见 [交付记录](docs/plans/e2-constrained-template-completion.md)。仍是独立设计探索工具，原应用未接入；视觉/素材生产批准待审阅。

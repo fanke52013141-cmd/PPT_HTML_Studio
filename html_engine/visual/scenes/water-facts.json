@@ -1,0 +1,170 @@
+{
+  "format": "hps.visual.scene",
+  "version": "0.3.0",
+  "id": "water-facts",
+  "name": "水的三个关键温度",
+  "themeRef": {
+    "id": "soft-science",
+    "version": "0.2.0"
+  },
+  "layoutRef": {
+    "id": "data-relation-v1",
+    "version": "0.2.0"
+  },
+  "templateRef": {
+    "id": "data-relation-v1",
+    "version": "0.1.0"
+  },
+  "durationMs": 12000,
+  "nodes": [
+    {
+      "id": "header",
+      "slot": "header",
+      "type": "header",
+      "number": "03",
+      "title": "水的三个关键温度"
+    },
+    {
+      "id": "stat-1",
+      "slot": "stat-1",
+      "type": "text",
+      "role": "stepTitle",
+      "runs": [
+        {
+          "text": "0°C",
+          "emphasis": true
+        },
+        {
+          "text": " 冰点：水开始结冰",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "stat-2",
+      "slot": "stat-2",
+      "type": "text",
+      "role": "stepTitle",
+      "runs": [
+        {
+          "text": "4°C",
+          "emphasis": true
+        },
+        {
+          "text": " 水的密度最大",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "stat-3",
+      "slot": "stat-3",
+      "type": "text",
+      "role": "stepTitle",
+      "runs": [
+        {
+          "text": "100°C",
+          "emphasis": true
+        },
+        {
+          "text": " 沸点：水剧烈汽化",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "caption",
+      "slot": "caption",
+      "type": "text",
+      "role": "body",
+      "runs": [
+        {
+          "text": "以上为标准大气压下的数值；压强改变时，熔点和沸点会随之变化。",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "summary",
+      "slot": "summary",
+      "type": "summary",
+      "heading": {
+        "icon": "check",
+        "text": "关系"
+      },
+      "from": {
+        "text": "液态水",
+        "tone": "blue"
+      },
+      "to": {
+        "text": "固态冰",
+        "tone": "green"
+      },
+      "term": "凝固",
+      "takeaway": "放热结冰，温度保持不变"
+    }
+  ],
+  "motion": [
+    {
+      "targetId": "header",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "stat-1",
+      "type": "enter",
+      "startMs": 600,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "stat-2",
+      "type": "enter",
+      "startMs": 2000,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "stat-3",
+      "type": "enter",
+      "startMs": 3400,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "caption",
+      "type": "enter",
+      "startMs": 4800,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "summary",
+      "type": "enter",
+      "startMs": 6200,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    }
+  ],
+  "beats": [
+    {
+      "startMs": 0,
+      "endMs": 6000,
+      "text": "标准大气压下，水在0摄氏度结冰，在100摄氏度沸腾。"
+    },
+    {
+      "startMs": 6000,
+      "endMs": 12000,
+      "text": "液态水放热凝固成冰，这个过程叫凝固，温度保持不变。"
+    }
+  ],
+  "source": "结构验证用中性内容：水的基础物理常数，属公开科学常识。"
+}

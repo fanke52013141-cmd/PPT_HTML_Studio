@@ -1,0 +1,233 @@
+{
+  "format": "hps.visual.scene",
+  "version": "0.3.0",
+  "id": "evaporation-process",
+  "name": "蒸发的发生条件与过程",
+  "themeRef": {
+    "id": "soft-science",
+    "version": "0.2.0"
+  },
+  "layoutRef": {
+    "id": "process-stage-v1",
+    "version": "0.2.0"
+  },
+  "templateRef": {
+    "id": "process-stage-v1",
+    "version": "0.1.0"
+  },
+  "durationMs": 15000,
+  "nodes": [
+    {
+      "id": "header",
+      "slot": "header",
+      "type": "header",
+      "number": "04",
+      "title": "蒸发的发生条件与过程"
+    },
+    {
+      "id": "figure",
+      "slot": "figure",
+      "type": "figure",
+      "tag": {
+        "icon": "eye",
+        "text": "过程观察"
+      },
+      "note": {
+        "icon": "droplet",
+        "text": "水面持续有水蒸气逸出"
+      }
+    },
+    {
+      "id": "subject",
+      "slot": "subject",
+      "type": "image",
+      "assetRef": {
+        "id": "evaporation",
+        "version": "0.1.0"
+      },
+      "anchorId": "focus"
+    },
+    {
+      "id": "arrow",
+      "slot": "arrow",
+      "type": "arrow"
+    },
+    {
+      "id": "badge-1",
+      "slot": "badge-1",
+      "type": "badge",
+      "text": "吸热",
+      "tone": "blue"
+    },
+    {
+      "id": "badge-2",
+      "slot": "badge-2",
+      "type": "badge",
+      "text": "常温",
+      "tone": "green"
+    },
+    {
+      "id": "result",
+      "slot": "result",
+      "type": "text",
+      "role": "callout",
+      "runs": [
+        {
+          "text": "液态水",
+          "emphasis": false
+        },
+        {
+          "text": "持续变为水蒸气",
+          "emphasis": true
+        }
+      ]
+    },
+    {
+      "id": "anchor-label",
+      "slot": "anchor-label",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "水面蒸发\n示意",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "summary",
+      "slot": "summary",
+      "type": "summary",
+      "heading": {
+        "icon": "lightbulb",
+        "text": "关键结论"
+      },
+      "from": {
+        "text": "液态水",
+        "tone": "blue"
+      },
+      "to": {
+        "text": "水蒸气",
+        "tone": "green"
+      },
+      "term": "蒸发",
+      "takeaway": "吸热越快，蒸发越明显"
+    },
+    {
+      "id": "annotation",
+      "slot": "annotation",
+      "type": "annotation",
+      "targetId": "subject",
+      "anchorId": "focus",
+      "radius": 21,
+      "labelId": "anchor-label"
+    }
+  ],
+  "motion": [
+    {
+      "targetId": "header",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "figure",
+      "type": "enter",
+      "startMs": 500,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "subject",
+      "type": "enter",
+      "startMs": 500,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "arrow",
+      "type": "enter",
+      "startMs": 2000,
+      "durationMs": 800,
+      "offsetX": 20,
+      "offsetY": 0
+    },
+    {
+      "targetId": "badge-1",
+      "type": "enter",
+      "startMs": 2600,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "badge-2",
+      "type": "enter",
+      "startMs": 4200,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "result",
+      "type": "enter",
+      "startMs": 5800,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "anchor-label",
+      "type": "enter",
+      "startMs": 9000,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "summary",
+      "type": "enter",
+      "startMs": 10500,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "annotation",
+      "type": "enter",
+      "startMs": 8800,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "badge-2",
+      "type": "exit",
+      "startMs": 12000,
+      "durationMs": 600
+    },
+    {
+      "targetId": "subject",
+      "type": "emphasize",
+      "startMs": 3000,
+      "durationMs": 900
+    }
+  ],
+  "beats": [
+    {
+      "startMs": 0,
+      "endMs": 5000,
+      "text": "蒸发在任何温度下都会发生，吸热会加快蒸发的速度。"
+    },
+    {
+      "startMs": 5000,
+      "endMs": 15000,
+      "text": "液态水持续变成水蒸气进入空气，这个过程叫蒸发。"
+    }
+  ],
+  "source": "结构验证用过程舞台样例；内容沿用蒸发科学事实，见 content-sources.md。"
+}

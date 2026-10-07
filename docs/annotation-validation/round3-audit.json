@@ -1,0 +1,29 @@
+{
+ "date": "2026-09-28",
+ "timing": {
+  "beat1_codepoints": 30,
+  "keyword_position": "7/30",
+  "sentence_level_error_sec": 0.75,
+  "actual_start": 0.3,
+  "word_proportional_start": 1.05
+ },
+ "ink": {
+  "frames": 63,
+  "total_kb": 669,
+  "avg_frame_kb": 10.6,
+  "render_24_frames_ms": 38
+ },
+ "planner_candidates": {
+  "total": 135,
+  "by_granularity": {
+   "char": 135
+  }
+ },
+ "pip_dry_run_python_3_13": {
+  "rapidocr": "OK (opencv/pyclipper/shapely, no torch/paddle)",
+  "faster-whisper": "OK (ctranslate2, no torch)",
+  "whisperx": "OK but pulls torch+pyannote",
+  "stable-ts": "OK but AGPL-3.0",
+  "paddleocr": "OK but heavy"
+ }
+}
