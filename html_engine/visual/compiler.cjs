@@ -4,7 +4,8 @@ const { EngineError, diagnostic } = require("../src/registry.cjs");
 const { imagePlacement } = require("../src/timeline.cjs");
 const icons = require("./icons.cjs");
 
-const SCENE_VERSIONS = ["0.1.0", "0.2.0"];
+const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0"];
+const SCENE_VERSION = "0.3.0";
 const DEFINITION_VERSION = "0.2.0";
 const EXTENDED_TEXT_ROLES = [
   "headline",
@@ -83,17 +84,17 @@ function normalizeTheme(theme) {
 // versions move to the registered 0.2.0 catalog. The adaptation is recorded
 // on the compiled snapshot.
 function adaptScene(scene) {
-  if (scene.version === "0.2.0") return { scene, adaptedFrom: null };
-  if (scene.version !== "0.1.0")
+  if (scene.version === SCENE_VERSION) return { scene, adaptedFrom: null };
+  if (scene.version !== "0.1.0" && scene.version !== "0.2.0")
     fail("UNSUPPORTED_VERSION", "/version", scene.version);
   return {
     scene: {
       ...scene,
-      version: DEFINITION_VERSION,
+      version: SCENE_VERSION,
       themeRef: { ...scene.themeRef, version: DEFINITION_VERSION },
       layoutRef: { ...scene.layoutRef, version: DEFINITION_VERSION },
     },
-    adaptedFrom: "0.1.0",
+    adaptedFrom: scene.version,
   };
 }
 function validateTemplate(scene, layout, catalog) {
@@ -186,28 +187,81 @@ function compile(input, catalog) {
     )
       fail("UNRESOLVED_ANCHOR", "/nodes", n.anchorId);
   }
-  const animated = new Set();
+  const byTarget = new Map();
   for (const action of scene.motion) {
-    if (!ids.has(action.targetId) || animated.has(action.targetId))
+    if (!ids.has(action.targetId))
       fail("INVALID_MOTION_TARGET", "/motion", action.targetId);
-    animated.add(action.targetId);
+    const list = byTarget.get(action.targetId) || [];
+    if (list.some((a) => a.type === action.type))
+      fail(
+        "ACTION_CHANNEL_CONFLICT",
+        "/motion",
+        `${action.targetId}:${action.type} defined twice`,
+      );
     if (action.startMs + action.durationMs > scene.durationMs)
       fail("INVALID_TIME", "/motion", action.targetId);
-    const node = scene.nodes.find((n) => n.id === action.targetId);
-    const b = layout.slots[node.slot].box;
-    if (
-      b.x + action.offsetX < 0 ||
-      b.y + action.offsetY < 0 ||
-      b.x + b.width + action.offsetX > 1600 ||
-      b.y + b.height + action.offsetY > 800
-    )
-      fail("CONTENT_SAFE_ZONE", "/motion", action.targetId);
-    if (node.type === "annotation" && (action.offsetX || action.offsetY))
+    list.push(action);
+    byTarget.set(action.targetId, list);
+  }
+  for (const [targetId, list] of byTarget) {
+    const enter = list.find((a) => a.type === "enter");
+    if (!enter)
+      fail("MISSING_MOTION", "/motion", `${targetId} requires an enter action`);
+    const node = scene.nodes.find((n) => n.id === targetId);
+    if (node.type === "annotation" && (enter.offsetX || enter.offsetY))
       fail(
         "INVALID_RELATION",
         "/motion",
         "Annotation follows its target; no independent offset",
       );
+    const enterEnd = enter.startMs + enter.durationMs;
+    const extras = list.filter((a) => a.type !== "enter");
+    for (const extra of extras) {
+      if (extra.startMs < enterEnd)
+        fail(
+          "ACTION_WINDOW_OVERLAP",
+          "/motion",
+          `${targetId}:${extra.type} overlaps enter`,
+        );
+      const nodeBox = layout.slots[node.slot].box;
+      if (extra.type === "emphasize") {
+        if (
+          nodeBox.y - 8 < 0 ||
+          nodeBox.x - 8 < 0 ||
+          nodeBox.x + nodeBox.width + 8 > 1600 ||
+          nodeBox.y + nodeBox.height + 8 > 800
+        )
+          fail(
+            "CONTENT_SAFE_ZONE",
+            "/motion",
+            `${targetId}: emphasize lift leaves the content zone`,
+          );
+      }
+    }
+    const sortedExtras = [...extras].sort((a, b) => a.startMs - b.startMs);
+    for (const [a, b] of [
+      [enter, sortedExtras[0]],
+      ...sortedExtras.slice(0, -1).map((w, i) => [w, sortedExtras[i + 1]]),
+    ]) {
+      if (b && b.startMs < a.startMs + a.durationMs)
+        fail(
+          "ACTION_WINDOW_OVERLAP",
+          "/motion",
+          `${targetId}: action windows overlap`,
+        );
+    }
+  }
+  for (const action of scene.motion) {
+    const node = scene.nodes.find((n) => n.id === action.targetId);
+    const b = layout.slots[node.slot].box;
+    if (
+      action.type === "enter" &&
+      (b.x + action.offsetX < 0 ||
+        b.y + action.offsetY < 0 ||
+        b.x + b.width + action.offsetX > 1600 ||
+        b.y + b.height + action.offsetY > 800)
+    )
+      fail("CONTENT_SAFE_ZONE", "/motion", action.targetId);
   }
   for (const n of scene.nodes.filter((v) => v.type === "annotation")) {
     const own = layout.slots[n.slot].box;
@@ -244,7 +298,7 @@ function compile(input, catalog) {
         );
     }
   }
-  if (animated.size !== ids.size)
+  if (byTarget.size !== ids.size)
     fail("MISSING_MOTION", "/motion", "Every node requires an enter action");
   let end = 0;
   for (const beat of scene.beats) {

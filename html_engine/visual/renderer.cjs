@@ -302,7 +302,12 @@ async function prepare(compiled, pack, host) {
     states = new Map(),
     geometry = {},
     measurements = {};
-  const motions = new Map(scene.motion.map((a) => [a.targetId, a]));
+  const motionsByTarget = new Map();
+  for (const action of scene.motion) {
+    const list = motionsByTarget.get(action.targetId) || [];
+    list.push(action);
+    motionsByTarget.set(action.targetId, list);
+  }
   const assetById = new Map(compiled.assets.map((a) => [a.id, a]));
   const textNodes = [],
     overflowChecks = [];
@@ -569,16 +574,37 @@ async function prepare(compiled, pack, host) {
         fail("INVALID_TIME", "timeMs", String(ms));
       time = ms;
       for (const node of scene.nodes) {
-        const a = motions.get(node.id),
-          p = ease("smoothstep", (ms - a.startMs) / a.durationMs);
+        const actions = motionsByTarget.get(node.id) || [];
+        const enter = actions.find((a) => a.type === "enter");
+        const p = ease("smoothstep", (ms - enter.startMs) / enter.durationMs);
+        let opacity = p,
+          lift = 0;
+        for (const extra of actions) {
+          if (extra.type === "exit") {
+            const q = ease(
+              "smoothstep",
+              (ms - extra.startMs) / extra.durationMs,
+            );
+            opacity *= 1 - q;
+          } else if (extra.type === "emphasize") {
+            const half = extra.durationMs / 2;
+            const rise = ease("smoothstep", (ms - extra.startMs) / half);
+            const fall = ease(
+              "smoothstep",
+              (ms - (extra.startMs + half)) / half,
+            );
+            lift = -8 * rise * (1 - fall);
+          }
+        }
         const state = {
-          opacity: p,
-          x: reduced ? 0 : a.offsetX * (1 - p),
-          y: reduced ? 0 : a.offsetY * (1 - p),
+          opacity,
+          x: reduced ? 0 : enter.offsetX * (1 - p),
+          y: reduced ? 0 : enter.offsetY * (1 - p) + lift,
+          lift,
         };
         states.set(node.id, state);
         const el = elements.get(node.id);
-        el.style.opacity = String(p);
+        el.style.opacity = String(opacity);
         el.style.transform = `translate(${state.x}px,${state.y}px)`;
         if (node.type === "image") {
           const asset = assetById.get(node.assetRef.id),
@@ -618,9 +644,12 @@ async function prepare(compiled, pack, host) {
           cy: anchor.y - origin.y,
           r: node.radius,
         });
+        const annotationEnter = (motionsByTarget.get(node.id) || []).find(
+          (a) => a.type === "enter",
+        );
         const progress = ease(
           "smoothstep",
-          (ms - motions.get(node.id).startMs) / motions.get(node.id).durationMs,
+          (ms - annotationEnter.startMs) / annotationEnter.durationMs,
         );
         attributes(leader, {
           d: `M ${anchor.x - origin.x + towards * node.radius} ${anchor.y - origin.y} L ${endpoint.x - origin.x - towards * 14} ${endpoint.y - origin.y}`,

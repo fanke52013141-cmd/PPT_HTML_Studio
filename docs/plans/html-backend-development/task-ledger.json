@@ -237,16 +237,18 @@
         "C04"
       ],
       "scope": "initial_release",
-      "status": "partial",
+      "status": "passed",
       "acceptance": [
         "AC11"
       ],
       "evidence": [
         "html_action_editing.py",
-        "checks/test_html_action_editing.py"
+        "checks/test_html_action_editing.py",
+        "html_engine/visual/tests/actions.test.cjs",
+        "html_engine/visual/evidence/actions-ac11.json"
       ],
       "commit": "this-round",
-      "note": "动作编辑契约与服务核已实现并验证：注册动作（enter 显隐入场/exit 退出/emphasize 强调/relation_draw 关系描绘）、通道唯一与时间窗非重叠校验、enter 必备、exit 仅限过渡对象、relation_draw 仅限批注目标、人工覆盖优先且重规划冲突显式返回（不静默覆盖）、AC11 动作证据（对象动作窗口+讲稿映射）。渲染器/Schema 0.3.0 的 exit/emphasize 运行时求值与浏览器边界截图（进入前/过程/退出后不可见/随机 seek）为下一步。"
+      "note": "运行时部分完成：Schema 0.3.0（motion enter/exit/emphasize oneOf；0.1.0/0.2.0 显式适配器）、编译器通道规则（enter 必备、通道唯一、时间窗互斥、emphasize 安全区）、渲染器组合求值（exit 淡出不可见、emphasize 有界提升、关系线追踪强调中的目标）。AC11 浏览器证据 5 项：进入前/在场/退出中/退出后不可见、强调 -8px 有界提升、关系线追踪、动作存在时乱序 seek 像素一致。AC04 视觉审阅另行。"
     },
     {
       "id": "D02",

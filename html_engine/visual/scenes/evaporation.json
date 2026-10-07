@@ -1,6 +1,6 @@
 {
   "format": "hps.visual.scene",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "id": "evaporation",
   "name": "一碗水，为什么会慢慢变少？",
   "themeRef": {

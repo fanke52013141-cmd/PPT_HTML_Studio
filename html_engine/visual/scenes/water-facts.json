@@ -1,6 +1,6 @@
 {
   "format": "hps.visual.scene",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "id": "water-facts",
   "name": "水的三个关键温度",
   "themeRef": {

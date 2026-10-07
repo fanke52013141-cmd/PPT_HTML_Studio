@@ -1,6 +1,6 @@
 {
   "format": "hps.visual.scene",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "id": "condensation",
   "name": "冷杯外的水滴，从哪里来？",
   "themeRef": {

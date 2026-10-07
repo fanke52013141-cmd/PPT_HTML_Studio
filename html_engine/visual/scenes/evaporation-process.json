@@ -1,6 +1,6 @@
 {
   "format": "hps.visual.scene",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "id": "evaporation-process",
   "name": "蒸发的发生条件与过程",
   "themeRef": {
@@ -203,6 +203,18 @@
       "durationMs": 800,
       "offsetX": 0,
       "offsetY": 0
+    },
+    {
+      "targetId": "badge-2",
+      "type": "exit",
+      "startMs": 12000,
+      "durationMs": 600
+    },
+    {
+      "targetId": "subject",
+      "type": "emphasize",
+      "startMs": 3000,
+      "durationMs": 900
     }
   ],
   "beats": [
