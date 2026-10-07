@@ -1,0 +1,43 @@
+{
+  "effectVersion": "0.1.0",
+  "frames": [
+    {
+      "timeMs": 0,
+      "sha256": "e0b8af813a9712a41103a4f6ad61efef96820b79ec6e961ca385ac17ea02b6c3"
+    },
+    {
+      "timeMs": 3500,
+      "sha256": "81367243236f09b2e397087557b8ed9a1b52ebd2e0ef6673c56dc5869c2f1506"
+    },
+    {
+      "timeMs": 7000,
+      "sha256": "0e25e2ceb3ae2b1d93f9c1d4e9abeb8b7ef82b03b0706f165ef263d5a91de809"
+    },
+    {
+      "timeMs": 12500,
+      "sha256": "1dcd5a238e7532110a363b4dd611a97e04d999f75ff62ab41bc1f29a6ceecf5e"
+    },
+    {
+      "timeMs": 18000,
+      "sha256": "a9a64294da8dfdee45beb409ecbc31ac6b16e88a1b5f019f6c9e5fbabcb47297"
+    }
+  ],
+  "zones": {
+    "contentHeight": 800,
+    "subtitleTop": 800,
+    "subtitleHeight": 100,
+    "noOverlap": true,
+    "objectsClear": true,
+    "assetLoaded": true
+  },
+  "subtitleSizes": [
+    20,
+    32,
+    44
+  ],
+  "realPlayback": "passed",
+  "pause": "passed",
+  "pageErrors": [],
+  "browser": "155.0.8059.12",
+  "visualReview": "agent-inspected; user review pending"
+}
