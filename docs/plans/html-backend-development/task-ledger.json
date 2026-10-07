@@ -8,11 +8,13 @@
       "title": "源码、环境与基线",
       "depends_on": [],
       "scope": "initial_release",
-      "status": "planned",
+      "status": "passed",
       "acceptance": [
         "AC01"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/baseline/html-adaptation-baseline.md"
+      ],
       "commit": null
     },
     {
