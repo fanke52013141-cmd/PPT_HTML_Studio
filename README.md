@@ -42,6 +42,7 @@ Schema、自动校验、风格样板和导出兼容验证尚未完成。
 ## 实施路线与背景
 
 - [调研与借鉴档案](docs/research/README.md)：保存报告、证据、借鉴判断和验证计划
+- [当前项目改造借鉴指南](docs/research/2026-10-07-skill-and-workflow-reports/adaptation-guide.md)：结合现有代码筛选两份新报告，并提供实施与验收卡
 - [编程式渲染架构报告借鉴分析](docs/research/2026-10-07-architecture-report/analysis-and-adoption.md)
 - [基础建设路线](docs/plans/html-foundation-roadmap.md)
 - [原项目复用与改造边界](docs/plans/html-studio-adaptation.md)

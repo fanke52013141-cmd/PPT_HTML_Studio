@@ -1,0 +1,294 @@
+{
+  "checked_on": "2026-10-07",
+  "local_application_head": "8efecc145835705c6534e9cc3bba1a094ee47d38",
+  "has_uncommitted_changes": true,
+  "evidence_scope": "local_working_files_not_remote_application_release",
+  "method": "read_only_source_boundary_review",
+  "runtime_tests_run": false,
+  "files": [
+    {
+      "path": "storyboard_planning.py",
+      "sha256": "fa7f89f43c617805d969025762e1ef33a301ea59f25bfae45325e5cd0c6b7331",
+      "line_count": 661,
+      "locations": [
+        {
+          "symbol_or_pattern": "normalize_narration_segments",
+          "line": 138
+        },
+        {
+          "symbol_or_pattern": "compose_visual_contract_from_plans",
+          "line": 529
+        }
+      ]
+    },
+    {
+      "path": "storyboard_service.py",
+      "sha256": "a1611ed3ba86362e714e0a501f30ac0f21b4c07cb7c585241fcb14b369c0e702",
+      "line_count": 1432,
+      "locations": []
+    },
+    {
+      "path": "project_style_context.py",
+      "sha256": "d5642a0f57d2b329ed6c131422bc757b4b74b4b8816dfd585564672235ab7f72",
+      "line_count": 46,
+      "locations": []
+    },
+    {
+      "path": "project_style_reference_service.py",
+      "sha256": "7b727fed65dc1bd3b4cb2bc89a59d8a49249f4bc2a329eed0f32a552910f9fe8",
+      "line_count": 514,
+      "locations": []
+    },
+    {
+      "path": "global_image_style_service.py",
+      "sha256": "764071f60bdba7b73fa6dafc4909cf41a9f8612010b9197c516fd1728ad77c45",
+      "line_count": 675,
+      "locations": []
+    },
+    {
+      "path": "ai_provider_service.py",
+      "sha256": "7ba56d14d7853bbc7d2358ab42f40c8d1ba266abe8a1bce8c15e70ea0099f77e",
+      "line_count": 936,
+      "locations": []
+    },
+    {
+      "path": "image_workflow_service.py",
+      "sha256": "5f5aed5e1165da8a03952a1ac3b74161640279e1b6e2aa1c1b9d5b3c0ad5b894",
+      "line_count": 2281,
+      "locations": []
+    },
+    {
+      "path": "generation_governor.py",
+      "sha256": "3c225e6053f70ef3dfdf1b97c49a14f4169ce4b1fe9044daf7dc2ae994b76ca1",
+      "line_count": 607,
+      "locations": []
+    },
+    {
+      "path": "tts_provider_service.py",
+      "sha256": "9ab8f5da2635a5298565fc31e6ffe509320a56a49b8b536d973ee948bd33838a",
+      "line_count": 461,
+      "locations": []
+    },
+    {
+      "path": "tts_service.py",
+      "sha256": "70d3f2829b5744c86483fe1fbbc94c626e13f0ecd9de7b4ee3eb008cc34cda81",
+      "line_count": 1771,
+      "locations": []
+    },
+    {
+      "path": "tts_artifacts.py",
+      "sha256": "6c3346632efef7ee8e9a3b1dda568f9d320f66dc6e3c1cba977f3693fa6cc00c",
+      "line_count": 216,
+      "locations": []
+    },
+    {
+      "path": "narration_audio_service.py",
+      "sha256": "66cc4c96ea82ebe0a9f20781a80d315b073f7aa37435b1ffbf94d47ddc39ffaf",
+      "line_count": 1056,
+      "locations": [
+        {
+          "symbol_or_pattern": "rewrite_audio_timeline_by_beats",
+          "line": 776
+        }
+      ]
+    },
+    {
+      "path": "annotation_provider_alignment.py",
+      "sha256": "34b11bed2a481450c13d107f3040dc0707438031f43bc15e0965edd467fa08ca",
+      "line_count": 72,
+      "locations": [
+        {
+          "symbol_or_pattern": "provider_word_alignment",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "path": "annotation_alignment_worker.py",
+      "sha256": "16201546d9611269bdf549175102a18f861201e9f2d111a96ee4d66a29952b73",
+      "line_count": 113,
+      "locations": [
+        {
+          "symbol_or_pattern": "MODEL =",
+          "line": 20
+        },
+        {
+          "symbol_or_pattern": "run_alignment",
+          "line": 77
+        }
+      ]
+    },
+    {
+      "path": "annotation_alignment.py",
+      "sha256": "38301693dff6c7ff5b23d15ad3d8ea7ccc03f3068df32b9866ad0728df8e5db8",
+      "line_count": 322,
+      "locations": [
+        {
+          "symbol_or_pattern": "resolve_anchor_times",
+          "line": 229
+        },
+        {
+          "symbol_or_pattern": "whisperx_",
+          "line": 239
+        }
+      ]
+    },
+    {
+      "path": "annotation_timeline.py",
+      "sha256": "116030267ae3c47a27e27a1e7a5d08046efffccc005cc8958dec108e4634c69e",
+      "line_count": 267,
+      "locations": [
+        {
+          "symbol_or_pattern": "build_annotation_timeline",
+          "line": 32
+        }
+      ]
+    },
+    {
+      "path": "annotation_target_resolver.py",
+      "sha256": "7ae6d746ee6939487f42b8acd3c53b2a96543c95b85395e91bd59367de2687c7",
+      "line_count": 219,
+      "locations": [
+        {
+          "symbol_or_pattern": "resolve_phrase_target",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "path": "annotation_geometry.py",
+      "sha256": "00ebc9abf7e511549b66afb362712002e608ff35bd84e94a3662998d3017d3ce",
+      "line_count": 396,
+      "locations": []
+    },
+    {
+      "path": "scripts/bind_reveal_timeline.py",
+      "sha256": "3e33ccba6bec8b9d0bf162df7391f78315bb707038f676100123fe901a85f334",
+      "line_count": 249,
+      "locations": [
+        {
+          "symbol_or_pattern": "segment_starts",
+          "line": 57
+        },
+        {
+          "symbol_or_pattern": "bind_slide",
+          "line": 121
+        }
+      ]
+    },
+    {
+      "path": "scripts/remotion/src/Video.tsx",
+      "sha256": "f819fb36f63f617075aeaf82370dbedb2483c0829f13c9c2b49cc8f6d75edaf8",
+      "line_count": 873,
+      "locations": [
+        {
+          "symbol_or_pattern": "type: 'png'",
+          "line": 24
+        },
+        {
+          "symbol_or_pattern": "eventProgress",
+          "line": 453
+        },
+        {
+          "symbol_or_pattern": "LayerView",
+          "line": 666
+        }
+      ]
+    },
+    {
+      "path": "video_render_service.py",
+      "sha256": "2e7aa1ab30f363151b8315f54a7367dcad79ac1a793b894a730b03f3f8c4df71",
+      "line_count": 1380,
+      "locations": [
+        {
+          "symbol_or_pattern": "class VideoRenderService",
+          "line": 89
+        }
+      ]
+    },
+    {
+      "path": "remotion_runner.py",
+      "sha256": "d9b87e4ff7b63bf1d2a331f39f2b4e468cab192fabed7c10f935066d0db75ed0",
+      "line_count": 871,
+      "locations": [
+        {
+          "symbol_or_pattern": "class RemotionRunner:",
+          "line": 54
+        }
+      ]
+    },
+    {
+      "path": "pptx_export.py",
+      "sha256": "8f93861e9637542ae1ba70988173847b9bbcc8903e068e68df4c685263db36a9",
+      "line_count": 314,
+      "locations": [
+        {
+          "symbol_or_pattern": "build_image_only_pptx",
+          "line": 217
+        }
+      ]
+    },
+    {
+      "path": "pptx_reveal_export.py",
+      "sha256": "800d55b4e83b2901126c54c04a4ad279952de6974fa9c81a171b14fee8401c38",
+      "line_count": 550,
+      "locations": [
+        {
+          "symbol_or_pattern": "build_reveal_pptx",
+          "line": 264
+        }
+      ]
+    },
+    {
+      "path": "pptx_service.py",
+      "sha256": "f120044f01a7e019d64cc449ce9d677b252e3dafac9682b120523b8e1fdd2b81",
+      "line_count": 866,
+      "locations": []
+    },
+    {
+      "path": "digital_human_service.py",
+      "sha256": "d09dfedca35de8b614c87135e1f8423bb9ca84ce60ee7cfe7583ec5b5a6debde",
+      "line_count": 974,
+      "locations": []
+    },
+    {
+      "path": "digital_human_client.py",
+      "sha256": "8bc3f7e2488170b8b9f6da3443aa304ea8ad4d7b36d0aed22139bb5b3b40660f",
+      "line_count": 174,
+      "locations": []
+    },
+    {
+      "path": "digital_human_routes.py",
+      "sha256": "d1f95f88c7ad043be2879eb08d300c3153f36c5a596ef0d84190da263c3cd572",
+      "line_count": 1023,
+      "locations": []
+    },
+    {
+      "path": "impact_registry.py",
+      "sha256": "b9574cc67c23ee28a6c28d8aec0330b350a3701eb732e1bbe7e5ad8c8e2b7fc9",
+      "line_count": 43,
+      "locations": []
+    },
+    {
+      "path": "project_impact_service.py",
+      "sha256": "ae02a352393fb98da359d412831091f4cb741e2afb7a6c6dea7d80091da96fb9",
+      "line_count": 300,
+      "locations": []
+    },
+    {
+      "path": "repository_paths.py",
+      "sha256": "a4bb00bfa14c47b19fa49a42886d54612046f7288db1ec74d9857c53975aee06",
+      "line_count": 132,
+      "locations": []
+    }
+  ],
+  "template_inventory": {
+    "file_extensions": [
+      ".pptx",
+      ".idml"
+    ],
+    "scope": "application_checkout_excluding_git_dependencies_virtualenv_runs_outputs_data",
+    "matching_template_assets": [],
+    "not_a_whole_computer_scan": true
+  }
+}

@@ -1,0 +1,484 @@
+{
+  "format_version": 1,
+  "research_id": "RES-20261007-02",
+  "date": "2026-10-07",
+  "contract_baseline": "0.3.0",
+  "normative": false,
+  "current_entrypoint": "adaptation-guide.md",
+  "baseline_path": "project-baseline.md",
+  "source_checks_path": "source-checks.md",
+  "implementation_cards_path": "implementation-cards.md",
+  "items": [
+    {
+      "id": "HBA-01",
+      "title": "解析后设计配置与语义 token",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            278,
+            423
+          ],
+          [
+            646,
+            665
+          ]
+        ],
+        "B": [
+          [
+            960,
+            1006
+          ],
+          [
+            1375,
+            1418
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-001",
+        "HPS-003",
+        "HPS-005",
+        "HPS-009",
+        "HPS-011",
+        "HPS-014"
+      ],
+      "evidence_sources": [
+        "NEW-S01",
+        "NEW-S02",
+        "NEW-S05",
+        "NEW-S10",
+        "NEW-S11"
+      ],
+      "local_module_refs": [
+        "project_style_context.py",
+        "global_image_style_service.py"
+      ],
+      "implementation_cards": [
+        "DEV-02"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "复用项目风格上下文及版本机制，新增 HTML 参数解析；不复制人工签字门。"
+    },
+    {
+      "id": "HBA-02",
+      "title": "结构化输入与受限编辑",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            1215,
+            1251
+          ]
+        ],
+        "B": [
+          [
+            498,
+            608
+          ],
+          [
+            1138,
+            1173
+          ],
+          [
+            1426,
+            1484
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-001",
+        "HPS-005",
+        "HPS-006",
+        "HPS-010",
+        "HPS-013",
+        "HPS-018"
+      ],
+      "evidence_sources": [
+        "NEW-S08",
+        "NEW-S09"
+      ],
+      "local_module_refs": [
+        "storyboard_planning.py",
+        "storyboard_service.py"
+      ],
+      "implementation_cards": [
+        "DEV-01"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "复用讲稿及视觉组身份，模型不能自己扩大容量或重写稳定身份。"
+    },
+    {
+      "id": "HBA-03",
+      "title": "公共资产与风格配方参考页",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            205,
+            277
+          ],
+          [
+            615,
+            741
+          ]
+        ],
+        "B": [
+          [
+            1114,
+            1131
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-002",
+        "HPS-003",
+        "HPS-004",
+        "HPS-007",
+        "HPS-013"
+      ],
+      "evidence_sources": [
+        "NEW-S01",
+        "NEW-S07"
+      ],
+      "local_module_refs": [
+        "project_style_reference_service.py"
+      ],
+      "implementation_cards": [
+        "DEV-02"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "未确认现有模板资产；先样板，不复制风格业务组件。"
+    },
+    {
+      "id": "HBA-04",
+      "title": "独立素材与槽位绑定",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            667,
+            699
+          ],
+          [
+            757,
+            794
+          ]
+        ],
+        "B": [
+          [
+            718,
+            832
+          ],
+          [
+            1322,
+            1350
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-003",
+        "HPS-007",
+        "HPS-009",
+        "HPS-011"
+      ],
+      "evidence_sources": [
+        "NEW-S01",
+        "NEW-S03"
+      ],
+      "local_module_refs": [
+        "ai_provider_service.py",
+        "image_workflow_service.py",
+        "generation_governor.py"
+      ],
+      "implementation_cards": [
+        "DEV-03"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "复用现有生图接入，不部署或训练新图像模型，不假定所有 provider 参数相同。"
+    },
+    {
+      "id": "HBA-05",
+      "title": "分层质量检查与修复记录",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            757,
+            842
+          ],
+          [
+            1215,
+            1251
+          ]
+        ],
+        "B": [
+          [
+            1277,
+            1321
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-005",
+        "HPS-007",
+        "HPS-009",
+        "HPS-013",
+        "HPS-017"
+      ],
+      "evidence_sources": [
+        "NEW-S03",
+        "NEW-S04",
+        "NEW-S14"
+      ],
+      "local_module_refs": [
+        "impact_registry.py"
+      ],
+      "implementation_cards": [
+        "DEV-05"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "不复制特定风格阈值；skipped 不是通过；不静默删内容。"
+    },
+    {
+      "id": "HBA-06",
+      "title": "现有时间消费与 HTML 几何/动作",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            721,
+            740
+          ]
+        ],
+        "B": [
+          [
+            220,
+            386
+          ],
+          [
+            1175,
+            1244
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-004",
+        "HPS-007",
+        "HPS-008",
+        "HPS-009",
+        "HPS-012"
+      ],
+      "evidence_sources": [
+        "NEW-S07",
+        "NEW-S12"
+      ],
+      "local_module_refs": [
+        "scripts/remotion/src/Video.tsx",
+        "scripts/bind_reveal_timeline.py",
+        "annotation_alignment.py",
+        "annotation_timeline.py"
+      ],
+      "implementation_cards": [
+        "DEV-04",
+        "DEV-06"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "已有 Remotion 与时间链路；只补画面适配和测量，不重选音频模型。"
+    },
+    {
+      "id": "HBA-07",
+      "title": "PPTX 能力分级与对象映射",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            339,
+            384
+          ],
+          [
+            918,
+            1040
+          ],
+          [
+            1276,
+            1299
+          ]
+        ],
+        "B": [
+          [
+            370,
+            379
+          ],
+          [
+            1574,
+            1581
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-007",
+        "HPS-009",
+        "HPS-012",
+        "HPS-013"
+      ],
+      "evidence_sources": [
+        "NEW-S06",
+        "NEW-S12",
+        "NEW-S13"
+      ],
+      "local_module_refs": [
+        "pptx_export.py",
+        "pptx_reveal_export.py",
+        "pptx_service.py"
+      ],
+      "implementation_cards": [
+        "DEV-07"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "原导出是图片/快照；编辑能力新增；拒绝重影和空白页静默成功。"
+    },
+    {
+      "id": "HBA-08",
+      "title": "固定修订与最小范围重试",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            298,
+            339
+          ],
+          [
+            796,
+            808
+          ]
+        ],
+        "B": [
+          [
+            176,
+            219
+          ],
+          [
+            1147,
+            1173
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-006",
+        "HPS-010",
+        "HPS-011",
+        "HPS-014",
+        "HPS-016",
+        "HPS-017"
+      ],
+      "evidence_sources": [
+        "NEW-S04",
+        "NEW-S05"
+      ],
+      "local_module_refs": [
+        "video_render_service.py",
+        "impact_registry.py",
+        "project_impact_service.py",
+        "repository_paths.py"
+      ],
+      "implementation_cards": [
+        "DEV-08"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "扩展现有任务、指纹、迁移和 Agent 接口，不新建平行服务体系。"
+    },
+    {
+      "id": "HBA-09",
+      "title": "按需能力上下文与确定代码",
+      "decision": "adopt_bounded_pattern_for_existing_project",
+      "report_refs": {
+        "A": [
+          [
+            134,
+            204
+          ],
+          [
+            711,
+            740
+          ],
+          [
+            1254,
+            1274
+          ]
+        ],
+        "B": [
+          [
+            609,
+            649
+          ],
+          [
+            1277,
+            1321
+          ]
+        ]
+      },
+      "contract_rules": [
+        "HPS-005",
+        "HPS-010",
+        "HPS-015",
+        "HPS-017",
+        "HPS-018"
+      ],
+      "evidence_sources": [
+        "NEW-S07"
+      ],
+      "local_module_refs": [
+        "storyboard_planning.py"
+      ],
+      "implementation_cards": [
+        "DEV-01",
+        "DEV-08"
+      ],
+      "definition_status": "planned",
+      "implementation_status": "not_implemented_by_this_research",
+      "verification_status": "not_run",
+      "result_paths": [],
+      "boundary": "规则来自契约，未来 Prompt 需走项目优化流程；本次不安装或创建 Skill。"
+    }
+  ],
+  "scope_exclusions": [
+    "speech_synthesis_selection",
+    "audio_alignment_model_selection",
+    "digital_human_selection",
+    "new_image_model_deployment_or_training",
+    "whole_application_framework_replacement",
+    "unknown_template_library_as_prerequisite",
+    "third_party_repeated_confirmation_workflow"
+  ],
+  "supersedes_research_advice": [
+    "RES-20261007-01/BOR-06 provider selection; reuse existing timeline/alignment instead"
+  ],
+  "notes": [
+    "Nine selected patterns, eight implementation cards. No application capability implemented or runtime experiment executed."
+  ]
+}

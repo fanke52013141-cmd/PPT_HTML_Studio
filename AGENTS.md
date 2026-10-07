@@ -78,6 +78,15 @@ of silently replacing previous conclusions. Promote findings into production
 contracts through HPS-015 and HPS-017; do not treat a report as implemented
 capability or an automatic framework choice.
 
+The current adaptation guide is
+`docs/research/2026-10-07-skill-and-workflow-reports/adaptation-guide.md`.
+Base borrowing decisions on actual local service boundaries. Reuse the existing
+local/cloud speech synthesis, audio timeline/alignment/calibration, and digital
+human solutions; do not introduce replacement selection merely because an
+external report recommends it. New HTML work consumes those outputs and adapts
+visual targets, timing, and composition. Preserve excluded report content only
+as historical evidence, not as scheduled implementation tasks.
+
 ## Production Pipeline
 
 `storyboard_planning.py` owns pure Step 2 plan normalization, narration-to-

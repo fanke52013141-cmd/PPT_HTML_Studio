@@ -97,7 +97,7 @@
         "path": "source-report.txt",
         "section": "第一部分；第五部分第四阶段"
       },
-      "decision": "adopt_pattern_engine_candidate",
+      "decision": "reuse_existing_remotion_with_html_adapter",
       "priority": "P0/P1",
       "contract_rules": [
         "HPS-008",
@@ -115,7 +115,7 @@
       "implementation_status": "not_implemented_by_this_research",
       "experiment_status": "planned",
       "result_paths": [],
-      "caveat": "Remotion/HyperFrames 未选定；不能用等值事件代替时间求值。",
+      "caveat": "先复用现有 Remotion、任务与编码器；其他引擎是研究背景，确有未解决问题时再立比较任务。",
       "analysis_path": "analysis-and-adoption.md",
       "verification_path": "verification-and-experiments.md"
     },
@@ -149,13 +149,13 @@
     },
     {
       "id": "BOR-06",
-      "title": "真实音频与讲稿锚点",
+      "title": "既有音频时间结果的 HTML 绑定",
       "source_report": {
         "path": "source-report.txt",
         "section": "第三部分；第五部分第二阶段"
       },
-      "decision": "adopt_pattern_provider_candidate",
-      "priority": "P1",
+      "decision": "reuse_existing_timeline_and_alignment",
+      "priority": "integration_stage",
       "contract_rules": [
         "HPS-006",
         "HPS-008",
@@ -171,10 +171,10 @@
       "experiments": [
         "EXP-04"
       ],
-      "implementation_status": "not_implemented_by_this_research",
+      "implementation_status": "existing_solution_html_integration_not_verified",
       "experiment_status": "planned",
       "result_paths": [],
-      "caveat": "先复用原服务；对齐精度需测量，不能解决图像切分。",
+      "caveat": "复用当前 provider/Qwen/人工链路；EXP-04/DEV-06 只验证 HTML 消费，不新选合成或对齐模型。",
       "analysis_path": "analysis-and-adoption.md",
       "verification_path": "verification-and-experiments.md"
     },
@@ -294,6 +294,23 @@
         "BOR-09"
       ],
       "reason": "数字人直接复用现有方案，取消新模型与卡通口型选型，仅验证 HTML 接入。"
+    },
+    {
+      "date": "2026-10-07",
+      "authority": "user_direction_and_local_code_review",
+      "affected_items": [
+        "BOR-06"
+      ],
+      "reason": "本地/云端合成与现有 provider/Qwen/人工时间链路复用，取消对齐模型选型；只验证 HTML 消费。",
+      "successor_path": "../2026-10-07-skill-and-workflow-reports/adaptation-guide.md"
+    },
+    {
+      "date": "2026-10-07",
+      "authority": "local_code_review_and_project_scope",
+      "affected_items": [
+        "BOR-04"
+      ],
+      "reason": "项目已有 Remotion；当前只验证 HTML 画面适配，不安排替换引擎比较。"
     }
   ]
 }

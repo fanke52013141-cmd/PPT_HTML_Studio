@@ -1,0 +1,46 @@
+{
+  "research_id": "RES-20261007-02",
+  "archived_on": "2026-10-07",
+  "sources": [
+    {
+      "id": "A",
+      "path": "source-skill-report.txt",
+      "original_filename": "已粘贴的文本.txt",
+      "title_lines": [
+        "「HTML → PPT / 短视频」SKILL 生态专项调研报告",
+        "—— 含前两轮报告的数据勘误与整合",
+        "报告日期：2026-10-07",
+        "调研范围：Agent Skill 形态的 PPT/HTML 生成项目（2025-10 之后仍活跃）",
+        "星数来源：GitHub 仓库页直接核实（2026-10-07），非二手目录站",
+        "触发原因：用户指出前两轮调研「项目太老、停更、没参考价值」，",
+        "要求转向 skill 形态，并点名「PPT master skill」「HTML to PPT」"
+      ],
+      "source_kind": "user_provided_attachment",
+      "author_verified": false,
+      "byte_length": 84923,
+      "line_count": 1399,
+      "sha256": "2b84ca17ceeca07d577cc3d5c38b7f9d344db3169e67041fbdf3419b1fb5a313",
+      "copy_policy": "byte_exact_unedited"
+    },
+    {
+      "id": "B",
+      "path": "source-workflow-report.txt",
+      "original_filename": "已粘贴的文本.txt",
+      "title_lines": [
+        "「课程内容 → PPT 课件 + 短视频」自动化流水线",
+        "开源项目深度调研报告",
+        "报告日期：2026-10-07",
+        "调研范围：GitHub 高星项目 + 官方 Agent Skill 生态 + 学术开源实现",
+        "星数来源：GitHub REST API 实测（2026-10-07），非二手目录站数据",
+        "报告用途：技术选型与架构决策依据"
+      ],
+      "source_kind": "user_provided_attachment",
+      "author_verified": false,
+      "byte_length": 97959,
+      "line_count": 1649,
+      "sha256": "3781ac93c559ad8a9241b5f6d295b6da5ad012db30235b99896897447e6b1c13",
+      "copy_policy": "byte_exact_unedited"
+    }
+  ],
+  "note": "Original reports are evidence archives, not implementation instructions; excluded content remains only in the source."
+}
