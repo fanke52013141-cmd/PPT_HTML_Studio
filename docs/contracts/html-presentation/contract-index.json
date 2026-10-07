@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.7.1",
+  "contract_version": "0.8.0",
   "effective_date": "2026-10-07",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -366,6 +366,42 @@
       "title": "分阶段验收、影响范围与兼容",
       "source": "framework/08-visual-generation-contract.md",
       "section": "## HPS-030：分阶段验收、影响范围与兼容",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-031",
+      "title": "统一效果组件，按能力选择实现",
+      "source": "framework/09-flat-effects.md",
+      "section": "## HPS-031：统一效果组件，按能力选择实现",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-032",
+      "title": "效果模板、组件、图谱和页面配方分别交付",
+      "source": "framework/09-flat-effects.md",
+      "section": "## HPS-032：效果模板、组件、图谱和页面配方分别交付",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-033",
+      "title": "图谱约束生图，逐元素核对还原",
+      "source": "framework/09-flat-effects.md",
+      "section": "## HPS-033：图谱约束生图，逐元素核对还原",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-034",
+      "title": "平面动效统一时间、几何与输出",
+      "source": "framework/09-flat-effects.md",
+      "section": "## HPS-034：平面动效统一时间、几何与输出",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "not_implemented"
