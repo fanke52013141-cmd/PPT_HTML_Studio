@@ -395,7 +395,8 @@
       "section": "## HPS-033：图谱约束生图，逐元素核对还原",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "clarification": "参考图按组件/主题版本复用，成熟布局不逐页重复生成设计图"
     },
     {
       "id": "HPS-034",
@@ -404,7 +405,8 @@
       "section": "## HPS-034：平面动效统一时间、几何与输出",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "clarification": "16:9固定底部字幕安全区；字幕字号独立，实例落实不等于通用后端支持"
     }
   ],
   "definition_index": "definitions/definition-index.json",

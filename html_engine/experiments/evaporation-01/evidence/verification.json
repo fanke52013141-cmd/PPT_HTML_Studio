@@ -1,31 +1,39 @@
 {
   "libraryVersion": "0.1.0",
+  "sceneRevision": 2,
+  "subtitleChecks": {
+    "fontsFit": true,
+    "contentClear": true,
+    "invalidRejected": true,
+    "layoutStable": true,
+    "zoneHeight": 100
+  },
   "reuseInstances": 14,
   "rejectedInvalidCases": 6,
   "frames": [
     {
       "time": 0,
-      "sha256": "c4849c09e3521966487b6f39930597b5be4a8f9c1e1e6e86e0634f08499a2998"
+      "sha256": "fba2c8a9a030321ce158f841502a2f24549984fb4bc1ae9e17215f2f2c76e59f"
     },
     {
       "time": 3000,
-      "sha256": "b5db2fa6ff15d1cf781c720642b267f6ca820a543c4b76806860f1e69a6f344c"
+      "sha256": "e3af060df15c527e960f00629c37a91b5c77a75cd5477540298d6a16c37122e5"
     },
     {
       "time": 7000,
-      "sha256": "6417a20415d14384db235006aec87321be04fc986231629f82fc4f15bc8ea03d"
+      "sha256": "9917e825638bc94ae9debc0d17e7f8740e5dbda27b216ee382947e0afea5b876"
     },
     {
       "time": 12000,
-      "sha256": "e32652c1947db883671016b8836cf3ecce33ebbd93bc792c5a5702e6207fd5e9"
+      "sha256": "b0f406cc2fb86b701b49b7d6be20b8b6eafc99d96a37447bb42b5b5b54565a76"
     },
     {
       "time": 16000,
-      "sha256": "444fb5a5a37ddcac123b8eb8be4b890de35979e8a8786372acae6fc2bc33ab0b"
+      "sha256": "b9a9ffbd9c2f1c9f2ea969434b386031274e28a95d6d73ee827f8902c8e73855"
     },
     {
       "time": 19999,
-      "sha256": "7837af793e6cc9143cf0f0cbaa1aa1437421072ec18a3438ccc648ffb02d2c3a"
+      "sha256": "56c60745525eecebbabed9360d99cbb1b809f5a71a623ae8f8fc6a137d4c55c6"
     }
   ],
   "geometry": [
@@ -103,28 +111,28 @@
     {
       "id": "state",
       "x": 539,
-      "y": 740,
+      "y": 706,
       "width": 540,
       "height": 126,
       "particles": []
     },
     {
       "id": "explanation",
-      "x": 534,
-      "y": 871,
-      "width": 710,
-      "height": 70,
+      "x": 1094,
+      "y": 626,
+      "width": 400,
+      "height": 110,
       "particles": []
     },
     {
       "id": "beaker",
       "x": 389,
-      "y": 331,
+      "y": 311,
       "width": 780,
       "height": 488,
-      "top": 331,
+      "top": 311,
       "right": 1169,
-      "bottom": 819,
+      "bottom": 799,
       "left": 389
     }
   ],

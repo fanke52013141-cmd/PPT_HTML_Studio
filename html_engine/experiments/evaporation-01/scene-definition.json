@@ -1,24 +1,116 @@
 {
-  "format":"hps.effect-study","version":"0.1.0","durationMs":20000,"canvas":[1600,900],
-  "style":"handdrawn-v1","library":"../../effects/handdrawn-v1/effects.js",
-  "scope":"independent visual experiment; manual silent timing; user visual approval pending",
-  "title":"水为什么会蒸发？",
-  "objects":[
-    {"id":"title","type":"text","effect":"A06","implementation":"CSS"},
-    {"id":"sun","type":"sun","effect":"A04","implementation":"SVG"},
-    {"id":"beaker","implementation":"image","asset":"assets/beaker.png","role":"whole static beaker; no internal animated parts"},
-    {"id":"particles","type":"flow","effect":"A05","implementation":"Canvas 2D","count":6,"seed":17},
-    {"id":"direction","type":"arrow","effect":"A02","implementation":"SVG"},
-    {"id":"term","type":"paper","effect":"A01","implementation":"CSS","text":"蒸发"},
-    {"id":"state","type":"mark","effect":"A03","implementation":"SVG","text":"液态 → 气态"},
-    {"id":"explanation","type":"text","effect":"A06","implementation":"CSS","text":"水变成水蒸气，进入空气。"}
+  "format": "hps.effect-study",
+  "version": "0.1.0",
+  "durationMs": 20000,
+  "canvas": [
+    1600,
+    900
   ],
-  "beats":[
-    {"startMs":0,"endMs":4000,"caption":"水面看起来很平静，水也会慢慢蒸发。","motion":"title enters, beaker settles, sun reveals"},
-    {"startMs":4000,"endMs":10000,"caption":"水变成水蒸气，进入空气。","motion":"six symbolic particles rise; do not show boiling"},
-    {"startMs":10000,"endMs":14500,"caption":"这个过程，叫作蒸发。","motion":"arrow draws toward paper label, label lands"},
-    {"startMs":14500,"endMs":20000,"caption":"记住：蒸发是从液态变为气态。","motion":"circle draws around state change, explanation appears, hold final"}
+  "style": "handdrawn-v1",
+  "library": "../../effects/handdrawn-v1/effects.js",
+  "scope": "independent visual experiment; manual silent timing; user visual approval pending",
+  "title": "水为什么会蒸发？",
+  "objects": [
+    {
+      "id": "title",
+      "type": "text",
+      "effect": "A06",
+      "implementation": "CSS"
+    },
+    {
+      "id": "sun",
+      "type": "sun",
+      "effect": "A04",
+      "implementation": "SVG"
+    },
+    {
+      "id": "beaker",
+      "implementation": "image",
+      "asset": "assets/beaker.png",
+      "role": "whole static beaker; no internal animated parts"
+    },
+    {
+      "id": "particles",
+      "type": "flow",
+      "effect": "A05",
+      "implementation": "Canvas 2D",
+      "count": 6,
+      "seed": 17
+    },
+    {
+      "id": "direction",
+      "type": "arrow",
+      "effect": "A02",
+      "implementation": "SVG"
+    },
+    {
+      "id": "term",
+      "type": "paper",
+      "effect": "A01",
+      "implementation": "CSS",
+      "text": "蒸发"
+    },
+    {
+      "id": "state",
+      "type": "mark",
+      "effect": "A03",
+      "implementation": "SVG",
+      "text": "液态 → 气态"
+    },
+    {
+      "id": "explanation",
+      "type": "text",
+      "effect": "A06",
+      "implementation": "CSS",
+      "text": "水变成水蒸气，进入空气。"
+    }
   ],
-  "keyframes":[0,3000,7000,12000,16000,19999],
-  "accuracy":"Evaporation may happen without sunshine or boiling. Sun is context, not required cause. Six dots are symbols, not measured molecules. No visible steam clouds."
+  "beats": [
+    {
+      "startMs": 0,
+      "endMs": 4000,
+      "caption": "水面看起来很平静，水也会慢慢蒸发。",
+      "motion": "title enters, beaker settles, sun reveals"
+    },
+    {
+      "startMs": 4000,
+      "endMs": 10000,
+      "caption": "水变成水蒸气，进入空气。",
+      "motion": "six symbolic particles rise; do not show boiling"
+    },
+    {
+      "startMs": 10000,
+      "endMs": 14500,
+      "caption": "这个过程，叫作蒸发。",
+      "motion": "arrow draws toward paper label, label lands"
+    },
+    {
+      "startMs": 14500,
+      "endMs": 20000,
+      "caption": "记住：蒸发是从液态变为气态。",
+      "motion": "circle draws around state change, explanation appears, hold final"
+    }
+  ],
+  "keyframes": [
+    0,
+    3000,
+    7000,
+    12000,
+    16000,
+    19999
+  ],
+  "accuracy": "Evaporation may happen without sunshine or boiling. Sun is context, not required cause. Six dots are symbols, not measured molecules. No visible steam clouds.",
+  "revision": 2,
+  "subtitleZone": {
+    "top": 800,
+    "height": 100,
+    "paddingX": 80,
+    "paddingY": 10,
+    "fontSize": 32,
+    "fontMin": 20,
+    "fontMax": 44,
+    "maxLines": 2,
+    "reservedWhenEmpty": true,
+    "coordinateSpace": "1600x900 scene pixels"
+  }
 }

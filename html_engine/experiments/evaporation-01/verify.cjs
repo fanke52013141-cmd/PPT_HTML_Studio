@@ -16,6 +16,16 @@ const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
   const overflows=await page.evaluate(()=>[...document.querySelectorAll('.flat-text,.flat-paper')].map(e=>{const r=document.createRange();r.selectNodeContents(e);const a=r.getBoundingClientRect(),b=e.getBoundingClientRect();return {id:e.dataset.effect,overflow:a.width>b.width+2||a.height>b.height+2}}).filter(x=>x.overflow));assert.deepEqual(overflows,[]);
   await page.locator('#play').click();await page.waitForTimeout(650);assert.ok(await page.evaluate(()=>evap.time>300&&evap.playing));await page.locator('#pause').click();const paused=await page.evaluate(()=>evap.time);await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>evap.time),paused);
   await page.locator('#seek').fill('17000');await page.locator('#seek').dispatchEvent('input');assert.equal(await page.evaluate(()=>evap.time),17000);
+  const subtitleChecks=await page.evaluate(()=>{
+    evap.renderAt(19999);const layer=document.querySelector('#subtitle-layer'), content=document.querySelector('#content-layer');
+    const before=JSON.stringify(evap.geometry('state'));const results=[];
+    for(const size of [20,32,44]){evap.setSubtitleFont(size);for(const beat of EvapDefinition.beats){evap.renderAt(beat.startMs);const a=layer.getBoundingClientRect(), b=document.querySelector('.caption').getBoundingClientRect();results.push(b.top>=a.top&&b.bottom<=a.bottom&&b.left>=a.left&&b.right<=a.right);}}
+    evap.setSubtitleFont(32);evap.renderAt(19999);
+    const edge=layer.getBoundingClientRect().top;
+    const clear=[...content.children].every(e=>e.getBoundingClientRect().bottom<=edge+1);
+    const invalid=[19,45].every(n=>{try{evap.setSubtitleFont(n);return false}catch{return true}});
+    return {fontsFit:results.every(Boolean),contentClear:clear,invalidRejected:invalid,layoutStable:before===JSON.stringify(evap.geometry('state')),zoneHeight:layer.offsetHeight};
+  });assert.deepEqual(subtitleChecks,{fontsFit:true,contentClear:true,invalidRejected:true,layoutStable:true,zoneHeight:100});
   assert.deepEqual(errors,[]);
-  fs.writeFileSync(path.join(__dirname,'evidence/verification.json'),JSON.stringify({libraryVersion:'0.1.0',reuseInstances:total,rejectedInvalidCases:rejects.length,frames,geometry,textBounds:'passed',seekOrderPixels:'passed',actualPlaybackAdvances:'passed',pause:'passed',scrub:'passed',pageErrors:errors,browser:browser.version(),userVisualApproval:'pending'},null,2)+'\n');console.log('14 reuse variants, 6 invalid cases, 6 deterministic frames, actual playback/pause/scrub passed.');
+  fs.writeFileSync(path.join(__dirname,'evidence/verification.json'),JSON.stringify({libraryVersion:'0.1.0',sceneRevision:2,subtitleChecks,reuseInstances:total,rejectedInvalidCases:rejects.length,frames,geometry,textBounds:'passed',seekOrderPixels:'passed',actualPlaybackAdvances:'passed',pause:'passed',scrub:'passed',pageErrors:errors,browser:browser.version(),userVisualApproval:'pending'},null,2)+'\n');console.log('14 reuse variants, 6 invalid cases, 6 deterministic frames, actual playback/pause/scrub passed.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
