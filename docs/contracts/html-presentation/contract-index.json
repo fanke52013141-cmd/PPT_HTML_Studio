@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.6.0",
+  "contract_version": "0.7.0",
   "effective_date": "2026-10-07",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -63,6 +63,9 @@
     },
     {
       "path": "framework/07-visual-production.md"
+    },
+    {
+      "path": "framework/08-visual-generation-contract.md"
     }
   ],
   "rules": [
@@ -287,6 +290,51 @@
       "title": "内容容量与美术验收",
       "source": "framework/07-visual-production.md",
       "section": "## HPS-025：内容容量与美术质量分别设门槛",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-026",
+      "title": "同一设计定义驱动生图与代码构建",
+      "source": "framework/08-visual-generation-contract.md",
+      "section": "## HPS-026：同一设计定义驱动生图与代码构建",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-027",
+      "title": "全过程对象与关键帧先于资产生成",
+      "source": "framework/08-visual-generation-contract.md",
+      "section": "## HPS-027：全过程对象与关键帧先于资产生成",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-028",
+      "title": "生成任务明确代码层与资产层",
+      "source": "framework/08-visual-generation-contract.md",
+      "section": "## HPS-028：生成任务明确代码层与资产层",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-029",
+      "title": "资产板提取保留身份、几何与版本",
+      "source": "framework/08-visual-generation-contract.md",
+      "section": "## HPS-029：资产板提取保留身份、几何与版本",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-030",
+      "title": "分阶段验收、影响范围与兼容",
+      "source": "framework/08-visual-generation-contract.md",
+      "section": "## HPS-030：分阶段验收、影响范围与兼容",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "not_implemented"

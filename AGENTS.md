@@ -91,6 +91,11 @@ their content budgets and asset contracts; do not freely compose production CSS.
 The first science sample received changes_requested; see its
 `visual-production-revision.md` before continuing P02 or starting P03.
 
+For generation allocation, keyframes, process-only objects and asset sheets, follow
+`docs/contracts/html-presentation/framework/08-visual-generation-contract.md` (HPS-026—030).
+Create the shared design definition before generation; visual references do not replace
+object identity or runtime data. These rules are design-review requirements, not implemented APIs.
+
 ## Research Reuse Policy
 
 Before relevant architecture or technology selection, consult
