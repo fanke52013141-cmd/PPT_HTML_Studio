@@ -1,0 +1,146 @@
+[
+  {
+    "file": "assets/cloud-small.png",
+    "sha256": "0b34d266a0b81eb652c99ccf1f37fc37ff5a2469fe56bffcc195977228b00e89",
+    "intrinsic": {
+      "width": 627,
+      "height": 627
+    },
+    "alphaNonzero": {
+      "x": 0,
+      "y": 0,
+      "width": 627,
+      "height": 573,
+      "opaqueFraction": 0.22783869925647815
+    },
+    "alpha16": {
+      "x": 114,
+      "y": 185,
+      "width": 420,
+      "height": 292,
+      "opaqueFraction": 0.21931732332135254
+    },
+    "marginRatio": {
+      "left": 0.18181818181818182,
+      "top": 0.29505582137161085,
+      "right": 0.14832535885167464,
+      "bottom": 0.23923444976076555
+    },
+    "edgeTouches": true,
+    "reviewStatus": "conditional-experiment",
+    "anchor": {
+      "id": "frame-center",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "limitations": "Metrics do not establish clean contour, correct science or aesthetic approval"
+  },
+  {
+    "file": "assets/cloud-small-v2.png",
+    "sha256": "0c4880b12e2f40b837774d3eb925786be3f8406d7abae4f890a1276d6644c934",
+    "intrinsic": {
+      "width": 1254,
+      "height": 1254
+    },
+    "alphaNonzero": {
+      "x": 97,
+      "y": 212,
+      "width": 1131,
+      "height": 1000,
+      "opaqueFraction": 0.2426181991153031
+    },
+    "alpha16": {
+      "x": 197,
+      "y": 341,
+      "width": 892,
+      "height": 603,
+      "opaqueFraction": 0.23916322632011375
+    },
+    "marginRatio": {
+      "left": 0.15709728867623604,
+      "top": 0.2719298245614035,
+      "right": 0.13157894736842105,
+      "bottom": 0.24720893141945774
+    },
+    "edgeTouches": false,
+    "reviewStatus": "conditional-experiment",
+    "anchor": {
+      "id": "frame-center",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "limitations": "Metrics do not establish clean contour, correct science or aesthetic approval"
+  },
+  {
+    "file": "assets/evaporation-v1.png",
+    "sha256": "5abb409bda12349a13b14cc1e67cf70941dbb5ff462b0d408964686792d6e17a",
+    "intrinsic": {
+      "width": 1254,
+      "height": 1254
+    },
+    "alphaNonzero": {
+      "x": 57,
+      "y": 23,
+      "width": 1141,
+      "height": 1184,
+      "opaqueFraction": 0.32685645169906064
+    },
+    "alpha16": {
+      "x": 101,
+      "y": 89,
+      "width": 1076,
+      "height": 1029,
+      "opaqueFraction": 0.31067092481093994
+    },
+    "marginRatio": {
+      "left": 0.08054226475279107,
+      "top": 0.07097288676236045,
+      "right": 0.06140350877192982,
+      "bottom": 0.10845295055821372
+    },
+    "edgeTouches": false,
+    "reviewStatus": "conditional-experiment",
+    "anchor": {
+      "id": "frame-center",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "limitations": "Metrics do not establish clean contour, correct science or aesthetic approval"
+  },
+  {
+    "file": "assets/condensation-v1.png",
+    "sha256": "b654e4a0c6f599df07d42c7ef3b0a3dacd6de11c822272b2c00871ab6b1ea554",
+    "intrinsic": {
+      "width": 1254,
+      "height": 1254
+    },
+    "alphaNonzero": {
+      "x": 0,
+      "y": 39,
+      "width": 1192,
+      "height": 1215,
+      "opaqueFraction": 0.42357852002777713
+    },
+    "alpha16": {
+      "x": 274,
+      "y": 127,
+      "width": 719,
+      "height": 1006,
+      "opaqueFraction": 0.39728943934433736
+    },
+    "marginRatio": {
+      "left": 0.21850079744816586,
+      "top": 0.10127591706539076,
+      "right": 0.20813397129186603,
+      "bottom": 0.09649122807017543
+    },
+    "edgeTouches": true,
+    "reviewStatus": "conditional-experiment",
+    "anchor": {
+      "id": "frame-center",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "limitations": "Metrics do not establish clean contour, correct science or aesthetic approval"
+  }
+]

@@ -800,3 +800,7 @@ with that registration. Read-only navigation and no-op saves must not invalidate
 artifacts or confirmations. New write paths need a regression check for no-op
 behavior and for the smallest affected scope. Preserve recoverable user work;
 generated caches may be rebuilt, while explicit deletion needs a separate action.
+
+## E2 Recipe Ownership
+
+`html_engine/src/recipes.cjs` owns hps.e2.recipe 0.1.0 authoring; its catalog pins template basis hashes and budgets. Recipe output is unchanged E1 scene input. Read `docs/contracts/html-presentation/runtime/e2/README.md`; run `npm run build:e2`, `npm run test:e2`, and existing E1 tests. Asset tooling is deterministic fixed-rectangle extraction and quality auditing, not automatic matting. Visual production approval remains separate.

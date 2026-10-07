@@ -210,7 +210,11 @@
       return playing;
     },
   };
-  window.e1Ready = loadScene(0);
+  const requestedId = new URLSearchParams(location.search).get("scene");
+  const requestedIndex = fixtures.scenes.findIndex(
+    (scene) => scene.id === requestedId,
+  );
+  window.e1Ready = loadScene(requestedIndex >= 0 ? requestedIndex : 0);
   // Error reporting is already done by applyInput; the original readiness promise stays rejecting.
   window.e1Ready.catch(() => {});
 })();

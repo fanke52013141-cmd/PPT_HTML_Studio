@@ -1,0 +1,27 @@
+{
+  "format": "hps.e2.recipe",
+  "version": "0.1.0",
+  "id": "scene.course-water",
+  "revision": 1,
+  "template": "recipe.dual-concept",
+  "variant": "sequential",
+  "title": "蒸发与凝结",
+  "subtitle": "方向恰好相反 · 小球为分子示意，水蒸气通常不可见",
+  "source": "https://www.usgs.gov/water-science-school/science/evaporation-and-water-cycle ; https://www.usgs.gov/water-science-school/science/condensation-and-water-cycle",
+  "concepts": [
+    {
+      "name": "蒸发",
+      "relation": "液态 → 气态",
+      "body": "水不沸腾，也会蒸发。",
+      "asset": "assets/evaporation-v1.png",
+      "narration": "液态水变成水蒸气，叫蒸发。蒸发可以在没有沸腾时发生。插画中的小球仅为分子示意，水蒸气通常不可见。"
+    },
+    {
+      "name": "凝结",
+      "relation": "气态 → 液态",
+      "body": "冷杯外的水滴，来自空气中的水蒸气。",
+      "asset": "assets/condensation-v1.png",
+      "narration": "水蒸气变成液态水，叫凝结。冷杯外的水滴来自空气中的水蒸气，并非杯里的水漏了出来。"
+    }
+  ]
+}

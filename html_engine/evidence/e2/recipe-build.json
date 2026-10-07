@@ -1,0 +1,29 @@
+[
+  {
+    "input": "course-water.recipe.json",
+    "output": "course-water.scene.json",
+    "recipe": "recipe.dual-concept",
+    "version": "0.1.0",
+    "visualStatus": "pending-user-review",
+    "source": "https://www.usgs.gov/water-science-school/science/evaporation-and-water-cycle ; https://www.usgs.gov/water-science-school/science/condensation-and-water-cycle",
+    "authorSha256": "6d92fc426589b013e8d25d2c1d047336166ab8ef74bffe3ce990269da0cdf9e7"
+  },
+  {
+    "input": "course-everyday.recipe.json",
+    "output": "course-everyday.scene.json",
+    "recipe": "recipe.dual-concept",
+    "version": "0.1.0",
+    "visualStatus": "pending-user-review",
+    "source": "https://www.usgs.gov/water-science-school/science/evaporation-and-water-cycle ; https://www.usgs.gov/water-science-school/science/condensation-and-water-cycle",
+    "authorSha256": "11b39aefe82f734a36df4d6bac4e92617dc55226069f5eb67105a89772fe533a"
+  },
+  {
+    "input": "e2-cloud.recipe.json",
+    "output": "e2-cloud.scene.json",
+    "recipe": "recipe.open-process",
+    "version": "0.1.0",
+    "visualStatus": "pending-user-review",
+    "source": "运动复用演示，不作为气象物理模型",
+    "authorSha256": "ce1eb51477a48daf87e31cba413fe56d95ecd548167c60638d6f74d8e5e220d4"
+  }
+]

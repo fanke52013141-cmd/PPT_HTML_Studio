@@ -5,7 +5,9 @@
   "description": "Standalone data-driven mixed visual scene prototype",
   "scripts": {
     "build": "node scripts/build.cjs",
-    "test": "node tests/engine.test.cjs"
+    "test": "node tests/engine.test.cjs",
+    "build:e2": "node scripts/build-recipes.cjs && node scripts/build.cjs",
+    "test:e2": "node tests/recipes.test.cjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",

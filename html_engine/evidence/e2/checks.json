@@ -1,0 +1,439 @@
+{
+  "scope": "E2 recipes 0.1.0",
+  "unit": [
+    {
+      "name": "Content does not mutate; shared template for two course inputs",
+      "passed": true
+    },
+    {
+      "name": "Long title",
+      "passed": true
+    },
+    {
+      "name": "Unknown layout override",
+      "passed": true
+    },
+    {
+      "name": "Unknown version",
+      "passed": true
+    },
+    {
+      "name": "Missing slot",
+      "passed": true
+    },
+    {
+      "name": "Asset traversal",
+      "passed": true
+    },
+    {
+      "name": "Asset swap keeps object identity and motion",
+      "passed": true
+    },
+    {
+      "name": "Missing local resource has slot diagnostic",
+      "passed": true
+    },
+    {
+      "name": "Foreground occlusion warning and invisible exclusion",
+      "passed": true
+    },
+    {
+      "name": "Immutable fixed rectangle extraction and overwrite rejection",
+      "passed": true
+    }
+  ],
+  "browser": [
+    {
+      "name": "course-water",
+      "frames": [
+        {
+          "keyframe": "K0",
+          "timeMs": 0,
+          "repeat": true
+        },
+        {
+          "keyframe": "K1",
+          "timeMs": 1600,
+          "repeat": true
+        },
+        {
+          "keyframe": "K2",
+          "timeMs": 7600,
+          "repeat": true
+        },
+        {
+          "keyframe": "K3",
+          "timeMs": 12000,
+          "repeat": true
+        }
+      ]
+    },
+    {
+      "name": "course-everyday",
+      "frames": [
+        {
+          "keyframe": "K0",
+          "timeMs": 0,
+          "repeat": true
+        },
+        {
+          "keyframe": "K1",
+          "timeMs": 1600,
+          "repeat": true
+        },
+        {
+          "keyframe": "K2",
+          "timeMs": 7600,
+          "repeat": true
+        },
+        {
+          "keyframe": "K3",
+          "timeMs": 12000,
+          "repeat": true
+        }
+      ]
+    },
+    {
+      "name": "e2-cloud",
+      "frames": [
+        {
+          "keyframe": "K0",
+          "timeMs": 0,
+          "repeat": true
+        },
+        {
+          "keyframe": "K1",
+          "timeMs": 3600,
+          "repeat": true
+        },
+        {
+          "keyframe": "K2",
+          "timeMs": 5800,
+          "repeat": true
+        },
+        {
+          "keyframe": "K3",
+          "timeMs": 8000,
+          "repeat": true
+        }
+      ]
+    }
+  ],
+  "visualStatus": "pending-user-review",
+  "geometry": [
+    {
+      "target": {
+        "nodeId": "left.illustration",
+        "part": "self"
+      },
+      "coordinateSpace": "canvas",
+      "opacity": 1,
+      "localRect": {
+        "x": 0,
+        "y": 0,
+        "width": 450,
+        "height": 450
+      },
+      "localToCanvas": [
+        1,
+        0,
+        0,
+        1,
+        195,
+        255
+      ],
+      "polygons": [
+        [
+          {
+            "x": 195,
+            "y": 255
+          },
+          {
+            "x": 645,
+            "y": 255
+          },
+          {
+            "x": 645,
+            "y": 705
+          },
+          {
+            "x": 195,
+            "y": 705
+          }
+        ]
+      ],
+      "rects": [
+        {
+          "x": 195,
+          "y": 255,
+          "width": 450,
+          "height": 450
+        }
+      ],
+      "resourceRef": {
+        "id": "asset.evaporation-v1",
+        "version": "0.1.0"
+      },
+      "anchor": {
+        "x": 420,
+        "y": 480
+      },
+      "visibleContent": {
+        "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+        "polygons": [
+          [
+            {
+              "x": 215.45454545454544,
+              "y": 263.2535885167464
+            },
+            {
+              "x": 624.9043062200956,
+              "y": 263.2535885167464
+            },
+            {
+              "x": 624.9043062200956,
+              "y": 688.1339712918659
+            },
+            {
+              "x": 215.45454545454544,
+              "y": 688.1339712918659
+            }
+          ]
+        ],
+        "rects": [
+          {
+            "x": 215.45454545454544,
+            "y": 263.2535885167464,
+            "width": 409.44976076555014,
+            "height": 424.88038277511953
+          }
+        ]
+      }
+    },
+    {
+      "target": {
+        "nodeId": "left.name",
+        "part": "self"
+      },
+      "coordinateSpace": "canvas",
+      "opacity": 1,
+      "localRect": {
+        "x": 0,
+        "y": 0,
+        "width": 570,
+        "height": 58
+      },
+      "localToCanvas": [
+        1,
+        0,
+        0,
+        1,
+        130,
+        700
+      ],
+      "polygons": [
+        [
+          {
+            "x": 130,
+            "y": 702.999987479968
+          },
+          {
+            "x": 202.00001252003204,
+            "y": 702.999987479968
+          },
+          {
+            "x": 202.00001252003204,
+            "y": 750.0000000000001
+          },
+          {
+            "x": 130,
+            "y": 750.0000000000001
+          }
+        ]
+      ],
+      "rects": [
+        {
+          "x": 130,
+          "y": 702.999987479968,
+          "width": 72.00001252003206,
+          "height": 47.00001252003205
+        }
+      ],
+      "layoutBox": {
+        "x": 130,
+        "y": 700,
+        "width": 570,
+        "height": 58
+      },
+      "text": "蒸发"
+    },
+    {
+      "target": {
+        "nodeId": "right.illustration",
+        "part": "self"
+      },
+      "coordinateSpace": "canvas",
+      "opacity": 1,
+      "localRect": {
+        "x": 0,
+        "y": 0,
+        "width": 450,
+        "height": 450
+      },
+      "localToCanvas": [
+        1,
+        0,
+        0,
+        1,
+        935,
+        255
+      ],
+      "polygons": [
+        [
+          {
+            "x": 935,
+            "y": 255
+          },
+          {
+            "x": 1385,
+            "y": 255
+          },
+          {
+            "x": 1385,
+            "y": 705
+          },
+          {
+            "x": 935,
+            "y": 705
+          }
+        ]
+      ],
+      "rects": [
+        {
+          "x": 935,
+          "y": 255,
+          "width": 450,
+          "height": 450
+        }
+      ],
+      "resourceRef": {
+        "id": "asset.condensation-v1",
+        "version": "0.1.0"
+      },
+      "anchor": {
+        "x": 1160,
+        "y": 480
+      },
+      "visibleContent": {
+        "meaning": "alphaBounds support rectangle, not pixel mask or semantic part",
+        "polygons": [
+          [
+            {
+              "x": 935,
+              "y": 268.9952153110048
+            },
+            {
+              "x": 1362.751196172249,
+              "y": 268.9952153110048
+            },
+            {
+              "x": 1362.751196172249,
+              "y": 705
+            },
+            {
+              "x": 935,
+              "y": 705
+            }
+          ]
+        ],
+        "rects": [
+          {
+            "x": 935,
+            "y": 268.9952153110048,
+            "width": 427.7511961722489,
+            "height": 436.0047846889952
+          }
+        ]
+      }
+    },
+    {
+      "target": {
+        "nodeId": "right.name",
+        "part": "self"
+      },
+      "coordinateSpace": "canvas",
+      "opacity": 1,
+      "localRect": {
+        "x": 0,
+        "y": 0,
+        "width": 570,
+        "height": 58
+      },
+      "localToCanvas": [
+        1,
+        0,
+        0,
+        1,
+        870,
+        700
+      ],
+      "polygons": [
+        [
+          {
+            "x": 870,
+            "y": 702.999987479968
+          },
+          {
+            "x": 942.0000125200321,
+            "y": 702.999987479968
+          },
+          {
+            "x": 942.0000125200321,
+            "y": 750.0000000000001
+          },
+          {
+            "x": 870,
+            "y": 750.0000000000001
+          }
+        ]
+      ],
+      "rects": [
+        {
+          "x": 870,
+          "y": 702.999987479968,
+          "width": 72.00001252003206,
+          "height": 47.00001252003205
+        }
+      ],
+      "layoutBox": {
+        "x": 870,
+        "y": 700,
+        "width": 570,
+        "height": 58
+      },
+      "text": "凝结"
+    }
+  ],
+  "occlusion": {
+    "kind": "conservative-AABB-warning",
+    "diagnostics": [
+      {
+        "code": "POSSIBLE_FOREGROUND_OCCLUSION",
+        "targets": [
+          {
+            "nodeId": "main.object",
+            "part": "self"
+          },
+          {
+            "nodeId": "cloud.front",
+            "part": "self"
+          }
+        ],
+        "area": 16223.941720715075,
+        "meaning": "visible support boxes; confirm visually, not pixel occlusion"
+      }
+    ],
+    "limitations": "bounding boxes, not pixel occlusion"
+  },
+  "pageErrors": []
+}

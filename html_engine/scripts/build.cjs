@@ -27,7 +27,13 @@ async function main() {
       standalone(ajv, validate),
   );
   const { compile } = require("../src/compiler.cjs");
-  const scenes = ["paper-plane", "cloud-drift"].map((name) =>
+  const scenes = [
+    "paper-plane",
+    "cloud-drift",
+    "course-water",
+    "course-everyday",
+    "e2-cloud",
+  ].map((name) =>
     JSON.parse(
       fs.readFileSync(
         path.join(root, "examples", name + ".scene.json"),
@@ -134,9 +140,7 @@ async function main() {
       2,
     ) + "\n",
   );
-  console.log(
-    "Built two validated scenes, three audited resources and browser engine.",
-  );
+  console.log("Built validated scenes, audited resources and browser engine.");
 }
 main().catch((error) => {
   console.error(error);

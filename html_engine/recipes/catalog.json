@@ -1,0 +1,39 @@
+{
+  "format": "hps.e2.catalog",
+  "version": "0.1.0",
+  "templates": [
+    {
+      "id": "recipe.open-process",
+      "version": "0.1.0",
+      "visualStatus": "pending-user-review",
+      "variants": [
+        "flight",
+        "drift"
+      ],
+      "budgets": {
+        "title": 18,
+        "subtitle": 38
+      }
+    },
+    {
+      "id": "recipe.dual-concept",
+      "version": "0.1.0",
+      "visualStatus": "pending-user-review",
+      "variants": [
+        "sequential"
+      ],
+      "budgets": {
+        "title": 18,
+        "subtitle": 38,
+        "name": 6,
+        "relation": 12,
+        "body": 28
+      },
+      "slots": 2
+    }
+  ],
+  "basisSha256": {
+    "paper-plane": "e2a5f9aecfff2885239c7f69d79855742fc265ad94385eada28db681fec653cb",
+    "cloud-drift": "4d4700cad9947e838d328dcffeaf714c5347b5749ad5710c551f3a6a029977f3"
+  }
+}

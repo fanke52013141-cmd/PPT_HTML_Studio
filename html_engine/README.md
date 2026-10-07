@@ -58,3 +58,7 @@ preview/engine.js、fixtures.js 和 src/generated 是可重建发布产物，不
 
 [E1 定义卡](../docs/contracts/html-presentation/runtime/e1/README.md)、[交付记录](../docs/plans/e1-data-driven-engine-completion.md)、[检查](evidence/checks.json)、[编译快照](evidence/compiled-snapshots.json)、[构建审计](evidence/build.json)、[代码审查](evidence/code-review.md)。
 跨浏览器、全字形覆盖和字体文件打包未验证，不能把本机 probe 和 fonts.ready 视为完整字体兼容。
+
+## E2 扩展
+
+[受约束配方](recipes/README.md) 已实现两个配方、三份新输入；运行 `npm run build:e2` 更新全部预览，`npm run test:e2` 验证。原 E1 运行格式不变。见 [E2 记录](../docs/plans/e2-constrained-template-completion.md)，资产/视觉仍待确认。

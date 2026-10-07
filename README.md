@@ -81,3 +81,7 @@ P01 最小定义及体系分类已完成；科普原首版样稿未获认可，�
 ## 数据驱动内核 E1
 
 已实现 [独立内核](html_engine/README.md) 与 [预览入口](html_engine/preview/index.html)。纸飞机/云朵两份 JSON 共用渲染代码，支持资源校验、文字容量、目标几何及确定取帧。现行契约包 0.7.1，限定实施记录见 [E1 交付](docs/plans/e1-data-driven-engine-completion.md)。应用仍运行原图片后端；HTML 集成和真实音频接入待后续阶段。
+
+## E2 受约束配方
+
+[交付记录](docs/plans/e2-constrained-template-completion.md)：两个配方、课程复用和资产质量检查已实现；视觉和生产批准待审阅。查看 [预览](html_engine/preview/index.html) 或 [资产对照](html_engine/preview/e2-assets.html)。

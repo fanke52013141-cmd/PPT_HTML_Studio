@@ -58,3 +58,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\stop-html-studio.ps1
 [HTML 基础构建方案](docs/plans/html-foundation-roadmap.md)。原定义与审查作为历史资料
 保留，审查依据见 [基础体系审查记录](docs/plans/html-foundation-review-20261007.md)。模块复用边界见
 [HTML 改造与复用方案](docs/plans/html-studio-adaptation.md)。现有界面品牌仍是原项目基线；新名称用于开发副本与启动入口，产品界面将在确定实施方案后统一调整。
+
+## E2 进展
+
+两个受约束配方和资产工具已实现，见 [交付记录](docs/plans/e2-constrained-template-completion.md)。仍是独立设计探索工具，原应用未接入；视觉/素材生产批准待审阅。

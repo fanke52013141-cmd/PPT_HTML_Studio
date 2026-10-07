@@ -1,7 +1,7 @@
 {
   "engineVersion": "0.1.0",
   "schemaSha256": "2cb6ef3d5443d647ff9ce0fa424175bc902e4b138feb6bd64024c1ff0c54f09c",
-  "sceneCount": 2,
+  "sceneCount": 5,
   "assets": [
     {
       "path": "assets/plane.png",
@@ -46,6 +46,51 @@
         "y": 0,
         "width": 627,
         "height": 573
+      }
+    },
+    {
+      "path": "assets/evaporation-v1.png",
+      "hash": "5abb409bda12349a13b14cc1e67cf70941dbb5ff462b0d408964686792d6e17a",
+      "sizeBytes": 928825,
+      "intrinsic": {
+        "width": 1254,
+        "height": 1254
+      },
+      "alphaBounds": {
+        "x": 57,
+        "y": 23,
+        "width": 1141,
+        "height": 1184
+      }
+    },
+    {
+      "path": "assets/condensation-v1.png",
+      "hash": "b654e4a0c6f599df07d42c7ef3b0a3dacd6de11c822272b2c00871ab6b1ea554",
+      "sizeBytes": 1478799,
+      "intrinsic": {
+        "width": 1254,
+        "height": 1254
+      },
+      "alphaBounds": {
+        "x": 0,
+        "y": 39,
+        "width": 1192,
+        "height": 1215
+      }
+    },
+    {
+      "path": "assets/cloud-small-v2.png",
+      "hash": "0c4880b12e2f40b837774d3eb925786be3f8406d7abae4f890a1276d6644c934",
+      "sizeBytes": 519529,
+      "intrinsic": {
+        "width": 1254,
+        "height": 1254
+      },
+      "alphaBounds": {
+        "x": 97,
+        "y": 212,
+        "width": 1131,
+        "height": 1000
       }
     }
   ],
