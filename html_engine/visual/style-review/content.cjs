@@ -9,6 +9,7 @@ function adapt(scene, overrides) {
       .join("");
   return {
     id: scene.id,
+    source: scene.source,
     title: scene.name,
     number: scene.id === "condensation" ? "01" : "02",
     headline: text("lead"),

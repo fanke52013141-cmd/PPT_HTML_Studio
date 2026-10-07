@@ -74,7 +74,6 @@ async function prepare(content, host) {
     header.append(
       el("span", "page-number", content.number),
       el("h1", "page-title", content.title),
-      el("span", "header-index", "KNOWLEDGE SHARING"),
     );
     const headline = add("headline", "headline", layout.headline, 350);
     headline.textContent = content.headline;
@@ -167,11 +166,6 @@ async function prepare(content, host) {
       flow,
       el("strong", "takeaway", content.summary),
     );
-    const source = add("source", "source", layout.source);
-    source.append(
-      el("span", "", "日常科学 · 水的状态变化"),
-      el("span", "", "知识依据：USGS 水循环 · 插画仅作示意"),
-    );
     const subtitle = el("div", "subtitle");
     subtitle.dataset.track = "subtitle";
     subtitle.style.fontSize = $("font").value + "px";
@@ -208,7 +202,7 @@ async function prepare(content, host) {
       for (const [id, { node, start }] of targets) {
         const p = ease("smoothstep", (ms - start) / 800);
         node.style.opacity = String(p);
-        node.style.transform = `translateY(${reduced || ["annotation", "source", "anchor-label"].includes(id) ? 0 : (1 - p) * 12}px)`;
+        node.style.transform = `translateY(${reduced || ["annotation", "anchor-label"].includes(id) ? 0 : (1 - p) * 12}px)`;
       }
       const subjectProgress = ease("smoothstep", (ms - 700) / 800),
         dy = reduced ? 0 : (1 - subjectProgress) * 12;

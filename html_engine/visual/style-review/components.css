@@ -32,13 +32,6 @@
   max-width: 1100px;
   white-space: nowrap;
 }
-.header-index {
-  margin-left: auto;
-  align-self: center;
-  font-size: 13px;
-  letter-spacing: 3px;
-  color: var(--blue);
-}
 .headline {
   font-size: var(--headline-size);
   font-weight: var(--headline-weight);
@@ -244,13 +237,6 @@
   line-height: var(--summary-height);
   color: var(--ink);
   white-space: nowrap;
-}
-.source {
-  display: flex;
-  justify-content: space-between;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 20px;
 }
 .subtitle {
   position: absolute;
