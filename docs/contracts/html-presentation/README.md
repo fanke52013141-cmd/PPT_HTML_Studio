@@ -1,7 +1,12 @@
 # HTML 演示体系契约
 
-契约包版本：0.5.0。生效日期：2026-10-07。
+契约包版本：0.6.0。生效日期：2026-10-07。
 状态：项目设计与开发的现行规则基线。HTML 内核、正式字段 Schema 和自动校验器尚未实现。
+
+## 本轮重点
+
+[视觉生产规则](framework/07-visual-production.md) 明确 HTML/生图分工、验收模板、内容容量与美术门槛。
+科普首版样稿用户审阅未通过，须先重制 P02，详见 [重制任务书](../../styles/science-explainer/visual-production-revision.md)。
 
 ## 阅读入口
 

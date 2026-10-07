@@ -57,3 +57,8 @@ Schema、自动校验、风格样板和导出兼容验证尚未完成。
 
 原讨论稿保留历史标记，正式规则统一在契约目录维护。本仓库地址：
 [fanke52013141-cmd/PPT_HTML_Studio](https://github.com/fanke52013141-cmd/PPT_HTML_Studio)。
+
+## 视觉生产规则更新
+
+科普首版样稿视觉审阅未通过。新增 [HTML 与生图分工、验收模板及内容容量规则](docs/contracts/html-presentation/framework/07-visual-production.md)，
+按 [P02 重制任务书](docs/styles/science-explainer/visual-production-revision.md) 继续；尚无已批准生产模板。

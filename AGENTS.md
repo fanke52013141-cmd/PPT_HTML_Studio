@@ -82,6 +82,15 @@ downstream-impact requirements still apply when the corresponding feature is
 implemented. Routine compatible fixes within user authorization do not require
 an extra approval step solely because a contract is being updated.
 
+## Visual Production Policy
+
+For HTML artwork allocation, layout templates and visual acceptance, follow
+`docs/contracts/html-presentation/framework/07-visual-production.md` (HPS-023—025).
+Geometry checks do not establish aesthetic approval. Use reviewed templates within
+their content budgets and asset contracts; do not freely compose production CSS.
+The first science sample received changes_requested; see its
+`visual-production-revision.md` before continuing P02 or starting P03.
+
 ## Research Reuse Policy
 
 Before relevant architecture or technology selection, consult

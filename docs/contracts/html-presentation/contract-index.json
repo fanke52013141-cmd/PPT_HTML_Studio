@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.5.0",
+  "contract_version": "0.6.0",
   "effective_date": "2026-10-07",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -60,6 +60,9 @@
     },
     {
       "path": "framework/06-composition-examples.md"
+    },
+    {
+      "path": "framework/07-visual-production.md"
     }
   ],
   "rules": [
@@ -257,6 +260,33 @@
       "title": "风格定制与参考验收",
       "source": "framework/05-style-workflow.md",
       "section": "## HPS-022：风格按样本覆盖与证据发布",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-023",
+      "title": "视觉职责与素材控制粒度",
+      "source": "framework/07-visual-production.md",
+      "section": "## HPS-023：按视觉职责与控制粒度分配实现方式",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-024",
+      "title": "经过视觉验收的页面模板",
+      "source": "framework/07-visual-production.md",
+      "section": "## HPS-024：生产使用经过视觉验收的页面模板",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-025",
+      "title": "内容容量与美术验收",
+      "source": "framework/07-visual-production.md",
+      "section": "## HPS-025：内容容量与美术质量分别设门槛",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "not_implemented"
