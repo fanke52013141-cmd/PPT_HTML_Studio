@@ -1,16 +1,24 @@
 {
   "version": 1,
   "entries": {
-    "bee71487dd4fdbb45984d72abddb648b": {
-      "file": "references-bee71487dd4fdbb45984d72abddb648b.png",
+    "43252de0dc6463d178fca687306294cd": {
+      "file": "references-43252de0dc6463d178fca687306294cd.png",
       "inputs": {
-        "theme": "soft-science@0.2.0",
+        "theme": "9bd3b1b86ed47aa0c5166ec97cda036baff07b19960c097f4a52334d271971ac",
+        "catalog": "e8077c6facb2c99773c4f4f7eed5db4a776ba04dc15a8c69d5ed0afa218e3fca",
+        "scene": "c3f95b3bb125046691ea1bc68f7f523bcfa2c4b1b88e100871f4ad47c3d3c991",
+        "atlasBuilder": "c7efd1e23c9f678c088f3eec6a93612582072d5d1fd8e07e4fb6c99acfc0f285",
         "layout": "science-explanation-v1",
         "font": "Microsoft YaHei",
-        "effects": "3c87bb3d9f083684",
-        "renderer": "64c01fc8e6dd695b"
+        "fontFiles": {
+          "msyh.ttc": "d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f",
+          "msyhbd.ttc": "4508821b3dffe01f0ef5e5326a3e60df705a44633858811f67b6982dce3f6ee6",
+          "msyhl.ttc": "7e9bdf90bb5d3fe1b5975fc8ae31944b8fa674122261f92c28d4ec0b9c482fa1"
+        },
+        "effects": "56ee3fbe57d91bab",
+        "renderer": "a91e7d8d66601b49"
       },
-      "createdAt": "2026-10-07T17:24:03.953Z"
+      "createdAt": "2026-10-07T23:44:59.163Z"
     }
   }
 }

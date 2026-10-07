@@ -576,6 +576,20 @@ def cmd_generation_control(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_html(args: argparse.Namespace) -> None:
+    from mcp_server.tools import _dispatch
+    client = AgentClient(base_url=args.base_url, app_token=args.token)
+    values = {"project_id": args.project}
+    if getattr(args,"slide",None): values["slide_id"] = args.slide
+    if getattr(args,"job",None): values["job_id"] = args.job
+    if getattr(args,"file",None):
+        values.update(json.loads(Path(args.file).read_text(encoding="utf-8")))
+    try:
+        _print_json(_dispatch(args.capability_id, values, client))
+    except AgentClientError as error:
+        _print_error(str(error)); sys.exit(1)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="pptctl",
@@ -600,6 +614,17 @@ def build_parser() -> argparse.ArgumentParser:
         if capability.id == 'generation.stop':
             control_parser.add_argument('--operation-id', required=True)
         control_parser.set_defaults(func=cmd_generation_control)
+
+    html_parser = subparsers.add_parser("html", help="HTML scene production and review")
+    html_sub = html_parser.add_subparsers(dest="subcommand", required=True)
+    for cap in [c for c in CAPABILITIES if c.cli_command.startswith("html ")]:
+        command = html_sub.add_parser(cap.cli_command.split()[1], help=cap.description)
+        command.add_argument("--project",required=True)
+        if "{slide_id}" in cap.agent_api_path: command.add_argument("--slide",required=True)
+        if "{job_id}" in cap.agent_api_path: command.add_argument("--job",required=True)
+        if cap.id == "html_visual.scene_write": command.add_argument("--file",required=True,help="JSON scene and expected_revision")
+        elif cap.id in ("html_review.review","html_review.approve"): command.add_argument("--file",help="Optional JSON scene request")
+        command.set_defaults(func=cmd_html,capability_id=cap.id)
 
     # project
     proj_parser = subparsers.add_parser("project", help="Project management")

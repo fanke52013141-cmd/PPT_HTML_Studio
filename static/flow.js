@@ -434,6 +434,7 @@
     const project = (root.PPTStudio && typeof root.PPTStudio.getCurrentProject === 'function')
       ? root.PPTStudio.getCurrentProject()
       : null;
+    if (project?.visual_backend === "html") return false;
     const status = project?.step_status || {};
     const imageConfirmed = ['completed', 'pending_reconfirmation'].includes(status['4'])
       || ['completed', 'pending_reconfirmation'].includes(status['5']);

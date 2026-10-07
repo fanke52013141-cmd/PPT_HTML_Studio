@@ -367,6 +367,8 @@ class DiagnosticsResult(BaseModel):
 
 
 class HtmlVisualStatusResult(BaseModel):
+    ready: bool = False
+    issues: list[dict[str, Any]] = Field(default_factory=list)
     project_id: str
     revision: int = Field(0, description="场景修订计数")
     scenes_present: int
@@ -419,3 +421,8 @@ class HtmlPlanGenerationResult(BaseModel):
     slide_id: str
     plan: dict[str, Any]
     evidence: dict[str, Any]
+
+
+class HtmlTaskResult(BaseModel):
+    project_id: str
+    task: dict[str, Any]

@@ -1342,3 +1342,8 @@ const calibrationSource = fs.readFileSync(path.join(root, 'static', 'annotation_
 if (!html.includes('annotation_audio_calibration.js') || !calibrationSource.includes('decodeAudioData') || !annotationsEditor.includes('AnnotationAudioCalibration.attach')) throw new Error('audio calibration must own waveform decoding and be wired before the editor');
 if (annotationsEditor.includes('decodeAudioData') || app.includes('decodeAudioData')) throw new Error('waveform decoding belongs to the audio calibration module');
 
+
+// HTML review owns only the HTML panel; all requests use the shared transport.
+const htmlReviewPanel = fs.readFileSync(path.join(root,'static/html_review_panel.js'),'utf8');
+if (/\bfetch\s*\(/.test(htmlReviewPanel) || htmlReviewPanel.includes('MutationObserver')) throw new Error('HTML review must use API and explicit refresh');
+if (!htmlReviewPanel.includes("getElementById('step-panel-3')")) throw new Error('HTML review belongs in the content panel');

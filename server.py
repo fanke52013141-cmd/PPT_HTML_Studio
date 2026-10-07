@@ -692,6 +692,13 @@ try:
             json_generator=_html_plan_json_generator,
         )
     )
+    from html_workflow_jobs import HtmlWorkflowJobs
+    from html_image_provider import configured_image
+    from html_visual_review_routes import configure_html_jobs, _service_deps
+    from database import SessionLocal as HtmlSessionLocal
+    html_workflow_jobs = HtmlWorkflowJobs(HtmlSessionLocal, _service_deps(), configured_image)
+    configure_html_jobs(html_workflow_jobs)
+    app.router.on_startup.append(html_workflow_jobs.recover)
     app.include_router(html_review_router)
 except Exception as exc:
     logger.exception(
@@ -701,12 +708,11 @@ except Exception as exc:
     raise
 
 
-def html_review_service_deps() -> HtmlReviewDependencies:
-    """Agent-facing accessor for the configured html review dependencies."""
-    return HtmlReviewDependencies(
-        repo_root=Path(REPO_ROOT),
-        json_generator=_html_plan_json_generator,
-    )
+def html_review_service_deps():
+    """Both transports consume the identical configured review dependency record."""
+    from html_visual_review_routes import _service_deps
+    return _service_deps()
+
 
 try:
     from visual_settings_routes import (

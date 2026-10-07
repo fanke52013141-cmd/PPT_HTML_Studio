@@ -19,6 +19,7 @@ def path_parameters_schema(cap: AgentCapability) -> dict[str, Any]:
     """Return JSON Schema properties required by a capability URL path."""
     descriptions = {
         "project_id": "The project ID.",
+        "job_id": "The persisted HTML task ID.",
         "slide_id": "The slide ID.",
         "checkpoint": "The checkpoint name (for example image_review).",
         "stage": "The pipeline stage name.",

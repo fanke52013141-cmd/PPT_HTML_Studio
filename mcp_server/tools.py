@@ -253,6 +253,12 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
             args.get("project_id", ""), args.get("slide_id", "")
         )
 
+    if cap_id == "html_review.produce":
+        return client.produce_html_scene(args.get("project_id", ""), args.get("slide_id", ""))
+    if cap_id == "html_review.task_status":
+        return client.html_task_status(args.get("project_id", ""), args.get("job_id", ""))
+    if cap_id == "html_review.task_cancel":
+        return client.html_task_cancel(args.get("project_id", ""), args.get("job_id", ""))
     raise ValueError(f"Unknown capability for dispatch: {cap_id}")
 
 

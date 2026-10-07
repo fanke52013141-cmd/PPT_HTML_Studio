@@ -159,6 +159,9 @@ def produce_asset(
         "prompt": prompt,
         "size": size,
         "transparent_background": transparent,
+        "anchors": anchors_input,
+        "need": need,
+        "reference_sha256": request.get("reference_sha256", []),
     }
     key = _request_key(normalized_request)
     for entry in manifest.get("assets", []):

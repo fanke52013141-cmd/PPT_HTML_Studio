@@ -29,6 +29,7 @@ import html_visual_review_service as html_review
 import html_visual_store as html_scene_store
 from agent_contract.models import (
     HtmlApprovalResult,
+    HtmlTaskResult,
     HtmlPlanGenerationResult,
     HtmlReviewReportResult,
     HtmlSceneBodyRequest,
@@ -210,7 +211,9 @@ def agent_html_visual_status(project_id: str, db: Session = Depends(get_db)):
 
     run_dir = project_run_dir_or_500(project)
     status = html_scene_store.read_status(run_dir, read_current_slide_ids_or_404(project))
-    return HtmlVisualStatusResult(project_id=project_id, **status)
+    from html_input_manifest import html_readiness
+    readiness = html_readiness(run_dir, Path(__file__).resolve().parents[1], read_current_slide_ids_or_404(project))
+    return HtmlVisualStatusResult(project_id=project_id, **status, ready=readiness["ready"], issues=readiness["issues"])
 
 
 @router.get(
@@ -296,6 +299,8 @@ def agent_html_review(
         if document is None:
             raise HTTPException(status_code=404, detail="该页尚未保存 HTML 场景")
         scene = document["scene"]
+    if scene.get("id") != slide_id:
+        raise HTTPException(400, "场景标识必须与 Slide 一致")
     try:
         report = html_review.review_scene(
             scene, run_dir=run_dir, deps=_agent_review_deps()
@@ -323,20 +328,10 @@ def agent_html_approve(
     project = _html_project_or_404(project_id, db)
     from project_path_service import project_run_dir_or_500
 
-    run_dir = project_run_dir_or_500(project)
-    if payload.scene is not None:
-        scene = payload.scene
-    else:
-        document = html_scene_store.load_scene_with_revision(run_dir, slide_id)
-        if document is None:
-            raise HTTPException(status_code=404, detail="该页尚未保存 HTML 场景")
-        scene = document["scene"]
     try:
-        approval = html_review.approve_scene(
-            scene, run_dir=run_dir, deps=_agent_review_deps()
-        )
-    except html_review.HtmlReviewError as error:
-        raise HTTPException(status_code=error.status_code, detail=str(error))
+        approval = html_review.approve_stored_scene(project_run_dir_or_500(project),slide_id,payload.scene,deps=_agent_review_deps())
+    except html_review.HtmlReviewError as exc:
+        raise HTTPException(exc.status_code,str(exc))
     return HtmlApprovalResult(
         project_id=project_id,
         slide_id=slide_id,
@@ -355,8 +350,11 @@ def agent_html_approval_status(
     project = _html_project_or_404(project_id, db)
     from project_path_service import project_run_dir_or_500
 
+    document = html_scene_store.load_scene_with_revision(
+        project_run_dir_or_500(project), slide_id
+    )
     status = html_review.approval_status(
-        None,
+        document["scene"] if document else None,
         run_dir=project_run_dir_or_500(project),
         deps=_agent_review_deps(),
         slide_id=slide_id,
@@ -1595,3 +1593,24 @@ def agent_digital_human_generate_full(
         except Exception as e:
             results.append({"slide_id": slide_id, "status": "failed", "error": str(e)})
     return {"success": True, "results": results}
+
+
+@router.post("/projects/{project_id}/html-review/{slide_id}/produce", response_model=HtmlTaskResult)
+def agent_html_produce(project_id: str, slide_id: str, db: Session = Depends(get_db)):
+    from html_visual_review_routes import produce
+    _html_project_or_404(project_id, db)
+    return HtmlTaskResult(project_id=project_id, task=produce(project_id, slide_id, db)["task"])
+
+
+@router.get("/projects/{project_id}/html-review/tasks/{job_id}", response_model=HtmlTaskResult)
+def agent_html_task_status(project_id: str, job_id: str, db: Session = Depends(get_db)):
+    from html_visual_review_routes import task_status
+    _html_project_or_404(project_id, db)
+    return HtmlTaskResult(project_id=project_id, task=task_status(project_id, job_id, db)["task"])
+
+
+@router.post("/projects/{project_id}/html-review/tasks/{job_id}/cancel", response_model=HtmlTaskResult)
+def agent_html_task_cancel(project_id: str, job_id: str, db: Session = Depends(get_db)):
+    from html_visual_review_routes import task_cancel
+    _html_project_or_404(project_id, db)
+    return HtmlTaskResult(project_id=project_id, task=task_cancel(project_id, job_id, db)["task"])

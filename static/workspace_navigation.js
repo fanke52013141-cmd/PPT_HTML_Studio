@@ -302,8 +302,7 @@ async function refreshCurrentProjectStatus(activeStep = state.currentStep) {
     // HTML 路线的场景就绪是独立事实，不造 Mask 文件骗过旧门槛。
     try {
       const status = await API.get(`/api/projects/${projectId}/html-visual/status`);
-      window.__htmlVisualReady = status?.scenes_expected > 0
-        && status?.scenes_present === status?.scenes_expected;
+      window.__htmlVisualReady = status?.ready === true;
     } catch (error) {
       window.__htmlVisualReady = false;
     }
@@ -311,6 +310,7 @@ async function refreshCurrentProjectStatus(activeStep = state.currentStep) {
     window.__htmlVisualReady = undefined;
   }
   syncProjectCanvasCssVars(project);
+  window.HtmlReviewPanel?.refresh();
   updateStepperUI(normalizeVisibleStep(activeStep), project.step_status);
 }
 
@@ -359,6 +359,7 @@ async function navigateToStep(step) {
   
   // 针对特定步骤加载结果数据
   await loadStepData(step);
+  window.HtmlReviewPanel?.refresh();
 }
 
 async function loadStepData(step) {

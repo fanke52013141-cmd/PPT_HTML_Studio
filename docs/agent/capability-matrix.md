@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.11.0
-- **Contract Hash**: `7b434fee45bbcbb7`
-- **Total Capabilities**: 38
+- **Agent API Version**: 1.12.0
+- **Contract Hash**: `7d503621e32b96c6`
+- **Total Capabilities**: 41
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -15,6 +15,9 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `generation.stop` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/generation/{stage}/stop` | `ppt_generation_stop` | Yes | `generation stop` | `generation_control.request_stop` | No | No |
 | `identity.get` | 1.0 | stable | GET | `/api/agent/v1/identity` | `ppt_identity_get` | Yes | `identity` | `agent_api.auth / account_service` | No | No |
 | `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
+| `html_review.produce` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
+| `html_review.task_status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}` | `ppt_html_task_status` | Yes | `html task-status` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
+| `html_review.task_cancel` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}/cancel` | `ppt_html_task_cancel` | Yes | `html task-cancel` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
 | `html_visual.status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/status` | `ppt_html_visual_status` | Yes | `html status` | `html_visual_store.read_status` | No | No |
 | `html_visual.scene_read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_read` | Yes | `html scene-read` | `html_visual_store.load_scene_with_revision` | No | No |
 | `html_visual.scene_write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_write` | Yes | `html scene-write` | `html_visual_store.save_scene` | No | No |
@@ -63,12 +66,15 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **33** stable tools:
+The MCP server exposes **36** stable tools:
 
 - `ppt_generation_status` — Read the active cooperative generation control for a project stage. Controls are process-local; durable TTS/video results remain in their job APIs.
 - `ppt_generation_stop` — Request a safe-boundary stop for the exact active operation ID. In-flight provider requests and render stages finish before stopping.
 - `ppt_identity_get` — Return the creative account and scopes associated with this Agent connection.
 - `ppt_project_create` — Create a project with canvas, production/presentation mode, versioned creation configuration, and optional course/chapter ownership.
+- `ppt_html_produce` — HTML production workflow: produce; persisted task and registered render gates.
+- `ppt_html_task_status` — HTML production workflow: task_status; persisted task and registered render gates.
+- `ppt_html_task_cancel` — HTML production workflow: task_cancel; persisted task and registered render gates.
 - `ppt_html_visual_status` — Read per-slide html scene readiness for an html-backend project (revision, present/expected counts).
 - `ppt_html_scene_read` — Read one slide's stored html scene document with its revision and content hash.
 - `ppt_html_scene_write` — Write one slide's html scene document with expected-revision optimistic concurrency (409 on conflict); html-backend projects only.

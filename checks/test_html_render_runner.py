@@ -42,6 +42,7 @@ def _runner(
         HtmlRenderRunnerDependencies(
             repo_root=tmp_path / "repo",
             read_slide_ids=lambda run_dir: ["s1", "s2"],
+            allow_legacy_unbound=True,
             run_subprocess_bounded=fake_run,
         )
     )

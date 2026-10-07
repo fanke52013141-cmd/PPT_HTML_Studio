@@ -191,6 +191,9 @@ class VideoRenderService:
             if not ready["ready"]:
                 raise VideoRenderError(409, "HTML 输入或视觉批准未就绪：" +
                                        "; ".join(x["message"] for x in ready["issues"]))
+            missing_bindings = [slide for slide in slide_ids if not (Path(project.run_dir)/"planning/html_visual"/f"binding-{slide}.json").is_file()]
+            if missing_bindings:
+                raise VideoRenderError(409,"页面缺少语块动作绑定，请重新生成场景："+", ".join(missing_bindings))
         else:
             provenance_errors = validate_visual_provenance_set(
                 project.run_dir,

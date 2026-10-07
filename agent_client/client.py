@@ -411,3 +411,12 @@ class AgentClient:
         return self._request(
             "GET", f"/projects/{project_id}/html-review/{slide_id}/approval"
         )
+
+    def produce_html_scene(self, project_id: str, slide_id: str) -> dict[str, Any]:
+        return self._request("POST", f"/projects/{project_id}/html-review/{slide_id}/produce")
+
+    def html_task_status(self, project_id: str, job_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/projects/{project_id}/html-review/tasks/{job_id}")
+
+    def html_task_cancel(self, project_id: str, job_id: str) -> dict[str, Any]:
+        return self._request("POST", f"/projects/{project_id}/html-review/tasks/{job_id}/cancel")

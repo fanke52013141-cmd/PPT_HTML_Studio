@@ -48,6 +48,7 @@ class HtmlRenderRunnerDependencies:
     ffprobe_bin: str = "ffprobe"
     export_script: Path = Path("html_engine") / "tools" / "export-slide-video.cjs"
     stage_timeout_sec: float = 600.0
+    allow_legacy_unbound: bool = False
 
 
 class HtmlRenderRunner:
@@ -90,6 +91,10 @@ class HtmlRenderRunner:
                 if binding_path.is_file()
                 else None
             )
+            if binding is None and not self.dependencies.allow_legacy_unbound:
+                raise AudioBindingError(
+                    "MOTION_BINDING_MISSING", "页面缺少语块动作绑定，请重新生成场景"
+                )
             bound = bind_scene_to_audio(scene, timeline, binding)
         except AudioBindingError as exc:
             raise HtmlRenderError(400, f"页面 {slide_id} 音频绑定失败：{exc}")
