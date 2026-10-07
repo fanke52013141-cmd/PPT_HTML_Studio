@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.3.0",
+  "contract_version": "0.4.0",
   "effective_date": "2026-10-07",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -11,7 +11,8 @@
   "notes": [
     "This index is documentation metadata, not a runtime capability registry or validator.",
     "Normative meaning belongs to the referenced document and section.",
-    "Rules apply when defining or implementing the corresponding capability; candidate features remain unimplemented."
+    "Rules apply when defining or implementing the corresponding capability; candidate features remain unimplemented.",
+    "P01 specific definitions and fixtures are documented; Schema/runtime/visual/export verification remains unimplemented."
   ],
   "documents": [
     {
@@ -34,6 +35,9 @@
     },
     {
       "path": "CHANGELOG.md"
+    },
+    {
+      "path": "definitions/README.md"
     }
   ],
   "rules": [
@@ -199,5 +203,6 @@
       "current_enforcement": "design_review",
       "runtime_validation": "not_implemented"
     }
-  ]
+  ],
+  "definition_index": "definitions/definition-index.json"
 }

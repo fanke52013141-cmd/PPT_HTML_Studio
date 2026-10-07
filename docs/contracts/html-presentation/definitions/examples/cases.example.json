@@ -1,0 +1,291 @@
+{
+  "kind": "documented-invalid-fixtures-not-executed-runtime-tests",
+  "baseRef": "scene.example.json",
+  "patchSemantics": "JSON Pointer add/replace/remove; null values in patch are deliberate invalid input, not allowed source defaults. Check expected diagnostic inclusion, not necessarily first diagnostic. Base font/visual pending diagnostics remain expected.",
+  "cases": [
+    {
+      "fixtureId": "fixture.01",
+      "acceptanceCase": "P01-C02",
+      "label": "重复节点身份",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/slides/0/nodes/2/nodeId",
+          "value": "node.concept-html"
+        }
+      ],
+      "expectedCode": "DUPLICATE_ID",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.02",
+      "acceptanceCase": "P01-C03",
+      "label": "必讲正文未被讲稿覆盖",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/narrationBeats/0/contentRefs",
+          "value": [
+            "content.html-title"
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/narrationBeats/2/contentRefs",
+          "value": [
+            "content.image-body",
+            "content.page-title"
+          ]
+        }
+      ],
+      "expectedCode": "CONTENT_UNCOVERED",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.03",
+      "acceptanceCase": "P01-C04",
+      "label": "不允许空值",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/slides/0/nodes/0/data/contentRef",
+          "value": null
+        }
+      ],
+      "expectedCode": "INVALID_FIELD",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.04",
+      "acceptanceCase": "P01-C06",
+      "label": "仅短语不能定位重复文本",
+      "patch": [
+        {
+          "op": "remove",
+          "path": "/textAnchors/0/range"
+        }
+      ],
+      "expectedCode": "INVALID_FIELD",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.05",
+      "acceptanceCase": "P01-C08",
+      "label": "锚点文字修订过期",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/contentUnits/2/revision",
+          "value": 2
+        }
+      ],
+      "expectedCode": "STALE_ANCHOR",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.06",
+      "acceptanceCase": "P01-C10",
+      "label": "资源未就绪",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/assets/0/state",
+          "value": "failed"
+        }
+      ],
+      "expectedCode": "ASSET_UNAVAILABLE",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.07",
+      "acceptanceCase": "P01-C12",
+      "label": "动作目标图片版本不一致",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/slides/0/actions/4/target/selector",
+          "value": {
+            "kind": "asset-anchor",
+            "assetRef": {
+              "id": "asset.html-structure",
+              "version": "0.2.0"
+            },
+            "anchorId": "object.one"
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/slides/0/actions/4/target/part",
+          "value": "figure"
+        },
+        {
+          "op": "replace",
+          "path": "/slides/0/actions/4/params/shape",
+          "value": "outline"
+        }
+      ],
+      "expectedCode": "STALE_ANCHOR",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.08",
+      "acceptanceCase": "P01-C13",
+      "label": "资源内部锚点不能独立出现",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/assets/0/anchors",
+          "value": [
+            {
+              "anchorId": "object.one",
+              "kind": "rect",
+              "rect": {
+                "x": 0.1,
+                "y": 0.1,
+                "width": 0.8,
+                "height": 0.8
+              },
+              "coordinateSpace": "normalized"
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/slides/0/actions/0/target/part",
+          "value": "figure"
+        },
+        {
+          "op": "add",
+          "path": "/slides/0/actions/0/target/selector",
+          "value": {
+            "kind": "asset-anchor",
+            "assetRef": {
+              "id": "asset.html-structure",
+              "version": "0.1.0"
+            },
+            "anchorId": "object.one"
+          }
+        }
+      ],
+      "expectedCode": "TARGET_CAPABILITY",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.09",
+      "acceptanceCase": "P01-C17",
+      "label": "未知变体",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/slides/0/nodes/1/variant",
+          "value": "unregistered"
+        }
+      ],
+      "expectedCode": "UNKNOWN_VARIANT",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.10",
+      "acceptanceCase": "P01-C21",
+      "label": "未知场景版本",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/schemaVersion",
+          "value": "99.0.0"
+        }
+      ],
+      "expectedCode": "UNSUPPORTED_VERSION",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.11",
+      "acceptanceCase": "P01-C22",
+      "label": "同目标同通道强调重叠",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/slides/0/actions/3/target/nodeId",
+          "value": "node.concept-html"
+        }
+      ],
+      "expectedCode": "ACTION_CONFLICT",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.12",
+      "acceptanceCase": "P01-C23",
+      "label": "负偏移越过页面起点",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/slides/0/actions/0/trigger/offsetMs",
+          "value": -100
+        }
+      ],
+      "expectedCode": "TIMING_OUT_OF_RANGE",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.13",
+      "acceptanceCase": "P01-C23",
+      "label": "绘制超出保持区间",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/slides/0/actions/4/durationMs",
+          "value": 5000
+        }
+      ],
+      "expectedCode": "TIMING_OUT_OF_RANGE",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.14",
+      "acceptanceCase": "P01-C24",
+      "label": "资产字节指纹不符",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/assets/0/file/sha256",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ],
+      "expectedCode": "ASSET_HASH_MISMATCH",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.15",
+      "acceptanceCase": "P01-C26",
+      "label": "图片模式与全可编辑要求冲突",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/outputIntent/pptx/degradationPolicy",
+          "value": "require-editable"
+        }
+      ],
+      "expectedCode": "UNSUPPORTED_EXPORT",
+      "runtimeStatus": "not_executed"
+    },
+    {
+      "fixtureId": "fixture.16",
+      "acceptanceCase": "P01-C04",
+      "label": "节点越权改页面列比例",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/slides/0/nodes/1/parameterOverrides",
+          "value": [
+            {
+              "path": "layout.columnRatio",
+              "value": 0.6
+            }
+          ]
+        }
+      ],
+      "expectedCode": "PARAMETER_NOT_ALLOWED",
+      "runtimeStatus": "not_executed"
+    }
+  ]
+}

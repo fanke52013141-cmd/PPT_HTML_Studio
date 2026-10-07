@@ -52,6 +52,13 @@ separate from theme values, reusable presentation variants, instance content,
 and derived geometry/timing. A new theme must reuse registered public
 capabilities rather than duplicate theme-specific business components.
 
+The P01 minimum definition cards and source fixtures are in
+`docs/contracts/html-presentation/definitions/README.md`; execution evidence is
+`docs/plans/p01-definition-completion.md`. These specify draft scene fields,
+not an implemented Schema, runtime registry, renderer, or public API. Consult
+the applicable cards before implementing P02/P03 capabilities and keep their
+definition, implementation, and verification states separate.
+
 When a rule is insufficient, update its owning document, contract index,
 CHANGELOG, affected definitions/models, implementation, and relevant validation
 in the same change as applicable. Distinguish implementation bugs from rule,

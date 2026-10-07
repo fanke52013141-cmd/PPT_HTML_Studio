@@ -1,0 +1,120 @@
+{
+  "kind": "node-fragment-not-document",
+  "contextRef": "scene.example.json",
+  "additionalContentUnits": [
+    {
+      "contentId": "content.atom-caption",
+      "revision": 1,
+      "kind": "text",
+      "value": "独立图文组合",
+      "required": false,
+      "source": {
+        "kind": "authored",
+        "locator": "原子复用字段例"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "nodeId": "node.atom-group",
+      "typeRef": {
+        "id": "atom.group",
+        "version": "0.1.0"
+      },
+      "data": {
+        "children": [
+          "node.atom-background",
+          "node.atom-image",
+          "node.atom-caption"
+        ],
+        "arrangementRef": {
+          "id": "group.overlay",
+          "version": "0.1.0"
+        },
+        "childConstraints": {
+          "node.atom-background": {
+            "x": 0,
+            "y": 0,
+            "width": 600,
+            "height": 600
+          },
+          "node.atom-image": {
+            "x": 100,
+            "y": 40,
+            "width": 400,
+            "height": 400
+          },
+          "node.atom-caption": {
+            "x": 40,
+            "y": 460,
+            "width": 520,
+            "height": 100
+          }
+        },
+        "transform": {
+          "translateX": 0,
+          "translateY": 0,
+          "rotateDeg": 0,
+          "scaleX": 1,
+          "scaleY": 1
+        },
+        "clip": "allocated-box"
+      }
+    },
+    {
+      "nodeId": "node.atom-background",
+      "parentNodeId": "node.atom-group",
+      "typeRef": {
+        "id": "atom.vector",
+        "version": "0.1.0"
+      },
+      "data": {
+        "shape": "rect",
+        "viewBox": {
+          "x": 0,
+          "y": 0,
+          "width": 600,
+          "height": 600
+        },
+        "geometry": {
+          "x": 0,
+          "y": 0,
+          "width": 600,
+          "height": 600
+        },
+        "fillRole": "surface",
+        "strokeRole": "none"
+      }
+    },
+    {
+      "nodeId": "node.atom-image",
+      "parentNodeId": "node.atom-group",
+      "typeRef": {
+        "id": "atom.image",
+        "version": "0.1.0"
+      },
+      "data": {
+        "assetRef": {
+          "id": "asset.html-structure",
+          "version": "0.1.0"
+        },
+        "fit": "contain",
+        "alt": "结构图示"
+      }
+    },
+    {
+      "nodeId": "node.atom-caption",
+      "parentNodeId": "node.atom-group",
+      "typeRef": {
+        "id": "atom.text",
+        "version": "0.1.0"
+      },
+      "data": {
+        "contentRef": "content.atom-caption",
+        "role": "caption",
+        "align": "center"
+      }
+    }
+  ],
+  "note": "该片段展示四原子的组合；600×600 分配区域由外部布局提供，组内约束不代表实际排版已通过。group.overlay 是 DEF-GROUP 卡内登记的最小策略。"
+}

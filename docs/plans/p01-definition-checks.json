@@ -1,0 +1,440 @@
+{
+  "recordVersion": 1,
+  "date": "2026-10-07",
+  "stage": "P01",
+  "contractVersion": "0.4.0",
+  "scope": "documentation_and_fixture_consistency_only",
+  "checker": "One-off local review helper; not shipped as product Schema or runtime validator.",
+  "summary": {
+    "checksPassed": 55,
+    "checksFailed": 0,
+    "definitionCards": 19,
+    "boundaryCases": 28,
+    "invalidFixtures": 16
+  },
+  "checks": [
+    {
+      "check": "json_parse",
+      "status": "passed",
+      "scope": 7
+    },
+    {
+      "check": "contract_versions",
+      "status": "passed",
+      "scope": "package/scene/index"
+    },
+    {
+      "check": "definition_count_and_states",
+      "status": "passed",
+      "scope": "19 definitions"
+    },
+    {
+      "check": "definition_rule_references",
+      "status": "passed",
+      "scope": "HPS-001..018"
+    },
+    {
+      "check": "definition_paths_and_ids",
+      "status": "passed",
+      "scope": "all cards"
+    },
+    {
+      "check": "pinned_definition_references",
+      "status": "passed",
+      "scope": "scene definitions"
+    },
+    {
+      "check": "source_shape_and_draft_state",
+      "status": "passed",
+      "scope": "example scene"
+    },
+    {
+      "check": "id_uniqueness",
+      "status": "passed",
+      "scope": "scene identity"
+    },
+    {
+      "check": "slide_order_slots_and_beats",
+      "status": "passed",
+      "scope": "page structure"
+    },
+    {
+      "check": "registered_node_types",
+      "status": "passed",
+      "scope": "node definitions"
+    },
+    {
+      "check": "required_content_reference_coverage",
+      "status": "passed",
+      "scope": "reference coverage only, not semantic speech review"
+    },
+    {
+      "check": "relation_references",
+      "status": "passed",
+      "scope": "contrast relation"
+    },
+    {
+      "check": "public_target_references",
+      "status": "passed",
+      "scope": "stable node/part targets"
+    },
+    {
+      "check": "text_anchor_codepoint_revision_and_context",
+      "status": "passed",
+      "scope": "anchor.html-control"
+    },
+    {
+      "check": "style_ref_and_fixture_status",
+      "status": "passed",
+      "scope": "not a verified product style"
+    },
+    {
+      "check": "style_support_pins",
+      "status": "passed",
+      "scope": "style capability references"
+    },
+    {
+      "check": "font_token_ref_and_min_size",
+      "status": "passed",
+      "scope": "slide-title"
+    },
+    {
+      "check": "font_token_ref_and_min_size",
+      "status": "passed",
+      "scope": "concept-title"
+    },
+    {
+      "check": "font_token_ref_and_min_size",
+      "status": "passed",
+      "scope": "body"
+    },
+    {
+      "check": "font_token_ref_and_min_size",
+      "status": "passed",
+      "scope": "caption"
+    },
+    {
+      "check": "asset_hash_and_relative_path",
+      "status": "passed",
+      "scope": "asset.html-structure"
+    },
+    {
+      "check": "svg_size_and_no_external_script",
+      "status": "passed",
+      "scope": "asset.html-structure"
+    },
+    {
+      "check": "asset_hash_and_relative_path",
+      "status": "passed",
+      "scope": "asset.image-illustration"
+    },
+    {
+      "check": "svg_size_and_no_external_script",
+      "status": "passed",
+      "scope": "asset.image-illustration"
+    },
+    {
+      "check": "pending_font_not_fabricated",
+      "status": "passed",
+      "scope": "font.p01-placeholder"
+    },
+    {
+      "check": "figure_asset_and_fit",
+      "status": "passed",
+      "scope": "node.concept-html"
+    },
+    {
+      "check": "figure_asset_and_fit",
+      "status": "passed",
+      "scope": "node.concept-image"
+    },
+    {
+      "check": "four_atom_fragment",
+      "status": "passed",
+      "scope": "node fragment, not a rendered page"
+    },
+    {
+      "check": "manual_timing_order_and_bounds",
+      "status": "passed",
+      "scope": "manual timing only"
+    },
+    {
+      "check": "action_range_and_capability",
+      "status": "passed",
+      "scope": "action.reveal-html"
+    },
+    {
+      "check": "action_range_and_capability",
+      "status": "passed",
+      "scope": "action.reveal-image"
+    },
+    {
+      "check": "action_range_and_capability",
+      "status": "passed",
+      "scope": "action.highlight-html"
+    },
+    {
+      "check": "action_range_and_capability",
+      "status": "passed",
+      "scope": "action.highlight-image"
+    },
+    {
+      "check": "action_range_and_capability",
+      "status": "passed",
+      "scope": "action.annotate-control"
+    },
+    {
+      "check": "expected_timing_matches_document_arithmetic",
+      "status": "passed",
+      "scope": "five actions"
+    },
+    {
+      "check": "sample_action_channels_no_overlap",
+      "status": "passed",
+      "scope": "sample only, not general conflict validator"
+    },
+    {
+      "check": "snapshot_times_and_output_mode",
+      "status": "passed",
+      "scope": "output intent, no export"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.01"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.02"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.03"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.04"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.05"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.06"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.07"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.08"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.09"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.10"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.11"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.12"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.13"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.14"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.15"
+    },
+    {
+      "check": "invalid_fixture_paths_and_registered_code",
+      "status": "passed",
+      "scope": "fixture.16"
+    },
+    {
+      "check": "boundary_case_count",
+      "status": "passed",
+      "scope": "28 cases"
+    },
+    {
+      "check": "markdown_relative_links",
+      "status": "passed",
+      "scope": 24
+    }
+  ],
+  "notVerified": [
+    "browser resource/font readiness",
+    "actual typography and geometry",
+    "visual quality",
+    "seek/frame rendering",
+    "audio alignment integration",
+    "MP4 encoding",
+    "PPTX compatibility",
+    "production validator diagnostic execution"
+  ],
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "1640280470eea52467ea8fa219e2304559f0d97858af25648af06a0d5f21e34b"
+    },
+    {
+      "path": "docs/contracts/html-presentation/01-building-and-ownership.md",
+      "sha256": "f890d4249680a95ec871375120f2cf44a7c8521b2ac834d8c80ad2a4a1bfc969"
+    },
+    {
+      "path": "docs/contracts/html-presentation/02-capabilities.md",
+      "sha256": "3f968340dd514d980eed10182fc37dca33f37a117eaae1c9f1570d7ad577cd8b"
+    },
+    {
+      "path": "docs/contracts/html-presentation/03-data-and-runtime.md",
+      "sha256": "874a8c54c2ae0edc4d0b28a4a126c8ae838a4181c708b344ac475c83398122a9"
+    },
+    {
+      "path": "docs/contracts/html-presentation/04-production-and-compatibility.md",
+      "sha256": "163f1a96808bb753f4fef0aebe3c70cdc0d18af5b3ef77b3b1b20fa24b57932e"
+    },
+    {
+      "path": "docs/contracts/html-presentation/05-definition-template.md",
+      "sha256": "d5b5f3e9741f3da527774936622ce8e36e7aa6fb1e6799751d41ac34c28b3331"
+    },
+    {
+      "path": "docs/contracts/html-presentation/CHANGELOG.md",
+      "sha256": "0381013d8b51b61e0c5146c4bf99540cbbeb470687d8e42e3b411153f64f7629"
+    },
+    {
+      "path": "docs/contracts/html-presentation/contract-index.json",
+      "sha256": "a139c7257cdce675d6c0b2a0ee5e1d5142dc2007179c41048263dcbd428d3912"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/01-scene.md",
+      "sha256": "92c0b244a65af7274273cee5f8500840fd4251eed420bd374883c25738ed1b4b"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/02-atoms.md",
+      "sha256": "a0581786823c648eb87837c8d3136bb9c99079ee3378242e8ccba06cf0202fb1"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/03-concept.md",
+      "sha256": "ba0c3861096dbd79c2e8b746b55299545a3f950b144604135eabe1c5da152aa0"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/04-layout-recipe.md",
+      "sha256": "ab4e196e6b127088c6c112d264c867188575760babf9ea77f291ee674bfb6cf5"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/05-style-resolution.md",
+      "sha256": "0eab8fd15c4d8d7f7fd274689b35a24ef6b2d92b3262c7da7ba97552e03d1b3c"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/06-assets.md",
+      "sha256": "9617f311851d855269c0a7e2b2684d7267ad3f90052f780e229e9274c69abae2"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/07-target-geometry.md",
+      "sha256": "8130d2a59c81575991e2e4903065abc587e9e2a92ad3c5f70bf66afe24d34ca5"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/08-timeline-actions.md",
+      "sha256": "1880e4a6dbc52b9368c89530b3727c2600195b0302928a96aa3f14cd8b9e2cba"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/09-readiness-diagnostics.md",
+      "sha256": "e52326d0c7e6381bb7cfd2a9566bee8515a64a24f097d93827520c5bb7c6a9af"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/10-edit-output.md",
+      "sha256": "a66e5bdc569277c41845bad6dfed3375989cd13659984b3c9dfdc8d0829857de"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/11-boundaries-acceptance.md",
+      "sha256": "b110515330dadb2bc0b8981482ed7da0a0b70d93ef3e41fcc761d1037f5a1064"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/definition-index.json",
+      "sha256": "aab9de09fe98e248b7a4e6405dc119a79ce1f1aeb45300759b1033365a8e213e"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/examples/assets/html-structure.svg",
+      "sha256": "b64b75b1b083f399beca661eee15aaac64ff4113c8cca5f9699f30542d9120e8"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/examples/assets/image-illustration.svg",
+      "sha256": "e3ac592ae627f163c94b0dace3b98ca90c3a108e35b122f15f46f20ccde4bc03"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/examples/atoms.fragment.example.json",
+      "sha256": "2da6f8db534b92597cf44c002b4efdc8468cfe9972d3c725f929bd272c45d076"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/examples/cases.example.json",
+      "sha256": "586a82b5af27784b0edcfdabbdb3dbb85be425f372191083b4cd4b59ad1d1d3b"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/examples/README.md",
+      "sha256": "672d5fc8be573e93e7372c287f2ea229c2fccb96b18037af4d6b93ae39635405"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/examples/scene.example.json",
+      "sha256": "ed596cea8544b8665827e9eade0e074973ceb38a7d304264ceb0ebf9179c96ce"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/examples/style.fixture.json",
+      "sha256": "5dfb0a074f91dbc9e4c04dfe56f6b93a35e717b38e9ac353d5368c32d3cbeb42"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/examples/timing.expected.json",
+      "sha256": "7a6564cabdb265d79e0a4973076096afe4f3535e6e52f16632bee7a7df41311e"
+    },
+    {
+      "path": "docs/contracts/html-presentation/definitions/README.md",
+      "sha256": "4ad6152291bd3bf3c395c4f3b7949c64d86e115142572606e603ac021d50d3e4"
+    },
+    {
+      "path": "docs/contracts/html-presentation/README.md",
+      "sha256": "920e761927d5b32010a3adb56c8cae0c56e30ea06763c2cf5c62a436250fe66c"
+    },
+    {
+      "path": "docs/plans/html-studio-implementation-plan.md",
+      "sha256": "b05dd2f83bfe304720c9510bde0cb0a8d095835b397e7ed6b101f280b55d3d15"
+    },
+    {
+      "path": "docs/plans/p01-definition-completion.md",
+      "sha256": "bc9517b593a7b2a0b342f6d8280e3acbb89b4ce4ab5d867b8d93f79420af30d5"
+    },
+    {
+      "path": "docs/research/2026-10-07-skill-and-workflow-reports/implementation-cards.md",
+      "sha256": "e4eaa8ebd423ae1500392daaf90c5247d04ca2182b5028c33c466ec09b1ffba8"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4b9d0575e974ee57de84b1379d4b7c490b760b3912a6d66ef9907f2caafd372c"
+    }
+  ]
+}

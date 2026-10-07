@@ -1,0 +1,630 @@
+{
+  "schemaVersion": "0.1.0",
+  "contractVersion": "0.4.0",
+  "documentId": "document.p01-comparison",
+  "revision": 1,
+  "title": "HTML 与独立插图结合：最小定义样例",
+  "language": "zh-CN",
+  "purpose": "说明结构可控与视觉素材如何组合",
+  "authoringState": "draft",
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "unit": "design-unit",
+    "safeInsets": {
+      "top": 72,
+      "right": 96,
+      "bottom": 72,
+      "left": 96
+    }
+  },
+  "styleRef": {
+    "id": "style.p01-neutral-fixture",
+    "version": "0.1.0"
+  },
+  "definitionRefs": [
+    {
+      "id": "scene.document",
+      "version": "0.1.0"
+    },
+    {
+      "id": "atom.text",
+      "version": "0.1.0"
+    },
+    {
+      "id": "atom.image",
+      "version": "0.1.0"
+    },
+    {
+      "id": "atom.vector",
+      "version": "0.1.0"
+    },
+    {
+      "id": "atom.group",
+      "version": "0.1.0"
+    },
+    {
+      "id": "component.concept",
+      "version": "0.1.0"
+    },
+    {
+      "id": "layout.two-column",
+      "version": "0.1.0"
+    },
+    {
+      "id": "recipe.two-concept-contrast",
+      "version": "0.1.0"
+    },
+    {
+      "id": "style.pack",
+      "version": "0.1.0"
+    },
+    {
+      "id": "parameters.resolve",
+      "version": "0.1.0"
+    },
+    {
+      "id": "asset.version",
+      "version": "0.1.0"
+    },
+    {
+      "id": "target.resolve",
+      "version": "0.1.0"
+    },
+    {
+      "id": "timeline.resolve",
+      "version": "0.1.0"
+    },
+    {
+      "id": "action.reveal",
+      "version": "0.1.0"
+    },
+    {
+      "id": "action.highlight",
+      "version": "0.1.0"
+    },
+    {
+      "id": "action.annotate",
+      "version": "0.1.0"
+    },
+    {
+      "id": "readiness.report",
+      "version": "0.1.0"
+    },
+    {
+      "id": "edit.proposal",
+      "version": "0.1.0"
+    },
+    {
+      "id": "output.intent",
+      "version": "0.1.0"
+    }
+  ],
+  "contentUnits": [
+    {
+      "contentId": "content.page-title",
+      "revision": 1,
+      "kind": "text",
+      "value": "让画面既精美，又可控制",
+      "required": true,
+      "source": {
+        "kind": "authored",
+        "locator": "P01 内部演示内容，非外部研究事实"
+      }
+    },
+    {
+      "contentId": "content.html-title",
+      "revision": 1,
+      "kind": "text",
+      "value": "HTML 结构化渲染",
+      "required": true,
+      "source": {
+        "kind": "authored",
+        "locator": "P01 内部演示内容，非外部研究事实"
+      }
+    },
+    {
+      "contentId": "content.html-body",
+      "revision": 1,
+      "kind": "text",
+      "value": "文字、布局和动画可以独立控制；插图作为独立素材加入。",
+      "required": true,
+      "source": {
+        "kind": "authored",
+        "locator": "P01 内部演示内容，非外部研究事实"
+      }
+    },
+    {
+      "contentId": "content.image-title",
+      "revision": 1,
+      "kind": "text",
+      "value": "独立插图生成",
+      "required": true,
+      "source": {
+        "kind": "authored",
+        "locator": "P01 内部演示内容，非外部研究事实"
+      }
+    },
+    {
+      "contentId": "content.image-body",
+      "revision": 1,
+      "kind": "text",
+      "value": "插图负责画面的视觉表现；标题、说明和讲解动作由 HTML 组织。",
+      "required": true,
+      "source": {
+        "kind": "authored",
+        "locator": "P01 内部演示内容，非外部研究事实"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "relationId": "relation.html-image",
+      "type": "contrast",
+      "contentIds": [
+        "content.html-body",
+        "content.image-body"
+      ],
+      "required": true
+    }
+  ],
+  "assets": [
+    {
+      "assetId": "asset.html-structure",
+      "version": "0.1.0",
+      "kind": "image",
+      "purpose": "illustration",
+      "state": "available",
+      "file": {
+        "path": "assets/html-structure.svg",
+        "mimeType": "image/svg+xml",
+        "sha256": "b64b75b1b083f399beca661eee15aaac64ff4113c8cca5f9699f30542d9120e8"
+      },
+      "intrinsic": {
+        "width": 400,
+        "height": 400
+      },
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 400,
+        "height": 400
+      },
+      "safeRegion": {
+        "x": 0.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8
+      },
+      "anchors": [],
+      "styleCompatibility": [
+        "style.p01-neutral-fixture"
+      ],
+      "provenance": {
+        "kind": "authored",
+        "description": "P01 自绘灰度几何夹具，非最终产品插图"
+      }
+    },
+    {
+      "assetId": "asset.image-illustration",
+      "version": "0.1.0",
+      "kind": "image",
+      "purpose": "illustration",
+      "state": "available",
+      "file": {
+        "path": "assets/image-illustration.svg",
+        "mimeType": "image/svg+xml",
+        "sha256": "e3ac592ae627f163c94b0dace3b98ca90c3a108e35b122f15f46f20ccde4bc03"
+      },
+      "intrinsic": {
+        "width": 400,
+        "height": 400
+      },
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 400,
+        "height": 400
+      },
+      "safeRegion": {
+        "x": 0.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8
+      },
+      "anchors": [],
+      "styleCompatibility": [
+        "style.p01-neutral-fixture"
+      ],
+      "provenance": {
+        "kind": "authored",
+        "description": "P01 自绘灰度几何夹具，非最终产品插图"
+      }
+    },
+    {
+      "assetId": "font.p01-placeholder",
+      "version": "0.1.0",
+      "kind": "font",
+      "purpose": "body-font",
+      "state": "pending",
+      "fontMetadata": {
+        "family": "P01FixtureSans",
+        "weights": [
+          400,
+          700
+        ],
+        "requestedScripts": [
+          "Hans",
+          "Latin"
+        ]
+      },
+      "provenance": {
+        "kind": "authored",
+        "description": "仅字体需求标识；P02 选择实际字体文件后创建正式版本，当前没有字体字节"
+      }
+    }
+  ],
+  "slideOrder": [
+    "slide.comparison"
+  ],
+  "slides": [
+    {
+      "slideId": "slide.comparison",
+      "revision": 1,
+      "title": "两种能力的组合",
+      "purpose": "分别说明 HTML 结构与独立插图，并解释组合关系",
+      "layoutRef": {
+        "id": "layout.two-column",
+        "version": "0.1.0"
+      },
+      "recipeRef": {
+        "id": "recipe.two-concept-contrast",
+        "version": "0.1.0"
+      },
+      "nodes": [
+        {
+          "nodeId": "node.page-title",
+          "typeRef": {
+            "id": "atom.text",
+            "version": "0.1.0"
+          },
+          "data": {
+            "contentRef": "content.page-title",
+            "role": "slide-title"
+          }
+        },
+        {
+          "nodeId": "node.concept-html",
+          "typeRef": {
+            "id": "component.concept",
+            "version": "0.1.0"
+          },
+          "data": {
+            "titleContentRef": "content.html-title",
+            "bodyContentRef": "content.html-body",
+            "figure": {
+              "assetRef": {
+                "id": "asset.html-structure",
+                "version": "0.1.0"
+              },
+              "fit": "contain",
+              "alt": "独立排版区域组成的结构图示"
+            }
+          },
+          "initialVisibility": "hidden"
+        },
+        {
+          "nodeId": "node.concept-image",
+          "typeRef": {
+            "id": "component.concept",
+            "version": "0.1.0"
+          },
+          "data": {
+            "titleContentRef": "content.image-title",
+            "bodyContentRef": "content.image-body",
+            "figure": {
+              "assetRef": {
+                "id": "asset.image-illustration",
+                "version": "0.1.0"
+              },
+              "fit": "contain",
+              "alt": "作为独立视觉素材的插图图示"
+            }
+          },
+          "initialVisibility": "hidden"
+        }
+      ],
+      "slots": {
+        "title": "node.page-title",
+        "left": "node.concept-html",
+        "right": "node.concept-image"
+      },
+      "beatIds": [
+        "beat.html",
+        "beat.image",
+        "beat.compare"
+      ],
+      "actions": [
+        {
+          "actionId": "action.reveal-html",
+          "typeRef": {
+            "id": "action.reveal",
+            "version": "0.1.0"
+          },
+          "target": {
+            "nodeId": "node.concept-html",
+            "part": "self"
+          },
+          "trigger": {
+            "beatId": "beat.html",
+            "edge": "start",
+            "offsetMs": 0
+          },
+          "durationMs": 400,
+          "easing": "linear",
+          "endPolicy": {
+            "kind": "keep-to-page-end"
+          }
+        },
+        {
+          "actionId": "action.reveal-image",
+          "typeRef": {
+            "id": "action.reveal",
+            "version": "0.1.0"
+          },
+          "target": {
+            "nodeId": "node.concept-image",
+            "part": "self"
+          },
+          "trigger": {
+            "beatId": "beat.image",
+            "edge": "start",
+            "offsetMs": 0
+          },
+          "durationMs": 400,
+          "easing": "linear",
+          "endPolicy": {
+            "kind": "keep-to-page-end"
+          }
+        },
+        {
+          "actionId": "action.highlight-html",
+          "typeRef": {
+            "id": "action.highlight",
+            "version": "0.1.0"
+          },
+          "target": {
+            "nodeId": "node.concept-html",
+            "part": "self"
+          },
+          "trigger": {
+            "beatId": "beat.compare",
+            "edge": "start",
+            "offsetMs": 0
+          },
+          "durationMs": 200,
+          "easing": "linear",
+          "params": {
+            "mode": "outline",
+            "colorRole": "accent"
+          },
+          "endPolicy": {
+            "kind": "restore-at-beat-end",
+            "beatId": "beat.compare"
+          }
+        },
+        {
+          "actionId": "action.highlight-image",
+          "typeRef": {
+            "id": "action.highlight",
+            "version": "0.1.0"
+          },
+          "target": {
+            "nodeId": "node.concept-image",
+            "part": "self"
+          },
+          "trigger": {
+            "beatId": "beat.compare",
+            "edge": "start",
+            "offsetMs": 0
+          },
+          "durationMs": 200,
+          "easing": "linear",
+          "params": {
+            "mode": "outline",
+            "colorRole": "accent"
+          },
+          "endPolicy": {
+            "kind": "restore-at-beat-end",
+            "beatId": "beat.compare"
+          }
+        },
+        {
+          "actionId": "action.annotate-control",
+          "typeRef": {
+            "id": "action.annotate",
+            "version": "0.1.0"
+          },
+          "target": {
+            "nodeId": "node.concept-html",
+            "part": "body",
+            "selector": {
+              "kind": "text-anchor",
+              "anchorId": "anchor.html-control"
+            }
+          },
+          "trigger": {
+            "beatId": "beat.compare",
+            "edge": "start",
+            "offsetMs": 500
+          },
+          "durationMs": 800,
+          "easing": "linear",
+          "params": {
+            "shape": "underline",
+            "colorRole": "accent",
+            "strokeWidth": 4
+          },
+          "endPolicy": {
+            "kind": "remove-at-beat-end",
+            "beatId": "beat.compare"
+          }
+        }
+      ],
+      "parameterOverrides": [],
+      "locks": []
+    }
+  ],
+  "narrationBeats": [
+    {
+      "beatId": "beat.html",
+      "revision": 1,
+      "slideId": "slide.comparison",
+      "text": "先看 HTML。文字、布局和动画作为独立元素，可以分别编辑和控制。",
+      "contentRefs": [
+        "content.html-title",
+        "content.html-body"
+      ],
+      "targetRefs": [
+        {
+          "nodeId": "node.concept-html",
+          "part": "self"
+        }
+      ]
+    },
+    {
+      "beatId": "beat.image",
+      "revision": 1,
+      "slideId": "slide.comparison",
+      "text": "再看配图。我们生成独立插图，让它负责画面的视觉表现。",
+      "contentRefs": [
+        "content.image-title",
+        "content.image-body"
+      ],
+      "targetRefs": [
+        {
+          "nodeId": "node.concept-image",
+          "part": "self"
+        }
+      ]
+    },
+    {
+      "beatId": "beat.compare",
+      "revision": 1,
+      "slideId": "slide.comparison",
+      "text": "把两者结合起来：HTML 组织可控制的结构，独立插图提供视觉表现。",
+      "contentRefs": [
+        "content.html-body",
+        "content.image-body",
+        "content.page-title"
+      ],
+      "targetRefs": [
+        {
+          "nodeId": "node.concept-html",
+          "part": "body"
+        },
+        {
+          "nodeId": "node.concept-image",
+          "part": "body"
+        },
+        {
+          "nodeId": "node.page-title",
+          "part": "self"
+        }
+      ],
+      "relationRefs": [
+        "relation.html-image"
+      ]
+    }
+  ],
+  "textAnchors": [
+    {
+      "anchorId": "anchor.html-control",
+      "target": {
+        "nodeId": "node.concept-html",
+        "part": "body"
+      },
+      "contentRef": "content.html-body",
+      "textRevision": 1,
+      "quote": "文字、布局和动画",
+      "range": {
+        "start": 0,
+        "end": 8
+      },
+      "prefix": "",
+      "suffix": "可以独立控制；插图作为独立素材加"
+    }
+  ],
+  "timingInput": {
+    "mode": "manual",
+    "unit": "ms",
+    "pageDurations": [
+      {
+        "slideId": "slide.comparison",
+        "durationMs": 13000
+      }
+    ],
+    "beatIntervals": [
+      {
+        "beatId": "beat.html",
+        "slideId": "slide.comparison",
+        "startMs": 0,
+        "endMs": 4000,
+        "source": "manual"
+      },
+      {
+        "beatId": "beat.image",
+        "slideId": "slide.comparison",
+        "startMs": 4000,
+        "endMs": 8000,
+        "source": "manual"
+      },
+      {
+        "beatId": "beat.compare",
+        "slideId": "slide.comparison",
+        "startMs": 8000,
+        "endMs": 12000,
+        "source": "manual"
+      }
+    ]
+  },
+  "outputIntent": {
+    "formats": [
+      "html",
+      "mp4",
+      "pptx"
+    ],
+    "video": {
+      "width": 1920,
+      "height": 1080,
+      "fps": {
+        "numerator": 30,
+        "denominator": 1
+      },
+      "codec": "h264"
+    },
+    "pptx": {
+      "mode": "image-steps",
+      "degradationPolicy": "allow-images",
+      "snapshotTimes": [
+        {
+          "slideId": "slide.comparison",
+          "timeMs": 400
+        },
+        {
+          "slideId": "slide.comparison",
+          "timeMs": 4400
+        },
+        {
+          "slideId": "slide.comparison",
+          "timeMs": 9300
+        },
+        {
+          "slideId": "slide.comparison",
+          "timeMs": 13000
+        }
+      ]
+    }
+  },
+  "extensions": {}
+}

@@ -1,0 +1,239 @@
+{
+  "styleId": "style.p01-neutral-fixture",
+  "version": "0.1.0",
+  "label": "P01 中性结构夹具，非产品视觉主题",
+  "definitionState": "draft",
+  "use": "structural-fixture",
+  "tokens": {
+    "colors": {
+      "background": "#FFFFFF",
+      "surface": "#F2F4F7",
+      "ink": "#101828",
+      "muted": "#667085",
+      "accent": "#475467",
+      "highlight": "#E4E7EC"
+    },
+    "typography": {
+      "slide-title": {
+        "fontRef": {
+          "id": "font.p01-placeholder",
+          "version": "0.1.0"
+        },
+        "weight": 700,
+        "size": 64,
+        "lineHeight": 1.4,
+        "letterSpacing": 0,
+        "colorRole": "ink"
+      },
+      "concept-title": {
+        "fontRef": {
+          "id": "font.p01-placeholder",
+          "version": "0.1.0"
+        },
+        "weight": 700,
+        "size": 40,
+        "lineHeight": 1.4,
+        "letterSpacing": 0,
+        "colorRole": "ink"
+      },
+      "body": {
+        "fontRef": {
+          "id": "font.p01-placeholder",
+          "version": "0.1.0"
+        },
+        "weight": 400,
+        "size": 32,
+        "lineHeight": 1.4,
+        "letterSpacing": 0,
+        "colorRole": "ink"
+      },
+      "caption": {
+        "fontRef": {
+          "id": "font.p01-placeholder",
+          "version": "0.1.0"
+        },
+        "weight": 400,
+        "size": 24,
+        "lineHeight": 1.4,
+        "letterSpacing": 0,
+        "colorRole": "ink"
+      }
+    },
+    "spacing": {
+      "padding": 32,
+      "titleGap": 40,
+      "columnGap": 48,
+      "innerGap": 24
+    },
+    "stroke": {
+      "width": 4,
+      "radius": 16
+    },
+    "concept": {
+      "figureRatio": 0.42
+    },
+    "readability": {
+      "minTextSize": 24,
+      "maxBodyLines": 6,
+      "maxTitleLines": 2
+    },
+    "motion": {
+      "revealDurationMs": 400,
+      "highlightDurationMs": 200,
+      "drawDurationMs": 800,
+      "easing": "linear"
+    }
+  },
+  "fonts": [
+    {
+      "assetRef": {
+        "id": "font.p01-placeholder",
+        "version": "0.1.0"
+      },
+      "weight": 400
+    },
+    {
+      "assetRef": {
+        "id": "font.p01-placeholder",
+        "version": "0.1.0"
+      },
+      "weight": 700
+    }
+  ],
+  "support": {
+    "components": [
+      {
+        "id": "atom.text",
+        "version": "0.1.0"
+      },
+      {
+        "id": "atom.image",
+        "version": "0.1.0"
+      },
+      {
+        "id": "atom.vector",
+        "version": "0.1.0"
+      },
+      {
+        "id": "atom.group",
+        "version": "0.1.0"
+      },
+      {
+        "id": "component.concept",
+        "version": "0.1.0"
+      }
+    ],
+    "variants": {
+      "component.concept": [
+        "above",
+        "side",
+        "text-only"
+      ]
+    },
+    "layouts": [
+      {
+        "id": "layout.two-column",
+        "version": "0.1.0"
+      }
+    ],
+    "recipes": [
+      {
+        "id": "recipe.two-concept-contrast",
+        "version": "0.1.0"
+      }
+    ],
+    "actions": [
+      {
+        "id": "action.reveal",
+        "version": "0.1.0"
+      },
+      {
+        "id": "action.highlight",
+        "version": "0.1.0"
+      },
+      {
+        "id": "action.annotate",
+        "version": "0.1.0"
+      }
+    ]
+  },
+  "assetPolicy": {
+    "illustrationDescription": "结构夹具用灰度图示，只验证独立资源与引用；P02 再定画风",
+    "iconDescription": "基本几何图标；无文字标签",
+    "paletteRoles": [
+      "surface",
+      "muted",
+      "accent"
+    ],
+    "background": "opaque",
+    "controlGranularity": "one-object-per-asset"
+  },
+  "assetRefs": [
+    {
+      "id": "asset.html-structure",
+      "version": "0.1.0"
+    },
+    {
+      "id": "asset.image-illustration",
+      "version": "0.1.0"
+    }
+  ],
+  "defaults": [
+    {
+      "path": "concept.variant",
+      "value": "above"
+    },
+    {
+      "path": "layout.columnRatio",
+      "value": 0.5
+    }
+  ],
+  "overrideRules": {
+    "layout.columnRatio": {
+      "min": 0.4,
+      "max": 0.6
+    },
+    "layout.columnGap": {
+      "min": 32,
+      "max": 80
+    },
+    "layout.titleGap": {
+      "min": 24,
+      "max": 64
+    },
+    "concept.variant": {
+      "allowed": [
+        "above",
+        "side",
+        "text-only"
+      ]
+    },
+    "concept.figureRatio": {
+      "min": 0.3,
+      "max": 0.5
+    },
+    "text.align": {
+      "allowed": [
+        "start",
+        "center",
+        "end"
+      ]
+    },
+    "text.colorRole": {
+      "allowed": [
+        "ink",
+        "muted",
+        "accent"
+      ]
+    },
+    "stroke.width": {
+      "min": 2,
+      "max": 8
+    }
+  },
+  "references": [],
+  "compositionRules": {
+    "forbiddenCombinations": [],
+    "fallbacks": []
+  }
+}
