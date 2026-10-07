@@ -99,5 +99,11 @@
     "PowerPoint open-check for AC16 (target software availability)",
     "workspace UI panels for html review/approve (service+routes shipped)"
   ],
-  "honesty_notes": "passed 项均为工程验收（可重复命令+退出码+断言）；pending_review/blocked 项不冒充完成；未保存任何密钥或真实用户数据。"
+  "honesty_notes": "passed 项均为工程验收（可重复命令+退出码+断言）；pending_review/blocked 项不冒充完成；未保存任何密钥或真实用户数据。",
+  "blocked_on_service_evidence": {
+    "probe_date": "2026-10-08",
+    "probe": "json_llm_service.generate_json_with_configured_llm availability probe",
+    "result": "400: 未配置大模型 API 密钥（原项目凭据按隔离设计未复制）",
+    "unblock_action": "在应用系统设置配置 LLM API 密钥后，运行 plan/generate 与资产生产各一次即补齐 C02/C03 真实服务证据"
+  }
 }
