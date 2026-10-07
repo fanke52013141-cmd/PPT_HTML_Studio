@@ -64,7 +64,11 @@ RENDER_STAGE_PROGRESS = {
     "digital_human": 74,
     "validating_color": 88,
     "finalizing": 96,
+    # HTML 后端逐页渲染阶段：progress 以 "rendering:<slide_id>" 形式上报，
+    # 统一映射到逐页渲染区间。
+    "composing": 80,
 }
+RENDER_STAGE_PROGRESS_DEFAULT_HTML = 52
 
 RENDER_SUBMISSION_SCHEMA_VERSION = 1
 RENDER_OUTPUT_FPS = 30
@@ -1193,7 +1197,12 @@ class VideoRenderService:
             task_id,
             status="running",
             stage=stage,
-            progress=RENDER_STAGE_PROGRESS.get(stage, 0),
+            progress=RENDER_STAGE_PROGRESS.get(stage)
+            or (
+                RENDER_STAGE_PROGRESS_DEFAULT_HTML
+                if stage.startswith("rendering:")
+                else 0
+            ),
         )
 
     def _prune_tasks_locked(self) -> None:

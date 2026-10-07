@@ -10,6 +10,7 @@ registration and digital-human composition stay in
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -105,6 +106,30 @@ class HtmlRenderRunner:
 
     # -- subprocess stages -----------------------------------------------
 
+    def _media_env(self) -> dict[str, str]:
+        """Resolve ffmpeg/ffprobe once via the shared media-tool lookup and
+        hand them to the node subprocess (the cjs reads FFMPEG_BIN/
+        FFPROBE_BIN); bare PATH lookups would miss env-configured installs."""
+        import importlib.util
+
+        env = dict(os.environ)
+        spec = importlib.util.spec_from_file_location(
+            "hps_media_tools",
+            self.dependencies.repo_root / "scripts" / "media_tools.py",
+        )
+        module = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(module)
+            for name in ("ffmpeg", "ffprobe"):
+                resolved = module.resolve_media_tool(
+                    name, repo_root=self.dependencies.repo_root
+                )
+                if resolved:
+                    env[f"{name.upper()}_BIN"] = resolved
+        except Exception:
+            pass
+        return env
+
     def _render_segment(
         self,
         scene_path: Path,
@@ -128,6 +153,7 @@ class HtmlRenderRunner:
             encoding="utf-8",
             errors="replace",
             timeout_sec=deps.stage_timeout_sec,
+            env=self._media_env(),
         )
         if result.returncode != 0:
             raise HtmlRenderError(
@@ -219,6 +245,8 @@ class HtmlRenderRunner:
         work_dir = Path(run_dir) / "planning" / "html_visual" / "render_work"
         work_dir.mkdir(parents=True, exist_ok=True)
         segments: list[Path] = []
+        output_path: Path | None = None
+        completed = False
         try:
             for index, slide_id in enumerate(slide_ids):
                 set_stage(f"rendering:{slide_id}")
@@ -255,12 +283,17 @@ class HtmlRenderRunner:
             set_stage("composing")
             self._concat(segments, output_path)
             probe = self._probe(output_path)
+            completed = True
         finally:
             for segment in segments:
                 segment.unlink(missing_ok=True)
-            for pattern in ("bound-*.json", "binding-*.json"):
+            for pattern in ("bound-*.json", "binding-*.json", "segment-*.mp4"):
                 for leftover in work_dir.glob(pattern):
                     leftover.unlink(missing_ok=True)
+            # Never leave a partial MP4 in the user's video collection: the
+            # artifact service lists every *.mp4 in that directory.
+            if output_path is not None and not completed:
+                output_path.unlink(missing_ok=True)
         return HtmlRenderResult(
             output_path=output_path,
             output_filename=output_filename,

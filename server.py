@@ -664,7 +664,6 @@ try:
     configure_html_visual_service(
         HtmlVisualDependencies(
             artifact_lock=project_artifact_lock,
-            write_json_atomic=write_json_atomic,
         )
     )
     app.include_router(html_visual_router)

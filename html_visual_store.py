@@ -21,7 +21,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import tempfile
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
@@ -56,6 +58,23 @@ def scene_path(run_dir: str | Path, slide_id: str) -> Path:
 
 def revision_path(run_dir: str | Path) -> Path:
     return Path(run_dir) / REVISION_FILE
+
+
+def _atomic_write_bytes(path: Path, payload: bytes) -> None:
+    """Same-directory temp file + os.replace so the stored bytes are exactly
+    ``payload``: the recorded digest always matches the on-disk document and
+    an identical re-save compares equal on the byte level."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle, temp_name = tempfile.mkstemp(
+        dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(handle, "wb") as file:
+            file.write(payload)
+        os.replace(temp_name, path)
+    except Exception:
+        Path(temp_name).unlink(missing_ok=True)
+        raise
 
 
 def _document_bytes(scene: dict[str, Any]) -> bytes:
@@ -98,11 +117,21 @@ def load_scene_with_revision(
     path = scene_path(run_dir, slide_id)
     if not path.is_file():
         return None
+    revision_before = _read_revision(run_dir)["revision"]
     payload = path.read_bytes()
+    revision_after = _read_revision(run_dir)["revision"]
+    if revision_before != revision_after:
+        raise HtmlVisualError(
+            "场景正在被并发写入，请重试读取"
+        )
+    try:
+        scene = json.loads(payload.decode("utf-8"))
+    except Exception as exc:
+        raise HtmlVisualError(f"场景文档损坏：{slide_id}") from exc
     return {
-        "scene": json.loads(payload.decode("utf-8")),
+        "scene": scene,
         "sha256": _sha256(payload),
-        "revision": _read_revision(run_dir)["revision"],
+        "revision": revision_after,
     }
 
 
@@ -113,7 +142,6 @@ def save_scene(
     expected_revision: int,
     *,
     lock: Callable[[Path], Any] | None = None,
-    write_json_atomic: Callable[[str | Path, Any], None] | None = None,
 ) -> dict[str, Any]:
     """Store one scene document under optimistic concurrency.
 
@@ -127,6 +155,10 @@ def save_scene(
     payload = _document_bytes(scene)
     digest = _sha256(payload)
     guard = lock(Path(run_dir)) if lock else None
+    if guard is not None:
+        # Explicit acquire/release: the injected factory returns the lock
+        # object, and a bare __exit__ without __enter__ would be a no-op.
+        guard.acquire()
     try:
         current = _read_revision(run_dir)["revision"]
         if expected_revision != current:
@@ -139,30 +171,19 @@ def save_scene(
                     "changed": False,
                     "sha256": _sha256(existing),
                 }
-        if write_json_atomic:
-            write_json_atomic(path, json.loads(payload.decode("utf-8")))
-        else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(payload)
-        revision_path(run_dir).parent.mkdir(parents=True, exist_ok=True)
-        if write_json_atomic:
-            write_json_atomic(
-                revision_path(run_dir),
+        _atomic_write_bytes(path, payload)
+        _atomic_write_bytes(
+            revision_path(run_dir),
+            json.dumps(
                 {"revision": current + 1, "last_sha256": digest},
-            )
-        else:
-            revision_path(run_dir).write_text(
-                json.dumps(
-                    {"revision": current + 1, "last_sha256": digest},
-                    ensure_ascii=False,
-                    indent=2,
-                ),
-                encoding="utf-8",
-            )
+                ensure_ascii=False,
+                indent=2,
+            ).encode("utf-8"),
+        )
         return {"revision": current + 1, "changed": True, "sha256": digest}
     finally:
-        if guard is not None and hasattr(guard, "__exit__"):
-            guard.__exit__(None, None, None)
+        if guard is not None:
+            guard.release()
 
 
 def read_status(

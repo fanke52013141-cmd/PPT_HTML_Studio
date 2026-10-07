@@ -24,10 +24,8 @@ class HtmlVisualDependencies:
     def __init__(
         self,
         artifact_lock: Any = None,
-        write_json_atomic: Any = None,
     ) -> None:
         self.artifact_lock = artifact_lock
-        self.write_json_atomic = write_json_atomic
 
 
 _dependencies = HtmlVisualDependencies()

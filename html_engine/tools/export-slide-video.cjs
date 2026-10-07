@@ -30,14 +30,14 @@ const framesDir = path.join(workDir, "frames");
 fs.mkdirSync(framesDir);
 
 function ffmpeg(args) {
-  const result = spawnSync("ffmpeg", args, { encoding: "utf8" });
+  const result = spawnSync(process.env.FFMPEG_BIN || "ffmpeg", args, { encoding: "utf8" });
   if (result.status !== 0)
     throw new Error("ffmpeg failed: " + (result.stderr || "").slice(-800));
 }
 
 function ffprobeJson(target) {
   const result = spawnSync(
-    "ffprobe",
+    process.env.FFPROBE_BIN || "ffprobe",
     ["-v", "error", "-print_format", "json", "-show_format", "-show_streams", target],
     { encoding: "utf8" },
   );
@@ -51,16 +51,15 @@ function ffprobeJson(target) {
   const browser = await chromium.launch({
     headless: true,
     executablePath:
-      process.env.HPS_CHROME ||
-      "C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1247/chrome-win64/chrome.exe",
-  });
-  const page = await browser.newPage({
-    viewport: { width: 1600, height: 900 },
-    deviceScaleFactor: 1,
+      process.env.HPS_CHROME || chromium.executablePath(),
   });
   const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
   try {
+    const page = await browser.newPage({
+      viewport: { width: 1600, height: 900 },
+      deviceScaleFactor: 1,
+    });
+    page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(pathToFileURL(path.join(root, "visual/preview/index.html")).href);
     await page.waitForFunction(() => window.visualPlayer?.ready, {}, { timeout: 20000 });
     const applied = await page.evaluate((s) => window.visualPlayer.apply(s), scene);
@@ -81,37 +80,40 @@ function ffprobeJson(target) {
   }
   // No -shortest: the narration tail must never be truncated; the container
   // duration equals the audio length, the last frame holds visually.
-  ffmpeg([
-    "-y",
-    "-framerate", String(fps),
-    "-i", path.join(framesDir, "frame-%05d.png"),
-    "-i", audioPath,
-    "-vf", "scale=1600:900",
-    "-c:v", "libx264",
-    "-pix_fmt", "yuv420p",
-    "-colorspace", "bt709",
-    "-color_primaries", "bt709",
-    "-color_trc", "bt709",
-    "-r", String(fps),
-    "-c:a", "aac",
-    "-b:a", "192k",
-    outputPath,
-  ]);
-  fs.rmSync(workDir, { recursive: true, force: true });
-  const probe = ffprobeJson(outputPath);
-  const video = probe.streams.find((s) => s.codec_type === "video");
-  const audio = probe.streams.find((s) => s.codec_type === "audio");
-  if (!video || !audio) throw new Error("segment missing video or audio stream");
-  console.log(JSON.stringify({
-    format: "hps.visual.slide-video",
-    sceneId: scene.id,
-    frames: frameCount,
-    fps,
-    width: video.width,
-    height: video.height,
-    durationSec: Number(probe.format.duration),
-    audioCodec: audio.codec_name,
-  }));
+  try {
+    ffmpeg([
+      "-y",
+      "-framerate", String(fps),
+      "-i", path.join(framesDir, "frame-%05d.png"),
+      "-i", audioPath,
+      "-vf", "scale=1600:900",
+      "-c:v", "libx264",
+      "-pix_fmt", "yuv420p",
+      "-colorspace", "bt709",
+      "-color_primaries", "bt709",
+      "-color_trc", "bt709",
+      "-r", String(fps),
+      "-c:a", "aac",
+      "-b:a", "192k",
+      outputPath,
+    ]);
+    const probe = ffprobeJson(outputPath);
+    const video = probe.streams.find((s) => s.codec_type === "video");
+    const audio = probe.streams.find((s) => s.codec_type === "audio");
+    if (!video || !audio) throw new Error("segment missing video or audio stream");
+    console.log(JSON.stringify({
+      format: "hps.visual.slide-video",
+      sceneId: scene.id,
+      frames: frameCount,
+      fps,
+      width: video.width,
+      height: video.height,
+      durationSec: Number(probe.format.duration),
+      audioCodec: audio.codec_name,
+    }));
+  } finally {
+    fs.rmSync(workDir, { recursive: true, force: true });
+  }
 })().catch((e) => {
   console.error(e);
   process.exitCode = 1;
