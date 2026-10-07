@@ -82,6 +82,18 @@ downstream-impact requirements still apply when the corresponding feature is
 implemented. Routine compatible fixes within user authorization do not require
 an extra approval step solely because a contract is being updated.
 
+## Visual Capability Boundary Policy
+
+Before choosing or extending an HTML visual style, follow
+`docs/contracts/html-presentation/framework/10-visual-capability-boundaries.md`
+(HPS-035—037, contract 0.9.0). Only code-led styles and limited image-assisted
+styles are in scope. Handdrawn watercolor/pencil master styles, image-heavy
+collage and whole-slide raster animation are currently prohibited. Preserve
+text, data, labels and semantic relationships as code-controlled objects.
+Check the documented asset budget and distinguish allowed design directions
+from implemented capabilities. The watercolor sample failed user visual review;
+retain it as historical evidence, not an approved production style.
+
 ## Visual Production Policy
 
 For HTML artwork allocation, layout templates and visual acceptance, follow

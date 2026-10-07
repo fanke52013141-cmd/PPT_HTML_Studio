@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.8.0",
+  "contract_version": "0.9.0",
   "effective_date": "2026-10-07",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -90,6 +90,9 @@
     },
     {
       "path": "runtime/e2/hero-steps.md"
+    },
+    {
+      "path": "framework/10-visual-capability-boundaries.md"
     }
   ],
   "rules": [
@@ -407,6 +410,33 @@
       "current_enforcement": "design_review",
       "runtime_validation": "not_implemented",
       "clarification": "16:9固定底部字幕安全区；字幕字号独立，实例落实不等于通用后端支持"
+    },
+    {
+      "id": "HPS-035",
+      "title": "风格白名单与禁止范围",
+      "source": "framework/10-visual-capability-boundaries.md",
+      "section": "## HPS-035：风格白名单与禁止范围",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-036",
+      "title": "代码主导与资产预算",
+      "source": "framework/10-visual-capability-boundaries.md",
+      "section": "## HPS-036：代码主导与资产预算",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
+    },
+    {
+      "id": "HPS-037",
+      "title": "能力状态、准入与验收",
+      "source": "framework/10-visual-capability-boundaries.md",
+      "section": "## HPS-037：能力状态、准入与验收",
+      "normative_status": "active_design_rule",
+      "current_enforcement": "design_review",
+      "runtime_validation": "not_implemented"
     }
   ],
   "definition_index": "definitions/definition-index.json",

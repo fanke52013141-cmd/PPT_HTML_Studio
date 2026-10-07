@@ -40,5 +40,6 @@
   "pause": "passed",
   "pageErrors": [],
   "browser": "155.0.8059.12",
-  "visualReview": "agent-inspected; user review pending"
+  "visualReview": "user_changes_requested",
+  "visualReviewReason": "用户认为仅做出元素，与目标手绘质感差距大；该主风格退出当前建设范围。"
 }

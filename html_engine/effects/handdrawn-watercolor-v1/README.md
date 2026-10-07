@@ -1,5 +1,7 @@
 # 彩铅水彩手绘风格样板 0.1.0
 
+> 当前状态：用户视觉审阅未通过；手绘水彩已退出当前建设范围。以下保留历史实验，不得用作已批准风格。后续遵守[视觉能力边界表](../../../docs/contracts/html-presentation/framework/10-visual-capability-boundaries.md)。
+
 [打开完整样板](index.html) · [效果图板](atlas.html) · [主风格规范](../../../docs/styles/handdrawn-science/README.md)
 
 这是独立风格实验，承接用户给出的彩铅水彩参考图。用同一组真实组件完成一张12秒蒸发讲解页，底部100px专用字幕区。当前为一页单对象过程，不宣称其他页面布局已经完成，也未集成既有项目的语音和数字人。

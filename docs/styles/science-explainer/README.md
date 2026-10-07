@@ -1,6 +1,6 @@
 # 初始风格任务书：知识科普
 
-> 当前优先方向已改为[手绘科普风](../handdrawn-science/README.md)。下文为早期风格探索记录。
+> 当前先执行[视觉能力边界表](../../contracts/html-presentation/framework/10-visual-capability-boundaries.md)。手绘主风格已退出建设范围；本文件保留早期科普风格探索，不能视为新风格已获批准。
 
 > 最新审阅：2026-10-07 用户认为首版拥挤、缺乏美感，状态 changes_requested。
 > 下文保留首次试制记录；待审阅表述已由此次结论取代。按 [视觉重制任务书](visual-production-revision.md) 继续，尚无已批准模板。
