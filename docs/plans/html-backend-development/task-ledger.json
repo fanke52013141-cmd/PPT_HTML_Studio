@@ -196,13 +196,16 @@
         "B02"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "partial",
       "acceptance": [
         "AC10"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "html_asset_service.py",
+        "checks/test_html_asset_service.py"
+      ],
+      "commit": "this-round",
+      "note": "资产服务核已实现并验证：请求哈希命中复用、真实 PNG 解码（尺寸/alpha bbox/透明声明门禁/边缘带底检测）、归一化锚点登记、清单哈希校验；provider 经注入包装 ai_provider_service，不做整页白底归一化。真实 provider 端到端与图集提取（分区清单/独立输出核验）待接入实际模型后执行（AC10 的真实服务项）。"
     },
     {
       "id": "C04",
