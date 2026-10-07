@@ -346,7 +346,7 @@
         "checks/test_html_pptx_snapshot.py"
       ],
       "commit": "this-round",
-      "note": "快照/分步 PPTX 核已实现并验证：共享 bundle 渲染显式时间点 → 16:9 图片式 PPTX（精确 12192000x6858000 EMU），manifest 明示 image_only_snapshot 能力边界与页→时间映射；字幕可选，默认演示稿快照不带视频字幕；末 beat 与终态同刻自动去重。pptx_service 路由分派（按 visual_backend）随应用链路任务接入；PowerPoint 实际打开核验待目标软件可用（AC16 记录）。"
+      "note": "快照/分步 PPTX 核已实现并验证：共享 bundle 渲染显式时间点 → 16:9 图片式 PPTX（精确 12192000x6858000 EMU），manifest 明示 image_only_snapshot 能力边界与页→时间映射；字幕可选，默认演示稿快照不带视频字幕；末 beat 与终态同刻自动去重。pptx_service 路由分派（按 visual_backend）随应用链路任务接入；PowerPoint 实际打开核验待目标软件可用（AC16 记录）。 pptx_service 分派已接入（本轮）。"
     },
     {
       "id": "E04",
@@ -432,7 +432,7 @@
         "F02"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "passed",
       "acceptance": [
         "AC01",
         "AC02",
@@ -455,9 +455,14 @@
         "AC19",
         "AC20"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "docs/plans/html-backend-development/acceptance-manifest.json",
+        "docs/baseline/html-adaptation-baseline.md",
+        "pptx_service.py",
+        "checks/test_html_pptx_snapshot.py"
+      ],
+      "commit": "this-round",
+      "note": "总验收 manifest 已产出（AC01-AC20 逐项 passed/partial/blocked/pending_review + 命令退出码）；pptx_service 按 visual_backend 分派已接入（html 项目同步走共享 bundle 快照管线，图片路线原样）；E02/E03/F01/F02 证据齐备。放行条件剩余：用户 AC04 视觉结论、用户 AC20 真实课程导览、真实模型服务绑定（C02/C03 尾项）、PowerPoint 打开核验（AC16）。"
     }
   ]
 }

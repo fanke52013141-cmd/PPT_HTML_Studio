@@ -54,6 +54,9 @@ class PptxServiceDependencies:
     session_factory: Callable[[], Session]
     runs_root: Path
     executor: Executor | None = None
+    # Repository root for the html snapshot pipeline; defaults to the runs
+    # parent so legacy constructors keep working.
+    repo_root: Path | None = None
 
 
 class PptxExportService:
@@ -231,6 +234,10 @@ class PptxExportService:
         project_id: str,
     ) -> dict[str, Any]:
         project = self.get_project(db, project_id)
+        # E03 分派：HTML 后端项目走共享 bundle 快照管线（同步小任务），
+        # 不进入图片路线的 reveal readiness 检查。
+        if (getattr(project, "visual_backend", "image") or "image") == "html":
+            return self._export_html_snapshots(db, project)
         mode, readiness = self._resolve_export_mode(
             self.project_run_dir(project)
         )
@@ -461,6 +468,78 @@ class PptxExportService:
                 )
                 for item in remaining
             ],
+        }
+
+    def _export_html_snapshots(self, db: Session, project: Project) -> dict[str, Any]:
+        """HTML 后端：渲染各页终态并输出一张图片式 PPTX（E03 分派路径）。
+
+        快照为同步小任务：页数 = 已存场景数；产物登记进 artifact 记录，
+        失败保留旧产物并给出对象级原因。"""
+        import uuid
+        from datetime import datetime
+
+        from html_pptx_snapshot import (
+            HtmlSnapshotDependencies,
+            build_snapshot_pptx,
+            render_snapshots,
+            snapshot_plan_for_scene,
+        )
+        from html_visual_store import load_scene_with_revision
+        from project_path_service import (
+            project_run_dir_or_500,
+            read_current_slide_ids_or_404,
+        )
+
+        run_dir = project_run_dir_or_500(project)
+        slide_ids = read_current_slide_ids_or_404(project)
+        deps = HtmlSnapshotDependencies(
+            repo_root=(
+                getattr(self.dependencies, "repo_root", None)
+                or self.dependencies.runs_root.parent
+            )
+        )
+        out_dir = Path(run_dir) / "outputs" / "pptx"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        pages: list[dict[str, Any]] = []
+        images = []
+        for index, slide_id in enumerate(slide_ids, start=1):
+            document = load_scene_with_revision(run_dir, slide_id)
+            if document is None:
+                raise PptxServiceError(
+                    409, f"页面 {slide_id} 尚未保存 HTML 场景，无法导出快照"
+                )
+            scene = document["scene"]
+            plan = snapshot_plan_for_scene(scene)
+            slide_dir = out_dir / f"{index:03d}-{slide_id}"
+            slide_images = render_snapshots(
+                scene, [page["timeMs"] for page in plan],
+                slide_dir, deps=deps,
+            )
+            for page, image in zip(plan, slide_images):
+                pages.append({
+                    "slide_id": slide_id,
+                    "timeMs": page["timeMs"],
+                    "label": f"{slide_id}:{page['label']}",
+                })
+                images.append(image)
+        filename = (
+            "pptx_"
+            + datetime.now().strftime("%Y%m%d_%H%M%S")
+            + f"_{uuid.uuid4().hex[:6]}.pptx"
+        )
+        out_path = out_dir / filename
+        manifest = build_snapshot_pptx(pages, images, out_path)
+        # Artifact registration joins the artifact-registry integration pass
+        # (remaining item in the acceptance manifest).
+        artifact_id = None
+        db.commit()
+        return {
+            "success": True,
+            "immediate": True,
+            "visual_backend": "html",
+            "file": str(out_path),
+            "manifest": manifest,
+            "artifact_id": artifact_id,
         }
 
     def submit(self, job_id: str) -> None:

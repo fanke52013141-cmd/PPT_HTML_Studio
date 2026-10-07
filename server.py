@@ -1197,6 +1197,7 @@ try:
         PptxServiceDependencies(
             session_factory=PptxSessionLocal,
             runs_root=Path(RUNS_DIR),
+            repo_root=Path(REPO_ROOT),
         )
     )
     app.include_router(pptx_router)

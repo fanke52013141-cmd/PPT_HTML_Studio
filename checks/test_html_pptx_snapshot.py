@@ -110,3 +110,61 @@ def test_e02_html_runner_dispatch_feeds_the_existing_composite(tmp_path) -> None
             output_dir=tmp_path,
             set_stage=lambda s: None,
         )
+
+
+def test_pptx_service_dispatches_html_projects_to_snapshots(tmp_path, scene) -> None:
+    """E03 route dispatch: an html-backend project is served by the snapshot
+    pipeline; an image project is left to the existing readiness flow."""
+    from database import LocalJob, Project
+    import pptx_service as ps
+
+    from repository_paths import RUNS_DIR
+
+    run_dir = Path(RUNS_DIR) / "ph"
+    slide_dir = run_dir / "planning" / "html_visual"
+    slide_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "planning").mkdir(exist_ok=True)
+    (slide_dir / "scene-s1.json").write_text(
+        json.dumps(scene, ensure_ascii=False), encoding="utf-8"
+    )
+    contract_dir = run_dir / "planning"
+    contract_dir.mkdir(exist_ok=True)
+    (contract_dir / "visual_contract.json").write_text(
+        json.dumps(
+            {"slides": [{"slide_id": "s1", "visual_groups": [], "narration_beats": []}]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "slides" / "s1").mkdir(parents=True, exist_ok=True)
+    (run_dir / "slides" / "s1" / "audio_timeline.json").write_text(
+        json.dumps(
+            {"audio_content_duration_sec": 12.0,
+             "segments": [{"id": "b1", "start": 0.0, "end": 11.5, "text": "讲解"}]}
+        ),
+        encoding="utf-8",
+    )
+
+    project = Project(
+        id="ph", name="html 项目", run_dir=str(run_dir),
+        visual_backend="html", account_id="default",
+    )
+
+    class Deps:
+        session_factory = None
+        runs_root = Path(RUNS_DIR)
+        executor = None
+        repo_root = REPO_ROOT
+
+    service = ps.PptxExportService(Deps())
+
+    class FakeDb:
+        def commit(self):
+            pass
+
+    result = service._export_html_snapshots(FakeDb(), project)
+    assert result["visual_backend"] == "html" and result["immediate"] is True
+    assert Path(result["file"]).is_file()
+    manifest = result["manifest"]
+    assert manifest["capability"] == "image_only_snapshot"
+    assert manifest["pages"][0]["label"].startswith("s1:")
