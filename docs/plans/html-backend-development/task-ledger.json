@@ -395,13 +395,16 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "passed",
       "acceptance": [
         "AC18"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "html_task_store.py",
+        "checks/test_html_task_store.py"
+      ],
+      "commit": "this-round",
+      "note": "HTML 任务持久化 store 已实现并验证（AC18）：独立任务类型（html_plan_generate/html_review/html_asset_produce）基于共享 LocalJob 表；同 submission_key 幂等复用（活跃/成功复用、失败限额内原地重试 attempt+1、超限 409 拒绝）；重启恢复把遗留 running/queued 标记 interrupted 且不静默重跑（显式重提交 attempt+1）；取消仅作用于活跃任务，终态结果不被迟到取消覆盖。generation_control 取消检查点由执行入口在各安全边界调用。"
     },
     {
       "id": "F03",
