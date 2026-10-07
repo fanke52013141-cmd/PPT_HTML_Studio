@@ -298,6 +298,18 @@ async function refreshCurrentProjectStatus(activeStep = state.currentStep) {
   const project = await API.get(`/api/projects/${projectId}`);
   if (navigationVersion !== workspaceNavigationVersion || !isCurrentWorkspaceProject(projectId)) return;
   state.currentProject = project;
+  if (project?.visual_backend === 'html') {
+    // HTML 路线的场景就绪是独立事实，不造 Mask 文件骗过旧门槛。
+    try {
+      const status = await API.get(`/api/projects/${projectId}/html-visual/status`);
+      window.__htmlVisualReady = status?.scenes_expected > 0
+        && status?.scenes_present === status?.scenes_expected;
+    } catch (error) {
+      window.__htmlVisualReady = false;
+    }
+  } else {
+    window.__htmlVisualReady = undefined;
+  }
   syncProjectCanvasCssVars(project);
   updateStepperUI(normalizeVisibleStep(activeStep), project.step_status);
 }

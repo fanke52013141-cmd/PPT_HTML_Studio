@@ -148,4 +148,93 @@ assert.deepEqual(
   'only image assignments should move'
 );
 
+// ---------------------------------------------------------------------------
+// 发行精简版（六步）：发行功能剖面关闭勾画标注与数字人讲解。
+// ---------------------------------------------------------------------------
+
+const light = flow.configureVisibleFlow({ digital_human: false, handwritten_annotations: false });
+assert.deepEqual(light.VISIBLE_FLOW_STEPS, [1, 2, 3, 5, 6, 8]);
+assert.deepEqual(flow.VISIBLE_FLOW_STEPS, [1, 2, 3, 5, 6, 8], 'module-level flow switches with the profile');
+assert.deepEqual(flow.displayFlow().map(item => [item.displayNumber, item.step]),
+  [[1, 1], [2, 2], [3, 3], [4, 5], [5, 6], [6, 8]]);
+
+// 音频确认后直达作品输出；旧 9/10 项目按音频确认情况回退，不落入不存在的页面。
+assert.equal(flow.resolveProjectVisibleStep({ current_step: 7, audio_confirmed: true }), 8);
+assert.equal(flow.resolveProjectVisibleStep({ current_step: 7, audio_confirmed: false }), 6);
+assert.equal(flow.resolveProjectVisibleStep({ current_step: 10, audio_confirmed: true }), 8);
+assert.equal(flow.resolveProjectVisibleStep({ current_step: 10, audio_confirmed: false }), 6);
+assert.equal(flow.resolveProjectVisibleStep({ current_step: 9, audio_confirmed: true }), 8);
+assert.equal(flow.resolveProjectVisibleStep({ current_step: 9, audio_confirmed: false }), 6);
+// 对禁用步骤的直接导航统一落回作品输出。
+assert.equal(flow.normalizeVisibleStep(10), 8);
+assert.equal(flow.normalizeVisibleStep(9), 8);
+// 内部确认步骤映射保持不变。
+assert.equal(flow.normalizeVisibleStep(4), 5);
+assert.equal(flow.normalizeVisibleStep(7), 6);
+
+// 有效 flow 的下一步：确认音频(6)后是输出(8)。
+assert.equal(flow.nextVisibleStep(6), 8);
+assert.equal(flow.nextVisibleStep(8), null);
+
+// 进度分母只含本发行版六个必做步骤；全部完成后为 100。
+const lightAllDone = { 1: 'completed', 2: 'completed', 3: 'completed', 4: 'completed', 5: 'completed', 6: 'completed', 7: 'completed', 8: 'completed' };
+assert.equal(flow.calculateVisibleProgress(lightAllDone, { audioConfirmed: true }), 100);
+assert.equal(flow.calculateVisibleProgress(lightAllDone, { audioConfirmed: false }), 83);
+// 禁用步骤的状态不得影响精简版进度计算。
+assert.equal(
+  flow.calculateVisibleProgress(lightAllDone, { audioConfirmed: true, annotationModuleState: 'confirmed', digitalHumanEnabled: true }),
+  100
+);
+
+// 解锁链：输出步仍要求内部 TTS(7) 完成 + 音频已确认；对禁用步骤的直接
+// 导航映射到输出 8，其解锁状态与输出本身一致。
+assert.equal(flow.isVisibleStepUnlocked(8, lightAllDone, 6, { audioConfirmed: true }), true);
+assert.equal(flow.isVisibleStepUnlocked(8, audioConfirmed, 6, { audioConfirmed: true }), true);
+assert.equal(flow.isVisibleStepUnlocked(8, audioGenerated, 6, { audioConfirmed: false }), false);
+assert.equal(flow.isVisibleStepUnlocked(10, confirmedImages, 4), false, 'disabled steps fall back to locked output');
+assert.equal(
+  flow.isVisibleStepUnlocked(9, audioConfirmed, 6, { audioConfirmed: true }),
+  flow.isVisibleStepUnlocked(8, audioConfirmed, 6, { audioConfirmed: true }),
+  'disabled-step navigation resolves to the output step'
+);
+
+// 编辑影响提示不提及本发行版不存在的下游（勾画/数字人）。
+const lightImpact = flow.getDownstreamEditImpact(1, 8, { 2: 'completed' }, {});
+assert.equal(lightImpact?.includes('勾画'), false);
+assert.equal(lightImpact?.includes('数字人'), false);
+assert.equal(flow.getDownstreamEditImpact(6, 8, { 8: 'completed' }, {})?.includes('勾画'), false);
+
+// 回到完整版：无参 configure 恢复环境检测的剖面（Node 下即完整版）。
+const restored = flow.configureVisibleFlow();
+assert.deepEqual(restored.VISIBLE_FLOW_STEPS, [1, 2, 3, 5, 6, 10, 9, 8]);
+assert.equal(flow.nextVisibleStep(6), 10);
+assert.equal(flow.resolveProjectVisibleStep({ current_step: 7, audio_confirmed: true }), 10);
+assert.deepEqual(flow.VISIBLE_FLOW_STEPS, [1, 2, 3, 5, 6, 10, 9, 8]);
+
 console.log('visible flow checks passed');
+
+// ===== HTML 后端流程分派（B03） =====
+flow.configureVisibleFlow(undefined, { visualBackend: 'html' });
+assert.equal(flow.resolveVisualBackend({ visual_backend: 'html' }), 'html');
+assert.equal(flow.resolveVisualBackend({}), 'image');
+assert.equal(flow.visibleStepLabel(5), '场景与对象');
+assert.equal(flow.visibleStepLabel(3), '视觉素材');
+assert.equal(flow.getVisibleStepState(5, {}, { htmlScenesReady: true }), 'completed');
+assert.equal(flow.getVisibleStepState(5, {}, { htmlScenesReady: false }), 'pending');
+// HTML 路线不要求 AI Mask 产物：状态仍由底层阶段给出，但不再出现 Mask 标签
+assert.equal(flow.VISIBLE_FLOW.find(item => item.step === 5).htmlStage, true);
+assert.equal(
+  flow.calculateVisibleProgress({}, { htmlScenesReady: true }) >
+  flow.calculateVisibleProgress({}, { htmlScenesReady: false }),
+  true
+);
+assert.equal(flow.getDownstreamEditImpact(3, 8, { 4: 'completed' })?.includes('Mask'), true);
+
+// 默认（图片路线）行为完全不变
+flow.configureVisibleFlow();
+assert.equal(flow.visibleStepLabel(5), 'AI Mask 标注');
+assert.equal(flow.visibleStepLabel(3), '图片生成');
+assert.equal(flow.getVisibleStepState(5, { 5: 'completed' }, {}), 'completed');
+assert.equal(flow.getVisibleStepState(5, {}, { htmlScenesReady: true }), 'pending');
+
+console.log('html backend flow checks passed');

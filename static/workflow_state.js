@@ -96,12 +96,23 @@ function getProjectCanvasGeometry(project = state.currentProject) {
 }
 
 function projectFlowContext(project = state.currentProject) {
+  // 发行可用性唯一来源是 PPTFlow.distributionFeatures()；这里只透传，
+  // 不复制功能开关逻辑。
+  const distributionFeatures = (typeof PPTFlow.distributionFeatures === 'function')
+    ? PPTFlow.distributionFeatures()
+    : { digital_human: true, handwritten_annotations: true };
   return {
     audioConfirmed: project?.audio_confirmed === true,
-    digitalHumanEnabled: window.__dhEnabled === true,
+    // HTML 后端场景就绪事实由工作区在加载后写入（html-visual/status）。
+    visualBackend: project?.visual_backend === 'html' ? 'html' : 'image',
+    htmlScenesReady: project?.visual_backend === 'html'
+      && window.__htmlVisualReady === true,
+    digitalHumanEnabled: window.__dhEnabled === true && distributionFeatures.digital_human !== false,
     // 勾画标注(模块六)决策态与输出开关;由 annotations 模块维护
-    annotationsEnabled: window.__annotationsEnabled === true,
+    annotationsEnabled: window.__annotationsEnabled === true
+      && distributionFeatures.handwritten_annotations !== false,
     annotationModuleState: window.__annotationModuleState || 'not_started',
+    distributionFeatures,
   };
 }
 

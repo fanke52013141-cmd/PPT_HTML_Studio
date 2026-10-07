@@ -5,7 +5,10 @@
   }
   root.PPTFlow = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function createVisibleFlow() {
-  const VISIBLE_FLOW = Object.freeze([
+  // 完整版八步稳定可见位置（AGENTS.md）。发行精简版通过发行功能剖面在
+  // 模块加载时构建六步有效 flow；未注入 PPTStudioDistribution 的环境
+  // （Node 测试、开发仓库）一律保持完整版行为。
+  const FULL_FLOW = Object.freeze([
     Object.freeze({
       step: 1,
       label: '导入文章',
@@ -62,12 +65,92 @@
     })
   ]);
 
-  const VISIBLE_FLOW_STEPS = Object.freeze(VISIBLE_FLOW.map(item => item.step));
+  // 发行功能剖面的唯一读取口。缺省一律视为启用，只有发行配置显式
+  // 传 false 才视为关闭；其他模块经 PPTFlow.distributionFeatures()
+  // 消费，避免各处自行解释 window.PPTStudioDistribution。
+  function distributionFeatures() {
+    const scope = typeof globalThis !== 'undefined' ? globalThis : null;
+    const provided = (scope && scope.PPTStudioDistribution && scope.PPTStudioDistribution.features) || {};
+    return Object.freeze({
+      digital_human: provided.digital_human !== false,
+      handwritten_annotations: provided.handwritten_annotations !== false
+    });
+  }
+
+  let activeFeatures = distributionFeatures();
+
+  function normalizeFeatures(features) {
+    const resolved = features || activeFeatures;
+    return Object.freeze({
+      digital_human: resolved.digital_human !== false,
+      handwritten_annotations: resolved.handwritten_annotations !== false
+    });
+  }
+
+  function buildVisibleFlow(features) {
+    const resolved = normalizeFeatures(features);
+    return Object.freeze(FULL_FLOW.filter(item => {
+      if (item.step === 10) return resolved.handwritten_annotations;
+      if (item.step === 9) return resolved.digital_human;
+      return true;
+    }));
+  }
+
+  // HTML 后端的项目沿同一外壳，但第四个可见位不再是 AI Mask：场景、
+  // 独立素材与对象动作驱动画面，就绪事实来自 html-visual/status。
+  // 内部 key 不变（图片 3/4、Mask 5、音频 6/7、批注 10、数字人 9、输出 8）。
+  const HTML_STAGE_ITEM = Object.freeze({
+    step: 5,
+    label: '场景与对象',
+    relevantSteps: Object.freeze([3, 4]),
+    completionSteps: Object.freeze([4]),
+    htmlStage: true
+  });
+  let activeBackend = 'image';
+  let VISIBLE_FLOW = buildVisibleFlow();
+
+  function applyBackendFlow() {
+    if (activeBackend !== 'html') {
+      VISIBLE_FLOW = buildVisibleFlow(activeFeatures);
+      return;
+    }
+    VISIBLE_FLOW = Object.freeze(FULL_FLOW.filter(item => {
+      if (item.step === 10) return activeFeatures.handwritten_annotations;
+      if (item.step === 9) return activeFeatures.digital_human;
+      return true;
+    }).map(item => {
+      if (item.step === 5) return HTML_STAGE_ITEM;
+      if (item.step === 3) {
+        return Object.freeze({ ...item, label: '视觉素材' });
+      }
+      return item;
+    }));
+  }
+
+  // 供测试与未来运行期剖面切换使用；浏览器正常路径只在模块加载时构建一次。
+  // 不带参数时回到发行剖面检测值（window.PPTStudioDistribution）。
+  function configureVisibleFlow(features, options = {}) {
+    activeFeatures = features ? normalizeFeatures(features) : distributionFeatures();
+    activeBackend = options && options.visualBackend === 'html' ? 'html' : 'image';
+    applyBackendFlow();
+    return { VISIBLE_FLOW, VISIBLE_FLOW_STEPS: currentFlowSteps() };
+  }
+
+  function resolveVisualBackend(project = {}) {
+    return project && project.visual_backend === 'html' ? 'html' : 'image';
+  }
+
+  function currentFlowSteps() {
+    return VISIBLE_FLOW.map(item => item.step);
+  }
 
   function normalizeVisibleStep(step) {
     const numericStep = Number(step);
     if (numericStep === 4) return 5;
     if (numericStep === 7) return 6;
+    // 精简发行版没有勾画/数字人面板：对禁用步骤的直接导航统一落回作品输出。
+    if (numericStep === 10 && !activeFeatures.handwritten_annotations) return 8;
+    if (numericStep === 9 && !activeFeatures.digital_human) return 8;
     return numericStep;
   }
 
@@ -83,7 +166,14 @@
   function resolveProjectVisibleStep(project = {}) {
     const internalStep = Number(project.current_step || 1);
     if (internalStep === 7 && project.audio_confirmed === true) {
-      return 10;
+      // 精简版没有勾画标注模块：音频确认后直接进入作品输出。
+      return activeFeatures.handwritten_annotations ? 10 : 8;
+    }
+    // 精简版旧项目停留在已禁用的内部步骤 9/10：按音频确认情况回退到
+    // 作品输出或旁白，绝不落入不存在的页面。
+    if ((internalStep === 9 || internalStep === 10)
+      && !activeFeatures.handwritten_annotations) {
+      return project.audio_confirmed === true ? 8 : 6;
     }
     return normalizeVisibleStep(internalStep);
   }
@@ -95,7 +185,7 @@
 
   function visibleStepNumber(step) {
     const normalized = normalizeVisibleStep(step);
-    const index = VISIBLE_FLOW_STEPS.indexOf(normalized);
+    const index = currentFlowSteps().indexOf(normalized);
     return index >= 0 ? index + 1 : normalized;
   }
 
@@ -106,6 +196,11 @@
   function getVisibleStepState(step, status = {}, context = {}) {
     const item = getFlowItem(step);
     if (!item) return 'pending';
+
+    // HTML 场景与对象：就绪事实优先；就绪前按底层阶段状态展示。
+    if (item.htmlStage && context.htmlScenesReady === true) {
+      return 'completed';
+    }
 
     // 数字人讲解:启用即完成;未启用始终 pending(不阻塞任何步骤)。
     if (item.optional) {
@@ -172,17 +267,26 @@
 
   function getPreviousVisibleStep(step) {
     const normalized = normalizeVisibleStep(step);
-    const index = VISIBLE_FLOW_STEPS.indexOf(normalized);
-    return index > 0 ? VISIBLE_FLOW_STEPS[index - 1] : null;
+    const steps = currentFlowSteps();
+    const index = steps.indexOf(normalized);
+    return index > 0 ? steps[index - 1] : null;
+  }
+
+  function nextVisibleStep(step) {
+    const steps = currentFlowSteps();
+    const index = steps.indexOf(normalizeVisibleStep(step));
+    if (index < 0 || index + 1 >= steps.length) return null;
+    return steps[index + 1];
   }
 
   function isVisibleStepUnlocked(step, status = {}, currentStep = 1, context = {}) {
     const normalized = normalizeVisibleStep(step);
-    const targetIndex = VISIBLE_FLOW_STEPS.indexOf(normalized);
+    const steps = currentFlowSteps();
+    const targetIndex = steps.indexOf(normalized);
     if (targetIndex < 0) return false;
     if (targetIndex === 0) return true;
 
-    const activeIndex = VISIBLE_FLOW_STEPS.indexOf(normalizeVisibleStep(currentStep));
+    const activeIndex = steps.indexOf(normalizeVisibleStep(currentStep));
     if (activeIndex >= targetIndex) return true;
 
     const targetState = getVisibleStepState(normalized, status, context);
@@ -229,15 +333,31 @@
     9: '修改数字人视频或布局后，已输出的视频需要重新生成；图片和音频不会被改动。'
   });
 
+  // 精简发行版没有勾画与数字人：编辑影响提示只保留本发行版存在的下游。
+  const DOWNSTREAM_EDIT_IMPACT_LIGHT = Object.freeze({
+    1: '修改文章后，分镜、图片、Mask、旁白与音频和已输出视频可能需要重做。',
+    2: '修改分镜后，图片、Mask、旁白与音频和已输出视频可能需要重做。',
+    3: '替换图片后，对应页面的 Mask 与文字定位会失效，音频确认及已输出视频可能需要重做。',
+    5: '修改 Mask 后，对应页面的揭示效果和已输出视频需要重新生成。',
+    6: '修改旁白或重新生成音频后，需要重新确认音频；已输出视频可能需要更新。'
+  });
+
+  function downstreamImpactTable() {
+    return (activeFeatures.handwritten_annotations && activeFeatures.digital_human)
+      ? DOWNSTREAM_EDIT_IMPACT
+      : DOWNSTREAM_EDIT_IMPACT_LIGHT;
+  }
+
   function getDownstreamEditImpact(targetStep, currentStep, status = {}, context = {}) {
     const target = normalizeVisibleStep(targetStep);
-    const currentIndex = VISIBLE_FLOW_STEPS.indexOf(normalizeVisibleStep(currentStep));
-    const targetIndex = VISIBLE_FLOW_STEPS.indexOf(target);
+    const steps = currentFlowSteps();
+    const currentIndex = steps.indexOf(normalizeVisibleStep(currentStep));
+    const targetIndex = steps.indexOf(target);
     if (targetIndex < 0 || currentIndex <= targetIndex) return null;
     const hasDownstreamWork = VISIBLE_FLOW.slice(targetIndex + 1).some(item =>
       getVisibleStepState(item.step, status, context) !== 'pending'
     );
-    return hasDownstreamWork ? DOWNSTREAM_EDIT_IMPACT[target] || null : null;
+    return hasDownstreamWork ? downstreamImpactTable()[target] || null : null;
   }
 
   function moveStep3ImageAssignment(slots = [], fromIndex, toIndex) {
@@ -265,8 +385,10 @@
   }
 
   return Object.freeze({
-    VISIBLE_FLOW,
-    VISIBLE_FLOW_STEPS,
+    get VISIBLE_FLOW() { return VISIBLE_FLOW; },
+    get VISIBLE_FLOW_STEPS() { return Object.freeze(currentFlowSteps()); },
+    configureVisibleFlow,
+    distributionFeatures,
     normalizeVisibleStep,
     mapClientPointToCanvas,
     resolveProjectVisibleStep,
@@ -275,7 +397,9 @@
     displayFlow,
     getVisibleStepState,
     calculateVisibleProgress,
+    resolveVisualBackend,
     getPreviousVisibleStep,
+    nextVisibleStep,
     isVisibleStepUnlocked,
     getDownstreamEditImpact,
     moveStep3ImageAssignment
