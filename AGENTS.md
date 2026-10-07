@@ -59,6 +59,15 @@ not an implemented Schema, runtime registry, renderer, or public API. Consult
 the applicable cards before implementing P02/P03 capabilities and keep their
 definition, implementation, and verification states separate.
 
+For system coverage and extensions, read
+`docs/contracts/html-presentation/framework/README.md` (HPS-019 through HPS-022).
+The capability catalog is a classification, not a runtime registry. Preserve
+P01's pinned definitions; use new capabilities or explicit versions for generic
+optional regions and nested layouts. The initial style direction and supplied
+reference are recorded in `docs/styles/science-explainer/README.md`; the user
+asked to complete the framework before selecting the production palette or
+making the style sample. Follow its S01-S08 workflow and record actual evidence.
+
 When a rule is insufficient, update its owning document, contract index,
 CHANGELOG, affected definitions/models, implementation, and relevant validation
 in the same change as applicable. Distinguish implementation bugs from rule,

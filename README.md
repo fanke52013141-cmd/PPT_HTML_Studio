@@ -6,7 +6,7 @@
 
 ## 项目规范入口
 
-**当前契约包版本：0.4.0。** 后续设计、开发、素材生产和验收统一依据
+**当前契约包版本：0.5.0。** 后续设计、开发、素材生产和验收统一依据
 [HTML 演示体系契约](docs/contracts/html-presentation/README.md)。
 
 | 文档 | 说明 |
@@ -15,9 +15,10 @@
 | [能力目录](docs/contracts/html-presentation/02-capabilities.md) | 各部分内容、组件与布局候选、首轮建设范围 |
 | [数据与运行契约](docs/contracts/html-presentation/03-data-and-runtime.md) | 身份、公开目标、布局定位、时间、资源、编辑影响与输出 |
 | [生产与兼容规则](docs/contracts/html-presentation/04-production-and-compatibility.md) | 按规则生产、处理问题、更新版本及兼容旧作品 |
+| [完整分类与扩展机制](docs/contracts/html-presentation/framework/README.md) | 八层分类、组合/扩展规则、能力覆盖与风格定制流程 |
 | [阶段 1 最小定义卡包](docs/contracts/html-presentation/definitions/README.md) | 19 张具体定义卡、完整场景与边界例、状态和后续项 |
 | [定义卡模板](docs/contracts/html-presentation/05-definition-template.md) | 逐项定义组件、布局、风格、素材和动作的模板 |
-| [规则索引](docs/contracts/html-presentation/contract-index.json) | HPS-001 至 HPS-018 的规范位置与执行状态 |
+| [规则索引](docs/contracts/html-presentation/contract-index.json) | HPS-001 至 HPS-022 的规范位置与执行状态 |
 | [契约变更记录](docs/contracts/html-presentation/CHANGELOG.md) | 规则版本、变更原因与兼容影响 |
 
 [AGENTS.md](AGENTS.md) 规定后续开发读取和维护契约的方式，并保留原项目集成边界。
@@ -38,7 +39,8 @@
 Schema、自动校验、风格样板和导出兼容验证尚未完成。
 
 阶段 1 已完成最小定义卡、单页字段草案样例和边界处理表，运行/视觉验证仍待实施。
-下一步选择首个风格并设计参考页，再制作可播放样板；随后验证替换内容、
+体系分类与扩展机制已补齐；初始风格为知识科普，用户视觉参考已归档。
+下一步依据[科普风格任务书](docs/styles/science-explainer/README.md)设计参考页，再制作可播放样板；随后验证替换内容、
 第二种风格、更多布局、多页和输出，最后接入原项目的公共应用能力。
 
 ## 实施路线与背景
