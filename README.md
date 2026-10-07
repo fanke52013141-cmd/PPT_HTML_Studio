@@ -6,7 +6,7 @@
 
 ## 项目规范入口
 
-**当前契约包版本：0.7.1。** 后续设计、开发、素材生产和验收统一依据
+**当前契约包版本以规范目录为准。** 后续设计、开发、素材生产和验收统一依据
 [HTML 演示体系契约](docs/contracts/html-presentation/README.md)。
 
 | 文档 | 说明 |
@@ -18,7 +18,7 @@
 | [完整分类与扩展机制](docs/contracts/html-presentation/framework/README.md) | 八层分类、组合/扩展规则、能力覆盖与风格定制流程 |
 | [阶段 1 最小定义卡包](docs/contracts/html-presentation/definitions/README.md) | 19 张具体定义卡、完整场景与边界例、状态和后续项 |
 | [定义卡模板](docs/contracts/html-presentation/05-definition-template.md) | 逐项定义组件、布局、风格、素材和动作的模板 |
-| [规则索引](docs/contracts/html-presentation/contract-index.json) | HPS-001 至 HPS-030 的规范位置与执行状态 |
+| [规则索引](docs/contracts/html-presentation/contract-index.json) | 规范位置、版本与执行状态 |
 | [契约变更记录](docs/contracts/html-presentation/CHANGELOG.md) | 规则版本、变更原因与兼容影响 |
 
 [AGENTS.md](AGENTS.md) 规定后续开发读取和维护契约的方式，并保留原项目集成边界。
@@ -34,15 +34,13 @@
 
 ## 当前阶段
 
-已发布项目规范、调研与独立 E1 数据驱动场景内核。E1 的两份 JSON 输入共享渲染、时间求值与取帧代码，支持有限原子/动作、资源/容量检查和目标几何；详见 [E1 交付](docs/plans/e1-data-driven-engine-completion.md)。
-本地应用仍运行隔离的原图片工作流，应用源码的完整发布与 HTML 接入另行实施。
+本地原图片应用与独立 HTML E1/E2、共享视觉模块并存，HTML 生产链尚未接入应用。共享视觉 V1 的简化外观已被用户否定；`html_engine/visual/style-review/` 是恢复指定科普参考的校正样板，尚需完成共享能力集成和视觉验收。
 
-P01 最小定义及体系分类已完成；科普原首版样稿未获认可，后续混合视觉和 motion-02 短动画方向已获用户认可。E1 新数据驱动页面仍需独立视觉审阅。
-下一项 E2 完善模板/资产复用，再接现有音频、数字人和输出，最后应用化与 AI 生产。自动排版、完整 P01 运行、多页/镜头、PPTX与生产工作流尚未完成。
+**当前执行入口：[HTML 后端开发与验收交接包](docs/plans/html-backend-development/README.md)。** 包含逐项开发任务、固定源码版本的开源借鉴映射、测试输入与验收标准、Agent 提示词和任务清单。应用源码完整发布需独立审计；远端克隆不能假定包含本地完整应用。
 
 ## 实施路线与背景
 
-- [分阶段实施计划](docs/plans/html-studio-implementation-plan.md)：当前执行顺序、逐阶段交付与验收、下一轮最小定义任务
+- [分阶段实施计划](docs/plans/html-studio-implementation-plan.md)：历史阶段规划；后续执行以新的开发交接包为准
 - [调研与借鉴档案](docs/research/README.md)：保存报告、证据、借鉴判断和验证计划
 - [当前项目改造借鉴指南](docs/research/2026-10-07-skill-and-workflow-reports/adaptation-guide.md)：结合现有代码筛选两份新报告，并提供实施与验收卡
 - [编程式渲染架构报告借鉴分析](docs/research/2026-10-07-architecture-report/analysis-and-adoption.md)
