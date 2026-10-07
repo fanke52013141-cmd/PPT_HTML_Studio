@@ -1,0 +1,234 @@
+{
+  "format": "hps.visual.layout",
+  "version": "0.1.0",
+  "id": "object-right",
+  "name": "单主体在右 / 三步在左",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "contentBottom": 800,
+    "subtitleHeight": 100
+  },
+  "slots": {
+    "eyebrow": {
+      "box": {
+        "x": 60,
+        "y": 42,
+        "width": 270,
+        "height": 44
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "title": {
+      "box": {
+        "x": 60,
+        "y": 104,
+        "width": 1460,
+        "height": 90
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "lead": {
+      "box": {
+        "x": 60,
+        "y": 205,
+        "width": 980,
+        "height": 50
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "subject": {
+      "box": {
+        "x": 715,
+        "y": 75,
+        "width": 760,
+        "height": 680
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 1
+    },
+    "from": {
+      "box": {
+        "x": 60,
+        "y": 696,
+        "width": 150,
+        "height": 64
+      },
+      "maxLines": 1,
+      "align": "center",
+      "z": 2
+    },
+    "arrow": {
+      "box": {
+        "x": 245,
+        "y": 710,
+        "width": 115,
+        "height": 35
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "to": {
+      "box": {
+        "x": 395,
+        "y": 696,
+        "width": 150,
+        "height": 64
+      },
+      "maxLines": 1,
+      "align": "center",
+      "z": 2
+    },
+    "callout": {
+      "box": {
+        "x": 1360,
+        "y": 342,
+        "width": 205,
+        "height": 105
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "annotation": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 3
+    },
+    "conclusion": {
+      "box": {
+        "x": 855,
+        "y": 696,
+        "width": 540,
+        "height": 64
+      },
+      "maxLines": 1,
+      "align": "center",
+      "z": 2
+    },
+    "source": {
+      "box": {
+        "x": 955,
+        "y": 772,
+        "width": 600,
+        "height": 24
+      },
+      "maxLines": 1,
+      "align": "right",
+      "z": 2
+    },
+    "number-1": {
+      "box": {
+        "x": 60,
+        "y": 292,
+        "width": 84,
+        "height": 84
+      },
+      "maxLines": 1,
+      "align": "center",
+      "z": 2
+    },
+    "step-1": {
+      "box": {
+        "x": 172,
+        "y": 292,
+        "width": 600,
+        "height": 46
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "body-1": {
+      "box": {
+        "x": 172,
+        "y": 342,
+        "width": 585,
+        "height": 65
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "number-2": {
+      "box": {
+        "x": 60,
+        "y": 421,
+        "width": 84,
+        "height": 84
+      },
+      "maxLines": 1,
+      "align": "center",
+      "z": 2
+    },
+    "step-2": {
+      "box": {
+        "x": 172,
+        "y": 421,
+        "width": 600,
+        "height": 46
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "body-2": {
+      "box": {
+        "x": 172,
+        "y": 471,
+        "width": 585,
+        "height": 65
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "number-3": {
+      "box": {
+        "x": 60,
+        "y": 550,
+        "width": 84,
+        "height": 84
+      },
+      "maxLines": 1,
+      "align": "center",
+      "z": 2
+    },
+    "step-3": {
+      "box": {
+        "x": 172,
+        "y": 550,
+        "width": 600,
+        "height": 46
+      },
+      "maxLines": 1,
+      "align": "left",
+      "z": 2
+    },
+    "body-3": {
+      "box": {
+        "x": 172,
+        "y": 600,
+        "width": 585,
+        "height": 65
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    }
+  }
+}

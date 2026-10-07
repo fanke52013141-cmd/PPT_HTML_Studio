@@ -1,0 +1,412 @@
+{
+  "format": "hps.visual.scene",
+  "version": "0.1.0",
+  "id": "evaporation",
+  "name": "一碗水，为什么会慢慢变少？",
+  "themeRef": {
+    "id": "soft-science",
+    "version": "0.1.0"
+  },
+  "layoutRef": {
+    "id": "object-left",
+    "version": "0.1.0"
+  },
+  "durationMs": 18000,
+  "nodes": [
+    {
+      "id": "eyebrow",
+      "slot": "eyebrow",
+      "type": "label",
+      "role": "eyebrow",
+      "text": "日常科学 · 物质变化",
+      "tone": "blue"
+    },
+    {
+      "id": "title",
+      "slot": "title",
+      "type": "text",
+      "role": "title",
+      "runs": [
+        {
+          "text": "一碗水，为什么会",
+          "emphasis": false
+        },
+        {
+          "text": "慢慢变少",
+          "emphasis": true
+        },
+        {
+          "text": "？",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "lead",
+      "slot": "lead",
+      "type": "text",
+      "role": "lead",
+      "runs": [
+        {
+          "text": "不必等到沸腾，水也能变成水蒸气。",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "subject",
+      "slot": "subject",
+      "type": "image",
+      "assetRef": {
+        "id": "evaporation",
+        "version": "0.1.0"
+      },
+      "anchorId": "focus"
+    },
+    {
+      "id": "number-1",
+      "slot": "number-1",
+      "type": "badge",
+      "text": "01",
+      "tone": "blue"
+    },
+    {
+      "id": "step-1",
+      "slot": "step-1",
+      "type": "text",
+      "role": "stepTitle",
+      "runs": [
+        {
+          "text": "从水面发生变化",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "body-1",
+      "slot": "body-1",
+      "type": "text",
+      "role": "body",
+      "runs": [
+        {
+          "text": "液态水变成水蒸气。",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "number-2",
+      "slot": "number-2",
+      "type": "badge",
+      "text": "02",
+      "tone": "green"
+    },
+    {
+      "id": "step-2",
+      "slot": "step-2",
+      "type": "text",
+      "role": "stepTitle",
+      "runs": [
+        {
+          "text": "水蒸气通常看不见",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "body-2",
+      "slot": "body-2",
+      "type": "text",
+      "role": "body",
+      "runs": [
+        {
+          "text": "插画中的小球是分子示意。",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "number-3",
+      "slot": "number-3",
+      "type": "badge",
+      "text": "03",
+      "tone": "accent"
+    },
+    {
+      "id": "step-3",
+      "slot": "step-3",
+      "type": "text",
+      "role": "stepTitle",
+      "runs": [
+        {
+          "text": "这个过程叫蒸发",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "body-3",
+      "slot": "body-3",
+      "type": "text",
+      "role": "body",
+      "runs": [
+        {
+          "text": "没有沸腾，也可以发生。",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "from",
+      "slot": "from",
+      "type": "label",
+      "role": "phase",
+      "text": "液态",
+      "tone": "blue"
+    },
+    {
+      "id": "to",
+      "slot": "to",
+      "type": "label",
+      "role": "phase",
+      "text": "气态",
+      "tone": "green"
+    },
+    {
+      "id": "arrow",
+      "slot": "arrow",
+      "type": "arrow"
+    },
+    {
+      "id": "callout",
+      "slot": "callout",
+      "type": "text",
+      "role": "callout",
+      "runs": [
+        {
+          "text": "水面上的\n变化示意",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "annotation",
+      "slot": "annotation",
+      "type": "annotation",
+      "targetId": "subject",
+      "anchorId": "focus",
+      "radius": 26,
+      "labelId": "callout"
+    },
+    {
+      "id": "conclusion",
+      "slot": "conclusion",
+      "type": "label",
+      "role": "conclusion",
+      "text": "没有沸腾，也可以蒸发",
+      "tone": "accent"
+    },
+    {
+      "id": "source",
+      "slot": "source",
+      "type": "text",
+      "role": "source",
+      "runs": [
+        {
+          "text": "知识依据：USGS 水循环；插画仅作示意",
+          "emphasis": false
+        }
+      ]
+    }
+  ],
+  "motion": [
+    {
+      "targetId": "eyebrow",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "title",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "lead",
+      "type": "enter",
+      "startMs": 300,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "subject",
+      "type": "enter",
+      "startMs": 500,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 24
+    },
+    {
+      "targetId": "number-1",
+      "type": "enter",
+      "startMs": 2000,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "step-1",
+      "type": "enter",
+      "startMs": 2000,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "body-1",
+      "type": "enter",
+      "startMs": 2000,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "number-2",
+      "type": "enter",
+      "startMs": 5000,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "step-2",
+      "type": "enter",
+      "startMs": 5000,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "body-2",
+      "type": "enter",
+      "startMs": 5000,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "number-3",
+      "type": "enter",
+      "startMs": 8500,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "step-3",
+      "type": "enter",
+      "startMs": 8500,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "body-3",
+      "type": "enter",
+      "startMs": 8500,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "from",
+      "type": "enter",
+      "startMs": 10500,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "to",
+      "type": "enter",
+      "startMs": 10500,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "arrow",
+      "type": "enter",
+      "startMs": 10800,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "callout",
+      "type": "enter",
+      "startMs": 12500,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "annotation",
+      "type": "enter",
+      "startMs": 12000,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "conclusion",
+      "type": "enter",
+      "startMs": 14000,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "source",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 850,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  ],
+  "beats": [
+    {
+      "startMs": 0,
+      "endMs": 3500,
+      "text": "一碗水放久了，水会慢慢变少。"
+    },
+    {
+      "startMs": 3500,
+      "endMs": 7000,
+      "text": "液态水会变成水蒸气，这个过程叫蒸发。"
+    },
+    {
+      "startMs": 7000,
+      "endMs": 10500,
+      "text": "图中的小球是水分子示意，水蒸气通常不可见。"
+    },
+    {
+      "startMs": 10500,
+      "endMs": 14000,
+      "text": "蒸发是从液态到气态的变化。"
+    },
+    {
+      "startMs": 14000,
+      "endMs": 18000,
+      "text": "水不沸腾，也可以发生蒸发。"
+    }
+  ],
+  "source": "docs/styles/science-explainer/content-sources.md；复用 hybrid-01 已登记插画和课程事实。"
+}
