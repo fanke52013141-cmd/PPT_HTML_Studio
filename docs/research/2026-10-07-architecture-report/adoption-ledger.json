@@ -205,13 +205,13 @@
     },
     {
       "id": "BOR-08",
-      "title": "数字人独立生成与可选媒体轨道",
+      "title": "现有数字人方案的 HTML 接入",
       "source_report": {
         "path": "source-report.txt",
         "section": "第四部分；第五部分第五阶段"
       },
-      "decision": "adopt_pattern_deferred_integration",
-      "priority": "P2",
+      "decision": "reuse_existing_solution",
+      "priority": "integration_stage",
       "contract_rules": [
         "HPS-009",
         "HPS-011",
@@ -224,10 +224,10 @@
       "experiments": [
         "EXP-07"
       ],
-      "implementation_status": "not_implemented_by_this_research",
+      "implementation_status": "existing_solution_html_integration_not_verified",
       "experiment_status": "planned",
       "result_paths": [],
-      "caveat": "先复用原服务；不假设透明输出、通用 CSS 抠像或本机实时性能。",
+      "caveat": "直接复用现有生成及口型方案；EXP-07 只验证位置、时间同步与导出合成。",
       "analysis_path": "analysis-and-adoption.md",
       "verification_path": "verification-and-experiments.md"
     },
@@ -238,8 +238,8 @@
         "path": "source-report.txt",
         "section": "第四部分 Rhubarb"
       },
-      "decision": "candidate",
-      "priority": "P2",
+      "decision": "excluded_by_user_direction",
+      "priority": "not_scheduled",
       "contract_rules": [
         "HPS-003",
         "HPS-008",
@@ -248,13 +248,11 @@
       "evidence_sources": [
         "S15"
       ],
-      "experiments": [
-        "EXP-07"
-      ],
-      "implementation_status": "not_implemented_by_this_research",
-      "experiment_status": "planned",
+      "experiments": [],
+      "implementation_status": "out_of_current_scope",
+      "experiment_status": "not_scheduled",
       "result_paths": [],
-      "caveat": "中文识别与素材口型需验证，不等同于仿真人物。",
+      "caveat": "仅保留报告研究记录，不安排 Rhubarb 或卡通口型的实施和验证。",
       "analysis_path": "analysis-and-adoption.md",
       "verification_path": "verification-and-experiments.md"
     },
@@ -285,6 +283,17 @@
       "caveat": "内联、本地打包和并行按实测决定；不承诺十倍速。",
       "analysis_path": "analysis-and-adoption.md",
       "verification_path": "verification-and-experiments.md"
+    }
+  ],
+  "decision_updates": [
+    {
+      "date": "2026-10-07",
+      "authority": "user_direction",
+      "affected_items": [
+        "BOR-08",
+        "BOR-09"
+      ],
+      "reason": "数字人直接复用现有方案，取消新模型与卡通口型选型，仅验证 HTML 接入。"
     }
   ]
 }
