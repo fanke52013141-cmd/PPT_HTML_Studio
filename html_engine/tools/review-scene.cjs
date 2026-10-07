@@ -4,16 +4,22 @@
 // text measurement run first; failures come back as structured diagnostics
 // with the offending object id. Exit code is always 0 when a report was
 // written; report.passed carries the verdict.
-// Usage: node tools/review-scene.cjs <scene.json> <out-report.json> <out.png>
+// Usage: node tools/review-scene.cjs <scene.json> <out-report.json> <out.png> [rangeSpec.json]
+// rangeSpec: {nodeId, start, end} — code-point range resolved via DOM Range
+// (UTF-16 conversion per contract) and reported as viewport/client rects
+// together with the deterministic geometry (D03 text targeting evidence).
 const fs = require("fs"),
   path = require("path");
 const { pathToFileURL } = require("url");
 
-const [scenePath, reportPath, screenshotPath] = process.argv.slice(2);
+const [scenePath, reportPath, screenshotPath, rangeSpecPath] = process.argv.slice(2);
 if (!scenePath || !reportPath || !screenshotPath) {
-  console.error("usage: review-scene.cjs <scene.json> <out-report.json> <out.png>");
+  console.error("usage: review-scene.cjs <scene.json> <out-report.json> <out.png> [rangeSpec.json]");
   process.exit(2);
 }
+const rangeSpec = rangeSpecPath
+  ? JSON.parse(fs.readFileSync(rangeSpecPath, "utf8"))
+  : null;
 const root = path.resolve(__dirname, "..");
 const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
 
@@ -73,6 +79,50 @@ function resolveChromePath(playwright) {
     );
     const shot = await page.locator(".visual-stage").screenshot();
     fs.writeFileSync(screenshotPath, shot);
+    const textRange = rangeSpec
+      ? await page.evaluate(
+          async (spec) => {
+            const el = document.querySelector(
+              `[data-object-id="${spec.nodeId}"]`,
+            );
+            if (!el) return { error: "node not found" };
+            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+            const units = [];
+            let node;
+            while ((node = walker.nextNode()))
+              for (const ch of node.data) units.push({ node, ch });
+            let startNode = null, startOffset = 0, endNode = null, endOffset = 0;
+            let codeIndex = 0;
+            for (let i = 0; i < units.length; i += 1) {
+              if (codeIndex === spec.start) { startNode = units[i].node; startOffset = i; }
+              if (codeIndex === spec.end) { endNode = units[i].node; endOffset = i; }
+              codeIndex += 1;
+            }
+            if (startNode === null || endNode === null)
+              return { error: "range out of bounds" };
+            const range = document.createRange();
+            range.setStart(startNode, startOffset);
+            range.setEnd(endNode, endOffset);
+            const rects = [...range.getClientRects()]
+              .filter((r) => r.width && r.height)
+              .map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height }));
+            const stage = document
+              .querySelector(".visual-stage")
+              .getBoundingClientRect();
+            const scale = stage.width / 1600;
+            return {
+              rects,
+              canvasRects: rects.map((r) => ({
+                x: (r.x - stage.x) / scale,
+                y: (r.y - stage.y) / scale,
+                width: r.width / scale,
+                height: r.height / scale,
+              })),
+            };
+          },
+          rangeSpec,
+        )
+      : null;
     fs.writeFileSync(
       reportPath,
       JSON.stringify(
@@ -82,6 +132,9 @@ function resolveChromePath(playwright) {
           durationMs: result.timeMs,
           measuredObjects: Object.keys(result.measurements || {}).length,
           geometryObjects: Object.keys(result.geometry || {}).length,
+          geometry: result.geometry,
+          measurements: result.measurements,
+          textRange: textRange || undefined,
           pageErrors,
         },
         null,

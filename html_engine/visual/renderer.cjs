@@ -663,6 +663,26 @@ async function prepare(compiled, pack, host) {
         );
         geometry[node.id] = { anchor, endpoint, radius: node.radius };
       }
+      // D03: every node gets resolvable geometry — text/shape nodes carry
+      // their moved box; annotation entries keep anchor/endpoint and gain
+      // the full-content box used by target resolution.
+      for (const node of scene.nodes) {
+        const b = layout.slots[node.slot].box;
+        const s = states.get(node.id);
+        if (geometry[node.id]) {
+          if (geometry[node.id].box === undefined) {
+            geometry[node.id] = {
+              ...geometry[node.id],
+              box: { x: b.x + s.x, y: b.y + s.y, width: b.width, height: b.height },
+            };
+          }
+          continue;
+        }
+        geometry[node.id] = {
+          kind: node.type,
+          box: { x: b.x + s.x, y: b.y + s.y, width: b.width, height: b.height },
+        };
+      }
       const beat = scene.beats.find(
         (b) =>
           b.startMs <= ms &&

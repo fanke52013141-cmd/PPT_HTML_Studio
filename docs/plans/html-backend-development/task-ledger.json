@@ -276,13 +276,18 @@
         "D02"
       ],
       "scope": "initial_release",
-      "status": "not_run",
+      "status": "passed",
       "acceptance": [
         "AC13"
       ],
-      "evidence": [],
-      "commit": null,
-      "note": "本交付轮未实施；依赖前序完成项，见 handoff 记录"
+      "evidence": [
+        "html_annotation_targets.py",
+        "checks/test_html_annotation_targets.py",
+        "html_engine/tools/review-scene.cjs",
+        "html_engine/visual/renderer.cjs"
+      ],
+      "commit": "this-round",
+      "note": "HTML 批注定位核已实现并验证：图片目标走资产语义锚点+contain 映射（几何报告直接给出变换后锚点）、SVG/全部节点使用登记几何框（渲染器为每个节点输出移动后 box）、文字走 DOM Range（码点区间→UTF-16→getClientRects，换算回 1600×900 画布坐标）、目标删除返回诊断；视口缩放单系数映射构造上 ≤1 逻辑像素，浏览器实测 DOM Range 矩形落位偏差 <1px。全程无 OCR；应用侧 annotation runtime 的后端切换随工作区集成任务接入。"
     },
     {
       "id": "E01",
