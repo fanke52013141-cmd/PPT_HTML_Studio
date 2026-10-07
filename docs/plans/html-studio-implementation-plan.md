@@ -1,9 +1,13 @@
 # PPT HTML Studio 分阶段实施计划
 
-更新日期：2026-10-07。状态：P01/P01-B 完成；P02 首版视觉审阅未通过，待混合页面重制；通用内核尚未实现。
+更新日期：2026-10-07。状态：P01/P01-B 完成；P02 原首版未通过，后续混合实验及 motion-02 方向已获用户认可；通用内核尚未实现。
 P01 交付与检查见 [交付记录](p01-definition-completion.md)。
 P01-B 体系分类与扩展补充已完成，见 [体系交付记录](framework-expansion-completion.md)。
 P02 的科普首版参数与样稿已试制，见 [P02 记录](p02-style-sample-completion.md)。用户要求重做视觉机制与样稿，见 [重制任务书](../styles/science-explainer/visual-production-revision.md)。
+
+## 当前工程下一步
+
+用户已认可 motion-02 短对象动画。按 [混合视觉工程流程](hybrid-visual-engineering-workflow.md) 推进 E1—E4：先落实最小数据驱动渲染链，再验证模板/资产复用、接入现有音频与输出，最后应用化和受限 AI 生产。原 P03/P04 等阶段仍需实现与验收，不因实验可播放而直接完成。
 
 ## 1. 当前起点与最终目标
 

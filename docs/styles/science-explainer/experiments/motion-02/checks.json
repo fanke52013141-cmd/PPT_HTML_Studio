@@ -399,7 +399,7 @@
     }
   ],
   "pageErrors": [],
-  "userVisualReview": "pending",
+  "userVisualReview": "accepted_experiment_direction; see user-review.json",
   "notVerified": [
     "automatic segmentation",
     "production template reuse",

@@ -384,7 +384,7 @@
   },
   "gates": {
     "G1": "experiment plan completed; no production registry",
-    "G2": "generated reference available; agent review usable; user aesthetic review pending",
+    "G2": "user accepted experiment direction on 2026-10-07; does not approve production template or every asset condition",
     "G3": "partial: three correctly identified cropped RGBA assets; strict padding and source-edge criteria not passed",
     "G4": "standalone composition complete; real text and control geometry retained; perceptual fidelity differences recorded",
     "G5": "8 frames and repeated seeks, reverse/pause, invalid time and end-state checks passed in recorded Chromium",
