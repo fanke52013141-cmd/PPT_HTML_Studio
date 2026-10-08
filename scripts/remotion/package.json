@@ -1,0 +1,21 @@
+{
+  "name": "article-video-remotion",
+  "private": true,
+  "scripts": {
+    "preview": "remotion preview src/index.tsx",
+    "render": "remotion render src/index.tsx ArticleVideo ../../runs/demo/video/final.mp4",
+    "build:annotation-preview": "esbuild src/AnnotationPlayer.tsx --bundle --minify --define:process.env.NODE_ENV=\\\"production\\\" --outfile=../../static/annotation_player.bundle.js"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.481",
+    "@remotion/player": "4.0.481",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "4.0.481"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.4.0"
+  }
+}

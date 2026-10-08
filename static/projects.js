@@ -1,0 +1,279 @@
+// Project library rendering and lifecycle actions.
+
+// Cache of batch automation statuses keyed by project_id.
+let _automationStatusMap = {};
+let _automationPollTimer = null;
+let _creatingProject = false;
+/**
+ * Ensure the creation-config selector is present in both the static modal and
+ * the project-profile wizard, which replaces the modal body at runtime.
+ */
+function ensureCreationConfigSelector() {
+  let select = document.getElementById('input-creation-config');
+  if (select) return select;
+
+  const modalContent = document.querySelector('#modal-create .modal-content');
+  const canvasSection = modalContent?.querySelector('#input-project-canvas-profile')?.closest('div');
+  if (!modalContent || !canvasSection) return null;
+
+  const section = document.createElement('section');
+  section.id = 'create-creation-config-section';
+  section.className = 'project-profile-section';
+
+  const heading = document.createElement('h4');
+  heading.textContent = '创作配置包';
+  const label = document.createElement('label');
+  label.htmlFor = 'input-creation-config';
+  label.textContent = '选择配置包';
+  select = document.createElement('select');
+  select.id = 'input-creation-config';
+  select.style.width = '100%';
+  section.append(heading, label, select);
+  canvasSection.before(section);
+  return select;
+}
+
+function selectedCreationConfig() {
+  const select = document.getElementById('input-creation-config');
+  return select?.value ? { id: select.value } : null;
+}
+
+/** Load reusable creation packages without making package selection mandatory. */
+async function loadCreationConfigs() {
+  const select = ensureCreationConfigSelector();
+  if (!select) return;
+
+  const selectedId = select.value;
+  const emptyOption = document.createElement('option');
+  emptyOption.value = '';
+  emptyOption.textContent = '不使用创作配置包';
+
+  try {
+    const data = await API.get('/api/creation-configs');
+    const packages = Array.isArray(data?.packages) ? data.packages : [];
+    select.replaceChildren(emptyOption);
+    packages.forEach(item => {
+      if (!item || typeof item.id !== 'string' || !item.id || item.archived) return;
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = String(item.name || '未命名配置包');
+      select.appendChild(option);
+    });
+    const restore = Array.from(select.options).find(option => option.value === selectedId);
+    select.value = restore ? selectedId : '';
+    window.refreshCreationConfigChoices?.(packages);
+  } catch (_) {
+    select.replaceChildren(emptyOption);
+    select.value = '';
+    window.refreshCreationConfigChoices?.([]);
+  }
+}
+
+/** Normalise a raw one-click status string to a badge descriptor. */
+function _badgeFromStatus(rawStatus) {
+  switch (rawStatus) {
+    case 'running':          return { cls: 'badge-running',   label: '进行中' };
+    case 'waiting_for_user': return { cls: 'badge-waiting',   label: '等待操作' };
+    case 'waiting_for_review': return { cls: 'badge-waiting', label: '已暂停' };
+    case 'paused':           return { cls: 'badge-paused',    label: '已暂停' };
+    case 'failed':           return { cls: 'badge-failed',    label: '出错' };
+    case 'completed':        return { cls: 'badge-done',      label: '已完成' };
+    default:                 return null;
+  }
+}
+
+/** Poll batch one-click status and update card badges. */
+async function pollAutomationStatus() {
+  try {
+    const data = await API.get('/api/one-click-statuses', { silent: true });
+    if (!data || !data.items) return;
+    const map = {};
+    data.items.forEach(item => { map[item.project_id] = item; });
+    _automationStatusMap = map;
+
+    // Update badges in the DOM.
+    document.querySelectorAll('[data-automation-badge]').forEach(el => {
+      const pid = el.getAttribute('data-project-id');
+      const info = map[pid];
+      const badge = info ? _badgeFromStatus(info.status) : null;
+      if (badge) {
+        el.textContent = badge.label;
+        el.className = `automation-badge ${badge.cls}`;
+        el.style.display = '';
+        el.title = info.current_stage
+          ? `当前阶段: ${info.current_stage}`
+          : '';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+
+    // Continue polling if any project is running or waiting.
+    const hasActive = Object.values(map).some(
+      item => item.status === 'running' || item.status === 'waiting_for_user'
+    );
+    if (hasActive) {
+      if (!_automationPollTimer) {
+        _automationPollTimer = setInterval(pollAutomationStatus, 3000);
+      }
+    } else if (_automationPollTimer) {
+      clearInterval(_automationPollTimer);
+      _automationPollTimer = null;
+    }
+  } catch (_) { /* silent — polling failures are non-fatal */ }
+}
+
+/** Pause automation for a project from the card. */
+async function pauseAutomationFromCard(projectId) {
+  try {
+    await API.post(`/api/projects/${projectId}/one-click-pause`);
+    showToast('已请求暂停自动化');
+    pollAutomationStatus();
+  } catch (_) { showToast('暂停失败，请稍后重试'); }
+}
+
+/** Resume automation for a project from the card. */
+async function resumeAutomationFromCard(projectId) {
+  try {
+    await API.post(`/api/projects/${projectId}/one-click-generate`, { mode: 'resume' });
+    showToast('自动化已继续');
+    pollAutomationStatus();
+  } catch (_) { showToast('继续失败，请稍后重试'); }
+}
+
+async function loadProjects() {
+  const projects = await API.get('/api/projects');
+  const list = document.getElementById('project-list');
+  list.innerHTML = '';
+
+  if (projects.length === 0) {
+    list.innerHTML = `
+      <div class="card soft-outline" style="text-align: center; padding: 4rem 2rem; grid-column: 1/-1;">
+        <p style="font-size: 1.2rem; margin-bottom: 1rem;">还没有项目，快去新建一个吧！</p>
+        <button type="button" data-create-first-project>立即新建</button>
+      </div>`;
+    list.querySelector('[data-create-first-project]')?.addEventListener('click', () => {
+      document.getElementById('btn-create-project')?.click();
+    });
+    return;
+  }
+
+  projects.forEach(project => {
+    const status = project.step_status || {};
+    const context = projectFlowContext(project);
+    const percent = calculateVisibleProgress(status, context);
+    const hasPendingReconfirm = VISIBLE_FLOW.some(
+      item => getVisibleStepState(item.step, status, context) === 'pending_reconfirmation'
+    );
+    const currentVisibleStep = resolveProjectVisibleStep(project);
+
+    // Automation badge from cached batch status.
+    const autoInfo = _automationStatusMap[project.id];
+    const badge = autoInfo ? _badgeFromStatus(autoInfo.status) : null;
+    const showPauseBtn = autoInfo && autoInfo.status === 'running';
+    const showResumeBtn = autoInfo && (autoInfo.status === 'paused' || autoInfo.status === 'waiting_for_user');
+
+    const card = document.createElement('div');
+    card.className = 'project-card soft-elevation';
+    card.innerHTML = `
+      <div>
+        <div class="project-card-header">
+          <h3 class="highlight-title">${escHtml(project.name)}</h3>
+          ${badge ? `<span class="automation-badge ${badge.cls}" data-automation-badge data-project-id="${escHtml(project.id)}" title="${escHtml(autoInfo.current_stage || '')}">${badge.label}</span>` : `<span class="automation-badge" data-automation-badge data-project-id="${escHtml(project.id)}" style="display:none;"></span>`}
+        </div>
+        <p style="color: #666; font-size: 0.95rem; min-height: 40px; margin-bottom: 0.5rem;">${escHtml(project.description || '无项目描述')}</p>
+        <div style="font-size: 0.9rem; margin-top: 0.5rem;">
+          <div>当前阶段: <strong>第 ${visibleStepNumber(currentVisibleStep)} 步 · ${visibleStepLabel(currentVisibleStep)}</strong></div>
+          ${project.visual_backend === 'html' ? '<div style="color: #4b83c9; font-weight: bold;">HTML 场景后端</div>' : ''}
+          ${hasPendingReconfirm ? '<div style="color: #c9a002; font-weight: bold;">有步骤需重做</div>' : ''}
+        </div>
+      </div>
+      <div>
+        <div class="project-progress-bar">
+          <div class="project-progress-fill" style="width: ${percent}%"></div>
+        </div>
+        <div style="text-align: right; font-size: 0.8rem; margin-top: 2px; color: #555;">完成度: ${percent}%</div>
+        <div style="display: flex; gap: 0.8rem; margin-top: 1rem;">
+          <button class="success" type="button" data-open-project style="flex: 1; justify-content: center; font-size: 0.95rem; padding: 0.4rem;">继续设计</button>
+          ${showPauseBtn ? '<button class="secondary" type="button" data-pause-automation style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">暂停</button>' : ''}
+          ${showResumeBtn ? '<button class="secondary" type="button" data-resume-automation style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">继续自动化</button>' : ''}
+          <button class="danger" type="button" data-delete-project aria-label="删除项目" style="font-size: 0.95rem; padding: 0.4rem 0.6rem;">
+            <svg class="icon" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      </div>`;
+    card.querySelector('[data-open-project]')?.addEventListener('click', () => enterWorkspace(project.id));
+    card.querySelector('[data-delete-project]')?.addEventListener('click', () => deleteProject(project.id));
+    card.querySelector('[data-pause-automation]')?.addEventListener('click', () => pauseAutomationFromCard(project.id));
+    card.querySelector('[data-resume-automation]')?.addEventListener('click', () => resumeAutomationFromCard(project.id));
+    list.appendChild(card);
+  });
+
+  // Fetch and render automation badges after cards are in the DOM.
+  pollAutomationStatus();
+}
+
+async function createProject() {
+  const name = document.getElementById('input-project-name').value.trim();
+  const description = document.getElementById('input-project-desc').value.trim();
+  const canvasProfile = (document.getElementById('input-project-canvas-profile')?.value || 'landscape_16_9').trim();
+  const visualBackend = (document.getElementById('input-project-visual-backend')?.value || 'image').trim();
+  const targetDurationValue = document.getElementById('input-project-target-duration')?.value || '';
+  const targetDurationSec = targetDurationValue ? Number(targetDurationValue) : null;
+
+  if (!name) {
+    showToast('请输入项目名称');
+    return;
+  }
+
+  if (_creatingProject) return;
+  _creatingProject = true;
+  const submitBtn = document.getElementById('btn-create-submit');
+  if (submitBtn) submitBtn.disabled = true;
+  try {
+    const creationConfig = selectedCreationConfig();
+    // A course-tree entry point can preselect the destination. Passing the
+    // ownership IDs on the initial create keeps this as one atomic, account-
+    // scoped operation instead of creating an unassigned project then moving it.
+    const parent = window.__pendingProjectParent || null;
+    const result = await API.post('/api/projects', {
+      name,
+      description,
+      canvas_profile: canvasProfile,
+      visual_backend: visualBackend,
+      target_duration_sec: targetDurationSec,
+      ...(creationConfig ? {
+        config_package_id: creationConfig.id,
+      } : {}),
+      ...(parent || {}),
+    });
+    if (!result.success) return;
+    document.getElementById('modal-create').style.display = 'none';
+    showToast('项目新建成功');
+    window.__pendingProjectParent = null;
+
+    // Course and chapter creation stays in the library so the user can keep
+    // organizing the course tree. The normal entry retains its direct opening.
+    if (parent && window.CourseTree?.load) {
+      await window.CourseTree.load();
+    } else {
+      enterWorkspace(result.project.id);
+    }
+  } finally {
+    _creatingProject = false;
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+function deleteProject(id) {
+  showCustomConfirm(
+    '删除项目确认',
+    '确定永久删除该项目及其全部素材和视频吗？此操作无法撤销。',
+    async () => {
+      const result = await API.delete(`/api/projects/${id}`);
+      if (!result.success) return;
+      showToast('项目已删除');
+      loadProjects();
+    }, { danger: true }
+  );
+}

@@ -1,0 +1,794 @@
+#!/usr/bin/env python3
+"""
+Build remotion_props.json from a run directory.
+
+This script is the glue between the production pipeline and Remotion.
+
+Input run structure:
+
+runs/<run_id>/
+  slides/
+    slide_001/
+      scene.json
+      animation_timeline.json
+      audio_timeline.json
+      voice.mp3
+    slide_002/
+      ...
+
+Output:
+
+runs/<run_id>/remotion_props.json
+
+The generated props are consumed by:
+
+scripts/remotion/src/Video.tsx
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import shutil
+import sys
+from pathlib import Path
+from typing import Any
+from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
+
+# Direct CLI execution must resolve source-owned annotation modules without
+# depending on the launching shell's PYTHONPATH.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+try:
+    from scripts.media_tools import probe_media_duration_sec
+except ModuleNotFoundError:
+    from media_tools import probe_media_duration_sec
+
+
+DEFAULT_FPS = 30
+DEFAULT_WIDTH = 1920
+DEFAULT_HEIGHT = 1080
+DEFAULT_REMOTION_PUBLIC_DIR = Path("scripts/remotion/public")
+DEFAULT_AUDIO_TAIL_PADDING_SEC = 0.4
+DEFAULT_SUBTITLE_STYLE = {
+    "enabled": True,
+    "font_key": "lxgw_marker_gothic",
+    "font_family": "LXGW Marker Gothic",
+    "font_size": 40,
+    "font_weight": 400,
+    "bottom": 0,
+    "horizontal_margin": 110,
+    "color": "#000000",
+    # 方案 B：TikTok 式整页分页 + 逐字高亮
+    "highlight_color": "#000000",       # 当前朗读 token 的高亮色
+    "paging_window_ms": 1300,           # 合并相邻 token 成一页的时间窗（毫秒）
+    "token_highlight": True,            # 是否启用逐字高亮（关闭则整页同色显示）
+    "max_lines": 1,                     # 字幕最大行数，超出按 keep-all 折行后裁切
+    "line_height": 1.4,                 # 行高
+}
+
+
+class BuildError(RuntimeError):
+    pass
+
+
+class RuntimeAssetStore:
+    def __init__(self, public_dir: Path, run_id: str) -> None:
+        self.public_dir = public_dir.resolve()
+        self.run_id = run_id
+
+    def copy(
+        self,
+        value: str,
+        slide_dir: Path,
+        repo_root: Path,
+        subdir: str,
+        required_suffix: str | None = None,
+    ) -> str:
+        if is_url(value):
+            return value
+
+        local_asset = resolve_local_path(value, slide_dir, repo_root)
+        if not local_asset.exists():
+            raise BuildError(f"Missing local file: {local_asset}")
+
+        if required_suffix and local_asset.suffix.lower() != required_suffix:
+            raise BuildError(f"Asset must be a {required_suffix} file: {local_asset}")
+
+        destination = (
+            self.public_dir
+            / "runtime"
+            / self.run_id
+            / slide_dir.name
+            / subdir
+            / local_asset.name
+        )
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(local_asset, destination)
+
+        return destination.relative_to(self.public_dir).as_posix()
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        raise BuildError(f"Missing required file: {path}")
+
+    try:
+        value = json.loads(path.read_text(encoding="utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        raise BuildError(f"Invalid JSON file: {path}: {exc}") from exc
+
+    if not isinstance(value, dict):
+        raise BuildError(f"JSON file must contain an object: {path}")
+
+    return value
+
+
+def read_subtitle_style(run_dir: Path) -> dict[str, Any]:
+    # A project creation package is the immutable source for new projects;
+    # the visual settings file remains the explicit per-project override.
+    package_style: dict[str, Any] = {}
+    project_config_path = run_dir / "planning" / "project_config.json"
+    if project_config_path.exists():
+        try:
+            project_config = read_json(project_config_path)
+            payload = project_config.get("payload")
+            if isinstance(payload, dict) and isinstance(payload.get("subtitle"), dict):
+                package_style = dict(payload["subtitle"])
+        except BuildError:
+            package_style = {}
+    settings_path = run_dir / "visual_settings.json"
+    result = dict(DEFAULT_SUBTITLE_STYLE)
+    result.update({key: package_style[key] for key in result if key in package_style})
+    if settings_path.exists():
+        try:
+            payload = read_json(settings_path)
+        except BuildError:
+            payload = {}
+        style = payload.get("subtitle_style") if isinstance(payload, dict) else None
+        if isinstance(style, dict):
+            result.update({key: style[key] for key in result if key in style})
+    return result
+
+
+def is_url(value: str) -> bool:
+    return value.startswith("http://") or value.startswith("https://")
+
+
+def is_file_uri(value: str) -> bool:
+    return value.startswith("file://")
+
+
+def path_from_file_uri(value: str) -> Path:
+    parsed = urlparse(value)
+    path = url2pathname(unquote(parsed.path))
+
+    if parsed.netloc:
+        path = f"//{parsed.netloc}{path}"
+
+    return Path(path)
+
+
+def slide_sort_key(path: Path) -> tuple[int, str]:
+    """
+    Sort slide_001, slide_002, slide_010 in natural order.
+    """
+    match = re.search(r"(\d+)$", path.name)
+    if match:
+        return int(match.group(1)), path.name
+
+    return 999999, path.name
+
+
+def resolve_local_path(value: str, slide_dir: Path, repo_root: Path) -> Path:
+    """
+    Resolve an asset path.
+
+    Supported forms:
+    - assets/title.png
+    - runs/demo/slides/slide_001/assets/title.png
+    - C:/.../title.png
+    - file:///C:/.../title.png
+    """
+    if is_file_uri(value):
+        return path_from_file_uri(value)
+
+    raw = Path(value)
+
+    if raw.is_absolute():
+        return raw
+
+    candidates = [
+        slide_dir / raw,
+        repo_root / raw,
+        Path.cwd() / raw,
+    ]
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    # Return the most likely path for a clear error message.
+    return slide_dir / raw
+
+
+def validate_layer(layer: dict[str, Any], slide_dir: Path) -> None:
+    if layer.get("type") != "png":
+        raise BuildError(
+            f"Only PNG layers are supported in Remotion scene model. "
+            f"Bad layer in {slide_dir}: {layer.get('id')}"
+        )
+
+    if not layer.get("id"):
+        raise BuildError(f"Layer missing id in {slide_dir}")
+
+    if not layer.get("asset"):
+        raise BuildError(f"Layer missing asset in {slide_dir}: {layer.get('id')}")
+
+    box = layer.get("box")
+    if not isinstance(box, dict):
+        raise BuildError(f"Layer missing box in {slide_dir}: {layer.get('id')}")
+
+    for key in ["x", "y", "w", "h"]:
+        if key not in box:
+            raise BuildError(f"Layer box missing {key} in {slide_dir}: {layer.get('id')}")
+
+    if "z_index" not in layer:
+        raise BuildError(f"Layer missing z_index in {slide_dir}: {layer.get('id')}")
+
+
+def convert_scene_assets(
+    scene: dict[str, Any],
+    slide_dir: Path,
+    repo_root: Path,
+    asset_store: RuntimeAssetStore,
+) -> dict[str, Any]:
+    """
+    Copy scene assets into Remotion public/runtime and convert to staticFile paths.
+    """
+    if "elements" in scene:
+        raise BuildError(
+            f"scene.json contains deprecated elements[] in {slide_dir}. "
+            "Use layers[] with PNG assets only."
+        )
+
+    layers = scene.get("layers")
+
+    if not isinstance(layers, list) or not layers:
+        raise BuildError(f"scene.json must contain non-empty layers[]: {slide_dir}")
+
+    converted_layers: list[dict[str, Any]] = []
+
+    for layer in layers:
+        if not isinstance(layer, dict):
+            raise BuildError(f"Invalid layer object in {slide_dir}")
+
+        validate_layer(layer, slide_dir)
+
+        converted = dict(layer)
+        converted["asset"] = asset_store.copy(
+            str(layer["asset"]),
+            slide_dir,
+            repo_root,
+            subdir="assets",
+            required_suffix=".png",
+        )
+        cutout_asset = layer.get("cutout_asset")
+        if isinstance(cutout_asset, str) and cutout_asset:
+            converted["cutout_asset"] = asset_store.copy(
+                cutout_asset,
+                slide_dir,
+                repo_root,
+                subdir="assets",
+                required_suffix=".png",
+            )
+        converted_layers.append(converted)
+
+    converted_scene = dict(scene)
+    converted_scene["layers"] = converted_layers
+
+    canvas = converted_scene.get("canvas")
+    if not isinstance(canvas, dict):
+        raise BuildError(f"scene.json missing canvas object: {slide_dir}")
+
+    background_asset = canvas.get("background_asset")
+    if isinstance(background_asset, str) and background_asset:
+        converted_canvas = dict(canvas)
+        converted_canvas["background_asset"] = asset_store.copy(
+            background_asset,
+            slide_dir,
+            repo_root,
+            subdir="assets",
+        )
+        converted_scene["canvas"] = converted_canvas
+
+    return converted_scene
+
+
+def require_slide_id(slide_dir: Path, *values: Any) -> str:
+    slide_ids = [str(value) for value in values if isinstance(value, str) and value]
+
+    if not slide_ids:
+        return slide_dir.name
+
+    first = slide_ids[0]
+    mismatches = sorted({value for value in slide_ids if value != first})
+    if mismatches:
+        raise BuildError(f"slide_id mismatch in {slide_dir}: {[first, *mismatches]}")
+
+    return first
+
+
+def validate_audio_timeline(audio_timeline: dict[str, Any], slide_dir: Path) -> None:
+    segments = audio_timeline.get("segments")
+    if not isinstance(segments, list):
+        raise BuildError(f"audio_timeline.json must contain segments[]: {slide_dir}")
+
+    for segment in segments:
+        if not isinstance(segment, dict):
+            raise BuildError(f"Invalid audio segment in {slide_dir}")
+
+        for key in ["id", "start", "end", "text"]:
+            if key not in segment:
+                raise BuildError(f"Audio segment missing {key} in {slide_dir}")
+
+        if not isinstance(segment["start"], (int, float)) or not isinstance(segment["end"], (int, float)):
+            raise BuildError(f"Audio segment start/end must be numbers in {slide_dir}: {segment.get('id')}")
+
+        if segment["end"] < segment["start"]:
+            raise BuildError(f"Audio segment end before start in {slide_dir}: {segment.get('id')}")
+
+
+def validate_animation_timeline(
+    animation_timeline: dict[str, Any],
+    layer_ids: set[str],
+    slide_dir: Path,
+) -> None:
+    events = animation_timeline.get("events")
+    if not isinstance(events, list):
+        raise BuildError(f"animation_timeline.json must contain events[]: {slide_dir}")
+
+    for event in events:
+        if not isinstance(event, dict):
+            raise BuildError(f"Invalid animation event in {slide_dir}")
+
+        for key in ["target", "action", "at", "duration"]:
+            if key not in event:
+                raise BuildError(f"Animation event missing {key} in {slide_dir}")
+
+        target = str(event["target"])
+        if target not in layer_ids:
+            raise BuildError(f"Animation event targets unknown layer in {slide_dir}: {target}")
+
+        if not isinstance(event["at"], (int, float)) or not isinstance(event["duration"], (int, float)):
+            raise BuildError(f"Animation event at/duration must be numbers in {slide_dir}: {event.get('id')}")
+
+
+def max_segment_end(audio_timeline: dict[str, Any]) -> float:
+    values: list[float] = []
+
+    for segment in audio_timeline.get("segments", []):
+        if isinstance(segment, dict) and isinstance(segment.get("end"), (int, float)):
+            values.append(float(segment["end"]))
+
+    return max(values, default=0.0)
+
+
+def max_event_end(animation_timeline: dict[str, Any]) -> float:
+    values: list[float] = []
+
+    for event in animation_timeline.get("events", []):
+        if (
+            isinstance(event, dict)
+            and isinstance(event.get("at"), (int, float))
+            and isinstance(event.get("duration"), (int, float))
+        ):
+            values.append(float(event["at"]) + float(event["duration"]))
+
+    return max(values, default=0.0)
+
+
+def optional_duration(value: Any) -> float:
+    if isinstance(value, (int, float)) and value > 0:
+        return float(value)
+
+    return 0.0
+
+
+def probe_audio_duration_sec(audio_path: Path) -> float | None:
+    return probe_media_duration_sec(audio_path, repo_root=Path(__file__).resolve().parents[1])
+
+
+def scale_audio_segments(audio_timeline: dict[str, Any], source_duration: float, target_duration: float) -> dict[str, Any]:
+    if source_duration <= 0 or target_duration <= 0 or abs(source_duration - target_duration) <= 0.05:
+        return audio_timeline
+    ratio = target_duration / source_duration
+    converted = dict(audio_timeline)
+    scaled_segments: list[dict[str, Any]] = []
+    for segment in audio_timeline.get("segments", []):
+        if not isinstance(segment, dict):
+            continue
+        scaled = dict(segment)
+        if isinstance(scaled.get("start"), (int, float)):
+            scaled["start"] = round(max(0.0, float(scaled["start"]) * ratio), 3)
+        if isinstance(scaled.get("end"), (int, float)):
+            scaled["end"] = round(min(target_duration, max(0.0, float(scaled["end"]) * ratio)), 3)
+        if (
+            isinstance(scaled.get("start"), (int, float))
+            and isinstance(scaled.get("end"), (int, float))
+            and scaled["end"] <= scaled["start"]
+        ):
+            scaled["end"] = round(min(target_duration, float(scaled["start"]) + 0.05), 3)
+        scaled_segments.append(scaled)
+    if scaled_segments:
+        scaled_segments[-1]["end"] = round(target_duration, 3)
+    converted["segments"] = scaled_segments
+    converted["timing_source"] = str(converted.get("timing_source") or "estimated") + "_retimed_to_local_audio"
+    return converted
+
+
+def align_audio_timeline_to_voice(audio_timeline: dict[str, Any], voice_path: Path) -> dict[str, Any]:
+    actual_content_duration = probe_audio_duration_sec(voice_path)
+    if not actual_content_duration:
+        return audio_timeline
+
+    audio_start_sec = optional_duration(audio_timeline.get("audio_start_sec"))
+    timeline_content_duration = max(
+        optional_duration(audio_timeline.get("audio_content_duration_sec")),
+        max(
+            0.0,
+            optional_duration(audio_timeline.get("duration_sec")) - audio_start_sec,
+        ),
+        max_segment_end(audio_timeline),
+    )
+    converted = (
+        scale_audio_segments(audio_timeline, timeline_content_duration, actual_content_duration)
+        if timeline_content_duration > 0
+        else dict(audio_timeline)
+    )
+    converted["audio_content_duration_sec"] = round(actual_content_duration, 3)
+    converted["duration_sec"] = round(actual_content_duration + audio_start_sec, 3)
+    converted["duration_source"] = "local_audio_ffprobe"
+    converted["probed_audio_duration_sec"] = round(actual_content_duration, 3)
+    if timeline_content_duration > 0:
+        converted["previous_timeline_content_duration_sec"] = round(timeline_content_duration, 3)
+    return converted
+
+
+def compute_slide_presentation_duration(
+    audio_timeline: dict[str, Any],
+    animation_timeline: dict[str, Any],
+) -> float:
+    """每页最终呈现时长（秒）：音频结尾 + 尾帧 padding，与真实 reveal 动画取大。
+
+    这是页长的唯一规则来源：Remotion 页构建（slide_duration）与字幕导出
+    （subtitle_export_service）必须共用同一份计算，否则多页合并字幕的
+    游标会相对视频按页累计漂移（每页少 0.4s 尾帧）。输入是两张时间线
+    dict，不做任何 IO；缺失的 animation_timeline 视为无动画扩展。
+
+    Static full-slide scenes intentionally retain a positive ``duration_sec`` in
+    ``animation_timeline.json`` for artifact compatibility.  That value is a
+    scene-builder fallback (historically 12 seconds), not an animation that
+    needs screen time.  Only a timeline with actual reveal events may extend a
+    slide beyond its voice duration and tail padding.
+    """
+    audio_end = max(
+        optional_duration(audio_timeline.get("duration_sec")),
+        max_segment_end(audio_timeline),
+    )
+    reveal_end = max_event_end(animation_timeline)
+    animation_end = (
+        max(optional_duration(animation_timeline.get("duration_sec")), reveal_end)
+        if reveal_end > 0
+        else 0.0
+    )
+    duration = max(
+        animation_end,
+        audio_end + DEFAULT_AUDIO_TAIL_PADDING_SEC if audio_end > 0 else 0.0,
+    )
+    return round(duration, 3)
+
+
+def slide_duration(audio_timeline: dict[str, Any], animation_timeline: dict[str, Any], slide_dir: Path) -> float:
+    """Resolve the rendered slide duration from audible content and real reveals."""
+    duration = compute_slide_presentation_duration(audio_timeline, animation_timeline)
+
+    if duration <= 0:
+        raise BuildError(f"Could not determine positive duration_sec for {slide_dir}")
+
+    return duration
+
+
+def contract_slide_ids(run_dir: Path) -> list[str]:
+    contract_path = run_dir / "planning" / "visual_contract.json"
+    if not contract_path.exists():
+        return []
+    try:
+        contract = read_json(contract_path)
+    except BuildError:
+        return []
+    slides = contract.get("slides")
+    if not isinstance(slides, list):
+        return []
+    slide_ids: list[str] = []
+    for slide in slides:
+        if not isinstance(slide, dict):
+            continue
+        slide_id = str(slide.get("slide_id", "")).strip()
+        if slide_id:
+            slide_ids.append(slide_id)
+    return slide_ids
+
+
+ANNOTATION_TIMELINE_RESOLVER_VERSION = "annotation_timeline_v2"
+
+
+def _sha256_file(path: Path) -> str | None:
+    import hashlib
+
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _load_annotation_timeline_for_render(
+    slide_dir: Path,
+    slide_id: str,
+    asset_store: "RuntimeAssetStore | None" = None,
+    repo_root: Path | None = None,
+    fps: int = 30,
+) -> dict[str, Any] | None:
+    timeline_path = slide_dir / "annotation_timeline.json"
+    # slide_dir = <run>/slides/<slide_id>;planning 位于 run 根(slide_dir 上两级)
+    settings_path = slide_dir.parent.parent / "planning" / "annotation_settings.json"
+    enabled = False
+    if settings_path.exists():
+        try:
+            raw = json.loads(settings_path.read_text(encoding="utf-8-sig"))
+            enabled = bool(raw.get("enabled")) if isinstance(raw, dict) else False
+        except ValueError as exc:
+            raise BuildError("勾画设置损坏，请检查 annotation_settings.json") from exc
+    if not enabled:
+        return None  # 功能关闭:旧 timeline 一律忽略
+    from annotation_build import AnnotationBuildError, read_json as read_annotation_json, validate_timeline
+    from annotation_contracts import AnnotationPage
+    raw_page = read_annotation_json(slide_dir / "annotations.json", optional=True)
+    if raw_page is None:
+        return None
+    raw_timeline = read_annotation_json(timeline_path, optional=True)
+    canvas = tuple((raw_timeline or {}).get("canvas") or [1920, 1080])
+    profile = read_annotation_json(slide_dir.parent.parent / "planning" / "canvas_profile.json", optional=True)
+    if profile:
+        canvas = (int(profile["width"]), int(profile["height"]))
+    issues = []
+    page = AnnotationPage.from_payload(raw_page, issues, canvas=canvas)
+    if issues or page is None:
+        raise BuildError(f"Slide {slide_id}: 勾画数据损坏，请检查 annotations.json")
+    try:
+        timeline = validate_timeline(slide_dir, page, canvas=canvas, timeline=raw_timeline, fps=fps)
+    except AnnotationBuildError as exc:
+        raise BuildError(f"Slide {slide_id}: 勾画未就绪 ({exc});请预览并重新确认勾画") from exc
+    if timeline is None:
+        return None
+    if asset_store is not None and repo_root is not None:
+        _attach_raster_assets(timeline, slide_dir, slide_id, asset_store, repo_root)
+    return timeline
+
+
+def _attach_raster_assets(
+    timeline: dict[str, Any],
+    slide_dir: Path,
+    slide_id: str,
+    asset_store: RuntimeAssetStore,
+    repo_root: Path,
+) -> None:
+    """把栅格墨迹帧复制进 runtime 资产,stroke.ink 替换为可访问 URL 列表。
+
+    视频呈现的是位图手写帧(非 SVG);缺帧按错误处理,避免视频里静默少笔迹。
+    """
+    for event in timeline.get("events", []) or []:
+        annotation_id = str(event.get("annotation_id") or "")
+        for stroke in event.get("strokes", []) or []:
+            ink = stroke.get("ink") if isinstance(stroke, dict) else None
+            if not isinstance(ink, dict) or ink.get("kind") != "raster":
+                continue
+            frame_count = int(ink.get("frame_count") or 0)
+            if frame_count <= 0:
+                raise BuildError(f"Slide {slide_id}: 勾画 {annotation_id} 墨迹帧数为 0,请重新确认勾画")
+            stroke_dir = str(ink.get("dir") or "")
+            ink_root = slide_dir / "annotation_ink" / annotation_id / stroke_dir
+            urls: list[str] = []
+            for index in range(frame_count):
+                src = ink_root / f"frame_{index:03d}.png"
+                if not src.exists():
+                    raise BuildError(
+                        f"Slide {slide_id}: 勾画 {annotation_id} 缺少墨迹帧 {src.name};请重新确认勾画"
+                    )
+                # 每笔独立子目录,避免所有帧都叫 frame_000.png 相互覆盖
+                urls.append(
+                    asset_store.copy(
+                        str(src),
+                        slide_dir,
+                        repo_root,
+                        subdir=f"annotation_ink/{annotation_id}/{stroke_dir}",
+                        required_suffix=".png",
+                    )
+                )
+            stroke["ink"] = {
+                "kind": "raster",
+                "frames": urls,
+                "fps": int(ink.get("fps") or 30),
+                "canvas": ink.get("canvas") or [1920, 1080],
+            }
+
+
+def build_slide(
+    slide_dir: Path,
+    repo_root: Path,
+    asset_store: RuntimeAssetStore,
+    start_sec: float,
+    fps: int = 30,
+) -> dict[str, Any]:
+    scene = convert_scene_assets(read_json(slide_dir / "scene.json"), slide_dir, repo_root, asset_store)
+    audio_timeline = read_json(slide_dir / "audio_timeline.json")
+    animation_timeline = read_json(slide_dir / "animation_timeline.json")
+
+    validate_audio_timeline(audio_timeline, slide_dir)
+    layer_ids = {str(layer["id"]) for layer in scene["layers"]}
+    validate_animation_timeline(animation_timeline, layer_ids, slide_dir)
+
+    voice_path = slide_dir / "voice.mp3"
+    audio_timeline = align_audio_timeline_to_voice(audio_timeline, voice_path)
+    audio_file = asset_store.copy(str(voice_path), slide_dir, repo_root, subdir="audio", required_suffix=".mp3")
+    converted_audio_timeline = dict(audio_timeline)
+    converted_audio_timeline["audio_file"] = audio_file
+    slide_id = require_slide_id(
+        slide_dir,
+        scene.get("slide_id"),
+        audio_timeline.get("slide_id"),
+        animation_timeline.get("slide_id"),
+    )
+    duration_sec = slide_duration(audio_timeline, animation_timeline, slide_dir)
+
+    # 勾画标注(模块六):正式导出门禁(R2 方案 6)。
+    # enabled=false → 忽略旧 timeline,绝不带入;
+    # enabled=true  → timeline 必须存在、resolver 未过期、输入哈希与当前
+    #                 文件一致;否则拒绝渲染并给出可操作错误。
+    annotation_timeline = _load_annotation_timeline_for_render(
+        slide_dir, slide_id, asset_store=asset_store, repo_root=repo_root, fps=fps
+    )
+
+    payload = {
+        "slide_id": slide_id,
+        "start_sec": round(start_sec, 3),
+        "duration_sec": duration_sec,
+        "audio_tail_padding_sec": DEFAULT_AUDIO_TAIL_PADDING_SEC,
+        "scene": scene,
+        "audio_file": audio_file,
+        "audio_timeline": converted_audio_timeline,
+        "animation_timeline": animation_timeline,
+    }
+    if annotation_timeline is not None:
+        payload["annotation_timeline"] = annotation_timeline
+    return payload
+
+
+def build_props(
+    run_dir: Path,
+    repo_root: Path,
+    asset_store: RuntimeAssetStore,
+    fps: int,
+    width: int,
+    height: int,
+    slide_ids: set[str] | None = None,
+) -> dict[str, Any]:
+    slides_dir = run_dir / "slides"
+    if not slides_dir.exists():
+        raise BuildError(f"Missing slides directory: {slides_dir}")
+
+    slide_dirs = sorted(
+        [path for path in slides_dir.iterdir() if path.is_dir()],
+        key=slide_sort_key,
+    )
+    if slide_ids:
+        slide_dirs = [path for path in slide_dirs if path.name in slide_ids]
+    else:
+        ordered_slide_ids = contract_slide_ids(run_dir)
+        if ordered_slide_ids:
+            by_name = {path.name: path for path in slide_dirs}
+            missing = [slide_id for slide_id in ordered_slide_ids if slide_id not in by_name]
+            if missing:
+                raise BuildError(f"Missing current slide directories: {', '.join(missing)}")
+            slide_dirs = [by_name[slide_id] for slide_id in ordered_slide_ids if slide_id in by_name]
+    if not slide_dirs:
+        raise BuildError(f"No matching slide directories found in: {slides_dir}")
+
+    slides: list[dict[str, Any]] = []
+    start_sec = 0.0
+
+    for slide_dir in slide_dirs:
+        slide = build_slide(slide_dir, repo_root, asset_store, start_sec, fps=fps)
+        slides.append(slide)
+        start_sec += float(slide["duration_sec"])
+
+    return {
+        "fps": fps,
+        "width": width,
+        "height": height,
+        "total_duration_sec": round(start_sec, 3),
+        "subtitle_style": read_subtitle_style(run_dir),
+        "slides": slides,
+    }
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Build Remotion props JSON from runs/<run_id>/slides/* inputs."
+    )
+    parser.add_argument("--run-dir", required=True, type=Path, help="Run directory, for example runs/demo")
+    parser.add_argument(
+        "--out",
+        type=Path,
+        help="Output props JSON path. Defaults to <run-dir>/remotion_props.json",
+    )
+    parser.add_argument("--repo-root", default=Path("."), type=Path, help="Repository root for resolving assets")
+    parser.add_argument(
+        "--remotion-public-dir",
+        default=DEFAULT_REMOTION_PUBLIC_DIR,
+        type=Path,
+        help="Remotion public directory. Assets are copied to public/runtime/<run_id>/...",
+    )
+    parser.add_argument(
+        "--slide-id",
+        dest="slide_ids",
+        action="append",
+        help="Only include one slide id. Can be repeated for multiple slides.",
+    )
+    parser.add_argument("--fps", default=DEFAULT_FPS, type=int)
+    parser.add_argument("--width", default=DEFAULT_WIDTH, type=int)
+    parser.add_argument("--height", default=DEFAULT_HEIGHT, type=int)
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    run_dir = args.run_dir.resolve()
+    repo_root = args.repo_root.resolve()
+    public_dir = args.remotion_public_dir
+    if not public_dir.is_absolute():
+        public_dir = repo_root / public_dir
+    out_path = (args.out or run_dir / "remotion_props.json").resolve()
+    asset_store = RuntimeAssetStore(public_dir=public_dir, run_id=run_dir.name)
+    runtime_run_dir = public_dir.resolve() / "runtime" / run_dir.name
+    if runtime_run_dir.exists():
+        shutil.rmtree(runtime_run_dir)
+
+    try:
+        props = build_props(
+            run_dir=run_dir,
+            repo_root=repo_root,
+            asset_store=asset_store,
+            fps=args.fps,
+            width=args.width,
+            height=args.height,
+            slide_ids=set(args.slide_ids) if args.slide_ids else None,
+        )
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(
+            json.dumps(props, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    except BuildError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    print(f"Wrote {out_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

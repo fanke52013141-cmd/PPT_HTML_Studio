@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Scene",
+  "type": "object",
+  "required": ["slide_id", "canvas", "layers"],
+  "properties": {
+    "slide_id": {"type": "string"},
+    "source_visual_draft": {"type": "string"},
+    "visual_source": {
+      "type": "string",
+      "enum": [
+        "master_reveal_layers"
+      ]
+    },
+    "canvas": {
+      "type": "object",
+      "required": ["width", "height", "background"],
+      "properties": {
+        "width": {"type": "number"},
+        "height": {"type": "number"},
+        "background": {"type": "string"},
+        "background_asset": {"type": "string"}
+      }
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "asset", "box", "z_index", "role"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"type": "string", "enum": ["png"]},
+          "asset": {"type": "string"},
+          "role": {
+            "type": "string",
+            "enum": [
+              "background",
+              "title",
+              "subtitle",
+              "content_body",
+              "diagram",
+              "annotation",
+              "summary",
+              "decoration",
+              "full_slide",
+              "cover_layer",
+              "fog_layer",
+              "reveal_crop"
+            ]
+          },
+          "target_group_id": {"type": "string"},
+          "visible_text": {"type": "string"},
+          "box": {
+            "type": "object",
+            "required": ["x", "y", "w", "h"],
+            "properties": {
+              "x": {"type": "number"},
+              "y": {"type": "number"},
+              "w": {"type": "number"},
+              "h": {"type": "number"}
+            }
+          },
+          "z_index": {"type": "number"},
+          "animation_role": {"type": "string"},
+          "content_index": {"type": "number"},
+          "narration_beat_id": {"type": "string"},
+          "linked_segment_id": {"type": "string"},
+          "text_summary": {"type": "string"},
+          "narration_cue": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

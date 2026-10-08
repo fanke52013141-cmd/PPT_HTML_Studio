@@ -1,0 +1,173 @@
+"""Central file and status lifecycle rules for generated project artifacts.
+
+This module deliberately has no FastAPI or database dependency.  Callers own
+database commits and Manifest mutation; this module owns deterministic artifact
+paths, deletion semantics, and downstream step-state transitions.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+from pathlib import Path
+import shutil
+import threading
+import time
+import uuid
+from typing import Any, Iterable, MutableMapping
+
+from project_storage import planning_path, safe_child, slide_dir
+
+
+LOGGER = logging.getLogger(__name__)
+_JSON_WRITE_LOCKS: dict[str, threading.Lock] = {}
+_JSON_WRITE_LOCKS_GUARD = threading.Lock()
+_PROJECT_ARTIFACT_LOCKS: dict[str, threading.RLock] = {}
+_PROJECT_ARTIFACT_LOCKS_GUARD = threading.Lock()
+REVEAL_FILENAMES = ("scene.json", "animation_timeline.json", "reveal_report.json", "mask_preview.png")
+
+
+def project_artifact_lock(run_dir: str | Path) -> threading.RLock:
+    """Return the shared per-project lock for manifest and derived artifacts."""
+    key = str(Path(run_dir).resolve())
+    with _PROJECT_ARTIFACT_LOCKS_GUARD:
+        lock = _PROJECT_ARTIFACT_LOCKS.get(key)
+        if lock is None:
+            lock = threading.RLock()
+            _PROJECT_ARTIFACT_LOCKS[key] = lock
+        return lock
+
+
+def remove_file(path: str | Path) -> bool:
+    """Remove one file and report whether an artifact existed."""
+    target = Path(path)
+    try:
+        target.unlink()
+        return True
+    except FileNotFoundError:
+        return False
+    except OSError as exc:
+        LOGGER.warning("Failed to remove generated artifact %s: %s", target, exc)
+        return False
+
+
+def remove_tree(path: str | Path) -> bool:
+    """Remove one generated directory without escaping to parent paths."""
+    target = Path(path)
+    if not target.exists():
+        return False
+    try:
+        shutil.rmtree(target)
+        return True
+    except OSError as exc:
+        LOGGER.warning("Failed to remove generated artifact directory %s: %s", target, exc)
+        return False
+
+
+def read_json_file(path: str | Path) -> Any:
+    try:
+        value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+        return value
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def write_json_atomic(path: str | Path, payload: Any) -> None:
+    """Write JSON through a same-directory temporary file and atomic replace.
+
+    原子替换持续失败时保留原目标文件并向上抛出异常：退化为对目标文件
+    的原地直写会摧毁本函数的核心保证（读者要么看到旧的完整内容、要么
+    看到新的完整内容，绝不看到截断或混合内容），且调用方无从得知原子性
+    已被放弃。调用方按既有任务失败/暂停机制处理该异常。
+    """
+    target = Path(path).resolve()
+    key = str(target)
+    with _JSON_WRITE_LOCKS_GUARD:
+        write_lock = _JSON_WRITE_LOCKS.setdefault(key, threading.Lock())
+    with write_lock:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+        temporary = target.with_name(f"{target.name}.{uuid.uuid4().hex}.tmp")
+        last_error: OSError | None = None
+        for attempt in range(4):
+            try:
+                with temporary.open("w", encoding="utf-8", newline="\n") as file:
+                    file.write(content)
+                    file.flush()
+                    os.fsync(file.fileno())
+                os.replace(temporary, target)
+                return
+            except OSError as exc:
+                last_error = exc
+                remove_file(temporary)
+                time.sleep(0.15 * (attempt + 1))
+        raise RuntimeError(
+            f"原子写入失败，已保留原文件且未做直写兜底: {target}"
+        ) from last_error
+
+
+def clear_remotion_props(run_dir: str | Path) -> bool:
+    return remove_file(safe_child(run_dir, "remotion_props.json"))
+
+
+def clear_audio_confirmation(run_dir: str | Path) -> bool:
+    return remove_file(planning_path(run_dir, "audio_confirmed.json"))
+
+
+def clear_slide_reveal_artifacts(run_dir: str | Path, slide_id: str) -> list[Path]:
+    target_slide_dir = slide_dir(run_dir, slide_id)
+    removed: list[Path] = []
+    for filename in REVEAL_FILENAMES:
+        path = target_slide_dir / filename
+        if remove_file(path):
+            removed.append(path)
+    assets_dir = target_slide_dir / "assets"
+    if remove_tree(assets_dir):
+        removed.append(assets_dir)
+    # AI Mask 检测中间产物与 reveal PPTX 的临时拆页图都派生自当前底图。
+    auto_mask_dir = target_slide_dir / "auto_mask"
+    if remove_tree(auto_mask_dir):
+        removed.append(auto_mask_dir)
+    for generated in target_slide_dir.glob("pptx_reveal_*.png"):
+        if remove_file(generated):
+            removed.append(generated)
+    if clear_remotion_props(run_dir):
+        removed.append(safe_child(run_dir, "remotion_props.json"))
+    return removed
+
+
+def clear_all_reveal_artifacts(run_dir: str | Path, slide_ids: Iterable[str]) -> list[Path]:
+    removed: list[Path] = []
+    for slide_id in slide_ids:
+        removed.extend(clear_slide_reveal_artifacts(run_dir, str(slide_id)))
+    # Handles projects whose contract currently has no slides.
+    props_path = safe_child(run_dir, "remotion_props.json")
+    if clear_remotion_props(run_dir) and props_path not in removed:
+        removed.append(props_path)
+    return removed
+
+
+def mark_downstream_pending(
+    statuses: MutableMapping[str, Any],
+    *,
+    from_step: int,
+    through_step: int = 8,
+) -> MutableMapping[str, Any]:
+    """Downgrade downstream steps while preserving completed/stale distinction."""
+    for step in range(from_step, through_step + 1):
+        key = str(step)
+        statuses[key] = "pending_reconfirmation" if statuses.get(key) == "completed" else "pending"
+    return statuses
+
+
+def mark_selected_stale(
+    statuses: MutableMapping[str, Any], step_numbers: Iterable[int]
+) -> MutableMapping[str, Any]:
+    for step in step_numbers:
+        key = str(step)
+        if statuses.get(key) == "completed":
+            statuses[key] = "pending_reconfirmation"
+        elif statuses.get(key) != "pending":
+            statuses[key] = "pending"
+    return statuses

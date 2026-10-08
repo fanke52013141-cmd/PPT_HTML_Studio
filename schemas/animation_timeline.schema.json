@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AnimationTimeline",
+  "type": "object",
+  "required": ["slide_id", "duration_sec", "events"],
+  "properties": {
+    "slide_id": {"type": "string"},
+    "duration_sec": {"type": "number"},
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "target", "action", "at", "duration"],
+        "properties": {
+          "id": {"type": "string"},
+          "target": {"type": "string", "description": "Must exist in scene.layers[].id"},
+          "target_group_id": {"type": "string"},
+          "action": {
+            "type": "string",
+            "enum": [
+              "fade_in",
+              "fade_up",
+              "soft_zoom_in",
+              "slide_in_left",
+              "highlight",
+              "cover_fade_out",
+              "cover_wipe_left_to_right",
+              "cover_wipe_right_to_left",
+              "cover_wipe_top_to_bottom",
+              "cover_wipe_bottom_to_top",
+              "fog_diagonal_erase",
+              "crop_fade_up",
+              "crop_slide_in_left",
+              "crop_soft_zoom_in",
+              "wipe_left_to_right",
+              "wipe_right_to_left",
+              "wipe_top_to_bottom",
+              "wipe_bottom_to_top",
+              "scratch_reveal",
+              "brush_wipe_left_to_right",
+              "sticker_pop",
+              "stamp_in",
+              "paper_drop"
+            ]
+          },
+          "at": {"type": "number", "minimum": 0},
+          "duration": {"type": "number", "minimum": 0},
+          "linked_segment_id": {"type": "string"},
+          "narration_beat_id": {"type": "string"},
+          "easing": {"type": "string"},
+          "params": {"type": "object"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

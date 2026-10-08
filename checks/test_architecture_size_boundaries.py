@@ -1,0 +1,35 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def line_count(path: str) -> int:
+    """Count logical source lines, ignoring formatting-only blank lines."""
+    return sum(
+        1
+        for line in (ROOT / path).read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    )
+
+
+def test_extracted_modules_do_not_regress_into_monoliths() -> None:
+    # 修改限额必须在变更说明中解释职责边界及增长原因。
+    limits = {
+        "static/workflow_state.js": 140,
+        "ai_mask_engine.py": 770,
+        "storyboard_service.py": 1350,
+        "server.py": 1100,
+    }
+    # ai_mask_engine.py 额度排队超时的可区分标记（quota_wait_timeout_fallback
+    # + 运行级汇总）是 LLM 治理闭环的必备可观测性，预算放宽到 770。
+
+    for path, maximum in limits.items():
+        actual = line_count(path)
+        assert actual <= maximum, f"{path} grew to {actual} lines (limit: {maximum})"
+
+
+def test_legacy_frontend_monolith_stays_retired() -> None:
+    assert not (ROOT / "static" / "app.js").exists()

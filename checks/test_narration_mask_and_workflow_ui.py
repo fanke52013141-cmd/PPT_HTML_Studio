@@ -1,0 +1,392 @@
+import json
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+from fastapi import HTTPException
+import server
+import storyboard_service
+from storyboard_planning import PlanningError
+
+from scripts.write_narration_from_visual_contract import build_slide_narration
+from visual_contract_service import (
+    dedupe_narration_beats,
+    narration_dedupe_key,
+    normalize_visual_contract,
+)
+from storyboard_service import (
+    normalize_narration_segments,
+    normalize_slide_script_plan,
+    normalize_slide_visual_plan,
+    normalize_visual_elements,
+)
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def beat(beat_id: str, group_id: str, text: str) -> dict:
+    return {
+        "id": beat_id,
+        "group_id": group_id,
+        "content_unit_id": f"{group_id}_unit",
+        "spoken_text": text,
+    }
+
+
+def group(group_id: str) -> dict:
+    return {
+        "id": group_id,
+        "content_unit_id": f"{group_id}_unit",
+        "visible_text": group_id,
+        "role": "content_body",
+    }
+
+
+def test_narration_key_ignores_tts_markup_spacing_and_punctuation():
+    assert narration_dedupe_key("<#0.5#> Token 的核心作用！") == narration_dedupe_key(
+        "Token的核心作用。"
+    )
+
+
+def test_server_dedupe_keeps_first_spoken_sentence():
+    beats = [
+        beat("beat_01", "group_01", "同一句旁白。"),
+        beat("beat_02", "group_02", "同一句旁白！"),
+        beat("beat_03", "group_03", "新的旁白。"),
+    ]
+    result = dedupe_narration_beats(beats)
+    assert [item["id"] for item in result] == ["beat_01", "beat_03"]
+
+
+def test_visual_contract_normalization_removes_duplicate_beats():
+    contract = {
+        "slides": [
+            {
+                "slide_id": "slide_001",
+                "visual_groups": [group("group_01"), group("group_02")],
+                "narration_beats": [
+                    beat("beat_01", "group_01", "保留这句。"),
+                    beat("beat_02", "group_02", "保留这句！"),
+                ],
+            }
+        ]
+    }
+    normalized = normalize_visual_contract(contract)
+    assert [item["id"] for item in normalized["slides"][0]["narration_beats"]] == ["beat_01"]
+
+
+def test_narration_writer_does_not_reintroduce_duplicates():
+    slide = {
+        "slide_id": "slide_001",
+        "visual_groups": [group("group_01"), group("group_02")],
+        "narration_beats": [
+            beat("beat_01", "group_01", "只讲一次。"),
+            beat("beat_02", "group_02", "只讲一次！"),
+        ],
+    }
+    payload = build_slide_narration(slide, max_beat_chars=220)
+    assert len(payload["beats"]) == 1
+    assert payload["narration"] == "只讲一次。"
+
+
+def test_step2_script_plan_normalization_removes_duplicate_segments():
+    segments = normalize_narration_segments(
+        [
+            {"segment_id": "seg_001", "narration": "这条信息只讲一次。"},
+            {"segment_id": "seg_002", "narration": "这条信息只讲一次！"},
+            {"segment_id": "seg_003", "narration": "下一条新信息。"},
+        ]
+    )
+    assert [item["segment_id"] for item in segments] == ["seg_001", "seg_003"]
+
+
+def test_step2_script_plan_normalizes_to_minimal_step_a_contract():
+    plan = normalize_slide_script_plan(
+        {
+            "title": "测试",
+            "slides": [
+                {
+                    "slide_id": "slide_001",
+                    "slide_title": "第一页",
+                    "slide_subtitle": "副标题",
+                    "body": "旧正文字段",
+                    "body_points": [{"text": "旧要点"}],
+                    "narration": "这是完整演讲稿。",
+                    "narration_segments": [{"narration": "旧分段"}],
+                }
+            ],
+        },
+        "测试",
+    )
+    assert set(plan["slides"][0]) == {"slide_id", "slide_title", "narration"}
+    assert "副标题" not in json.dumps(plan, ensure_ascii=False)
+    visual_input = json.loads(server.build_step2_visual_user_prompt(plan))["slide_script_plan"]
+    assert visual_input == plan
+
+
+def test_step2_visual_element_normalization_does_not_silently_delete_duplicate_text():
+    elements = normalize_visual_elements(
+        [
+            {
+                "element_id": "el_001",
+                "role": "body",
+                "visual_type": "text",
+                "visual_description": "信息标题",
+                "narration": "同一段旁白。",
+            },
+            {
+                "element_id": "el_002",
+                "role": "body",
+                "visual_type": "illustration",
+                "visual_description": "辅助插图",
+                "narration": "同一段旁白！",
+            },
+        ]
+    )
+    assert [item["narration"] for item in elements] == ["同一段旁白。", "同一段旁白！"]
+
+
+def test_step2_visual_plan_requires_one_to_one_complete_narration_mapping():
+    script_plan = {
+        "title": "测试",
+        "slides": [
+            {
+                "slide_id": "slide_001",
+                "slide_title": "第一页",
+                "narration": "先介绍本页主题。再讲正文内容。",
+            }
+        ],
+    }
+    valid = normalize_slide_visual_plan(
+        {
+            "slides": [
+                {
+                    "slide_id": "slide_001",
+                    "visual_elements": [
+                        {
+                            "element_id": "el_001",
+                            "role": "title",
+                            "visual_type": "text",
+                            "visual_description": "第一页",
+                            "narration": "先介绍本页主题。",
+                        },
+                        {
+                            "element_id": "el_002",
+                            "role": "body",
+                            "visual_type": "picture",
+                            "visual_description": "一个连续的正文画面",
+                            "narration": "再讲正文内容。",
+                        },
+                    ],
+                }
+            ]
+        },
+        script_plan,
+    )
+    assert len(valid["slides"][0]["visual_elements"]) == 2
+
+    # 空旁白不再直接 500：当其余元素已覆盖源演讲稿且仍有剩余文本时，
+    # 会被 auto_fill_empty_narrations 精确回填，且拼接仍能还原源演讲稿。
+    invalid = json.loads(json.dumps(valid, ensure_ascii=False))
+    invalid["slides"][0]["visual_elements"][0]["narration"] = ""
+    repaired = normalize_slide_visual_plan(invalid, script_plan)
+    repaired_elements = repaired["slides"][0]["visual_elements"]
+    assert all(str(e.get("narration") or "").strip() for e in repaired_elements)
+    source = "先介绍本页主题。再讲正文内容。"
+    combined = "".join(str(e["narration"]) for e in repaired_elements)
+    assert "".join(combined.split()) == "".join(source.split())
+
+
+def test_step2_visual_plan_reassigns_empty_title_when_body_covers_all_source():
+    # 回归：slide_007 场景 —— title 旁白为空，且 body 元素已完整覆盖源演讲稿
+    # （无剩余文本可回填），此时应等分重建，保证所有元素非空且拼接还原原文，
+    # 而不是抛 "没有对应演讲片段" 500 卡死整个分镜生成。
+    script_plan = {
+        "title": "什么是公务员遴选考试",
+        "slides": [
+            {
+                "slide_id": "slide_007",
+                "slide_title": "笔试与面试的考察重点",
+                "narration": "笔试常见题型有案例分析、对策实务、公文写作、策论文，重点考察政策理解、办文办会办事、解决基层实际问题的能力。面试以结构化为主，部分岗位采用结构化小组形式，侧重考察岗位实务和机关工作情景应对能力。",
+            }
+        ],
+    }
+    raw = {
+        "slides": [
+            {
+                "slide_id": "slide_007",
+                "visual_elements": [
+                    {"element_id": "el_001", "role": "title", "visual_type": "text", "visual_description": "笔试与面试的考察重点", "narration": ""},
+                    {"element_id": "el_002", "role": "body", "visual_type": "text", "visual_description": "笔试题型", "narration": "笔试常见题型有案例分析、对策实务、公文写作、策论文，重点考察政策理解、办文办会办事、解决基层实际问题的能力。"},
+                    {"element_id": "el_003", "role": "body", "visual_type": "text", "visual_description": "面试形式", "narration": "面试以结构化为主，部分岗位采用结构化小组形式，侧重考察岗位实务和机关工作情景应对能力。"},
+                ],
+            }
+        ]
+    }
+    result = normalize_slide_visual_plan(raw, script_plan)
+    elements = result["slides"][0]["visual_elements"]
+    assert len(elements) == 3
+    assert all(str(e.get("narration") or "").strip() for e in elements)
+    source = "笔试常见题型有案例分析、对策实务、公文写作、策论文，重点考察政策理解、办文办会办事、解决基层实际问题的能力。面试以结构化为主，部分岗位采用结构化小组形式，侧重考察岗位实务和机关工作情景应对能力。"
+    combined = "".join(str(e["narration"]) for e in elements)
+    assert "".join(combined.split()) == "".join(source.split())
+
+
+def test_step2_visual_plan_rejects_separate_subtitle_element():
+    script_plan = {
+        "title": "测试",
+        "slides": [{"slide_id": "slide_001", "slide_title": "标题", "narration": "先讲标题。再讲正文。"}],
+    }
+    with pytest.raises(PlanningError, match="只能包含 title 和 body"):
+        normalize_slide_visual_plan(
+            {
+                "slides": [
+                    {
+                        "slide_id": "slide_001",
+                        "visual_elements": [
+                            {"element_id": "el_001", "role": "title", "visual_type": "text", "visual_description": "标题", "narration": "先讲标题。"},
+                            {"element_id": "el_002", "role": "subtitle", "visual_type": "text", "visual_description": "副标题", "narration": ""},
+                            {"element_id": "el_003", "role": "body", "visual_type": "text", "visual_description": "正文", "narration": "再讲正文。"},
+                        ],
+                    }
+                ]
+            },
+            script_plan,
+        )
+
+
+def test_default_step2_prompts_explicitly_forbid_duplicate_narration_binding():
+    script_prompt = (ROOT / "templates" / "prompts" / "step2_script_system.md").read_text(encoding="utf-8")
+    visual_prompt = (ROOT / "templates" / "prompts" / "step2_visual_system.md").read_text(encoding="utf-8")
+    assert "一项信息只讲一次" in script_prompt
+    assert "<ContractVersion>step2_visual_v8_mapping_only</ContractVersion>" in visual_prompt
+
+
+def test_mask_size_cursor_and_exact_painted_pixel_contracts():
+    html = (ROOT / "static" / "index.html").read_text(encoding="utf-8")
+    mask_editor = (ROOT / "static" / "mask_editor.js").read_text(encoding="utf-8")
+    assert 'id="step5-brush-size" type="range" min="100" max="200" value="140"' in html
+    assert 'id="step5-eraser-size" type="range" min="100" max="200" value="100"' in html
+    assert "toolSize * displayScale" in mask_editor
+    assert "getCoalescedEvents" in mask_editor
+    assert "scheduleLiveMaskRedraw" in mask_editor
+    assert "MASK_PREVIEW_OUTLINE_PX" not in mask_editor
+    assert "buildMaskDisplayLayer" in mask_editor
+
+
+def test_step3_actions_use_the_current_card_action_layout():
+    images = (ROOT / "static" / "images.js").read_text(encoding="utf-8")
+    css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
+    assert 'class="step3-card-actions"' in images
+    assert 'step3-delete-action' in images
+    assert 'step3-card-utilities' not in images
+    assert '.step3-card-actions' in css
+    assert "#step3-btn-batch-generate," in css
+    assert ".step3-ai-action," in css
+    assert "background: #ffffff !important" in css
+    assert "white-space: nowrap !important" in css
+
+
+def test_builtin_prompts_and_mask_state_are_reset_per_project():
+    html = (ROOT / "static" / "index.html").read_text(encoding="utf-8")
+    app = (ROOT / "static" / "workflow_state.js").read_text(encoding="utf-8")
+    storyboard = (ROOT / "static" / "storyboard.js").read_text(encoding="utf-8")
+    storyboard_prompts = (ROOT / "static" / "storyboard_prompts.js").read_text(encoding="utf-8")
+    mask_workspace = (ROOT / "static" / "mask_workspace.js").read_text(encoding="utf-8")
+    mask_editor = (ROOT / "static" / "mask_editor.js").read_text(encoding="utf-8")
+    workspace_navigation = (ROOT / "static" / "workspace_navigation.js").read_text(encoding="utf-8")
+    css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
+    style_manager = (ROOT / "static" / "style_reference_manager_extension.js").read_text(encoding="utf-8")
+    assert "正在编辑：" not in html
+    assert "`「${slide.main_title}」`" not in app
+    assert "setStep2GenerationStatus('');" in storyboard
+    assert "#step-panel-2 .slides-thumbnail-container" in css
+    assert "function resetStep5ProjectState()" in mask_workspace
+    assert "resetStep5ProjectState();" in workspace_navigation
+    assert "let manifestProjectId = ''" in mask_workspace
+    assert "manifestProjectId !== projectId" in mask_editor
+    assert "renderStep2PromptTemplateOptions('');" in storyboard_prompts
+    assert "template.prompt_type === state.activeStep2PromptMode && template.built_in" not in storyboard_prompts
+    assert "selectedTemplateId: 'handdrawn'" in style_manager
+    assert "STATE.selectedTemplateId = builtInDefault ? String(builtInDefault.id) : 'current'" in style_manager
+
+
+def test_workflow_rail_owns_toasts_and_disabled_buttons_remain_readable():
+    css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
+    assert "body.workspace-open #toast-container" in css
+    assert "left: 18px" in css
+    assert "#step6-btn-audio-confirm-next:disabled" in css
+    assert "#step8-btn-render:disabled" in css
+
+
+def test_workflow_connector_stops_at_step_six_and_step2_errors_are_visible():
+    html = (ROOT / "static" / "index.html").read_text(encoding="utf-8")
+    storyboard = (ROOT / "static" / "storyboard.js").read_text(encoding="utf-8")
+    css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
+    assert "sidebar-flow-title" not in html
+    assert "left: 30.875px" in css
+    assert "repeating-linear-gradient" in css
+    assert "height: calc((64px + 0.35rem) * 5)" in css
+    assert "step2-generation-status" in html
+    assert "setStep2GenerationStatus" in storyboard
+    assert "setStep2GenerationStatus(`演讲稿生成失败" in storyboard
+    assert "setStep2GenerationStatus(`可视化生成失败" in storyboard
+
+
+def test_step2_timeout_is_logged_and_returned_as_actionable_error(monkeypatch, tmp_path):
+    assert storyboard_service.STEP2_LLM_TIMEOUT_SEC == 240.0
+
+    class FakeCompletions:
+        def create(self, **kwargs):
+            raise TimeoutError("simulated upstream timeout")
+
+    class FakeClient:
+        def __init__(self):
+            self.chat = SimpleNamespace(completions=FakeCompletions())
+            self.closed = False
+
+        def close(self):
+            self.closed = True
+
+    client = FakeClient()
+    monkeypatch.setattr(
+        storyboard_service,
+        "configured_step2_llm",
+        lambda: ("test-key", "https://example.invalid/v1", "test-model", 0.2, 2048),
+    )
+    monkeypatch.setattr(
+        storyboard_service,
+        "get_openai_client",
+        lambda **kwargs: client,
+    )
+    project = SimpleNamespace(id="project-test", run_dir=str(tmp_path))
+
+    with pytest.raises(HTTPException) as exc_info:
+        storyboard_service.run_step2_json_llm(
+            project=project,
+            system_prompt="system",
+            user_prompt="user",
+            artifact_prefix="step2_script_plan",
+            schema_hint="{}",
+            trace_id="trace123",
+        )
+
+    assert exc_info.value.status_code == 504
+    assert "240" in str(exc_info.value.detail)
+    assert "Step 2A 演讲稿规划" in str(exc_info.value.detail)
+    assert client.closed is True
+    records = [json.loads(line) for line in (tmp_path / "logs" / "pipeline.log").read_text(encoding="utf-8").splitlines()]
+    assert records[-1]["event"] == "step2_script_plan_failed"
+    assert records[-1]["timeout"] is True
+
+
+def test_doubao_step2_requests_disable_deep_thinking():
+    assert storyboard_service.step2_llm_vendor_options(
+        "doubao-seed-2-1-turbo-260628",
+        "https://ark.cn-beijing.volces.com/api/v3",
+    ) == {"extra_body": {"thinking": {"type": "disabled"}}}
+    assert storyboard_service.step2_llm_vendor_options(
+        "gpt-4.1",
+        "https://api.openai.com/v1",
+    ) == {}

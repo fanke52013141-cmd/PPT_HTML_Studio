@@ -1,0 +1,92 @@
+@echo off
+chcp 65001 >nul
+title PPT Visualization Studio
+setlocal EnableExtensions
+
+REM ---- use the shortcut's configured working directory; keep this file ASCII-safe ----
+set "PROJ=%CD%"
+set "VENV=%PROJ%\.venv\Scripts\python.exe"
+
+REM ---- ffmpeg discovery ----
+set "FF_FOUND=0"
+if defined PPT_STUDIO_FFMPEG_DIR (
+  if exist "%PPT_STUDIO_FFMPEG_DIR%\ffmpeg.exe" if exist "%PPT_STUDIO_FFMPEG_DIR%\ffprobe.exe" set "FF_FOUND=1"
+)
+if %FF_FOUND%==0 (
+  if exist "%PROJ%\tools\ffmpeg\bin\ffmpeg.exe" if exist "%PROJ%\tools\ffmpeg\bin\ffprobe.exe" (
+    set "PPT_STUDIO_FFMPEG_DIR=%PROJ%\tools\ffmpeg\bin"
+    set "FF_FOUND=1"
+  )
+)
+if %FF_FOUND%==0 (
+  where ffmpeg >nul 2>nul
+  if not errorlevel 1 (
+    where ffprobe >nul 2>nul
+    if not errorlevel 1 set "FF_FOUND=2"
+  )
+)
+if %FF_FOUND%==1 (
+  set "PATH=%PPT_STUDIO_FFMPEG_DIR%;%PATH%"
+  echo [ffmpeg] using %PPT_STUDIO_FFMPEG_DIR%
+) else if %FF_FOUND%==2 (
+  for /f "delims=" %%F in ('where ffmpeg') do set "PPT_STUDIO_FFMPEG_DIR=%%~dpF"
+  echo [ffmpeg] using PATH: %PPT_STUDIO_FFMPEG_DIR%
+) else (
+  echo [warn] ffmpeg not found; video color validation / export may fail.
+)
+
+if not exist "%VENV%" (
+  echo [error] .venv not found at %VENV%. Re-run the deployment step.
+  pause
+  exit /b 1
+)
+
+REM ---- subtitle design fonts: register for the current user (idempotent) ----
+REM Remotion resolves subtitle fonts by CSS family NAME only, so the bundled
+REM design fonts must exist in the Windows font table or rendering silently
+REM falls back to Microsoft YaHei. Failures here must not block startup.
+if exist "%PROJ%\scripts\portable_install_fonts.ps1" (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJ%\scripts\portable_install_fonts.ps1" -Quiet
+)
+
+set "PYTHONPATH=%PROJ%"
+
+REM ---- pick a free port (avoids "Address already in use" -> window flash) ----
+set "PORT=8000"
+for /f "delims=" %%P in ('"%VENV%" "%PROJ%\pick_port.py"') do set "PORT=%%P"
+set "PPT_STUDIO_PORT=%PORT%"
+echo [server] using port %PORT%
+
+REM ---- open the browser a few seconds after boot ----
+start "" cmd /c "timeout /t 4 /nobreak >nul && start http://127.0.0.1:%PORT%"
+
+
+REM ---- digital human service (separate window, default :9001) ----
+if not defined PPT_DIGITAL_HUMAN_PORT set "PPT_DIGITAL_HUMAN_PORT=9001"
+REM ---- use the independent InfiniteTalk asset directory when it exists ----
+if not defined PPT_STUDIO_ASSETS_DIR set "PPT_STUDIO_ASSETS_DIR=D:\PPT_Studio_Assets"
+if not defined PPT_DIGITAL_HUMAN_COMFYUI_WORKFLOW set "PPT_DIGITAL_HUMAN_COMFYUI_WORKFLOW=%PPT_STUDIO_ASSETS_DIR%\InfiniteTalk_TTS\InfiniteTalk\workflow\infinitetalk-数字人_api_windows-compatible.json"
+if exist "%PPT_DIGITAL_HUMAN_COMFYUI_WORKFLOW%" (
+  set "PPT_DIGITAL_HUMAN_BACKEND=comfyui"
+  set "PPT_DIGITAL_HUMAN_MOCK=0"
+  echo [digital-human] InfiniteTalk workflow: %PPT_DIGITAL_HUMAN_COMFYUI_WORKFLOW%
+) else (
+  if not defined PPT_DIGITAL_HUMAN_MOCK set "PPT_DIGITAL_HUMAN_MOCK=1"
+  echo [digital-human] InfiniteTalk workflow not found; fallback mode=%PPT_DIGITAL_HUMAN_MOCK%
+)
+set "DH_PORT_FREE=0"
+for /f "delims=" %%F in ('"%VENV%" "%PROJ%\check_port_free.py" %PPT_DIGITAL_HUMAN_PORT%') do set "DH_PORT_FREE=%%F"
+if "%DH_PORT_FREE%"=="1" (
+  start "Digital Human Service %PPT_DIGITAL_HUMAN_PORT%" /min "%VENV%" "%PROJ%\digital_human_service.py"
+  echo [digital-human] starting on port %PPT_DIGITAL_HUMAN_PORT% ...
+) else (
+  echo [digital-human] port %PPT_DIGITAL_HUMAN_PORT% already in use - assume running, skip.
+)
+echo [server] PPT Visualization Studio starting at http://127.0.0.1:%PORT%
+echo [server] Keep this window open. Press Ctrl+C to stop the service.
+"%VENV%" "%PROJ%\start_server.py"
+if errorlevel 1 (
+  echo [error] server exited with an error. See output above.
+  pause
+)
+endlocal

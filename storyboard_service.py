@@ -1,0 +1,1432 @@
+"""Step 2 storyboard planning, templates, and contract lifecycle."""
+
+from __future__ import annotations
+
+from copy import deepcopy
+from dataclasses import dataclass
+from storyboard_contract_diff import StoryboardContractImpact, _contract_slides_by_id, diff_storyboard_contracts
+from datetime import datetime
+import hashlib
+import json
+import logging
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+from typing import Any, Callable, Dict, List, Optional
+import uuid
+
+from fastapi import HTTPException
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+import yaml
+
+from canvas_profile_service import (
+    canvas_prompt_context,
+    normalize_canvas_profile,
+)
+from config_store import get_setting
+from database import Project
+from project_path_service import project_or_404
+import invalidation_service
+from pipeline_lifecycle import project_artifact_lock, write_json_atomic
+import generation_control
+import storyboard_plan_store as plan_store
+import storyboard_template_store as template_store
+from storyboard_template_store import storyboard_template_payload  # noqa: F401 - compatibility export
+from storyboard_planning import _step2_script_plan_fingerprint
+from visual_contract_service import contract_canonical_sha256, reject_blank_slide_ids
+from project_config_runtime import get_config_value
+from storyboard_project_config import read_step2_prompts_for_project, resolve_step2_llm
+from project_storage import slide_file as storage_slide_file
+from repository_paths import (
+    DATA_DIR,
+    REPO_ROOT,
+    STEP2_PROMPT_TEMPLATE_FILES,
+    STEP2_PROMPT_TEMPLATES_PATH,
+    STORYBOARD_TEMPLATES_PATH,
+)
+from scripts.pipeline_profiles import (
+    read_pipeline_profile,
+    role_catalog,
+    storyboard_profile_prompt,
+    storyboard_requirements,
+)
+from storyboard_llm import StoryboardLlmCapabilities, execute_step2_json_llm
+logger = logging.getLogger("PPTStudio.Storyboard")
+
+STEP2_LLM_TIMEOUT_SEC = 240.0
+
+
+def _not_configured(*_args: Any, **_kwargs: Any) -> Any:
+    raise RuntimeError("Storyboard dependencies have not been configured")
+
+
+clean_json_markdown: Callable[..., Any] = _not_configured
+contract_slide_ids_from_payload: Callable[..., Any] = _not_configured
+get_openai_client: Callable[..., Any] = _not_configured
+handle_step_navigation: Callable[..., Any] = _not_configured
+invalidate_after_upstream_edit: Callable[..., Any] = _not_configured
+is_timeout_exception: Callable[..., Any] = _not_configured
+mark_step_retry_needed: Callable[..., Any] = _not_configured
+narration_dedupe_key: Callable[..., Any] = _not_configured
+normalize_visual_contract: Callable[..., Any] = _not_configured
+normalized_template_name: Callable[..., Any] = _not_configured
+parse_int_setting: Callable[..., Any] = _not_configured
+parse_json_or_repair_with_llm: Callable[..., Any] = _not_configured
+parse_range_text: Callable[..., Any] = _not_configured
+read_json_file: Callable[..., Any] = _not_configured
+read_project_article_source: Callable[..., Any] = _not_configured
+sync_narration_beats_to_contract: Callable[..., Any] = _not_configured
+sync_narration_sources_from_contract: Callable[..., Any] = _not_configured
+sync_reveal_manifest_to_contract: Callable[..., Any] = _not_configured
+template_timestamp: Callable[..., Any] = _not_configured
+write_project_log: Callable[..., Any] = _not_configured
+
+AI_KNOWLEDGE_STEP2_SCRIPT_EXTENSION = ""
+LEGACY_STEP2_PROMPT_HASHES: dict[str, set[str]] = {}
+LEGACY_INTERVIEW_SCRIPT_PROMPT_HASH = ""
+
+
+@dataclass(frozen=True)
+class StoryboardDependencies:
+    clean_json_markdown: Callable[..., Any]
+    contract_slide_ids_from_payload: Callable[..., Any]
+    get_openai_client: Callable[..., Any]
+    handle_step_navigation: Callable[..., Any]
+    invalidate_after_upstream_edit: Callable[..., Any]
+    is_timeout_exception: Callable[..., Any]
+    mark_step_retry_needed: Callable[..., Any]
+    narration_dedupe_key: Callable[..., Any]
+    normalize_visual_contract: Callable[..., Any]
+    normalized_template_name: Callable[..., Any]
+    parse_int_setting: Callable[..., Any]
+    parse_json_or_repair_with_llm: Callable[..., Any]
+    parse_range_text: Callable[..., Any]
+    read_json_file: Callable[..., Any]
+    read_project_article_source: Callable[..., Any]
+    sync_narration_beats_to_contract: Callable[..., Any]
+    sync_narration_sources_from_contract: Callable[..., Any]
+    sync_reveal_manifest_to_contract: Callable[..., Any]
+    template_timestamp: Callable[..., Any]
+    write_project_log: Callable[..., Any]
+    ai_knowledge_script_extension: str
+    legacy_prompt_hashes: dict[str, set[str]]
+    legacy_interview_script_prompt_hash: str
+    resolve_model_connection: Optional[Callable[[str, int], Any]] = None
+    get_credential: Optional[Callable[[str], Any]] = None
+
+
+_DEPENDENCIES: StoryboardDependencies | None = None
+read_project_step2_prompts = lambda project: read_step2_prompts_for_project(project, read_prompts=read_step2_prompts)
+configured_project_step2_llm = lambda project, binding_name: resolve_step2_llm(project, binding_name, resolve_model_connection=_DEPENDENCIES.resolve_model_connection, get_credential=_DEPENDENCIES.get_credential, parse_int_setting=parse_int_setting, fallback=configured_step2_llm) if _DEPENDENCIES is not None else (_ for _ in ()).throw(RuntimeError("Storyboard dependencies have not been configured"))
+
+
+def configure_storyboard_dependencies(
+    dependencies: StoryboardDependencies,
+) -> None:
+    global _DEPENDENCIES
+    global AI_KNOWLEDGE_STEP2_SCRIPT_EXTENSION
+    global LEGACY_INTERVIEW_SCRIPT_PROMPT_HASH
+    global LEGACY_STEP2_PROMPT_HASHES
+    global clean_json_markdown
+    global contract_slide_ids_from_payload
+    global get_openai_client
+    global handle_step_navigation
+    global invalidate_after_upstream_edit
+    global is_timeout_exception
+    global mark_step_retry_needed
+    global narration_dedupe_key
+    global normalize_visual_contract
+    global normalized_template_name
+    global parse_int_setting
+    global parse_json_or_repair_with_llm
+    global parse_range_text
+    global read_json_file
+    global read_project_article_source
+    global sync_narration_beats_to_contract
+    global sync_narration_sources_from_contract
+    global sync_reveal_manifest_to_contract
+    global template_timestamp
+    global write_project_log
+
+    _DEPENDENCIES = dependencies
+    clean_json_markdown = dependencies.clean_json_markdown
+    contract_slide_ids_from_payload = (
+        dependencies.contract_slide_ids_from_payload
+    )
+    get_openai_client = dependencies.get_openai_client
+    handle_step_navigation = dependencies.handle_step_navigation
+    invalidate_after_upstream_edit = (
+        dependencies.invalidate_after_upstream_edit
+    )
+    is_timeout_exception = dependencies.is_timeout_exception
+    mark_step_retry_needed = dependencies.mark_step_retry_needed
+    narration_dedupe_key = dependencies.narration_dedupe_key
+    normalize_visual_contract = dependencies.normalize_visual_contract
+    normalized_template_name = dependencies.normalized_template_name
+    parse_int_setting = dependencies.parse_int_setting
+    parse_json_or_repair_with_llm = (
+        dependencies.parse_json_or_repair_with_llm
+    )
+    parse_range_text = dependencies.parse_range_text
+    read_json_file = dependencies.read_json_file
+    read_project_article_source = (
+        dependencies.read_project_article_source
+    )
+    sync_narration_beats_to_contract = (
+        dependencies.sync_narration_beats_to_contract
+    )
+    sync_narration_sources_from_contract = (
+        dependencies.sync_narration_sources_from_contract
+    )
+    sync_reveal_manifest_to_contract = (
+        dependencies.sync_reveal_manifest_to_contract
+    )
+    template_timestamp = dependencies.template_timestamp
+    write_project_log = dependencies.write_project_log
+    AI_KNOWLEDGE_STEP2_SCRIPT_EXTENSION = (
+        dependencies.ai_knowledge_script_extension
+    )
+    LEGACY_STEP2_PROMPT_HASHES = dependencies.legacy_prompt_hashes
+    LEGACY_INTERVIEW_SCRIPT_PROMPT_HASH = (
+        dependencies.legacy_interview_script_prompt_hash
+    )
+    configure_storyboard_prompt_templates(
+        read_json=dependencies.read_json_file,
+        normalize_template_name=dependencies.normalized_template_name,
+        timestamp=dependencies.template_timestamp,
+        ai_knowledge_script_extension=(
+            dependencies.ai_knowledge_script_extension
+        ),
+        legacy_prompt_hashes=dependencies.legacy_prompt_hashes,
+        legacy_interview_script_prompt_hash=(
+            dependencies.legacy_interview_script_prompt_hash
+        ),
+    )
+
+from storyboard_profiles import (
+    apply_storyboard_profile_patch,
+    default_storyboard_profile_text,
+    default_storyboard_rules,
+    handdrawn_storyboard_rules,  # noqa: F401 - compatibility export
+    parse_storyboard_profile_text,
+    read_project_pipeline_profile,
+    sanitize_storyboard_profile,
+    storyboard_profile_editor_data,
+    storyboard_profile_path,
+    storyboard_rules_path,
+    visual_contract_schema_text,
+)
+
+
+from storyboard_prompt_templates import (
+    STEP2_PROMPTS_FILE,
+    STEP2_SCRIPT_PLAN_FILE,
+    STEP2_VISUAL_PLAN_FILE,
+    built_in_step2_prompt_templates,
+    compose_step2_system_prompt,
+    configure_storyboard_prompt_templates,
+    default_step2_prompts,
+    delete_step2_prompt_template,
+    get_step2_prompt_template,
+    get_step2_prompt_templates,
+    list_step2_prompt_templates,
+    migrate_legacy_step2_prompt,
+    normalize_step2_prompt_type,
+    normalized_prompt_hash,
+    read_prompt_template,
+    read_step2_prompts,
+    save_step2_prompt_template,
+    step2_prompt_compatibility,
+    step2_prompt_response,
+    step2_prompt_template_detail,
+    step2_prompts_path,
+    step2_script_plan_path,
+    step2_script_prompt_uses_legacy_contract,
+    step2_visual_plan_path,
+    step2_visual_prompt_uses_legacy_contract,
+)
+
+
+from storyboard_planning import (
+    PlanningError,
+    build_step2_script_user_prompt,
+    build_step2_visual_repair_user_prompt,
+    build_step2_visual_user_prompt,
+    clean_planning_block,
+    clean_planning_text,
+    target_duration_requirement,
+    target_duration_response,
+    compose_visual_contract_from_plans,
+    element_visible_text,
+    narration_sequence_key,
+    normalize_body_points,
+    normalize_narration_segments,
+    normalize_slide_body,
+    normalize_slide_script_plan,
+    normalize_slide_visual_plan,
+    normalize_visual_elements,
+    stable_plan_id,
+    validate_slide_visual_mapping,
+)
+
+# Explicit compatibility surface for legacy callers. New code imports from the
+# focused planning/profile/template modules directly.
+__all__ = (
+    "DATA_DIR",
+    "REPO_ROOT",
+    "STEP2_PROMPT_TEMPLATE_FILES",
+    "STEP2_PROMPT_TEMPLATES_PATH",
+    "STEP2_PROMPTS_FILE",
+    "STEP2_SCRIPT_PLAN_FILE",
+    "STEP2_VISUAL_PLAN_FILE",
+    "built_in_step2_prompt_templates",
+    "clean_planning_block",
+    "clean_planning_text",
+    "delete_step2_prompt_template",
+    "element_visible_text",
+    "get_config_value",
+    "get_step2_prompt_template",
+    "get_step2_prompt_templates",
+    "list_step2_prompt_templates",
+    "migrate_legacy_step2_prompt",
+    "narration_sequence_key",
+    "normalize_body_points",
+    "normalize_narration_segments",
+    "normalize_slide_body",
+    "normalize_step2_prompt_type",
+    "normalize_visual_elements",
+    "normalized_prompt_hash",
+    "read_prompt_template",
+    "sanitize_storyboard_profile",
+    "save_step2_prompt_template",
+    "stable_plan_id",
+    "step2_prompt_compatibility",
+    "step2_prompt_template_detail",
+    "validate_slide_visual_mapping",
+)
+
+
+def _apply_project_reveal_mode(plan: Dict[str, Any], project: Project) -> Dict[str, Any]:
+    """Keep animation policy outside the model's Step 2 mapping decision."""
+    reveal_mode = "sequential" if bool(getattr(project, "mask_enabled", 1) or 0) else "together"
+    for slide in plan.get("slides") or []:
+        for element in slide.get("visual_elements") or []:
+            element["reveal_mode"] = reveal_mode
+    return plan
+
+
+def _planning_http_error(exc: PlanningError, fallback_status: int) -> HTTPException:
+    """把纯层 PlanningError 映射为 HTTP 语义（审查 M-08）。
+
+    手动编辑路径 fallback 400；LLM 输出路径 fallback 502；
+    PlanningError 自带 status_code=400 的结构错误保持 400。
+    """
+    return HTTPException(
+        status_code=exc.status_code or fallback_status,
+        detail=exc.detail,
+    )
+
+
+def read_plan_json(path: str, missing_message: str) -> Dict[str, Any]:
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail=missing_message)
+    with open(path, "r", encoding="utf-8-sig") as f:
+        value = json.load(f)
+    if not isinstance(value, dict):
+        raise HTTPException(status_code=400, detail="规划文件格式无效")
+    return value
+
+
+def _step2_visual_plan_status(project, script_plan):
+    return plan_store._step2_visual_plan_status(project, script_plan, visual_path=step2_visual_plan_path(project))
+
+
+def _mark_step2_visual_plan_stale(project, previous_plan, current_plan):
+    return plan_store._mark_step2_visual_plan_stale(project, previous_plan, current_plan, visual_path=step2_visual_plan_path(project))
+
+
+def _sync_visual_plan_for_script_reorder(project, previous_plan, current_plan):
+    return plan_store._sync_visual_plan_for_script_reorder(project, previous_plan, current_plan, visual_path=step2_visual_plan_path(project))
+
+
+def _persist_step2_script_plan(project, plan, previous_plan):
+    return plan_store._persist_step2_script_plan(project, plan, previous_plan, visual_path=step2_visual_plan_path(project), script_path=step2_script_plan_path(project))
+
+
+def configured_step2_llm() -> tuple[str, Optional[str], str, float, int]:
+    llm_api_key = get_setting("llm_api_key")
+    llm_base_url = get_setting("llm_base_url")
+    llm_model = get_setting("llm_model")
+    llm_temp = float(get_setting("llm_temperature", "0.7"))
+    planning_temp = min(llm_temp, 0.2)
+    planning_max_tokens = parse_int_setting(get_setting("llm_max_tokens", "50000"), 50000, 1024, 64000)
+    if not llm_api_key:
+        raise HTTPException(status_code=400, detail="未配置大模型 API 密钥，请在系统设置中配置后再试。")
+    return llm_api_key, llm_base_url, llm_model, planning_temp, planning_max_tokens
+
+
+def step2_llm_vendor_options(model: str, base_url: Optional[str]) -> Dict[str, Any]:
+    """Use fast non-thinking mode for Volcengine/Doubao storyboard requests."""
+    model_name = str(model or "").strip().lower()
+    endpoint = str(base_url or "").strip().lower()
+    if model_name.startswith("doubao-") or "volces.com" in endpoint:
+        return {"extra_body": {"thinking": {"type": "disabled"}}}
+    return {}
+
+
+def run_step2_json_llm(
+    *,
+    project: Project,
+    system_prompt: str,
+    user_prompt: str,
+    artifact_prefix: str,
+    schema_hint: str,
+    trace_id: str,
+) -> Dict[str, Any]:
+    binding_name = (
+        "visualization"
+        if artifact_prefix == "step2_visual_plan"
+        else "storyboard"
+    )
+    dependencies = _DEPENDENCIES
+    if dependencies is None:
+        raise RuntimeError("Storyboard dependencies have not been configured")
+    llm_config = resolve_step2_llm(
+        project,
+        binding_name,
+        resolve_model_connection=dependencies.resolve_model_connection,
+        get_credential=dependencies.get_credential,
+        parse_int_setting=parse_int_setting,
+        fallback=configured_step2_llm,
+    )
+    return execute_step2_json_llm(
+        capabilities=StoryboardLlmCapabilities(
+            get_openai_client=get_openai_client,
+            is_timeout_exception=is_timeout_exception,
+            clean_json_markdown=clean_json_markdown,
+            parse_json_or_repair_with_llm=parse_json_or_repair_with_llm,
+            write_project_log=write_project_log,
+            logger=logger,
+        ),
+        project=project,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        artifact_prefix=artifact_prefix,
+        schema_hint=schema_hint,
+        trace_id=trace_id,
+        llm_config=llm_config,
+        vendor_options=step2_llm_vendor_options(llm_config[2], llm_config[1]),
+        timeout_sec=STEP2_LLM_TIMEOUT_SEC,
+    )
+
+
+def list_storyboard_templates():
+    return template_store.list_storyboard_templates(path=STORYBOARD_TEMPLATES_PATH)
+
+
+def get_storyboard_templates():
+    return template_store.get_storyboard_templates(path=STORYBOARD_TEMPLATES_PATH)
+
+
+def save_storyboard_template(payload):
+    return template_store.save_storyboard_template(payload, path=STORYBOARD_TEMPLATES_PATH)
+
+
+def delete_storyboard_template(template_id):
+    return template_store.delete_storyboard_template(template_id, path=STORYBOARD_TEMPLATES_PATH)
+
+
+def build_storyboard_request(
+    project_title: str,
+    article_summary: str,
+    article_content: str,
+    storyboard_rules: str,
+    profile: Optional[Dict[str, Any]] = None,
+    canvas_profile: Any = None,
+    target_duration_sec: Any = None,
+) -> tuple[str, str]:
+    profile = profile or read_pipeline_profile()
+    slide_count_requirement, _ = storyboard_requirements(article_content, profile)
+    profile_prompt = storyboard_profile_prompt(article_content, profile)
+    canvas = canvas_prompt_context(normalize_canvas_profile(canvas_profile))
+
+    schema_hint = visual_contract_schema_text()
+
+    system_prompt = f"""你是一个顶级的 PPT 视频分镜策划师和演讲稿设计师。
+
+## 目的
+把文章转成可直接驱动后续生图、Mask、Reveal、旁白和视频制作的 Visual Contract；忠实保留文章事实，不在本阶段生成图片或执行动画。
+
+## 输入
+- 项目主题、文章摘要与文章全文。
+- 当前项目的分镜结构配置、用户自定义规则与 JSON Schema。
+- 文章及显式规则是内容与边界依据；不得虚构来源中没有的具体事实。
+
+## 输出
+- 只返回一个符合下方 JSON Schema 的合法 JSON 对象。
+- 不要 Markdown 代码围栏、解释、推理过程或任何 JSON 之外的文字。
+- 输出必须同时满足 visual_groups 与 narration_beats 的绑定约束，供后续阶段直接读取。
+请阅读用户输入的内容摘要和全文，先设计“如何把内容讲清楚”的理解路径和演讲稿，再把它编译成符合 PPT 动画视频制作标准的视觉合约(Visual Contract)。
+视频的画面风格可由后续图片风格配置决定；这里重点规划“讲解逻辑、演讲稿、内容结构、视觉表达、旁白绑定、Mask 友好性”。
+总原则：
+- 内容优先，结构服务内容；不要让内容服务固定模板或角色枚举。
+- 演讲稿不是附属品。每页必须有自然、连贯、适合口播的 spoken_text，用来解释推理过程、上下文和结论。
+- 画面不是演讲稿的逐字复刻。visible_text 应是关键词、短句、结构标签、图示标签或结论钩子。
+- visual_groups 是后续 Mask/动画/旁白绑定接口，不是页面设计模板；role 只是后处理语义标签。
+- 主标题使用页面上方固定位置，不生成页面副标题；底部 y={canvas["subtitle_safe_top"]}..{canvas["subtitle_safe_bottom"]} 固定为视频字幕安全区。当前画布为 {canvas["width"]}×{canvas["height"]}、{canvas["aspect_ratio"]}。除此之外，主体内容区根据内容自由发挥。
+- 字号比例必须明确：每页 slide 顶部标题的视觉字号为当前默认标题的 2 倍；正文内容、演讲稿对应画面文字的视觉字号约为当前默认的 2/3。
+- 禁止画面元素重叠：文字、卡片、图标、箭头、线条、标签、装饰、图表之间不得互相覆盖、压住、穿插或粘连。
+要求：
+1. 必须要将整篇文章合理划分，分成 {slide_count_requirement} Slide（每页的 slide_id 为 slide_001, slide_002 格式）。
+2. 视觉分组数量由内容和独立 Reveal 需求决定；一个完整正文视觉组同样合法，不设置固定上下限。不要固定套用“主标题/正文/总结”模板；可以按内容需要使用判断链、冲突地图、对象关系图、推理路径、时间压力图、对比、表格、流程、FAQ、场景拆解或行动清单。
+3. 每个视觉分组（visual_groups）必须有：
+   - id: 比如 title_group, body_group_01 等
+   - visible_text: 页面上会显式画出来的中文字符标签（非常重要，通常为短句或关键词，绝对不能为空；不要把整段演讲稿塞进这里）
+   - visual_anchor: 视觉描述（比如“顶部主标题”、“左侧判断链起点”、“中间对象关系图”、“右侧结论卡”）
+   - narration_function: 解释该分组在画面中所起的视觉/解释作用
+   - reveal_order: 页面渲染时层淡入淡出显示的顺序，从 1 开始依次增加
+   - content_unit_id: 稳定内容单元 ID，必须和 narration_beats[].content_unit_id 对齐
+   - mask_target: 后续人工 Mask 要覆盖的画面目标描述
+4. 必须规划 narration_beats (旁白语段)，使说话声音与相应视觉分组绑定：
+   - group_id: 指向前面定义的 visual_groups 中的 id
+   - visible_anchor: 该分组对应的 visible_text 文本（不可写错，必须一致）
+   - spoken_intent: 这一句话想达到的意图
+   - spoken_text: 这一句话具体要朗读的中文旁白（需自然连贯，解释 visible_text）
+   - content_unit_id: 必须与绑定 visual_group 的 content_unit_id 一致
+   - narration_beats 是是否朗读的唯一依据：某个 visual_group 有对应 beat 才会在演讲稿中讲解，没有 beat 就只作为画面内容展示。
+   - 不要为了覆盖所有 visual_groups 而强行补旁白；只为演讲稿实际需要讲解的内容创建 beat。
+   - 同一页内每条 spoken_text 的内容必须唯一；严禁重复、近似复述或为了凑数量复制同一句旁白。
+5. 当前项目的可配置分镜结构如下。请优先遵守：
+{profile_prompt}
+6. 用户自定义的分镜与演讲稿规则如下。请遵守这些内容，但不得修改输出字段、层级、ID 规则或 JSON 结构：
+--- 用户分镜规则开始 ---
+{storyboard_rules}
+--- 用户分镜规则结束 ---
+7. 请确保生成的 JSON 数据严格符合以下的 JSON Schema 格式要求：
+{schema_hint}
+
+请直接返回合法的 JSON 对象，不要包含 markdown 标记的 ```json 外壳。"""
+    user_prompt = (
+        f"项目主题：{project_title}\n"
+        f"摘要提纲：{article_summary}\n"
+        f"正文全文：\n{article_content}"
+    )
+    duration_requirement = target_duration_requirement(target_duration_sec)
+    if duration_requirement is not None:
+        user_prompt += (
+            "\n\n<DurationConstraint>\n"
+            f"整套旁白目标口播时长：{duration_requirement['target_duration_label']}（{duration_requirement['target_duration_sec']} 秒）。\n"
+            f"推荐总字数：约 {duration_requirement['recommended_narration_chars']} 字；合理范围："
+            f"{duration_requirement['narration_chars_range'][0]}–{duration_requirement['narration_chars_range'][1]} 字。\n"
+            "按内容重要性分配各页旁白；不得通过重复、空话或虚构事实凑时长。最终视频以实际音频时长为准。\n"
+            "</DurationConstraint>"
+        )
+    return system_prompt, user_prompt
+
+
+def get_step2_rules(project_id: str, db: Session):
+    project = project_or_404(db, project_id)
+    path = storyboard_rules_path(project)
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            rules = f.read()
+    else:
+        rules = default_storyboard_rules()
+    profile_path = storyboard_profile_path(project)
+    if os.path.exists(profile_path):
+        with open(profile_path, "r", encoding="utf-8-sig") as f:
+            profile_text = f.read()
+    else:
+        profile_text = default_storyboard_profile_text()
+    profile = parse_storyboard_profile_text(profile_text)
+    return {
+        "success": True,
+        "rules": rules,
+        "profile_yaml": profile_text,
+        "schema_text": visual_contract_schema_text(),
+        "roles": role_catalog(profile),
+        "editor": storyboard_profile_editor_data(profile),
+    }
+
+
+def update_step2_rules(project_id: str, payload: Dict[str, Any], db: Session):
+    project = project_or_404(db, project_id)
+    rules = str(payload.get("rules") or "").strip()
+    if not rules:
+        rules = default_storyboard_rules()
+    profile_text = str(payload.get("profile_yaml") or "").strip()
+    if not profile_text:
+        profile_text = default_storyboard_profile_text().strip()
+    profile = parse_storyboard_profile_text(profile_text)
+    profile = apply_storyboard_profile_patch(profile, payload.get("profile_patch"))
+    profile_text = yaml.safe_dump(
+        profile,
+        allow_unicode=True,
+        sort_keys=False,
+        width=1000,
+    ).strip()
+    path = storyboard_rules_path(project)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(rules + "\n")
+    with open(storyboard_profile_path(project), "w", encoding="utf-8", newline="\n") as f:
+        f.write(profile_text.rstrip() + "\n")
+    return {
+        "success": True,
+        "rules": rules,
+        "profile_yaml": profile_text,
+        "roles": role_catalog(profile),
+        "editor": storyboard_profile_editor_data(profile),
+    }
+
+
+def get_step2_prompts(project_id: str, db: Session):
+    project = project_or_404(db, project_id)
+    return step2_prompt_response(project)
+
+
+def update_step2_prompts(project_id: str, payload: Dict[str, Any], db: Session):
+    project = project_or_404(db, project_id)
+    defaults = default_step2_prompts()
+    prompts: Dict[str, str] = {}
+    for key, default_value in defaults.items():
+        value = str(payload.get(key) or "").strip()
+        prompts[key] = value or default_value
+    write_json_atomic(step2_prompts_path(project), prompts)
+    return step2_prompt_response(project)
+
+
+@generation_control.controlled('storyboard_script')
+def execute_step2_script_plan(
+    project_id: str,
+    db: Session,
+    payload: Optional[Dict[str, Any]] = None,
+):
+    project = project_or_404(db, project_id)
+    article_source = read_project_article_source(project)
+    project_title = article_source["title"]
+    article_content = article_source["content"]
+    generation_requirement = str((payload or {}).get("requirement") or "").strip()
+    prompts = read_step2_prompts_for_project(project, read_prompts=read_step2_prompts)
+    if step2_script_prompt_uses_legacy_contract(prompts["script_system"]):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "当前文章→Slides Prompt 仍要求旧字段 body_points/narration_segments，"
+                "与 Step 2A 的精简输出合同不兼容。请载入最新内置模板或升级该自定义模板后再生成。"
+            ),
+        )
+    trace_id = uuid.uuid4().hex[:8]
+    raw_plan = run_step2_json_llm(
+        project=project,
+        system_prompt=compose_step2_system_prompt(prompts["script_system"], prompts["script_output_example"]),
+        user_prompt=build_step2_script_user_prompt(
+            project_title=project_title,
+            article_content=article_content,
+            generation_requirement=generation_requirement,
+            target_duration_sec=getattr(project, "target_duration_sec", None),
+        ),
+        artifact_prefix="step2_script_plan",
+        schema_hint=prompts["script_output_example"],
+        trace_id=trace_id,
+    )
+    try:
+        plan = normalize_slide_script_plan(raw_plan, project_title)
+    except PlanningError as exc:
+        raise _planning_http_error(exc, 502)
+    generation_control.checkpoint(project_id, 'storyboard_script')
+    script_path = step2_script_plan_path(project)
+    previous_plan: Dict[str, Any] = {}
+    if os.path.isfile(script_path):
+        try:
+            with open(script_path, "r", encoding="utf-8-sig") as file:
+                previous_plan = json.load(file)
+        except (OSError, json.JSONDecodeError):
+            previous_plan = {}
+    visual_exists, visual_stale, workflow_changed, workflow_pending = _persist_step2_script_plan(
+        project, plan, previous_plan
+    )
+    write_project_log(project, "step2_script_plan_written", trace_id=trace_id, slide_count=len(plan.get("slides", [])))
+    return {
+        "success": True,
+        "script_plan": plan,
+        "visual_exists": visual_exists,
+        "visual_stale": visual_stale,
+        "workflow_changed": workflow_changed,
+        "workflow_pending": workflow_pending,
+        "target_duration": target_duration_response(project.target_duration_sec, plan),
+    }
+
+
+def get_step2_script_plan(project_id: str, db: Session):
+    project = project_or_404(db, project_id)
+    plan = read_plan_json(step2_script_plan_path(project), "尚未生成演讲稿规划")
+    return {
+        "success": True,
+        "script_plan": plan,
+        "target_duration": target_duration_response(project.target_duration_sec, plan),
+    }
+
+
+def update_step2_script_plan(project_id: str, payload: Dict[str, Any], db: Session):
+    project = project_or_404(db, project_id)
+    article_source = read_project_article_source(project)
+    project_title = article_source["title"]
+    try:
+        plan = normalize_slide_script_plan(payload, project_title)
+    except PlanningError as exc:
+        raise _planning_http_error(exc, 400)
+    script_path = step2_script_plan_path(project)
+    previous_plan: Dict[str, Any] = {}
+    if os.path.isfile(script_path):
+        try:
+            with open(script_path, "r", encoding="utf-8-sig") as file:
+                previous_plan = json.load(file)
+        except (OSError, json.JSONDecodeError):
+            previous_plan = {}
+    visual_exists, visual_stale, workflow_changed, workflow_pending = _persist_step2_script_plan(
+        project, plan, previous_plan
+    )
+    return {
+        "success": True,
+        "script_plan": plan,
+        "visual_exists": visual_exists,
+        "visual_stale": visual_stale,
+        "workflow_changed": workflow_changed,
+        "workflow_pending": workflow_pending,
+        "target_duration": target_duration_response(project.target_duration_sec, plan),
+    }
+
+
+def _execute_step2_visual_plan(
+    project: Project,
+    script_plan: Dict[str, Any],
+    *,
+    repair_validation_error: str = "",
+    previous_visual_plan: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Generate a visual plan, with at most one targeted atomicity repair call."""
+    prompts = read_step2_prompts_for_project(project, read_prompts=read_step2_prompts)
+    if step2_visual_prompt_uses_legacy_contract(prompts["visual_system"]):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "当前 Slides→可视化 Prompt 仍依赖旧字段 body_points/narration_segments，"
+                "但 Step 2B 现在只接收 slide_id、slide_title 和完整 narration，不接收页面副标题。"
+                "请载入最新内置模板或升级该自定义模板后再生成。"
+            ),
+        )
+    script_slide_ids = [
+        str(s.get("slide_id") or "").strip()
+        for s in (script_plan.get("slides") or [])
+        if isinstance(s, dict)
+    ]
+    is_targeted_repair = bool(str(repair_validation_error or "").strip())
+    max_retries = 0 if is_targeted_repair else 2
+    last_error: Optional[str] = None
+    for attempt in range(1, max_retries + 2):
+        generation_control.checkpoint(str(getattr(project, 'id', '')), 'storyboard_visual')
+        trace_id = uuid.uuid4().hex[:8]
+        system_prompt = compose_step2_system_prompt(
+            prompts["visual_system"], prompts["visual_output_example"]
+        )
+        user_prompt = (
+            build_step2_visual_repair_user_prompt(
+                script_plan,
+                previous_visual_plan or {},
+                repair_validation_error,
+            )
+            if is_targeted_repair
+            else build_step2_visual_user_prompt(script_plan)
+        )
+        if attempt > 1:
+            retry_issue = str(last_error or "")
+            user_prompt += (
+                "\n\n上一次可视化规划未通过校验："
+                f"{retry_issue}。请重新输出全部页面，每页都要有且仅有一个开头的 title 元素，"
+                "并至少有一个 role 为 body、visual_description 非空的正文视觉元素。"
+                "每个元素都要对应非空演讲片段，所有片段按顺序拼接须覆盖该页原演讲稿。"
+                f"必须包含这些 slide_id：{', '.join(script_slide_ids)}。"
+            )
+            write_project_log(
+                project,
+                "step2_visual_plan_retry",
+                trace_id=trace_id,
+                attempt=attempt,
+                reason=last_error or "incomplete",
+            )
+        raw_plan = run_step2_json_llm(
+            project=project,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            artifact_prefix="step2_visual_plan",
+            schema_hint=prompts["visual_output_example"],
+            trace_id=trace_id,
+        )
+        try:
+            plan = _apply_project_reveal_mode(normalize_slide_visual_plan(raw_plan, script_plan), project)
+        except PlanningError as exc:
+            last_error = str(exc)
+            if attempt <= max_retries:
+                logger.warning(
+                    "Step 2B visual plan attempt %d/%d failed: %s",
+                    attempt, max_retries + 1, last_error,
+                )
+                continue
+            raise _planning_http_error(exc, 502)
+        generation_control.checkpoint(str(getattr(project, 'id', '')), 'storyboard_visual')
+        plan["source_script_hash"] = _step2_script_plan_fingerprint(script_plan)
+        write_json_atomic(step2_visual_plan_path(project), plan)
+        write_project_log(
+            project,
+            "step2_visual_plan_written",
+            trace_id=trace_id,
+            slide_count=len(plan.get("slides", [])),
+            source="atomicity_targeted_repair" if is_targeted_repair else "initial_generation",
+        )
+        return {"success": True, "visual_plan": plan}
+
+
+@generation_control.controlled('storyboard_visual')
+def execute_step2_visual_plan(project_id: str, db: Session):
+    project = project_or_404(db, project_id)
+    script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
+    return _execute_step2_visual_plan(project, script_plan)
+
+
+def get_step2_visual_plan(project_id: str, db: Session):
+    project = project_or_404(db, project_id)
+    plan = read_plan_json(step2_visual_plan_path(project), "尚未生成视觉规划")
+    script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
+    _, stale = _step2_visual_plan_status(project, script_plan)
+    return {
+        "success": True,
+        "visual_plan": plan,
+        "stale": stale,
+    }
+
+
+def update_step2_visual_plan(project_id: str, payload: Dict[str, Any], db: Session):
+    project = project_or_404(db, project_id)
+    script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
+    try:
+        plan = _apply_project_reveal_mode(normalize_slide_visual_plan(payload, script_plan), project)
+    except PlanningError as exc:
+        raise _planning_http_error(exc, 400)
+    plan["source_script_hash"] = _step2_script_plan_fingerprint(script_plan)
+    write_json_atomic(step2_visual_plan_path(project), plan)
+    return {"success": True, "visual_plan": plan}
+
+
+def compose_step2_visual_contract(project_id: str, db: Session):
+    project = project_or_404(db, project_id)
+    article_source = read_project_article_source(project)
+    project_title = article_source["title"]
+    article_summary = article_source["summary"]
+    script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
+    try:
+        stored_visual_plan = read_plan_json(step2_visual_plan_path(project), "请先生成视觉规划")
+        stored_script_hash = str(stored_visual_plan.get("source_script_hash") or "")
+        if stored_script_hash and stored_script_hash != _step2_script_plan_fingerprint(script_plan):
+            raise HTTPException(status_code=409, detail="演讲稿已修改，可视化映射已过期，请重新生成可视化。")
+        visual_plan = _apply_project_reveal_mode(normalize_slide_visual_plan(stored_visual_plan, script_plan), project)
+        contract = compose_visual_contract_from_plans(script_plan, visual_plan, project_id, project_title)
+    except PlanningError as exc:
+        raise _planning_http_error(exc, 400)
+    trace_id = uuid.uuid4().hex[:8]
+    completion_trace_id = trace_id
+    completion_source = "narration_first_compose"
+    contract, validation = persist_and_validate_step2_contract(
+        project=project,
+        project_id=project_id,
+        contract=contract,
+        project_title=project_title,
+        article_summary=article_summary,
+        trace_id=trace_id,
+        source="narration_first_compose",
+    )
+    if not validation["valid"] and validation_has_repairable_atomicity_failure(validation):
+        # This is intentionally bounded to one extra LLM request.  It repairs
+        # only the semantic quality-gate conflict and leaves all other errors
+        # visible to the user instead of looping forever.
+        write_project_log(
+            project,
+            "step2_atomicity_repair_started",
+            trace_id=trace_id,
+            stderr=validation["stderr"],
+        )
+        repaired = _execute_step2_visual_plan(
+            project,
+            script_plan,
+            repair_validation_error=validation["stderr"],
+            previous_visual_plan=visual_plan,
+        )
+        repaired_visual_plan = _apply_project_reveal_mode(repaired["visual_plan"], project)
+        try:
+            contract = compose_visual_contract_from_plans(
+                script_plan,
+                repaired_visual_plan,
+                project_id,
+                project_title,
+            )
+        except PlanningError as exc:
+            raise _planning_http_error(exc, 502)
+        repair_trace_id = uuid.uuid4().hex[:8]
+        contract, validation = persist_and_validate_step2_contract(
+            project=project,
+            project_id=project_id,
+            contract=contract,
+            project_title=project_title,
+            article_summary=article_summary,
+            trace_id=repair_trace_id,
+            source="narration_first_atomicity_repair",
+        )
+        completion_trace_id = repair_trace_id
+        completion_source = "narration_first_atomicity_repair"
+        write_project_log(
+            project,
+            "step2_atomicity_repair_finished",
+            trace_id=repair_trace_id,
+            valid=validation["valid"],
+            stderr=validation["stderr"],
+        )
+    contract = finish_step2_contract_validation(
+        project=project,
+        db=db,
+        contract=contract,
+        validation=validation,
+        trace_id=completion_trace_id,
+        source=completion_source,
+    )
+    return {
+        "success": True,
+        "contract": contract,
+        "target_duration": target_duration_response(project.target_duration_sec, script_plan),
+    }
+
+
+def get_step2_prompt_preview(
+    project_id: str,
+    db: Session,
+    payload: Optional[Dict[str, Any]] = None,
+):
+    project = project_or_404(db, project_id)
+
+    article_source = read_project_article_source(project)
+
+    storyboard_rules = str((payload or {}).get("rules") or "").strip()
+    if not storyboard_rules:
+        rules_path = storyboard_rules_path(project)
+        if os.path.exists(rules_path):
+            with open(rules_path, "r", encoding="utf-8") as f:
+                storyboard_rules = f.read().strip()
+        else:
+            storyboard_rules = default_storyboard_rules()
+    profile_text = str((payload or {}).get("profile_yaml") or "").strip()
+    profile = (
+        parse_storyboard_profile_text(profile_text)
+        if profile_text
+        else read_project_pipeline_profile(project)
+    )
+    profile = apply_storyboard_profile_patch(profile, (payload or {}).get("profile_patch"))
+
+    project_title = article_source["title"]
+    article_content = article_source["content"]
+    article_summary = article_source["summary"]
+    system_prompt, user_prompt = build_storyboard_request(
+        project_title,
+        article_summary,
+        article_content,
+        storyboard_rules,
+        profile,
+        canvas_profile=getattr(project, "canvas_profile", None),
+        target_duration_sec=getattr(project, "target_duration_sec", None),
+    )
+    return {
+        "success": True,
+        "system_content": system_prompt,
+        "user_content": user_prompt,
+    }
+
+
+def visual_contract_validation_path(project: Project) -> str:
+    return os.path.join(project.run_dir, "planning", "visual_contract.validation.json")
+
+
+def validate_visual_contract_file(
+    project: Project,
+    contract_path: str,
+    *,
+    source: str,
+    trace_id: str = "",
+) -> Dict[str, Any]:
+    validate_script = os.path.abspath(os.path.join(os.path.dirname(__file__), "scripts", "validate_visual_contract.py"))
+    validation_args = [sys.executable, validate_script, "--contract", contract_path]
+    if not bool(getattr(project, "mask_enabled", 1) or 0):
+        # Without the Mask stage, connectedness/atomic reveal boundaries are
+        # not a production invariant.  Keep every other contract check active.
+        validation_args.append("--allow-combined-visual-groups")
+    project_profile_path = storyboard_profile_path(project)
+    if os.path.exists(project_profile_path):
+        validation_args.extend(["--profile", project_profile_path])
+    try:
+        result = subprocess.run(
+            validation_args,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=90,
+        )
+    except subprocess.TimeoutExpired:
+        result = subprocess.CompletedProcess(
+            validation_args, 124, "", "visual contract validation timed out"
+        )
+    contract_bytes = Path(contract_path).read_bytes()
+    validation = {
+        "valid": result.returncode == 0,
+        "contract_sha256": hashlib.sha256(contract_bytes).hexdigest(),
+        "validated_at": datetime.now().isoformat(timespec="seconds"),
+        "returncode": result.returncode,
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+        "source": source,
+        "trace_id": trace_id,
+    }
+    write_json_atomic(visual_contract_validation_path(project), validation)
+    return validation
+
+
+def storyboard_validation_gate_enabled(project: Project) -> bool:
+    profile = read_project_pipeline_profile(project)
+    gates = profile.get("quality_gates") if isinstance(profile.get("quality_gates"), dict) else {}
+    return bool(gates.get("pause_on_storyboard_validation_error", True))
+
+
+def validation_has_repairable_atomicity_failure(validation: Dict[str, Any]) -> bool:
+    """True only for the quality-gate conflict that has a safe LLM repair path."""
+    return "describes multiple independent visual islands" in str(validation.get("stderr") or "")
+
+
+def apply_storyboard_contract_impact(
+    project: Project,
+    previous_contract: Dict[str, Any],
+    current_contract: Dict[str, Any],
+    *,
+    empty: bool = False,
+) -> StoryboardContractImpact:
+    """Register only the material Step 2 effects after a contract write."""
+    impact = diff_storyboard_contracts(previous_contract, current_contract)
+    # A project's first contract has no older generated work to review.  Its
+    # normal Step 2 completion remains the only state transition in that case.
+    if empty or (impact.has_effect and _contract_slides_by_id(previous_contract)):
+        invalidation_service.storyboard_contract_changed(
+            project,
+            visual_slide_ids=impact.visual_slide_ids,
+            narration_slide_ids=impact.narration_slide_ids,
+            added_slide_ids=impact.added_slide_ids,
+            removed_slide_ids=impact.removed_slide_ids,
+            reordered=impact.reordered,
+            empty=empty,
+        )
+    return impact
+
+
+def persist_and_validate_step2_contract(
+    *,
+    project: Project,
+    project_id: str,
+    contract: Dict[str, Any],
+    project_title: str,
+    article_summary: str,
+    trace_id: str,
+    source: str,
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """Persist a candidate contract and return its validation result without changing workflow state."""
+    contract["version"] = "visual_contract_v1"
+    if "topic" not in contract or not isinstance(contract.get("topic"), dict):
+        contract["topic"] = {
+            "topic_id": "topic_" + project_id,
+            "topic_name": project_title,
+            "topic_summary": article_summary,
+        }
+    contract = normalize_visual_contract(contract, read_project_pipeline_profile(project))
+    contract_path = os.path.join(project.run_dir, "planning", "visual_contract.json")
+    os.makedirs(os.path.dirname(contract_path), exist_ok=True)
+    contract["version"] = "visual_contract_v1"
+    contract["topic"] = {
+        "topic_id": "topic_" + project_id,
+        "topic_name": project_title,
+        "topic_summary": article_summary,
+    }
+    previous_contract = normalize_visual_contract(
+        deepcopy(read_json_file(contract_path, {})),
+        read_project_pipeline_profile(project),
+    )
+    write_json_atomic(contract_path, contract)
+    apply_storyboard_contract_impact(project, previous_contract, contract)
+    write_project_log(
+        project,
+        "step2_contract_written",
+        trace_id=trace_id,
+        contract_path=contract_path,
+        slide_count=len(contract.get("slides", [])) if isinstance(contract.get("slides"), list) else 0,
+        source=source,
+    )
+    validation = validate_visual_contract_file(
+        project,
+        contract_path,
+        source=source,
+        trace_id=trace_id,
+    )
+    if validation["valid"]:
+        write_project_log(
+            project,
+            "step2_contract_validation_success",
+            trace_id=trace_id,
+            stdout=validation["stdout"],
+            source=source,
+        )
+    else:
+        logger.warning("Visual contract validation warning:\n%s", validation["stderr"])
+        write_project_log(
+            project,
+            "step2_contract_validation_warning",
+            trace_id=trace_id,
+            returncode=validation["returncode"],
+            stderr=validation["stderr"],
+            source=source,
+        )
+    return contract, validation
+
+
+def finish_step2_contract_validation(
+    *,
+    project: Project,
+    db: Session,
+    contract: Dict[str, Any],
+    validation: Dict[str, Any],
+    trace_id: str,
+    source: str,
+) -> Dict[str, Any]:
+    """Apply the quality gate only after any bounded targeted repair has run."""
+    from project_impact_service import resolve_impacts, snapshot_impacts
+
+    impact_snapshot = snapshot_impacts(project.run_dir, affected=("storyboard",))
+    if not validation["valid"] and storyboard_validation_gate_enabled(project):
+        mark_step_retry_needed(project, 2, db)
+        raise HTTPException(
+            status_code=422,
+            detail="分镜合同校验失败，质量门已暂停流程：" + (validation["stderr"] or "请检查分镜结构"),
+        )
+    handle_step_navigation(project, 2, db)
+    resolve_impacts(project.run_dir, affected=("storyboard",), snapshot=impact_snapshot)
+    write_project_log(project, "step2_execute_completed", trace_id=trace_id, source=source)
+    return contract
+
+
+def finalize_step2_contract(
+    *,
+    project: Project,
+    project_id: str,
+    db: Session,
+    contract: Dict[str, Any],
+    project_title: str,
+    article_summary: str,
+    trace_id: str,
+    source: str,
+) -> Dict[str, Any]:
+    contract, validation = persist_and_validate_step2_contract(
+        project=project,
+        project_id=project_id,
+        contract=contract,
+        project_title=project_title,
+        article_summary=article_summary,
+        trace_id=trace_id,
+        source=source,
+    )
+    return finish_step2_contract_validation(
+        project=project,
+        db=db,
+        contract=contract,
+        validation=validation,
+        trace_id=trace_id,
+        source=source,
+    )
+
+
+
+def execute_step2(
+    project_id: str,
+    db: Session,
+    payload: Optional[Dict[str, Any]] = None,
+):
+    """Compatibility endpoint delegated to the narration-first Step 2 pipeline."""
+
+    script_result = execute_step2_script_plan(project_id, db, payload if isinstance(payload, dict) else {})
+    if not script_result.get('success'):
+        return script_result
+    visual_result = execute_step2_visual_plan(project_id, db)
+    if not visual_result.get('success'):
+        return visual_result
+    result = compose_step2_visual_contract(project_id, db)
+    return {
+        **result,
+        "deprecated_route": True,
+        "preferred_routes": [
+            f"/api/projects/{project_id}/steps/2/script/execute",
+            f"/api/projects/{project_id}/steps/2/visual/execute",
+            f"/api/projects/{project_id}/steps/2/compose",
+        ],
+    }
+
+
+def get_step2_result(project_id: str, db: Session):
+    project = project_or_404(db, project_id)
+
+    contract_path = os.path.join(project.run_dir, "planning", "visual_contract.json")
+    if not os.path.exists(contract_path):
+        return {"success": False, "message": "尚未生成分镜规划"}
+
+    with open(contract_path, "r", encoding="utf-8") as f:
+        stored_contract = json.load(f)
+    contract = normalize_visual_contract(stored_contract, read_project_pipeline_profile(project))
+    migration_required = contract_canonical_sha256(contract) != contract_canonical_sha256(stored_contract)
+    return {
+        "success": True,
+        "contract": contract,
+        # Step 2 CAS:客户端保存时回传该摘要,过期即 409
+        "contract_sha256": contract_canonical_sha256(contract),
+        "target_duration": target_duration_response(
+            project.target_duration_sec,
+            read_json_file(step2_script_plan_path(project), {}),
+        ),
+        "repair": {
+            "required": migration_required,
+            "reasons": ["visual_contract_schema_normalization"] if migration_required else [],
+            "endpoint": f"/api/projects/{project_id}/steps/2/repair",
+        },
+    }
+
+
+def repair_step2_result(project_id: str, db: Session):
+    """Persist schema normalization explicitly instead of mutating on GET."""
+    project = project_or_404(db, project_id)
+    contract_path = os.path.join(project.run_dir, "planning", "visual_contract.json")
+    if not os.path.exists(contract_path):
+        raise HTTPException(status_code=400, detail="尚未生成分镜规划")
+    stored_contract = read_json_file(contract_path, {})
+    comparison_contract = normalize_visual_contract(
+        deepcopy(stored_contract),
+        read_project_pipeline_profile(project),
+    )
+    contract = normalize_visual_contract(stored_contract, read_project_pipeline_profile(project))
+    changed = contract_canonical_sha256(contract) != contract_canonical_sha256(stored_contract)
+    if changed:
+        write_json_atomic(contract_path, contract)
+        current_slide_ids = contract_slide_ids_from_payload(contract)
+        sync_reveal_manifest_to_contract(project, current_slide_ids)
+        sync_narration_beats_to_contract(project, current_slide_ids)
+        validate_visual_contract_file(project, contract_path, source="explicit_schema_repair")
+        apply_storyboard_contract_impact(project, comparison_contract, contract)
+        db.commit()
+    return {"success": True, "changed": changed, "contract": contract}
+
+def update_step2_result(project_id: str, payload: Dict[str, Any], db: Session):
+    project = project_or_404(db, project_id)
+    # Step 2 CAS:锁内比较基线摘要,过期浏览器快照 409 且零副作用(R4/Step2 并发);
+    # 手写保存入口拒绝空白 slide_id,空白页在产物寻址中会被静默丢弃(R1-002)。
+    expected_sha = str(payload.get("expected_contract_sha256") or "").strip()
+    reject_blank_slide_ids(payload.get("slides"))
+    contract_path = os.path.join(project.run_dir, "planning", "visual_contract.json")
+    with project_artifact_lock(project.run_dir):
+        stored_contract = read_json_file(contract_path, {})
+        existing_contract = normalize_visual_contract(deepcopy(stored_contract), read_project_pipeline_profile(project))
+        if expected_sha and contract_canonical_sha256(existing_contract) != expected_sha:
+            raise HTTPException(status_code=409, detail={
+                "code": "storyboard_conflict", "message": "分镜已被其他窗口修改；请刷新核对后重试，当前内容未被覆盖。",
+                "current_contract_sha256": contract_canonical_sha256(existing_contract),
+            })
+        payload = normalize_visual_contract(payload, read_project_pipeline_profile(project))
+        previous_slide_ids = contract_slide_ids_from_payload(existing_contract)
+        if contract_canonical_sha256(stored_contract) == contract_canonical_sha256(payload):
+            return {
+                "success": True,
+                "contract": payload,
+                "contract_sha256": contract_canonical_sha256(payload),
+                "validation": read_json_file(visual_contract_validation_path(project), {}),
+                "changed": False,
+            }
+        _persist_step2_result_locked(project, payload, existing_contract, previous_slide_ids, contract_path, db)
+    refreshed = normalize_visual_contract(deepcopy(read_json_file(contract_path, {})), read_project_pipeline_profile(project))
+    return {
+        "success": True,
+        "changed": True,
+        "contract": refreshed,
+        "contract_sha256": contract_canonical_sha256(refreshed),
+        "validation": read_json_file(visual_contract_validation_path(project), {}),
+    }
+
+
+def _persist_step2_result_locked(project, payload, existing_contract, previous_slide_ids, contract_path, db) -> None:
+    """锁内的落盘/归档/同步/影响登记;调用方持有 project_artifact_lock。"""
+    contract_impact = diff_storyboard_contracts(existing_contract, payload)
+    write_json_atomic(contract_path, payload)
+    current_slide_ids = contract_slide_ids_from_payload(payload)
+    removed_slide_ids = [slide_id for slide_id in previous_slide_ids if slide_id not in current_slide_ids]
+    for slide_id in removed_slide_ids:
+        slide_path = Path(storage_slide_file(project.run_dir, slide_id, "visual_draft.png")).parent
+        if slide_path.exists():
+            archive_root = Path(project.run_dir) / "archived_slides"
+            archive_root.mkdir(parents=True, exist_ok=True)
+            # Keep user-generated images, Mask corrections and audio recoverable.
+            # A future slide may reuse the same ID, so each archive has a unique path.
+            shutil.move(str(slide_path), str(archive_root / f"{slide_id}-{uuid.uuid4().hex}"))
+
+    if not current_slide_ids:
+        validation = {
+            "valid": False,
+            "editable_empty": True,
+            "contract_sha256": hashlib.sha256(Path(contract_path).read_bytes()).hexdigest(),
+            "validated_at": datetime.now().isoformat(timespec="seconds"),
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "分镜列表为空；可以继续添加分镜，但不能进入图片生成。",
+            "source": "manual_empty_storyboard",
+            "trace_id": "",
+        }
+        write_json_atomic(visual_contract_validation_path(project), validation)
+        sync_reveal_manifest_to_contract(project, [])
+        sync_narration_beats_to_contract(project, [])
+        sync_narration_sources_from_contract(project, existing_contract, payload)
+        apply_storyboard_contract_impact(
+            project,
+            existing_contract,
+            payload,
+            empty=True,
+        )
+        db.commit()
+        payload = read_json_file(contract_path, payload)
+        return {"success": True, "contract": payload, "validation": validation, "changed": True}
+
+    validation = validate_visual_contract_file(project, contract_path, source="manual_autosave")
+    if validation.get("valid"):
+        sync_reveal_manifest_to_contract(project, current_slide_ids)
+        sync_narration_beats_to_contract(project, current_slide_ids)
+        sync_narration_sources_from_contract(project, existing_contract, payload)
+        payload = read_json_file(contract_path, payload)
+    if contract_impact.has_effect and _contract_slides_by_id(existing_contract):
+        invalidation_service.storyboard_contract_changed(
+            project,
+            visual_slide_ids=contract_impact.visual_slide_ids,
+            narration_slide_ids=contract_impact.narration_slide_ids,
+            added_slide_ids=contract_impact.added_slide_ids,
+            removed_slide_ids=contract_impact.removed_slide_ids,
+            reordered=contract_impact.reordered,
+        )
+    db.commit()
+
+    return {"success": True, "contract": payload, "validation": validation, "changed": True}
+
+
+class ManualSkeletonSlide(BaseModel):
+    slide_id: Optional[str] = None
+    main_title: str
+    narration: str
+
+
+class ManualSkeletonPayload(BaseModel):
+    slides: List[ManualSkeletonSlide]
+
+
+def submit_step2_manual_skeleton(
+    project_id: str,
+    payload: ManualSkeletonPayload,
+    db: Session,
+):
+    """Manual mode: build a visual_contract.json from title + narration only.
+
+    Each slide produces an empty visual_groups[] (full-slide static render)
+    and one narration_beat entry bound to the spoken text. AI Mask is not
+    triggered; the user can still click "运行 AI 标注" later if desired.
+    """
+    project = project_or_404(db, project_id)
+    if not payload.slides:
+        raise HTTPException(status_code=400, detail="slides 不能为空")
+
+    article_source = read_project_article_source(project, required=False)
+    project_title = article_source.get("title") or project.name or project_id
+    article_summary = article_source.get("summary", "")
+
+    contract_slides: List[Dict[str, Any]] = []
+    for index, slide in enumerate(payload.slides, start=1):
+        slide_id = (slide.slide_id or f"slide_{index:03d}").strip()
+        main_title = (slide.main_title or "").strip()
+        narration = (slide.narration or "").strip()
+        if not main_title:
+            raise HTTPException(status_code=400, detail=f"{slide_id} 标题不能为空")
+        if not narration:
+            raise HTTPException(status_code=400, detail=f"{slide_id} 演讲稿不能为空")
+        contract_slides.append({
+            "slide_id": slide_id,
+            "main_title": main_title,
+            "subtitle": "",
+            "core_message": narration,
+            "body_content": [narration],
+            "visual_groups": [],
+            "narration_beats": [
+                {
+                    "id": f"{slide_id}_beat_001",
+                    "group_id": None,
+                    "visible_anchor": "",
+                    "spoken_intent": main_title,
+                    "spoken_text": narration,
+                    "content_unit_id": f"{slide_id}_unit_001",
+                }
+            ],
+        })
+
+    previous_contract = read_json_file(
+        os.path.join(project.run_dir, "planning", "visual_contract.json"),
+        {},
+    )
+    contract = {
+        "version": "visual_contract_v1",
+        "presentation_policy": {
+            "subtitle_policy": "no_slides_have_subtitle",
+            "subtitle_decided_by": "system_no_subtitle_contract",
+            "visual_narration_mapping": "manual_free_v1",
+        },
+        "topic": {
+            "topic_id": "topic_" + project_id,
+            "topic_name": project_title,
+            "topic_summary": article_summary,
+        },
+        "slides": contract_slides,
+    }
+
+    trace_id = uuid.uuid4().hex[:8]
+    contract = finalize_step2_contract(
+        project=project,
+        project_id=project_id,
+        db=db,
+        contract=contract,
+        project_title=project_title,
+        article_summary=article_summary,
+        trace_id=trace_id,
+        source="manual_skeleton_submit",
+    )
+    sync_narration_sources_from_contract(project, previous_contract, contract)
+    # Ensure the project reflects manual mode so the frontend can render the
+    # correct UI affordances (e.g., hide auto-trigger AI Mask).
+    if project.ai_mode != "manual":
+        project.ai_mode = "manual"
+        db.commit()
+        db.refresh(project)
+    return {"success": True, "contract": contract, "ai_mode": project.ai_mode}
+
+# ==================== 步骤 3-4: 图片生成与管理 ====================
+

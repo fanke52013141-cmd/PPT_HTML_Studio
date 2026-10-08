@@ -1,0 +1,197 @@
+from __future__ import annotations
+
+def test_legacy_checks():
+    from pathlib import Path
+    import sys
+    import tempfile
+    from types import SimpleNamespace
+
+
+    ROOT = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(ROOT))
+
+    import ai_mask_engine as mask
+    import ai_mask_config
+    import global_image_style_service as global_image_style
+    import image_workflow_service as image_workflow
+    import narration_service
+    import server
+    from scripts import write_visual_prompts
+
+
+    html = (ROOT / "static" / "index.html").read_text(encoding="utf-8")
+    prompt_help = (ROOT / "static" / "prompt_help.js").read_text(encoding="utf-8")
+    narration_audio = (ROOT / "static" / "narration_audio.js").read_text(encoding="utf-8")
+    storyboard_prompts = (ROOT / "static" / "storyboard_prompts.js").read_text(encoding="utf-8")
+    images = (ROOT / "static" / "images.js").read_text(encoding="utf-8")
+    image_prompts = (ROOT / "static" / "image_prompts.js").read_text(encoding="utf-8")
+    mask_ui = (ROOT / "static" / "ai_mask_extension.js").read_text(encoding="utf-8")
+    css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
+
+    assert 'id="step2-script-full-prompt"' in html
+    assert 'id="step2-visual-full-prompt"' in html
+    assert "updateStep2FullPromptPreviews" in storyboard_prompts
+    assert '<OutputExample>' in server.compose_step2_system_prompt("system", "example")
+    assert '<OutputExample>' not in server.compose_step2_system_prompt("system", "")
+    assert 'id="step6-btn-ai-prompt"' in html
+    assert 'id="step6-ai-system-prompt"' in html
+    assert 'id="step6-ai-output-example"' in html
+    assert 'id="step6-ai-full-prompt"' in html
+    assert 'id="step3-btn-prompt-settings"' in html
+    assert 'id="step3-image-system-prompt"' in html
+    assert 'id="step3-image-input-preview"' in html
+    assert 'id="step3-image-full-prompt"' in html
+    assert 'data-prompt-help="step3-image"' in html
+    assert 'data-prompt-help="narration-annotation"' in html
+    assert "openStep6AnnotationPromptModal" in narration_audio
+    assert "openStep3PromptSettingsModal" in image_prompts
+    assert "PROMPT_IO_HELP" in prompt_help
+    assert '<OutputExample>' in narration_service.compose_narration_annotation_prompt("system", "example")
+    assert '<OutputExample>' not in narration_service.compose_narration_annotation_prompt("system", "")
+    assert 'id="ai-mask-full-prompt"' in mask_ui
+    full_mask_prompt = ai_mask_config.compose_ai_mask_full_prompt("method", "schema")
+    assert "method" in full_mask_prompt and "schema" in full_mask_prompt
+    assert "OUTPUT STRUCTURE / 输出结构" in full_mask_prompt
+    assert "ai_mask_semantic_mapping_v4" in mask.DEFAULT_METHODOLOGY
+    assert "语义正确优先于为了覆盖率强行匹配" in mask.DEFAULT_METHODOLOGY
+    assert "每个动态 group 在本批内最多输出一条 match" in mask.DEFAULT_METHODOLOGY
+    assert "不要把多个独立对象硬塞进同一个 Mask" in mask.DEFAULT_METHODOLOGY
+    assert "batch.total > 1" in mask.DEFAULT_METHODOLOGY
+    assert "element_ids` 输出空数组" in mask.DEFAULT_OUTPUT_STRUCTURE
+    assert "系统会按 object 自动展开" in mask.DEFAULT_OUTPUT_STRUCTURE
+    assert "未出现在本批输入中的对象一律不要写" in mask.DEFAULT_OUTPUT_STRUCTURE
+
+
+    class _LegacyAiMaskPromptStore:
+        values = {
+            mask.PROMPT_METHOD_KEY: mask.LEGACY_STORED_METHODOLOGY_V2,
+            mask.PROMPT_OUTPUT_KEY: mask.LEGACY_DEFAULT_OUTPUT_STRUCTURE_V2,
+        }
+
+        @classmethod
+        def get_setting(cls, key, default=""):
+            return cls.values.get(key, default)
+
+
+    original_get_setting = ai_mask_config.get_setting
+    ai_mask_config.get_setting = _LegacyAiMaskPromptStore.get_setting
+    try:
+        migrated_methodology, migrated_output = ai_mask_config.read_ai_mask_prompts()
+    finally:
+        ai_mask_config.get_setting = original_get_setting
+    assert "ai_mask_semantic_mapping_v4" in migrated_methodology
+    assert "系统会按 object 自动展开" in migrated_output
+    assert ".slide-thumbnail-card.step2-slide-thumb" in css
+    assert "height: 32px !important" in css
+    assert "button.prompt-help-button" in css
+    assert "justify-content: center !important" in css
+
+    script_prompt = (ROOT / "templates" / "prompts" / "step2_script_system.md").read_text(encoding="utf-8")
+    visual_prompt = (ROOT / "templates" / "prompts" / "step2_visual_system.md").read_text(encoding="utf-8")
+    image_prompt = (ROOT / "templates" / "prompts" / "visual_draft.prompt.md").read_text(encoding="utf-8")
+    step3_system_prompt = (ROOT / "templates" / "prompts" / "step3_image_system.md").read_text(encoding="utf-8")
+    assert "step2_script_v5_speech_driven" in script_prompt
+    assert "认知旅程" in script_prompt
+    assert "完整演讲稿" in script_prompt
+    assert "step2_visual_v8_mapping_only" in visual_prompt
+    assert "画面内容与原文演讲片段的一对一对应关系" in visual_prompt
+    assert "不决定动画、出现先后、Mask" in visual_prompt
+    assert "数量由内容决定" in visual_prompt
+    assert "逐字还原整页演讲稿" in visual_prompt
+    assert "insufficient_visual_groups_for_independent_objects" in mask.DEFAULT_METHODOLOGY
+    assert "必要且最小" in image_prompt
+    assert "step3_image_v3_editable_creative_direction" in step3_system_prompt
+    assert "`main_title` 和 `body_elements`" in step3_system_prompt
+    assert "固定生产合同" in step3_system_prompt
+    assert "标题区、正文区、视频字幕开启时的字幕安全区" in step3_system_prompt
+
+    sample_slides = [
+        {
+            "slide_id": "slide_001",
+            "main_title": "First title",
+            "visual_groups": [
+                {"id": "slide_001_el_001", "role": "title", "visual_type": "text", "display_text": "First title"},
+                {"id": "slide_001_el_002", "role": "content_body", "visual_type": "text", "display_text": "Alpha", "narration_function": "do not send"}
+            ],
+            "narration": "must not enter image input",
+            "core_message": "must not enter image input",
+        },
+        {
+            "slide_id": "slide_002",
+            "main_title": "Second title",
+            "visual_groups": [
+                {"id": "slide_002_el_001", "role": "diagram", "visual_type": "illustration", "visual_anchor": "Beta"}
+            ],
+        },
+    ]
+    batch_prompt = image_workflow.compose_step3_batch_copy_prompt(
+        "UNIQUE_GLOBAL_STYLE",
+        sample_slides,
+    )
+    assert batch_prompt.count("UNIQUE_GLOBAL_STYLE") == 1
+    assert "slide_001" in batch_prompt and "slide_002" in batch_prompt
+    assert "First title" in batch_prompt and "Second title" in batch_prompt
+    assert "element_id" not in batch_prompt
+    assert "must not enter image input" not in batch_prompt
+    assert batch_prompt.count("<NonOverridableProductionRules>") == 1
+    assert "step3BatchPrompt" in images
+
+    minimal_input = image_workflow.step3_slide_input_payload(sample_slides[0])
+    assert minimal_input == {
+        "slide_id": "slide_001",
+        "main_title": "First title",
+        "body_elements": [{"type": "text", "content": "Alpha"}],
+    }
+    assert write_visual_prompts.compact_visual_input(sample_slides[0]) == minimal_input
+    single_prompt = image_workflow.compose_step3_single_slide_prompt(
+        "STYLE",
+        sample_slides[0],
+        "CUSTOM SYSTEM",
+    )
+    assert "CUSTOM SYSTEM" in single_prompt
+    assert "First title" in single_prompt and "Alpha" in single_prompt
+    assert single_prompt.count("<NonOverridableProductionRules>") == 1
+    assert image_workflow.enforce_white_generation_background(single_prompt) == single_prompt
+
+    portrait_prompt = image_workflow.compose_step3_single_slide_prompt(
+        "STYLE",
+        sample_slides[0],
+        "CUSTOM SYSTEM",
+        canvas_profile="portrait_9_16",
+    )
+    assert "1080×1920、9:16" in portrait_prompt
+    assert "y=1650..1920" in portrait_prompt
+    assert "1920×1080、16:9" not in portrait_prompt
+    portrait_system = image_workflow.adapt_step3_system_content_for_canvas(
+        image_workflow.default_step3_image_system_content(),
+        "portrait_9_16",
+    )
+    assert "内容表达与构图方法" in portrait_system
+    assert "字幕安全区" in portrait_system
+    assert "1920×1080" not in portrait_system
+
+    minimal_style = global_image_style.build_image_style_prompt(
+        global_image_style.read_style_tokens_data()
+    )
+    assert "只描述视觉语言，不重复生产规则" in minimal_style
+    assert "narration beat" not in minimal_style
+    assert "visual_group" not in minimal_style
+    assert "副标题" not in minimal_style
+    assert len(minimal_style) < 1200
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        project = SimpleNamespace(run_dir=temp_dir)
+        image_workflow.write_step3_image_system_content(
+            project,
+            "PROJECT CUSTOM PROMPT",
+        )
+        assert (
+            image_workflow.read_step3_image_system_content(project)
+            == "PROJECT CUSTOM PROMPT"
+        )
+
+    print("prompt and thumbnail checks passed")
+
+
+if __name__ == "__main__":
+    test_legacy_checks()

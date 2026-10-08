@@ -1,0 +1,288 @@
+"""MCP Resources — expose project state and artifacts as addressable resources.
+
+Resource URI scheme: ppt://
+
+Supported URIs:
+    ppt://projects/{id}/summary       — project summary
+    ppt://projects/{id}/slides        — all slides overview
+    ppt://projects/{id}/slides/{sid}/image   — slide image
+    ppt://projects/{id}/slides/{sid}/audio   — slide audio
+    ppt://projects/{id}/videos/latest — latest rendered video
+    ppt://projects/{id}/artifacts     — all artifacts
+    ppt://projects/{id}/contract      — visual contract JSON
+    ppt://projects/{id}/digital-human/config       — digital-human config
+    ppt://projects/{id}/digital-human/videos        — digital-human video listing
+    ppt://projects/{id}/digital-human/videos/{sid}  — per-slide DH video
+
+Resources are read-only and fetched via AgentClient.
+"""
+
+from __future__ import annotations
+
+import re
+import base64
+from typing import Any, Optional
+
+from agent_client.client import AgentClient
+
+
+# URI patterns (order matters — most specific first)
+_URI_PATTERNS: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"^ppt://projects/([^/]+)/summary$"), "summary"),
+    (re.compile(r"^ppt://projects/([^/]+)/slides$"), "slides"),
+    (re.compile(r"^ppt://projects/([^/]+)/slides/([^/]+)/image$"), "slide_image"),
+    (re.compile(r"^ppt://projects/([^/]+)/slides/([^/]+)/audio$"), "slide_audio"),
+    (re.compile(r"^ppt://projects/([^/]+)/videos/latest$"), "video_latest"),
+    (re.compile(r"^ppt://projects/([^/]+)/artifacts$"), "artifacts"),
+    (re.compile(r"^ppt://projects/([^/]+)/contract$"), "contract"),
+    (re.compile(r"^ppt://projects/([^/]+)/digital-human/config$"), "dh_config"),
+    (re.compile(r"^ppt://projects/([^/]+)/digital-human/videos$"), "dh_videos"),
+    (re.compile(r"^ppt://projects/([^/]+)/digital-human/videos/([^/]+)$"), "dh_video_slide"),
+]
+
+
+def parse_resource_uri(uri: str) -> Optional[tuple[str, str, dict[str, str]]]:
+    """Parse a ppt:// URI into (project_id, resource_type, params).
+
+    Returns None if the URI doesn't match any known pattern.
+    """
+    for pattern, rtype in _URI_PATTERNS:
+        m = pattern.match(uri)
+        if m:
+            groups = m.groups()
+            params: dict[str, str] = {}
+            if rtype in ("slide_image", "slide_audio", "dh_video_slide"):
+                params["project_id"] = groups[0]
+                params["slide_id"] = groups[1]
+            else:
+                params["project_id"] = groups[0]
+            return (groups[0], rtype, params)
+    return None
+
+
+def list_resource_templates() -> list[dict[str, Any]]:
+    """Return MCP resource template definitions for discovery."""
+    return [
+        {
+            "uriTemplate": "ppt://projects/{project_id}/summary",
+            "name": "Project Summary",
+            "description": "Get project name, canvas, AI mode, and current step.",
+            "mimeType": "application/json",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/slides",
+            "name": "Slides Overview",
+            "description": "List all slides with image and narration status.",
+            "mimeType": "application/json",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/slides/{slide_id}/image",
+            "name": "Slide Image",
+            "description": "Get the generated image for a specific slide.",
+            "mimeType": "image/png",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/slides/{slide_id}/audio",
+            "name": "Slide Audio",
+            "description": "Get the TTS audio for a specific slide.",
+            "mimeType": "audio/mpeg",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/videos/latest",
+            "name": "Latest Video",
+            "description": "Get the most recently rendered video.",
+            "mimeType": "video/mp4",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/artifacts",
+            "name": "All Artifacts",
+            "description": "List all artifacts (images, audio, video, pptx).",
+            "mimeType": "application/json",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/contract",
+            "name": "Visual Contract",
+            "description": "Get the visual contract JSON for the project.",
+            "mimeType": "application/json",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/digital-human/config",
+            "name": "Digital Human Config",
+            "description": "Get the digital-human presenter configuration for the project.",
+            "mimeType": "application/json",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/digital-human/videos",
+            "name": "Digital Human Videos",
+            "description": "List all generated digital-human presenter videos.",
+            "mimeType": "application/json",
+        },
+        {
+            "uriTemplate": "ppt://projects/{project_id}/digital-human/videos/{slide_id}",
+            "name": "Digital Human Slide Video",
+            "description": "Get the digital-human presenter video for a specific slide.",
+            "mimeType": "video/mp4",
+        },
+    ]
+
+
+def read_resource(uri: str, client: AgentClient) -> dict[str, Any]:
+    """Read a resource by URI and return MCP-formatted content.
+
+    Returns:
+        {"contents": [{"uri": ..., "mimeType": ..., "text": ...}]}
+    """
+    parsed = parse_resource_uri(uri)
+    if parsed is None:
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "text/plain",
+                "text": f"Unknown resource URI pattern: {uri}",
+            }]
+        }
+
+    project_id, rtype, params = parsed
+
+    if rtype == "summary":
+        data = client.get_project(project_id)
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": _to_json_text(data),
+            }]
+        }
+
+    elif rtype == "slides":
+        data = client.get_project(project_id)
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": _to_json_text(data),
+            }]
+        }
+
+    elif rtype == "slide_image":
+        data, mime_type = client.get_bytes(
+            f"/api/agent/v1/projects/{project_id}/slides/{params['slide_id']}/image"
+        )
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": mime_type,
+                "blob": base64.b64encode(data).decode("ascii"),
+            }]
+        }
+
+    elif rtype == "slide_audio":
+        data, mime_type = client.get_bytes(
+            f"/api/agent/v1/projects/{project_id}/slides/{params['slide_id']}/audio"
+        )
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": mime_type,
+                "blob": base64.b64encode(data).decode("ascii"),
+            }]
+        }
+
+    elif rtype == "video_latest":
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": _to_json_text({
+                    "download_url": f"{client.base_url}/api/agent/v1/projects/{project_id}/videos/latest"
+                }),
+            }]
+        }
+
+    elif rtype == "artifacts":
+        data = client.list_artifacts(project_id)
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": _to_json_text(data),
+            }]
+        }
+
+    elif rtype == "contract":
+        data = client.get_stage(project_id, "storyboard")
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": _to_json_text(data),
+            }]
+        }
+
+    elif rtype == "dh_config":
+        data = client.get_digital_human_config(project_id)
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": _to_json_text(data),
+            }]
+        }
+
+    elif rtype == "dh_videos":
+        health = client.check_digital_human_health(project_id)
+        config = client.get_digital_human_config(project_id)
+        data = {
+            "service": health,
+            "config": config,
+            "videos": {},
+        }
+        if config.get("enabled") and config.get("slides"):
+            for slide_id in config["slides"]:
+                data["videos"][slide_id] = {
+                    "uri": f"ppt://projects/{project_id}/digital-human/videos/{slide_id}",
+                    "status": "pending",
+                }
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": _to_json_text(data),
+            }]
+        }
+
+    elif rtype == "dh_video_slide":
+        slide_id = params.get("slide_id", "")
+        config = client.get_digital_human_config(project_id)
+        slide_cfg = {}
+        if isinstance(config.get("slides"), dict):
+            slide_cfg = config["slides"].get(slide_id, {})
+        elif isinstance(config.get("slides"), list) and slide_id in config.get("slides", []):
+            slide_cfg = {"slide_id": slide_id, "configured": True}
+        data = {
+            "project_id": project_id,
+            "slide_id": slide_id,
+            "configured": bool(slide_cfg),
+            "config": slide_cfg,
+            "download_url": f"{client.base_url}/api/agent/v1/projects/{project_id}/digital-human/videos/{slide_id}",
+        }
+        return {
+            "contents": [{
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": _to_json_text(data),
+            }]
+        }
+
+    return {
+        "contents": [{
+            "uri": uri,
+            "mimeType": "text/plain",
+            "text": f"Unsupported resource type: {rtype}",
+        }]
+    }
+
+
+def _to_json_text(data: Any) -> str:
+    import json
+    return json.dumps(data, indent=2, ensure_ascii=False, default=str)

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SlidePlan",
+  "type": "object",
+  "required": ["topic", "slides"],
+  "properties": {
+    "presentation_policy": {
+      "type": "object",
+      "required": ["subtitle_policy"],
+      "properties": {
+        "subtitle_policy": {
+          "type": "string",
+          "enum": ["all_slides_have_subtitle", "no_slides_have_subtitle"]
+        },
+        "subtitle_decided_by": {"type": "string"},
+        "subtitle_rationale": {"type": "string"},
+        "default_visual_anchor_count": {"type": "string"},
+        "layout_freedom": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "topic": {
+      "type": "object",
+      "required": ["topic_id", "topic_name", "topic_summary"],
+      "properties": {
+        "topic_id": {"type": "string"},
+        "topic_name": {"type": "string"},
+        "topic_summary": {"type": "string"}
+      }
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "slide_id",
+          "main_title",
+          "core_message",
+          "narration"
+        ],
+        "properties": {
+          "slide_id": {"type": "string"},
+          "slide_purpose": {"type": "string"},
+          "main_title": {"type": "string"},
+          "subtitle": {"type": "string"},
+          "core_message": {"type": "string"},
+          "body_content": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "visual_intent": {"type": "string"},
+          "content": {
+            "type": "object",
+            "properties": {
+              "content_type": {"type": "string"},
+              "layout_intent": {"type": "string"},
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {"type": "string"},
+                    "label": {"type": "string"},
+                    "side": {"type": "string"},
+                    "text": {"type": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "narration": {"type": "string"},
+          "narration_beats": {
+            "type": "array",
+            "description": "Voiceover rhythm hints. They may reference visual anchors after the page is drawn; they are not a rigid pre-generation layout template.",
+            "items": {
+              "type": "object",
+              "required": ["id", "spoken_point"],
+              "properties": {
+                "id": {"type": "string"},
+                "spoken_point": {"type": "string"},
+                "visual_group": {"type": "string"},
+                "animation": {
+                  "type": "string",
+                  "enum": ["fade_in", "fade_up", "soft_zoom_in", "slide_in_left", "highlight"]
+                },
+                "time_hint": {"type": "string"},
+                "source_article_point": {"type": "string"},
+                "text_summary": {"type": "string"}
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

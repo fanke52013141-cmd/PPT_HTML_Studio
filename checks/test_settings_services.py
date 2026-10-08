@@ -1,0 +1,334 @@
+from __future__ import annotations
+
+import asyncio
+import base64
+from pathlib import Path
+import subprocess
+import sys
+from types import SimpleNamespace
+from typing import Any
+
+import pytest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+import config_portability_service as config_service  # noqa: E402
+from route_inventory import iter_effective_routes  # noqa: E402
+import server  # noqa: E402
+import settings_routes  # noqa: E402
+import settings_service  # noqa: E402
+
+
+SETTINGS_PATHS = {
+    ("GET", "/api/settings"),
+    ("PUT", "/api/settings"),
+    ("GET", "/api/config/export"),
+    ("POST", "/api/config/export-with-secrets"),
+    ("POST", "/api/config/import"),
+    ("POST", "/api/settings/test-llm"),
+    ("POST", "/api/settings/test-image"),
+    ("POST", "/api/settings/test-tts"),
+}
+
+
+def replace_settings_dependencies(
+    **changes: Any,
+) -> settings_service.SettingsDependencies:
+    dependencies = settings_service._deps()
+    values = {
+        field: getattr(dependencies, field)
+        for field in dependencies.__dataclass_fields__
+    }
+    values.update(changes)
+    return settings_service.SettingsDependencies(**values)
+
+
+def replace_config_dependencies(
+    **changes: Any,
+) -> config_service.ConfigPortabilityDependencies:
+    dependencies = config_service._deps()
+    values = {
+        field: getattr(dependencies, field)
+        for field in dependencies.__dataclass_fields__
+    }
+    values.update(changes)
+    return config_service.ConfigPortabilityDependencies(**values)
+
+
+def test_settings_routes_are_registered_exactly_once() -> None:
+    route_counts: dict[tuple[str, str], int] = {}
+    for route in iter_effective_routes(server.app):
+        path = getattr(route, "path", "")
+        for method in getattr(route, "methods", set()):
+            key = (method, path)
+            if key in SETTINGS_PATHS:
+                route_counts[key] = route_counts.get(key, 0) + 1
+    assert route_counts == {path: 1 for path in SETTINGS_PATHS}
+
+
+def test_comfyui_workflow_upload_reads_at_most_the_configured_limit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class LimitedFile:
+        def __init__(self) -> None:
+            self.read_sizes: list[int] = []
+
+        async def read(self, size: int = -1) -> bytes:
+            self.read_sizes.append(size)
+            return b"x" * size
+
+    file = LimitedFile()
+    monkeypatch.setattr(
+        settings_routes,
+        "_COMFYUI_TTS_WORKFLOW_PATH",
+        str(tmp_path / "comfyui_tts_workflow.json"),
+    )
+
+    with pytest.raises(settings_routes.HTTPException) as exc_info:
+        asyncio.run(settings_routes.upload_comfyui_tts_workflow(file))
+
+    assert getattr(exc_info.value, "status_code", None) == 413
+    assert file.read_sizes == [settings_routes._MAX_TTS_WORKFLOW_BYTES + 1]
+
+
+def test_settings_service_boundaries_are_explicit() -> None:
+    server_source = (ROOT / "server.py").read_text(encoding="utf-8")
+    routes_source = (ROOT / "settings_routes.py").read_text(
+        encoding="utf-8"
+    )
+    for filename in (
+        "settings_service.py",
+        "config_portability_service.py",
+    ):
+        source = (ROOT / filename).read_text(encoding="utf-8")
+        assert "APIRouter" not in source
+        assert "Depends(" not in source
+        assert "get_db" not in source
+        assert "server_module" not in source
+        assert "import server" not in source
+    assert "router = APIRouter()" in routes_source
+    assert "app.include_router(settings_router)" in server_source
+    for method in ("get", "put", "post"):
+        assert f'@app.{method}("/api/settings' not in server_source
+        assert f'@app.{method}("/api/config' not in server_source
+
+
+def test_reference_validation_happens_before_any_import_write() -> None:
+    writes: list[Any] = []
+    original = config_service._deps()
+
+    def reject_image(_content: bytes) -> Any:
+        raise ValueError("invalid image")
+
+    config_service.configure_config_portability_dependencies(
+        replace_config_dependencies(
+            open_validated_image=reject_image,
+            update_settings=lambda values: writes.append(values),
+            write_json_atomic=lambda path, value: writes.append(
+                (path, value)
+            ),
+            ensure_active_image_style_storage=lambda: writes.append(
+                "ensure"
+            ),
+        )
+    )
+    payload = {
+        "settings": {"llm_model": "must-not-write"},
+        "storyboard_templates": [{"name": "must-not-write"}],
+        "image_style": {
+            "active_references": {
+                "template": {
+                    "exists": True,
+                    "data": base64.b64encode(b"bad").decode("ascii"),
+                }
+            }
+        },
+    }
+    try:
+        with pytest.raises(ValueError, match="invalid image"):
+            config_service.import_full_config(payload)
+    finally:
+        config_service.configure_config_portability_dependencies(
+            original
+        )
+    assert writes == []
+
+
+def test_llm_connection_probe_contract_is_unchanged() -> None:
+    captured: dict[str, Any] = {}
+
+    class Completions:
+        def create(self, **kwargs: Any) -> Any:
+            captured.update(kwargs)
+            return SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        message=SimpleNamespace(content="pong")
+                    )
+                ]
+            )
+
+    client = SimpleNamespace(
+        chat=SimpleNamespace(completions=Completions())
+    )
+    original = settings_service._deps()
+    settings_service.configure_settings_dependencies(
+        replace_settings_dependencies(
+            get_openai_client=lambda **_kwargs: client,
+        )
+    )
+    try:
+        result = settings_service.test_llm_connection(
+            settings_service.TestLlmPayload(
+                api_key="key",
+                base_url="https://example.invalid",
+                model="model",
+            )
+        )
+    finally:
+        settings_service.configure_settings_dependencies(original)
+    assert result["success"] is True
+    assert captured == {
+        "model": "model",
+        "messages": [{"role": "user", "content": "ping"}],
+        "max_tokens": 5,
+        "timeout": 10,
+    }
+
+
+def test_image_connection_probe_contract_is_unchanged() -> None:
+    captured: dict[str, Any] = {}
+    client = object()
+
+    def generate(**kwargs: Any) -> Any:
+        captured.update(kwargs)
+        return {"data": [{"b64_json": "image"}]}
+
+    original = settings_service._deps()
+    settings_service.configure_settings_dependencies(
+        replace_settings_dependencies(
+            get_openai_client=lambda **_kwargs: client,
+            generate_image_response=generate,
+            response_has_image_data=lambda response: bool(response),
+        )
+    )
+    try:
+        result = settings_service.test_image_connection(
+            settings_service.TestImagePayload(
+                api_key="key",
+                base_url="https://example.invalid",
+                model="image-model",
+            )
+        )
+    finally:
+        settings_service.configure_settings_dependencies(original)
+    assert result["success"] is True
+    assert captured == {
+        "client": client,
+        "model": "image-model",
+        "prompt": "a single dot",
+        "size": "1024x1024",
+        "base_url": "https://example.invalid",
+        "timeout": 15,
+    }
+
+
+def test_tts_connection_probe_contract_is_unchanged() -> None:
+    command_args: dict[str, Any] = {}
+    process_args: dict[str, Any] = {}
+
+    def provider_command(**kwargs: Any) -> list[str]:
+        command_args.update(kwargs)
+        command_args["text"] = Path(
+            kwargs["text_file"]
+        ).read_text(encoding="utf-8")
+        return ["fake-tts"]
+
+    def run_process(command: list[str], **kwargs: Any) -> Any:
+        process_args["command"] = command
+        process_args.update(kwargs)
+        Path(command_args["out_audio"]).write_bytes(b"audio")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    original = settings_service._deps()
+    settings_service.configure_settings_dependencies(
+        replace_settings_dependencies(
+            get_setting=lambda *_args: "",
+            configured_tts_api_key=lambda *_args: "key",
+            configured_tts_secret_key=lambda *_args: "",
+            provider_tts_command=provider_command,
+            provider_tts_environment=lambda api_key, secret_key: {
+                "API_KEY": api_key,
+                "SECRET_KEY": secret_key,
+            },
+            run_subprocess_bounded=run_process,
+        )
+    )
+    try:
+        result = settings_service.test_tts_connection(
+            settings_service.TestTtsPayload(
+                provider="minimax",
+            )
+        )
+    finally:
+        settings_service.configure_settings_dependencies(original)
+    assert result["success"] is True
+    assert command_args["text"] == "测试语音。\n"
+    assert command_args["slide_id"] == "tts_test"
+    assert command_args["speed"] == "1.0"
+    assert command_args["volume"] == "1.0"
+    assert command_args["pitch"] == "0"
+    assert process_args["timeout_sec"] == 90
+    assert process_args["capture_output"] is True
+    assert process_args["text"] is True
+    assert process_args["encoding"] == "utf-8"
+    assert process_args["errors"] == "replace"
+
+
+def test_concurrent_masked_save_cannot_overwrite_a_newer_secret() -> None:
+    import threading
+    import time
+
+    store: dict[str, Any] = {"llm_api_key": "K1", "image_api_key": "I1"}
+    read_counter = iter(range(10))
+
+    def slow_get_all_settings() -> dict[str, Any]:
+        if next(read_counter) == 0:
+            time.sleep(0.3)
+        return dict(store)
+
+    def update_settings(settings: dict[str, str]) -> None:
+        store.update(settings)
+
+    original = settings_service._deps()
+    settings_service.configure_settings_dependencies(
+        replace_settings_dependencies(
+            get_all_settings=slow_get_all_settings,
+            update_settings=update_settings,
+        )
+    )
+    try:
+        masked_writer = threading.Thread(
+            target=lambda: settings_service.update_system_settings(
+                settings_service.SettingsUpdate(
+                    settings={"llm_api_key": settings_service.MASKED_SETTINGS_VALUE}
+                )
+            )
+        )
+        masked_writer.start()
+        time.sleep(0.05)
+        real_writer = threading.Thread(
+            target=lambda: settings_service.update_system_settings(
+                settings_service.SettingsUpdate(settings={"llm_api_key": "K2"})
+            )
+        )
+        real_writer.start()
+        masked_writer.join(5)
+        real_writer.join(5)
+    finally:
+        settings_service.configure_settings_dependencies(original)
+
+    assert store["llm_api_key"] == "K2"

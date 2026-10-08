@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PPT Visualization Studio - 内容可视化</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=20260929.1">
+  <link rel="apple-touch-icon" href="favicon.svg?v=20260929.1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=LXGW+Marker+Gothic&family=LXGW+WenKai+TC:wght@300;400;700&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@300;400;500;600;700;800&family=Noto+Serif+TC:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20261006.1">
+  <!-- Stitch screen contract: the supplied page code is the visual source of truth. -->
+  <link rel="stylesheet" href="stitch.css?v=20261006.26">
+  <!-- 勾画标注工作区(可选步骤 10)作用域样式,置于既有层之后,仅覆盖新面板。 -->
+  <link rel="stylesheet" href="annotations.css?v=20261006.25">
+  <link rel="stylesheet" href="workspace_content.css?v=20261006.5">
+</head>
+<body>
+
+  <!-- 顶部导航栏 -->
+  <header class="app-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <img src="assets/logo.svg?v=20260929.1" alt="PPT Studio Logo" class="logo-mark">
+      </div>
+      <span>PPT Studio</span>
+    </div>
+    <div class="header-divider" aria-hidden="true"></div>
+    <div id="project-info-header" style="display: none; font-weight: bold; font-size: 1.15rem; align-items: center; gap: 0.8rem;">
+      当前项目: <span id="current-project-name" style="color: var(--ink-color);">--</span>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <div class="account-switcher">
+        <button id="account-picker-trigger" class="account-picker" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="切换创作账号">
+          <span id="account-picker-name">默认创作账号</span>
+          <span class="account-picker-chevron" aria-hidden="true"></span>
+        </button>
+        <div id="account-picker-menu" class="account-picker-menu" role="listbox" aria-label="创作账号列表" hidden></div>
+        <select id="current-account-select" class="account-select-native" aria-label="当前创作账号" tabindex="-1"></select>
+        <button id="btn-create-account" class="secondary" type="button" title="创建创作账号">＋</button>
+        <button id="btn-edit-current-account" class="secondary account-edit-action" type="button" title="修改当前创作账号" aria-label="修改当前创作账号">✎</button>
+      </div>
+      <button id="btn-open-creation-config-management" class="secondary header-config-action" type="button">创作配置</button>
+      <button id="btn-open-model-management" class="secondary header-config-action" type="button">模型设置</button>
+      <button id="btn-open-agent" class="secondary header-config-action" type="button">Agent 对接</button>
+      <button id="btn-open-settings" style="display:none;">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        系统设置
+      </button>
+      <button id="btn-config-export" class="secondary" type="button" title="导出账号、模型、API/TTS 凭据、创作包和风格参考图">配置导出</button>
+      <button id="btn-config-import" class="secondary" type="button">配置导入</button>
+      <div id="ai-mode-segment" class="ai-mode-segment" style="display: none;" role="group" aria-label="分镜方式">
+        <button type="button" class="ai-mode-segment-btn" id="btn-ai-mode-auto">AI 辅助</button>
+        <button type="button" class="ai-mode-segment-btn" id="btn-ai-mode-manual">手动编排</button>
+      </div>
+      <button id="btn-back-home" class="secondary header-action header-return-home" hidden type="button">
+        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6"></path></svg>
+        返回首页
+      </button>
+    </div>
+  </header>
+
+  <!-- 全局 Container -->
+  <main id="app-viewport">
+
+    <!-- 首页: 项目管理 -->
+    <div id="page-home" class="main-content" style="padding: 2rem 4rem;">
+      <div class="home-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.62rem; gap: 1rem; flex-wrap: wrap;">
+        <h1 class="highlight-title">课程与项目</h1>
+        <div style="display: flex; gap: 1rem;">
+          <button id="btn-create-course" class="success" type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            新建课程
+          </button>
+          <button id="btn-create-project" class="secondary legacy-project-entry" type="button" title="新建一个独立视频项目">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            新建视频
+          </button>
+        </div>
+      </div>
+
+      <div id="project-list" class="project-grid">
+        <!-- 项目卡片动态插入 -->
+        <div class="card soft-outline" style="text-align: center; padding: 4rem 2rem;">
+          <p style="font-size: 1.2rem; margin-bottom: 1rem;">还没有课程，先新建课程，再添加章节和视频项目。</p>
+          <button class="success" onclick="document.getElementById('btn-create-course').click()">新建课程</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工作区: 步骤条向导 + 主工作区 -->
+    <div id="page-workspace" class="app-container" style="display: none;">
+
+      <!-- 左侧步骤条 -->
+      <aside class="sidebar">
+        <div class="step-state-legend" aria-label="步骤状态示例">
+          <span><i class="legend-dot legend-done" aria-hidden="true"></i>已完成</span>
+          <span><i class="legend-dot legend-current" aria-hidden="true"></i>进行中</span>
+          <span><i class="legend-dot legend-pending" aria-hidden="true"></i>待完成</span>
+        </div>
+        <ul class="stepper">
+          <li class="step-item active" data-step="1">
+            <div class="step-num">1</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"></path><path d="M14 2v5h5M9 12h7M9 16h7"></path></svg></div>
+            <div class="step-label">导入文章</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+          <li class="step-item" data-step="2">
+            <div class="step-num">2</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8 4-8 4-8-4 8-4z"></path><path d="m4 12 8 4 8-4M4 17l8 4 8-4"></path></svg></div>
+            <div class="step-label">分镜规划</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+          <li class="step-item" data-step="3">
+            <div class="step-num">3</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18h1.3a2 2 0 0 0 0-4H12a1.7 1.7 0 0 1 0-3.4h2.2A6.8 6.8 0 0 0 12 3z"></path><circle cx="7.5" cy="10" r="1"></circle><circle cx="10" cy="6.8" r="1"></circle><circle cx="15" cy="7.2" r="1"></circle></svg></div>
+            <div class="step-label">图片生成</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+          <li class="step-item" data-step="5">
+            <div class="step-num">4</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 4.6-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.6 16 4 20z"></path><path d="m14.8 6.8 2.4 2.4"></path></svg></div>
+            <div class="step-label">AI Mask 标注</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+          <li class="step-item" data-step="6">
+            <div class="step-num">5</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"></path></svg></div>
+            <div class="step-label">旁白与音频</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+          <li class="step-item" data-step="10">
+            <div class="step-num">6</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 4.6-1L19.4 8.2a2.1 2.1 0 0 0-3-3L5.6 16 4 20z"></path><path d="m14.8 5.2 2.4 2.4"></path><circle cx="9" cy="13" r="2.2"></circle></svg></div>
+            <div class="step-label">勾画标注</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+          <li class="step-item" data-step="9">
+            <div class="step-num">7</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg></div>
+            <div class="step-label">数字人讲解</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+          <li class="step-item" data-step="8">
+            <div class="step-num">8</div>
+            <div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="15" height="14" rx="3"></rect><path d="m10 9 4 3-4 3zM18 10l3-2v8l-3-2"></path></svg></div>
+            <div class="step-label">作品输出</div>
+            <span class="step-complete" aria-hidden="true">✓</span>
+          </li>
+        </ul>
+        <div id="project-activity-status" class="project-activity-status" role="status" aria-live="polite"></div>
+      </aside>
+
+      <!-- 右侧主展示区 -->
+      <section class="main-content" id="workspace-main">
+
+        <!-- ==================== 步骤 1: 导入文章 ==================== -->
+        <div id="step-panel-1" class="step-panel" style="display: none;">
+          <div class="step1-heading-row workflow-header workflow-header--titlebar">
+            <h2 class="highlight-title workflow-title">准备文章</h2>
+            <div class="step1-heading-actions">
+              <button id="step1-btn-system-content" class="secondary" type="button">内容创作prompt</button>
+              <span class="workflow-titlebar-divider" aria-hidden="true"></span>
+              <button id="step1-btn-submit" class="success ws-primary" type="button" title="保存文章并进入分镜规划">
+                进入分镜规划
+              </button>
+            </div>
+          </div>
+          <div class="step1-workflow-tabs">
+            <div class="step1-mode-switch" data-active-mode="article" role="tablist" aria-label="文章来源">
+              <button id="step1-mode-article" class="step1-mode-button active" type="button" data-step1-mode="article" role="tab" aria-selected="true">
+                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z"></path></svg>
+                导入文章
+              </button>
+              <button id="step1-mode-topic" class="step1-mode-button" type="button" data-step1-mode="topic" role="tab" aria-selected="false">
+                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586Z"></path></svg>
+                输入话题
+              </button>
+            </div>
+          </div>
+          <div class="card step1-content-card">
+            <div id="step1-import-view" class="step1-content-view step1-import-view">
+              <div id="step1-editor-shell" class="step1-editor-shell">
+                <div id="step1-markdown-editor" class="step1-markdown-editor markdown-editor" contenteditable="true" role="textbox" aria-label="文章 Markdown 编辑器" aria-multiline="true" data-placeholder="# 在这里粘贴您的文章..."></div>
+                <textarea id="step1-article-input" class="step1-source-textarea" rows="1" placeholder="# 在这里粘贴您的文章..." aria-hidden="true" tabindex="-1"></textarea>
+                <span id="step1-status-hint" class="step1-status-hint" aria-live="polite" hidden></span>
+              </div>
+            </div>
+            <div id="step1-topic-view" class="step1-content-view step1-topic-view" style="display:none;">
+              <div id="step1-topic-panel" class="step1-topic-panel">
+              <label for="step1-topic-input" class="step1-topic-visually-hidden">话题</label>
+              <div class="step1-topic-input-row">
+                <div class="step1-topic-input-wrap">
+                  <textarea id="step1-topic-input" rows="1" maxlength="500"></textarea>
+                </div>
+                <button id="step1-btn-generate-article" class="success" type="button">
+                  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z"></path></svg>
+                  AI 生成文章
+                </button>
+              </div>
+            </div>
+              <div id="step1-topic-result-header" class="step1-topic-result-header">
+                <div class="step1-topic-result-title"><span class="step1-topic-result-accent"></span><span>文章内容</span><span id="step1-article-count" class="step1-article-count">待生成</span></div>
+                <button id="step1-copy-article" class="step1-copy-article" type="button" disabled>
+                  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1M8 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M8 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 0h2a2 2 0 0 1 2 2v3m2 4H10m0 0 3-3m-3 3 3 3"></path></svg>
+                  复制全文
+                </button>
+              </div>
+              <div id="step1-topic-editor-slot" class="step1-topic-editor-slot"></div>
+            </div>
+          </div>
+
+          <!-- 保存结果展示区（隐藏不展示，保留 DOM 兼容 JS 逻辑） -->
+          <div id="step1-result-box" style="display: none !important;">
+            <input type="hidden" id="step1-res-title">
+            <input type="hidden" id="step1-res-summary">
+          </div>
+        </div>
+
+        <!-- ==================== 步骤 2: 分镜规划 ==================== -->
+        <div id="step-panel-2" class="step-panel" style="display: none;">
+
+          <!-- 粘性吸顶栏容器：合并按钮与缩略图，使用不透明背景挡住滚上来的正文 -->
+          <div class="step2-sticky-header workflow-header workflow-header--tabs">
+            <div class="workflow-titlebar">
+              <div class="workflow-titlebar-actions">
+                <h2 class="highlight-title workflow-title">分镜规划</h2>
+                <button id="step2-btn-script-prompt" class="secondary">
+                  演讲稿 Prompt
+                </button>
+                <button id="step2-btn-visual-prompt" class="secondary">
+                  可视化 Prompt
+                </button>
+                <span class="workflow-titlebar-divider" aria-hidden="true"></span>
+                <button id="step2-btn-save" class="secondary" style="display: none;">
+                  批量删除
+                </button>
+                <button id="step2-btn-batch-import" class="secondary" style="display: none;">
+                  批量导入
+                </button>
+                <button id="step2-btn-add-slide" class="secondary" style="display: none;">
+                  添加幻灯片
+                </button>
+                <button id="step2-btn-generate-script" class="secondary" type="button">
+                  <span class="btn-label">生成演讲稿</span>
+                </button>
+                <button id="step2-btn-generate-visual" class="secondary" type="button" disabled>
+                  <span class="btn-label">内容可视化</span>
+                </button>
+                <span id="step2-autosave-status" class="step2-autosave-status"></span>
+              </div>
+              <button class="btn-next-step success ws-primary" id="step2-btn-next" style="display: none;" title="完成每页演讲稿与画面可视化后，可进入图片生成">
+                进入图片生成
+              </button>
+            </div>
+
+          </div>
+
+          <!-- 页签随内容滚动，标题栏单独吸顶。 -->
+          <div id="step2-thumbs" class="slides-thumbnail-container workflow-tabs" style="display: none;"></div>
+
+          <div id="step2-loading" class="card" style="display: none; text-align: center; padding: 3rem;">
+            <div class="loading-spinner"></div>
+            <p style="font-size: 1.2rem; margin-top: 1rem;">大模型正在拆解分镜，请稍候…通常需要 30～90 秒，超长文章可能更久</p>
+          </div>
+          <div id="step2-generation-status" class="step2-generation-status" role="status" aria-live="polite" style="display:none;"></div>
+
+          <section id="step2-script-review" class="card step2-script-review" style="display:none;">
+            <div class="step2-stage step2-stage--script">
+              <div class="step2-stage-head">
+                <span class="step-stage-badge step-stage-badge--one" aria-hidden="true">1</span>
+                <h3 class="step2-stage-title">第一步：演讲稿</h3>
+                <span id="step2-script-task-status"></span>
+                <span class="step2-word-count" data-step2-word-count></span>
+                <div class="step2-script-review-actions">
+                  <button id="step2-btn-regenerate-script" class="secondary" type="button">重新生成演讲稿</button>
+                </div>
+              </div>
+              <div id="step2-script-slides" class="step2-script-slides"></div>
+            </div>
+            <div class="step2-stage step2-stage--visual">
+              <div class="step2-stage-head">
+                <span class="step-stage-badge step-stage-badge--two" aria-hidden="true">2</span>
+                <h3 class="step2-stage-title">第二步：画面与演讲片段（可视化）</h3>
+                <span id="step2-visual-task-status"></span>
+              </div>
+              <div id="step2-script-visuals" class="step2-script-visuals"></div>
+            </div>
+          </section>
+
+          <!-- 分镜列表编辑区（自动模式和手动模式共用） -->
+          <div id="step2-editor-area" style="display: none;">
+            <!-- 当前编辑的分镜内容 -->
+            <div id="step2-slide-card" class="step2-slide-editor">
+              <div id="step2-slide-fields" class="step2-slide-fields">
+                <label>
+                  <span>主标题</span>
+                  <input id="step2-slide-title-input" class="step2-soft-input" type="text">
+                </label>
+                <label class="step2-full-narration-field">
+                  <span>完整演讲稿</span>
+                  <textarea id="step2-slide-narration-input" class="step2-soft-input" rows="5" aria-describedby="step2-narration-source-hint"></textarea>
+                  <small id="step2-narration-source-hint">演讲稿以第一步生成的版本为准。需要修改时请返回该阶段编辑并重新生成可视化。</small>
+                </label>
+              </div>
+              <div id="step2-visual-narration-map" class="step2-vn-map" aria-live="polite"></div>
+            </div>
+          </div>
+          <!-- 隐藏字段保留兼容 -->
+          <input type="hidden" id="step2-main-title">
+          <input type="hidden" id="step2-core-message">
+        </div>
+
+        <!-- ==================== 步骤 3: 图片生成与上传 ==================== -->
+        <div id="step-panel-3" class="step-panel" style="display: none;">
+          <!-- 顶部控制栏 -->
+          <div class="step3-toolbar-row workflow-header workflow-header--titlebar">
+            <h2 class="highlight-title workflow-title">图片生成与管理</h2>
+            <div class="workflow-toolbar">
+              <button id="step3-btn-prompt-settings" class="secondary" type="button">
+                生图 Prompt
+              </button>
+              <span class="workflow-titlebar-divider" aria-hidden="true"></span>
+              <button id="step3-btn-copy-prompts" class="secondary">
+                复制提示词
+              </button>
+
+              <button id="step3-btn-style" class="secondary" title="图片风格设置">
+                图片风格
+              </button>
+              <button id="step3-btn-ip-character" class="secondary" type="button">
+                IP 形象
+              </button>
+              <label id="step3-batch-upload-label" class="btn secondary" style="cursor: pointer;">
+                批量上传
+                <input type="file" id="step3-batch-upload" accept="image/*" multiple style="display: none;">
+              </label>
+              <button id="step3-btn-batch-generate" class="secondary">
+                批量生图
+              </button>
+              <button id="step3-btn-stop-queue" class="secondary" type="button" hidden>停止后续排队</button>
+              <button id="step3-btn-confirm" class="success ws-primary" style="display: none;" title="确认全部页面图片并进入 AI Mask 标注">
+                进入 AI 标注
+              </button>
+            </div>
+          </div>
+
+          <!-- 全局图片管理网格：生成状态只呈现在每张图片卡片上（2026-10-06 裁决，顶部不放状态条）。 -->
+          <div id="step3-images-grid" class="step3-grid-four"></div>
+
+        </div>
+
+        <!-- ==================== 步骤 5: AI Mask 标注 ==================== -->
+        <div id="step-panel-5" class="step-panel" style="display: none;">
+          <div class="step5-mask-header workflow-header workflow-header--stacked">
+            <h2 class="highlight-title workflow-title">AI Mask 标注</h2>
+            <span id="step5-task-status" hidden></span>
+            <div class="step5-toolbar workflow-toolbar">
+              <span class="workflow-titlebar-divider" aria-hidden="true"></span>
+              <label class="step5-brush-control" title="调整橡皮大小">
+                <span>橡皮</span>
+                <input id="step5-eraser-size" type="range" min="100" max="200" value="100">
+                <span id="step5-eraser-size-value">100</span>
+              </label>
+              <label class="step5-brush-control" title="调整手动画笔大小">
+                <span>画笔</span>
+                <input id="step5-brush-size" type="range" min="100" max="200" value="140">
+                <span id="step5-brush-size-value">140</span>
+              </label>
+              <button id="step5-btn-fullscreen" class="secondary" type="button" title="全屏标注">
+                <span id="step5-fullscreen-label">全屏标注</span>
+              </button>
+              <button id="step5-btn-animation-settings" class="secondary">
+                动画设置
+              </button>
+              <button id="step5-btn-subtitle-settings" class="secondary">
+                字幕设置
+              </button>
+              <button id="step5-btn-clear-current" class="secondary" type="button">
+                清除当前页
+              </button>
+              <button id="step5-btn-semantic-blocks" class="secondary" type="button" title="基于分镜合约预识别语义块、旁白与画面内容，不会自动绘制 Mask">
+                <span class="btn-label">AI 语义分块</span>
+              </button>
+              <button id="step5-btn-confirm-next" class="success compact-action-btn ws-primary" type="button" title="确认标注并构建切层，进入旁白与音频">
+                进入旁白语音
+              </button>
+            </div>
+          </div>
+
+          <div id="step5-thumbs" class="slides-thumbnail-container workflow-tabs"></div>
+
+          <div class="workspace-split">
+            <!-- 左栏: Canvas 画布编辑 -->
+            <div class="workspace-left">
+              <div class="canvas-wrapper" id="canvas-container">
+                <div id="step5-zoom-stage" class="step5-zoom-stage">
+                  <img id="step5-bg-img" src="" alt="Slide Background">
+                  <canvas id="step5-canvas" width="1920" height="1080"></canvas>
+                </div>
+                <div id="step5-tool-cursor" class="step5-tool-cursor" aria-hidden="true"></div>
+              </div>
+              <div id="step5-narration-panel" class="step5-narration-panel"></div>
+            </div>
+
+            <!-- 右栏: 标注块列表属性 -->
+            <div class="workspace-right">
+              <div class="step5-side-header">
+                <h3>AI 语块关联</h3>
+                <button id="step5-btn-new-block" class="secondary step5-add-block-btn" type="button">
+                  添加语块
+                </button>
+              </div>
+              <div id="step5-boxes-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <!-- 标注盒子表单 -->
+              </div>
+              <div class="step5-confirm-footer">
+                <div id="step5-confirm-status" class="step5-confirm-status" style="display: none;" role="status" aria-live="polite"></div>
+              </div>
+            </div>
+          </div>
+          <span id="step5-draft-status" class="step5-draft-floating" role="status" aria-live="polite"></span>
+        </div>
+
+        <!-- ==================== 步骤 6 + 7: 旁白与音频 ==================== -->
+        <div id="step-panel-6" class="step-panel" style="display: none;">
+          <div class="step6-compact-header workflow-header workflow-header--titlebar">
+            <h2 class="highlight-title workflow-title">旁白与音频</h2>
+            <div class="step6-header-actions workflow-toolbar">
+              <button id="step6-btn-ai-prompt" class="secondary compact-action-btn" type="button" title="编辑旁白 AI 停顿语气标注使用的提示词">AI 标注 Prompt</button>
+              <span class="workflow-titlebar-divider" aria-hidden="true"></span>
+              <button id="step6-btn-init" class="secondary" title="按最新分镜与画面同步旁白内容">
+                同步旁白
+              </button>
+              <button id="step6-btn-ai-annotate" class="secondary compact-action-btn" title="添加朗读停顿和轻量语气标签，保留原文正文">添加停顿与语气</button>
+              <button id="step6-btn-export-audio" class="secondary compact-action-btn" type="button" title="导出整段语音：拼接全部页面旁白为一整段 mp3，供离线生成数字人视频">导出整段语音</button>
+              <button id="step7-btn-force-all" class="secondary compact-action-btn" type="button" title="强制重生成全部：忽略缓存，重新生成所有页面音频">强制重生成</button>
+              <button id="step7-btn-synthesize" class="secondary compact-action-btn" title="检查并补齐音频：检查所有页面，只补生成旁白或语音配置发生变化的音频">
+                补齐音频
+              </button>
+              <button id="step6-btn-save-and-tts" class="secondary compact-action-btn" title="保存旁白后，只生成缺失或过期的页面音频；已有有效音频会跳过">
+                生成音频
+              </button>
+              <span id="step6-autosave-status" class="step6-autosave-status"></span>
+              <button id="step6-btn-audio-confirm-next" class="success compact-action-btn ws-primary" title="确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过">
+                <span id="step6-audio-confirm-label">进入勾画标注</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="step7-empty-state" class="step-audio-empty ws-empty">
+            尚未生成音频。编辑旁白后，点击“生成音频”。
+          </div>
+
+          <div id="step6-beats-list" class="step6-slides-stack"></div>
+        </div>
+
+        <!-- ==================== 步骤 10: 勾画标注（可选） ==================== -->
+        <div id="step-panel-10" class="step-panel" style="display: none;">
+          <div class="annotation-workspace">
+            <div class="annotation-header workflow-header workflow-header--titlebar">
+              <h2 class="highlight-title workflow-title">勾画标注</h2>
+              <span id="annotation-job-status" class="annotation-save-status" style="display:none;"></span>
+              <div class="annotation-header-actions workflow-toolbar">
+                <button id="annotation-btn-ai-all" class="secondary" type="button">AI 勾画所有页面</button>
+                <label class="annotation-enable-toggle">
+                  <input type="checkbox" id="annotation-enabled-toggle">
+                  <span class="annotation-switch-slider" aria-hidden="true"></span>
+                  <span>视频中启用勾画</span>
+                </label>
+                <span id="annotation-save-status" class="annotation-save-status" style="display:none;"></span>
+
+                <button id="step10-btn-next" class="success compact-action-btn ws-primary" type="button" title="进入数字人讲解步骤；数字人为可选步骤">进入数字人讲解
+                </button>
+              </div>
+            </div>
+
+            <div id="annotation-missing-state" class="annotation-missing card" style="display:none;">
+              <div id="annotation-missing-reason"></div>
+              <div class="annotation-missing-actions">
+                <button id="annotation-btn-goto-images" class="secondary" type="button">去生成图片</button>
+                <button id="annotation-btn-goto-narration" class="secondary" type="button">去编辑旁白</button>
+              </div>
+            </div>
+
+            <div id="annotation-workspace-body" style="display:none;">
+              <ol class="annotation-flow" aria-label="勾画操作流程">
+                <li data-annotation-phase="1"><span class="annotation-flow-number">1</span><div><strong>AI 自动勾画</strong><small>识别文字 · 选择重点 · 匹配语音</small></div></li>
+                <li data-annotation-phase="2"><span class="annotation-flow-number">2</span><div><strong>检查画面与语音</strong><small>选中勾画调整，播放预览检查时机</small></div></li>
+                <li data-annotation-phase="3"><span class="annotation-flow-number">3</span><div><strong>确认本页</strong><small>保存结果，再切换下一页</small></div></li>
+              </ol>
+              <div id="annotation-thumb-strip" class="annotation-thumb-strip"></div>
+              <div class="annotation-columns">
+                <div class="annotation-canvas-pane card">
+                  <div class="annotation-pane-title annotation-pane-title-row"><span>画面</span><small>点击勾画结果，查看对应位置</small></div>
+                  <div class="annotation-canvas-toolbar annotation-operation-toolbar">
+                    <button id="annotation-btn-detect" class="secondary compact-action-btn" type="button">识别文字</button>
+                    <button id="annotation-btn-align" class="secondary compact-action-btn" type="button">定位音频文字</button>
+
+                    <button id="annotation-btn-undo" class="secondary compact-action-btn" type="button">撤销</button>
+                    <button id="annotation-btn-redo" class="secondary compact-action-btn" type="button">重做</button>
+                    <button id="annotation-btn-preview" class="secondary compact-action-btn" type="button">同步预览</button>
+                  </div>
+                  <div class="annotation-canvas-frame" id="annotation-canvas-frame">
+                    <img id="annotation-canvas-image" alt="页面图">
+                    <svg id="annotation-canvas-overlay" class="annotation-canvas-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+                    <div id="annotation-region-ghost" class="annotation-region-ghost" style="display:none;"></div>
+                  </div>
+                  <section class="annotation-manual-tools" aria-labelledby="annotation-manual-title"><h3 id="annotation-manual-title" class="annotation-expanded-title">手动调整勾画</h3><p class="annotation-manual-hint">新增勾画：先在右侧关联讲稿，再框选区域或自由绘制。修改已有勾画：先点右侧对应条目。</p><div class="annotation-canvas-toolbar annotation-drawing-toolbar">
+                    <button id="annotation-btn-select" class="secondary compact-action-btn" type="button">选择/编辑</button>
+                    <button id="annotation-btn-region" class="secondary compact-action-btn" type="button">框选区域</button>
+                    <button id="annotation-btn-freehand" class="secondary compact-action-btn" type="button">自由画笔</button>
+                    <button id="annotation-btn-finish-freehand" class="secondary compact-action-btn" type="button" hidden>完成绘制</button>
+                    <label class="annotation-tool-style">新标注样式
+                      <select id="annotation-new-style">
+                        <option value="ellipse">手写圈</option>
+                        <option value="underline">横线</option>
+                        <option value="highlighter" selected>荧光笔</option>
+                      </select>
+                    </label>
+                    <label class="annotation-tool-style">AI 重点密度
+                      <select id="annotation-ai-emphasis">
+                        <option value="weak">少量</option>
+                        <option value="moderate" selected>标准</option>
+                        <option value="strong">较多</option>
+                      </select>
+                    </label>
+                  </div></section>
+
+                </div>
+                <div class="annotation-review-column"><div class="annotation-list-pane card">
+                  <div class="annotation-pane-title annotation-pane-title-row">
+                    <span>勾画结果</span><small id="annotation-result-count"></small>
+                  </div>
+                  <p id="annotation-next-action" class="annotation-next-action"></p>
+                  <div class="annotation-auto-actions"><button id="annotation-btn-ai-plan" class="success compact-action-btn" type="button">AI 勾画本页</button></div>
+                  <div id="annotation-stage-feedback" class="annotation-stage-feedback" role="status" hidden></div>
+                  <div id="annotation-items" class="annotation-items"></div>
+                  <div id="annotation-item-editor" class="annotation-item-editor" style="display:none;"></div>
+                  <div class="annotation-confirm-row"><span id="annotation-confirm-hint">检查预览后确认当前页</span><button id="annotation-btn-confirm-page" class="success compact-action-btn" type="button" disabled>确认本页</button></div>
+                </div>
+                <section class="annotation-narration-pane card" aria-labelledby="annotation-link-title"><h3 id="annotation-link-title" class="annotation-expanded-title">手动关联讲稿与文字</h3><p class="annotation-manual-hint">先选讲稿中的词句，再点画面文字或框选区域。</p>
+                  <div class="annotation-pane-title">本页讲稿</div>
+                  <div id="annotation-narration-beats" class="annotation-narration-beats"></div>
+                  <div class="annotation-pane-title" style="margin-top:0.8rem;">文字候选</div>
+                  <div id="annotation-candidates" class="annotation-candidates"></div>
+                </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 步骤 9: 数字人讲解（可选） ==================== -->
+        <div id="step-panel-9" class="step-panel" style="display: none;">
+          <div class="step9-header workflow-header workflow-header--titlebar">
+            <h2 class="highlight-title workflow-title">数字人讲解</h2>
+            <div class="step9-header-actions workflow-toolbar">
+              <button id="step9-btn-skip" class="secondary compact-action-btn ws-primary" type="button" title="保留当前数字人设置并进入作品输出">进入作品输出
+              </button>
+            </div>
+          </div>
+                    <!-- ==================== 数字人讲解 ==================== -->
+          <div id="digital-human-panel" class="dh-panel card soft-outline" style="margin-top: 1.5rem;">
+            <div class="dh-panel-header">
+              <div class="dh-panel-title">
+                <h3 style="margin: 0;">数字人配置</h3>
+                <span id="dh-service-status" class="dh-service-status"></span>
+              </div>
+              <label class="dh-enable-toggle">
+                <input type="checkbox" id="dh-enabled">
+                <span class="dh-switch-slider"></span>
+                <span>启用数字人讲解</span>
+              </label>
+            </div>
+            <div id="dh-panel-body" class="dh-panel-body" style="display: none;">
+              <div class="dh-settings-title">参数设置</div>
+              <div class="dh-grid">
+                <div class="dh-field">
+                  <div class="dh-field-label">① 数字人生成方式</div>
+                  <div class="dh-mode-toggle">
+                    <button type="button" id="dh-tab-comfyui" class="dh-tab-btn dh-tab-active" style="flex:1;">ComfyUI 生成</button>
+                    <button type="button" id="dh-tab-upload" class="dh-tab-btn" style="flex:1;">导入视频</button>
+                  </div>
+                  <!-- ComfyUI 模式面板 -->
+                  <div id="dh-mode-panel-comfyui">
+                    <div style="margin-bottom:0.6rem;">
+                      <label class="btn secondary dh-upload-btn" style="width:100%;">
+                        上传工作流 JSON
+                        <input type="file" id="dh-comfyui-workflow-file" accept=".json" style="display:none;">
+                      </label>
+                      <span id="dh-comfyui-workflow-status" class="dh-drag-hint" style="display:block; margin-top:0.3rem;">未上传工作流</span>
+                    </div>
+                    <label class="btn secondary dh-upload-btn" style="width:100%;">
+                      上传数字人形象图片
+                      <input type="file" id="dh-comfyui-avatar-file" accept="image/*" style="display:none;">
+                    </label>
+                    <span id="dh-comfyui-avatar-status" class="dh-drag-hint" style="display:block; margin-top:0.3rem;">未上传形象图片</span>
+                    <button id="dh-btn-generate-all" class="success" style="width:100%; margin-top:0.8rem;">生成全部页数字人</button>
+                  </div>
+                  <!-- 导入视频模式面板 -->
+                  <div id="dh-mode-panel-upload" style="display:none;">
+                    <label class="btn secondary dh-upload-btn" style="width:100%;">
+                      上传数字人视频
+                      <input type="file" id="dh-upload-video-file" accept="video/*" style="display:none;">
+                    </label>
+                    <span id="dh-upload-video-status" class="dh-drag-hint" style="display:block; margin-top:0.3rem;">未上传</span>
+                    <div class="dh-drag-hint" style="margin-top:0.6rem;">
+                      先用 HeyGem / Wan2.2 等工具离线生成讲师讲解视频，再上传到此处。导出整段语音后可用于离线生成。
+                    </div>
+                  </div>
+                  <div id="dh-slide-status" class="dh-slide-status"></div>
+                </div>
+                <div class="dh-field">
+                  <div class="dh-field-label">② 框选与缩放</div>
+                  <div class="dh-shape-toggle">
+                    <button type="button" data-dh-shape="circle" class="dh-shape-active">圆形</button>
+                    <button type="button" data-dh-shape="rect">矩形</button>
+                  </div>
+                  <div id="dh-video-ref-box" class="dh-video-ref-box" style="display:none;">
+                    <img id="dh-video-ref" alt="完整视频第一帧参考">
+                    <span class="dh-video-ref-label">完整视频第一帧（参考缩放与位置）</span>
+                  </div>
+                  <div id="dh-circle-canvas" class="dh-circle-canvas">
+                    <div id="dh-circle-layer" class="dh-circle-layer">
+                      <video id="dh-preview-video" muted loop playsinline></video>
+                    </div>
+                    <div id="dh-circle-resize" class="dh-circle-resize" title="拖动左上角调整框大小"></div>
+                  </div>
+                  <div class="dh-drag-hint" style="margin-top:0.4rem;">框内拖动=平移视频 · 框外拖动=移动位置 · 左上角手柄=调整大小</div>
+                </div>
+                <div class="dh-field">
+                  <div class="dh-field-label">③ 位置与缩放精调</div>
+                  <div class="dh-lock-row">
+                    <button type="button" id="dh-btn-lock" class="dh-lock-btn">固定当前布局</button>
+                    <span id="dh-lock-status" class="dh-lock-status">未固定</span>
+                  </div>
+                  <div class="dh-slider-group">
+                    <div class="dh-slider-row">
+                      <span class="dh-slider-label">框位置 X</span>
+                      <input type="range" id="dh-slider-cx" min="0" max="1" step="0.01" value="0.92">
+                      <span class="dh-slider-value" id="dh-val-cx">0.92</span>
+                    </div>
+                    <div class="dh-slider-row">
+                      <span class="dh-slider-label">框位置 Y</span>
+                      <input type="range" id="dh-slider-cy" min="0" max="1" step="0.01" value="0.92">
+                      <span class="dh-slider-value" id="dh-val-cy">0.92</span>
+                    </div>
+                    <div class="dh-slider-row">
+                      <span class="dh-slider-label">框大小</span>
+                      <input type="range" id="dh-slider-r" min="0.06" max="0.6" step="0.01" value="0.10">
+                      <span class="dh-slider-value" id="dh-val-r">0.10</span>
+                    </div>
+                    <div class="dh-slider-row">
+                      <span class="dh-slider-label">视频缩放</span>
+                      <input type="range" id="dh-slider-zoom" min="0.5" max="4" step="0.05" value="0.65">
+                      <span class="dh-slider-value" id="dh-val-zoom">65%</span>
+                    </div>
+                    <div class="dh-slider-row">
+                      <span class="dh-slider-label">视频偏移 X</span>
+                      <input type="range" id="dh-slider-ox" min="0" max="1" step="0.01" value="0.65">
+                      <span class="dh-slider-value" id="dh-val-ox">0.65</span>
+                    </div>
+                    <div class="dh-slider-row">
+                      <span class="dh-slider-label">视频偏移 Y</span>
+                      <input type="range" id="dh-slider-oy" min="0" max="1" step="0.01" value="0.75">
+                      <span class="dh-slider-value" id="dh-val-oy">0.75</span>
+                    </div>
+                  </div>
+                  <div class="dh-circle-info" id="dh-circle-info">
+                    圆框直径 <span id="dh-info-diameter">—</span> px · 中心 (<span id="dh-info-px">—</span>, <span id="dh-info-py">—</span>) px
+                  </div>
+                  <button id="dh-btn-save" class="secondary" style="width:100%; margin-top:0.8rem;">保存设置</button>
+                  <div id="dh-generate-status" class="dh-slide-status"></div>
+                  <div class="dh-audio-export">
+                    <div class="dh-field-label">④ 整段语音导出</div>
+                    <button id="dh-btn-export-audio" class="secondary" style="width:100%;">导出整段语音（拼接全课程）</button>
+                    <div id="dh-audio-export-status" class="dh-drag-hint"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 步骤 8: 作品输出 ==================== -->
+        <div id="step-panel-8" class="step-panel" style="display: none;">
+          <div class="step8-header workflow-header workflow-header--titlebar">
+            <div class="step8-output-title">
+              <h2 class="highlight-title workflow-title">作品输出</h2>
+              <span id="step8-pptx-readiness" class="step8-readiness" aria-live="polite"></span>
+            </div>
+            <div class="step8-header-actions workflow-toolbar">
+              <button id="step8-btn-download-srt" class="secondary compact-action-btn" type="button" disabled title="仅在点击后下载字幕文件">
+                下载字幕 SRT
+              </button>
+              <button id="step8-btn-pptx" class="secondary compact-action-btn" type="button">
+                生成 PPTX
+              </button>
+              <button id="step8-btn-render" class="secondary compact-action-btn" type="button">生成 MP4
+              </button>
+            </div>
+          </div>
+
+          <div id="step8-error-box" class="card soft-outline" style="display: none; margin-top: 1.5rem; border-color: #d73333; background: #fff4f4;">
+            <h3 id="step8-error-title" style="margin-bottom: 0.6rem;">输出失败</h3>
+            <p id="step8-error-message" style="white-space: pre-wrap; word-break: break-word;"></p>
+            <p id="step8-error-log-hint" style="margin-top: 0.8rem; font-size: 0.9rem;">详细阶段日志见项目目录下的 logs/pipeline.log。</p>
+          </div>
+
+          <div id="step8-loading" class="step-inline-loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span id="step8-loading-text">视频渲染中...</span>
+          </div>
+
+          <div id="step8-digital-human-status" class="card soft-outline" style="margin: 1rem 0; padding: 0.9rem 1rem;" aria-live="polite">
+            <strong>数字人讲解</strong>
+            <p id="step8-digital-human-message" class="config-editor-note" style="margin: 0.35rem 0 0;">正在读取数字人状态...</p>
+          </div>
+
+          <div id="step8-pptx-loading" class="step-inline-loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span id="step8-pptx-loading-text">PPTX 生成中...</span>
+          </div>
+
+          <div id="step8-result-box" class="step-plain-section" style="display: none;">
+            <h3 style="margin-bottom: 0.4rem;">视频输出</h3>
+            <div id="step8-video-list" class="step8-video-list"></div>
+          </div>
+
+          <div id="step8-pptx-result-box" class="step-plain-section step8-pptx-section" style="display: none;">
+            <div class="step8-section-heading">
+              <div>
+                <h3>PPTX 导出记录</h3>
+                <p>每页使用当前已确认的完整 Slide 图片，按分镜顺序生成 16:9 演示文稿。</p>
+              </div>
+            </div>
+            <div id="step8-pptx-list" class="step8-pptx-list"></div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal: 新建项目 -->
+  <div id="modal-create" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
+      <h3 class="highlight-title" style="margin-bottom: 1.2rem;">新建视频项目</h3>
+      <div style="margin-bottom: 1rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">项目名称:</label>
+        <input type="text" id="input-project-name" placeholder="请输入项目名称，如：AI大模型原理解析">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">项目描述:</label>
+        <textarea id="input-project-desc" rows="3" placeholder="请输入可选的项目描述"></textarea>
+      </div>
+      <div id="create-creation-config-section" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;" for="input-creation-config">创作配置包:</label>
+        <select id="input-creation-config" class="project-profile-native-select" data-select-menu-native="true" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: #fff;">
+          <option value="">不使用创作配置包</option>
+        </select>
+        <div id="create-creation-config-help" style="font-size: 0.85rem; color: var(--muted-color); margin-top: 0.4rem; line-height: 1.5;">
+          选择后会固定使用该配置包的最新版本；不选择则沿用当前项目创建方式。
+        </div>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">画面比例:</label>
+        <select id="input-project-canvas-profile" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: #fff;">
+          <option value="landscape_16_9" selected>横屏 16:9（1920×1080）</option>
+          <option value="portrait_9_16">竖屏 9:16（1080×1920）</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">画面后端:</label>
+        <select id="input-project-visual-backend" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: #fff;">
+          <option value="image" selected>图片管线（现有流程）</option>
+          <option value="html">HTML 场景渲染（实验版：仅分步制作 + 16:9）</option>
+        </select>
+        <div style="font-size: 0.85rem; color: var(--muted-color); margin-top: 0.4rem; line-height: 1.5;">
+          HTML 后端使用结构化场景渲染画面；创建后不可切换，仅支持分步制作与 16:9。
+        </div>
+      </div>
+      <div id="create-target-duration-section" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;" for="input-project-target-duration">目标视频时长:</label>
+        <select id="input-project-target-duration" class="project-profile-native-select" data-select-menu-native="true" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: #fff;">
+          <option value="" selected>不设置（默认）</option>
+          <option value="600">10 分钟</option><option value="570">9 分 30 秒</option><option value="540">9 分钟</option>
+          <option value="510">8 分 30 秒</option><option value="480">8 分钟</option><option value="450">7 分 30 秒</option>
+          <option value="420">7 分钟</option><option value="390">6 分 30 秒</option><option value="360">6 分钟</option>
+          <option value="330">5 分 30 秒</option><option value="300">5 分钟</option><option value="270">4 分 30 秒</option>
+          <option value="240">4 分钟</option><option value="210">3 分 30 秒</option><option value="180">3 分钟</option>
+          <option value="150">2 分 30 秒</option><option value="120">2 分钟</option><option value="90">1 分 30 秒</option>
+          <option value="60">1 分钟</option><option value="30">30 秒</option>
+        </select>
+        <div style="font-size: 0.85rem; color: var(--muted-color); margin-top: 0.4rem; line-height: 1.5;">仅在选择时约束 Step 2 演讲稿规划；不设置则按内容自由规划。</div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+        <button id="btn-create-cancel" class="secondary">取消</button>
+        <button id="btn-create-submit" class="success">确认新建</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal: 修改视频项目设定 -->
+  <div id="modal-edit-project" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
+      <h3 class="highlight-title" style="margin-bottom: 1.2rem;">修改视频设定</h3>
+      <input type="hidden" id="edit-project-id">
+      <div style="margin-bottom: 1rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">项目名称:</label>
+        <input type="text" id="edit-project-name" placeholder="请输入项目名称">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">项目描述:</label>
+        <textarea id="edit-project-desc" rows="3" placeholder="请输入可选的项目描述"></textarea>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label style="font-weight: bold; display: block; margin-bottom: 0.4rem;">AI 模式:</label>
+        <select id="edit-project-ai-mode" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: #fff;">
+          <option value="auto" selected>自动模式（AI 规划分镜 + 可视化 + Mask）</option>
+          <option value="manual">手动模式（自填标题与演讲稿，按需触发 AI）</option>
+        </select>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+        <button id="btn-edit-cancel" class="secondary" onclick="document.getElementById('modal-edit-project').style.display='none';">取消</button>
+        <button id="btn-edit-submit" class="success" onclick="saveEditProject()">保存修改</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 系统设置 -->
+  <div id="modal-settings" class="modal-overlay" style="display: none;">
+    <div class="modal-content settings-modal">
+      <h3 class="highlight-title" style="margin-bottom: 1.2rem;">
+        <svg class="icon" viewBox="0 0 24 24" style="margin-right: 0.2rem;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        系统设置
+      </h3>
+
+      <div class="tabs legacy-settings-tabs" style="display:none" aria-hidden="true">
+        <div class="tab-item active" data-tab="tab-llm">
+          <svg class="icon" viewBox="0 0 24 24" style="margin-right: 0.2rem;"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          文本模型
+        </div>
+        <div class="tab-item" data-tab="tab-image">
+          <svg class="icon" viewBox="0 0 24 24" style="margin-right: 0.2rem;"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.01445 19.1559 5.09238 19.3789 5.06456 19.5977C5.01915 19.9549 5 20.3197 5 20.69C5 21.4135 5.58654 22 6.31 22H12Z"></path><circle cx="7.5" cy="10.5" r="1.5" fill="currentColor"></circle><circle cx="11.5" cy="7.5" r="1.5" fill="currentColor"></circle><circle cx="16.5" cy="9.5" r="1.5" fill="currentColor"></circle><circle cx="15.5" cy="14.5" r="1.5" fill="currentColor"></circle></svg>
+          图片生成
+        </div>
+        <div class="tab-item" data-tab="tab-tts">
+          <svg class="icon" viewBox="0 0 24 24" style="margin-right: 0.2rem;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+          语音合成
+        </div>
+      </div>
+
+      <div class="tab-contents legacy-settings-content" style="display:none" aria-hidden="true">
+        <!-- Text LLM Tab -->
+        <div id="tab-llm" class="tab-pane">
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">供应商预设:</label>
+            <select id="setting-llm-provider">
+              <option value="openai">OpenAI</option>
+              <option value="newapi">New API / 自建中转</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="litellm">LiteLLM Proxy</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="volcengine">火山引擎方舟</option>
+              <option value="siliconflow">硅基流动</option>
+              <option value="dashscope">阿里云百炼兼容模式</option>
+              <option value="zhipu">智谱开放平台</option>
+              <option value="custom">自定义 OpenAI 兼容接口</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">接口地址 (Base URL):</label>
+            <input type="text" id="setting-llm-base-url" placeholder="https://api.openai.com/v1">
+          </div>
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">接口密钥 (API Key):</label>
+            <input type="password" id="setting-llm-api-key" placeholder="sk-...">
+          </div>
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">文本模型 (LLM Model):</label>
+            <input type="text" id="setting-llm-model" placeholder="gpt-4o-mini">
+          </div>
+          <div style="display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">采样温度 (Temperature):</label>
+              <input type="text" id="setting-llm-temp" placeholder="0.7">
+            </div>
+            <div style="flex: 1;">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">最大输出 (Max token):</label>
+              <input type="number" id="setting-llm-max-tokens" min="1024" max="64000" step="512" placeholder="50000">
+            </div>
+          </div>
+          <div style="margin-top: 1.2rem; display: flex; justify-content: flex-start;">
+            <button type="button" class="secondary" id="btn-test-llm" style="padding: 0.4rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+              测试连接
+            </button>
+          </div>
+          <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(17,24,39,0.1);">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">勾画标注 · 百度 OCR 密钥:</label>
+            <input type="password" id="setting-annotation-ocr-key" placeholder="bce-v3/ALTAK-.../...">
+            <small style="display:block; margin-top:0.3rem; color:#6b7280;">支持统一 API Key；使用 AK/SK 时，上方填 Access Key ID，下方填 Secret Access Key。</small>
+            <input type="password" id="setting-annotation-ocr-secret" placeholder="Secret Access Key（统一 API Key 方式留空）" autocomplete="new-password">
+          </div>
+        </div>
+
+        <!-- Image Tab -->
+        <div id="tab-image" class="tab-pane" style="display: none;">
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">接口地址 (Base URL):</label>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="text" id="setting-image-base-url" placeholder="https://api.openai.com/v1" style="flex: 1;">
+              <button class="secondary" onclick="copyLlmUrlToImage()" style="white-space: nowrap; font-size: 0.82rem; padding: 0.4rem 0.7rem; display: flex; align-items: center; gap: 0.3rem;">
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                同步文本 URL
+              </button>
+            </div>
+          </div>
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">接口密钥 (API Key):</label>
+            <input type="password" id="setting-image-api-key" placeholder="sk-...">
+          </div>
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">生图模型 (Model):</label>
+            <input type="text" id="setting-image-model" placeholder="gpt-image-1 / doubao-seedream-3-0-t2i">
+          </div>
+          <p style="font-size: 0.78rem; color: #888; margin-top: 0.2rem;">
+            图片比例由新建项目时的画面比例决定。火山/豆包 Seedream 可填写方舟模型 ID，接口地址通常为方舟兼容地址。
+          </p>
+          <div style="margin-top: 1.2rem; display: flex; justify-content: flex-start;">
+            <button type="button" class="secondary" id="btn-test-image" style="padding: 0.4rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+              测试连接
+            </button>
+          </div>
+        </div>
+
+        <!-- TTS Tab -->
+        <div id="tab-tts" class="tab-pane" style="display: none;">
+          <div style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">语音厂商 (Provider):</label>
+            <select id="setting-tts-provider">
+              <option value="minimax">MiniMax</option>
+              <option value="aliyun_cosyvoice">阿里 CosyVoice / DashScope</option>
+              <option value="tencent_tts">腾讯云 TTS</option>
+              <option value="volcengine_seed">火山/豆包 Seed Speech</option>
+              <option value="comfyui_tts">ComfyUI IndexTTS 2（本地）</option>
+            </select>
+          </div>
+          <div id="tts-comfyui-section" style="display: none; margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">ComfyUI 工作流（IndexTTS2，API 格式）:</label>
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <button type="button" class="secondary" id="btn-tts-comfyui-workflow" style="padding: 0.4rem 1rem; font-size: 0.85rem;">导入工作流 JSON</button>
+              <span id="tts-comfyui-workflow-status" style="font-size: 0.85rem; color: #888;">未导入</span>
+            </div>
+            <input type="file" id="tts-comfyui-workflow-file" accept=".json,application/json" style="display: none;">
+            <p style="font-size: 0.8rem; color: #888; margin-top: 0.4rem; line-height: 1.5;">
+              在 ComfyUI 中搭建 IndexTTS2 工作流，使用「Save (API Format)」导出 JSON 后导入即可。文本与参考音频由系统自动注入，其余参数（语速等）均以工作流 JSON 中的设置为准。ComfyUI 服务默认地址 http://127.0.0.1:8188。
+            </p>
+          </div>
+          <div id="tts-row-endpoint" style="margin-bottom: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">语音接口地址 (Endpoint):</label>
+            <input type="text" id="setting-tts-endpoint" placeholder="https://api.minimaxi.com/v1/t2a_async_v2">
+          </div>
+          <div id="tts-row-credentials" style="margin-bottom: 0.8rem; display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">API Key / SecretId:</label>
+              <input type="password" id="setting-tts-api-key" placeholder="API Key / Tencent SecretId">
+            </div>
+            <div style="flex: 1;">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">SecretKey（腾讯云）:</label>
+              <input type="password" id="setting-tts-secret-key" placeholder="Tencent SecretKey">
+            </div>
+          </div>
+          <div id="tts-row-model-voice" style="margin-bottom: 0.8rem; display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">语音模型 (Model):</label>
+              <input type="text" id="setting-tts-model" placeholder="speech-2.8-hd">
+            </div>
+            <div style="flex: 1;">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">音色标识 (Voice ID):</label>
+              <input type="text" id="setting-tts-voice-id" placeholder="Chinese (Mandarin)_Soft_Girl">
+            </div>
+          </div>
+          <div id="tts-row-clone-region" style="margin-bottom: 0.8rem; display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">Clone Voice ID（可选）:</label>
+              <input type="text" id="setting-tts-clone-voice-id" placeholder="克隆/复刻后的音色 ID">
+            </div>
+            <div style="flex: 1;">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">Region（可选）:</label>
+              <input type="text" id="setting-tts-region" placeholder="ap-guangzhou / cn-beijing">
+            </div>
+          </div>
+          <div style="display: flex; gap: 1rem;">
+            <div style="flex: 1;" id="tts-field-speed">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">语速 (0.5 - 2.0):</label>
+              <input type="text" id="setting-tts-speed" placeholder="1.2">
+            </div>
+            <div style="flex: 1;" id="tts-field-volume">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">音量 (0.5 - 2.0):</label>
+              <input type="text" id="setting-tts-volume" placeholder="1.0">
+            </div>
+            <div style="flex: 1;" id="tts-field-pitch">
+              <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">音调 (-12 - 12):</label>
+              <input type="text" id="setting-tts-pitch" placeholder="0">
+            </div>
+          </div>
+          <div id="tts-row-provider-extra" style="margin-top: 0.8rem;">
+            <label style="font-weight: bold; display: block; margin-bottom: 0.3rem;">Provider Extra JSON（可选）:</label>
+            <textarea id="setting-tts-provider-extra" rows="4" spellcheck="false" placeholder='{"appid":"火山 AppID","cluster":"volcano_tts","resource_id":"seed-tts-2.0"}'></textarea>
+          </div>
+          <div style="margin-top: 1.2rem; display: flex; justify-content: flex-start;">
+            <button type="button" class="secondary" id="btn-test-tts" style="padding: 0.4rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+              测试连接
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 任务并发（方案④）：跨项目后台任务的全局吞吐上限，独立于上方 legacy Tab 容器，始终可见 -->
+      <section class="soft-outline" id="settings-job-concurrency-section" style="padding:1rem; border-radius:12px; margin-top:1.2rem;">
+        <h4 style="margin-top:0;">任务并发</h4>
+        <p class="config-editor-note" style="margin:0.2rem 0 0.8rem;">控制多账号/多项目同时输出时的全局吞吐。超出的任务会自动排队，并在输出页显示“前面还有 N 个”。</p>
+        <div style="display:flex; flex-wrap:wrap; gap:1rem;">
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">同时渲染的视频数（1-3）</span>
+            <input id="setting-max-concurrent-renders" type="number" min="1" max="3" step="1" placeholder="1" inputmode="numeric">
+          </label>
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">同时合成的音频任务数（1-4）</span>
+            <input id="setting-tts-job-workers" type="number" min="1" max="4" step="1" placeholder="1" inputmode="numeric">
+          </label>
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">同时调用的大模型请求数（1-4）</span>
+            <input id="setting-llm-max-concurrency" type="number" min="1" max="4" step="1" placeholder="2" inputmode="numeric">
+          </label>
+        </div>
+        <h4 style="margin:1.2rem 0 0.2rem;">上游网关额度</h4>
+        <p class="config-editor-note" style="margin:0.2rem 0 0.8rem;">额度按<b>网关全局</b>计算，所有账号与项目共享同一份；超出即排队等待，不会失败。生图额度同时被参考图上传、任务提交和状态轮询消耗，因此“每分钟 500 次”不等于“每分钟 500 张图”。</p>
+        <div style="display:flex; flex-wrap:wrap; gap:1rem;">
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">生图网关请求上限/分钟</span>
+            <input id="setting-image-gateway-rpm" type="number" min="1" max="100000" step="1" placeholder="500" inputmode="numeric">
+          </label>
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">生图网关同时请求数（1-64）</span>
+            <input id="setting-image-gateway-concurrency" type="number" min="1" max="64" step="1" placeholder="12" inputmode="numeric">
+          </label>
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">语音网关请求上限/分钟</span>
+            <input id="setting-tts-gateway-rpm" type="number" min="1" max="600" step="1" placeholder="10" inputmode="numeric">
+          </label>
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">语音网关同时请求数（1-16）</span>
+            <input id="setting-tts-gateway-concurrency" type="number" min="1" max="16" step="1" placeholder="4" inputmode="numeric">
+          </label>
+        </div>
+        <p class="config-editor-note" style="margin:0.8rem 0 0;">排队超时上限（秒，5-3600）与总开关：把“网关治理开关”设为 0 可临时退回不限流行为。</p>
+        <div style="display:flex; flex-wrap:wrap; gap:1rem;">
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">排队超时上限（秒）</span>
+            <input id="setting-generation-queue-max-wait" type="number" min="5" max="3600" step="1" placeholder="600" inputmode="numeric">
+          </label>
+          <label style="flex:1; min-width:220px;">
+            <span style="font-weight:bold; display:block; margin-bottom:0.3rem;">网关治理开关（1 开 / 0 关）</span>
+            <input id="setting-generation-governor-enabled" type="number" min="0" max="1" step="1" placeholder="1" inputmode="numeric">
+          </label>
+        </div>
+      </section>
+
+      <div class="settings-footer-actions">
+        <!-- Compatibility hooks for older extensions; the visible entry points
+             are the two overview cards above to avoid duplicate actions. -->
+        <input id="settings-import-file" type="file" accept="application/zip,.zip,application/json,.json" style="display: none;">
+        <button id="btn-settings-cancel" class="secondary">取消</button>
+        <button id="btn-settings-save" class="success">保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 创作配置 -->
+  <div id="modal-creation-config-management" class="modal-overlay" style="display: none;">
+    <div class="modal-content config-editor-modal" role="dialog" aria-modal="true" aria-labelledby="creation-config-management-title" style="max-width: 1280px; width:min(1280px, calc(100vw - 32px));">
+      <div class="config-editor-scroll">
+        <div class="prompt-title-row">
+          <h3 id="creation-config-management-title" class="highlight-title">创作配置</h3>
+          <button id="btn-creation-config-management-close" class="icon-button" type="button" data-modal-close aria-label="关闭">×</button>
+        </div>
+        <div id="creation-config-management-body" class="creation-config-management-body">
+          <section class="soft-outline cc-split-grid" style="padding:1rem; border-radius:12px;">
+            <div class="cc-aside">
+            <h4 style="margin-top:0;">创作配置包</h4>
+            <section class="creation-config-existing-packages" aria-label="创作配置包">
+              <div id="creation-config-package-list"></div>
+            </section>
+            <label class="creation-config-name-field" for="creation-config-package-name">当前配置包名称<input id="creation-config-package-name" type="text" maxlength="80" placeholder="例如：科普账号长视频" aria-describedby="creation-config-editing-status"></label>
+            <p id="creation-config-editing-status" class="config-editor-note" aria-live="polite" hidden></p>
+            </div>
+            <div class="cc-main">
+            <nav class="creation-config-tabs" role="tablist" aria-label="创作配置分类">
+              <button id="creation-config-tab-models" type="button" role="tab" class="is-active" aria-controls="creation-config-panel-models" aria-selected="true" tabindex="0" data-creation-config-tab="models">基础与模型</button>
+              <button id="creation-config-tab-visual" type="button" role="tab" aria-controls="creation-config-panel-visual" aria-selected="false" tabindex="-1" data-creation-config-tab="visual">视觉与风格</button>
+              <button id="creation-config-tab-output" type="button" role="tab" aria-controls="creation-config-panel-output" aria-selected="false" tabindex="-1" data-creation-config-tab="output">输出与交付</button>
+              <button id="creation-config-tab-prompts" type="button" role="tab" aria-controls="creation-config-panel-prompts" aria-selected="false" tabindex="-1" data-creation-config-tab="prompts">提示词工程</button>
+            </nav>
+            <div id="creation-config-structured-editor" class="creation-config-structured-editor">
+              <section id="creation-config-panel-models" class="creation-config-section" role="tabpanel" aria-labelledby="creation-config-tab-models" data-creation-config-panel="models">
+                <h5>模型关联</h5>
+                <div id="creation-config-model-binding-fields" class="creation-config-model-binding-fields"></div>
+              </section>
+              <section id="creation-config-panel-visual" class="creation-config-section creation-config-image-style-section" role="tabpanel" aria-labelledby="creation-config-tab-visual" data-creation-config-panel="visual">
+                <div class="creation-config-section-heading">
+                  <h5>图片风格</h5>
+                  <div>
+                    <button id="btn-creation-config-create-style" class="secondary" type="button">新建风格</button>
+                  </div>
+                </div>
+                <div class="creation-config-image-style-grid">
+                  <label>风格资源
+                    <select id="creation-config-image-style-template" class="creation-config-native-select" aria-label="图片风格资源"></select>
+                  </label>
+                  <label>最低参考图数量
+                    <select id="creation-config-image-style-minimum">
+                      <option value="1">1 张</option>
+                      <option value="2">2 张</option>
+                      <option value="3">3 张</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="creation-config-image-style-cards" class="creation-config-image-style-cards" role="radiogroup" aria-label="选择图片风格"></div>
+                <div class="creation-config-policy-row" role="radiogroup" aria-label="参考图使用方式">
+                  <label class="creation-config-policy-card"><input type="radio" name="creation-config-reference-policy" value="required"><span><strong>必须使用</strong><small>参考图不足或模型不支持时停止生成</small></span></label>
+                  <label class="creation-config-policy-card"><input type="radio" name="creation-config-reference-policy" value="preferred" checked><span><strong>优先使用</strong><small>不可用时继续按风格提示词生成</small></span></label>
+                  <label class="creation-config-policy-card"><input type="radio" name="creation-config-reference-policy" value="text_only"><span><strong>仅提示词</strong><small>保留风格文字，不发送参考图片</small></span></label>
+                </div>
+                <div class="creation-config-mode-selector" role="radiogroup" aria-label="生成模式">
+                  <h6>生成模式</h6>
+                  <label class="creation-config-mode-card"><input type="radio" name="creation-config-automation-mode" value="auto" checked><span><strong>自动模式</strong><small>创建后连续推进流水线；实施中可以暂停，并在当前环节完成后停下。</small></span></label>
+                  <label class="creation-config-mode-card"><input type="radio" name="creation-config-automation-mode" value="manual"><span><strong>手动模式</strong><small>创建后进入第 1 步；图片、AI Mask、旁白与数字人等环节由你逐项完成。</small></span></label>
+                </div>
+              </section>
+              <section id="creation-config-panel-output" class="creation-config-section creation-config-section--options" role="tabpanel" aria-labelledby="creation-config-tab-output" data-creation-config-panel="output">
+                <div class="creation-config-option-group creation-config-output-group">
+                  <h5>输出设置</h5>
+                  <div class="creation-config-options-row creation-config-output-options" aria-label="输出类型">
+                    <label class="creation-config-check"><input data-creation-config-output="video" type="checkbox" checked> 视频</label>
+                    <label class="creation-config-check"><input data-creation-config-output="pptx" type="checkbox"> PPT</label>
+                    <label class="creation-config-check"><input id="creation-config-subtitle-enabled" type="checkbox"> 字幕</label>
+                  </div>
+                </div>
+                <div class="creation-config-option-group creation-config-subtitle-option">
+                  <h5>字幕样式</h5>
+                  <div class="creation-config-subtitle-details">
+                    <div class="creation-config-number-grid creation-config-subtitle-grid">
+                      <label>字体<select data-creation-config-subtitle="font_key">
+                        <option value="noto_sans_sc">Noto Sans SC（现代黑体）</option>
+                        <option value="noto_serif_sc">Noto Serif SC（现代宋体）</option>
+                        <option value="ma_shan_zheng">马善政毛笔体</option>
+                        <option value="zcool_xiaowei">站酷小薇体</option>
+                        <option value="zcool_qingke">站酷庆科黄油体</option>
+                        <option value="zcool_kuaile">站酷快乐体</option>
+                        <option value="long_cang">龙藏体</option>
+                        <option value="liu_jian_mao_cao">流江毛草体</option>
+                        <option value="zhi_mang_xing">知芒行书</option>
+                        <option value="lxgw_marker_gothic" selected>霞鹜漫黑</option>
+                        <option value="lxgw_wenkai_tc">霞鹜文楷（繁体）</option>
+                        <option value="noto_sans_tc">Noto Sans TC</option>
+                        <option value="noto_serif_tc">Noto Serif TC</option>
+                        <option value="lxgw_wenkai">霞鹜文楷</option>
+                      </select></label>
+                      <label>字号<input data-creation-config-subtitle="font_size" type="number" min="22" max="72" value="40"></label>
+                      <label>字重<input data-creation-config-subtitle="font_weight" type="number" min="300" max="800" step="100" value="400"></label>
+                      <label>距底部<input data-creation-config-subtitle="bottom" type="number" min="0" max="220" value="0"></label>
+                      <label>左右留白<input data-creation-config-subtitle="horizontal_margin" type="number" min="40" max="420" value="110"></label>
+                      <label title="相邻两句字幕的间隔小于该窗口时合并为同一页显示，避免字幕频繁闪切">分页MS（ms）<input data-creation-config-subtitle="paging_window_ms" type="number" min="600" max="2500" step="100" value="1300"></label>
+                      <label>最大行数<input data-creation-config-subtitle="max_lines" type="number" min="1" max="3" value="1"></label>
+                      <label>行高<input data-creation-config-subtitle="line_height" type="number" min="1" max="2" step="0.1" value="1.4"></label>
+                      <label>文字颜色<input data-creation-config-subtitle="color" type="color" value="#000000"></label>
+                      <label>高亮颜色<input data-creation-config-subtitle="highlight_color" type="color" value="#000000"></label>
+                    </div>
+                    <div class="creation-config-options-row creation-config-subtitle-highlight-row">
+                      <label class="creation-config-check"><input data-creation-config-subtitle="token_highlight" type="checkbox" checked> 启用逐字高亮</label>
+                    </div>
+                    <div class="creation-config-subtitle-preview">
+                      <div class="creation-config-subtitle-preview-stage">
+                        <span id="creation-config-subtitle-preview-text"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="creation-config-option-group creation-config-auto-options">
+                  <h5>自动模式配置</h5>
+                  <div class="creation-config-auto-options-grid">
+                    <div class="creation-config-pause-block">
+                      <h6>一键生成暂停点</h6>
+                      <div class="creation-config-pause-list" role="radiogroup" aria-label="一键生成暂停点">
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="storyboard"><span>分镜规划</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="images"><span>图片生成</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="ai_mask"><span>AI Mask 标注</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="narration"><span>旁白与音频</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="tts"><span>语音合成</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="annotation"><span>勾画标注</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="digital_human"><span>数字人讲解</span></label>
+                        <label class="creation-config-pause-item"><input type="radio" name="creation-config-pause-point" data-creation-config-pause="render"><span>作品输出</span></label>
+                      </div>
+                    </div>
+                    <div>
+                      <h6>AI 语音合成标注</h6>
+                      <div class="creation-config-options-row" role="radiogroup" aria-label="是否需要 AI 做语音合成标注">
+                        <label class="creation-config-check"><input type="radio" name="creation-config-narration-annotation" value="false" checked> 不需要</label>
+                        <label class="creation-config-check"><input type="radio" name="creation-config-narration-annotation" value="true"> 需要</label>
+                      </div>
+                    </div>
+                    <div>
+                      <h6>AI Mask 标注</h6>
+                      <div class="creation-config-options-row" role="radiogroup" aria-label="是否需要 AI 做元素 Mask 标注">
+                        <label class="creation-config-check"><input type="radio" name="creation-config-mask-annotation" value="false" checked> 不需要</label>
+                        <label class="creation-config-check"><input type="radio" name="creation-config-mask-annotation" value="true"> 需要</label>
+                      </div>
+                    </div>
+                    <div>
+                      <h6>勾画标注</h6>
+                      <div class="creation-config-options-row" role="radiogroup" aria-label="是否需要 AI 做勾画标注">
+                        <label class="creation-config-check"><input type="radio" name="creation-config-annotation-annotation" value="false" checked> 不需要</label>
+                        <label class="creation-config-check"><input type="radio" name="creation-config-annotation-annotation" value="true"> 需要</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="creation-config-option-group creation-config-option-group--runtime creation-config-concurrency-group">
+                  <h5>自动化并发</h5>
+                  <div class="creation-config-number-grid creation-config-concurrency-grid">
+                    <label><span>图片生成并发</span><input id="creation-config-image-concurrency" type="number" min="1" max="12" value="5" inputmode="numeric"><small>同一项目可同时生成的图片页数；总速率仍受全局生图网关额度约束。</small></label>
+                    <label><span>语音合成并发</span><input id="creation-config-tts-concurrency" type="number" min="1" max="10" value="4" inputmode="numeric"><small>第 5 步可同时提交给 TTS 的语音任务数；这是项目级请求上限，实际还会与全局网关额度取较小值。</small></label>
+                    <label><span>豆包语音合成并发</span><input id="creation-config-seed-audio-concurrency" type="number" min="1" max="5" value="5" inputmode="numeric"><small>仅豆包音频生成 1.0 使用；最大 5 个并发任务。</small></label>
+                    <label><span>MiniMax 每分钟上限</span><input id="creation-config-tts-rpm" type="number" min="1" max="600" value="10" inputmode="numeric"><small>本项目可用的 MiniMax 请求上限；实际还会受全局网关额度（默认 10/分钟）约束，超出即排队。</small></label>
+                  </div>
+                </div>
+                <div class="creation-config-option-group creation-config-option-group--runtime">
+                  <h5>视频渲染加速</h5>
+                  <label class="creation-config-render-field" aria-label="渲染方式"><select id="creation-config-render-acceleration"><option value="auto">自动检测 GPU（推荐）</option><option value="gpu">仅使用 GPU</option><option value="cpu">仅使用 CPU</option></select></label>
+                </div>
+              </section>
+              <section id="creation-config-panel-prompts" class="creation-config-section creation-config-prompts-section" role="tabpanel" aria-labelledby="creation-config-tab-prompts" data-creation-config-panel="prompts">
+                <h5>Prompt</h5>
+                <div id="creation-config-prompt-fields" class="creation-config-prompt-fields"></div>
+              </section>
+            </div>
+            <details class="creation-config-json-editor">
+              <summary>高级 JSON 编辑</summary>
+              <p class="config-editor-note">结构化表单与 JSON 会同步。直接修改 JSON 后点击“从 JSON 载入”以刷新表单。</p>
+              <label>配置内容 JSON<textarea id="creation-config-package-payload" rows="12" spellcheck="false">{}</textarea></label>
+              <button id="btn-creation-config-load-json" class="secondary" type="button">从 JSON 载入</button>
+            </details>
+            </div>
+            </section>
+        </div>
+        <div class="creation-config-package-actions">
+              <button id="btn-cancel-creation-config-edit" class="secondary" type="button">放弃修改</button>
+              <button id="btn-prepare-save-creation-config-as" class="secondary" type="button">另存为新配置</button>
+              <button id="btn-create-creation-config" class="success" type="button">保存当前修改</button>
+            </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 在创作配置中创建可复用图片风格。 -->
+  <div id="modal-creation-config-style" class="modal-overlay" style="display:none;">
+    <div class="modal-content creation-config-style-modal" role="dialog" aria-modal="true" aria-labelledby="creation-config-style-title">
+      <div class="modal-header-row">
+        <h3 id="creation-config-style-title" class="highlight-title">新建图片风格</h3>
+        <button id="btn-creation-config-style-close" class="icon-button" type="button" data-modal-close aria-label="关闭">×</button>
+      </div>
+      <p class="config-editor-note">填写风格名称和创作提示词；可选上传 1–3 张参考图。创建后会自动选中这个风格。</p>
+      <label class="form-field">风格名称<input id="creation-config-style-name" type="text" maxlength="120" placeholder="例如：轻松教学风"></label>
+      <label class="form-field">风格说明（可选）<input id="creation-config-style-summary" type="text" maxlength="500" placeholder="例如：低饱和蓝绿、亲和信息图"></label>
+      <label class="form-field">图片风格提示词<textarea id="creation-config-style-system-content" rows="8" maxlength="30000" spellcheck="false" placeholder="描述配色、构图、材质、氛围、字体气质与需要避免的内容。"></textarea></label>
+      <label class="form-field">参考图（可选，最多 3 张）<input id="creation-config-style-reference-files" type="file" accept="image/*" multiple></label>
+      <div id="creation-config-style-reference-preview" class="creation-config-style-reference-preview" aria-live="polite"></div>
+      <div class="modal-actions">
+        <button id="btn-creation-config-style-cancel" class="secondary" type="button">取消</button>
+        <button id="btn-creation-config-style-submit" class="success" type="button">创建并选用</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 模型设置。独立于创作配置，避免跨概念切换。 -->
+  <div id="modal-model-management" class="modal-overlay" style="display: none;">
+    <div class="modal-content config-editor-modal" role="dialog" aria-modal="true" aria-labelledby="model-management-title" style="max-width: 1080px; width:min(1080px, calc(100vw - 32px));">
+      <div class="config-editor-scroll">
+        <div class="prompt-title-row">
+          <h3 id="model-management-title" class="highlight-title">模型设置</h3>
+          <button id="btn-model-management-close-icon" class="icon-button" type="button" data-modal-close aria-label="关闭">×</button>
+        </div>
+        <p id="model-management-status" class="config-editor-note" aria-live="polite"></p>
+        <div class="mm-split">
+        <section class="model-library-section">
+          <div class="model-kind-tabs" role="tablist" aria-label="模型类型">
+            <button class="model-kind-tab is-active" type="button" data-model-kind="text" role="tab" aria-selected="true">文本模型</button>
+            <button class="model-kind-tab" type="button" data-model-kind="image" role="tab" aria-selected="false">图片模型</button>
+            <button class="model-kind-tab" type="button" data-model-kind="tts" role="tab" aria-selected="false">语音模型</button>
+          </div>
+          <div id="model-library-list" class="model-library-list"></div>
+        </section>
+        <section class="model-setup-card" aria-labelledby="model-setup-title">
+          <div class="model-setup-heading">
+            <div>
+              <h4 id="model-setup-title">新增文本模型</h4>
+              <p id="model-setup-description">使用 OpenAI 或任意兼容 OpenAI Chat Completions 的服务。</p>
+            </div>
+          </div>
+          <div class="model-setup-grid">
+            <label>显示名称<input id="model-form-name" type="text" maxlength="120" placeholder="例如：豆包写作模型"></label>
+            <label id="model-form-protocol-row">接入方式
+              <select id="model-form-protocol">
+                <option value="openai">OpenAI 兼容接口</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="newapi">New API / 自建中转</option>
+                <option value="litellm">LiteLLM Proxy</option>
+                <option value="toapis">ToAPIs 图片中转</option>
+                <option value="custom">自定义兼容接口</option>
+              </select>
+            </label>
+            <label id="model-form-endpoint-row">接口地址（Base URL）<input id="model-form-endpoint" type="url" maxlength="1000" placeholder="https://api.example.com/v1"></label>
+            <label id="model-form-api-key-row">API 密钥<input id="model-form-api-key" type="password" maxlength="2000" autocomplete="off" placeholder="保存后不会再次显示"></label>
+            <label id="model-form-model-row">模型 ID<input id="model-form-model" type="text" maxlength="160" placeholder="例如：gpt-4o-mini"></label>
+            <label id="model-form-text-context-window-row">上下文窗口（Token，可选）<input id="model-form-text-context-window" type="number" min="1024" max="2000000" step="1024" placeholder="例如：128000"></label>
+            <label id="model-form-text-max-tokens-row">单次最大输出（Token，可选）<input id="model-form-text-max-tokens" type="number" min="256" max="64000" step="256" placeholder="例如：24000"></label>
+            <label id="model-form-text-temperature-row">温度（可选）<input id="model-form-text-temperature" type="number" min="0" max="2" step="0.05" placeholder="例如：0.35"></label>
+            <label id="model-form-image-reference-row" hidden>参考图能力
+              <span class="model-inline-check"><input id="model-form-image-supports-references" type="checkbox" checked> 支持上传参考图生成</span>
+            </label>
+            <label id="model-form-image-reference-count-row" hidden>最多参考图
+              <select id="model-form-image-max-references"><option value="1">1 张</option><option value="2">2 张</option><option value="3" selected>3 张</option><option value="4">4 张</option><option value="6">6 张</option></select>
+            </label>
+            <label id="model-form-toapis-resolution-row" hidden>ToAPIs 分辨率
+              <select id="model-form-toapis-resolution"><option value="1k">1K</option><option value="2k" selected>2K</option><option value="4k">4K</option></select>
+            </label>
+            <label id="model-form-toapis-quality-row" hidden>ToAPIs 图片质量
+              <select id="model-form-toapis-quality"><option value="low">低（预览）</option><option value="medium">中（平衡）</option><option value="high" selected>高（正式出图）</option></select>
+            </label>
+            <label id="model-form-tts-provider-row" hidden>语音方式
+              <select id="model-form-tts-provider"><option value="minimax">MiniMax 云端语音</option><option value="volcengine_seed_audio">豆包音频生成 1.0（参考音频）</option><option value="comfyui_tts">ComfyUI / IndexTTS（本地）</option></select>
+            </label>
+          </div>
+          <div id="model-form-minimax" class="model-provider-panel" hidden>
+            <div class="model-setup-grid">
+              <label>MiniMax 接口地址<input id="model-form-minimax-endpoint" type="url" maxlength="1000" value="https://api.minimaxi.com/v1/t2a_async_v2"></label>
+              <label>API Token<input id="model-form-minimax-token" type="password" maxlength="2000" autocomplete="off" placeholder="保存后不会再次显示"></label>
+              <label>语音模型<input id="model-form-minimax-model" type="text" maxlength="160" value="speech-2.8-hd"></label>
+              <label>音色 ID<input id="model-form-minimax-voice-id" type="text" maxlength="200" placeholder="例如：Chinese (Mandarin)_News_Anchor"></label>
+              <label>语速<input id="model-form-minimax-speed" type="number" min="0.5" max="2" step="0.05" value="1" aria-describedby="model-form-minimax-controls-help"></label>
+              <label>音量<input id="model-form-minimax-volume" type="number" min="0" max="10" step="0.1" value="1" aria-describedby="model-form-minimax-controls-help"></label>
+              <label>音调<input id="model-form-minimax-pitch" type="number" min="-12" max="12" step="1" value="0" aria-describedby="model-form-minimax-controls-help"></label>
+            </div>
+            <p id="model-form-minimax-controls-help" class="config-editor-note">MiniMax 会在合成时使用语速、音量和音调；留在常用范围内可保持声音稳定。</p>
+          </div>
+          <div id="model-form-comfyui" class="model-provider-panel" hidden>
+            <label>ComfyUI 服务地址<input id="model-form-comfyui-endpoint" type="url" maxlength="1000" value="http://127.0.0.1:8188"></label>
+            <label>参考音频<input id="model-form-comfyui-reference" type="file" accept="audio/wav,audio/mpeg,audio/mp3,audio/ogg,.wav,.mp3,.pcm,.ogg"></label>
+            <div class="model-workflow-row">
+              <input id="model-form-comfyui-workflow-file" type="file" accept="application/json,.json" hidden>
+              <button id="btn-model-form-comfyui-workflow" class="secondary" type="button">导入 IndexTTS 工作流 JSON</button>
+              <span id="model-form-comfyui-workflow-status" class="config-editor-note" aria-live="polite"></span>
+            </div>
+            <p class="config-editor-note">参考音频会作为默认音色保存；每次合成时都会自动上传到 ComfyUI 并与旁白文本一同注入工作流。</p>
+          </div>
+          <div id="model-form-seed-audio" class="model-provider-panel" hidden>
+            <div class="model-setup-grid">
+              <label>接口地址<input id="model-form-seed-audio-endpoint" type="url" maxlength="1000" value="https://openspeech.bytedance.com/api/v3/tts/create"></label>
+              <label>API Key<input id="model-form-seed-audio-key" type="password" maxlength="2000" autocomplete="off" placeholder="保存后不会再次显示"></label>
+              <label>语音模型<input id="model-form-seed-audio-model" type="text" maxlength="160" value="seed-audio-1.0" readonly></label>
+              <label>参考音频<input id="model-form-seed-audio-reference" type="file" accept="audio/wav,audio/mpeg,audio/mp3,audio/ogg,.wav,.mp3,.pcm,.ogg"></label>
+              <label>语速<input id="model-form-seed-audio-speed" type="number" min="0.5" max="2" step="0.05" value="1"></label>
+              <label>音量<input id="model-form-seed-audio-volume" type="number" min="0.5" max="2" step="0.05" value="1"></label>
+              <label>音调<input id="model-form-seed-audio-pitch" type="number" min="-12" max="12" step="1" value="0"></label>
+              <label class="model-setup-grid-span-two">口播风格<input id="model-form-seed-audio-prompt-prefix" type="text" maxlength="300" value="参考此音频中的人物音色。一个人在做口播短视频，内容如下："></label>
+            </div>
+            <p class="config-editor-note">系统会自动绑定已上传的参考音频，并将口播风格置于旁白前。输出固定为 MP3 / 48kHz；字幕与水印不会发送。</p>
+          </div>
+          <p id="model-setup-editing-status" class="config-editor-note" aria-live="polite" hidden></p>
+        </section>
+        </div>
+        <div class="model-setup-actions">
+            <button id="btn-save-model" class="success" type="button">保存文本模型</button>
+            <button id="btn-cancel-model-edit" class="secondary" type="button" hidden>取消编辑</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 通用确认对话框（2026-10-06 重设计：图标徽章 + 语义化主按钮） -->
+  <div id="modal-confirm" class="modal-overlay" style="display: none;">
+    <div class="modal-content confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div class="confirm-modal-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <h3 id="confirm-title">操作确认</h3>
+      <p id="confirm-message"></p>
+      <div class="confirm-modal-actions">
+        <button id="btn-confirm-no" class="secondary" type="button">取消</button>
+        <button id="btn-confirm-yes" type="button">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-step3-ai" class="modal-overlay" style="display: none;">
+    <div id="step3-editor" class="modal-content step3-ai-modal" role="dialog" aria-modal="true" aria-labelledby="step3-ai-title">
+      <div class="step3-ai-header">
+        <h3 id="step3-ai-title">AI 生成图片：<span id="step3-slide-id-label" hidden>--</span><span id="step3-slide-display-label"></span></h3>
+        <button id="step3-btn-close-editor" class="secondary step3-ai-close" type="button" data-modal-close>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+          关闭
+        </button>
+      </div>
+      <div class="step3-ai-layout">
+        <section class="step3-ai-pane">
+          <div class="prompt-field-heading">
+            <label class="step3-ai-label" for="step3-prompt-input">生图提示词 (Prompt)</label>
+            <button class="prompt-help-button" type="button" data-prompt-help="step3-image" aria-label="查看图片生成 Prompt 的输入输出示例">?</button>
+          </div>
+          <textarea id="step3-prompt-input" rows="14"></textarea>
+          <button id="step3-btn-generate" class="success step3-ai-generate" type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.01445 19.1559 5.09238 19.3789 5.06456 19.5977C5.01915 19.9549 5 20.3197 5 20.69C5 21.4135 5.58654 22 6.31 22H12Z"></path><circle cx="7.5" cy="10.5" r="1.5" fill="currentColor"></circle><circle cx="11.5" cy="7.5" r="1.5" fill="currentColor"></circle><circle cx="16.5" cy="9.5" r="1.5" fill="currentColor"></circle><circle cx="15.5" cy="14.5" r="1.5" fill="currentColor"></circle></svg>
+            立即 AI 生成
+          </button>
+          <div id="step3-loading" class="step3-ai-loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>图片正在生成，请稍候...</p>
+          </div>
+        </section>
+        <section class="step3-ai-pane">
+          <div class="step3-ai-preview-heading">
+            <span id="step3-preview-label" class="step3-ai-label">当前图片预览</span>
+            <span id="step3-candidate-status" class="step3-candidate-status" style="display: none;">待确认</span>
+          </div>
+          <div id="step3-preview-box" class="soft-outline step3-ai-preview">
+            <span>暂无图片</span>
+          </div>
+          <div class="step3-ai-actions">
+            <button id="step3-btn-apply-candidate" class="success" type="button" style="display: none;">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+              替换原图
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-step3-prompt-settings" class="modal-overlay" style="display: none;">
+    <div class="modal-content config-editor-modal step3-prompt-settings-modal" role="dialog" aria-modal="true" aria-labelledby="step3-prompt-settings-title">
+      <div class="config-editor-scroll">
+        <div class="prompt-title-row">
+          <h3 id="step3-prompt-settings-title" class="highlight-title">图片生成 Prompt</h3>
+          <button class="prompt-help-button" type="button" data-prompt-help="step3-image" aria-label="查看图片生成 Prompt 的输入输出示例">?</button>
+          <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
+        </div>
+        <p class="config-editor-note">这里只编辑内容表达与构图方法。画布、标题区、正文区、字幕安全区和白底规则由服务端固定，不能被项目 Prompt 或风格模板覆盖。</p>
+        <label class="storyboard-config-field storyboard-rule-field">
+          <span>图片生成 · 创作指引（可编辑）</span>
+          <textarea id="step3-image-system-prompt" rows="16" spellcheck="false"></textarea>
+        </label>
+        <label class="storyboard-config-field storyboard-rule-field prompt-locked-field">
+          <span>图片生成 · 固定生产合同（系统锁定）</span>
+          <textarea id="step3-image-protected-rules" rows="10" readonly spellcheck="false"></textarea>
+        </label>
+        <label class="storyboard-config-field storyboard-rule-field">
+          <span>当前 Slide · 最小输入（只读）</span>
+          <textarea id="step3-image-input-preview" rows="10" readonly spellcheck="false"></textarea>
+        </label>
+        <label class="storyboard-config-field storyboard-rule-field">
+          <span>当前 Slide · 完整提示词（只读）</span>
+          <textarea id="step3-image-full-prompt" rows="18" readonly spellcheck="false"></textarea>
+        </label>
+      </div>
+      <div class="config-editor-actions">
+        <button id="btn-step3-prompt-reset" class="secondary" type="button">恢复默认</button>
+        <button id="btn-step3-prompt-cancel" class="secondary" type="button">取消</button>
+        <button id="btn-step3-prompt-save" class="success" type="button">保存当前 Prompt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== IP 形象管理 ==================== -->
+  <div id="modal-ip-character" class="modal-overlay" style="display: none;">
+    <div class="modal-content config-editor-modal ip-character-modal" role="dialog" aria-modal="true" aria-labelledby="ip-character-title">
+      <div class="config-editor-scroll">
+        <div class="prompt-title-row">
+          <h3 id="ip-character-title" class="highlight-title">IP 形象管理</h3>
+          <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
+        </div>
+        <p class="config-editor-note">为当前项目配置 IP 形象角色（最多 2 个）。</p>
+
+        <div class="ip-character-settings-card">
+          <label class="ip-character-toggle-bar">
+            <span class="ip-character-toggle-text">
+              <strong>启用 IP 形象融入</strong>
+              <small>开启后，下方配置的 IP 角色将自动融入生图画面</small>
+            </span>
+            <span class="ip-character-switch">
+              <input type="checkbox" id="ip-character-enabled">
+              <span class="ip-character-switch-slider"></span>
+            </span>
+          </label>
+          <div class="ip-character-scope-row">
+            <label class="storyboard-config-field ip-character-scope-field">
+              <span>应用范围</span>
+              <select id="ip-character-page-scope">
+                <option value="all">全部页面</option>
+                <option value="selected">仅指定页面</option>
+              </select>
+            </label>
+          </div>
+          <div id="ip-character-selected-row" class="ip-character-slide-panel" style="display:none;">
+            <div class="ip-character-slide-panel-hint">勾选需要融入 IP 形象的页面</div>
+            <div id="ip-character-slide-checklist" class="ip-character-slide-checklist"></div>
+          </div>
+        </div>
+
+        <div class="ip-character-section-header">
+          <span>IP 形象角色</span>
+          <small>最多 2 个，以参考图作为主要载体</small>
+        </div>
+        <div id="ip-character-list" class="ip-character-list"></div>
+        <button id="ip-character-btn-add" class="secondary ip-character-add-btn" type="button">+ 添加角色</button>
+
+        <details class="ip-character-template-block">
+          <summary class="ip-character-advanced-summary">
+            高级选项：自定义 IP 融入提示词模板
+          </summary>
+          <div class="ip-character-template-header">
+            <span class="storyboard-config-field" style="margin-bottom:0;">
+              <span>IP 融入提示词模板（{characters} 占位符会被角色列表替换）</span>
+            </span>
+            <button id="btn-ip-character-reset-template" class="secondary" type="button" style="margin-left:auto;">恢复默认模板</button>
+          </div>
+          <textarea id="ip-character-prompt-template" class="ip-character-input" rows="6" spellcheck="false" placeholder="请保持 {characters} 占位符；不要删除 <IPCharacterRequirements> 标记。"></textarea>
+        </details>
+      </div>
+      <div class="config-editor-actions">
+        <button id="btn-ip-character-cancel" class="secondary" type="button">关闭</button>
+        <button id="btn-ip-character-save-config" class="success" type="button">保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-step2-generate" class="modal-overlay" style="display: none;">
+    <div class="modal-content ai-generation-modal">
+      <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
+      <h3 class="highlight-title">生成演讲稿</h3>
+      <label class="ai-requirement-field">
+        <span>本次补充需求（可选）</span>
+        <textarea id="step2-generation-requirement" rows="8" placeholder="例如：控制在 6 页以内；先解释概念，再讲工作机制和实际应用；每页只讲一个重点，多用流程图和对比结构；旁白简洁，避免重复。"></textarea>
+      </label>
+      <div class="config-editor-actions">
+        <button id="btn-step2-generation-cancel" class="secondary" type="button">取消</button>
+        <button id="btn-step2-generation-confirm" class="success" type="button">生成演讲稿</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-step2-batch-import" class="modal-overlay" style="display: none;">
+    <div class="modal-content step2-batch-import-modal">
+      <button type="button" class="modal-corner-close" data-modal-close aria-label="关闭">×</button>
+      <h3 class="highlight-title">批量导入分镜</h3>
+      <p class="config-editor-note">手动模式专用。下载模板 → 按格式填写 → 上传 txt 文件。文件内容是 JSON 数组：每项含 main_title 与 segments（每段含 screen_text 画面文字、speech_segment 对应演讲片段）；也兼容旧的 main_title + narration 简式。</p>
+      <div class="step2-batch-import-actions">
+        <button id="step2-batch-import-download" class="secondary" type="button">
+          <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>
+          下载模板
+        </button>
+        <label class="btn secondary step2-batch-import-upload-label">
+          <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg>
+          选择 txt 文件
+          <input id="step2-batch-import-file" type="file" accept=".txt,text/plain" style="display: none;">
+        </label>
+      </div>
+      <div id="step2-batch-import-preview" class="step2-batch-import-preview" style="display: none;"></div>
+      <div class="config-editor-actions">
+        <button id="btn-step2-batch-import-cancel" class="secondary" type="button">取消</button>
+        <button id="btn-step2-batch-import-append" class="success" type="button" disabled>追加导入</button>
+        <button id="btn-step2-batch-import-overwrite" class="danger" type="button" disabled>覆盖导入</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-step6-ai-prompt" class="modal-overlay" style="display: none;">
+    <div class="modal-content config-editor-modal step6-ai-prompt-modal">
+      <div class="config-editor-scroll">
+        <div class="prompt-title-row">
+          <h3 class="highlight-title">旁白 AI 标注 Prompt</h3>
+          <button class="prompt-help-button" type="button" data-prompt-help="narration-annotation" aria-label="查看旁白 AI 标注的输入输出示例">?</button>
+          <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
+        </div>
+        <p class="config-editor-note">用于为第 5 步旁白添加 MiniMax 停顿与轻量语气标记。展示结构与分镜规划 Prompt 一致，修改后会应用到后续所有 AI 标注。</p>
+        <label class="storyboard-config-field storyboard-rule-field">
+          <span>AI 标注 · System Content</span>
+          <textarea id="step6-ai-system-prompt" rows="12" spellcheck="false"></textarea>
+        </label>
+        <label class="storyboard-config-field storyboard-rule-field">
+          <span>AI 标注 · Output Example</span>
+          <textarea id="step6-ai-output-example" rows="10" spellcheck="false"></textarea>
+        </label>
+        <label class="storyboard-config-field storyboard-rule-field">
+          <span>AI 标注 · 完整提示词（可直接复制）</span>
+          <textarea id="step6-ai-full-prompt" rows="16" readonly spellcheck="false"></textarea>
+        </label>
+      </div>
+      <div class="config-editor-actions">
+        <button id="btn-step6-ai-prompt-cancel" class="secondary" type="button">取消</button>
+        <button id="btn-step6-ai-prompt-save" class="success" type="button">保存当前 Prompt</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-storyboard-rules" class="modal-overlay" style="display: none;">
+    <div class="modal-content config-editor-modal">
+      <div class="config-editor-scroll">
+        <div class="prompt-title-row">
+          <h3 id="storyboard-prompt-modal-title" class="highlight-title">演讲稿 Prompt</h3>
+          <button id="step2-prompt-help" class="prompt-help-button" type="button" data-prompt-help="step2-script" aria-label="查看当前 Prompt 的输入输出示例">?</button>
+          <button type="button" class="icon-button" data-modal-close aria-label="关闭">×</button>
+        </div>
+        <div class="template-manager-bar step2-prompt-template-bar">
+          <label aria-label="Prompt 模板">
+            <select id="step2-prompt-template-select"></select>
+          </label>
+          <button id="btn-step2-prompt-template-load" class="secondary" type="button">载入模板</button>
+          <button id="btn-step2-prompt-template-delete" class="danger" type="button" disabled>删除模板</button>
+          <button id="btn-step2-prompt-template-new" class="secondary" type="button">新建模板</button>
+        </div>
+        <div id="step2-prompt-template-create-panel" class="step2-prompt-create-panel" style="display:none;">
+          <div class="step2-prompt-create-copy">
+            <strong>新建 <span id="step2-prompt-create-mode-label">演讲稿 Prompt</span> 模板</strong>
+            <span>填写模板名称，并在下方定义 System Content 与 Output Example。</span>
+          </div>
+          <label class="template-name-field">
+            模板名称
+            <input id="step2-prompt-template-name" type="text" maxlength="60" placeholder="例如：技术文章讲解模板">
+          </label>
+          <button id="btn-step2-prompt-template-create-cancel" class="secondary" type="button">取消新建</button>
+          <button id="btn-step2-prompt-template-save" class="success" type="button">创建模板</button>
+        </div>
+        <div id="step2-script-prompt-section">
+          <label class="storyboard-config-field storyboard-rule-field">
+            <span>演讲稿 Prompt · System Content</span>
+            <textarea id="step2-script-system-prompt" rows="10" spellcheck="false"></textarea>
+          </label>
+          <label class="storyboard-config-field storyboard-rule-field">
+            <span>演讲稿 Prompt · Output Example</span>
+            <textarea id="step2-script-output-example" rows="10" spellcheck="false"></textarea>
+          </label>
+          <label class="storyboard-config-field storyboard-rule-field">
+            <span>演讲稿 Prompt · 完整提示词（可直接复制）</span>
+            <textarea id="step2-script-full-prompt" rows="16" readonly spellcheck="false"></textarea>
+          </label>
+        </div>
+        <div id="step2-visual-prompt-section">
+          <label class="storyboard-config-field storyboard-rule-field">
+            <span>可视化 · System Content</span>
+            <textarea id="step2-visual-system-prompt" rows="10" spellcheck="false"></textarea>
+          </label>
+          <label class="storyboard-config-field storyboard-rule-field">
+            <span>可视化 · Output Example</span>
+            <textarea id="step2-visual-output-example" rows="10" spellcheck="false"></textarea>
+          </label>
+          <label class="storyboard-config-field storyboard-rule-field">
+            <span>可视化 · 完整提示词（可直接复制）</span>
+            <textarea id="step2-visual-full-prompt" rows="16" readonly spellcheck="false"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="config-editor-actions">
+        <button id="btn-step2-prompts-save" class="secondary">保存当前 Prompt</button>
+        <button id="btn-storyboard-rules-cancel" class="secondary">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-subtitle-settings" class="modal-overlay" style="display: none;">
+    <div class="modal-content subtitle-settings-modal">
+      <div class="subtitle-settings-header">
+        <div>
+          <h3 class="highlight-title">字幕样式与位置</h3>
+          <p class="config-editor-note">优先使用当前项目第一张 Slide；没有 Slide 时使用图片风格中的模板参考图。预览样式会直接进入最终视频。</p>
+        </div>
+        <button id="btn-subtitle-settings-close" class="secondary" type="button" data-modal-close>关闭</button>
+      </div>
+      <div class="subtitle-settings-layout">
+        <div class="subtitle-preview-stage">
+          <img id="subtitle-preview-image" alt="字幕背景预览">
+          <div id="subtitle-margin-left-shade" class="subtitle-margin-shade left"></div>
+          <div id="subtitle-margin-right-shade" class="subtitle-margin-shade right"></div>
+          <div id="subtitle-safe-width-guide">
+            <span>字幕可用宽度</span>
+          </div>
+          <div id="subtitle-preview-text">这是一段视频字幕效果预览</div>
+        </div>
+        <div class="subtitle-settings-controls">
+          <label class="subtitle-checkbox-label">
+            <input id="subtitle-enabled" type="checkbox" checked>
+            <span>在视频中显示字幕（关闭后仍生成音频和字幕时间轴）</span>
+          </label>
+          <label>
+            <span>预览字幕文字</span>
+            <input id="subtitle-sample-text" type="text" value="这是一段视频字幕效果预览">
+          </label>
+          <label>
+            <span>中文字体</span>
+            <select id="subtitle-font-key"></select>
+          </label>
+          <label>
+            <span>字号：<strong id="subtitle-font-size-value">38</strong> px</span>
+            <input id="subtitle-font-size" type="range" min="22" max="72" step="1" value="38">
+          </label>
+          <label>
+            <span>字体粗细：<strong id="subtitle-font-weight-value">500</strong></span>
+            <input id="subtitle-font-weight" type="range" min="300" max="800" step="100" value="500">
+          </label>
+          <label>
+            <span>上下位置（距底部）：<strong id="subtitle-bottom-value">18</strong> px</span>
+            <input id="subtitle-bottom" type="range" min="0" max="220" step="2" value="18">
+          </label>
+          <label>
+            <span>左右留白：<strong id="subtitle-margin-value">180</strong> px</span>
+            <input id="subtitle-horizontal-margin" type="range" min="40" max="420" step="10" value="180">
+          </label>
+          <label>
+            <span>字幕颜色：<strong id="subtitle-color-value">#111111</strong></span>
+            <input id="subtitle-color" type="color" value="#111111">
+          </label>
+          <label>
+            <span>高亮颜色：<strong id="subtitle-highlight-color-value">#1E3A8A</strong></span>
+            <input id="subtitle-highlight-color" type="color" value="#1E3A8A">
+          </label>
+          <label>
+            <span>分页MS：<strong id="subtitle-paging-window-value">1300</strong> ms</span>
+            <input id="subtitle-paging-window" type="range" min="600" max="2500" step="100" value="1300">
+          </label>
+          <label>
+            <span>最大行数：<strong id="subtitle-max-lines-value">2</strong> 行</span>
+            <input id="subtitle-max-lines" type="range" min="1" max="3" step="1" value="2">
+          </label>
+          <label class="subtitle-checkbox-label">
+            <input id="subtitle-token-highlight" type="checkbox" checked>
+            <span>启用逐字高亮（关闭则整页同色显示）</span>
+          </label>
+          <div class="subtitle-font-note">字体列表优先选择 SIL Open Font License 的开源中文字体；霞鹜文楷使用本机字体，未安装时自动回退。分页MS越小越接近逐句切换，越大越倾向合并多句显示。</div>
+        </div>
+      </div>
+      <div class="config-editor-actions">
+        <button id="btn-subtitle-settings-reset" class="secondary" type="button">恢复默认</button>
+        <button id="btn-subtitle-settings-save" class="success" type="button">保存字幕设置</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-animation-settings" class="modal-overlay" style="display: none;">
+    <div class="modal-content subtitle-settings-modal animation-settings-modal">
+      <div class="subtitle-settings-header">
+        <div>
+          <h3 class="highlight-title">统一动画设置</h3>
+          <p class="config-editor-note">当前设置会同步到全部 Slide 的全部语块。预览使用当前页已经涂抹的 Mask。</p>
+        </div>
+        <button id="btn-animation-settings-close" class="secondary" type="button" data-modal-close>关闭</button>
+      </div>
+      <div class="subtitle-settings-layout">
+        <div class="animation-preview-stage">
+          <canvas id="animation-preview-canvas" width="1920" height="1080"></canvas>
+          <div id="animation-preview-empty">当前页还没有可预览的 Mask</div>
+        </div>
+        <div class="subtitle-settings-controls">
+          <label>
+            <span>动画</span>
+            <select id="animation-setting-type"></select>
+          </label>
+          <label>
+            <span>时长：<strong id="animation-setting-duration-value">0.75</strong> 秒</span>
+            <input id="animation-setting-duration" type="range" min="0.2" max="3" step="0.05" value="0.75">
+          </label>
+          <button id="btn-animation-settings-preview" class="secondary" type="button">
+            <svg class="icon" viewBox="0 0 24 24"><polygon points="7 4 20 12 7 20 7 4"></polygon></svg>
+            预览当前页
+          </button>
+        </div>
+      </div>
+      <div class="config-editor-actions">
+        <button id="btn-animation-settings-reset" class="secondary" type="button">恢复默认</button>
+        <button id="btn-animation-settings-save" class="success" type="button">应用到全部语块</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- 主业务 JavaScript 脚本 -->
+  <script src="distribution_profile.js?v=20261007.1"></script>
+  <script src="flow.js?v=20261007.1"></script>
+  <script src="workflow_state.js?v=20261007.1"></script>
+  <script src="ui_foundation.js?v=20261006.18"></script>
+  <script src="api_client.js?v=20261005.1"></script>
+  <script src="artifact_repair.js?v=20261005.1"></script>
+  <script src="prompt_help.js?v=20261006.2"></script>
+  <script src="settings.js?v=20261007.1"></script>
+  <script src="projects.js?v=20260916.1"></script>
+  <script src="creation_config_management.js?v=20261007.1"></script>
+  <script src="select_menus.js?v=20260906.1"></script>
+  <script src="courses.js?v=20261007.1"></script>
+  <script src="article.js?v=20261006.17"></script>
+  <script src="storyboard.js?v=20261006.18"></script>
+  <script src="storyboard_prompts.js?v=20261006.2"></script>
+  <script src="images.js?v=20261006.20"></script>
+  <script src="image_prompts.js?v=20260801.1"></script>
+  <script src="ip_character_manager.js?v=20261005.1"></script>
+  <script src="mask_reveal.js?v=20260801.1"></script>
+  <script src="mask_workspace.js?v=20261006.17"></script>
+  <script src="mask_editor.js?v=20261006.1"></script>
+  <script src="subtitle_settings.js?v=20260801.1"></script>
+  <script src="narration_audio.js?v=20261007.1"></script>
+  <script src="annotation_playback.js?v=20260929.1"></script>
+  <script src="annotations_core.js?v=20260927.1"></script>
+  <script src="annotations_workspace.js?v=20261006.25"></script>
+  <script src="annotation_audio_calibration.js?v=20261006.2"></script>
+  <script src="annotations_editor.js?v=20261006.23"></script>
+  <script src="annotation_preview.js?v=20261006.24"></script>
+  <script src="video_controls.js?v=20261006.24"></script>
+  <script src="output_render.js?v=20261007.1"></script>
+  <script src="account_management.js?v=20261006.2"></script>
+  <script src="workspace_navigation.js?v=20261006.BCD2"></script>
+    <script src="static/html_review_panel.js" defer></script>
+  <script src="generation_controls.js?v=20261005.1"></script>
+  <script src="event_bindings.js?v=20261007.1"></script>
+  <script src="project_profile_extension.js?v=20261006.14"></script>
+  <script src="storyboard_background_extension.js?v=20261006.6"></script>
+  <script src="style_reference_manager_extension.js?v=20261005.1"></script>
+  <script src="ai_mask_auto_state.js?v=20260809.1"></script>
+  <script src="digital_human_panel.js?v=20261006.17"></script>
+  <script src="ai_mask_extension.js?v=20261006.17"></script>
+  <script src="one_click_extension.js?v=20261007.1"></script>
+</body>
+</html>

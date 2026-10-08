@@ -1,0 +1,428 @@
+"""Unified Pydantic models for all Agent-facing operations.
+
+These models are the SINGLE source of truth for request/response schemas.
+Agent API, MCP tools, and CLI commands all reference these models — never
+duplicate parameter definitions across layers.
+"""
+
+from __future__ import annotations
+
+from enum import Enum
+from typing import Any, Optional, Literal
+
+from pydantic import BaseModel, Field
+
+GenerationKind = Literal['storyboard_script', 'storyboard_visual', 'mask', 'tts', 'video']
+
+
+class GenerationStopRequest(BaseModel):
+    operation_id: str = Field(min_length=1, max_length=128)
+
+
+class GenerationControlResult(BaseModel):
+    active: bool
+    operation_id: Optional[str] = None
+    stop_requested: bool = False
+
+
+class GenerationStopResult(BaseModel):
+    accepted: bool
+    operation_id: str
+    message: str
+
+
+class IdentityResult(BaseModel):
+    account_id: str
+    account_name: str
+    scopes: list[str] = Field(default_factory=list)
+    authenticated: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Project models
+# ---------------------------------------------------------------------------
+
+class CanvasProfile(str, Enum):
+    landscape_16_9 = "landscape_16_9"
+    portrait_9_16 = "portrait_9_16"
+
+
+class AutomationMode(str, Enum):
+    auto = "auto"
+    manual = "manual"
+    agent = "agent"
+
+
+class ReviewPolicy(str, Enum):
+    none = "none"
+    images_and_video = "images_and_video"
+    all_stages = "all_stages"
+
+
+class ProductionMode(str, Enum):
+    one_click = "one_click"
+    guided = "guided"
+
+
+class PresentationMode(str, Enum):
+    full_frame = "full_frame"
+    reveal = "reveal"
+
+
+class VisualBackend(str, Enum):
+    image = "image"
+    html = "html"
+
+
+class ProjectCreateRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200, description="项目名称")
+    description: str = Field("", max_length=2000, description="项目描述")
+    canvas_profile: CanvasProfile = CanvasProfile.landscape_16_9
+    automation_mode: AutomationMode = AutomationMode.auto
+    review_policy: ReviewPolicy = ReviewPolicy.none
+    mask_enabled: bool = Field(False, description="旧版兼容字段；新项目默认整页展示")
+    production_mode: ProductionMode = ProductionMode.guided
+    presentation_mode: PresentationMode = PresentationMode.full_frame
+    visual_backend: VisualBackend = Field(
+        VisualBackend.image,
+        description="画面实现后端：image=原图片管线；html=结构化场景渲染（首发仅 guided+16:9，创建后不可切换）",
+    )
+    config_package_id: Optional[str] = Field(None, min_length=1, max_length=120, description="创作配置包 ID")
+    config_package_version: Optional[int] = Field(None, ge=1, description="创作配置包版本；不填时固定当前最新版本")
+    config_overrides: dict[str, Any] = Field(default_factory=dict, description="仅本项目的创作配置覆盖项")
+    course_id: Optional[str] = Field(None, min_length=1, max_length=120, description="项目所属课程 ID；不填则保留独立项目兼容模式")
+    chapter_id: Optional[str] = Field(None, min_length=1, max_length=120, description="项目所属章节 ID；填写时服务端验证课程与账号归属")
+    idempotency_key: Optional[str] = Field(None, description="幂等键，防止重复创建")
+
+
+class ProjectSummary(BaseModel):
+    project_id: str
+    name: str
+    description: str
+    canvas_profile: str
+    ai_mode: str
+    current_step: int
+    status: str
+    step_status: dict[str, str] = Field(default_factory=dict)
+    revision: int = Field(0, description="乐观锁版本号，每次写操作递增")
+    review_policy: str = Field("none", description="审查策略: none / images_and_video / all_stages")
+    mask_enabled: bool = Field(False, description="旧版渲染兼容标记；由 presentation_mode 同步")
+    production_mode: str = Field("guided", description="one_click / guided")
+    presentation_mode: str = Field("full_frame", description="full_frame / reveal")
+    visual_backend: str = Field("image", description="image / html；创建后不可切换")
+    creation_config: Optional[dict[str, Any]] = Field(None, description="项目固定使用的创作配置包版本摘要")
+    course_id: Optional[str] = None
+    chapter_id: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class ProjectCreateResult(BaseModel):
+    project: ProjectSummary
+    operation_id: str
+
+
+class ProjectListRequest(BaseModel):
+    status_filter: Optional[str] = Field(None, description="active / completed / all")
+    limit: int = Field(50, ge=1, le=200)
+
+
+class ProjectListResult(BaseModel):
+    projects: list[ProjectSummary]
+    total: int
+
+
+class ProjectGetResult(BaseModel):
+    project: ProjectSummary
+    has_article: bool = False
+    has_contract: bool = False
+    slide_ids: list[str] = Field(default_factory=list)
+
+
+class ProjectUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    ai_mode: Optional[str] = None
+    production_mode: Optional[ProductionMode] = None
+    presentation_mode: Optional[PresentationMode] = None
+    visual_backend: Optional[VisualBackend] = Field(
+        None,
+        description="首发不可切换：仅接受与当前一致的值，用于显式确认",
+    )
+    expected_revision: Optional[int] = Field(None, description="乐观锁：期望的项目版本号")
+    idempotency_key: Optional[str] = None
+
+
+class ProjectUpdateResult(BaseModel):
+    project: ProjectSummary
+    updated: bool
+
+
+# ---------------------------------------------------------------------------
+# Source / Article models
+# ---------------------------------------------------------------------------
+
+class SourceSetRequest(BaseModel):
+    content: Optional[str] = Field(None, description="直接提供文章内容（Markdown）")
+    topic: Optional[str] = Field(None, description="主题描述，触发 AI 生成文章")
+    idempotency_key: Optional[str] = None
+
+
+class SourceSetResult(BaseModel):
+    project_id: str
+    article_imported: bool
+    article_preview: str = Field("", description="文章内容前 500 字")
+    word_count: int = 0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline run models
+# ---------------------------------------------------------------------------
+
+class PipelineRunRequest(BaseModel):
+    start_from: str = Field("preflight", description="起始阶段；未显式提供时按编排器恢复策略执行")
+    stop_at: Optional[str] = Field(None, description="停止阶段，如 image_review")
+    mode: str = Field("resume", description="resume / restart")
+    idempotency_key: Optional[str] = None
+
+
+class PipelineRunResult(BaseModel):
+    operation_id: str
+    project_id: str
+    status: str
+    current_stage: str
+    message: str = ""
+
+
+class PipelineStatusResult(BaseModel):
+    operation_id: str
+    project_id: str
+    status: str
+    current_stage: str
+    progress: int = 0
+    message: str = ""
+    stages: list[dict[str, Any]] = Field(default_factory=list)
+    blocking_errors: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    artifacts: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class PipelineResumeRequest(BaseModel):
+    stop_at: Optional[str] = None
+    idempotency_key: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Digital human
+# ---------------------------------------------------------------------------
+
+class DigitalHumanConfigUpdateRequest(BaseModel):
+    """Validated Agent transport envelope for the project digital-human config."""
+
+    config: dict[str, Any] = Field(
+        ...,
+        description="Digital-human configuration patch. Only supported fields are persisted.",
+    )
+
+
+class DigitalHumanConfigResult(BaseModel):
+    config: dict[str, Any] = Field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# Stage models
+# ---------------------------------------------------------------------------
+
+class StageGetResult(BaseModel):
+    project_id: str
+    stage: str
+    data: dict[str, Any] = Field(default_factory=dict)
+    slide_ids: list[str] = Field(default_factory=list)
+
+
+class NarrationUpdateRequest(BaseModel):
+    slide_id: str
+    narration_text: str
+    expected_revision: Optional[int] = None
+    idempotency_key: Optional[str] = None
+
+
+class ImageRegenerateRequest(BaseModel):
+    slide_id: str
+    instruction: str = Field("", description="修改指令，如'更有冲击力'")
+    idempotency_key: Optional[str] = None
+
+
+class ImageRegenerateResult(BaseModel):
+    slide_id: str
+    artifact_id: str = ""
+    resource_uri: str = ""
+    revision: int = 0
+    message: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Media models
+# ---------------------------------------------------------------------------
+
+class TtsSynthesizeRequest(BaseModel):
+    slide_ids: Optional[list[str]] = Field(None, description="指定 slide，None 表示全部")
+    idempotency_key: Optional[str] = None
+
+
+class TtsSynthesizeResult(BaseModel):
+    operation_id: str
+    project_id: str
+    status: str
+    job_id: str = ""
+
+
+class VideoRenderRequest(BaseModel):
+    idempotency_key: Optional[str] = None
+
+
+class VideoRenderResult(BaseModel):
+    operation_id: str
+    project_id: str
+    status: str
+    job_id: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Checkpoint models
+# ---------------------------------------------------------------------------
+
+class CheckpointApproveRequest(BaseModel):
+    checkpoint: str = Field(..., description="storyboard_review / image_review / etc.")
+    approved: bool = True
+    notes: str = ""
+    idempotency_key: Optional[str] = None
+
+
+class CheckpointResult(BaseModel):
+    project_id: str
+    checkpoint: str
+    approved: bool
+    next_stage: str = ""
+
+
+class CheckpointInfo(BaseModel):
+    name: str
+    label: str = ""
+    description: str = ""
+
+
+class CheckpointListResult(BaseModel):
+    project_id: str
+    checkpoints: list[CheckpointInfo] = Field(default_factory=list)
+
+
+class ProjectDeleteResult(BaseModel):
+    project_id: str
+    deleted: bool
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# Artifact models
+# ---------------------------------------------------------------------------
+
+class ArtifactsListRequest(BaseModel):
+    artifact_type: Optional[str] = Field(None, description="image / audio / video / pptx / all")
+    slide_id: Optional[str] = None
+
+
+class ArtifactInfo(BaseModel):
+    artifact_id: str
+    artifact_type: str
+    filename: str
+    mime_type: str
+    size_bytes: int = 0
+    resource_uri: str = ""
+    slide_id: Optional[str] = None
+    revision: int = 0
+    created_at: Optional[str] = None
+
+
+class ArtifactsListResult(BaseModel):
+    project_id: str
+    artifacts: list[ArtifactInfo]
+    total: int
+
+
+class ArtifactGetResult(BaseModel):
+    artifact: ArtifactInfo
+    download_url: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Diagnostics
+# ---------------------------------------------------------------------------
+
+class DiagnosticsResult(BaseModel):
+    agent_api_version: str
+    contract_hash: str
+    application_version: str = ""
+    capabilities: list[str] = Field(default_factory=list)
+    checks: dict[str, Any] = Field(default_factory=dict)
+
+
+class HtmlVisualStatusResult(BaseModel):
+    ready: bool = False
+    issues: list[dict[str, Any]] = Field(default_factory=list)
+    project_id: str
+    revision: int = Field(0, description="场景修订计数")
+    scenes_present: int
+    scenes_expected: int
+    slides: dict[str, Any] = Field(default_factory=dict)
+
+
+class HtmlSceneDocumentResult(BaseModel):
+    project_id: str
+    slide_id: str
+    scene: dict[str, Any]
+    sha256: str
+    revision: int
+
+
+class HtmlSceneSaveRequest(BaseModel):
+    scene: dict[str, Any]
+    expected_revision: int = Field(..., description="乐观锁：当前场景修订号")
+
+
+class HtmlSceneSaveResult(BaseModel):
+    project_id: str
+    slide_id: str
+    revision: int
+    changed: bool
+    sha256: str
+
+
+class HtmlSceneBodyRequest(BaseModel):
+    scene: Optional[dict[str, Any]] = Field(None, description="缺省时使用已保存场景")
+
+
+class HtmlReviewReportResult(BaseModel):
+    project_id: str
+    slide_id: str
+    passed: bool
+    report: dict[str, Any]
+
+
+class HtmlApprovalResult(BaseModel):
+    project_id: str
+    slide_id: str
+    valid: bool
+    reason: Optional[str] = None
+    approval: Optional[dict[str, Any]] = None
+
+
+class HtmlPlanGenerationResult(BaseModel):
+    project_id: str
+    slide_id: str
+    plan: dict[str, Any]
+    evidence: dict[str, Any]
+
+
+class HtmlTaskResult(BaseModel):
+    project_id: str
+    task: dict[str, Any]

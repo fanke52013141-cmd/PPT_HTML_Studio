@@ -1,0 +1,1946 @@
+"""One-click generation orchestrator v2.
+
+The orchestrator uses the same in-process production service facade as the web
+routes. It does not create an HTTP client or route requests back into the app.
+
+Scope:
+- start a single in-process job per project;
+- write resumable status to planning/one_click_status.json;
+- execute existing steps in order;
+- pause/fail with a blocking error when an existing step fails.
+
+This is not a durable distributed queue. It is a local-app convenience layer that
+keeps the user-facing workflow simple while preserving manual recovery paths.
+"""
+
+from __future__ import annotations
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
+import json
+import logging
+import os
+import shutil
+import threading
+import time
+import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable
+
+from one_click_resume_policy import (
+    build_resume_plan,
+    has_article as _has_article,
+    has_contract as _has_contract,
+    has_fresh_narration as _has_fresh_narration,
+    run_dir as _run_dir,
+    slide_ids as _slide_ids,
+    slides_requiring_images as _slides_requiring_images,
+)
+from project_profile_store import DEFAULT_QUALITY_GATES, load_profile  # noqa: F401  (source guard asserts the gate wiring import)
+from pipeline_state import complete_step, current_step_after_completion
+from tts_provider_service import normalize_tts_provider
+from video_render_service import RENDER_STAGE_PROGRESS
+from project_config_runtime import get_config_value, load_project_config
+from account_context import get_current_account_id, reset_current_account_id, set_current_account_id
+import generation_governor
+
+STATUS_FILENAME = "one_click_status.json"
+STATUS_VERSION = "one_click_orchestrator_v2"
+
+# Agent/UI review checkpoints pause *between* existing stages.  This keeps the
+# production stage implementations unchanged while making review decisions
+# durable and resumable.
+_REVIEW_CHECKPOINT_AFTER_STAGE = {
+    "storyboard": "storyboard_review",
+    "images": "image_review",
+    "ai_mask": "mask_review",
+    "narration": "narration_review",
+    "tts": "audio_review",
+    "render": "video_review",
+}
+
+logger = logging.getLogger(__name__)
+
+
+# Map a review_policy to the first checkpoint where the pipeline should pause.
+# The orchestrator re-evaluates the policy after each checkpoint so that
+# policies with multiple gates (e.g. all_stages) pause at every boundary.
+_POLICY_CHECKPOINTS: dict[str, list[str]] = {
+    "none": [],
+    "images_and_video": ["image_review", "video_review"],
+    "all_stages": [
+        "storyboard_review",
+        "image_review",
+        "mask_review",
+        "narration_review",
+        "audio_review",
+        "video_review",
+    ],
+}
+
+
+def _stop_at_from_policy(policy: str) -> str:
+    """Return the first pending review checkpoint for *policy*.
+
+    Returns an empty string when the policy requires no review gates.
+    """
+    checkpoints = _POLICY_CHECKPOINTS.get((policy or "none").strip().lower(), [])
+    return checkpoints[0] if checkpoints else ""
+
+
+def _next_stop_at_from_policy(policy: str, after_checkpoint: str) -> str:
+    """Return the next checkpoint after *after_checkpoint* for *policy*."""
+    checkpoints = _POLICY_CHECKPOINTS.get((policy or "none").strip().lower(), [])
+    try:
+        idx = checkpoints.index(after_checkpoint)
+    except ValueError:
+        return ""
+    if idx + 1 < len(checkpoints):
+        return checkpoints[idx + 1]
+    return ""
+
+
+# [同步 step_status 20260814] 一键生成 stage -> 前端步骤映射
+_STAGE_TO_STEP = {
+    "preflight": "1",
+    "storyboard": "2",
+    "images": "3",
+    "confirm_images": "3",
+    "ai_mask": "5",
+    "narration": "6",
+    "tts": "6",
+    "render": "8",
+}
+STAGES = [
+    ("preflight", "预检查"),
+    ("storyboard", "生成分镜"),
+    ("images", "生成全部图片"),
+    ("confirm_images", "确认整页图片并准备场景"),
+    ("ai_mask", "AI Mask 标注"),
+    ("narration", "生成演讲稿"),
+    ("tts", "合成并确认音频"),
+    ("render", "渲染视频"),
+]
+
+_RUNNING_LOCK = threading.Lock()
+_RUNNING: dict[str, threading.Thread] = {}
+_PAUSE_REQUESTS: set[str] = set()
+
+
+@dataclass(frozen=True)
+class OneClickDependencies:
+    session_factory: Callable[[], Any]
+    project_model: Any
+    get_setting: Callable[..., Any]
+    resolve_media_tool: Callable[[str], Any]
+    repo_root: Path
+    read_project_article_source: Callable[..., Any]
+    write_project_log: Callable[..., None]
+    inspect_tts_preflight: Callable[[dict[str, Any]], dict[str, Any]]
+    pipeline_service_factory: Callable[[Any, str], Any]
+
+
+_DEPENDENCIES: OneClickDependencies | None = None
+
+
+def configure_one_click_dependencies(
+    dependencies: OneClickDependencies,
+) -> OneClickDependencies:
+    global _DEPENDENCIES
+    _DEPENDENCIES = dependencies
+    return dependencies
+
+
+def get_one_click_dependencies() -> OneClickDependencies:
+    if _DEPENDENCIES is None:
+        raise RuntimeError("One-click dependencies have not been configured")
+    return _DEPENDENCIES
+
+
+class QualityGateFailure(RuntimeError):
+    def __init__(self, message: str, *, pause: bool) -> None:
+        super().__init__(message)
+        self.pause = pause
+
+
+class ManualModeOneClickError(ValueError):
+    """Raised when a manual project is sent to the unattended pipeline."""
+
+
+def _now() -> str:
+    return datetime.now().isoformat(timespec="seconds")
+
+
+_TERMINAL_RUN_STATES = {
+    "completed",
+    "paused",
+    "failed",
+    "cancelled",
+    "waiting_for_review",
+    "waiting_for_user",
+}
+
+
+def _run_elapsed_seconds(status: dict[str, Any], now: str | None = None) -> int:
+    """Return wall-clock duration for this one-click invocation.
+
+    ``started_at`` predates resumable runs, so the dedicated run fields are
+    authoritative whenever present. Legacy status files still fall back to
+    ``started_at`` without losing their existing progress information.
+    """
+    started_at = str(status.get("run_started_at") or status.get("started_at") or "")
+    finished_at = str(status.get("run_finished_at") or now or _now())
+    if not started_at:
+        return 0
+    try:
+        elapsed = datetime.fromisoformat(finished_at) - datetime.fromisoformat(started_at)
+    except (TypeError, ValueError):
+        return 0
+    return max(0, int(elapsed.total_seconds()))
+
+
+def _refresh_run_timing(status: dict[str, Any], now: str) -> None:
+    """Persist a stable duration once a run reaches a terminal state."""
+    if status.get("status") in _TERMINAL_RUN_STATES:
+        if not status.get("run_finished_at"):
+            status["run_finished_at"] = now
+    elif status.get("status") == "running":
+        status["run_finished_at"] = ""
+    status["run_elapsed_seconds"] = _run_elapsed_seconds(status, now)
+
+
+def _safe_text(value: Any, limit: int = 2000) -> str:
+    return str(value or "").strip()[:limit]
+
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    try:
+        return int(float(str(value).strip()))
+    except Exception:
+        return default
+
+
+def _bounded_parallelism(
+    project: Any,
+    *,
+    config_path: str,
+    environment_name: str,
+    default: int,
+    maximum: int,
+) -> int:
+    """Resolve an optional package setting without allowing unsafe fan-out."""
+    configured = get_config_value(
+        project,
+        config_path,
+        os.environ.get(environment_name, default),
+    )
+    return max(1, min(maximum, _safe_int(configured, default)))
+
+
+def _is_rate_limit_error(error: Exception) -> bool:
+    """兼容入口：限流判定已下沉到 generation_governor（单一事实来源）。"""
+    return generation_governor.is_rate_limit_error(error)
+
+
+def _read_json(path: Path, fallback: Any) -> Any:
+    if not path.exists():
+        return fallback
+    try:
+        return json.loads(path.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return fallback
+
+
+def _write_json(path: Path, value: Any) -> None:
+    """原子写状态文件(R2-008):替换失败保留旧文件并上抛,绝不直写目标。
+
+    历史"沙箱兼容"降级会原地覆盖目标文件,截断的一键状态会让运行进度
+    丢失;失败时保留旧状态并显式报错才是可恢复语义。
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(value, ensure_ascii=False, indent=2) + "\n"
+    temp_path = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        temp_path.write_text(payload, encoding="utf-8")
+        os.replace(temp_path, path)
+    except OSError as exc:
+        raise RuntimeError(f"写入一键状态文件失败（已保留旧状态）：{path.name}: {exc}") from exc
+    finally:
+        if temp_path.exists():
+            try:
+                temp_path.unlink()
+            except Exception:
+                pass
+
+
+def _status_path(project: Any) -> Path:
+    return _run_dir(project) / "planning" / STATUS_FILENAME
+
+
+def _initial_status(project_id: str, run_id: str) -> dict[str, Any]:
+    started_at = _now()
+    return {
+        "version": STATUS_VERSION,
+        "project_id": project_id,
+        "run_id": run_id,
+        "status": "running",
+        "current_stage": "preflight",
+        "started_at": started_at,
+        "updated_at": started_at,
+        "completed_at": "",
+        "run_started_at": started_at,
+        "run_finished_at": "",
+        "run_elapsed_seconds": 0,
+        "video": None,
+        "requested_mode": "",
+        "previous_failed_stage": "",
+        "effective_start_stage": "preflight",
+        "revalidation": [],
+        "stop_at": "",
+        "review_checkpoint": "",
+        "review_next_stage": "",
+        "review_decision": "",
+        "stages": [
+            {
+                "id": stage_id,
+                "title": title,
+                "status": "pending",
+                "started_at": "",
+                "finished_at": "",
+                "message": "",
+                "progress": 0,
+                "warnings": [],
+                "blocking_errors": [],
+            }
+            for stage_id, title in STAGES
+        ],
+    }
+
+
+def _status_for_project(project: Any, project_id: str) -> dict[str, Any]:
+    status = _read_json(_status_path(project), {})
+    if isinstance(status, dict) and status.get("version") in {"one_click_orchestrator_v1", STATUS_VERSION}:
+        status["version"] = STATUS_VERSION
+        status.setdefault("requested_mode", "")
+        status.setdefault("previous_failed_stage", "")
+        status.setdefault("effective_start_stage", status.get("current_stage") or "preflight")
+        status.setdefault("revalidation", [])
+        status.setdefault("stop_at", "")
+        status.setdefault("review_checkpoint", "")
+        status.setdefault("review_next_stage", "")
+        status.setdefault("review_decision", "")
+        if "run_started_at" not in status:
+            status["run_started_at"] = status.get("started_at") or ""
+        if "run_finished_at" not in status:
+            status["run_finished_at"] = (
+                status.get("completed_at") or ""
+                if status.get("status") in _TERMINAL_RUN_STATES
+                else ""
+            )
+        if "run_elapsed_seconds" not in status:
+            status["run_elapsed_seconds"] = _run_elapsed_seconds(status)
+        return status
+    return {
+        "version": STATUS_VERSION,
+        "project_id": project_id,
+        "run_id": "",
+        "status": "idle",
+        "current_stage": "",
+        "started_at": "",
+        "updated_at": "",
+        "completed_at": "",
+        "run_started_at": "",
+        "run_finished_at": "",
+        "run_elapsed_seconds": 0,
+        "video": None,
+        "requested_mode": "",
+        "previous_failed_stage": "",
+        "effective_start_stage": "preflight",
+        "revalidation": [],
+        "stop_at": "",
+        "review_checkpoint": "",
+        "review_next_stage": "",
+        "review_decision": "",
+        "stages": _initial_status(project_id, "")["stages"],
+    }
+
+
+def _save_status(project: Any, status: dict[str, Any]) -> None:
+    now = _now()
+    status["updated_at"] = now
+    _refresh_run_timing(status, now)
+    _write_json(_status_path(project), status)
+
+
+def _stage(status: dict[str, Any], stage_id: str) -> dict[str, Any]:
+    for item in status.get("stages", []):
+        if item.get("id") == stage_id:
+            return item
+    item = {"id": stage_id, "title": stage_id, "status": "pending", "started_at": "", "finished_at": "", "message": "", "progress": 0, "warnings": [], "blocking_errors": []}
+    status.setdefault("stages", []).append(item)
+    return item
+
+
+def _start_stage(project: Any, status: dict[str, Any], stage_id: str, message: str = "") -> None:
+    item = _stage(status, stage_id)
+    item.update({"status": "running", "started_at": item.get("started_at") or _now(), "finished_at": "", "message": message, "progress": 0, "blocking_errors": []})
+    status["status"] = "running"
+    status["current_stage"] = stage_id
+    _save_status(project, status)
+
+
+def _finish_stage(project: Any, status: dict[str, Any], stage_id: str, message: str = "", progress: float = 1.0) -> None:
+    item = _stage(status, stage_id)
+    item.update({"status": "done", "finished_at": _now(), "message": message, "progress": max(0, min(1, float(progress)))})
+    _save_status(project, status)
+
+
+def _pause_at_stage_boundary(
+    project: Any,
+    status: dict[str, Any],
+    project_id: str,
+) -> bool:
+    """Honor a user pause request without starting another pipeline stage.
+
+    Individual production operations are intentionally not interrupted: image
+    generation, TTS, and rendering own external work that must reach a safe
+    terminal point. This function runs before a stage starts and after each
+    one finishes, retaining the completed stage and its progress for resume.
+    """
+    if project_id not in _PAUSE_REQUESTS:
+        return False
+    _PAUSE_REQUESTS.discard(project_id)
+    current_stage = str(status.get("current_stage") or "")
+    status.update(
+        {
+            "status": "paused",
+            "completed_at": _now(),
+            "message": f"已在{current_stage or '当前'}阶段完成后暂停，后续阶段不会执行",
+        }
+    )
+    _save_status(project, status)
+    return True
+
+
+def _pause_for_requested_review(
+    project: Any,
+    status: dict[str, Any],
+    stage_id: str,
+) -> bool:
+    """Persist a review pause after a completed stage when requested."""
+    checkpoint = _REVIEW_CHECKPOINT_AFTER_STAGE.get(stage_id)
+    if not checkpoint or status.get("stop_at") != checkpoint:
+        return False
+    stage_ids = [item[0] for item in STAGES]
+    try:
+        next_stage = stage_ids[stage_ids.index(stage_id) + 1]
+    except (ValueError, IndexError):
+        next_stage = ""
+    status.update(
+        {
+            "status": "waiting_for_review",
+            "current_stage": stage_id,
+            "completed_at": _now(),
+            "review_checkpoint": checkpoint,
+            "review_next_stage": next_stage,
+            "review_decision": "pending",
+        }
+    )
+    _save_status(project, status)
+    return True
+
+
+# Map manual pause module names to the pipeline stage they pause before
+# (「进入所选步骤前先暂停」). 勾画标注与数字人是渲染前的手动模块：自动流程
+# 不会替用户执行它们，因此二者与「作品输出」共用渲染前这一个暂停点。
+_MANUAL_PAUSE_BEFORE_STAGE: dict[str, str] = {
+    "storyboard": "storyboard",
+    "images": "images",
+    "ai_mask": "ai_mask",
+    "narration": "narration",
+    "tts": "tts",
+    "annotation": "render",
+    "digital_human": "render",
+    "render": "render",
+}
+
+
+def _pause_for_manual_step(
+    project: Any,
+    status: dict[str, Any],
+    stage_id: str,
+    should_run_fn: Any = None,
+) -> bool:
+    """Pause before *stage_id* starts if the user flagged that step.
+
+    Unlike ``_pause_for_requested_review`` (which is driven by
+    ``review_policy``), this checks the per-project ``manual_pause_steps``
+    list — steps the user explicitly flagged for manual handling. The pause
+    only fires when the stage is about to run; already-completed stages that
+    will be skipped keep the flow moving toward the first pending stage.
+    """
+    import json as _json
+
+    raw = getattr(project, "manual_pause_steps", "[]") or "[]"
+    try:
+        pause_modules = _json.loads(raw)
+    except (ValueError, TypeError):
+        pause_modules = []
+    if not isinstance(pause_modules, list) or not pause_modules:
+        return False
+
+    target = _MANUAL_PAUSE_BEFORE_STAGE.get(stage_id, stage_id)
+    confirmed = set(status.get("manual_pause_resumed") or [])
+    module_name = next(
+        (
+            normalized
+            for raw_name in pause_modules
+            # 存量创作包的 "mask" 归一为 "ai_mask"(旧值从未匹配过任何阶段)
+            for normalized in ("ai_mask" if raw_name == "mask" else raw_name,)
+            if _MANUAL_PAUSE_BEFORE_STAGE.get(normalized, normalized) == target
+            and normalized not in confirmed
+        ),
+        None,
+    )
+    if not module_name:
+        return False
+    if should_run_fn is not None and not should_run_fn(stage_id):
+        return False
+
+    checkpoint = _REVIEW_CHECKPOINT_AFTER_STAGE.get(stage_id, "")
+    status.update(
+        {
+            "status": "waiting_for_user",
+            "current_stage": stage_id,
+            "completed_at": _now(),
+            "review_checkpoint": checkpoint,
+            "review_next_stage": stage_id,
+            "review_decision": "pending",
+            "manual_pause_module": module_name,
+            "message": f"等待手动操作：{module_name}",
+        }
+    )
+    _save_status(project, status)
+    return True
+
+
+def _warn_stage(project: Any, status: dict[str, Any], stage_id: str, warning: str) -> None:
+    item = _stage(status, stage_id)
+    item.setdefault("warnings", []).append(_safe_text(warning, 1200))
+    _save_status(project, status)
+
+
+def _fail_stage(
+    project: Any,
+    status: dict[str, Any],
+    stage_id: str,
+    error: str,
+    *,
+    pause: bool = True,
+) -> None:
+    item = _stage(status, stage_id)
+    item.update({"status": "failed", "finished_at": _now(), "progress": item.get("progress") or 0})
+    item.setdefault("blocking_errors", []).append(_safe_text(error, 3000))
+    status["status"] = "paused" if pause else "failed"
+    status["current_stage"] = stage_id
+    status["completed_at"] = _now()
+    _save_status(project, status)
+
+
+def _complete(
+    project: Any,
+    status: dict[str, Any],
+    db: Any = None,
+    video: Any = None,
+) -> None:
+    video_url = str(video.get("url") or "") if isinstance(video, dict) else ""
+    if not video_url:
+        # [完成基准 20260904] 一键生成的完成以视频产出为基准。
+        # 没有可下载视频时绝不写 completed，避免前端误报"一键生成已完成"。
+        status["status"] = "paused"
+        status["completed_at"] = _now()
+        status["message"] = "一键生成未产出可下载视频，未标记完成"
+        item = _stage(status, "render")
+        item.setdefault("blocking_errors", []).append("未产出可下载的视频文件")
+        _save_status(project, status)
+        return
+    status["status"] = "completed"
+    status["current_stage"] = ""
+    status["completed_at"] = _now()
+    status["video"] = video
+    _save_status(project, status)
+    # [同步 step_status 20260814] 一键生成完成时，把已完成的 stage 同步到数据库 step_status。
+    # 必须复用 _run_pipeline 中持有 project ORM 对象的同一个 db session；另开 session 的
+    # commit 不会提交该 project 的脏数据（旧实现误用未定义的 dependencies 名字并另开
+    # session，导致 NameError 被 except 静默吞掉、step_status 从不落库）。
+    try:
+        current = project.get_step_status() if hasattr(project, "get_step_status") else {}
+        updated = dict(current)
+        completed_steps = sorted({
+            int(step_key)
+            for stage in (status.get("stages") or [])
+            if stage.get("status") == "done"
+            for step_key in [_STAGE_TO_STEP.get(stage.get("id", ""))]
+            if step_key
+        })
+        # 升序复用 complete_step，保证步骤状态与手动流程一致（含 in_progress 收敛）。
+        for step in completed_steps:
+            updated = complete_step(updated, step)
+        if hasattr(project, "set_step_status"):
+            project.set_step_status(updated)
+        if completed_steps and isinstance(getattr(project, "current_step", None), int):
+            project.current_step = current_step_after_completion(
+                project.current_step, completed_steps[-1]
+            )
+        if db is not None:
+            db.commit()
+    except Exception:
+        if db is not None and hasattr(db, "rollback"):
+            db.rollback()
+        logger.exception("Failed to sync step_status after one-click completion")
+
+
+def _error_text(exc: Exception) -> str:
+    detail = getattr(exc, "detail", "")
+    return _safe_text(detail or str(exc) or type(exc).__name__, 3000)
+
+
+def _require_ok(payload: Any, label: str) -> dict[str, Any]:
+    if isinstance(payload, dict) and payload.get("success") is False:
+        raise RuntimeError(f"{label} failed: {_safe_text(payload.get('message') or payload.get('detail') or payload, 3000)}")
+    return payload if isinstance(payload, dict) else {"value": payload}
+
+
+def _invoke(operation: Any, label: str) -> dict[str, Any]:
+    try:
+        return _require_ok(operation(), label)
+    except Exception as exc:
+        if isinstance(exc, RuntimeError) and str(exc).startswith(f"{label} failed:"):
+            raise
+        raise RuntimeError(f"{label} failed: {_error_text(exc)}") from exc
+
+
+def _require_quality_gate(
+    operation: Any,
+    label: str,
+    gates: dict[str, bool],
+    gate_name: str,
+) -> dict[str, Any]:
+    try:
+        return _invoke(operation, label)
+    except Exception as exc:
+        raise QualityGateFailure(
+            str(exc),
+            pause=bool(gates.get(gate_name, True)),
+        ) from exc
+
+
+# [render 终态轮询 20260904] start_render 只是异步提交后台渲染任务并立即返回，
+# 一键生成 render 阶段的完成语义必须以"视频文件真正产出"为基准。
+_RENDER_POLL_INTERVAL_SEC = 5.0
+_RENDER_POLL_TIMEOUT_SEC = 60 * 30  # Remotion 渲染 + 数字人合成可能超过 20 分钟。
+_RENDER_TERMINAL_STATES = {"error", "failed", "interrupted", "cancelled"}
+
+
+def _render_stage_progress(stage: Any) -> float | None:
+    mapped = RENDER_STAGE_PROGRESS.get(str(stage or ""))
+    if mapped is None:
+        return None
+    return max(0.0, min(1.0, float(mapped) / 100.0))
+
+
+def _wait_for_render_terminal(
+    project: Any,
+    status: dict[str, Any],
+    services: Any,
+    submission: dict[str, Any],
+) -> dict[str, Any]:
+    """轮询视频渲染任务直到终态，返回 {"video": ...}。
+
+    - success 且有可下载视频：返回 {"video": video_payload}。
+    - error/failed/interrupted/cancelled 或超时：抛 RuntimeError，
+      由 _require_quality_gate 的 pause_on_render_failure 门统一处理。
+    - 渲染仍在进行：把渲染子阶段进度映射到 render stage 并在变化时落盘。
+    """
+    task_id = submission.get("task_id") if isinstance(submission, dict) else None
+    deadline = time.monotonic() + _RENDER_POLL_TIMEOUT_SEC
+    last_stage_key = ""
+    while True:
+        payload = services.render_video_status(task_id)
+        if not isinstance(payload, dict):
+            payload = {}
+        state = str(payload.get("status") or "idle")
+        if state == "success":
+            video = payload.get("video")
+            if isinstance(video, dict) and str(video.get("url") or ""):
+                return {"video": video}
+            videos = payload.get("videos")
+            if isinstance(videos, list) and videos and isinstance(videos[0], dict):
+                first = videos[0]
+                if str(first.get("url") or ""):
+                    return {"video": first}
+            raise RuntimeError("视频渲染已结束但未产出可下载的视频文件")
+        if state in _RENDER_TERMINAL_STATES:
+            raise RuntimeError(
+                str(payload.get("error") or f"视频渲染任务已终止（{state}）")
+            )
+        stage_name = str(payload.get("stage") or "")
+        stage_label = str(payload.get("stage_label") or stage_name or "渲染排队中")
+        stage_key = f"{stage_name}|{stage_label}"
+        if stage_key != last_stage_key:
+            last_stage_key = stage_key
+            item = _stage(status, "render")
+            progress = _render_stage_progress(stage_name)
+            if progress is not None:
+                item["progress"] = progress
+            item["message"] = stage_label
+            _save_status(project, status)
+        if time.monotonic() >= deadline:
+            raise RuntimeError(
+                f"视频渲染等待超过 {_RENDER_POLL_TIMEOUT_SEC // 60} 分钟仍未完成"
+                + (f"（任务 {task_id}）" if task_id else "")
+            )
+        time.sleep(_RENDER_POLL_INTERVAL_SEC)
+
+
+def _backup_narration(project: Any, run_id: str) -> Path | None:
+    source = _run_dir(project) / "planning" / "narration_beats.json"
+    if not source.is_file():
+        return None
+    backup = _run_dir(project) / "planning" / "backups" / f"narration_before_one_click_{run_id}.json"
+    backup.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.copy2(source, backup)
+    except OSError as exc:
+        raise RuntimeError(f"备份现有演讲稿失败：{_error_text(exc)}") from exc
+    return backup
+
+
+def _load_existing_narration(
+    services: Any,
+    before_mutation: Callable[[], Any],
+) -> dict[str, Any] | None:
+    try:
+        payload = services.narration()
+    except Exception as exc:
+        raise RuntimeError(f"读取现有演讲稿失败：{_error_text(exc)}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("读取现有演讲稿失败：返回结果不是有效对象")
+    if payload.get("success") is False:
+        message = _safe_text(payload.get("message") or payload.get("detail"), 1000)
+        if "尚未生成" in message:
+            return None
+        raise RuntimeError(f"读取现有演讲稿失败：{message or '未知错误'}")
+    beats = payload.get("beats")
+    if not isinstance(beats, dict):
+        raise RuntimeError("读取现有演讲稿失败：beats 结构无效")
+    if payload.get("repair", {}).get("required"):
+        before_mutation()
+        try:
+            payload = services.repair_narration()
+        except Exception as exc:
+            raise RuntimeError(f"修复现有演讲稿失败：{_error_text(exc)}") from exc
+        if not isinstance(payload, dict) or payload.get("success") is False or not isinstance(payload.get("beats"), dict):
+            raise RuntimeError("修复现有演讲稿失败：修复结果无效")
+    return payload
+
+
+def _quality_gates(project: Any) -> dict[str, bool]:
+    return dict(load_profile(project)["quality_gates"])
+
+
+def _should_annotate_narration(project: Any) -> bool:
+    """Whether this automatic run should ask AI to add TTS delivery markup.
+
+    The default intentionally remains false for old immutable project snapshots:
+    plain narration can go straight to TTS, while the manual editor keeps its
+    explicit AI-annotation action available.
+    """
+    return get_config_value(project, "automation.ai_narration_annotation", False) is True
+
+
+def _should_annotate_ai_mask(project: Any) -> bool:
+    """Whether an automatic run should generate element-level AI Masks.
+
+    Old project snapshots intentionally default to ``False``. They retain
+    the historical full-frame one-click output unless a creation package
+    explicitly opts in to the element-reveal stage.
+    """
+    return get_config_value(project, "automation.ai_mask_annotation", False) is True
+
+
+def _stage_index(stage_id: str) -> int:
+    for index, (candidate, _title) in enumerate(STAGES):
+        if candidate == stage_id:
+            return index
+    return 0
+
+
+def _resume_status(project: Any, project_id: str, run_id: str, mode: str) -> tuple[dict[str, Any], int]:
+    previous = _status_for_project(project, project_id)
+    if mode == "resume" and previous.get("status") in ("waiting_for_review", "waiting_for_user"):
+        # Preserve the completed stage and pending checkpoint until the worker
+        # verifies that the caller supplied the matching approval token.
+        status = previous
+        status.update({"run_id": run_id, "requested_mode": mode, "completed_at": ""})
+        return status, _stage_index(str(status.get("review_next_stage") or "preflight"))
+    resumable_states = {"paused", "running", "failed", "completed"}
+    if mode == "resume" and previous.get("status") in resumable_states:
+        failed_stage = str(previous.get("current_stage") or ("render" if previous.get("status") == "completed" else "preflight"))
+        plan = build_resume_plan(project, failed_stage)
+        start_index = _stage_index(str(plan["effective_start_stage"]))
+        status = previous
+        status.update({
+            "run_id": run_id,
+            "status": "running",
+            "completed_at": "",
+            "video": None,
+            "requested_mode": mode,
+            **plan,
+        })
+        for index, item in enumerate(status.get("stages", [])):
+            if index >= start_index:
+                item.update({
+                    "status": "pending",
+                    "started_at": "",
+                    "finished_at": "",
+                    "message": "",
+                    "progress": 0,
+                    "warnings": [],
+                    "blocking_errors": [],
+                })
+        return status, start_index
+    status = _initial_status(project_id, run_id)
+    status["requested_mode"] = mode
+    return status, 0
+
+
+def _preflight_errors(dependencies: OneClickDependencies, project: Any) -> list[str]:
+    errors: list[str] = []
+    # 注意：此调用有副作用——负责遗留 brief 文章的迁移（不可删除，
+    # 返回值虽被丢弃，但迁移发生在读取路径中）。审查 L-11 曾误判为死代码。
+    try:
+        dependencies.read_project_article_source(project, required=False)
+    except Exception:
+        pass
+    if not _has_article(project):
+        errors.append("请先导入文章内容，或在创建项目时填写文章内容。")
+    # A project snapshot is authoritative for the stages it binds.  The old
+    # global settings are checked only for legacy projects or for an
+    # unbound stage, preventing a valid account-specific package from being
+    # rejected by an unrelated default account key.
+    snapshot = load_project_config(project)
+    text_bindings = get_config_value(project, "model_bindings", {}) or {}
+    image_bound = isinstance(text_bindings, dict) and bool(text_bindings.get("image_generation"))
+    text_bound = isinstance(text_bindings, dict) and any(
+        text_bindings.get(name) for name in (
+            "article_generation", "storyboard", "visualization", "narration_annotation"
+        )
+    )
+    if snapshot is None or not text_bound:
+        if not str(dependencies.get_setting("llm_api_key") or "").strip():
+            errors.append("未配置 LLM API Key")
+    if snapshot is None or not image_bound:
+        if not str(dependencies.get_setting("image_api_key") or "").strip():
+            errors.append("未配置 图片生成 API Key")
+
+    tts_bound = bool(
+        get_config_value(project, "tts.connection", None)
+        or get_config_value(project, "model_bindings.tts", None)
+    )
+    # ComfyUI/IndexTTS is a local provider and intentionally has no cloud
+    # credential. Keep its preflight independent from the legacy TTS key
+    # requirement, while still catching a missing workflow before the worker
+    # thread starts.
+    try:
+        configured_provider = dependencies.get_setting("tts_provider", "minimax")
+    except TypeError:
+        configured_provider = dependencies.get_setting("tts_provider")
+    provider = normalize_tts_provider(configured_provider)
+    if not tts_bound and provider == "comfyui_tts":
+        try:
+            endpoint = str(dependencies.get_setting("tts_endpoint", "") or "").strip()
+        except TypeError:
+            endpoint = str(dependencies.get_setting("tts_endpoint") or "").strip()
+        if endpoint.lower().startswith(("http://", "https://")):
+            endpoint = ""
+        from repository_paths import resolve_comfyui_tts_workflow_path
+
+        workflow_path = resolve_comfyui_tts_workflow_path(endpoint, dependencies.repo_root)
+        if not workflow_path.is_file():
+            errors.append(f"ComfyUI TTS 工作流不存在：{workflow_path}")
+        else:
+            inspector = getattr(dependencies, "inspect_tts_preflight", None)
+            if callable(inspector):
+                try:
+                    workflow = json.loads(workflow_path.read_text(encoding="utf-8-sig"))
+                except (OSError, json.JSONDecodeError) as exc:
+                    errors.append(f"ComfyUI TTS 工作流无法读取：{workflow_path}（{type(exc).__name__}）")
+                else:
+                    result = inspector(workflow)
+                    if not isinstance(result, dict) or not result.get("success"):
+                        details = []
+                        if isinstance(result, dict):
+                            details = [
+                                _safe_text(item, 300)
+                                for item in result.get("errors", []) or []
+                                if _safe_text(item, 300)
+                            ]
+                        reason = "；".join(details) or "预检查未返回成功状态"
+                        errors.append(
+                            "ComfyUI/IndexTTS 不可用："
+                            + reason
+                            + "。请启动包含 IndexTTS 2.5 节点的 ComfyUI，并确认 http://127.0.0.1:8188/ 可打开。"
+                        )
+    else:
+        if not tts_bound and not str(dependencies.get_setting("tts_api_key") or "").strip():
+            errors.append("未配置 TTS API Key")
+    for tool_name in ("ffmpeg", "ffprobe"):
+        available = bool(dependencies.resolve_media_tool(tool_name))
+        if not available:
+            errors.append(f"未找到 {tool_name}")
+    remotion_dir = dependencies.repo_root / "scripts" / "remotion"
+    if not (remotion_dir / "package.json").exists():
+        errors.append("Remotion package.json 不存在")
+    return errors
+
+
+def _has_manual_mask(group: Any) -> bool:
+    if not isinstance(group, dict):
+        return False
+    manual = group.get("manual_mask")
+    if not isinstance(manual, dict):
+        return False
+    rle = manual.get("rle")
+    if isinstance(rle, dict) and isinstance(rle.get("runs"), list) and len(rle["runs"]) > 0:
+        return True
+    strokes = manual.get("strokes")
+    return isinstance(strokes, list) and len(strokes) > 0
+
+
+def _existing_mask_count(project: Any, slide_ids: list[str] | None = None) -> int:
+    manifest = _read_json(_run_dir(project) / "reveal_manifest.json", {})
+    if not isinstance(manifest, dict):
+        return 0
+    selected = set(slide_ids) if slide_ids is not None else None
+    count = 0
+    for slide in manifest.get("slides", []) or []:
+        if not isinstance(slide, dict):
+            continue
+        if selected is not None and str(slide.get("slide_id") or "") not in selected:
+            continue
+        for collection_name in ("groups", "semantic_blocks"):
+            for group in slide.get(collection_name, []) or []:
+                if _has_manual_mask(group):
+                    count += 1
+    return count
+
+
+def _ai_mask_quality_errors(result: dict[str, Any], existing_mask_count: int = 0) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(result, dict):
+        return ["AI Mask 返回结果不是有效对象"]
+    if result.get("complete") is False:
+        errors.append("AI Mask 尚未完成全部语块关联")
+    processed = _safe_int(result.get("processed_slide_count") or result.get("processed"), 0)
+    updated = _safe_int(result.get("updated_group_count"), 0)
+    if processed == 0:
+        errors.append("AI Mask 没有处理任何 slide")
+    if updated == 0 and existing_mask_count <= 0:
+        errors.append("AI Mask 没有更新任何语块，且当前 manifest 中没有可复用的已有 Mask")
+    for slide in result.get("slides", []) or []:
+        if not isinstance(slide, dict):
+            continue
+        slide_id = _safe_text(slide.get("slide_id"), 100) or "unknown slide"
+        unmatched_groups = _safe_int(slide.get("unmatched_group_count"), 0)
+        if unmatched_groups > 0:
+            errors.append(f"{slide_id} 有 {unmatched_groups} 个未匹配语块")
+        quality = slide.get("quality") if isinstance(slide.get("quality"), dict) else {}
+        if quality and not quality.get("passed"):
+            coverage = float(quality.get("foreground_coverage_ratio") or 0)
+            overlap = _safe_int(quality.get("overlap_pixel_count"), 0)
+            unassigned = _safe_int(quality.get("unassigned_component_count"), 0)
+            min_coverage = float(quality.get("minimum_foreground_coverage_ratio") or 0.995)
+            pixel_ok = coverage >= min_coverage and unassigned == 0 and overlap == 0
+            semantic = slide.get("semantic_quality") if isinstance(slide.get("semantic_quality"), dict) else {}
+            semantic_blockers = []
+            for _issue in (semantic.get("blocking_errors") or []):
+                _t = _safe_text(_issue.get("type") if isinstance(_issue, dict) else str(_issue), 80)
+                if _t:
+                    semantic_blockers.append(_t)
+            if pixel_ok and semantic_blockers:
+                # [Mask语义降级 20260813] 像素 Mask 完美（覆盖率达标、无重叠、无未分配），
+                # 仅语义布局（如正文组触及标题/字幕区）需人工复核：不作为流水线硬阻断，
+                # 让自动流程继续产出视频；复核项已记录在该 slide 的 review_issues 中。
+                continue
+            reasons = []
+            if coverage < min_coverage:
+                reasons.append(f"覆盖率 {coverage:.2%}（需 ≥ {min_coverage:.2%}）")
+            if unassigned > 0:
+                reasons.append(f"未分配组件 {unassigned}")
+            if overlap > 0:
+                reasons.append(f"重叠 {overlap} 像素")
+            if semantic_blockers:
+                reasons.append("语义布局：" + "、".join(semantic_blockers))
+            if not reasons:
+                reasons.append("质量未通过")
+            errors.append(f"{slide_id} Mask 质量未通过：" + "；".join(reasons))
+    return errors
+
+
+def _ai_mask_failed_slide_ids(result: dict[str, Any], fallback: list[str]) -> list[str]:
+    failed: list[str] = []
+    for slide in result.get("slides", []) if isinstance(result, dict) else []:
+        if not isinstance(slide, dict):
+            continue
+        slide_id = _safe_text(slide.get("slide_id"), 100)
+        quality = slide.get("quality") if isinstance(slide.get("quality"), dict) else {}
+        if slide_id and (
+            _safe_int(slide.get("unmatched_group_count"), 0) > 0
+            or (quality and quality.get("passed") is not True)
+            or bool(slide.get("review_required"))
+        ):
+            failed.append(slide_id)
+    for issue in result.get("review_issues", []) if isinstance(result, dict) else []:
+        if isinstance(issue, dict):
+            slide_id = _safe_text(issue.get("slide_id"), 100)
+            if slide_id:
+                failed.append(slide_id)
+    selected = list(dict.fromkeys(failed))
+    return selected or list(fallback)
+
+
+def _image_failure_outcome(slide_id: str, exc: BaseException) -> dict[str, Any]:
+    """把单页失败异常归一成完整的结果记录（不是首个错误的片段）。
+
+    ``image_workflow_service`` 抛出的 HTTPException 携带结构化的
+    ``image_generation_failure``；中间层包装后的异常沿 ``__cause__`` 链
+    向上查找。其他来源的异常退回到通用记录。
+    """
+    payload = None
+    seen: set[int] = set()
+    candidate: BaseException | None = exc
+    while candidate is not None and id(candidate) not in seen:
+        seen.add(id(candidate))
+        payload = getattr(candidate, "image_generation_failure", None)
+        if payload is not None:
+            break
+        candidate = candidate.__cause__ or candidate.__context__
+    if payload is not None and hasattr(payload, "to_payload"):
+        outcome = dict(payload.to_payload())
+    else:
+        outcome = {
+            "slide_id": slide_id,
+            "attempts": 1,
+            "code": "unknown",
+            "phase": "",
+            "message": _error_text(exc),
+            "retryable": False,
+            "recoverable": False,
+            "outcome_unknown": False,
+            "status_code": None,
+            "image_saved": False,
+            "elapsed_sec": 0.0,
+            "upstream_task_id": "",
+        }
+    if not str(outcome.get("slide_id") or "").strip():
+        outcome["slide_id"] = slide_id
+    return outcome
+
+
+def _run_pipeline(
+    dependencies: OneClickDependencies,
+    project_id: str,
+    run_id: str,
+    mode: str = "resume",
+    start_from: str = "",
+    stop_at: str = "",
+    approved_checkpoint: str = "",
+    account_id: str = "default",
+) -> None:
+    account_context_token = set_current_account_id(account_id)
+    db = dependencies.session_factory()
+    project = None
+    try:
+        project_model = dependencies.project_model
+        project = db.query(project_model).filter(project_model.id == project_id).first()
+        if not project:
+            return
+        status, start_index = _resume_status(project, project_id, run_id, mode)
+        if status.get("status") == "waiting_for_review":
+            checkpoint = str(status.get("review_checkpoint") or "")
+            if not checkpoint or checkpoint != approved_checkpoint:
+                # A user cannot bypass a pending review merely by calling
+                # resume. The approval endpoint supplies the matching token.
+                return
+            next_stage = str(status.get("review_next_stage") or "")
+            if next_stage not in {stage_id for stage_id, _ in STAGES}:
+                raise RuntimeError("审查点缺少可恢复的下一阶段")
+            start_index = _stage_index(next_stage)
+            # After approving a checkpoint, compute the next policy-driven
+            # stop_at so multi-gate policies (all_stages) pause again.
+            policy = getattr(project, "review_policy", None) or "none"
+            next_stop = _next_stop_at_from_policy(policy, checkpoint)
+            status.update(
+                {
+                    "status": "running",
+                    "current_stage": next_stage,
+                    "review_decision": "approved",
+                    "review_checkpoint": "",
+                    "review_next_stage": "",
+                    "stop_at": next_stop,
+                }
+            )
+        elif status.get("status") == "waiting_for_user":
+            # Manual pause (user-flagged module). Resume without checkpoint
+            # approval — the user explicitly clicked "continue". The confirmed
+            # module is recorded so the same pause point does not re-fire
+            # immediately after the resume (进入前暂停的防重触发).
+            next_stage = str(status.get("review_next_stage") or "")
+            if next_stage not in {stage_id for stage_id, _ in STAGES}:
+                raise RuntimeError("手动暂停缺少可恢复的下一阶段")
+            confirmed_module = str(status.get("manual_pause_module") or "")
+            resumed_modules = [name for name in (status.get("manual_pause_resumed") or []) if name]
+            if confirmed_module and confirmed_module not in resumed_modules:
+                resumed_modules.append(confirmed_module)
+            start_index = _stage_index(next_stage)
+            status.update(
+                {
+                    "status": "running",
+                    "current_stage": next_stage,
+                    "review_decision": "",
+                    "review_checkpoint": "",
+                    "review_next_stage": "",
+                    "manual_pause_module": "",
+                    "manual_pause_resumed": resumed_modules,
+                }
+            )
+        elif start_from:
+            start_index = _stage_index(start_from)
+            status["effective_start_stage"] = start_from
+        if stop_at:
+            status["stop_at"] = stop_at
+        _save_status(project, status)
+        gates = _quality_gates(project)
+        services = dependencies.pipeline_service_factory(db, project_id)
+
+        def should_run(stage_id: str) -> bool:
+            return _stage_index(stage_id) >= start_index
+
+        # A request can arrive between worker startup and the first operation.
+        # Do not run preflight in that case; a smart resume revalidates it.
+        if _pause_at_stage_boundary(project, status, project_id):
+            return
+
+        if should_run("preflight") or mode == "resume":
+            _start_stage(project, status, "preflight", "检查文章、凭据、媒体工具、项目目录及 ComfyUI/IndexTTS")
+            preflight_errors = _preflight_errors(dependencies, project)
+            if preflight_errors:
+                raise RuntimeError("预检查失败：" + "；".join(preflight_errors))
+            _finish_stage(project, status, "preflight", "预检查通过")
+            if _pause_at_stage_boundary(project, status, project_id):
+                return
+
+        if _pause_for_manual_step(project, status, "storyboard", should_run):
+            return
+        if should_run("storyboard"):
+            _start_stage(project, status, "storyboard", "生成或复用 visual_contract.json")
+            if mode == "restart" or not _has_contract(project):
+                _require_quality_gate(
+                    services.storyboard_script,
+                    "Step 2 article-to-slide",
+                    gates,
+                    "pause_on_storyboard_validation_error",
+                )
+                _require_quality_gate(
+                    services.storyboard_visual,
+                    "Step 2 slide-to-visual",
+                    gates,
+                    "pause_on_storyboard_validation_error",
+                )
+                _require_quality_gate(
+                    services.storyboard_compose,
+                    "Step 2 compose",
+                    gates,
+                    "pause_on_storyboard_validation_error",
+                )
+                db.refresh(project)
+            _finish_stage(project, status, "storyboard", "分镜规划已就绪")
+            if _pause_at_stage_boundary(project, status, project_id):
+                return
+            if _pause_for_requested_review(project, status, "storyboard"):
+                return
+
+        if _pause_for_manual_step(project, status, "images", should_run):
+            return
+        if should_run("images"):
+            _start_stage(project, status, "images", "生成缺失或过期的 slide 图片")
+            prompts_payload = _invoke(services.image_prompts, "Step 3 prompts")
+            prompts_by_slide = {str(item.get("slide_id") or ""): str(item.get("prompt") or "") for item in prompts_payload.get("prompts", []) if isinstance(item, dict)}
+            requiring_images = _slides_requiring_images(project)
+            image_jobs: list[tuple[int, str, str]] = []
+            for index, slide_id in enumerate(requiring_images, start=1):
+                prompt = prompts_by_slide.get(slide_id)
+                if not prompt:
+                    raise RuntimeError(f"缺少 {slide_id} 的生图 Prompt")
+                image_jobs.append((index, slide_id, prompt))
+
+            image_workers = min(
+                _bounded_parallelism(
+                    project,
+                    config_path="automation.image_concurrency",
+                    environment_name="PPT_STUDIO_IMAGE_CONCURRENCY",
+                    default=5,
+                    maximum=12,
+                ),
+                len(image_jobs),
+            ) if image_jobs else 1
+            account_id = str(getattr(project, "account_id", "") or get_current_account_id())
+
+            def generate_one_image(
+                index: int,
+                slide_id: str,
+                prompt: str,
+            ) -> tuple[int, str, dict[str, Any], float]:
+                worker_db = dependencies.session_factory()
+                account_token = set_current_account_id(account_id)
+                started = time.monotonic()
+                try:
+                    worker_services = dependencies.pipeline_service_factory(
+                        worker_db,
+                        project_id,
+                    )
+                    result = _require_quality_gate(
+                        lambda: worker_services.generate_image(
+                            slide_id,
+                            prompt,
+                            defer_invalidation=True,
+                        ),
+                        f"Step 3 image {slide_id}",
+                        gates,
+                        "pause_on_image_generation_failure",
+                    )
+                    return index, slide_id, result, round(time.monotonic() - started, 3)
+                finally:
+                    reset_current_account_id(account_token)
+                    worker_db.close()
+
+            generated = 0
+            page_outcomes: list[dict[str, Any]] = []
+            completed_slide_ids: list[str] = []
+            if image_jobs:
+                dependencies.write_project_log(
+                    project,
+                    "step3_parallel_image_start",
+                    submitted=len(image_jobs),
+                    concurrency=image_workers,
+                )
+
+                # 上游额度治理（网关全局 RPM + 全局并发 + FIFO 排队）由
+                # generation_governor 在 provider 层统一负责，这里只保留**本项目**
+                # 的并发扇出上限。原先的 _AdaptiveImageLimiter 用"每项目一个、
+                # 只降不升、归 1 即抛错"的方式模拟限流，既无法约束跨账号叠加的
+                # 请求速率，又会在额度紧张时直接判死整条流水线。
+                def generate_limited_image(
+                    index: int,
+                    slide_id: str,
+                    prompt: str,
+                ) -> tuple[int, str, dict[str, Any], float]:
+                    try:
+                        return generate_one_image(index, slide_id, prompt)
+                    except Exception as exc:
+                        if generation_governor.is_rate_limit_error(exc) or isinstance(
+                            exc, generation_governor.GovernorTimeout
+                        ):
+                            dependencies.write_project_log(
+                                project,
+                                "step3_parallel_image_throttled",
+                                slide_id=slide_id,
+                                reason=type(exc).__name__,
+                                detail=_safe_text(exc, 500),
+                            )
+                        raise
+
+                # 显式的 future -> slide_id 映射：任何一页的最终结果都能准确
+                # 归位，成功页保留、失败页聚合，批次不在中途因单页错误提前结束。
+                with ThreadPoolExecutor(
+                    max_workers=image_workers,
+                    thread_name_prefix="one-click-image",
+                ) as executor:
+                    future_to_slide = {
+                        executor.submit(
+                            generate_limited_image, index, slide_id, prompt
+                        ): slide_id
+                        for index, slide_id, prompt in image_jobs
+                    }
+                    for future in as_completed(future_to_slide):
+                        slide_id = future_to_slide[future]
+                        try:
+                            _, _, _, elapsed_sec = future.result()
+                        except Exception as exc:
+                            page_outcomes.append(
+                                _image_failure_outcome(slide_id, exc)
+                            )
+                            continue
+                        generated += 1
+                        completed_slide_ids.append(slide_id)
+                        page_outcomes.append(
+                            {
+                                "slide_id": slide_id,
+                                "ok": True,
+                                "elapsed_sec": elapsed_sec,
+                            }
+                        )
+                        dependencies.write_project_log(
+                            project,
+                            "step3_parallel_image_success",
+                            slide_id=slide_id,
+                            elapsed_sec=elapsed_sec,
+                        )
+                        item = _stage(status, "images")
+                        item["progress"] = generated / len(image_jobs)
+                        item["message"] = (
+                            f"已生成 {generated}/{len(image_jobs)} 张（刚完成 {slide_id}）"
+                        )
+                        _save_status(project, status)
+                if completed_slide_ids:
+                    # 已成功图片统一收尾（延迟失效 + 单次项目级失效提交），
+                    # 与失败页解耦：失败页不影响成功页的下游状态。
+                    _invoke(
+                        lambda: services.finalize_images(completed_slide_ids),
+                        "Step 3 finalize images",
+                    )
+            failed_outcomes = [
+                outcome for outcome in page_outcomes if not outcome.get("ok")
+            ]
+            if failed_outcomes:
+                # 批次末尾统一汇总：列出全部失败页、尝试次数和原因，默认暂停；
+                # 用户点击继续后按图片完整性只补缺失页，成功页不会重做。
+                blocking_lines = [
+                    "{slide_id}: 已尝试 {attempts} 次仍未成功（{code}{saved}）：{message}".format(
+                        slide_id=outcome.get("slide_id"),
+                        attempts=outcome.get("attempts") or 1,
+                        code=outcome.get("code") or "unknown",
+                        saved="，图片已保存仅收尾缺失" if outcome.get("image_saved") else "",
+                        message=_safe_text(outcome.get("message") or "", 400),
+                    )
+                    for outcome in failed_outcomes
+                ]
+                dependencies.write_project_log(
+                    project,
+                    "step3_image_batch_failed",
+                    requested=len(image_jobs),
+                    generated=generated,
+                    failed=failed_outcomes,
+                )
+                item = _stage(status, "images")
+                item.setdefault("blocking_errors", []).extend(
+                    _safe_text(line, 600) for line in blocking_lines
+                )
+                _save_status(project, status)
+                attempt_summary = "、".join(
+                    f"{outcome.get('slide_id')}（{outcome.get('attempts') or 1} 次）"
+                    for outcome in failed_outcomes
+                )
+                raise QualityGateFailure(
+                    (
+                        f"已完成 {generated}/{len(image_jobs)} 张图片，其余失败页已保留失败原因。"
+                        f"{attempt_summary} 自动尝试后仍未成功，已保留其他成功图片；"
+                        "点击继续可补齐缺失页。"
+                    ),
+                    pause=bool(gates.get("pause_on_image_generation_failure", True)),
+                )
+            _finish_stage(project, status, "images", f"图片已就绪，新增或刷新 {generated} 张")
+            if _pause_at_stage_boundary(project, status, project_id):
+                return
+            if _pause_for_requested_review(project, status, "images"):
+                return
+
+        if _pause_for_manual_step(project, status, "confirm_images", should_run):
+            return
+        if should_run("confirm_images"):
+            _start_stage(project, status, "confirm_images", "确认整页图片并准备视频场景")
+            _invoke(services.confirm_images, "Step 3 confirm")
+            manifest_payload = _invoke(services.mask_manifest, "Static scene manifest")
+            if manifest_payload.get("repair", {}).get("required"):
+                manifest_payload = _invoke(services.repair_mask_manifest, "Static scene repair")
+            manifest = manifest_payload.get("manifest")
+            if not isinstance(manifest, dict):
+                raise RuntimeError("整页场景清单返回为空")
+            # This legacy builder is still responsible for writing Step 7's
+            # static scene and timeline files, without running AI annotation.
+            _invoke(lambda: services.build_mask_assets(manifest), "Build full-frame scenes")
+            _finish_stage(project, status, "confirm_images", "图片已确认，整页场景已准备")
+            if _pause_at_stage_boundary(project, status, project_id):
+                return
+
+        if _pause_for_manual_step(project, status, "ai_mask", should_run):
+            return
+        if should_run("ai_mask"):
+            ai_mask_enabled = _should_annotate_ai_mask(project)
+            if not ai_mask_enabled:
+                # Persist the explicit no-op. A skipped optional stage is
+                # complete rather than pending so status, resume, and Agent
+                # progress all reflect that the creation package chose the
+                # full-frame path.
+                _finish_stage(
+                    project,
+                    status,
+                    "ai_mask",
+                    "已跳过（创作包未启用 AI Mask 标注，使用整页展示）",
+                )
+            else:
+                _start_stage(project, status, "ai_mask", "自动标注页面元素并构建 Reveal 场景")
+                slide_ids = _slide_ids(project)
+                if not slide_ids:
+                    raise RuntimeError("AI Mask 标注前未找到可处理的 slide")
+                existing_mask_count = _existing_mask_count(project, slide_ids)
+                annotation_settings = {
+                    # Re-run automatically generated Masks on resume, while
+                    # preserving deliberate manual painting and locked groups.
+                    "overwrite_existing_manual_mask": False,
+                    "overwrite_existing_ai_mask": True,
+                    "skip_locked_groups": True,
+                }
+                result = _require_quality_gate(
+                    lambda: services.annotate_ai_mask(
+                        {"settings": annotation_settings, "slide_ids": slide_ids}
+                    ),
+                    "Step 5 AI Mask annotate",
+                    gates,
+                    "pause_on_ai_mask_low_confidence",
+                )
+                quota_timeout_slides = [
+                    _safe_text(slide_id, 100)
+                    for slide_id in (result.get("quota_wait_timeout_slide_ids") or [])
+                    if _safe_text(slide_id, 100)
+                ]
+                if quota_timeout_slides:
+                    # 额度排队超时不能悄悄改变质量策略：确定性回退被明确记录，
+                    # 用户可据此选择继续或稍后重跑这些页面。
+                    _warn_stage(
+                        project,
+                        status,
+                        "ai_mask",
+                        "以下页面因 LLM 额度排队超时按确定性回退标注（结果已区分，可稍后重跑）："
+                        + ", ".join(quota_timeout_slides),
+                    )
+                quality_errors = _ai_mask_quality_errors(result, existing_mask_count)
+                if quality_errors:
+                    retry_slide_ids = _ai_mask_failed_slide_ids(result, slide_ids)
+                    retry_result = _require_quality_gate(
+                        lambda: services.annotate_ai_mask(
+                            {"settings": annotation_settings, "slide_ids": retry_slide_ids}
+                        ),
+                        "Step 5 AI Mask retry",
+                        gates,
+                        "pause_on_ai_mask_low_confidence",
+                    )
+                    result = retry_result
+                    quality_errors = _ai_mask_quality_errors(
+                        retry_result,
+                        _existing_mask_count(project, retry_slide_ids),
+                    )
+                if quality_errors:
+                    raise QualityGateFailure(
+                        "；".join(quality_errors),
+                        pause=bool(gates.get("pause_on_ai_mask_low_confidence", True)),
+                    )
+                manifest_payload = _invoke(services.mask_manifest, "AI Mask scene manifest")
+                if manifest_payload.get("repair", {}).get("required"):
+                    manifest_payload = _invoke(
+                        services.repair_mask_manifest,
+                        "AI Mask scene repair",
+                    )
+                manifest = manifest_payload.get("manifest")
+                if not isinstance(manifest, dict):
+                    raise RuntimeError("AI Mask 场景清单返回为空")
+                _invoke(lambda: services.build_mask_assets(manifest), "Build AI Mask scenes")
+                updated = _safe_int(result.get("updated_group_count"), 0)
+                _finish_stage(
+                    project,
+                    status,
+                    "ai_mask",
+                    f"AI Mask 标注已完成，更新 {updated} 个语义元素",
+                )
+            if _pause_at_stage_boundary(project, status, project_id):
+                return
+            if _pause_for_requested_review(project, status, "ai_mask"):
+                return
+
+        if _pause_for_manual_step(project, status, "narration", should_run):
+            return
+        if should_run("narration"):
+            _start_stage(project, status, "narration", "生成或复用演讲稿")
+            narration_backed_up = False
+
+            def backup_narration_once() -> None:
+                nonlocal narration_backed_up
+                if not narration_backed_up:
+                    _backup_narration(project, run_id)
+                    narration_backed_up = True
+
+            existing_payload = _load_existing_narration(services, backup_narration_once)
+            if existing_payload is not None:
+                backup_narration_once()
+            if (
+                mode != "restart"
+                and _has_fresh_narration(project)
+                and isinstance(existing_payload, dict)
+                and existing_payload.get("success") is True
+                and isinstance(existing_payload.get("beats"), dict)
+            ):
+                init = {"beats": existing_payload["beats"]}
+                _warn_stage(project, status, "narration", "已保留并复用现有演讲稿")
+            else:
+                init = _invoke(services.init_narration, "Step 6 init")
+            narration_beats = init.get("beats") or {}
+            annotation_enabled = _should_annotate_narration(project)
+            if annotation_enabled:
+                try:
+                    annotated = _invoke(
+                        lambda: services.annotate_narration(narration_beats),
+                        "Step 6 annotate",
+                    )
+                    narration_beats = annotated.get("beats") or narration_beats
+                except Exception as exc:
+                    _warn_stage(project, status, "narration", f"AI TTS 标记失败，继续使用原演讲稿：{_error_text(exc)}")
+            _invoke(lambda: services.save_narration(narration_beats), "Step 6 confirm narration")
+            _finish_stage(
+                project,
+                status,
+                "narration",
+                "演讲稿已就绪" if annotation_enabled else "演讲稿已就绪（未启用 AI 语音标注）",
+            )
+            if _pause_at_stage_boundary(project, status, project_id):
+                return
+            if _pause_for_requested_review(project, status, "narration"):
+                return
+
+        if _pause_for_manual_step(project, status, "tts", should_run):
+            return
+        if should_run("tts"):
+            _start_stage(
+                project,
+                status,
+                "tts",
+                (
+                    "合成 TTS 音频并执行技术确认"
+                    f"（共 {len(_slide_ids(project))} 页，逐页调用云 TTS，"
+                    "每页通常 1-3 分钟；服务端排队或失败重试时更久，"
+                    "逐页错误见 runs/<run>/logs/pipeline.log）"
+                ),
+            )
+            _require_quality_gate(
+                services.synthesize_audio,
+                "Step 7 synthesize",
+                gates,
+                "pause_on_tts_failure",
+            )
+            _require_quality_gate(
+                services.confirm_audio,
+                "Step 7 confirm",
+                gates,
+                "pause_on_tts_failure",
+            )
+            _finish_stage(project, status, "tts", "音频已生成并通过自动技术检查（未人工试听）")
+            if _pause_at_stage_boundary(project, status, project_id):
+                return
+            if _pause_for_requested_review(project, status, "tts"):
+                return
+
+        video = None
+        if _pause_for_manual_step(project, status, "render", should_run):
+            return
+        if should_run("render"):
+            _start_stage(project, status, "render", "渲染最终视频")
+
+            def _render_until_video_ready() -> dict[str, Any]:
+                submission = _invoke(services.render_video, "Step 8 render")
+                # start_render 只做异步提交；必须轮询到渲染任务终态、
+                # 确认视频文件产出后，render 阶段才算完成。
+                return _wait_for_render_terminal(project, status, services, submission)
+
+            result = _require_quality_gate(
+                _render_until_video_ready,
+                "Step 8 render",
+                gates,
+                "pause_on_render_failure",
+            )
+            video = result.get("video") or result.get("item") or result
+            _finish_stage(project, status, "render", "视频渲染完成")
+            if _pause_at_stage_boundary(project, status, project_id):
+                return
+            if _pause_for_requested_review(project, status, "render"):
+                return
+
+        # Defensive final boundary: prevents a conditional future stage from
+        # falling through to the video-completion guard after a pause.
+        if _pause_at_stage_boundary(project, status, project_id):
+            return
+
+        if not (isinstance(video, dict) and str(video.get("url") or "")):
+            # 正常流程由 _wait_for_render_terminal 保证 video 有 url；这里
+            # 兜底防御，确保完成事件只在视频真正产出时记录。
+            raise RuntimeError("一键生成未能产出可下载的视频，不能标记完成")
+
+        _complete(project, status, db, video=video)
+        try:
+            dependencies.write_project_log(
+                project,
+                "one_click_generate_completed",
+                run_id=run_id,
+                video=video,
+                total_elapsed_seconds=status.get("run_elapsed_seconds", 0),
+            )
+        except Exception:
+            pass
+    except Exception as exc:
+        try:
+            if project is not None:
+                status = _status_for_project(project, project_id)
+                stage_id = status.get("current_stage") or "preflight"
+                _fail_stage(
+                    project,
+                    status,
+                    str(stage_id),
+                    str(exc),
+                    pause=getattr(exc, "pause", True),
+                )
+                event = "one_click_generate_paused" if getattr(exc, "pause", True) else "one_click_generate_failed"
+                dependencies.write_project_log(
+                    project,
+                    event,
+                    run_id=run_id,
+                    stage=stage_id,
+                    error=str(exc),
+                    total_elapsed_seconds=status.get("run_elapsed_seconds", 0),
+                )
+        except Exception:
+            pass
+    finally:
+        try:
+            db.close()
+        except Exception:
+            pass
+        with _RUNNING_LOCK:
+            _RUNNING.pop(project_id, None)
+        reset_current_account_id(account_context_token)
+
+
+def start_one_click(
+    project: Any,
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if str(getattr(project, "ai_mode", "auto") or "auto").strip().lower() == "manual":
+        # A manual project can still use individual workflow actions, but it
+        # must never start the background end-to-end worker.  Keep this guard
+        # before dependency lookup and thread registration so rejected calls
+        # have no runtime side effects.
+        raise ManualModeOneClickError("手动模式项目不能启动一键自动化，请逐步完成各个创作环节")
+    project_id = str(project.id)
+    dependencies = get_one_click_dependencies()
+    with _RUNNING_LOCK:
+        thread = _RUNNING.get(project_id)
+        if thread and thread.is_alive():
+            return {
+                "success": True,
+                "already_running": True,
+                "status": _status_for_project(project, project_id),
+            }
+        mode = str((payload or {}).get("mode") or "resume").strip().lower()
+        if mode not in {"resume", "restart"}:
+            raise ValueError("mode 必须是 resume 或 restart")
+        start_from = str((payload or {}).get("start_from") or "").strip()
+        valid_stages = {stage_id for stage_id, _ in STAGES}
+        if start_from and start_from not in valid_stages:
+            raise ValueError(f"start_from 必须是以下阶段之一: {', '.join(sorted(valid_stages))}")
+        stop_at = str((payload or {}).get("stop_at") or "").strip()
+        valid_checkpoints = set(_REVIEW_CHECKPOINT_AFTER_STAGE.values())
+        if stop_at and stop_at not in valid_checkpoints:
+            raise ValueError(f"stop_at 必须是以下审查点之一: {', '.join(sorted(valid_checkpoints))}")
+
+        # If the caller did not specify stop_at, derive it from the project's
+        # persisted review_policy so that review gates are automatic.
+        if not stop_at:
+            policy = getattr(project, "review_policy", None) or "none"
+            stop_at = _stop_at_from_policy(policy)
+
+        approved_checkpoint = str((payload or {}).get("approved_checkpoint") or "").strip()
+        previous = _status_for_project(project, project_id)
+        if previous.get("status") == "waiting_for_review":
+            expected = str(previous.get("review_checkpoint") or "")
+            if approved_checkpoint != expected:
+                raise ValueError(f"项目正在等待审查点 {expected} 的审批")
+        run_id = uuid.uuid4().hex[:12]
+        status, _start_index = _resume_status(
+            project,
+            project_id,
+            run_id,
+            mode,
+        )
+        # A prior worker may have exited through a review/manual boundary
+        # before consuming an earlier request. A new explicit run is a new
+        # user intent, so it must not inherit that stale pause signal.
+        _PAUSE_REQUESTS.discard(project_id)
+        # A resume/restart is a distinct user-requested production run. Keep
+        # the historical status timestamps for compatibility, but measure and
+        # report this invocation from the moment the user pressed one-click.
+        run_started_at = _now()
+        status.update(
+            {
+                "run_started_at": run_started_at,
+                "run_finished_at": "",
+                "run_elapsed_seconds": 0,
+            }
+        )
+        thread = threading.Thread(
+            name=f"ppt-one-click-{project_id}-{run_id}",
+            target=_run_pipeline,
+            args=(
+                dependencies, project_id, run_id, mode, start_from, stop_at,
+                approved_checkpoint,
+                str(getattr(project, "account_id", None) or get_current_account_id()),
+            ),
+            daemon=True,
+        )
+        # 启动与状态对账共用 _RUNNING_LOCK：线程构造、注册、启动全部在锁内
+        # 完成，状态读取方（get_one_click_status 等）也必须持锁检查存活线程，
+        # 否则会看到"状态已 running、线程尚未注册"的窗口并把任务误写成暂停。
+        _RUNNING[project_id] = thread
+        try:
+            thread.start()
+        except BaseException:
+            # start 失败必须清理注册并写入明确终态，不能留下"运行中"的假象。
+            _RUNNING.pop(project_id, None)
+            status.update(
+                {
+                    "status": "failed",
+                    "completed_at": _now(),
+                    "message": "一键生成后台线程启动失败，请重试",
+                }
+            )
+            _save_status(project, status)
+            raise
+        _save_status(project, status)
+    return {"success": True, "started": True, "status": status}
+
+
+_RECONCILE_THROTTLE_SEC = 60.0
+_RECONCILE_THROTTLE: dict[str, float] = {}
+
+
+def _registered_worker(project_id: str) -> threading.Thread | None:
+    """持锁返回存活的 worker 线程；没有则 ``None``。
+
+    与 ``start_one_click`` 的"注册 -> 启动 -> 落盘 running"使用同一把
+    ``_RUNNING_LOCK``，读取方持锁检查，消除启动竞态：不会再出现
+    "状态文件已写 running、线程尚未注册"期间被错误降级为暂停的窗口。
+    """
+    with _RUNNING_LOCK:
+        thread = _RUNNING.get(project_id)
+        if thread is not None and thread.is_alive():
+            return thread
+    return None
+
+
+def _reconcile_completed_status(
+    project: Any,
+    project_id: str,
+    status: dict[str, Any],
+) -> dict[str, Any]:
+    """对账历史 completed 状态：视频未产出而渲染任务仍在跑时降级 running。
+
+    旧版本编排器在渲染任务异步提交后立即写 completed，造成"一键生成
+    已完成"误报。这里读取持久化渲染任务做对账：
+    - 渲染任务仍在进行（rendering）→ 降级为 running 并恢复 render 阶段
+      进度展示，让前端继续轮询真实进度。
+    - 任务已成功且有可下载视频 → 回填 status["video"]。
+    - 任务失败/中断 → 修正为 paused 并附上真实错误。
+    - 查询失败或任务不可见（如手动清理）→ 保持 completed，避免对
+      手动渲染或旧项目造成破坏性降级。
+
+    对账会打开数据库会话，而状态接口被前端（2.5s）与 Agent SSE（1s）
+    高频轮询；无法立即修正的 completed 结果按项目节流 60 秒，避免
+    每次轮询都重复开库查询。
+    """
+    video = status.get("video")
+    if isinstance(video, dict) and str(video.get("url") or ""):
+        return status
+    now = time.monotonic()
+    last = _RECONCILE_THROTTLE.get(project_id, 0.0)
+    if now - last < _RECONCILE_THROTTLE_SEC:
+        return status
+    _RECONCILE_THROTTLE[project_id] = now
+    try:
+        dependencies = get_one_click_dependencies()
+    except RuntimeError:
+        return status
+    payload: dict[str, Any] = {}
+    try:
+        db = dependencies.session_factory()
+        try:
+            services = dependencies.pipeline_service_factory(db, project_id)
+            candidate = services.render_video_status()
+            if isinstance(candidate, dict):
+                payload = candidate
+        finally:
+            try:
+                db.close()
+            except Exception:
+                pass
+    except Exception:
+        logger.debug("one-click completed status reconcile failed", exc_info=True)
+        return status
+    render_state = str(payload.get("status") or "idle")
+    if render_state == "rendering":
+        _RECONCILE_THROTTLE.pop(project_id, None)
+        status["status"] = "running"
+        status["current_stage"] = "render"
+        status["completed_at"] = ""
+        status["message"] = ""
+        item = _stage(status, "render")
+        progress = _render_stage_progress(payload.get("stage")) or 0.52
+        item.update(
+            {
+                "status": "running",
+                "finished_at": "",
+                "progress": progress,
+                "message": str(payload.get("stage_label") or "渲染视频（已恢复跟踪）"),
+            }
+        )
+        blocking_errors = item.setdefault("blocking_errors", [])
+        blocking_errors.clear()
+        _save_status(project, status)
+        return status
+    if render_state == "success":
+        _RECONCILE_THROTTLE.pop(project_id, None)
+        render_video = payload.get("video")
+        if isinstance(render_video, dict) and str(render_video.get("url") or ""):
+            status["video"] = render_video
+            _save_status(project, status)
+            return status
+        return status
+    if render_state in _RENDER_TERMINAL_STATES:
+        _RECONCILE_THROTTLE.pop(project_id, None)
+        error_text = str(payload.get("error") or f"渲染任务状态 {render_state}")
+        status["status"] = "paused"
+        status["completed_at"] = _now()
+        status["message"] = f"视频渲染未完成：{error_text}"
+        item = _stage(status, "render")
+        item.update({"status": "failed", "finished_at": _now()})
+        item.setdefault("blocking_errors", []).append(_safe_text(error_text, 3000))
+        _save_status(project, status)
+        return status
+    if render_state == "idle":
+        # 无进行中的渲染任务：渲染服务仍会返回历史视频列表，
+        # 尝试回填第一个可下载视频，让完成状态带上产物入口。
+        videos = payload.get("videos")
+        if isinstance(videos, list):
+            for candidate in videos:
+                if isinstance(candidate, dict) and str(candidate.get("url") or ""):
+                    status["video"] = candidate
+                    _RECONCILE_THROTTLE.pop(project_id, None)
+                    _save_status(project, status)
+                    return status
+    return status
+
+
+def get_one_click_status(project: Any) -> dict[str, Any]:
+    project_id = str(project.id)
+    status = _status_for_project(project, project_id)
+    thread = _registered_worker(project_id)
+    if status.get("status") == "running" and thread is None:
+        status["status"] = "paused"
+        status["completed_at"] = status.get("completed_at") or _now()
+        _save_status(project, status)
+    if status.get("status") == "completed":
+        status = _reconcile_completed_status(project, project_id, status)
+    return {"success": True, "status": status}
+
+
+def reject_one_click_checkpoint(project: Any, checkpoint: str, notes: str = "") -> dict[str, Any]:
+    """Persist a rejection without allowing the pipeline to continue."""
+    project_id = str(project.id)
+    status = _status_for_project(project, project_id)
+    if status.get("status") != "waiting_for_review":
+        raise ValueError("项目当前不在等待审查状态")
+    if str(status.get("review_checkpoint") or "") != checkpoint:
+        raise ValueError("审批的审查点与项目当前等待的审查点不一致")
+    status["review_decision"] = "rejected"
+    status["review_notes"] = _safe_text(notes, 2000)
+    _save_status(project, status)
+    return status
+
+
+def pause_one_click(project: Any) -> dict[str, Any]:
+    """Request the running pipeline to pause at the next stage boundary."""
+    project_id = str(project.id)
+    thread = _registered_worker(project_id)
+    if thread is None:
+        # If the pipeline already exited (paused / failed / waiting), just
+        # confirm the current status.
+        status = _status_for_project(project, project_id)
+        if status.get("status") == "running":
+            status["status"] = "paused"
+            status["completed_at"] = _now()
+            _save_status(project, status)
+        return {"success": True, "status": status}
+    # Signal the worker thread to stop at the next stage boundary.
+    _PAUSE_REQUESTS.add(project_id)
+    status = _status_for_project(project, project_id)
+    return {"success": True, "status": status, "pause_requested": True}
+
+
+def batch_one_click_status(
+    project_model: Any,
+    session_factory: Callable,
+    account_id: str | None = None,
+) -> dict[str, Any]:
+    """Return one-click status for projects owned by one creative account."""
+    account_id = str(account_id or get_current_account_id())
+    db = session_factory()
+    try:
+        projects = (
+            db.query(project_model)
+            .filter(project_model.account_id == account_id)
+            .all()
+        )
+    finally:
+        db.close()
+    items: list[dict[str, Any]] = []
+    for project in projects:
+        project_id = str(project.id)
+        status = _status_for_project(project, project_id)
+        thread = _registered_worker(project_id)
+        if status.get("status") == "running" and thread is None:
+            status["status"] = "paused"
+            status["completed_at"] = status.get("completed_at") or _now()
+            _save_status(project, status)
+        items.append(
+            {
+                "project_id": project_id,
+                "project_name": getattr(project, "name", ""),
+                "status": status.get("status", ""),
+                "current_stage": status.get("current_stage", ""),
+                "manual_pause_module": status.get("manual_pause_module", ""),
+                "progress": _overall_progress(status),
+                "completed_at": status.get("completed_at", ""),
+            }
+        )
+    return {"success": True, "items": items}
+
+
+def _overall_progress(status: dict[str, Any]) -> float:
+    """Compute overall pipeline progress as a 0-1 float."""
+    stages = status.get("stages") or []
+    if not stages:
+        return 0.0
+    # Newer run records persist completed stages as ``done``.  Retain
+    # ``completed`` for historical projects created by earlier releases.
+    done = sum(
+        1 for item in stages
+        if isinstance(item, dict) and item.get("status") in {"done", "completed"}
+    )
+    return round(done / len(stages), 4)

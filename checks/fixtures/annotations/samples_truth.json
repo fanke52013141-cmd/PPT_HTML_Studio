@@ -1,0 +1,155 @@
+{
+  "canvas": [
+    1920,
+    1080
+  ],
+  "samples": {
+    "sample_slide.png": [
+      {
+        "text": "2026年秋季课程报名说明",
+        "box": [
+          120,
+          114,
+          848,
+          177
+        ],
+        "font": "msyh",
+        "font_size": 64
+      },
+      {
+        "text": "报名截止时间:9月30日 18:00",
+        "box": [
+          120,
+          309,
+          633,
+          349
+        ],
+        "font": "msyh",
+        "font_size": 40
+      },
+      {
+        "text": "面向对象:全体在校本科生与研究生",
+        "box": [
+          120,
+          389,
+          730,
+          429
+        ],
+        "font": "msyh",
+        "font_size": 40
+      },
+      {
+        "text": "通过率预计提升 23.5%,满意度 96%",
+        "box": [
+          120,
+          469,
+          751,
+          509
+        ],
+        "font": "msyh",
+        "font_size": 40
+      },
+      {
+        "text": "Online registration opens on Sep 1st",
+        "box": [
+          120,
+          567,
+          702,
+          600
+        ],
+        "font": "arial",
+        "font_size": 36
+      },
+      {
+        "text": "Registration Fee: 250 CNY per student",
+        "box": [
+          120,
+          647,
+          740,
+          680
+        ],
+        "font": "arial",
+        "font_size": 36
+      },
+      {
+        "text": "扫码进入报名系统",
+        "box": [
+          150,
+          798,
+          470,
+          838
+        ],
+        "font": "msyh",
+        "font_size": 40
+      }
+    ],
+    "sample_numbers.png": [
+      {
+        "text": "Q3 营收 1,284.6 万元",
+        "box": [
+          140,
+          129,
+          569,
+          173
+        ],
+        "font": "msyh",
+        "font_size": 44
+      },
+      {
+        "text": "同比增长 18.7%",
+        "box": [
+          140,
+          250,
+          457,
+          293
+        ],
+        "font": "msyh",
+        "font_size": 44
+      },
+      {
+        "text": "截止 2026-12-31 23:59:59",
+        "box": [
+          140,
+          368,
+          562,
+          395
+        ],
+        "font": "arial",
+        "font_size": 38
+      },
+      {
+        "text": "ROI = 312%,回收周期 9 个月",
+        "box": [
+          140,
+          490,
+          721,
+          533
+        ],
+        "font": "msyh",
+        "font_size": 44
+      },
+      {
+        "text": "预算上限 RMB 88,000(含税 6%)",
+        "box": [
+          140,
+          610,
+          779,
+          654
+        ],
+        "font": "msyh",
+        "font_size": 44
+      },
+      {
+        "text": "Version 2.0.1 build 20260927",
+        "box": [
+          140,
+          726,
+          535,
+          748
+        ],
+        "font": "arial",
+        "font_size": 30
+      }
+    ]
+  }
+}

@@ -1,0 +1,340 @@
+from pathlib import Path
+import tempfile
+
+import pytest
+from sqlalchemy import create_engine
+
+from database_migrations import MIGRATIONS_DIR, MigrationError, run_migrations
+
+
+def sqlite_engine(database_path: Path):
+    return create_engine(
+        f"sqlite:///{database_path}",
+        connect_args={"check_same_thread": False},
+    )
+
+
+def table_names(engine) -> set[str]:
+    with engine.connect() as connection:
+        rows = connection.exec_driver_sql(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        ).fetchall()
+    return {str(row[0]) for row in rows}
+
+
+def test_numbered_migrations_apply_once_and_store_checksums() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        engine = sqlite_engine(Path(value) / "fresh.db")
+
+        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        assert run_migrations(engine) == []
+        assert {
+            "projects", "settings", "artifact_records", "local_jobs",
+            "agent_idempotency_records",
+        }.issubset(table_names(engine))
+
+        with engine.connect() as connection:
+            rows = connection.exec_driver_sql(
+                "SELECT version, name, checksum FROM schema_migrations ORDER BY version"
+            ).fetchall()
+            project_columns = {
+                row[1]
+                for row in connection.exec_driver_sql("PRAGMA table_info(projects)").fetchall()
+            }
+        assert [row[0] for row in rows] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        assert [row[1] for row in rows] == [
+            "core_schema",
+            "project_ai_mode",
+            "artifacts_and_local_jobs",
+            "courses_and_chapters",
+            "project_canvas_profile",
+            "agent_idempotency",
+            "agent_review_policy",
+            "auto_mode_pause_and_style",
+            "project_mask_enabled",
+            "local_job_submission_key",
+            "project_creation_config",
+            "creative_accounts",
+            "course_account_ownership",
+            "project_production_and_presentation_modes",
+            "project_target_duration",
+            "repair_presentation_mode_backfill",
+            "project_visual_backend",
+        ]
+        assert all(len(row[2]) == 64 for row in rows)
+        assert "ai_mode" in project_columns
+        assert "revision" in project_columns
+        assert "review_policy" in project_columns
+        assert "manual_pause_steps" in project_columns
+        assert "image_style_template" in project_columns
+        assert "mask_enabled" in project_columns
+        assert "creation_config_package_id" in project_columns
+        assert "creation_config_version" in project_columns
+        assert "creation_config_hash" in project_columns
+        assert "account_id" in project_columns
+        assert "production_mode" in project_columns
+        assert "presentation_mode" in project_columns
+        assert "target_duration_sec" in project_columns
+        assert {"accounts", "agent_tokens"}.issubset(table_names(engine))
+        with engine.connect() as connection:
+            course_columns = {
+                row[1]
+                for row in connection.exec_driver_sql("PRAGMA table_info(courses)").fetchall()
+            }
+        assert "account_id" in course_columns
+        engine.dispose()
+
+
+def test_known_creative_accounts_legacy_checksum_is_rebased_after_schema_check() -> None:
+    """A prior 0012 release must not prevent an otherwise valid DB from starting."""
+    with tempfile.TemporaryDirectory() as value:
+        engine = sqlite_engine(Path(value) / "legacy-0012.db")
+        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        legacy_checksum = "a99a22439d12b3ab9c84e8ccaf7237882c5dc93ebe0f477db47c5a8e9e6004e6"
+        with engine.begin() as connection:
+            connection.exec_driver_sql(
+                "UPDATE schema_migrations SET checksum = ? WHERE version = 12",
+                (legacy_checksum,),
+            )
+
+        assert run_migrations(engine) == []
+        with engine.connect() as connection:
+            checksum = connection.exec_driver_sql(
+                "SELECT checksum FROM schema_migrations WHERE version = 12"
+            ).scalar_one()
+        assert checksum != legacy_checksum
+        assert len(checksum) == 64
+        engine.dispose()
+
+
+def test_legacy_marker_database_is_adopted_without_losing_data() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        database_path = Path(value) / "legacy.db"
+        engine = sqlite_engine(database_path)
+        with engine.begin() as connection:
+            connection.exec_driver_sql(
+                """
+                CREATE TABLE projects (
+                    id VARCHAR PRIMARY KEY,
+                    name VARCHAR NOT NULL,
+                    description VARCHAR,
+                    current_step INTEGER,
+                    status VARCHAR,
+                    step_status TEXT,
+                    created_at DATETIME,
+                    updated_at DATETIME,
+                    run_dir VARCHAR NOT NULL
+                )
+                """
+            )
+            connection.exec_driver_sql(
+                "CREATE TABLE settings (key VARCHAR PRIMARY KEY, value TEXT NOT NULL)"
+            )
+            connection.exec_driver_sql(
+                """
+                CREATE TABLE artifact_records (
+                    id VARCHAR PRIMARY KEY,
+                    project_id VARCHAR NOT NULL,
+                    artifact_type VARCHAR NOT NULL,
+                    filename VARCHAR NOT NULL,
+                    relative_path VARCHAR NOT NULL,
+                    mime_type VARCHAR NOT NULL,
+                    size_bytes INTEGER NOT NULL,
+                    source_fingerprint TEXT NOT NULL,
+                    metadata_json TEXT NOT NULL,
+                    created_at DATETIME NOT NULL
+                )
+                """
+            )
+            connection.exec_driver_sql(
+                """
+                CREATE TABLE local_jobs (
+                    id VARCHAR PRIMARY KEY,
+                    project_id VARCHAR NOT NULL,
+                    job_type VARCHAR NOT NULL,
+                    status VARCHAR NOT NULL,
+                    progress INTEGER NOT NULL,
+                    stage VARCHAR NOT NULL,
+                    error TEXT,
+                    result_artifact_id VARCHAR,
+                    payload_json TEXT NOT NULL,
+                    created_at DATETIME NOT NULL,
+                    started_at DATETIME,
+                    finished_at DATETIME,
+                    updated_at DATETIME NOT NULL
+                )
+                """
+            )
+            connection.exec_driver_sql(
+                """
+                CREATE TABLE schema_migrations (
+                    version VARCHAR PRIMARY KEY,
+                    applied_at DATETIME NOT NULL
+                )
+                """
+            )
+            connection.exec_driver_sql(
+                "INSERT INTO schema_migrations VALUES "
+                "('0001_artifact_records_and_local_jobs', '2026-07-30 00:00:00')"
+            )
+            connection.exec_driver_sql(
+                """
+                INSERT INTO projects (
+                    id, name, current_step, status, step_status, run_dir
+                ) VALUES ('kept', '保留项目', 3, 'active', '{}', 'runs/kept')
+                """
+            )
+
+        assert run_migrations(engine) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        with engine.connect() as connection:
+            project = connection.exec_driver_sql(
+                "SELECT id, name, ai_mode FROM projects WHERE id = 'kept'"
+            ).one()
+            rows = connection.exec_driver_sql(
+                "SELECT version, name FROM schema_migrations ORDER BY version"
+            ).fetchall()
+        assert tuple(project) == ("kept", "保留项目", "auto")
+        assert [tuple(row) for row in rows] == [
+            (1, "core_schema"),
+            (2, "project_ai_mode"),
+            (3, "artifacts_and_local_jobs"),
+            (4, "courses_and_chapters"),
+            (5, "project_canvas_profile"),
+            (6, "agent_idempotency"),
+            (7, "agent_review_policy"),
+            (8, "auto_mode_pause_and_style"),
+            (9, "project_mask_enabled"),
+            (10, "local_job_submission_key"),
+                (11, "project_creation_config"),
+                (12, "creative_accounts"),
+                (13, "course_account_ownership"),
+                (14, "project_production_and_presentation_modes"),
+                (15, "project_target_duration"),
+                (16, "repair_presentation_mode_backfill"),
+                (17, "project_visual_backend"),
+        ]
+        engine.dispose()
+
+
+def test_checksum_mismatch_is_rejected() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        root = Path(value)
+        migrations = root / "migrations"
+        migrations.mkdir()
+        migration = migrations / "0001_example.sql"
+        migration.write_text("CREATE TABLE example (id INTEGER PRIMARY KEY);\n", encoding="utf-8")
+        engine = sqlite_engine(root / "checksum.db")
+
+        assert run_migrations(engine, migrations) == [1]
+        migration.write_text(
+            "CREATE TABLE example (id INTEGER PRIMARY KEY, name TEXT);\n",
+            encoding="utf-8",
+        )
+        with pytest.raises(MigrationError, match="checksum"):
+            run_migrations(engine, migrations)
+        engine.dispose()
+
+
+def test_failed_migration_rolls_back_schema_and_ledger() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        root = Path(value)
+        migrations = root / "migrations"
+        migrations.mkdir()
+        (migrations / "0001_broken.sql").write_text(
+            "CREATE TABLE should_rollback (id INTEGER PRIMARY KEY);\n"
+            "INSERT INTO missing_table (id) VALUES (1);\n",
+            encoding="utf-8",
+        )
+        engine = sqlite_engine(root / "rollback.db")
+
+        with pytest.raises(MigrationError, match="failed to apply migration"):
+            run_migrations(engine, migrations)
+
+        assert "should_rollback" not in table_names(engine)
+        with engine.connect() as connection:
+            count = connection.exec_driver_sql(
+                "SELECT COUNT(*) FROM schema_migrations"
+            ).scalar_one()
+        assert count == 0
+        engine.dispose()
+
+
+def test_production_migration_files_are_consecutive() -> None:
+    with tempfile.TemporaryDirectory() as value:
+        engine = sqlite_engine(Path(value) / "production-shape.db")
+        assert run_migrations(engine, MIGRATIONS_DIR) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        engine.dispose()
+
+
+def test_add_column_migration_is_idempotent_on_a_prebuilt_schema() -> None:
+    """已是最新 schema 但没有 ledger 记录的数据库必须仍能初始化。
+
+    回归背景：数据库可能由 ``Base.metadata.create_all()`` 建成，或来自更新的
+    快照/备份 —— 此时 schema 已含目标列但 ledger 为空。
+    ``_known_migration_already_present`` 只为迁移 1-13 写了识别规则，14/15 缺失，
+    于是 0014/0015 会对已存在的列再执行 ``ALTER TABLE ... ADD COLUMN``，
+    报 duplicate column name，**整库无法启动**。
+
+    这里用真实迁移目录忠实复现：先正常建库，再清空 ledger 模拟"schema 齐全但
+    没有迁移记录"，然后必须能重新初始化成功。
+    """
+    from database_migrations import _statement_head
+
+    # 语句前的 "--" 注释会被 _split_sql_statements 一起带进语句开头，
+    # 判定语句种类时必须先剥掉，否则容忍逻辑不生效（曾因此漏判）。
+    commented_inline = (
+        "-- leading comment explaining the change\n"
+        "ALTER TABLE projects ADD COLUMN production_mode VARCHAR(32);"
+    )
+    assert _statement_head(commented_inline).startswith("ALTER TABLE")
+
+    with tempfile.TemporaryDirectory() as value:
+        engine = sqlite_engine(Path(value) / "prebuilt.db")
+        try:
+            assert run_migrations(engine, MIGRATIONS_DIR) == list(range(1, 18))
+
+            # 模拟 create_all/快照带来的状态：列都在，ledger 为空。
+            with engine.connect() as connection:
+                connection.exec_driver_sql("DELETE FROM schema_migrations")
+                connection.commit()
+
+            # 修复前这里会因 0014 的 duplicate column name 直接抛 MigrationError。
+            assert run_migrations(engine, MIGRATIONS_DIR) == list(range(1, 18))
+
+            with engine.connect() as connection:
+                columns = {
+                    row[1]
+                    for row in connection.exec_driver_sql(
+                        "PRAGMA table_info(projects)"
+                    ).fetchall()
+                }
+                applied = connection.exec_driver_sql(
+                    "SELECT COUNT(*) FROM schema_migrations"
+                ).scalar_one()
+            assert {"production_mode", "presentation_mode", "target_duration_sec"}.issubset(
+                columns
+            )
+            assert applied == 17
+        finally:
+            # 断言失败时也必须释放句柄，否则临时目录清理会报文件占用，
+            # 掩盖真正的失败原因。
+            engine.dispose()
+
+
+def test_non_additive_statement_errors_are_not_swallowed() -> None:
+    """只有"加列且列已存在"才容忍；其它语句错误必须照常失败。"""
+    with tempfile.TemporaryDirectory() as value:
+        root = Path(value)
+        migrations = root / "migrations"
+        migrations.mkdir()
+        (migrations / "0001_broken.sql").write_text(
+            "CREATE TABLE ok (id INTEGER PRIMARY KEY);\n"
+            "INSERT INTO ok (missing_column) VALUES (1);\n",
+            encoding="utf-8",
+        )
+        engine = sqlite_engine(root / "errors.db")
+        try:
+            with pytest.raises(MigrationError, match="failed to apply migration"):
+                run_migrations(engine, migrations)
+        finally:
+            engine.dispose()

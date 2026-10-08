@@ -1,0 +1,1407 @@
+"""Persistent video render orchestration.
+
+The coordinator owns task state and stage transitions. Remotion subprocesses,
+MP4 filesystem operations, and SQLite job persistence live in dedicated
+components.
+"""
+
+from __future__ import annotations
+
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, replace as dataclass_replace
+from datetime import datetime
+import json
+import logging
+import os
+from pathlib import Path
+import threading
+import time
+import uuid
+import generation_control
+from typing import Any, Callable
+
+from sqlalchemy.orm import Session
+
+from artifact_fingerprint import sha256_json
+from database import LocalJob, Project, utc_now_naive
+import distribution_profile
+import invalidation_service
+from remotion_runner import RemotionRunner
+from scripts.media_tools import resolve_media_tool
+from tts_artifacts import confirmation_status as tts_confirmation_status
+from video_artifact_service import VideoArtifactService
+from video_contracts import VideoRenderConfig, VideoRenderError
+from video_job_store import (
+    ACTIVE_JOB_STATUSES,
+    VIDEO_RENDER_JOB_TYPE,
+    VideoJobPersistenceError,
+    VideoJobStore,
+)
+from visual_provenance import validate_visual_provenance_set
+from account_context import get_current_account_id, reset_current_account_id, set_current_account_id
+
+
+logger = logging.getLogger("PPTStudio.VideoRender")
+
+RENDER_STAGE_LABELS = {
+    "validating": "校验项目状态",
+    "building_reveal": "构建 Reveal 资源",
+    "binding_timeline": "绑定语音时间轴",
+    "building_props": "构建 Remotion 配置",
+    "rendering": "Remotion 渲染中",
+    "digital_human": "合成数字人讲解窗口",
+    "validating_color": "校验视频颜色",
+    "finalizing": "写入元数据",
+    "interrupted": "任务已中断",
+}
+
+RENDER_STAGE_PROGRESS = {
+    "validating": 5,
+    "building_reveal": 15,
+    "binding_timeline": 28,
+    "building_props": 40,
+    "rendering": 52,
+    "digital_human": 74,
+    "validating_color": 88,
+    "finalizing": 96,
+    # HTML 后端逐页渲染阶段：progress 以 "rendering:<slide_id>" 形式上报，
+    # 统一映射到逐页渲染区间。
+    "composing": 80,
+}
+RENDER_STAGE_PROGRESS_DEFAULT_HTML = 52
+
+RENDER_SUBMISSION_SCHEMA_VERSION = 1
+RENDER_OUTPUT_FPS = 30
+RENDER_OUTPUT_CODEC = "h264"
+
+
+class DigitalHumanCompositeError(RuntimeError):
+    """A presenter was requested, but the MP4 could not be composited."""
+
+
+@dataclass(frozen=True)
+class VideoRenderDependencies:
+    session_factory: Callable[[], Session]
+    artifact_service: VideoArtifactService
+    remotion_runner: RemotionRunner
+    config: VideoRenderConfig
+    # Global cross-project render concurrency.  Extra submissions stay queued
+    # as persistent "queued" jobs until a worker slot frees up.
+    max_concurrent_renders: int = 1
+    # Optional until the html backend is configured; html projects fail
+    # with a clear error instead of silently using the image pipeline.
+    html_runner: Any | None = None
+
+
+class VideoRenderService:
+    """Coordinates validation, jobs, rendering, and artifact publication."""
+
+    def __init__(self, dependencies: VideoRenderDependencies) -> None:
+        self.dependencies = dependencies
+        self.artifacts = dependencies.artifact_service
+        self.runner = dependencies.remotion_runner
+        self.job_store = VideoJobStore(dependencies.session_factory)
+        self._tasks: dict[str, dict[str, Any]] = {}
+        self._tasks_lock = threading.Lock()
+        self._project_locks: dict[str, threading.Lock] = {}
+        self._project_locks_guard = threading.Lock()
+        # Bounded global worker pool: the project lock keeps one task per
+        # project, while this pool caps how many projects render at once.
+        self._render_executor = ThreadPoolExecutor(
+            max_workers=max(1, int(dependencies.max_concurrent_renders)),
+            thread_name_prefix="video-render",
+        )
+
+    @property
+    def config(self) -> VideoRenderConfig:
+        return self.dependencies.config
+
+    def recover_jobs(self) -> int:
+        return self.job_store.interrupt_orphaned(
+            "应用上次运行时退出，视频渲染已中断；请重新生成。",
+            queued_message="应用在任务开始前退出，排队中的渲染任务已取消；请重新提交渲染。",
+        )
+
+    def get_project(self, db: Session, project_id: str) -> Project:
+        return self.artifacts.get_project(db, project_id)
+
+    # Compatibility facade: callers and routes keep one stable service surface.
+    def validated_run_dir(self, project: Project) -> Path:
+        return self.artifacts.validated_run_dir(project)
+
+    def project_video_dir(self, project: Project) -> Path:
+        return self.artifacts.project_video_dir(project)
+
+    def project_video_file(
+        self,
+        project: Project,
+        filename: str,
+    ) -> Path:
+        return self.artifacts.project_video_file(project, filename)
+
+    def project_legacy_video_file(self, project: Project) -> Path:
+        return self.artifacts.project_legacy_video_file(project)
+
+    @staticmethod
+    def video_metadata_path(path: str | Path) -> Path:
+        return VideoArtifactService.video_metadata_path(path)
+
+    def read_video_metadata(
+        self,
+        path: str | Path,
+    ) -> dict[str, Any]:
+        return self.artifacts.read_video_metadata(path)
+
+    def current_render_input_fingerprint(
+        self,
+        project: Project,
+    ) -> dict[str, Any]:
+        return self.artifacts.current_render_input_fingerprint(project)
+
+    def video_item(
+        self,
+        project: Project,
+        path: str | Path,
+        label: str | None = None,
+        current_fingerprint: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        return self.artifacts.video_item(
+            project,
+            path,
+            label,
+            current_fingerprint,
+        )
+
+    def list_video_items(
+        self,
+        project: Project,
+    ) -> list[dict[str, Any]]:
+        return self.artifacts.list_video_items(project)
+
+    def start_render(
+        self,
+        db: Session,
+        project_id: str,
+    ) -> dict[str, Any]:
+        project = self.get_project(db, project_id)
+        slide_ids = self._read_contract_slide_ids(project.run_dir)
+        if (getattr(project, "visual_backend", "image") or "image") == "html":
+            from html_input_manifest import html_readiness
+            ready = html_readiness(project.run_dir, Path(__file__).resolve().parent, slide_ids)
+            if not ready["ready"]:
+                raise VideoRenderError(409, "HTML 输入或视觉批准未就绪：" +
+                                       "; ".join(x["message"] for x in ready["issues"]))
+            missing_bindings = [slide for slide in slide_ids if not (Path(project.run_dir)/"planning/html_visual"/f"binding-{slide}.json").is_file()]
+            if missing_bindings:
+                raise VideoRenderError(409,"页面缺少语块动作绑定，请重新生成场景："+", ".join(missing_bindings))
+        else:
+            provenance_errors = validate_visual_provenance_set(
+                project.run_dir,
+                slide_ids,
+            )
+            if provenance_errors:
+                details = ", ".join(
+                    f"{item['slide_id']}({item['reason']})"
+                    for item in provenance_errors
+                )
+                raise VideoRenderError(
+                    409,
+                    "图片来源校验未通过，请返回图片步骤处理：" + details,
+                )
+        audio_confirmation = tts_confirmation_status(
+            project.run_dir,
+            slide_ids,
+        )
+        if not audio_confirmation.get("confirmed"):
+            if audio_confirmation.get("reason") == "legacy_confirmation":
+                raise VideoRenderError(
+                    400,
+                    "音频文件仍在，但旧版确认记录已失效。请回到“旁白与音频”试听并重新确认；无需重新合成音频。",
+                )
+            if audio_confirmation.get("reason") == "config_changed":
+                raise VideoRenderError(
+                    400,
+                    "语音合成配置已在确认音频后发生变更，请回到“旁白与音频”重新生成并确认音频后再渲染。",
+                )
+            raise VideoRenderError(
+                400,
+                "请先在“旁白与音频”步骤试听并确认音频，再开始视频渲染。",
+            )
+        submission_key = self._submission_key(project)
+
+        project_lock = self._project_lock(project_id)
+        if not project_lock.acquire(blocking=False):
+            active = self._active_task(project_id)
+            if active:
+                return self._active_task_response(active)
+            raise VideoRenderError(
+                409,
+                "该项目已有渲染任务进行中，请等待完成或刷新页面查看状态。",
+            )
+
+        prior_submission = self._latest_submission(
+            project_id,
+            submission_key,
+        )
+        if prior_submission and self._can_reuse_submission(
+            project,
+            prior_submission,
+        ):
+            project_lock.release()
+            return self._submission_reuse_response(prior_submission)
+
+        active = self._active_task(project_id)
+        if active:
+            project_lock.release()
+            return self._active_task_response(active)
+
+        try:
+            self._complete_caller_transaction_before_job_create(
+                db,
+                project_id,
+            )
+        except Exception:
+            # No worker owns the project lock until the persistent job has
+            # been created.  Transaction-boundary failures must therefore
+            # release it in this request path.
+            project_lock.release()
+            raise
+        task_id = uuid.uuid4().hex
+        submission_attempt = self._next_submission_attempt(
+            prior_submission,
+        )
+        payload = {
+            "requested_at": datetime.now().isoformat(timespec="seconds"),
+            "submission_key": submission_key,
+            "submission_attempt": submission_attempt,
+            "account_id": getattr(project, "account_id", None) or get_current_account_id(),
+        }
+        if prior_submission:
+            # The prior id is a local opaque identifier.  Do not include
+            # database paths, request payloads, or any provider credentials.
+            payload["prior_job_id"] = prior_submission.id
+        try:
+            self.job_store.create(
+                project_id,
+                job_id=task_id,
+                stage="validating",
+                payload=payload,
+                submission_key=submission_key,
+                submission_attempt=submission_attempt,
+            )
+        except VideoJobPersistenceError as exc:
+            project_lock.release()
+            logger.error(
+                "Video render job persistence failed project_id=%s "
+                "category=%s exception_type=%s attempts=%s retryable=%s",
+                project_id,
+                exc.category,
+                exc.exception_type,
+                exc.attempt_count,
+                exc.retryable,
+            )
+            raise VideoRenderError(
+                500,
+                exc.public_message,
+            ) from exc
+        except Exception as exc:
+            project_lock.release()
+            logger.error(
+                "Video render job persistence failed project_id=%s "
+                "category=%s exception_type=%s attempts=%s retryable=%s",
+                project_id,
+                "unclassified_persistence_failure",
+                type(exc).__name__,
+                1,
+                False,
+            )
+            raise VideoRenderError(
+                500,
+                "无法创建持久化视频任务，请重试。",
+            ) from exc
+
+        with self._tasks_lock:
+            self._tasks[task_id] = {
+                "task_id": task_id,
+                "project_id": project_id,
+                # The task stays "queued" in memory until a render worker
+                # actually picks it up from the bounded pool; polling then
+                # shows a truthful queue position instead of fake progress.
+                "status": "queued",
+                "stage": "validating",
+                "stage_label": RENDER_STAGE_LABELS["validating"],
+                "started_at": time.time(),
+                "finished_at": None,
+                "elapsed_sec": 0.0,
+                "error": None,
+                "video": None,
+                "videos": None,
+                "output_filename": None,
+            }
+
+        generation_control.reserve(project_id, 'video', task_id)
+        try:
+            future = self._render_executor.submit(
+                self.run_render_job,
+                project_id,
+                task_id,
+                project_lock,
+                getattr(project, "account_id", None) or get_current_account_id(),
+            )
+            if future is not None:
+                def stop_queued():
+                    if future.cancel():
+                        self._set_task_status(task_id, 'cancelled')
+                        generation_control.finish(project_id, 'video', task_id)
+                        project_lock.release()
+                generation_control.bind_stop_handler(project_id, 'video', task_id, stop_queued)
+        except Exception as exc:
+            generation_control.finish(project_id, 'video', task_id)
+            self._set_task_status(
+                task_id,
+                "interrupted",
+                error="视频任务启动失败，请重试",
+            )
+            project_lock.release()
+            logger.exception(
+                "Failed to enqueue video render task for %s",
+                project_id,
+            )
+            raise VideoRenderError(
+                500,
+                "视频任务启动失败，请重试",
+            ) from exc
+        return {
+            "success": True,
+            "task_id": task_id,
+            "status": "queued",
+            "stage": "validating",
+            "stage_label": RENDER_STAGE_LABELS["validating"],
+            "elapsed_sec": 0.0,
+            "message": "渲染已启动，请轮询 render-status 接口",
+        }
+
+    def _submission_key(self, project: Project) -> str:
+        """Hash the complete render input without persisting sensitive data.
+
+        The artifact fingerprint already covers the ordered Slide assets,
+        confirmed audio, visual settings, Remotion props, and pipeline version.
+        Only its digest is used here.  The small explicit render config section
+        covers service-level output-affecting values that are not files.
+        """
+        fingerprint = self.current_render_input_fingerprint(project)
+        # ``scene.json``, ``animation_timeline.json``, and
+        # ``remotion_props.json`` are generated during a render.  Including
+        # them would make the exact same submission appear new immediately
+        # after its first successful render.  Keep only the source artifacts
+        # that are already confirmed before a worker begins.
+        components = fingerprint.get("components")
+        if isinstance(components, dict):
+            stable_components = {
+                str(path): value
+                for path, value in components.items()
+                if str(path) != "remotion_props.json"
+                and not str(path).endswith("/scene.json")
+                and not str(path).endswith("/animation_timeline.json")
+            }
+            fingerprint_digest = sha256_json(
+                {
+                    "schema_version": fingerprint.get("schema_version"),
+                    "pipeline_version": fingerprint.get("pipeline_version"),
+                    "slide_ids": fingerprint.get("slide_ids"),
+                    "visual_settings": fingerprint.get("visual_settings"),
+                    "components": stable_components,
+                }
+            )
+        else:
+            # Test and extension callers that only provide a digest retain a
+            # stable key without exposing the full input payload.
+            fingerprint_digest = str(fingerprint.get("digest") or "")
+            if not fingerprint_digest:
+                fingerprint_digest = sha256_json(fingerprint)
+        return sha256_json(
+            {
+                "schema_version": RENDER_SUBMISSION_SCHEMA_VERSION,
+                "project_id": project.id,
+                "render_input_digest": fingerprint_digest,
+                "render_config": {
+                    "pipeline_version": self.config.pipeline_version,
+                    "reveal_visual_lead_sec": (
+                        self.config.reveal_visual_lead_sec
+                    ),
+                    "canvas_profile": str(
+                        getattr(project, "canvas_profile", "landscape_16_9")
+                        or "landscape_16_9"
+                    ),
+                    "fps": RENDER_OUTPUT_FPS,
+                    "codec": RENDER_OUTPUT_CODEC,
+                },
+            }
+        )
+
+    def _latest_submission(
+        self,
+        project_id: str,
+        submission_key: str,
+    ) -> LocalJob | None:
+        lookup = getattr(self.job_store, "latest_for_submission", None)
+        return lookup(project_id, submission_key) if callable(lookup) else None
+
+    def _can_reuse_submission(
+        self,
+        project: Project,
+        job: LocalJob,
+    ) -> bool:
+        if job.status in ACTIVE_JOB_STATUSES:
+            return True
+        if job.status != "succeeded":
+            return False
+        payload = job.get_payload()
+        output_filename = str(payload.get("output_filename") or "").strip()
+        if not output_filename:
+            return False
+        try:
+            return self.project_video_file(
+                project,
+                output_filename,
+            ).is_file()
+        except (OSError, VideoRenderError):
+            return False
+
+    @staticmethod
+    def _next_submission_attempt(job: LocalJob | None) -> int:
+        if job is None:
+            return 0
+        payload = job.get_payload()
+        try:
+            prior_attempt = int(payload.get("submission_attempt", 0))
+        except (TypeError, ValueError):
+            prior_attempt = 0
+        return max(0, prior_attempt) + 1
+
+    def _submission_reuse_response(
+        self,
+        job: LocalJob,
+    ) -> dict[str, Any]:
+        task = self._attach_queue_ahead(
+            job,
+            self._persistent_job_to_task(job),
+        )
+        if job.status in ACTIVE_JOB_STATUSES:
+            return self._active_task_response(task)
+        return {
+            "success": True,
+            "task_id": task["task_id"],
+            "status": task["status"],
+            "stage": task["stage"],
+            "stage_label": RENDER_STAGE_LABELS.get(
+                task.get("stage") or "",
+                "",
+            ),
+            "elapsed_sec": task["elapsed_sec"],
+            "message": "当前输入已有可用视频，无需重复渲染。",
+        }
+
+    @staticmethod
+    def _complete_caller_transaction_before_job_create(
+        db: Session,
+        project_id: str,
+    ) -> None:
+        """End a caller-owned transaction before the job store opens its own.
+
+        One-click passes a long-lived session through all earlier stages.  The
+        persistent render-job insertion deliberately uses a separate session,
+        so leaving an earlier write transaction open can deadlock SQLite's
+        single writer.  Commit even read-only sessions to close their current
+        transaction boundary; on failure immediately roll it back.
+        """
+        try:
+            db.commit()
+        except Exception as exc:
+            try:
+                db.rollback()
+            except Exception:
+                # The original transaction-finalization failure is the useful
+                # diagnostic; never replace it with a rollback failure.
+                pass
+            logger.error(
+                "Video render caller transaction finalization failed "
+                "project_id=%s category=%s exception_type=%s "
+                "attempts=%s retryable=%s",
+                project_id,
+                "caller_transaction_finalize_failed",
+                type(exc).__name__,
+                1,
+                False,
+            )
+            raise VideoRenderError(
+                500,
+                "无法准备持久化视频任务，请重试。",
+            ) from exc
+
+    def render_status(
+        self,
+        db: Session,
+        project_id: str,
+        *,
+        task_id: str | None = None,
+    ) -> dict[str, Any]:
+        project = self.get_project(db, project_id)
+        task: dict[str, Any] | None = None
+        with self._tasks_lock:
+            if task_id:
+                task = self._tasks.get(task_id)
+                if (
+                    task is not None
+                    and task["project_id"] != project_id
+                ):
+                    task = None
+            else:
+                candidates = [
+                    value
+                    for value in self._tasks.values()
+                    if value["project_id"] == project_id
+                ]
+                if candidates:
+                    task = max(
+                        candidates,
+                        key=lambda value: value["started_at"],
+                    )
+        if task is not None and task.get("status") in {"queued", "rendering"}:
+            # 持久任务是最终状态来源：worker 崩溃、启动恢复或任何路径写
+            # 出终态后，内存里的活跃快照（queued/rendering）不得盖过
+            # 数据库的终态；反之持久 running 只补充细节，不回盖内存。
+            persistent_active = self.job_store.get(
+                task["task_id"],
+                project_id=project_id,
+            )
+            if (
+                persistent_active is not None
+                and persistent_active.status in {"succeeded", "failed", "interrupted", "cancelled"}
+            ):
+                task = self._persistent_job_to_task(persistent_active)
+        if task is None:
+            persistent = (
+                self.job_store.get(
+                    task_id,
+                    project_id=project_id,
+                )
+                if task_id
+                else self.job_store.latest(project_id)
+            )
+            if persistent:
+                task = self._persistent_job_to_task(persistent)
+        if task is None:
+            return {
+                "success": True,
+                "status": "idle",
+                "task_id": None,
+                "stage": None,
+                "stage_label": "",
+                "elapsed_sec": 0.0,
+                "error": None,
+                "video": None,
+                "videos": self.list_video_items(project),
+            }
+
+        elapsed = (
+            round(time.time() - task["started_at"], 1)
+            if task["status"] == "rendering"
+            else task.get("elapsed_sec", 0.0)
+        )
+        video = task.get("video")
+        output_filename = str(
+            task.get("output_filename") or ""
+        )
+        if not video and output_filename:
+            try:
+                output_path = self.project_video_file(
+                    project,
+                    output_filename,
+                )
+                if output_path.is_file():
+                    video = self.video_item(project, output_path)
+            except (VideoRenderError, OSError):
+                video = None
+        return {
+            "success": True,
+            "task_id": task["task_id"],
+            "status": task["status"],
+            "stage": task.get("stage"),
+            "stage_label": RENDER_STAGE_LABELS.get(
+                task.get("stage") or "",
+                "",
+            ),
+            "started_at": task["started_at"],
+            "finished_at": task.get("finished_at"),
+            "elapsed_sec": elapsed,
+            "queue_ahead": task.get("queue_ahead"),
+            "error": task.get("error"),
+            "video": video,
+            "videos": (
+                task.get("videos")
+                or self.list_video_items(project)
+            ),
+        }
+
+    def run_render_job(
+        self,
+        project_id: str,
+        task_id: str,
+        render_lock: threading.Lock | None = None,
+        account_id: str = "default",
+    ) -> None:
+        """执行一次视频渲染任务。
+
+        render_lock 由 start_render 在请求线程获取后显式移交（审查 L-12）：
+        渲染全生命周期持有同一把按项目互斥锁，由本 worker 在 finally 中释放。
+        未传锁（历史调用方/测试直调）时沿用旧的按需读取 + locked() 守卫。
+        """
+        account_context_token = set_current_account_id(account_id)
+        # worker 已从队列取出任务：内存状态从 queued 翻转为 rendering，
+        # 持久层同步置 running。否则整个渲染期间 render_status 一直返回
+        # 创建时的 queued，前端始终显示"排队中"，且 _prune_tasks_locked
+        # 的活动任务保护集合恒为空。
+        self._set_task_status(task_id, "rendering")
+        db = self.dependencies.session_factory()
+        try:
+            project = (
+                db.query(Project)
+                .filter(Project.id == project_id, Project.account_id == get_current_account_id())
+                .first()
+            )
+            if not project:
+                self._set_task_status(
+                    task_id,
+                    "error",
+                    error="项目不存在",
+                )
+                return
+            try:
+                # Source inputs may be edited while the long-running render
+                generation_control.checkpoint(project_id, 'video')
+                # proceeds. Never publish the result as the current version
+                # when that happens.
+                submission_at_start = self._submission_key(project)
+                from project_impact_service import snapshot_impacts
+
+                output_impacts_at_start = snapshot_impacts(
+                    project.run_dir, affected=("output",)
+                )
+                render_started = time.time()
+                runner = self.runner
+                if (getattr(project, "visual_backend", "image") or "image") == "html":
+                    if self.dependencies.html_runner is None:
+                        raise RuntimeError("HTML 渲染后端未配置")
+                    runner = self.dependencies.html_runner
+                result = runner.run(
+                    project,
+                    output_dir=self.project_video_dir(project),
+                    set_stage=lambda stage: self._controlled_stage(project_id, task_id, stage),
+                )
+                render_elapsed = round(time.time() - render_started, 1)
+                logger.info(
+                    "[render-time] project=%s stage=remotion elapsed=%ss",
+                    project.id, render_elapsed,
+                )
+                # 数字人讲解合成：启用时把圆形/矩形窗口叠加到渲染视频上
+                composite_started = time.time()
+                result, dh_composited = self._apply_digital_human_composite(
+                    project,
+                    result,
+                    task_id,
+                )
+                if self._submission_key(project) != submission_at_start:
+                    raise RuntimeError(
+                        "渲染期间项目输入已变化；旧成品保留，请检查修改后重新生成。"
+                    )
+                composite_elapsed = round(time.time() - composite_started, 1)
+                if composite_elapsed > 0.5:
+                    logger.info(
+                        "[render-time] project=%s stage=digital_human elapsed=%ss",
+                        project.id, composite_elapsed,
+                    )
+                self._set_task_stage(task_id, "finalizing")
+                render_fingerprint = (
+                    self.current_render_input_fingerprint(project)
+                )
+                visual_settings = self.artifacts.visual_settings(project)
+                render_completed_at = utc_now_naive()
+                project_created_at = getattr(project, "created_at", None)
+                project_total_elapsed_sec: int | None = None
+                if isinstance(project_created_at, datetime):
+                    project_total_elapsed_sec = max(
+                        0,
+                        round((render_completed_at - project_created_at).total_seconds()),
+                    )
+                render_metadata = {
+                    "rendered_at": render_completed_at.isoformat(timespec="seconds"),
+                    # This measures the complete user-visible production cycle,
+                    # not only the Remotion subprocess duration.
+                    "project_total_elapsed_sec": project_total_elapsed_sec,
+                    "reveal_pipeline_version": (
+                        self.config.pipeline_version
+                    ),
+                    "video_background": visual_settings[
+                        "video_background"
+                    ],
+                    "subtitle_style": visual_settings[
+                        "subtitle_style"
+                    ],
+                    "manifest": "reveal_manifest.json",
+                    "input_fingerprint": render_fingerprint,
+                    "color_standard": "bt709_tv_yuv420p",
+                    "color_validation": result.color_validation,
+                    "digital_human_composite": dh_composited,
+                    "timing_sec": {
+                        "remotion_render": render_elapsed,
+                        "digital_human_composite": composite_elapsed,
+                    },
+                }
+                artifact = self.artifacts.record_rendered_video(
+                    db,
+                    project,
+                    result.output_path,
+                    result.output_filename,
+                    render_metadata=render_metadata,
+                    render_fingerprint=render_fingerprint,
+                )
+                invalidation_service.complete_stage(project, 8)
+                from project_impact_service import resolve_impacts
+
+                # The render that was just published covers the current
+                # project-wide output. Keep unrelated page review items.
+                resolve_impacts(
+                    project.run_dir,
+                    affected=("output",),
+                    snapshot=output_impacts_at_start,
+                )
+                db.commit()
+                video = self.video_item(project, result.output_path)
+                videos = self.list_video_items(project)
+                self._set_task_status(
+                    task_id,
+                    "success",
+                    video=video,
+                    videos=videos,
+                    output_filename=(
+                        video.get("filename")
+                        or result.output_filename
+                    ),
+                    result_artifact_id=artifact.id,
+                )
+            except generation_control.GenerationStopped:
+                self._set_task_status(task_id, 'cancelled')
+            except Exception as exc:
+                logger.exception(
+                    "Async render failed for project %s",
+                    project_id,
+                )
+                self._set_task_status(
+                    task_id,
+                    "error",
+                    error=str(exc),
+                )
+        finally:
+            generation_control.finish(project_id, 'video', task_id)
+            db.close()
+            # R2-006: 只释放显式移交的锁;locked() 探测可能误释放他人持有的锁。
+            try:
+                if render_lock is not None:
+                    render_lock.release()
+            finally:
+                reset_current_account_id(account_context_token)
+
+    def _apply_digital_human_composite(
+        self,
+        project: Project,
+        result: Any,
+        task_id: str,
+    ) -> tuple[Any, bool]:
+        """Remotion 渲染完成后，若启用了数字人讲解，
+        把数字人视频窗口合成到渲染出的整段视频上。
+
+        支持两种数字人源视频：
+          - 上传模式（mode=upload）：使用已上传的整段讲解视频 digi_upload.mp4；
+          - 生成模式（mode=comfyui/generate）：使用已生成的整段数字人视频 digi_full.mp4。
+
+        上传模式直接调用本机 FFmpeg 合成，不依赖 9001 推理服务。只要数字人
+        已启用，源视频、FFmpeg 或合成结果任一不可用都必须使任务失败；绝不能把
+        未合成的普通 MP4 伪装成数字人成片。
+
+        返回 (result, composited)：composited=True 时 result.color_validation
+        已经是合成后成片的重新校验结果（审查 M-07）。
+        """
+        # 发行精简版关闭数字人讲解：读取/校验旧数字人素材之前直接退出，
+        # 旧 digital_human.json 既不触发合成，也不允许阻塞导出。
+        if not distribution_profile.digital_human_enabled():
+            return result, False
+        cfg_path = (
+            Path(project.run_dir) / "planning" / "digital_human.json"
+        )
+        if not cfg_path.exists():
+            return result, False
+        composite_out = result.output_path.with_name(
+            result.output_filename.rsplit(".", 1)[0] + "_dh.mp4"
+        )
+        try:
+            cfg = json.loads(
+                cfg_path.read_text(encoding="utf-8-sig")
+            )
+        except (OSError, json.JSONDecodeError) as exc:
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解配置无法读取，请返回“数字人讲解”重新保存后再生成。"
+            ) from exc
+        if not isinstance(cfg, dict):
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解配置格式错误，请返回“数字人讲解”重新保存后再生成。"
+            )
+        if not cfg.get("enabled"):
+            return result, False
+        mode = str(cfg.get("mode") or "upload").strip().lower()
+        digi_dir = Path(project.run_dir) / "planning" / "digital_human"
+        upload_video = digi_dir / "digi_upload.mp4"
+        full_video = digi_dir / "digi_full.mp4"
+        digi = upload_video if mode == "upload" else full_video
+        if not digi.is_file() or digi.stat().st_size <= 0:
+            if mode == "upload":
+                message = (
+                    "已启用数字人讲解，但未找到上传的视频；"
+                    "请返回“数字人讲解”重新上传后再生成。"
+                )
+            else:
+                message = (
+                    "已启用数字人讲解，但生成的数字人视频尚未就绪；"
+                    "请先完成生成，并确认数字人服务（9001）可用后再生成 MP4。"
+                )
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(message)
+
+        self._set_task_stage(task_id, "digital_human")
+        circle = (
+            cfg.get("circle")
+            if isinstance(cfg.get("circle"), dict)
+            else {"cx": 0.8, "cy": 0.2, "r": 0.25}
+        )
+        video = (
+            cfg.get("video")
+            if isinstance(cfg.get("video"), dict)
+            else {"ox": 0.5, "oy": 0.5, "zoom": 1.0}
+        )
+        shape = str(cfg.get("shape") or "circle")
+        border = (
+            cfg.get("border")
+            if isinstance(cfg.get("border"), dict)
+            else None
+        )
+        position = (
+            cfg.get("position")
+            if isinstance(cfg.get("position"), dict)
+            else None
+        )
+
+        if composite_out.exists():
+            try:
+                composite_out.unlink()
+            except OSError as exc:
+                self._discard_unpublished_digital_human_outputs(
+                    result.output_path,
+                    composite_out,
+                )
+                raise DigitalHumanCompositeError(
+                    "无法准备数字人讲解合成文件，请关闭占用该视频的程序后重试。"
+                ) from exc
+        try:
+            self._ensure_local_digital_human_ffmpeg()
+            # digital_human_service 的合成函数本身不启动 9001，也不会加载推理
+            # 模型；它只复用成熟的 FFmpeg 合成实现。
+            from digital_human_service import composite_circle
+
+            composite_circle(
+                digi_video=digi,
+                base_video=result.output_path,
+                output=composite_out,
+                circle=circle,
+                video=video,
+                shape=shape,
+                border=border,
+                position=position,
+            )
+        except Exception as exc:
+            logger.exception(
+                "[digital-human] composite failed for %s",
+                project.id,
+            )
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解合成失败，请检查上传视频格式和 FFmpeg 组件后重试。"
+            ) from exc
+
+        if not composite_out.is_file() or composite_out.stat().st_size <= 0:
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解合成未生成有效视频，请检查上传视频后重试。"
+            )
+        # 用合成视频替换原渲染视频，保持文件名不变（下游产物逻辑无需改动）
+        try:
+            os.replace(composite_out, result.output_path)
+        except OSError as exc:
+            logger.warning(
+                "[digital-human] composite file replace failed for %s: %s",
+                project.id,
+                exc,
+            )
+            self._discard_unpublished_digital_human_outputs(
+                result.output_path,
+                composite_out,
+            )
+            raise DigitalHumanCompositeError(
+                "数字人讲解合成文件无法写入，请关闭占用该视频的程序后重试。"
+            ) from exc
+        # 合成后的成片必须重新过 bt709 颜色门禁（审查 M-07）：
+        # sidecar 的颜色声明必须描述最终交付文件，而非被替换前的渲染产物。
+        # 校验失败会删除成片并抛错 → 整个渲染任务按失败处理，绝不输出颜色失实文件。
+        fresh_validation = self.runner._validate_render_color(
+            project,
+            result.output_path,
+            set_stage=lambda stage: self._set_task_stage(task_id, stage),
+        )
+        logger.info(
+            "[digital-human] composite success for %s: %s",
+            project.id,
+            result.output_path,
+        )
+        return dataclass_replace(result, color_validation=fresh_validation), True
+
+    def _ensure_local_digital_human_ffmpeg(self) -> None:
+        """Expose the application's resolved FFmpeg binary to the local compositor."""
+        ffmpeg = resolve_media_tool(
+            "ffmpeg",
+            repo_root=self.config.repo_root,
+        )
+        ffprobe = resolve_media_tool(
+            "ffprobe",
+            repo_root=self.config.repo_root,
+        )
+        if not ffmpeg or not ffprobe:
+            raise RuntimeError("FFmpeg 或 FFprobe 不可用")
+        current_path = os.environ.get("PATH", "")
+        existing_dirs = current_path.split(os.pathsep)
+        required_dirs = [
+            str(Path(ffmpeg).parent),
+            str(Path(ffprobe).parent),
+        ]
+        new_dirs = [
+            directory
+            for directory in required_dirs
+            if directory not in existing_dirs
+        ]
+        if new_dirs:
+            os.environ["PATH"] = os.pathsep.join(new_dirs + existing_dirs)
+
+    @staticmethod
+    def _discard_unpublished_digital_human_outputs(
+        base_output: Path,
+        composite_output: Path,
+    ) -> None:
+        """Remove a failed render before it can appear as a normal MP4 artifact."""
+        for path in (composite_output, base_output):
+            try:
+                if path.is_file():
+                    path.unlink()
+            except OSError:
+                logger.warning(
+                    "Could not remove failed digital-human render output %s",
+                    path,
+                    exc_info=True,
+                )
+
+    def list_videos(
+        self,
+        db: Session,
+        project_id: str,
+    ) -> dict[str, Any]:
+        return self.artifacts.list_videos(db, project_id)
+
+    def video_download(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+    ) -> Path:
+        return self.artifacts.video_download(
+            db,
+            project_id,
+            filename,
+        )
+
+    def video_download_filename(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+    ) -> str:
+        return self.artifacts.video_download_filename(
+            db,
+            project_id,
+            filename,
+        )
+
+    def create_speed_adjusted_video(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self.artifacts.create_speed_adjusted_video(
+            db,
+            project_id,
+            filename,
+            payload,
+        )
+
+    def delete_video(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+    ) -> dict[str, Any]:
+        return self.artifacts.delete_video(
+            db,
+            project_id,
+            filename,
+        )
+
+    def final_video_status(
+        self,
+        db: Session,
+        project_id: str,
+    ) -> dict[str, Any]:
+        return self.artifacts.final_video_status(db, project_id)
+
+    def final_video_download(
+        self,
+        db: Session,
+        project_id: str,
+    ) -> Path:
+        return self.artifacts.final_video_download(db, project_id)
+
+    def _attach_queue_ahead(
+        self,
+        job: LocalJob,
+        task: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Attach the cross-project queue position for a queued job.
+
+        The count is advisory: zero means the job is next in line.  A lookup
+        failure degrades to ``None`` instead of failing the status response.
+        """
+        if job.status != "queued":
+            return task
+        try:
+            task["queue_ahead"] = self.job_store.count_queued_ahead(
+                VIDEO_RENDER_JOB_TYPE,
+                before_created_at=job.created_at,
+            )
+        except Exception:
+            logger.warning(
+                "Queue position lookup failed for job %s",
+                job.id,
+                exc_info=True,
+            )
+            task["queue_ahead"] = None
+        return task
+
+    def _project_lock(self, project_id: str) -> threading.Lock:
+        with self._project_locks_guard:
+            lock = self._project_locks.get(project_id)
+            if lock is None:
+                lock = threading.Lock()
+                self._project_locks[project_id] = lock
+            return lock
+
+    def _active_task(
+        self,
+        project_id: str,
+    ) -> dict[str, Any] | None:
+        with self._tasks_lock:
+            for task in self._tasks.values():
+                if (
+                    task["project_id"] == project_id
+                    and task.get("status") in ("rendering", "queued")
+                ):
+                    return task
+        persistent = self.job_store.active(project_id)
+        if not persistent:
+            return None
+        task = self._persistent_job_to_task(persistent)
+        return self._attach_queue_ahead(persistent, task)
+
+    @staticmethod
+    def _active_task_response(
+        active: dict[str, Any],
+    ) -> dict[str, Any]:
+        status = active.get("status") or "rendering"
+        queued = status == "queued"
+        return {
+            "success": True,
+            "task_id": active["task_id"],
+            "status": status,
+            "stage": active.get("stage", "rendering"),
+            "stage_label": RENDER_STAGE_LABELS.get(
+                active.get("stage", ""),
+                "",
+            ),
+            "elapsed_sec": (
+                0.0
+                if queued
+                else round(
+                    time.time() - active["started_at"],
+                    1,
+                )
+            ),
+            "queue_ahead": active.get("queue_ahead"),
+            "message": (
+                "已加入渲染队列，等待前面的任务完成"
+                if queued
+                else "已有渲染任务进行中"
+            ),
+        }
+
+    def _controlled_stage(self, project_id: str, task_id: str, stage: str) -> None:
+        generation_control.checkpoint(project_id, 'video')
+        self._set_task_stage(task_id, stage)
+
+    def _set_task_stage(
+        self,
+        task_id: str,
+        stage: str,
+    ) -> None:
+        with self._tasks_lock:
+            task = self._tasks.get(task_id)
+            if task is not None:
+                task["stage"] = stage
+                task["elapsed_sec"] = round(
+                    time.time() - task["started_at"],
+                    1,
+                )
+        self.job_store.update(
+            task_id,
+            status="running",
+            stage=stage,
+            progress=RENDER_STAGE_PROGRESS.get(stage)
+            or (
+                RENDER_STAGE_PROGRESS_DEFAULT_HTML
+                if stage.startswith("rendering:")
+                else 0
+            ),
+        )
+
+    def _prune_tasks_locked(self) -> None:
+        """Bound the in-memory ``_tasks`` dict.
+
+        Task entries are kept so the frontend can show recent render history,
+        but success/error entries are never removed today, so long-running
+        sessions leak memory. Cap the dict to the newest MAX_TASKS entries,
+        always preserving any still-running task.
+        """
+        max_tasks = 50
+        if len(self._tasks) <= max_tasks:
+            return
+        active_ids = {
+            task_id
+            for task_id, task in self._tasks.items()
+            if task.get("status") in {"queued", "rendering"}
+        }
+        finished = [
+            (task_id, task)
+            for task_id, task in self._tasks.items()
+            if task_id not in active_ids
+        ]
+        finished.sort(
+            key=lambda item: item[1].get("finished_at") or 0.0,
+            reverse=True,
+        )
+        for task_id, _task in finished[max_tasks - len(active_ids):]:
+            self._tasks.pop(task_id, None)
+
+    def _set_task_status(
+        self,
+        task_id: str,
+        status: str,
+        **fields: Any,
+    ) -> None:
+        with self._tasks_lock:
+            task = self._tasks.get(task_id)
+            if task is not None:
+                task["status"] = status
+                task["elapsed_sec"] = round(
+                    time.time() - task["started_at"],
+                    1,
+                )
+                if status in {
+                    "success",
+                    "error",
+                    "interrupted",
+                    "cancelled",
+                }:
+                    task["finished_at"] = time.time()
+                task.update(fields)
+            self._prune_tasks_locked()
+        persistent_status = {
+            "rendering": "running",
+            "success": "succeeded",
+            "error": "failed",
+            "interrupted": "interrupted",
+        }.get(status, status)
+        self.job_store.update(
+            task_id,
+            status=persistent_status,
+            stage=(
+                "completed"
+                if status == "success"
+                else "failed"
+                if status == "error"
+                else None
+            ),
+            progress=100 if status == "success" else None,
+            error=(
+                fields.get("error")
+                if status in {"error", "interrupted"}
+                else None
+            ),
+            result_artifact_id=fields.get(
+                "result_artifact_id"
+            ),
+            payload_updates=(
+                {
+                    "output_filename": fields[
+                        "output_filename"
+                    ]
+                }
+                if fields.get("output_filename")
+                else None
+            ),
+        )
+
+    @staticmethod
+    def _persistent_job_to_task(
+        job: LocalJob,
+    ) -> dict[str, Any]:
+        public_status = {
+            "queued": "rendering",
+            "running": "rendering",
+            "succeeded": "success",
+            "failed": "error",
+            "interrupted": "interrupted",
+            "cancelled": "cancelled",
+        }.get(job.status, job.status)
+        started_at = (
+            job.started_at or job.created_at
+        ).timestamp()
+        finished_at = (
+            job.finished_at.timestamp()
+            if job.finished_at
+            else None
+        )
+        payload = job.get_payload()
+        elapsed = (
+            max(
+                0.0,
+                (
+                    job.finished_at
+                    - (job.started_at or job.created_at)
+                ).total_seconds(),
+            )
+            if job.finished_at
+            else max(0.0, time.time() - started_at)
+        )
+        return {
+            "task_id": job.id,
+            "project_id": job.project_id,
+            "status": public_status,
+            "stage": job.stage,
+            "started_at": started_at,
+            "finished_at": finished_at,
+            "elapsed_sec": round(elapsed, 1),
+            "error": job.error,
+            "video": None,
+            "videos": None,
+            "output_filename": (
+                str(payload.get("output_filename") or "")
+                or None
+            ),
+            "result_artifact_id": job.result_artifact_id,
+            "progress": int(job.progress or 0),
+        }
+
+    @staticmethod
+    def _read_contract_slide_ids(
+        run_dir: str | Path,
+    ) -> list[str]:
+        path = Path(run_dir) / "planning" / "visual_contract.json"
+        try:
+            payload = json.loads(
+                path.read_text(encoding="utf-8-sig")
+            )
+        except (OSError, json.JSONDecodeError):
+            return []
+        if not isinstance(payload, dict):
+            return []
+        return [
+            str(slide.get("slide_id") or "").strip()
+            for slide in payload.get("slides", [])
+            if (
+                isinstance(slide, dict)
+                and str(slide.get("slide_id") or "").strip()
+            )
+        ]
+
+
+_SERVICE_LOCK = threading.Lock()
+_SERVICE: VideoRenderService | None = None
+
+
+def configure_video_render_service(
+    dependencies: VideoRenderDependencies,
+    *,
+    recover_jobs: bool = True,
+) -> VideoRenderService:
+    global _SERVICE
+    service = VideoRenderService(dependencies)
+    with _SERVICE_LOCK:
+        _SERVICE = service
+    if recover_jobs:
+        changed = service.recover_jobs()
+        if changed:
+            logger.info(
+                "Marked %s orphaned video render job(s) as interrupted",
+                changed,
+            )
+    return service
+
+
+def get_video_render_service() -> VideoRenderService:
+    if _SERVICE is None:
+        raise RuntimeError(
+            "Video render service has not been configured"
+        )
+    return _SERVICE

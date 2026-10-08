@@ -1,0 +1,150 @@
+"""Read-only diagnostics for explicitly registered source services."""
+
+from __future__ import annotations
+
+import json
+from typing import Any
+
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import PlainTextResponse
+
+from error_log_service import ERROR_LOG_DIR, get_latest_error_log_path
+from route_inventory import iter_effective_routes
+import generation_governor
+
+
+router = APIRouter()
+
+EXPECTED_SOURCE_ROUTES = {
+    "/api/projects/{project_id}/one-click-generate": {"POST"},
+    "/api/projects/{project_id}/steps/5/ai-mask/annotate": {"POST"},
+    "/api/projects/{project_id}/steps/3/image-style": {"GET", "PUT"},
+}
+
+ANNOTATION_RUNTIME_VERSION = "annotation_batch_bcd_v1"
+ANNOTATION_REQUIRED_ROUTES = {
+    "/api/projects/{project_id}/annotations/jobs": "POST",
+    "/api/projects/{project_id}/annotations/jobs/{job_id}": "GET",
+    "/api/projects/{project_id}/annotations/jobs/{job_id}/cancel": "POST",
+    "/api/projects/{project_id}/annotations/slides/{slide_id}/prepare": "POST",
+    "/api/projects/{project_id}/annotations/slides/{slide_id}/confirm": "POST",
+    "/api/projects/{project_id}/annotations/slides/{slide_id}/ink/{build_id}/{annotation_id}/{stroke_index}/{frame_index}": "GET",
+}
+
+
+def _route_methods_by_path(app: Any) -> dict[str, list[str]]:
+    result: dict[str, set[str]] = {}
+    for route in iter_effective_routes(app):
+        path = route.path
+        if not path:
+            continue
+        methods = set(route.methods)
+        if methods:
+            result.setdefault(path, set()).update(methods)
+    return {path: sorted(methods) for path, methods in sorted(result.items())}
+
+
+def _diagnostics_payload(app: Any) -> dict[str, Any]:
+    routes = _route_methods_by_path(app)
+    effective_route_count = sum(1 for _ in iter_effective_routes(app))
+    missing_routes = sorted(
+        f"{method} {path}"
+        for path, methods in EXPECTED_SOURCE_ROUTES.items()
+        for method in methods
+        if method not in routes.get(path, [])
+    )
+    return {
+        "success": True,
+        "registration_mode": "explicit_source",
+        "runtime_bootstrap_loaded": False,
+        "runtime_modules": [],
+        "expected_routes": {path: sorted(methods) for path, methods in sorted(EXPECTED_SOURCE_ROUTES.items())},
+        "missing_routes": missing_routes,
+        "route_count": effective_route_count,
+        "routes": routes,
+        "annotation_runtime": {
+            "version": ANNOTATION_RUNTIME_VERSION,
+            "ready": all(method in routes.get(path, []) for path, method in ANNOTATION_REQUIRED_ROUTES.items()),
+        },
+    }
+
+
+@router.get("/api/runtime/diagnostics")
+def runtime_diagnostics(request: Request) -> dict[str, Any]:
+    return _diagnostics_payload(request.app)
+
+
+@router.get("/api/diagnostics/generation-governor")
+def generation_governor_snapshot() -> dict[str, Any]:
+    """只读暴露各上游网关的额度占用与排队情况。
+
+    额度是**网关全局**的，所以这里的每个条目对应一个
+    ``(资源种类, 网关)`` 组合，而不是单个项目：
+    - ``requests_per_minute`` / ``max_concurrency`` 是配置额度；
+    - ``concurrency_limit_current`` 是 AIMD 后的当前并发上限（撞限流会减半，
+      连续成功后逐格回升）；
+    - ``tokens_available`` 是令牌桶余量，``queued`` 是正在排队等待的调用方数量；
+    - ``waited_sec_total`` / ``rate_limit_events`` / ``timeouts`` 用于判断
+      到底是被额度卡住，还是被上游限流。
+    """
+    governor = generation_governor.get_generation_governor()
+    return {
+        "success": True,
+        "enabled": governor.enabled,
+        "max_wait_sec": governor.max_wait_sec,
+        "gateways": governor.snapshot(),
+    }
+
+
+
+@router.get("/api/error-log")
+def get_error_log(limit: int = 50) -> dict[str, Any]:
+    """Return recent error log entries for quick diagnosis."""
+    import os
+
+    entries: list[dict[str, Any]] = []
+    if not os.path.isdir(ERROR_LOG_DIR):
+        return {
+            "success": True,
+            "entries": [],
+            "total": 0,
+            "log_dir": ERROR_LOG_DIR,
+        }
+
+    files = sorted(
+        (f for f in os.listdir(ERROR_LOG_DIR) if f.endswith(".jsonl")),
+        reverse=True,
+    )
+    for fname in files:
+        fpath = os.path.join(ERROR_LOG_DIR, fname)
+        try:
+            with open(fpath, encoding="utf-8") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if line:
+                        entries.append(json.loads(line))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if len(entries) >= limit:
+            break
+
+    entries = entries[-limit:]
+    return {
+        "success": True,
+        "total": len(entries),
+        "entries": entries,
+        "log_dir": ERROR_LOG_DIR,
+    }
+
+
+@router.get("/api/error-log/latest", response_class=PlainTextResponse)
+def get_latest_error_log() -> str:
+    """Return the raw contents of today's error log file."""
+    log_path = get_latest_error_log_path()
+    if not log_path:
+        return "# 暂无错误日志记录"
+    try:
+        with open(log_path, encoding="utf-8") as fh:
+            return fh.read()
+    except OSError as exc:
+        raise HTTPException(500, f"读取错误日志失败：{exc}") from exc

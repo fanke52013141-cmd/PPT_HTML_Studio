@@ -1,0 +1,1349 @@
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..');
+const app = fs.readFileSync(path.join(root, 'static', 'workflow_state.js'), 'utf8');
+const uiFoundation = fs.readFileSync(path.join(root, 'static', 'ui_foundation.js'), 'utf8');
+const apiClient = fs.readFileSync(path.join(root, 'static', 'api_client.js'), 'utf8');
+const artifactRepair = fs.readFileSync(path.join(root, 'static', 'artifact_repair.js'), 'utf8');
+const settings = fs.readFileSync(path.join(root, 'static', 'settings.js'), 'utf8');
+const projects = fs.readFileSync(path.join(root, 'static', 'projects.js'), 'utf8');
+const courses = fs.readFileSync(path.join(root, 'static', 'courses.js'), 'utf8');
+const article = fs.readFileSync(path.join(root, 'static', 'article.js'), 'utf8');
+const storyboard = fs.readFileSync(path.join(root, 'static', 'storyboard.js'), 'utf8');
+const storyboardPrompts = fs.readFileSync(path.join(root, 'static', 'storyboard_prompts.js'), 'utf8');
+const images = fs.readFileSync(path.join(root, 'static', 'images.js'), 'utf8');
+const imagePrompts = fs.readFileSync(path.join(root, 'static', 'image_prompts.js'), 'utf8');
+const maskReveal = fs.readFileSync(path.join(root, 'static', 'mask_reveal.js'), 'utf8');
+const maskWorkspace = fs.readFileSync(path.join(root, 'static', 'mask_workspace.js'), 'utf8');
+const maskEditor = fs.readFileSync(path.join(root, 'static', 'mask_editor.js'), 'utf8');
+const subtitleSettings = fs.readFileSync(path.join(root, 'static', 'subtitle_settings.js'), 'utf8');
+const narrationAudio = fs.readFileSync(path.join(root, 'static', 'narration_audio.js'), 'utf8');
+const outputRender = fs.readFileSync(path.join(root, 'static', 'output_render.js'), 'utf8');
+const digitalHumanPanel = fs.readFileSync(path.join(root, 'static', 'digital_human_panel.js'), 'utf8');
+const promptHelp = fs.readFileSync(path.join(root, 'static', 'prompt_help.js'), 'utf8');
+const workspaceNavigation = fs.readFileSync(path.join(root, 'static', 'workspace_navigation.js'), 'utf8');
+const eventBindings = fs.readFileSync(path.join(root, 'static', 'event_bindings.js'), 'utf8');
+const generationControls = fs.readFileSync(path.join(root, 'static', 'generation_controls.js'), 'utf8');
+if (!generationControls.includes('function initGenerationControls()')
+    || app.includes('function initGenerationControls()')
+    || !eventBindings.includes('initGenerationControls();')) {
+  throw new Error('Generation control ownership/startup contract is missing');
+}
+if (eventBindings.includes('getDownstreamEditImpact(')) {
+  throw new Error('Step navigation must not prompt about edits before an edit occurs');
+}
+const step2Logic = `${app}\n${storyboard}\n${storyboardPrompts}`;
+const html = fs.readFileSync(path.join(root, 'static', 'index.html'), 'utf8');
+if (outputRender.includes('loadStep8Impacts(') || html.includes('id="step8-impact-list"') || html.includes('修改后的待核对内容')) {
+  throw new Error('Output workspace must keep the impact ledger out of the user-facing output page');
+}
+const css = fs.readFileSync(path.join(root, 'static', 'style.css'), 'utf8');
+const stitchCss = fs.readFileSync(path.join(root, 'static', 'stitch.css'), 'utf8');
+const aiMask = fs.readFileSync(path.join(root, 'static', 'ai_mask_extension.js'), 'utf8');
+const projectProfile = fs.readFileSync(path.join(root, 'static', 'project_profile_extension.js'), 'utf8');
+const background = fs.readFileSync(path.join(root, 'static', 'storyboard_background_extension.js'), 'utf8');
+const styleManager = fs.readFileSync(path.join(root, 'static', 'style_reference_manager_extension.js'), 'utf8');
+const oneClick = fs.readFileSync(path.join(root, 'static', 'one_click_extension.js'), 'utf8');
+if ([html, images, storyboard, narrationAudio, aiMask, maskWorkspace, outputRender, oneClick]
+    .some(source => /待核对|建议检查|待检查|等待审查/.test(source))) {
+  throw new Error('Non-actionable review notices must not appear in the workspace');
+}
+if ([uiFoundation, images, oneClick].some(source => source.includes('showFailureBadge'))) {
+  throw new Error('Persistent failure badges duplicate in-context job errors');
+}
+if (!uiFoundation.includes("presentation.tone !== 'error'")
+    || !uiFoundation.includes('container.children.length >= 1')
+    || !images.includes('async function getStep3ReplacementVersion(')) {
+  throw new Error('Error-only notification policy or quiet image replacement regressed');
+}
+const creationConfigManagement = fs.readFileSync(path.join(root, 'static', 'creation_config_management.js'), 'utf8');
+const selectMenus = fs.readFileSync(path.join(root, 'static', 'select_menus.js'), 'utf8');
+
+for (const outputToken of ['function formatProjectTotalElapsed(', '总耗时：', 'project_total_elapsed_sec']) {
+  if (!outputRender.includes(outputToken)) {
+    throw new Error(`video output total elapsed display is missing ${outputToken}`);
+  }
+}
+
+if (fs.existsSync(path.join(root, 'static', 'app.js')) || html.includes('app.js')) {
+  throw new Error('legacy app.js runtime entry was recreated');
+}
+for (const stateOwner of ['function createWorkflowState(', 'const state = createWorkflowState()', 'const PPTStudioRuntime =', 'runtime: PPTStudioRuntime']) {
+  if (!app.includes(stateOwner)) throw new Error(`workflow state entry is missing ${stateOwner}`);
+}
+if (!css.includes('#toast-container')) throw new Error('toast container layout missing');
+{
+  // index.html must keep unique DOM ids: runtime wiring is id-based, and a
+  // duplicate silently binds only the first node (docs/ui-consistency-plan.md P2-1).
+  const idCounts = new Map();
+  for (const match of html.matchAll(/\bid="([^"]+)"/g)) {
+    idCounts.set(match[1], (idCounts.get(match[1]) || 0) + 1);
+  }
+  const duplicates = [...idCounts.entries()].filter(([, count]) => count > 1).map(([id]) => id);
+  if (duplicates.length) throw new Error(`duplicate DOM ids in index.html: ${duplicates.join(', ')}`);
+}
+for (const uiOwner of ['getToastPresentation', 'showToast', 'showCustomConfirm', 'escHtml', 'narrationDedupeKey', 'autoResizeTextarea']) {
+  if (!uiFoundation.includes(`function ${uiOwner}(`)) throw new Error(`UI foundation is missing ${uiOwner}`);
+  if (app.includes(`function ${uiOwner}(`)) throw new Error(`UI foundation ownership returned to app.js: ${uiOwner}`);
+}
+if (!(html.indexOf('workflow_state.js') < html.indexOf('ui_foundation.js') && html.indexOf('ui_foundation.js') < html.indexOf('api_client.js'))) {
+  throw new Error('workflow state, UI foundation, and API client script order is unsafe');
+}
+// 发行剖面必须在 flow.js 之前加载：flow.js 的模块工厂在创建时读取
+// window.PPTStudioDistribution 构建有效 flow，加载顺序颠倒会先按完整版定型。
+const distributionProfile = fs.readFileSync(path.join(root, 'static', 'distribution_profile.js'), 'utf8');
+if (!(html.includes('distribution_profile.js') && html.indexOf('distribution_profile.js') < html.indexOf('flow.js'))) {
+  throw new Error('distribution profile must load before flow.js');
+}
+if (!distributionProfile.includes('window.PPTStudioDistribution = Object.freeze({')
+    || !distributionProfile.includes('digital_human: true')
+    || !distributionProfile.includes('handwritten_annotations: true')) {
+  throw new Error('repository distribution profile must default to the full edition');
+}
+for (const apiOwner of ['const API =', "headers.set('X-PPT-Studio-Request'", 'window.API = API']) {
+  if (!apiClient.includes(apiOwner)) throw new Error(`API client is missing ${apiOwner}`);
+  if (app.includes(apiOwner)) throw new Error(`API client ownership returned to app.js: ${apiOwner}`);
+}
+for (const binaryTransport of ['async getBinary(url)', 'async postBinary(url, body, extra = {})', "options.responseType === 'blob'"]) {
+  if (!apiClient.includes(binaryTransport)) throw new Error(`API binary transport is missing ${binaryTransport}`);
+}
+for (const repairOwner of ['artifactRepairPrompts', 'offerArtifactRepair']) {
+  if (!artifactRepair.includes(repairOwner)) throw new Error(`artifact repair module is missing ${repairOwner}`);
+  if (app.includes(repairOwner)) throw new Error(`artifact repair ownership returned to app.js: ${repairOwner}`);
+}
+if (!(html.indexOf('workflow_state.js') < html.indexOf('api_client.js') && html.indexOf('api_client.js') < html.indexOf('artifact_repair.js'))) {
+  throw new Error('workflow state, API client, and artifact repair script order is unsafe');
+}
+if (!stitchCss.includes('left: 50% !important') || !stitchCss.includes('transform: translateX(-50%)')) {
+  throw new Error('global notices must be centered');
+}
+if (/\.toast\s*\{[^}]*position:\s*fixed/s.test(css)) throw new Error('individual toasts still overlap at a fixed position');
+if (!images.includes('step3-card-actions') || !images.includes('step3-delete-action')
+    || !stitchCss.includes('.step3-image-card .step3-card-actions')) {
+  throw new Error('image card actions must separate primary and secondary controls');
+}
+if (!/\.step3-image-card \.step3-card-actions\s*\{[^}]*display:\s*flex\s*!important/s.test(stitchCss)) {
+  throw new Error('image card primary actions must stay on one row');
+}
+if (!images.includes('step3UploadingSlides') || !images.includes("step3GeneratingPreviewHtml('上传中'")) throw new Error('per-card upload progress is missing');
+if (!background.includes('step3-btn-delete-all-images') || !images.includes('deleteAllStep3Images')) throw new Error('bulk image deletion control is missing');
+if (html.includes('step3-image-order-hint')) throw new Error('obsolete fixed-position image hint is still visible');
+
+if (html.includes('config_effectiveness.js')) throw new Error('runtime patch script is still loaded');
+if (!html.includes('settings.js')) throw new Error('settings frontend module is not loaded explicitly');
+for (const settingsFunction of [
+  'loadSettings',
+  'saveSettings',
+  'exportGlobalSettings',
+  'importGlobalSettings',
+  'testLlmConnection',
+  'testImageConnection',
+  'testTtsConnection',
+]) {
+  if (!settings.includes(`function ${settingsFunction}(`)) {
+    throw new Error(`settings module is missing ${settingsFunction}`);
+  }
+  if (app.includes(`function ${settingsFunction}(`)) {
+    throw new Error(`settings implementation returned to app.js: ${settingsFunction}`);
+  }
+}
+if (!settings.includes("/api/config/export-with-secrets-zip") || !settings.includes("confirmation: 'EXPORT_SECRETS'")) {
+  throw new Error('settings export does not use the full migration ZIP endpoint');
+}
+if (!html.includes('projects.js')) throw new Error('project library frontend module is not loaded explicitly');
+for (const projectFunction of ['loadProjects', 'createProject', 'deleteProject']) {
+  if (!projects.includes(`function ${projectFunction}(`)) {
+    throw new Error(`project library module is missing ${projectFunction}`);
+  }
+  if (app.includes(`function ${projectFunction}(`)) {
+    throw new Error(`project library implementation returned to app.js: ${projectFunction}`);
+  }
+}
+for (const creationConfigFunction of ['ensureCreationConfigSelector', 'selectedCreationConfig', 'loadCreationConfigs']) {
+  if (!projects.includes(`function ${creationConfigFunction}(`)) {
+    throw new Error(`project creation configuration selector is missing ${creationConfigFunction}`);
+  }
+}
+if (!html.includes('id="input-creation-config"')) {
+  throw new Error('project creation configuration selector is missing from the static modal');
+}
+for (const creationConfigToken of [
+  "API.get('/api/creation-configs')",
+  'config_package_id: creationConfig.id',
+  "option.textContent = String(item.name || '未命名配置包');",
+]) {
+  if (!projects.includes(creationConfigToken)) {
+    throw new Error(`project creation configuration contract missing: ${creationConfigToken}`);
+  }
+}
+if (projects.includes('config_package_version: creationConfig.version')) {
+  throw new Error('project creation must not pin a creation configuration version');
+}
+if (!eventBindings.includes('loadCreationConfigs();')) {
+  throw new Error('creation configuration packages are not loaded when opening the project modal');
+}
+for (const managementToken of [
+  'openCreationConfigManagement',
+  "window.API.get('/api/creation-configs')",
+  "window.API.get('/api/accounts/current')",
+  'defaultPackageId',
+  "window.API.get('/api/model-connections')",
+  "window.API.post('/api/model-connections', payload)",
+  'MODEL_KIND_COPY',
+  'saveApiSecret',
+  'saveModel',
+  'buildStructuredEditor',
+  'syncStructuredFieldsToJson',
+  'loadPayloadIntoStructured',
+  'updateAutomationControls',
+  'ai_narration_annotation',
+  'ai_mask_annotation',
+  'deletePackage',
+  'deleteModelConnection',
+  'readBindingValue',
+  'versions',
+  'copyPackage',
+  'archivePackage',
+  "window.API.put(`/api/creation-configs/${encodeURIComponent(state.editingPackageId)}`, { name, payload })",
+  'discardCreationConfigChanges',
+  'saveCreationConfigAs',
+  'selectCreationConfigTab',
+]) {
+  if (!creationConfigManagement.includes(managementToken)) {
+    throw new Error(`creation configuration management UI missing: ${managementToken}`);
+  }
+}
+if (!html.includes('creation_config_management.js')
+  || !html.includes('btn-open-creation-config-management')
+  || !html.includes('modal-creation-config-management')
+  || !html.includes('creation-config-prompt-fields')
+  || !html.includes('creation-config-model-binding-fields')
+  || !projectProfile.includes('creation-config-choice-grid')
+  || !projectProfile.includes('refreshCreationConfigChoices')
+  || !creationConfigManagement.includes("['tts', '语音模型'")
+  || !html.includes('creation-config-subtitle-enabled')) {
+  throw new Error('creation configuration management UI is not declared');
+}
+for (const imageStyleControl of [
+  'creation-config-image-style-template',
+  'creation-config-image-style-cards',
+  'creation-config-reference-policy',
+  'model-form-image-supports-references',
+  'model-form-image-max-references',
+]) {
+  if (!html.includes(imageStyleControl) && !creationConfigManagement.includes(imageStyleControl)) {
+    throw new Error(`image style configuration control missing: ${imageStyleControl}`);
+  }
+}
+for (const automaticModeControl of [
+  'creation-config-mode-selector',
+  'creation-config-auto-options',
+  'creation-config-narration-annotation',
+  'creation-config-mask-annotation',
+  'creation-config-seed-audio-concurrency',
+  'creation-config-output-group',
+  'creation-config-subtitle-option',
+]) {
+  if (!html.includes(automaticModeControl)) {
+    throw new Error(`automatic creation configuration control missing: ${automaticModeControl}`);
+  }
+}
+for (const seedAudioConcurrencyToken of [
+  'seed_audio_concurrency',
+  'function boundedSeedAudioConcurrency(value)',
+  'return Math.max(1, Math.min(5, Math.round(numeric)));',
+]) {
+  if (!creationConfigManagement.includes(seedAudioConcurrencyToken)) {
+    throw new Error(`Seed Audio concurrency handling is missing: ${seedAudioConcurrencyToken}`);
+  }
+}
+if (html.includes('creation-config-contract-fields')
+  || html.includes('creation-config-image-style-name')
+  || html.includes('creation-config-tts-voice-id')) {
+  throw new Error('obsolete creation configuration fields are still exposed');
+}
+for (const modelSetupControl of [
+  'model-library-list',
+  'data-model-kind="text"',
+  'data-model-kind="image"',
+  'data-model-kind="tts"',
+  'model-form-protocol',
+  'model-form-minimax-token',
+  'model-form-comfyui-workflow-file',
+  'btn-save-model',
+]) {
+  if (!html.includes(modelSetupControl)) {
+    throw new Error(`typed model setup control missing: ${modelSetupControl}`);
+  }
+}
+if (html.includes('creation-config-credential-list')
+  || html.includes('btn-create-credential')
+  || html.includes('凭据引用')) {
+  throw new Error('legacy credential-management controls are still exposed');
+}
+if (!(html.indexOf('api_client.js') < html.indexOf('creation_config_management.js')
+  && html.indexOf('creation_config_management.js') < html.indexOf('event_bindings.js'))) {
+  throw new Error('creation configuration management script order is unsafe');
+}
+if (!eventBindings.includes('initCreationConfigManagementEvents')) {
+  throw new Error('creation configuration management events are not bound at startup');
+}
+if (!creationConfigManagement.includes('renderImageStyleCards')
+  || !css.includes('.creation-config-image-style-card')) {
+  throw new Error('creation configuration image-style preview cards are missing');
+}
+if (html.includes('兼容项目')
+  || html.includes('input-project-reference-images')
+  || html.includes('create-style-grid')
+  || projectProfile.includes('input-project-reference-images')
+  || projectProfile.includes('profile-style-tile')) {
+  throw new Error('new-video creation still exposes duplicated project-level image-style controls');
+}
+if (!html.includes('select_menus.js') || !selectMenus.includes('initPptSelectMenus') || !selectMenus.includes('HTMLSelectElement')) {
+  throw new Error('shared select-menu component is not loaded correctly');
+}
+const accountManagement = fs.readFileSync(path.join(root, 'static', 'account_management.js'), 'utf8');
+for (const accountRenameToken of [
+  'btn-edit-current-account',
+  'function editCurrentCreativeAccount()',
+  "API.put(`/api/accounts/${encodeURIComponent(editingAccountId)}`, { name })",
+]) {
+  if (!html.includes(accountRenameToken) && !accountManagement.includes(accountRenameToken)) {
+    throw new Error(`account rename UI is missing: ${accountRenameToken}`);
+  }
+}
+for (const removedAccountCopy of [
+  '账号中心',
+  '只修改显示名称；该账号下的项目、模型关联和创作配置不会受到影响。',
+  '建议使用容易识别的内容品牌或团队名称。',
+]) {
+  if (html.includes(removedAccountCopy) || accountManagement.includes(removedAccountCopy)) {
+    throw new Error(`account dialog still contains redundant copy: ${removedAccountCopy}`);
+  }
+}
+for (const accountMenuToken of [
+  'syncAccountPickerWidth',
+  '--account-picker-width',
+  'aria-label',
+  'width: min(var(--account-picker-width',
+  'left: 0;',
+]) {
+  if (!accountManagement.includes(accountMenuToken) && !css.includes(accountMenuToken)) {
+    throw new Error(`compact account picker UI is missing: ${accountMenuToken}`);
+  }
+}
+if (accountManagement.includes('account-picker-option-status') || css.includes('.account-picker-option-status')) {
+  throw new Error('account picker still renders an extra status dot');
+}
+for (const accountPickerToken of [
+  'function accountDisplayName(account)',
+  "account?.id === 'default'",
+  "return '默认账号'",
+  'aria-selected',
+  'header .account-picker-menu .account-picker-option[aria-selected="true"]',
+]) {
+  if (!accountManagement.includes(accountPickerToken) && !css.includes(accountPickerToken)) {
+    throw new Error(`account picker presentation contract is missing: ${accountPickerToken}`);
+  }
+}
+for (const courseTreeToken of [
+  'is-inline-renaming',
+  'is-new-entity',
+  'grid-template-columns: 14px 16px minmax(0, 1fr) 20px',
+  'grid-template-columns: minmax(0, 1fr) 20px',
+]) {
+  if (!courses.includes(courseTreeToken) && !css.includes(courseTreeToken)) {
+    throw new Error(`course tree compact creation UI is missing: ${courseTreeToken}`);
+  }
+}
+if (!projectProfile.includes("apiGet('/api/creation-configs')")
+  || !projectProfile.includes('config_package_id: creationConfig.id')) {
+  throw new Error('profile project creation does not preserve the selected creation configuration');
+}
+if (projectProfile.includes('config_package_version: creationConfig.version')) {
+  throw new Error('profile project creation must not pin a creation configuration version');
+}
+for (const defaultConfigToken of [
+  "apiGet('/api/accounts/current')",
+  'defaultCreationConfig',
+  'orderCreationConfigs',
+  'preferDefault',
+]) {
+  if (!projectProfile.includes(defaultConfigToken)) {
+    throw new Error(`project creation default configuration state is missing: ${defaultConfigToken}`);
+  }
+}
+for (const packageManagementToken of [
+  "item.className = 'creation-config-package-card'",
+  "iconActionButton('edit', '编辑'",
+  "iconActionButton('copy', '复制'",
+  "iconActionButton('delete', '删除', 'danger'",
+  'cc-icon-action',
+]) {
+  if (!creationConfigManagement.includes(packageManagementToken) && !css.includes(packageManagementToken)) {
+    throw new Error(`configuration management compact package list is missing: ${packageManagementToken}`);
+  }
+}
+for (const removedPackageManagementToken of [
+  'creation-config-default-package-slot',
+  '选择“编辑”后，在下方继续修改或另存为新包。',
+  "button('设为默认'",
+  'creation-config-package-card-copy',
+]) {
+  if (html.includes(removedPackageManagementToken) || creationConfigManagement.includes(removedPackageManagementToken)) {
+    throw new Error(`configuration management still exposes package-list detail: ${removedPackageManagementToken}`);
+  }
+}
+if (projects.includes('onclick=')) throw new Error('project cards still use interpolated inline click handlers');
+if (!projects.includes('escHtml(project.name)') || !projects.includes("escHtml(project.description || '无项目描述')")) {
+  throw new Error('project card user content is not HTML escaped');
+}
+if (!html.includes('article.js')) throw new Error('Step 1 article frontend module is not loaded explicitly');
+for (const articleFunction of [
+  'loadStep1Data',
+  'setStep1Mode',
+  'ensureArticleSystemContentModal',
+  'openArticleSystemContentModal',
+  'generateStep1Article',
+  'submitStep1',
+  'saveStep1Edit',
+]) {
+  if (!article.includes(`function ${articleFunction}(`)) {
+    throw new Error(`Step 1 article module is missing ${articleFunction}`);
+  }
+  if (app.includes(`function ${articleFunction}(`)) {
+    throw new Error(`Step 1 implementation returned to app.js: ${articleFunction}`);
+  }
+}
+if (!article.includes("saveEditButton.style.display = 'inline-flex'")) {
+  throw new Error('saved Step 1 articles do not restore the edit action');
+}
+if (!article.includes('await navigateToStep(2)') || article.includes('setTimeout(() =>')) {
+  throw new Error('Step 1 save still relies on an artificial navigation delay');
+}
+if (!html.includes('storyboard.js')) throw new Error('Step 2 storyboard frontend module is not loaded explicitly');
+for (const storyboardFunction of [
+  'loadStep2Data',
+  'addManualSlide',
+  'submitStep2BatchImport',
+  'generateStep2ScriptPlan',
+  'generateStep2VisualPlan',
+  'renderStep2Workspace',
+  'handleStep2MapEditorInput',
+  'saveStep2Contract',
+]) {
+  if (!storyboard.includes(`function ${storyboardFunction}(`)) {
+    throw new Error(`Step 2 storyboard module is missing ${storyboardFunction}`);
+  }
+  if (app.includes(`function ${storyboardFunction}(`)) {
+    throw new Error(`Step 2 implementation returned to app.js: ${storyboardFunction}`);
+  }
+}
+if (!html.includes('storyboard_prompts.js')) throw new Error('Step 2 Prompt frontend module is not loaded explicitly');
+for (const promptFunction of [
+  'openStoryboardRulesModal',
+  'updateStep2FullPromptPreviews',
+  'renderStep2PromptEditor',
+  'renderStep2PromptTemplateOptions',
+  'loadSelectedStep2PromptTemplate',
+  'saveStep2PromptTemplate',
+  'deleteSelectedStep2PromptTemplate',
+  'saveStep2Prompts',
+  'closeStoryboardRulesModal',
+]) {
+  if (!storyboardPrompts.includes(`function ${promptFunction}(`)) {
+    throw new Error(`Step 2 Prompt module is missing ${promptFunction}`);
+  }
+  if (app.includes(`function ${promptFunction}(`) || storyboard.includes(`function ${promptFunction}(`)) {
+    throw new Error(`Step 2 Prompt implementation escaped its module: ${promptFunction}`);
+  }
+}
+if (!html.includes('images.js')) throw new Error('Step 3 image frontend module is not loaded explicitly');
+for (const imageFunction of [
+  'loadStep3Data',
+  'refreshStep3Images',
+  'renderStep3Grid',
+  'reorderStep3Images',
+  'openStep3AI',
+  'uploadStep3ImageById',
+  'deleteStep3Image',
+  'deleteAllStep3Images',
+  'handleStep3BatchUpload',
+  'generateAllStep3Images',
+  'generateStep3Image',
+  'applyStep3Candidate',
+  'confirmStep3Images',
+]) {
+  if (!images.includes(`function ${imageFunction}(`)) {
+    throw new Error(`Step 3 image module is missing ${imageFunction}`);
+  }
+  if (app.includes(`function ${imageFunction}(`)) {
+    throw new Error(`Step 3 image implementation returned to app.js: ${imageFunction}`);
+  }
+}
+if (!html.includes('image_prompts.js')) throw new Error('Step 3 image Prompt frontend module is not loaded explicitly');
+for (const imagePromptFunction of [
+  'refreshStep3Prompts',
+  'currentStep3PromptInfo',
+  'updateStep3PromptFullPreview',
+  'openStep3PromptSettingsModal',
+  'closeStep3PromptSettingsModal',
+  'resetStep3PromptSettings',
+  'saveStep3PromptSettings',
+]) {
+  if (!imagePrompts.includes(`function ${imagePromptFunction}(`)) {
+    throw new Error(`Step 3 image Prompt module is missing ${imagePromptFunction}`);
+  }
+  if (app.includes(`function ${imagePromptFunction}(`) || images.includes(`function ${imagePromptFunction}(`)) {
+    throw new Error(`Step 3 image Prompt implementation escaped its module: ${imagePromptFunction}`);
+  }
+}
+if (!imagePrompts.includes('window.refreshStep3Prompts = refreshStep3Prompts')) {
+  throw new Error('Step 3 image Prompt refresh bridge is missing');
+}
+if (!html.includes('mask_workspace.js')) throw new Error('Step 5 Mask workspace module is not loaded explicitly');
+for (const maskWorkspaceFunction of [
+  'resetStep5ProjectState',
+  'loadStep5Data',
+  'normalizeManifestNarrationFragments',
+  'getSlideMaskBoxes',
+  'renderStep5Workspace',
+  'toggleStep5Fullscreen',
+  'renderStep5BoxesForm',
+  'renderStep5NarrationPanel',
+  'toggleStep5FragmentLink',
+  'selectStep5MaskBox',
+  'focusAiMaskIssue',
+]) {
+  if (!maskWorkspace.includes(`function ${maskWorkspaceFunction}(`)) {
+    throw new Error(`Step 5 Mask workspace module is missing ${maskWorkspaceFunction}`);
+  }
+  if (app.includes(`function ${maskWorkspaceFunction}(`)) {
+    throw new Error(`Step 5 Mask workspace implementation returned to app.js: ${maskWorkspaceFunction}`);
+  }
+}
+for (const bridge of ['window.loadStep5Data', 'window.renderStep5Workspace', 'window.focusAiMaskIssue', 'window.getCurrentStep5SlideId']) {
+  if (!maskWorkspace.includes(bridge)) throw new Error(`Step 5 Mask workspace bridge is missing: ${bridge}`);
+}
+if (!html.includes('mask_editor.js')) throw new Error('Step 5 Mask editor module is not loaded explicitly');
+for (const maskEditorFunction of [
+  'updateBrushSize',
+  'updateEraserSize',
+  'startMaskTool',
+  'createCurrentSlideBlock',
+  'beginMaskStroke',
+  'continueMaskStroke',
+  'finishMaskStroke',
+  'initCanvasEvents',
+  'applyMaskCanvasZoom',
+  'buildMaskDisplayLayer',
+  'rasterizeManualMask',
+  'setStep5MaskPreviewMode',
+  'drawManualMaskStrokes',
+  'redrawCanvas',
+  'saveStep5CurrentState',
+  'scheduleStep5Autosave',
+  'saveStep5Draft',
+  'flushStep5Draft',
+  'runStep5SemanticBlocks',
+  'saveStep5Masks',
+]) {
+  if (!maskEditor.includes(`function ${maskEditorFunction}(`)) {
+    throw new Error(`Step 5 Mask editor module is missing ${maskEditorFunction}`);
+  }
+  if (app.includes(`function ${maskEditorFunction}(`) || maskWorkspace.includes(`function ${maskEditorFunction}(`)) {
+    throw new Error(`Step 5 Mask editor implementation escaped its module: ${maskEditorFunction}`);
+  }
+}
+for (const bridge of [
+  'window.saveStep5Draft',
+  'window.saveStep5CurrentState',
+  'window.focusFirstAiMaskResult',
+  'window.setStep5MaskPreviewMode',
+  'window.PPTStudio',
+]) {
+  if (!maskEditor.includes(bridge)) throw new Error(`Step 5 Mask editor bridge is missing: ${bridge}`);
+}
+if (!html.includes('subtitle_settings.js')) throw new Error('subtitle settings module is not loaded explicitly');
+for (const subtitleFunction of [
+  'readSubtitleSettingsForm',
+  'populateSubtitleSettingsForm',
+  'updateSubtitlePreview',
+  'openSubtitleSettingsModal',
+  'saveSubtitleSettings',
+]) {
+  if (!subtitleSettings.includes(`function ${subtitleFunction}(`)) {
+    throw new Error(`subtitle settings module is missing ${subtitleFunction}`);
+  }
+  if (app.includes(`function ${subtitleFunction}(`) || narrationAudio.includes(`function ${subtitleFunction}(`)) {
+    throw new Error(`subtitle settings implementation escaped its module: ${subtitleFunction}`);
+  }
+}
+if (!html.includes('narration_audio.js')) throw new Error('narration/audio module is not loaded explicitly');
+for (const narrationFunction of [
+  'loadStep6Data',
+  'initStep6Narration',
+  'openStep6AnnotationPromptModal',
+  'annotateStep6Narration',
+  'normalizeStep6Data',
+  'renderStep6Workspace',
+  'saveStep6CurrentState',
+  'scheduleStep6Autosave',
+  'flushStep6Autosave',
+  'saveStep6Narration',
+  'loadStep7Data',
+  'runStep7TTS',
+  'saveNarrationAndRunTTS',
+  'confirmStep7Audio',
+]) {
+  if (!narrationAudio.includes(`function ${narrationFunction}(`)) {
+    throw new Error(`narration/audio module is missing ${narrationFunction}`);
+  }
+  if (app.includes(`function ${narrationFunction}(`)) {
+    throw new Error(`narration/audio implementation returned to app.js: ${narrationFunction}`);
+  }
+}
+if (!html.includes('output_render.js')) throw new Error('output/render module is not loaded explicitly');
+for (const outputFunction of [
+  'updateStep8LoadingText',
+  'stopStep8RenderPolling',
+  'startStep8RenderPolling',
+  'loadStep8Data',
+  'runStep8Render',
+  'refreshStep8DigitalHumanStatus',
+  'stopStep8PptxPolling',
+  'setStep8OutputError',
+  'updateStep8PptxLoading',
+  'startStep8PptxPolling',
+  'refreshStep8PptxReadiness',
+  'loadStep8PptxData',
+  'runStep8PptxExport',
+  'showStep8PptxResults',
+  'deleteStep8Pptx',
+  'showStep8VideoResult',
+  'generateStep8SpeedVideo',
+  'deleteStep8Video',
+]) {
+  if (!outputRender.includes(`function ${outputFunction}(`)) {
+    throw new Error(`output/render module is missing ${outputFunction}`);
+  }
+  if (app.includes(`function ${outputFunction}(`)) {
+    throw new Error(`output/render implementation returned to app.js: ${outputFunction}`);
+  }
+}
+for (const token of [
+  'waitForPendingPersistence',
+  'await saveConfig()',
+  '进入作品输出',
+  'getOutputStatus: async function',
+  'mode === "upload"',
+  'dhUploadInFlight.catch(function () {})',
+  'throw e;',
+  '服务器未确认数字人视频上传成功',
+]) {
+  if (!digitalHumanPanel.includes(token)) {
+    throw new Error(`digital-human upload/output persistence contract missing: ${token}`);
+  }
+}
+for (const token of [
+  'refreshStep8DigitalHumanStatus(projectId, sessionVersion)',
+  '数字人素材未就绪',
+  '无法确认本次 MP4 是否包含数字人',
+  'keepRenderButtonDisabled',
+  '服务器没有返回视频渲染任务编号',
+]) {
+  if (!outputRender.includes(token)) {
+    throw new Error(`Step 8 digital-human readiness presentation is missing: ${token}`);
+  }
+}
+if (!digitalHumanPanel.includes('本次生成 MP4 将包含数字人')) {
+  throw new Error('digital-human ready state does not confirm MP4 composition');
+}
+if (!html.includes('id="step8-digital-human-status"')
+  || !html.includes('title="保留当前数字人设置并进入作品输出"')
+  || html.includes('跳过，进入作品输出')) {
+  throw new Error('digital-human to output navigation remains misleading');
+}
+for (const bridge of ['window.deleteStep8Video', 'window.deleteStep8Pptx']) {
+  if (!outputRender.includes(bridge)) throw new Error(`output/render bridge is missing: ${bridge}`);
+}
+if (!html.includes('prompt_help.js')) throw new Error('Prompt help module is not loaded explicitly');
+for (const promptHelpFunction of ['ensurePromptIOHelpModal', 'openPromptIOHelp']) {
+  if (!promptHelp.includes(`function ${promptHelpFunction}(`)) {
+    throw new Error(`Prompt help module is missing ${promptHelpFunction}`);
+  }
+  if (app.includes(`function ${promptHelpFunction}(`)) {
+    throw new Error(`Prompt help implementation returned to app.js: ${promptHelpFunction}`);
+  }
+}
+if (!promptHelp.includes('window.openPromptIOHelp = openPromptIOHelp')) {
+  throw new Error('Prompt help global bridge is missing');
+}
+if (!html.includes('workspace_navigation.js')) throw new Error('workspace navigation module is not loaded explicitly');
+for (const navigationFunction of [
+  'enterWorkspace',
+  'exitWorkspace',
+  'applyProjectAiMode',
+  'toggleProjectAiMode',
+  'updateStepperUI',
+  'refreshCurrentProjectStatus',
+  'navigateToStep',
+  'loadStepData',
+]) {
+  if (!workspaceNavigation.includes(`function ${navigationFunction}(`)) {
+    throw new Error(`workspace navigation module is missing ${navigationFunction}`);
+  }
+  if (app.includes(`function ${navigationFunction}(`)) {
+    throw new Error(`workspace navigation implementation returned to app.js: ${navigationFunction}`);
+  }
+}
+if (!html.includes('event_bindings.js')) throw new Error('event bindings module is not loaded explicitly');
+if (!eventBindings.includes('function initGlobalEvents(') || !eventBindings.includes("document.addEventListener('DOMContentLoaded'")) {
+  throw new Error('shared DOM startup contract is missing');
+}
+if (app.includes('function initGlobalEvents(') || app.includes("document.addEventListener('DOMContentLoaded'")) {
+  throw new Error('DOM startup or event bindings returned to app.js');
+}
+const workspaceScriptIndex = html.indexOf('workspace_navigation.js');
+const eventScriptIndex = html.indexOf('event_bindings.js');
+const extensionScriptIndex = html.indexOf('project_profile_extension.js');
+if (!(workspaceScriptIndex > html.indexOf('output_render.js') && eventScriptIndex > workspaceScriptIndex && extensionScriptIndex > eventScriptIndex)) {
+  throw new Error('core workflow, navigation, event, and extension script order is unsafe');
+}
+for (const settingsOwner of ['LLM_PROVIDER_PRESETS', 'detectLlmProvider', 'applyLlmProviderPreset']) {
+  if (!settings.includes(settingsOwner)) {
+    throw new Error(`settings module is missing LLM provider ownership: ${settingsOwner}`);
+  }
+  if (app.includes(settingsOwner)) {
+    throw new Error(`LLM provider configuration returned to app.js: ${settingsOwner}`);
+  }
+}
+const fullscreenStart = maskWorkspace.indexOf('function toggleStep5Fullscreen');
+const fullscreenEnd = maskWorkspace.indexOf('function uuid', fullscreenStart);
+const fullscreenImplementation = maskWorkspace.slice(fullscreenStart, fullscreenEnd);
+if (!fullscreenImplementation.includes("fullscreenLabel.textContent = state.canvasState.maskFullscreen ? '退出全屏' : '全屏标注'")) {
+  throw new Error('Step 5 fullscreen toggle does not update its label directly');
+}
+if (fullscreenImplementation.includes('renderStep5Workspace')) {
+  throw new Error('Step 5 fullscreen toggle still reloads unsaved workspace state');
+}
+if (!css.includes('body.step5-fullscreen-mode #step-panel-5') || !css.includes('z-index: 900;')) {
+  throw new Error('Step 5 fullscreen workspace must remain below modal and toast layers');
+}
+for (const requiredStep2Token of [
+  'step2-btn-script-prompt',
+  'step2-btn-visual-prompt',
+  'step2-script-system-prompt',
+  'step2-script-output-example',
+  'step2-visual-system-prompt',
+  'step2-visual-output-example',
+  'btn-step2-prompt-template-new',
+  'step2-prompt-template-create-panel',
+  'step2-slide-title-input',
+  'step2-slide-narration-input',
+]) {
+  if (!html.includes(requiredStep2Token)) throw new Error(`simplified Step 2 UI missing: ${requiredStep2Token}`);
+}
+for (const removedStep2Token of [
+  'step2-btn-rules',
+  'btn-storyboard-rules-save-regenerate',
+  'storyboard-template-select',
+  'storyboard-profile-input',
+  'storyboard-schema-input',
+  'storyboard-rules-input',
+  'step2-groups-list',
+  'storyboardRoleOptions',
+  'addVisualGroup',
+  'updateGroupField',
+  'removeVisualGroup',
+  'generateStoryboardRulesAiDraft',
+  'storyboard-ai-draft',
+  'step2-slide-subtitle-input',
+  'step2-subtitle-field',
+]) {
+  if (step2Logic.includes(removedStep2Token) || html.includes(removedStep2Token) || css.includes(removedStep2Token)) {
+    throw new Error(`legacy Step 2 editor still present: ${removedStep2Token}`);
+  }
+}
+if (step2Logic.includes("group.id === 'body_group_02'")) {
+  throw new Error('legacy hard-coded visual group filtering is still present');
+}
+if (!html.includes('step3-btn-batch-generate')) throw new Error('step 3 batch image generation action missing');
+if (!background.includes('step3-btn-background-settings')) throw new Error('Step 3 final video background entry missing');
+if (html.includes('step3-video-background-apply') || background.includes('step3-video-background-apply')) {
+  throw new Error('obsolete video background apply button is still present');
+}
+if (!background.includes('铺满画面') || !background.includes('完整显示')) throw new Error('video background fit modes missing');
+for (const backgroundMode of ['data-mode-card="image"', 'data-mode-card="solid"', 'canvasAspectLabel()']) {
+  if (!background.includes(backgroundMode)) throw new Error(`final background modal contract missing: ${backgroundMode}`);
+}
+if (!storyboard.includes('handleStep2MapEditorInput') || !storyboard.includes('handleStep2MapEditorChange')) {
+  throw new Error('Step 2 visual/narration mapping is not editable');
+}
+if (!html.includes('step2-slide-narration-input') || !html.includes('aria-describedby="step2-narration-source-hint"')) {
+  throw new Error('Step 2 full narration editor is missing');
+}
+for (const confusingMappingToken of ['画面文字 / 元素名称', '对应旁白与绑定关系', '<span>绑定到</span>']) {
+  if (step2Logic.includes(confusingMappingToken)) throw new Error(`Step 2 still exposes internal mapping control: ${confusingMappingToken}`);
+}
+if (!css.includes('grid-column: 3 / 5') || !css.includes('grid-row: 2')) {
+  throw new Error('stale step status is not positioned below the step label');
+}
+if (!css.includes('.storyboard-bg-preview') || !css.includes('aspect-ratio:var(--project-aspect-ratio,16 / 9)')) {
+  throw new Error('final background preview does not follow the current project canvas ratio');
+}
+if (!css.includes('calc(min(52dvh, 620px) * var(--project-aspect-ratio-scale, 1.7777778))')) {
+  throw new Error('video review preview is not constrained by the viewport and project ratio');
+}
+if (!css.includes('.video-preview-box video') || !css.includes('object-fit: contain;')) {
+  throw new Error('video review preview can crop its source video');
+}
+if (!maskEditor.includes('hexToRgba(color, isSelected ? 0.68 : 0.55)')) {
+  throw new Error('mask overlay colors are too faint');
+}
+if (!images.includes('generateAllStep3Images')) throw new Error('step 3 batch generation handler missing');
+if (!images.includes('step3GeneratingSlides')) throw new Error('step 3 per-slide generation state missing');
+if (!images.includes('tasks.forEach(task => step3GeneratingSlides.add(task.slideId))')) {
+  throw new Error('batch generation does not switch all cards to loading immediately');
+}
+if (!images.includes("document.getElementById('step3-preview-box').innerHTML = step3GeneratingPreviewHtml()")) {
+  throw new Error('single image generation does not show loading in the preview pane');
+}
+if (!css.includes('.step3-generating-preview')) throw new Error('step 3 loading preview style missing');
+if (!images.includes('await refreshStep3Images();')) throw new Error('step 3 does not wait for image state');
+if (!images.includes('setDisabledReason(confirmBtn, !allImagesReady)')) throw new Error('step 3 confirmation is not gated');
+if (!maskEditor.includes('step5AutoSavePromise')) throw new Error('step 5 save serialization missing');
+if (!maskReveal.includes("raw.type || raw.value || 'crop_fade_up'")) {
+  throw new Error('mask animation preset values are not normalized correctly');
+}
+if (!maskReveal.includes('applyGlobalMaskReveal') || !maskEditor.includes('previewGlobalAnimationSettings')) {
+  throw new Error('global Mask animation sync or preview is missing');
+}
+for (const animation of ['wipe_left_to_right', 'scratch_reveal', 'sticker_pop', 'stamp_in', 'paper_drop']) {
+  if (!maskReveal.includes(`value: '${animation}'`)) {
+    throw new Error(`mask animation preset missing: ${animation}`);
+  }
+}
+for (const revealOwner of ['MASK_ANIMATION_PRESETS', 'normalizeMaskReveal', 'applyGlobalMaskReveal', 'ensureGlobalMaskRevealDefault']) {
+  if (!maskReveal.includes(revealOwner)) throw new Error(`Mask Reveal module is missing ${revealOwner}`);
+  if (app.includes(revealOwner)) throw new Error(`Mask Reveal ownership returned to app.js: ${revealOwner}`);
+}
+if (!(html.indexOf('mask_reveal.js') < html.indexOf('mask_workspace.js'))) {
+  throw new Error('Mask Reveal module must load before the Mask workspace');
+}
+if (!html.includes('step5-btn-subtitle-settings') || !html.includes('modal-subtitle-settings')) {
+  throw new Error('subtitle settings entry or modal is missing');
+}
+for (const removedImageStyleToken of [
+  'btn-image-style-ai-draft',
+  'image-style-ai-requirement',
+  'image-style-ai-draft-preview',
+  'image-style-use-advanced',
+  'image-style-validation-status',
+  'image-style-keywords',
+  'image-style-visual-style',
+  'image-style-diagram-style',
+  'image-style-layout-rules',
+  'image-style-avoid',
+  'generateImageStyleAiDraft',
+  'validateImageStyleYaml',
+  'image-style/ai-draft',
+  '.ai-draft-preview',
+  '.ai-request-panel',
+]) {
+  if (app.includes(removedImageStyleToken) || html.includes(removedImageStyleToken) || css.includes(removedImageStyleToken)) {
+    throw new Error(`legacy image style editor still present: ${removedImageStyleToken}`);
+  }
+}
+if (!maskWorkspace.includes('visual_description') || !css.includes('.mask-visual-card')) {
+  throw new Error('Mask semantic visual description display is missing');
+}
+for (const removedNarrationPolicyToken of [
+  'updateGroupSpeakPolicy',
+  'groupSpeakPolicy',
+  'step2-speak-policy-select',
+  'storyboard-role-required',
+  'storyboard-role-speak-policy',
+  '仅画面展示',
+  '旁白策略',
+]) {
+  if (step2Logic.includes(removedNarrationPolicyToken) || html.includes(removedNarrationPolicyToken)) {
+    throw new Error(`legacy narration policy UI still present: ${removedNarrationPolicyToken}`);
+  }
+}
+for (const manualMaskControl of ['step5-brush-size', 'step5-eraser-size', 'step5-btn-new-block', 'step5-btn-clear-current']) {
+  if (!html.includes(manualMaskControl)) throw new Error(`manual Mask fallback control missing: ${manualMaskControl}`);
+}
+if (!html.includes('id="step5-brush-size" type="range" min="100" max="200" value="140"')) {
+  throw new Error('brush size contract must be 100-200 with a 140 default');
+}
+if (!html.includes('id="step5-eraser-size" type="range" min="100" max="200" value="100"')) {
+  throw new Error('eraser size contract must be 100-200 with a 100 default');
+}
+if (!html.includes('step5-tool-cursor') || !maskEditor.includes('toolSize * displayScale')) {
+  throw new Error('Mask tool cursor does not track the real canvas pixel diameter');
+}
+if (!maskEditor.includes('getCoalescedEvents') || !maskEditor.includes('scheduleLiveMaskRedraw')) {
+  throw new Error('Mask painting does not coalesce pointer samples and redraws');
+}
+if (maskEditor.includes('MASK_PREVIEW_OUTLINE_PX') || !maskEditor.includes('buildMaskDisplayLayer')) {
+  throw new Error('Mask preview must render the exact painted pixels without an added outline');
+}
+if (!maskWorkspace.includes('claimUniqueMaskColor') || !maskWorkspace.includes('idx + offset')) {
+  throw new Error('Mask color collision handling must search for an unused palette color');
+}
+if (!css.includes('.step3-toolbar-row::before') || !css.includes('backdrop-filter: saturate(135%) blur(24px)') || !css.includes('mask-image: linear-gradient(')) {
+  throw new Error('sticky workflow headers must use the full-width fading glass layer');
+}
+if (!stitchCss.includes('.step-state-legend') || !stitchCss.includes('.sidebar .step-item::after')
+    || !stitchCss.includes('.sidebar .step-item.completed:not(.active)::after')
+    || workspaceNavigation.includes("badge.textContent = status === 'completed'")) {
+  throw new Error('workflow rail must communicate status through colors without row labels');
+}
+if (aiMask.includes("setInlineStatus('AI 标注已完成'")) {
+  throw new Error('completed AI Mask status must be a temporary toast, not persistent sidebar content');
+}
+for (const manualMaskHandler of ['startMaskPaint', 'startMaskErase', 'deleteMaskBox', 'beginMaskStroke']) {
+  const owner = manualMaskHandler === 'deleteMaskBox' ? maskWorkspace : maskEditor;
+  if (!owner.includes(manualMaskHandler)) throw new Error(`manual Mask fallback handler missing: ${manualMaskHandler}`);
+}
+if (!aiMask.includes('maybeAutoAnnotate') || !aiMask.includes("presentationMode() !== 'reveal'") || !aiMask.includes('运行 AI 标注')) {
+  throw new Error('opt-in AI Mask flow is missing');
+}
+for (const reviewToken of ['ai-mask-review-panel', 'focusReviewIssue', 'quality_status']) {
+  if (!aiMask.includes(reviewToken)) throw new Error(`AI Mask review UX missing: ${reviewToken}`);
+}
+for (const previewToken of ['data-preview-mode="source"', 'data-preview-mode="mask"', 'data-preview-mode="final"', 'buildExactPreview']) {
+  if (!aiMask.includes(previewToken)) throw new Error(`production Mask preview control missing: ${previewToken}`);
+}
+if (!maskEditor.includes('setStep5MaskPreviewMode') || !maskWorkspace.includes('focusAiMaskIssue')) {
+  throw new Error('Mask preview or issue focus bridge missing');
+}
+if (!maskEditor.includes('rebuildStep5SourceCache')) throw new Error('source image cache missing');
+if (!maskEditor.includes('ctx.drawImage(step5SourceCanvas, 0, 0)')) {
+  throw new Error('mask editor does not keep the full source visible');
+}
+for (const removedToken of [
+  'step5-live-coverage',
+  'step5-btn-preview',
+  'modal-mask-preview',
+  'step5-foreground-mask-img',
+  'createStep5UncoveredPattern',
+  'scheduleStep5CoverageCheck',
+  '/steps/5/preview',
+  'selection_ratio',
+  'reveal_boxes',
+  'modal-narration-picker',
+  'autoMaskLoading',
+  'runStep5AutoMask',
+]) {
+  if (html.includes(removedToken) || app.includes(removedToken) || maskEditor.includes(removedToken) || css.includes(removedToken)) {
+    throw new Error(`legacy Mask diagnostics still present: ${removedToken}`);
+  }
+}
+if (!styleManager.includes('window.refreshStep3Prompts')) {
+  throw new Error('image style changes do not refresh prompts');
+}
+for (const token of ['step1-mode-article', 'step1-mode-topic', 'step1-btn-generate-article', 'step1-btn-system-content']) {
+  if (!html.includes(token)) throw new Error(`Step 1 dual-mode UI missing: ${token}`);
+}
+for (const label of ['演讲稿 Prompt', '可视化 Prompt']) {
+  if (!html.includes(label)) throw new Error(`Step 2 button label missing: ${label}`);
+}
+if (!maskWorkspace.includes("rle.encoding === 'row_runs_v1'") || !maskEditor.includes('exactRuns.forEach')) {
+  throw new Error('exact RLE Mask preview support missing');
+}
+if (aiMask.includes('setInterval(fitFullscreenCanvas, 800)') || !aiMask.includes("new MutationObserver(fitFullscreenCanvas)")) {
+  throw new Error('Mask fullscreen fitting must be event-driven rather than permanently polled');
+}
+if (html.includes('请在下方粘贴您的 Markdown 格式文章')) throw new Error('obsolete Step 1 top hint is still present');
+// UI 审查（docs/ui-audit-2026-10-06.md §3）：除确认弹窗（必须显式选择）与已无入口的
+// 系统设置遗留弹窗外，每个静态弹窗都必须带 data-modal-close 关闭按钮。
+{
+  const modalIds = [...html.matchAll(/<div id="(modal-[a-z0-9-]+)" class="modal-overlay"/g)].map(match => match[1]);
+  const closeExempt = new Set(['modal-confirm', 'modal-settings']);
+  for (const modalId of modalIds) {
+    if (closeExempt.has(modalId)) continue;
+    const start = html.indexOf(`<div id="${modalId}" class="modal-overlay"`);
+    const next = html.indexOf('<div id="modal-', start + 1);
+    const section = html.slice(start, next === -1 ? html.length : next);
+    if (!section.includes('data-modal-close')) {
+      throw new Error(`modal ${modalId} is missing its data-modal-close button (UI audit §3.1)`);
+    }
+  }
+}
+for (const script of ['project_profile_extension.js', 'storyboard_background_extension.js', 'style_reference_manager_extension.js', 'ai_mask_auto_state.js', 'ai_mask_extension.js', 'one_click_extension.js']) {
+  if (!html.includes(script)) throw new Error(`direct frontend script declaration missing: ${script}`);
+}
+if (!styleManager.includes('style-panel-template-name') || !styleManager.includes('最多只能上传 3 张')) {
+  throw new Error('named image-style templates or three-image limit missing');
+}
+for (const styleMode of ['data-style-tab="template"', 'data-style-tab="manual"', 'data-style-tab="reverse"']) {
+  if (!styleManager.includes(styleMode)) throw new Error(`image-style mode missing: ${styleMode}`);
+}
+if (!css.includes('.style-ref-card') || !css.includes('aspect-ratio:16 / 9') || !styleManager.includes('这 3 张效果预览会作为后续图片生成的实际参考图')) {
+  throw new Error('image-style System Content / 16:9 reference output contract missing');
+}
+if (styleManager.includes('visual-draft-quality') || oneClick.includes('图片质量检查')) {
+  throw new Error('removed image quality feature is still user-visible');
+}
+if (!oneClick.includes('button-spinner')) throw new Error('one-click stage spinner missing');
+if (!oneClick.includes('one-click-sidebar-entry') || !oneClick.includes('sidebar.appendChild(entry)')) {
+  throw new Error('one-click button is not docked at the sidebar bottom');
+}
+for (const lifecycleOwner of ['function isCurrentWorkspaceProject(', 'function resetProjectScopedAsyncUi(', '++workspaceNavigationVersion;']) {
+  if (!workspaceNavigation.includes(lifecycleOwner)) {
+    throw new Error(`project lifecycle guard is missing: ${lifecycleOwner}`);
+  }
+}
+for (const guardedStep2Token of ['const projectId = state.currentProject?.id;', 'saveStep2Contract({ silent: true, autosave: true, projectId, sessionVersion })']) {
+  if (!storyboard.includes(guardedStep2Token)) {
+    throw new Error(`Step 2 cross-project save guard is missing: ${guardedStep2Token}`);
+  }
+}
+for (const guardedStep3Token of ['function resetStep3ProjectState()', 'if (!isCurrentWorkspaceProject(projectId, sessionVersion)) break;', '/steps/3/generate']) {
+  if (!images.includes(guardedStep3Token)) {
+    throw new Error(`Step 3 cross-project operation guard is missing: ${guardedStep3Token}`);
+  }
+}
+for (const guardedOutputToken of ['_step8RenderProjectId', '_step8PptxProjectId', 'stopStep8RenderPolling();']) {
+  if (!outputRender.includes(guardedOutputToken)) {
+    throw new Error(`Step 8 project-scoped polling guard is missing: ${guardedOutputToken}`);
+  }
+}
+if (!oneClick.includes('window.navigateToStep(targetStep)')) {
+  throw new Error('one-click stage changes no longer switch the active workspace tab');
+}
+if (!oneClick.includes('formatElapsedSeconds') || !oneClick.includes('总耗时')) {
+  throw new Error('one-click total duration presentation is missing');
+}
+// [轮询自愈 20260904] 一键轮询必须保留连接失败计数、前台恢复刷新与
+// 新鲜度展示，且不允许回退到完全静默吞错的轮询实现。
+if (oneClick.includes('catch(() => {})')) {
+  throw new Error('one-click polling must not swallow connection errors silently');
+}
+for (const token of ['renderConnectionAlert', 'visibilitychange', 'lastRefreshAt', '页面数据刷新于']) {
+  if (!oneClick.includes(token)) throw new Error(`one-click polling self-healing missing: ${token}`);
+}
+if (!css.includes('one-click-conn-alert')) throw new Error('one-click connection alert style missing');
+if (!workspaceNavigation.includes("document.body.classList.add('workspace-open')") || !css.includes('body.workspace-open #toast-container')) {
+  throw new Error('workspace notifications can still overlap the sidebar action');
+}
+if (html.includes('sidebar-flow-title') || html.includes('sidebar-flow-mark')) {
+  throw new Error('obsolete workflow rail title/icon is still visible');
+}
+if (!html.includes('step-complete') || !css.includes('.sidebar .step-icon svg')) {
+  throw new Error('workflow rail redesign is incomplete');
+}
+if (!css.includes('left: 30.875px') || !css.includes('repeating-linear-gradient') || !css.includes('height: calc((64px + 0.35rem) * 5)')) {
+  throw new Error('workflow rail connector is not centered, dashed, and bounded to six steps');
+}
+if (!html.includes('step2-generation-status') || !storyboard.includes('setStep2GenerationStatus') || storyboard.includes('// 捕获报错')) {
+  throw new Error('Step 2 failure is still swallowed without persistent feedback');
+}
+if (!css.includes('#step6-btn-audio-confirm-next:disabled') || !css.includes('#step8-btn-render:disabled')) {
+  throw new Error('disabled primary button contrast contract is missing');
+}
+for (const creationModeToken of [
+  "id: 'auto', name: '自动模式'",
+  "id: 'manual', name: '手动模式'",
+  "selectedOption('ai_mode', 'auto')",
+  'ai_mode: aiMode',
+  "automation_mode: aiMode === 'manual' ? 'manual_review' : 'auto'",
+]) {
+  if (!projectProfile.includes(creationModeToken)) {
+    throw new Error(`project creation mode selection is missing: ${creationModeToken}`);
+  }
+}
+if (projectProfile.includes('manual_pause_steps: manualPauseSteps')) {
+  throw new Error('project creation must not duplicate creation-package pause settings');
+}
+if (!workspaceNavigation.includes("document.getElementById('ai-mode-segment').style.display = 'none'")) {
+  throw new Error('project AI mode control remains visible after returning to the project library');
+}
+if (!workspaceNavigation.includes('await navigateToStep(visibleStep)') || !workspaceNavigation.includes('workspaceNavigationVersion')) {
+  throw new Error('workspace navigation does not await or invalidate stale loads');
+}
+if (!workspaceNavigation.includes('const entryVersion = ++workspaceNavigationVersion') || !workspaceNavigation.includes('entryVersion !== workspaceNavigationVersion')) {
+  throw new Error('workspace entry can still be overwritten by a stale project request');
+}
+if (!uiFoundation.includes('await onYes()') || !uiFoundation.includes('showToast(`操作失败')) {
+  throw new Error('shared confirmation does not handle asynchronous failures');
+}
+for (const token of ['智能继续', '从头重跑', "startOneClick('resume')", "startOneClick('restart')"]) {
+  if (!oneClick.includes(token)) throw new Error(`one-click recovery control missing: ${token}`);
+}
+if (!uiFoundation.includes('narrationDedupeKey')) {
+  throw new Error('frontend narration deduplication guard is missing');
+}
+if (!html.includes('id="btn-back-home" class="secondary header-action header-return-home" hidden')) {
+  throw new Error('back-home control must use semantic hidden state instead of an inline display override');
+}
+if (!html.includes('id="step3-btn-batch-generate" class="secondary"') || !html.includes('批量生图')) {
+  throw new Error('Step 3 batch generation action must keep the approved concise label');
+}
+if (!workspaceNavigation.includes("btnBackHome.hidden = false") || !workspaceNavigation.includes("btnBackHome.hidden = true")) {
+  throw new Error('back-home visibility must preserve its inline-flex layout');
+}
+for (const token of [
+  '--workflow-space-top: 12px',
+  '--workflow-action-gap: 8px',
+  '--workflow-tab-height: 28px',
+  '.workflow-header',
+  '.workflow-toolbar',
+  '.workflow-tabs',
+]) {
+  if (!css.includes(token)) throw new Error(`workflow spacing system missing: ${token}`);
+}
+for (const panelClass of [
+  'workflow-header workflow-header--titlebar',
+  'workflow-header workflow-header--tabs',
+  'workflow-header workflow-header--stacked',
+]) {
+  if (!html.includes(panelClass)) throw new Error(`workflow header variant missing: ${panelClass}`);
+}
+if (/step2-sticky-header" style="[^"]*margin-top:/s.test(html) || /step3-toolbar-row" style="[^"]*margin-/s.test(html)) {
+  throw new Error('workflow header spacing must not be controlled by inline margins');
+}
+if (html.includes('step8-subtitle-readiness')) {
+  throw new Error('Step 8 must not show the redundant subtitle readiness badge');
+}
+if (!outputRender.includes("button.dataset.subtitleReady = ready ? 'true' : 'false'")) {
+  throw new Error('subtitle download readiness must remain functional without the removed badge');
+}
+// [不可逆操作确认弹窗 20260916] 删除分镜页、Step 5 最终确认标注、Step 6 显式保存
+// 旁白、字幕可见性开关都会物理删除产物或清除音频确认，必须走共享确认弹窗。
+function topLevelFunctionSource(source, moduleName, functionName) {
+  const start = source.indexOf(`function ${functionName}(`);
+  if (start < 0) throw new Error(`${moduleName} is missing ${functionName}`);
+  const end = source.indexOf('\n}', start);
+  return end < 0 ? source.slice(start) : source.slice(start, end + 2);
+}
+for (const [moduleName, source, functionName, gateTokens] of [
+  ['Step 2 storyboard', storyboard, 'saveStep2BatchDelete', ['removedCount === 0']],
+  ['Step 5 Mask editor', maskEditor, 'saveStep5Masks', ['audio_confirmed']],
+  ['narration/audio', narrationAudio, 'saveStep6Narration', ['audio_confirmed', 'userInitiated']],
+  ['subtitle settings', subtitleSettings, 'saveSubtitleSettings', ['state.subtitleSettings']],
+]) {
+  const functionSource = topLevelFunctionSource(source, moduleName, functionName);
+  if (!functionSource.includes('showCustomConfirm')) {
+    throw new Error(`${moduleName} ${functionName} submits an irreversible action without showCustomConfirm`);
+  }
+  for (const gateToken of gateTokens) {
+    if (!functionSource.includes(gateToken)) {
+      throw new Error(`${moduleName} ${functionName} confirmation is not gated by ${gateToken}`);
+    }
+  }
+}
+const step2BatchDeleteSource = topLevelFunctionSource(storyboard, 'Step 2 storyboard', 'saveStep2BatchDelete');
+if (step2BatchDeleteSource.indexOf('removedCount === 0') > step2BatchDeleteSource.indexOf('showCustomConfirm')) {
+  throw new Error('Step 2 batch delete must keep the empty-deletion early return before the confirmation');
+}
+if (topLevelFunctionSource(narrationAudio, 'narration/audio', 'scheduleStep6Autosave').includes('userInitiated')) {
+  throw new Error('Step 6 autosave must never open the narration confirmation dialog');
+}
+if (!topLevelFunctionSource(narrationAudio, 'narration/audio', 'scheduleStep6Autosave').includes("saveStep6Narration({ silent: true, scope })")) {
+  throw new Error('Step 6 autosave lost its silent save path');
+}
+if (!topLevelFunctionSource(narrationAudio, 'narration/audio', 'scheduleStep6Autosave').includes('narrationProjectScope?.projectId !== scope.projectId')) {
+  throw new Error('Step 6 autosave must drop stale-project timers instead of saving into the switched project');
+}
+
+
+// 共享传输必须为抛出的错误附加 status/body,勾画 409/422 分支依赖它
+if (!apiClient.includes('statusError.status = response.status') || !apiClient.includes('blobError.status = response.status')) {
+  throw new Error('API client must attach status/body to thrown errors');
+}
+
+// ==================== 勾画标注(可选步骤 10)模块归属 ====================
+const annotationsCore = fs.readFileSync(path.join(root, 'static', 'annotations_core.js'), 'utf8');
+const annotationsWorkspace = fs.readFileSync(path.join(root, 'static', 'annotations_workspace.js'), 'utf8');
+const annotationsEditor = fs.readFileSync(path.join(root, 'static', 'annotations_editor.js'), 'utf8');
+const annotationsCss = fs.readFileSync(path.join(root, 'static', 'annotations.css'), 'utf8');
+const annotationPreview = fs.readFileSync(path.join(root, 'static', 'annotation_preview.js'), 'utf8');
+if (!annotationsWorkspace.includes('mask_groups: page.mask_groups || []')) {
+  throw new Error('annotation workspace must retain the server content groups');
+}
+if (!annotationPreview.includes("script.src = '/annotation_player.bundle.js")
+  || annotationPreview.includes("script.src = '/static/annotation_player.bundle.js")) {
+  throw new Error('annotation player must load from the root static mount');
+}
+if (!html.includes('annotation_preview.js') || !annotationPreview.includes('function prepareAnnotationPreview(')
+  || !annotationPreview.includes('window.AnnotationPlayer.mount')) {
+  throw new Error('formal annotation preview must own preparation and the shared Remotion player');
+}
+if (annotationsEditor.includes('let cursor = 0.2') || !annotationsEditor.includes('window.showAnnotationSyncPreview')) {
+  throw new Error('annotation editor must not invent a second playback timeline');
+}
+
+if (!html.includes('annotations_core.js')) throw new Error('annotation core module is not loaded explicitly');
+if (!html.includes('annotation_playback.js')) throw new Error('annotation playback module is not loaded explicitly');
+if (!html.includes('annotations_workspace.js')) throw new Error('annotation workspace module is not loaded explicitly');
+if (!html.includes('annotations_editor.js')) throw new Error('annotation editor module is not loaded explicitly');
+if (!html.includes('annotations.css')) throw new Error('annotation workspace stylesheet is not loaded explicitly');
+if (!(html.indexOf('narration_audio.js') < html.indexOf('annotation_playback.js')
+  && html.indexOf('annotation_playback.js') < html.indexOf('annotations_core.js')
+  && html.indexOf('annotations_core.js') < html.indexOf('annotations_workspace.js')
+  && html.indexOf('annotations_workspace.js') < html.indexOf('annotations_editor.js')
+  && html.indexOf('annotations_editor.js') < html.indexOf('workspace_navigation.js'))) {
+  throw new Error('annotation modules must load after narration and before workspace navigation');
+}
+if (!(html.indexOf('stitch.css') < html.indexOf('annotations.css'))) {
+  throw new Error('annotation stylesheet must load after the Stitch parity layer');
+}
+if (!html.includes('data-step="10"') || !html.includes('step-panel-10')) {
+  throw new Error('annotation optional step navigation entry or panel is missing');
+}
+if (!html.includes('annotation-enabled-toggle') || !html.includes('annotation-save-status')) {
+  throw new Error('annotation header controls are missing');
+}
+// 独立 DOM ID:不得复用 Mask 工作区的 ID
+for (const annotationDomId of ['annotation-canvas-frame', 'annotation-canvas-overlay', 'annotation-items', 'annotation-narration-beats']) {
+  if (!html.includes(`id="${annotationDomId}"`)) throw new Error(`annotation workspace DOM node ${annotationDomId} is missing`);
+}
+for (const manualAnnotationToken of [
+  'annotation-btn-freehand', 'annotation-new-style', 'annotation-ai-emphasis',
+  'function addAnnotationFreehand(', 'function limitAnnotationPathPoints(', 'item.target?.path_points',
+  'function handleAnnotationDrawPointerCancel(', 'annotation-btn-freehand',
+]) {
+  if (!html.includes(manualAnnotationToken) && !annotationsEditor.includes(manualAnnotationToken)) {
+    throw new Error(`manual annotation interaction is missing ${manualAnnotationToken}`);
+  }
+}
+if (!eventBindings.includes("'freehand'")) throw new Error('freehand pointer interaction is not bound');
+// 纯逻辑归属:UMD 工厂只在 core;DOM/编辑实现不得回流到 core
+for (const coreOwner of ['utf16IndexToCodepointIndex', 'codepointIndexToUtf16Index', 'createPageHistory', 'classifyPatchFailure']) {
+  if (!annotationsCore.includes(coreOwner)) throw new Error(`annotation core is missing ${coreOwner}`);
+}
+if (annotationsCore.includes('document.')) throw new Error('annotation core must stay DOM-free');
+// 画布交互与属性编辑归属 editor;工作区模块只做生命周期/渲染/保存编排
+for (const editorOwner of ['handleAnnotationDrawPointerDown', 'renderAnnotationOverlay', 'renderAnnotationItemEditor', 'undoAnnotationEdit', 'redoAnnotationEdit']) {
+  if (!annotationsEditor.includes(`function ${editorOwner}(`)) throw new Error(`annotation editor is missing ${editorOwner}`);
+  if (annotationsWorkspace.includes(`function ${editorOwner}(`)) throw new Error(`annotation editor ownership leaked into workspace: ${editorOwner}`);
+}
+for (const workspaceOwner of ['loadStep10Data', 'resetAnnotationsProjectState', 'flushAnnotationsSave', 'queueAnnotationSave', 'renderAnnotationItems']) {
+  if (!annotationsWorkspace.includes(`function ${workspaceOwner}(`)) throw new Error(`annotation workspace is missing ${workspaceOwner}`);
+  if (annotationsEditor.includes(`function ${workspaceOwner}(`)) throw new Error(`annotation workspace ownership leaked into editor: ${workspaceOwner}`);
+}
+// workflow_state 只接只读标志,不得长出勾画业务状态
+if (app.includes('ANNOTATIONS_WS') || app.includes('pendingOps')) {
+  throw new Error('annotation business state must not live in workflow_state.js');
+}
+if (!app.includes('annotationsEnabled: window.__annotationsEnabled === true')) {
+  throw new Error('projectFlowContext must expose the read-only annotationsEnabled flag');
+}
+// 导航接入:复位、flush、数据路由
+if (!workspaceNavigation.includes('resetAnnotationsProjectState')) throw new Error('workspace navigation must reset annotation project state');
+if (!workspaceNavigation.includes('flushAnnotationsSave')) throw new Error('workspace navigation must flush annotation saves before leaving step 10');
+if (!workspaceNavigation.includes('case 10:')) throw new Error('workspace navigation must route step 10 data loading');
+// 事件绑定:唯一启动入口注册勾画事件
+if (!eventBindings.includes('initAnnotationWorkspaceEvents')) throw new Error('event bindings must register annotation workspace events');
+// 流程契约(R2):模块六决策态驱动;显示序号唯一来源 displayFlow;无"可选"徽标
+const flowSource = fs.readFileSync(path.join(root, 'static', 'flow.js'), 'utf8');
+if (!flowSource.includes('annotationModuleState')) {
+  throw new Error('visible flow must derive module six state from annotationModuleState');
+}
+if (!flowSource.includes('function displayFlow(')) {
+  throw new Error('visible flow must expose displayFlow as the display-number source');
+}
+if (flowSource.includes("step-item-optional") || html.includes('step-optional-badge')) {
+  throw new Error('module six must not carry the optional badge');
+}
+if (!html.includes('<div class="step-num">6</div>')) {
+  throw new Error('module six must show a real display number');
+}
+// 发行功能剖面：判定函数只属于 flow.js；消费方一律经 PPTFlow.distributionFeatures()
+// 读取，禁止各模块自行解释 window.PPTStudioDistribution。
+if (!flowSource.includes('function distributionFeatures(')) {
+  throw new Error('distribution feature detection must live in flow.js');
+}
+if (app.includes('function distributionFeatures(') || oneClick.includes('function distributionFeatures(')) {
+  throw new Error('distribution feature detection leaked out of flow.js');
+}
+for (const distributionConsumer of [oneClick, outputRender, narrationAudio, eventBindings, courses, settings, creationConfigManagement]) {
+  if (distributionConsumer.includes('window.PPTStudioDistribution')) {
+    throw new Error('modules must read the distribution profile via PPTFlow.distributionFeatures()');
+  }
+}
+if (!outputRender.includes('function step8DigitalHumanEnabled(')) {
+  throw new Error('output module must gate digital-human status via the distribution profile');
+}
+if (!oneClick.includes("stageIds.includes('annotation')") || !oneClick.includes("stageIds.includes('digital_human')")) {
+  throw new Error('one-click cards must hide disabled distribution stages');
+}
+if (!settings.includes('const ocrKeyInput') || !settings.includes('const ocrSecretInput')) {
+  throw new Error('settings must tolerate missing annotation OCR inputs (light edition)');
+}
+if (!eventBindings.includes('PPTFlow.nextVisibleStep(6)')) {
+  throw new Error('audio confirm must follow the effective flow, not a hardcoded step 10');
+}
+if (!annotationsWorkspace.includes('refreshAnnotationModuleState')) {
+  throw new Error('annotation workspace must publish module decision state');
+}
+if (!annotationsCss.includes('.annotation-')) {
+  throw new Error('annotation stylesheet must scope new panels');
+}
+// 勾画确认/决策/预览闭环:确认接口必须由前端调用,渲染门禁才可通过
+for (const annotationActionId of ['annotation-btn-confirm-page', 'annotation-btn-preview']) {
+  if (!html.includes(`id="${annotationActionId}"`)) throw new Error(`annotation workspace action ${annotationActionId} is missing`);
+}
+if (!annotationsWorkspace.includes('/confirm')) {
+  throw new Error('annotation workspace must call the per-slide confirm endpoint');
+}
+if (!annotationsWorkspace.includes('function confirmAnnotationPage(')
+  || !annotationsWorkspace.includes('function requestAnnotationDecision(')
+  || !annotationsWorkspace.includes('function updateAnnotationConfirmButton(')) {
+  throw new Error('annotation workspace must implement page confirm and decision entries');
+}
+if (!annotationsEditor.includes('function previewAnnotationAnimation(')
+  || !annotationsEditor.includes('function cancelAnnotationPreviewLoop(')) {
+  throw new Error('annotation editor must own the animation preview lifecycle');
+}
+if (!eventBindings.includes('previewAnnotationAnimation')
+  || !eventBindings.includes('confirmAnnotationPage')) {
+  throw new Error('annotation preview/confirm buttons must be bound in event bindings');
+}
+if (!html.includes('data-creation-config-pause="annotation"')) {
+  throw new Error('creation package must expose the annotation manual-pause option');
+}
+// 撤销/重做必须以变更前条目为 diff 基准并同步服务端(自比较导致撤销从不入队)
+if (!annotationsEditor.includes('queueSyncAnnotationItems(before, restored)')) {
+  throw new Error('annotation undo/redo must diff against the pre-change items');
+}
+// 编辑态静态预览必须采样在绘制完成区间(此前 0.5 只显示半截笔迹)
+if (!annotationsEditor.includes('ANNOTATION_EDIT_SAMPLE_SEC = 1')) {
+  throw new Error('annotation edit overlay must render fully drawn strokes');
+}
+// AI 重点密度必须声明自己的 projectId(此前 ReferenceError 使选择框永远失败)
+const emphasisBody = annotationsWorkspace.slice(annotationsWorkspace.indexOf('async function setAnnotationEmphasis('));
+if (emphasisBody.length < 30 || !emphasisBody.slice(0, 400).includes('const projectId = ANNOTATIONS_WS.projectId')) {
+  throw new Error('setAnnotationEmphasis must resolve projectId before calling the settings API');
+}
+// 勾画 OCR 密钥设置入口:表单字段与读写两侧接线
+if (!html.includes('setting-annotation-ocr-key')) {
+  throw new Error('settings modal must expose the annotation Baidu OCR key field');
+}
+if (!settings.includes('annotation_ocr_baidu_api_key')) {
+  throw new Error('settings form must load/save the annotation Baidu OCR key');
+}
+
+
+// Shared transport ownership: extensions cannot bypass timeout/auth/error handling.
+for (const filename of ['ai_mask_extension.js', 'project_profile_extension.js',
+  'style_reference_manager_extension.js', 'storyboard_background_extension.js', 'narration_audio.js']) {
+  const source = fs.readFileSync(path.join(root, 'static', filename), 'utf8');
+  if (/\bfetch\s*\(/.test(source)) throw new Error(`${filename} must use api_client.js`);
+}
+const backgroundExtension = fs.readFileSync(path.join(root, 'static', 'storyboard_background_extension.js'), 'utf8');
+if (backgroundExtension.includes('sessionStorage')) throw new Error('background writes must use the live project scope');
+
+const calibrationSource = fs.readFileSync(path.join(root, 'static', 'annotation_audio_calibration.js'), 'utf8');
+if (!html.includes('annotation_audio_calibration.js') || !calibrationSource.includes('decodeAudioData') || !annotationsEditor.includes('AnnotationAudioCalibration.attach')) throw new Error('audio calibration must own waveform decoding and be wired before the editor');
+if (annotationsEditor.includes('decodeAudioData') || app.includes('decodeAudioData')) throw new Error('waveform decoding belongs to the audio calibration module');
+
+
+// HTML review owns only the HTML panel; all requests use the shared transport.
+const htmlReviewPanel = fs.readFileSync(path.join(root,'static/html_review_panel.js'),'utf8');
+if (/\bfetch\s*\(/.test(htmlReviewPanel) || htmlReviewPanel.includes('MutationObserver')) throw new Error('HTML review must use API and explicit refresh');
+if (!htmlReviewPanel.includes("getElementById('step-panel-3')")) throw new Error('HTML review belongs in the content panel');

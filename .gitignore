@@ -1,0 +1,100 @@
+# Runtime projects
+runs/*
+!runs/.gitkeep
+
+# User-facing exports
+outputs/*
+!outputs/.gitkeep
+
+# Generated media and assets
+*.mp4
+*.mov
+*.m4v
+*.wav
+*.mp3
+*.aac
+*.flac
+*.srt
+*.vtt
+*.png
+*.jpg
+*.jpeg
+*.webp
+!references/style_reference/
+!references/style_reference/*.png
+!references/style_reference/*.jpg
+!references/style_reference/*.jpeg
+!references/style_reference/*.webp
+!references/style_reference/**/
+!references/style_reference/**/*.png
+!references/style_reference/**/*.jpg
+!references/style_reference/**/*.jpeg
+!references/style_reference/**/*.webp
+!docs/ai-mask-optimization/**/*.png
+# 勾画标注:确定性评测夹具与验证证据图(报告/对比页引用)
+!checks/fixtures/**/*.png
+!docs/annotation-validation/**/*.png
+!docs/annotation-validation/**/*.html
+!docs/annotation-validation/**/*.json
+
+# Local caches and builds
+.cache/
+.tmp/
+node_modules/
+dist/
+build/
+.remotion/
+scripts/remotion/public/runtime/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.coverage
+.coverage.*
+htmlcov/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Sensitive local settings exports (never commit)
+ppt-studio-global-settings-sensitive*.json
+*-sensitive-*.json
+
+*.log
+*.pid
+scratch/
+work/
+data/
+
+# Third-party binary tooling (downloaded, not source)
+tools/ffmpeg/
+
+# Portable runtime bundle (embedded Python/Node, downloaded binaries)
+/runtime/
+
+# Editor/working backups
+*.bak
+*.bak2
+_sandbox_test.txt
+
+# ZCode session runtime data
+.zcode/
+
+# WorkBuddy AI session memory (local agent state, never published)
+.workbuddy-ai/
+
+# Local downloaded fonts (not in repo)
+static/fonts/
+UI优化方案.md
+
+# Local server runtime logs
+logs/*
+!logs/.gitkeep
+
+# Temporary TTS staging from legacy runs
+tts-stage-*/
+.workbuddy/

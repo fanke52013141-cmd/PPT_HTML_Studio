@@ -831,4 +831,8 @@ generated caches may be rebuilt, while explicit deletion needs a separate action
 
 ## Publication status — 2026-10-08
 
-main contains specifications and standalone HTML engine; html-studio contains application source and reviewed backend fixes. Guided HTML integration has engineering evidence, while real-provider, real-course and user visual acceptance remain incomplete. Read docs/releases/2026-10-08-html-backend-update.md and the per-AC ledger for current status; earlier phase descriptions are historical.
+main now contains specifications, standalone HTML engine, application source and reviewed backend fixes; html-studio preserves pre-merge source history. Guided HTML integration has engineering evidence, while real-provider, real-course and user visual acceptance remain incomplete. Read docs/releases/2026-10-08-html-backend-update.md and the per-AC ledger for current status; earlier phase descriptions are historical.
+
+## Main source merge — 2026-10-08
+
+The user explicitly authorized merging application source into main. main is now the primary development branch. Previous specification-only publication restrictions are historical and superseded for this repository. Never publish to the original upstream repository. The merge includes committed sources only, not inherited local working-tree edits or credentials/runtime data. Follow docs/releases/2026-10-08-main-source-merge.md and individual acceptance statuses.

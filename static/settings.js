@@ -1,0 +1,371 @@
+// Global settings, configuration portability, and provider connection checks.
+// This remains a classic script so existing inline handlers and ui_foundation.js / workflow_state.js calls keep
+// the same global function contract while the legacy bundle is modularized.
+
+const LLM_PROVIDER_PRESETS = {
+  openai: { baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
+  newapi: { baseUrl: '', model: '' },
+  openrouter: { baseUrl: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o-mini' },
+  litellm: { baseUrl: 'http://localhost:4000/v1', model: '' },
+  deepseek: { baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat' },
+  volcengine: { baseUrl: 'https://ark.cn-beijing.volces.com/api/v3', model: '' },
+  siliconflow: { baseUrl: 'https://api.siliconflow.cn/v1', model: 'deepseek-ai/DeepSeek-V3' },
+  dashscope: { baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
+  zhipu: { baseUrl: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash' },
+  custom: { baseUrl: '', model: '' }
+};
+
+function updateTtsProviderHint() {
+  var provider = document.getElementById('setting-tts-provider');
+  if (!provider) return;
+  var isComfyui = provider.value === 'comfyui_tts';
+  var section = document.getElementById('tts-comfyui-section');
+  if (section) section.style.display = isComfyui ? 'block' : 'none';
+  // ComfyUI 本地模式不使用云端 API 字段，全部隐藏
+  ['tts-row-endpoint', 'tts-row-credentials', 'tts-row-model-voice', 'tts-row-clone-region', 'tts-row-provider-extra'].forEach(function (rowId) {
+    var row = document.getElementById(rowId);
+    if (row) row.style.display = isComfyui ? 'none' : '';
+  });
+  // ComfyUI 模式下所有音频参数（语速等）由工作流 JSON 自行定义，全部隐藏
+  ['tts-field-speed', 'tts-field-volume', 'tts-field-pitch'].forEach(function (fieldId) {
+    var field = document.getElementById(fieldId);
+    if (field) field.style.display = isComfyui ? 'none' : '';
+  });
+  if (isComfyui) loadComfyuiTtsWorkflowStatus();
+}
+
+async function loadComfyuiTtsWorkflowStatus() {
+  var statusEl = document.getElementById('tts-comfyui-workflow-status');
+  if (!statusEl) return;
+  try {
+    const res = await API.get('/api/settings/comfyui-tts-workflow');
+    if (res && res.exists) {
+      statusEl.textContent = '已导入';
+      statusEl.style.color = '#4CAF50';
+    } else {
+      statusEl.textContent = '未导入';
+      statusEl.style.color = '';
+    }
+  } catch (error) {
+    statusEl.textContent = '状态未知';
+    statusEl.style.color = '';
+  }
+}
+
+async function uploadComfyuiTtsWorkflow(file) {
+  var button = document.getElementById('btn-tts-comfyui-workflow');
+  var statusEl = document.getElementById('tts-comfyui-workflow-status');
+  if (!file || !button) return;
+  var originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = '上传中...';
+  try {
+    const form = new FormData();
+    form.append('file', file);
+    await API.post('/api/settings/comfyui-tts-workflow', form);
+    if (statusEl) {
+      statusEl.textContent = '已导入';
+      statusEl.style.color = '#4CAF50';
+    }
+    showToast('ComfyUI 工作流已导入，语音合成将自动使用该工作流');
+  } catch (error) {
+    // API transport 已展示错误详情，仅重置状态
+    if (statusEl) {
+      statusEl.textContent = '未导入';
+      statusEl.style.color = '';
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var ttsProviderSelect = document.getElementById('setting-tts-provider');
+  if (ttsProviderSelect) {
+    ttsProviderSelect.addEventListener('change', updateTtsProviderHint);
+  }
+  var wfButton = document.getElementById('btn-tts-comfyui-workflow');
+  var wfInput = document.getElementById('tts-comfyui-workflow-file');
+  if (wfButton && wfInput) {
+    wfButton.addEventListener('click', function () { wfInput.click(); });
+    wfInput.addEventListener('change', function () {
+      if (wfInput.files && wfInput.files.length > 0) {
+        uploadComfyuiTtsWorkflow(wfInput.files[0]);
+      }
+      wfInput.value = '';
+    });
+  }
+});
+
+function detectLlmProvider(savedProvider, baseUrl) {
+  const normalized = String(baseUrl || '').replace(/\/+$/, '').toLowerCase();
+  const known = Object.entries(LLM_PROVIDER_PRESETS).find(([, preset]) =>
+    preset.baseUrl && preset.baseUrl.replace(/\/+$/, '').toLowerCase() === normalized
+  );
+  if (known) return known[0];
+  if (savedProvider === 'newapi' || savedProvider === 'litellm' || savedProvider === 'custom') {
+    return savedProvider;
+  }
+  return normalized ? 'custom' : (savedProvider || 'openai');
+}
+
+function applyLlmProviderPreset(provider) {
+  const preset = LLM_PROVIDER_PRESETS[provider];
+  if (!preset) return;
+  if (preset.baseUrl) document.getElementById('setting-llm-base-url').value = preset.baseUrl;
+  if (preset.model) document.getElementById('setting-llm-model').value = preset.model;
+}
+
+async function loadSettings() {
+  state.settings = await API.get('/api/settings');
+
+  document.getElementById('setting-llm-provider').value = detectLlmProvider(
+    state.settings.llm_provider,
+    state.settings.llm_base_url
+  );
+  document.getElementById('setting-llm-base-url').value = state.settings.llm_base_url || '';
+  document.getElementById('setting-llm-api-key').value = state.settings.llm_api_key || '';
+  document.getElementById('setting-llm-model').value = state.settings.llm_model || '';
+  document.getElementById('setting-llm-temp').value = state.settings.llm_temperature || '0.7';
+  document.getElementById('setting-llm-max-tokens').value = state.settings.llm_max_tokens || '50000';
+  document.getElementById('setting-annotation-ocr-key').value = state.settings.annotation_ocr_baidu_api_key || '';
+  document.getElementById('setting-annotation-ocr-secret').value = state.settings.annotation_ocr_baidu_secret_key || '';
+
+  document.getElementById('setting-image-base-url').value = state.settings.image_base_url || '';
+  document.getElementById('setting-image-api-key').value = state.settings.image_api_key || '';
+  document.getElementById('setting-image-model').value = state.settings.image_model || 'gpt-image-1';
+
+  document.getElementById('setting-tts-provider').value = state.settings.tts_provider || 'minimax';
+  updateTtsProviderHint();
+  document.getElementById('setting-tts-endpoint').value = state.settings.tts_endpoint || '';
+  document.getElementById('setting-tts-api-key').value = state.settings.tts_api_key || '';
+  document.getElementById('setting-tts-secret-key').value = state.settings.tts_secret_key || '';
+  document.getElementById('setting-tts-region').value = state.settings.tts_region || '';
+  document.getElementById('setting-tts-model').value = state.settings.tts_model || '';
+  document.getElementById('setting-tts-voice-id').value = state.settings.tts_voice_id || '';
+  document.getElementById('setting-tts-clone-voice-id').value = state.settings.tts_clone_voice_id || '';
+  document.getElementById('setting-tts-provider-extra').value = state.settings.tts_provider_extra || '';
+  document.getElementById('setting-tts-speed').value = state.settings.tts_speed || '1.2';
+  document.getElementById('setting-tts-volume').value = state.settings.tts_volume || '1.0';
+  document.getElementById('setting-tts-pitch').value = state.settings.tts_pitch || '0';
+
+  // 任务并发（方案④）：跨项目后台任务全局吞吐上限。
+  document.getElementById('setting-max-concurrent-renders').value = state.settings.max_concurrent_renders || '1';
+  document.getElementById('setting-tts-job-workers').value = state.settings.tts_job_workers || '1';
+  document.getElementById('setting-llm-max-concurrency').value = state.settings.llm_max_concurrency || '2';
+
+  // 上游网关额度：按网关全局计量，所有账号/项目共享同一份（见 generation_governor.py）。
+  document.getElementById('setting-image-gateway-rpm').value = state.settings.image_gateway_requests_per_minute || '500';
+  document.getElementById('setting-image-gateway-concurrency').value = state.settings.image_gateway_max_concurrency || '12';
+  document.getElementById('setting-tts-gateway-rpm').value = state.settings.tts_gateway_requests_per_minute || '10';
+  document.getElementById('setting-tts-gateway-concurrency').value = state.settings.tts_gateway_max_concurrency || '4';
+  document.getElementById('setting-generation-queue-max-wait').value = state.settings.generation_queue_max_wait_sec || '600';
+  document.getElementById('setting-generation-governor-enabled').value = state.settings.generation_governor_enabled || '1';
+}
+
+function openSettingsModal() {
+  document.getElementById('modal-settings').style.display = 'flex';
+}
+
+function closeSettingsModal() {
+  document.getElementById('modal-settings').style.display = 'none';
+}
+
+function readSettingsForm() {
+  return {
+    llm_provider: document.getElementById('setting-llm-provider').value,
+    llm_base_url: document.getElementById('setting-llm-base-url').value.trim(),
+    llm_api_key: document.getElementById('setting-llm-api-key').value.trim(),
+    llm_model: document.getElementById('setting-llm-model').value.trim(),
+    llm_temperature: document.getElementById('setting-llm-temp').value.trim(),
+    llm_max_tokens: document.getElementById('setting-llm-max-tokens').value.trim(),
+    annotation_ocr_baidu_api_key: document.getElementById('setting-annotation-ocr-key').value.trim(),
+    annotation_ocr_baidu_secret_key: document.getElementById('setting-annotation-ocr-secret').value.trim(),
+    vision_model: state.settings?.vision_model || document.getElementById('setting-llm-model').value.trim(),
+    image_base_url: document.getElementById('setting-image-base-url').value.trim(),
+    image_api_key: document.getElementById('setting-image-api-key').value.trim(),
+    image_model: document.getElementById('setting-image-model').value.trim(),
+    tts_provider: document.getElementById('setting-tts-provider').value,
+    tts_endpoint: document.getElementById('setting-tts-endpoint').value.trim(),
+    tts_api_key: document.getElementById('setting-tts-api-key').value.trim(),
+    tts_secret_key: document.getElementById('setting-tts-secret-key').value.trim(),
+    tts_region: document.getElementById('setting-tts-region').value.trim(),
+    tts_model: document.getElementById('setting-tts-model').value.trim(),
+    tts_voice_id: document.getElementById('setting-tts-voice-id').value.trim(),
+    tts_clone_voice_id: document.getElementById('setting-tts-clone-voice-id').value.trim(),
+    tts_provider_extra: document.getElementById('setting-tts-provider-extra').value.trim(),
+    tts_speed: document.getElementById('setting-tts-speed').value.trim(),
+    tts_volume: document.getElementById('setting-tts-volume').value.trim(),
+    tts_pitch: document.getElementById('setting-tts-pitch').value.trim(),
+    // 任务并发（方案④）：保存为字符串，消费端用 parse_int_setting 钳位到合法区间。
+    max_concurrent_renders: document.getElementById('setting-max-concurrent-renders').value.trim() || '1',
+    tts_job_workers: document.getElementById('setting-tts-job-workers').value.trim() || '1',
+    llm_max_concurrency: document.getElementById('setting-llm-max-concurrency').value.trim() || '2',
+    // 上游网关额度：同样保存为字符串，由 get_bounded_int_setting 钳位。
+    image_gateway_requests_per_minute: document.getElementById('setting-image-gateway-rpm').value.trim() || '500',
+    image_gateway_max_concurrency: document.getElementById('setting-image-gateway-concurrency').value.trim() || '12',
+    tts_gateway_requests_per_minute: document.getElementById('setting-tts-gateway-rpm').value.trim() || '10',
+    tts_gateway_max_concurrency: document.getElementById('setting-tts-gateway-concurrency').value.trim() || '4',
+    generation_queue_max_wait_sec: document.getElementById('setting-generation-queue-max-wait').value.trim() || '600',
+    generation_governor_enabled: document.getElementById('setting-generation-governor-enabled').value.trim() || '1'
+  };
+}
+
+async function saveSettings() {
+  const res = await API.put('/api/settings', { settings: readSettingsForm() });
+  if (!res.success) return;
+  await loadSettings();
+  closeSettingsModal();
+  showToast('系统全局设置保存成功，当前配置已重新加载');
+}
+
+function settingsExportFileName() {
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
+  return `ppt-studio-full-migration-${stamp}.zip`;
+}
+
+function downloadConfigBlob(blob) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = settingsExportFileName();
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function exportGlobalSettings() {
+  // A migration archive intentionally includes credentials.  It is used to
+  // move a whole local studio: accounts, models, creation packages, styles,
+  // style-reference images, and their usable API/TTS credentials.
+  const blob = await API.postBinary('/api/config/export-with-secrets-zip', {
+    confirmation: 'EXPORT_SECRETS',
+  });
+  downloadConfigBlob(blob);
+  showToast('完整迁移配置包已导出：包含账号、模型、API/TTS 凭据、创作配置和风格参考图。请妥善保管该 ZIP。', 7000);
+}
+
+async function importGlobalSettings(file) {
+  // [配置包压缩包 20260908] 服务端按字节嗅探容器类型：ZIP 配置包和旧版 JSON
+  // 配置包都直接上传原始字节，前端不再自行解析 JSON。
+  showCustomConfirm(
+    '导入整体配置？',
+    '将恢复账号、模型、API/TTS 凭据、创作配置、Prompt 模板和参考风格图片；支持 .zip 压缩包与旧版 .json 配置包，项目内容不会被修改。',
+    async () => {
+      try {
+        const bytes = await file.arrayBuffer();
+        await API.post('/api/config/import-zip', bytes);
+        await loadSettings();
+        showToast('配置已导入并重新加载。', 5000);
+      } catch (error) {
+        showToast(`导入失败：${error.message}`, 6000);
+      }
+    }
+  );
+}
+
+async function testLlmConnection() {
+  const button = document.getElementById('btn-test-llm');
+  const originalHtml = button.innerHTML;
+  const payload = {
+    base_url: document.getElementById('setting-llm-base-url').value.trim() || null,
+    api_key: document.getElementById('setting-llm-api-key').value.trim(),
+    model: document.getElementById('setting-llm-model').value.trim()
+  };
+  if (!payload.api_key) {
+    showToast('请填写接口密钥 (API Key)');
+    return;
+  }
+  if (!payload.model) {
+    showToast('请填写文本模型');
+    return;
+  }
+  button.disabled = true;
+  button.innerHTML = '测试中...';
+  try {
+    const result = await API.post('/api/settings/test-llm', payload);
+    if (!result.success) showToast(`文本模型连接失败：${result.message || '未知错误'}`);
+  } catch (error) {
+    showToast(`测试请求发送失败: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.innerHTML = originalHtml;
+  }
+}
+
+async function testImageConnection() {
+  const button = document.getElementById('btn-test-image');
+  const originalHtml = button.innerHTML;
+  const payload = {
+    base_url: document.getElementById('setting-image-base-url').value.trim() || null,
+    api_key: document.getElementById('setting-image-api-key').value.trim(),
+    model: document.getElementById('setting-image-model').value.trim(),
+    size: '1920x1080'
+  };
+  if (!payload.api_key) {
+    showToast('请填写生图接口密钥 (API Key)');
+    return;
+  }
+  if (!payload.model) {
+    showToast('请填写生图模型');
+    return;
+  }
+  button.disabled = true;
+  button.innerHTML = '测试中...';
+  try {
+    const result = await API.post('/api/settings/test-image', payload);
+    if (!result.success) showToast(`图片模型连接失败：${result.message || '未知错误'}`);
+  } catch (error) {
+    showToast(`测试请求发送失败: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.innerHTML = originalHtml;
+  }
+}
+
+async function testTtsConnection() {
+  const button = document.getElementById('btn-test-tts');
+  const originalHtml = button.innerHTML;
+  const payload = {
+    provider: document.getElementById('setting-tts-provider').value,
+    endpoint: document.getElementById('setting-tts-endpoint').value.trim(),
+    api_key: document.getElementById('setting-tts-api-key').value.trim(),
+    secret_key: document.getElementById('setting-tts-secret-key').value.trim(),
+    region: document.getElementById('setting-tts-region').value.trim(),
+    model: document.getElementById('setting-tts-model').value.trim(),
+    voice_id: document.getElementById('setting-tts-voice-id').value.trim(),
+    clone_voice_id: document.getElementById('setting-tts-clone-voice-id').value.trim(),
+    provider_extra: document.getElementById('setting-tts-provider-extra').value.trim()
+  };
+  if (!payload.model) {
+    showToast('请填写语音模型');
+    return;
+  }
+  if (!payload.voice_id) {
+    showToast('请填写音色 ID');
+    return;
+  }
+  button.disabled = true;
+  button.innerHTML = '测试中...';
+  try {
+    const result = await API.post('/api/settings/test-tts', payload);
+    if (!result.success) showToast(`语音模型连接失败：${result.message || '未知错误'}`);
+  } catch (error) {
+    showToast(`测试请求发送失败: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.innerHTML = originalHtml;
+  }
+}
+
+function copyLlmUrlToImage() {
+  const llmUrl = document.getElementById('setting-llm-base-url').value.trim();
+  if (!llmUrl) {
+    showToast('请先填写文本模型的接口地址');
+    return;
+  }
+  document.getElementById('setting-image-base-url').value = llmUrl;
+  showToast('已将文本模型 Base URL 同步到图片生成配置');
+}

@@ -1,0 +1,187 @@
+brand:
+  name: Handdrawn Science Explainer
+  style_keywords:
+    - 温暖极简
+    - 手绘线稿
+    - 清爽
+    - 亲和
+    - 低门槛
+    - 解释型
+    - 轻科普
+    - 普通人友好
+
+canvas:
+  aspect_ratio: "16:9"
+  width: 1920
+  height: 1080
+  background: "#FFFFFF"
+  safe_margin:
+    x: 60
+    y: 55
+  subtitle_reserved:
+    height: 150
+    y: 930
+
+colors:
+  background: "#FFFFFF"
+  surface: "#FFFFFF"
+  ink: "#111111"
+  muted_ink: "#1A1A1A"
+  subtle_ink: "#4A4A4A"
+  line: "#111111"
+  yellow: "#F9D65C"
+  yellow_deep: "#F4C542"
+  yellow_soft: "#FFF3BF"
+  green_soft: "#D9F0A3"
+  blue_soft: "#BDE0FE"
+  subtitle_text: "#111111"
+  paper: "#FFFFFF"
+
+layout:
+  title_marker:
+    x: 60
+    y: 65
+    w: 10
+    h: 75
+  title_block:
+    main_title:
+      x: 110
+      y: 55
+      w: 1600
+      h: 86
+  content:
+    x: 80
+    y: 165
+    w: 1760
+    h: 750
+    frame: none
+  subtitle_area:
+    x: 0
+    y: 930
+    w: 1920
+    h: 150
+    fixed: true
+
+scene_layers:
+  model: png_layers_only
+  description: Remotion 只显示 PNG 图层、音频、字幕和 reveal 动效，不绘制 PPT 语义内容。
+  required_output_field: layers
+  production_default_role: content_body
+  production_visual_source: master_reveal_layers
+  allowed_roles:
+    - background
+    - title
+    - subtitle
+    - content_body
+    - diagram
+    - annotation
+    - summary
+    - decoration
+    - full_slide
+    - cover_layer
+    - fog_layer
+    - reveal_crop
+  recommended_layers:
+    - full_slide
+    - cover_layer
+    - fog_layer
+    - reveal_crop
+  rules:
+    - scene.json 使用 layers[]，每个 layer 必须是 type: png。
+    - animation_timeline.events[].target 必须指向 scene.layers[].id。
+    - 正式生产以 Image Gen 整页位图作为 full_slide_layer。
+    - PPT 主体语义内容来自完整页面位图；有 Mask 时只生成对应 reveal PNG。
+    - cover_layer、fog_layer、reveal_crop 只服务于显现动效，不承载新的语义内容。
+    - 页面中间是开放内容区，不绘制大圆角外框或任何 enclosing content frame。
+    - 底部字幕区不属于 PNG 主体内容，视频字幕由 Remotion 单独叠加。
+    - Remotion 不渲染 PPT 正文文字、线条、形状或分组元素。
+
+visual_assets:
+  template_reference_image: references/style_reference/PPT模板.png
+  image_style: warm_minimal_handdrawn_line_art
+  diagram_style: handdrawn_explainer_diagram
+  required_background: flat_uniform_pure_white
+  reveal_friendly_layout:
+    - "使用纯净平面 #FFFFFF 背景；四条边和四个角必须连续纯白，不要纸纹、噪声、阴影、渐变或暗角。"
+    - 主标题作为一个完整标题组固定在页面上方标题区，不生成页面副标题；底部 y=930..1080 固定作为视频字幕安全区。
+    - 手绘风只规定线条、亲和感和轻量图示，不规定主体内容必须是卡片列表。
+    - 主体内容区可以自由使用判断链、流程图、关系图、对比图、场景小插图、时间线、关键词地图等结构。
+    - 每个 visual_group 必须能被一个矩形区域完整覆盖。
+    - 独立 group 之间保留 80-120px 干净背景。
+    - 严禁画面元素重叠：文字、卡片、图标、箭头、线条、标签、装饰、图表之间不得互相覆盖、压住、穿插或粘连。
+    - 箭头、标签、图标、公式和卡片如果语义上不可分割，必须留在同一个 group 内。
+    - 不要跨多个 group 绘制长连接线；需要表达关系时，用清晰分段、留白充足的结构。
+    - 不要把关键正文内容、人物、图形或标签放到 y=930 以下字幕安全区。
+  avoid:
+    - 科技蓝黑风
+    - 赛博朋克
+    - 复杂 3D 背景
+    - 大面积渐变
+    - 金属质感
+    - 强阴影
+    - 儿童卡通大插画
+    - AI 生成图里的乱码文字
+    - 大面积装饰图形
+    - 纸纹背景
+    - 背景噪声
+    - 跨组长箭头
+    - 元素重叠
+    - 文字压住图标或箭头
+    - 箭头穿过文字
+    - 多个语义块粘连
+
+reveal:
+  default_padding_px: 32
+  large_padding_px: 48
+  min_group_gap_px: 80
+  recommended_group_gap_px: 120
+  fog:
+    blur_px: 16
+    overlay_color: "#FEFDF9"
+    overlay_opacity: 0.68
+    diagonal_angle: 135
+    feather_px: 16
+  allowed_actions:
+    - cover_fade_out
+    - cover_wipe_left_to_right
+    - cover_wipe_top_to_bottom
+    - fog_diagonal_erase
+    - crop_fade_up
+    - crop_slide_in_left
+    - crop_soft_zoom_in
+    - highlight
+
+subtitle:
+  reserved_area:
+    y: 930
+    height: 150
+  overlay:
+    font_key: lxgw_marker_gothic
+    font_family: LXGW Marker Gothic
+    font_size: 40
+    font_weight: 400
+    color: "#000000"
+    background: transparent
+    border_radius: 0
+    max_lines: 1
+    max_cjk_chars: 26
+    horizontal_margin: 110
+    bottom: 0
+
+animation:
+  default_duration_sec: 0.6
+  default_easing: easeOutCubic
+  target_model: scene.layers[].id
+  allowed_actions:
+    - fade_in
+    - fade_up
+    - soft_zoom_in
+    - slide_in_left
+    - highlight
+    - cover_fade_out
+    - cover_wipe_left_to_right
+    - cover_wipe_top_to_bottom
+    - fog_diagonal_erase
+    - crop_fade_up
+    - crop_slide_in_left
+    - crop_soft_zoom_in

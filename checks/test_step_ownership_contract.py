@@ -1,0 +1,84 @@
+from __future__ import annotations
+
+def test_legacy_checks():
+    """Guard ownership of the six visible production steps."""
+
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parents[1]
+
+
+    def read_text(path: str) -> str:
+        return (ROOT / path).read_text(encoding="utf-8")
+
+
+    def main() -> None:
+        html = read_text("static/index.html")
+        create_ui = read_text("static/project_profile_extension.js")
+        style_ui = read_text("static/style_reference_manager_extension.js")
+        one_click_ui = read_text("static/one_click_extension.js")
+        one_click_backend = read_text("one_click_orchestrator.py")
+        step3_routes = read_text("project_style_routes.py")
+        step3_template_backend = read_text("project_style_template_service.py")
+
+        for script in (
+            "project_profile_extension.js",
+            "storyboard_background_extension.js",
+            "style_reference_manager_extension.js",
+            "ai_mask_extension.js",
+            "one_click_extension.js",
+        ):
+            assert script in html, f"frontend script must be declared directly: {script}"
+
+        for deleted_script in (
+            "step2_storyboard_settings_extension.js",
+            "image_style_reverse_extension.js",
+            "visual_draft_quality_extension.js",
+        ):
+            assert deleted_script not in html
+
+        assert "step2-btn-script-prompt" in html
+        assert "step2-btn-visual-prompt" in html
+        assert "step3-btn-background-settings" in read_text("static/storyboard_background_extension.js")
+        assert "step3-video-background-apply" not in html
+
+        for token in (
+            "/steps/3/image-style",
+            "style-panel-system-content",
+            "style-panel-reverse-files",
+            "style-panel-upload-files",
+            "style-panel-template-name",
+            "最多只能上传 3 张",
+        ):
+            assert token in style_ui, f"Step 3 image-style flow missing: {token}"
+        assert "/project-profile/image-style" not in style_ui
+        assert "step3_image_style_templates" in step3_template_backend
+        for template_token in ("_templates_root", "_write_templates", "step3_image_style_templates"):
+            assert template_token not in step3_routes, (
+                f"Step 3 template logic must stay in project_style_template_service.py: {template_token}"
+            )
+
+        for forbidden in (
+            'name="storyboard_template_id"',
+            'name="image_style_template_id"',
+            'name="auto_generate_image_style"',
+        ):
+            assert forbidden not in create_ui
+
+        assert "services.storyboard_script" in one_click_backend
+        assert "services.storyboard_visual" in one_click_backend
+        assert "services.storyboard_compose" in one_click_backend
+        assert "services.annotate_ai_mask" in one_click_backend
+        assert "services.save_narration" in one_click_backend
+        assert "TestClient" not in one_click_backend
+        assert "图片质量检查" not in one_click_ui
+        assert "project-profile/image-style" not in one_click_backend
+        print("Step ownership wording contract passed.")
+
+
+
+    main()
+
+
+if __name__ == "__main__":
+    test_legacy_checks()

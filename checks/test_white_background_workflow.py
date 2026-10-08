@@ -1,0 +1,51 @@
+from __future__ import annotations
+
+def test_legacy_checks():
+    from pathlib import Path
+
+    import yaml
+
+
+    ROOT = Path(__file__).resolve().parents[1]
+    server = (ROOT / "server.py").read_text(encoding="utf-8")
+    visual_settings_routes = (
+        ROOT / "visual_settings_routes.py"
+    ).read_text(encoding="utf-8")
+    visual_settings_service = (
+        ROOT / "visual_settings_service.py"
+    ).read_text(encoding="utf-8")
+    app = (ROOT / "static" / "workflow_state.js").read_text(encoding="utf-8")
+    html = (ROOT / "static" / "index.html").read_text(encoding="utf-8")
+    background_ui = (ROOT / "static" / "storyboard_background_extension.js").read_text(encoding="utf-8")
+    visual_prompts = (ROOT / "scripts" / "write_visual_prompts.py").read_text(encoding="utf-8")
+    reveal_builder = (ROOT / "scripts" / "build_reveal_scene.py").read_text(encoding="utf-8")
+    background_color = (ROOT / "scripts" / "background_color.py").read_text(encoding="utf-8")
+    style_tokens = yaml.safe_load((ROOT / "config" / "style_tokens.yaml").read_text(encoding="utf-8"))
+
+    assert (
+        'IMAGE_GENERATION_BACKGROUND = "#FFFFFF"'
+        in visual_settings_service
+    )
+    assert (
+        'DEFAULT_VIDEO_BACKGROUND = "#FEFDF9"'
+        in visual_settings_service
+    )
+    assert "/steps/3/visual-settings" in visual_settings_routes
+    assert "/steps/3/visual-settings" not in server
+    assert "connected_content_alpha" not in server
+    assert "masked_outer_white_cutout" in reveal_builder
+    assert "masked_outer_white_cutout" in background_color
+    assert style_tokens["canvas"]["background"] == "#FFFFFF"
+    assert style_tokens["visual_assets"]["required_background"] == "flat_uniform_pure_white"
+    assert "pure-white #FFFFFF background" in visual_prompts
+    assert "step3-btn-background-settings" in background_ui
+    assert "btn-storyboard-bg-save" in background_ui
+    assert "铺满画面" in background_ui and "完整显示" in background_ui
+    assert "step3-video-background-apply" not in html
+    assert "saveStep3VideoBackground" not in app
+
+    print("white background workflow checks passed")
+
+
+if __name__ == "__main__":
+    test_legacy_checks()

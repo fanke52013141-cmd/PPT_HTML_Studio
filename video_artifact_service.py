@@ -1,0 +1,804 @@
+"""MP4 paths, freshness metadata, variants, and artifact lifecycle."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime
+import json
+import logging
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import uuid
+from typing import Any, Callable
+
+from sqlalchemy.orm import Session, object_session
+
+from runtime_support import run_subprocess_killable
+
+from account_context import get_current_account_id
+from artifact_fingerprint import render_input_fingerprint, sha256_file
+from artifact_registry import record_artifact, remove_artifact_record
+from database import Account, Project
+from error_log_service import log_pipeline_error
+from pipeline_lifecycle import project_artifact_lock, write_json_atomic
+from project_storage import (
+    UnsafeProjectPath,
+    legacy_video_file,
+    project_run_dir,
+    video_file,
+    video_sidecar,
+    videos_dir,
+)
+from video_contracts import VideoRenderError
+
+
+logger = logging.getLogger("PPTStudio.VideoArtifacts")
+
+# Windows 禁止字符与控制字符都不允许出现在下载文件名中。
+_DOWNLOAD_NAME_UNSAFE = re.compile(r'[\\/:*?"<>|\r\n\t]+')
+
+def _sanitize_download_name_part(value: Any, fallback: str) -> str:
+    """把账号名/项目名清理成可安全用作下载文件名片段的文本。"""
+    cleaned = _DOWNLOAD_NAME_UNSAFE.sub("", str(value or "")).strip().strip(".")
+    return cleaned or fallback
+
+
+def _safe_unlink(path: Path, retries: int = 3, delay: float = 0.5) -> None:
+    """安全删除文件，处理 Windows 下浏览器占用导致的 PermissionError。
+
+    先尝试直接删除，失败后重试几次（等待浏览器释放句柄）。
+    若仍失败，则将文件重命名为 .deleted 后缀，使其从列表中消失，
+    并标记为待清理（下次删除其他视频时顺带清理）。
+    """
+    import time
+    for attempt in range(retries):
+        try:
+            path.unlink()
+            return
+        except PermissionError:
+            if attempt < retries - 1:
+                time.sleep(delay)
+    # 最终重试仍失败：重命名为 .deleted 后缀使其不再出现在列表中
+    try:
+        dest = path.with_suffix(path.suffix + ".deleted")
+        path.rename(dest)
+        logger.warning("文件被占用，已重命名为待清理: %s", dest)
+        # 尝试删除 .deleted 文件（可能仍被占用，忽略失败）
+        try:
+            dest.unlink()
+        except OSError:
+            pass
+    except OSError as exc:
+        raise VideoRenderError(409, f"视频文件被占用，请关闭预览后重试: {exc}")
+
+
+@dataclass(frozen=True)
+class VideoArtifactDependencies:
+    runs_root: Path
+    pipeline_version: str
+    render_timeout_sec: float
+    read_visual_settings: Callable[[Project], dict[str, Any]]
+    normalize_color: Callable[..., str]
+    normalize_subtitle_style: Callable[[Any], dict[str, Any]]
+    resolve_media_tool: Callable[[str], str | None]
+
+
+class VideoArtifactService:
+    """Owns every filesystem and registry operation for rendered MP4 files."""
+
+    def __init__(self, dependencies: VideoArtifactDependencies) -> None:
+        self.dependencies = dependencies
+
+    def get_project(self, db: Session, project_id: str) -> Project:
+        # 账号边界必须与项目服务一致：只允许读取当前创作账号名下的项目，
+        # 防止视频/PPTX/删除等接口通过 project_id 越权访问其他账号的数据。
+        account_id = get_current_account_id()
+        project = (
+            db.query(Project)
+            .filter(
+                Project.id == project_id,
+                Project.account_id == account_id,
+            )
+            .first()
+        )
+        if not project:
+            raise VideoRenderError(404, "项目不存在")
+        return project
+
+    def validated_run_dir(self, project: Project) -> Path:
+        try:
+            return project_run_dir(
+                self.dependencies.runs_root,
+                project.run_dir,
+                project.id,
+            )
+        except UnsafeProjectPath as exc:
+            logger.error(
+                "Unsafe project run directory for %s: %s",
+                project.id,
+                exc,
+            )
+            raise VideoRenderError(
+                500,
+                "项目运行目录安全校验失败",
+            ) from exc
+
+    def project_video_dir(self, project: Project) -> Path:
+        target = videos_dir(self.validated_run_dir(project))
+        target.mkdir(parents=True, exist_ok=True)
+        return target
+
+    def project_video_file(
+        self,
+        project: Project,
+        filename: str,
+    ) -> Path:
+        try:
+            return video_file(
+                self.validated_run_dir(project),
+                filename,
+            )
+        except UnsafeProjectPath as exc:
+            raise VideoRenderError(400, "视频文件名无效") from exc
+
+    def project_legacy_video_file(self, project: Project) -> Path:
+        return legacy_video_file(self.validated_run_dir(project))
+
+    @staticmethod
+    def video_metadata_path(path: str | Path) -> Path:
+        return video_sidecar(path)
+
+    def read_video_metadata(
+        self,
+        path: str | Path,
+    ) -> dict[str, Any]:
+        metadata_path = self.video_metadata_path(path)
+        if not metadata_path.exists():
+            return {}
+        try:
+            value = json.loads(metadata_path.read_text(encoding="utf-8"))
+            return value if isinstance(value, dict) else {}
+        except Exception as exc:
+            logger.warning(
+                "Failed to read video metadata %s: %s",
+                metadata_path,
+                exc,
+            )
+            return {}
+
+    def current_render_input_fingerprint(
+        self,
+        project: Project,
+    ) -> dict[str, Any]:
+        return render_input_fingerprint(
+            project.run_dir,
+            visual_settings=self.visual_settings(project),
+            pipeline_version=self.dependencies.pipeline_version,
+        )
+
+    def visual_settings(self, project: Project) -> dict[str, Any]:
+        return self.dependencies.read_visual_settings(project)
+
+    def _account_display_name(self, project: Project) -> str:
+        """解析项目归属账号的展示名，用于下载文件名前缀。"""
+        account_id = str(
+            getattr(project, "account_id", "") or ""
+        ).strip()
+        if not account_id:
+            account_id = get_current_account_id()
+        # project 可能是测试夹具的 SimpleNamespace（未映射），object_session
+        # 对未映射实例会抛异常，因此统一按"拿不到会话"兜底。
+        try:
+            session = object_session(project)
+        except Exception:
+            session = None
+        if session is not None:
+            account = (
+                session.query(Account)
+                .filter(Account.id == account_id)
+                .first()
+            )
+            if account and str(account.name or "").strip():
+                return str(account.name)
+        return account_id or "default"
+
+    def build_download_filename(
+        self,
+        project: Project,
+        path: str | Path,
+    ) -> str:
+        """默认下载名：账号名_项目名_YYYYMMDD+两位序号.mp4。
+
+        序号是该视频在「同一自然日内渲染出的视频」中按时间排序的
+        1-based 位置，因此当天第一个视频以 01 结尾。磁盘文件名保持
+        不变，这里只决定交给浏览器的 Content-Disposition 文件名。
+        """
+        target = Path(path)
+        try:
+            own_mtime = target.stat().st_mtime
+        except OSError:
+            own_mtime = datetime.now().timestamp()
+        date_tag = datetime.fromtimestamp(own_mtime).strftime("%Y%m%d")
+        sequence = 1
+        try:
+            siblings = list(target.parent.iterdir())
+        except OSError:
+            siblings = []
+        for sibling in siblings:
+            if sibling == target or sibling.suffix.lower() != ".mp4":
+                continue
+            try:
+                sibling_mtime = sibling.stat().st_mtime
+            except OSError:
+                continue
+            if datetime.fromtimestamp(sibling_mtime).strftime(
+                "%Y%m%d"
+            ) != date_tag:
+                continue
+            if sibling_mtime < own_mtime or (
+                sibling_mtime == own_mtime
+                and sibling.name < target.name
+            ):
+                sequence += 1
+        account_part = _sanitize_download_name_part(
+            self._account_display_name(project),
+            "账号",
+        )
+        project_part = _sanitize_download_name_part(
+            getattr(project, "name", ""),
+            "项目",
+        )
+        return (
+            f"{account_part}_{project_part}_{date_tag}"
+            f"{sequence:02d}.mp4"
+        )
+
+    def video_item(
+        self,
+        project: Project,
+        path: str | Path,
+        label: str | None = None,
+        current_fingerprint: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        target = Path(path)
+        try:
+            stat = target.stat()
+        except OSError as exc:
+            raise FileNotFoundError(f"视频产物不存在: {target}") from exc
+        filename = target.name
+        metadata_path = self.video_metadata_path(target)
+        metadata_exists = metadata_path.exists()
+        metadata = self.read_video_metadata(target)
+        pipeline_version = str(
+            metadata.get("reveal_pipeline_version") or ""
+        )
+        video_background = self.dependencies.normalize_color(
+            metadata.get("video_background"),
+            fallback="",
+        )
+        current_visual_settings = self.visual_settings(project)
+        current_background = current_visual_settings["video_background"]
+        has_subtitle_style_metadata = isinstance(
+            metadata.get("subtitle_style"),
+            dict,
+        )
+        subtitle_style = self.dependencies.normalize_subtitle_style(
+            metadata.get("subtitle_style")
+        )
+        current_subtitle_style = current_visual_settings["subtitle_style"]
+        playback_rate = float(
+            metadata.get("playback_rate", 1.0) or 1.0
+        )
+        raw_project_elapsed = metadata.get("project_total_elapsed_sec")
+        try:
+            project_total_elapsed_sec = max(0, round(float(raw_project_elapsed)))
+        except (TypeError, ValueError):
+            project_total_elapsed_sec = None
+        stored_fingerprint = metadata.get("input_fingerprint")
+        current_fingerprint = (
+            current_fingerprint
+            or self.current_render_input_fingerprint(project)
+        )
+        if metadata_exists and not metadata:
+            artifact_state = "invalid"
+        elif (
+            not metadata_exists
+            or pipeline_version != self.dependencies.pipeline_version
+            or not isinstance(stored_fingerprint, dict)
+        ):
+            artifact_state = "legacy"
+        elif (
+            stored_fingerprint.get("digest")
+            != current_fingerprint.get("digest")
+            or video_background != current_background
+            or not has_subtitle_style_metadata
+            or subtitle_style != current_subtitle_style
+        ):
+            artifact_state = "stale"
+        else:
+            artifact_state = "current"
+        return {
+            "filename": filename,
+            "download_filename": self.build_download_filename(
+                project,
+                target,
+            ),
+            "label": label or filename,
+            "size": stat.st_size,
+            "created_at": datetime.fromtimestamp(
+                stat.st_mtime
+            ).isoformat(timespec="seconds"),
+            "url": f"/api/projects/{project.id}/videos/{filename}",
+            "reveal_pipeline_version": pipeline_version or None,
+            "video_background": video_background or None,
+            "subtitle_style": subtitle_style,
+            "playback_rate": playback_rate,
+            "project_total_elapsed_sec": project_total_elapsed_sec,
+            "source_filename": (
+                str(metadata.get("source_filename") or "") or None
+            ),
+            "is_speed_variant": abs(playback_rate - 1.0) > 0.001,
+            "artifact_state": artifact_state,
+            "is_current": artifact_state == "current",
+            "is_stale": artifact_state == "stale",
+            "is_legacy": artifact_state == "legacy",
+            "is_invalid": artifact_state == "invalid",
+        }
+
+    def list_video_items(
+        self,
+        project: Project,
+    ) -> list[dict[str, Any]]:
+        run_dir = self.validated_run_dir(project)
+        managed_dir = videos_dir(run_dir)
+        items: list[dict[str, Any]] = []
+        current_fingerprint: dict[str, Any] | None = None
+        if managed_dir.is_dir():
+            for path in managed_dir.iterdir():
+                if path.is_file() and path.suffix.lower() == ".mp4":
+                    current_fingerprint = (
+                        current_fingerprint
+                        or self.current_render_input_fingerprint(project)
+                    )
+                    items.append(
+                        self.video_item(
+                            project,
+                            path,
+                            current_fingerprint=current_fingerprint,
+                        )
+                    )
+        legacy_path = legacy_video_file(run_dir)
+        if legacy_path.exists() and not items:
+            current_fingerprint = (
+                current_fingerprint
+                or self.current_render_input_fingerprint(project)
+            )
+            legacy = self.video_item(
+                project,
+                legacy_path,
+                "out.mp4",
+                current_fingerprint=current_fingerprint,
+            )
+            legacy["url"] = f"/api/projects/{project.id}/video"
+            items.append(legacy)
+        items.sort(
+            key=lambda item: item["created_at"],
+            reverse=True,
+        )
+        return items
+
+    def write_render_metadata(
+        self,
+        output_path: str | Path,
+        metadata: dict[str, Any],
+    ) -> None:
+        write_json_atomic(
+            self.video_metadata_path(output_path),
+            metadata,
+        )
+
+    def record_rendered_video(
+        self,
+        db: Session,
+        project: Project,
+        output_path: Path,
+        output_filename: str,
+        *,
+        render_metadata: dict[str, Any],
+        render_fingerprint: dict[str, Any],
+    ) -> Any:
+        self.write_render_metadata(output_path, render_metadata)
+        artifact = record_artifact(
+            db,
+            project_id=project.id,
+            artifact_type="video",
+            path=output_path,
+            relative_path=f"videos/{output_filename}",
+            mime_type="video/mp4",
+            source_fingerprint=render_fingerprint,
+            metadata=render_metadata,
+        )
+        shutil.copy2(
+            output_path,
+            self.project_legacy_video_file(project),
+        )
+        return artifact
+
+    def list_videos(
+        self,
+        db: Session,
+        project_id: str,
+    ) -> dict[str, Any]:
+        project = self.get_project(db, project_id)
+        return {
+            "success": True,
+            "videos": self.list_video_items(project),
+        }
+
+    def video_download(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+    ) -> Path:
+        project = self.get_project(db, project_id)
+        path = self.project_video_file(project, filename)
+        if not path.exists():
+            raise VideoRenderError(404, "视频文件不存在")
+        return path
+
+    def video_download_filename(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+    ) -> str:
+        """为单个视频下载请求解析浏览器默认保存文件名。"""
+        project = self.get_project(db, project_id)
+        path = self.project_video_file(project, filename)
+        if not path.exists():
+            raise VideoRenderError(404, "视频文件不存在")
+        return self.build_download_filename(project, path)
+
+    def create_speed_adjusted_video(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        # R2-012: 同倍率并发调速的"检查-生成-校验-发布"必须落在同一互斥范围,
+        # 否则两个请求都可能通过 exists() 检查并注册指向同一路径的两条记录。
+        with project_artifact_lock(self.get_project(db, project_id).run_dir):
+            return self._create_speed_adjusted_video_locked(db, project_id, filename, payload)
+
+    def _create_speed_adjusted_video_locked(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        project = self.get_project(db, project_id)
+        requested_path = self.project_video_file(project, filename)
+        try:
+            speed = round(float(payload.get("speed", 1.0)), 2)
+        except (TypeError, ValueError) as exc:
+            raise VideoRenderError(400, "视频语速必须是数字") from exc
+        if speed < 0.5 or speed > 2.0:
+            raise VideoRenderError(400, "视频语速范围为 0.5× 到 2.0×")
+        if not requested_path.exists():
+            raise VideoRenderError(404, "视频文件不存在")
+
+        requested_metadata = self.read_video_metadata(requested_path)
+        source_name = Path(
+            str(requested_metadata.get("source_filename") or filename)
+        ).name
+        try:
+            source_path = self.project_video_file(project, source_name)
+        except VideoRenderError:
+            source_name = filename
+            source_path = requested_path
+        if not source_path.exists():
+            source_name = filename
+            source_path = requested_path
+        source_hash = sha256_file(source_path)
+        if abs(speed - 1.0) <= 0.001:
+            return {
+                "success": True,
+                "video": self.video_item(project, source_path),
+                "videos": self.list_video_items(project),
+            }
+
+        ffmpeg = self.dependencies.resolve_media_tool("ffmpeg")
+        if not ffmpeg:
+            raise VideoRenderError(
+                500,
+                "未找到 FFmpeg，无法生成调速视频",
+            )
+        speed_tag = (
+            f"{speed:.2f}".rstrip("0").rstrip(".").replace(".", "_")
+        )
+        output_name = f"{source_path.stem}_speed_{speed_tag}x.mp4"
+        output_path = self.project_video_file(project, output_name)
+        if output_path.exists():
+            output_name = f"{source_path.stem}_speed_{speed_tag}x_{uuid.uuid4().hex[:8]}.mp4"
+            output_path = self.project_video_file(project, output_name)
+        temporary = Path(f"{output_path}.{uuid.uuid4().hex}.tmp.mp4")
+        # Use multiplication instead of division to avoid Windows path
+        # conversion issues where FFmpeg's MSYS2 layer interprets the '/'
+        # in "PTS/1.25" as a path separator (e.g. "setpts=PTS*0.8" == "PTS/1.25").
+        pts_factor = round(1.0 / speed, 6)
+        command = [
+            ffmpeg,
+            "-y",
+            "-i",
+            str(source_path),
+            "-filter:v",
+            f"setpts=PTS*{pts_factor}",
+            "-filter:a",
+            f"atempo={speed}",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "medium",
+            "-crf",
+            "18",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-pix_fmt",
+            "yuv420p",
+            # 与渲染归一化保持一致：重编码后必须保留 bt709。ffmpeg 7.x
+            # 不会把颜色选项落到编码器 VUI，需要 h264_metadata bsf 补写。
+            "-color_primaries", "bt709",
+            "-color_trc", "bt709",
+            "-colorspace", "bt709",
+            "-color_range", "tv",
+            "-bsf:v",
+            "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1",
+            "-movflags",
+            "+faststart",
+            str(temporary),
+        ]
+        try:
+            result = run_subprocess_killable(
+                command,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout_sec=self.dependencies.render_timeout_sec,
+            )
+            if result.returncode == 124:
+                raise subprocess.TimeoutExpired(command, self.dependencies.render_timeout_sec)
+        except subprocess.TimeoutExpired as exc:
+            if temporary.exists():
+                temporary.unlink()
+            log_pipeline_error(
+                project_id=project.id,
+                project_name=getattr(project, "name", ""),
+                step="speed",
+                error_message="生成调速视频超时",
+                error_type="TimeoutExpired",
+                details={
+                    "source_file": source_name,
+                    "speed": speed,
+                    "timeout_sec": self.dependencies.render_timeout_sec,
+                },
+            )
+            raise VideoRenderError(504, "生成调速视频超时") from exc
+        if result.returncode != 0 or not temporary.exists():
+            if temporary.exists():
+                temporary.unlink()
+            error_text = str(result.stderr or "")[-800:]
+            log_pipeline_error(
+                project_id=project.id,
+                project_name=getattr(project, "name", ""),
+                step="speed",
+                error_message=f"生成调速视频失败：{error_text}",
+                error_type="VideoRenderError",
+                details={
+                    "source_file": source_name,
+                    "speed": speed,
+                    "ffmpeg_returncode": result.returncode,
+                    "ffmpeg_command": " ".join(str(c) for c in command),
+                    "ffmpeg_stderr": str(result.stderr or "")[-2000:],
+                },
+            )
+            raise VideoRenderError(
+                500,
+                "生成调速视频失败：" + error_text,
+            )
+        if sha256_file(source_path) != source_hash:
+            temporary.unlink(missing_ok=True)
+            raise VideoRenderError(409, "源视频在调速期间已变化，请重试")
+        os.replace(temporary, output_path)
+        source_metadata = self.read_video_metadata(source_path)
+        source_metadata.update(
+            {
+                "rendered_at": datetime.now().isoformat(
+                    timespec="seconds"
+                ),
+                "playback_rate": speed,
+                "source_filename": source_name,
+                "speed_adjustment": "ffmpeg_setpts_atempo",
+            }
+        )
+        self.write_render_metadata(output_path, source_metadata)
+        record_artifact(
+            db,
+            project_id=project.id,
+            artifact_type="video",
+            path=output_path,
+            relative_path=f"videos/{output_name}",
+            mime_type="video/mp4",
+            source_fingerprint=(
+                source_metadata.get("input_fingerprint")
+                if isinstance(
+                    source_metadata.get("input_fingerprint"),
+                    dict,
+                )
+                else {}
+            ),
+            metadata=source_metadata,
+        )
+        db.commit()
+        item = self.video_item(project, output_path)
+        return {
+            "success": True,
+            "video": item,
+            "videos": self.list_video_items(project),
+        }
+
+    def delete_video(
+        self,
+        db: Session,
+        project_id: str,
+        filename: str,
+    ) -> dict[str, Any]:
+        project = self.get_project(db, project_id)
+        # 清理此前 _safe_unlink 因占用改名的 .deleted 兜底文件（审查 L-09）
+        video_dir = self.project_video_dir(project)
+        if video_dir.exists():
+            for stale in video_dir.glob("*.deleted"):
+                try:
+                    stale.unlink()
+                except OSError:
+                    pass
+        path = (
+            self.project_legacy_video_file(project)
+            if filename == "out.mp4"
+            else self.project_video_file(project, filename)
+        )
+        if not path.exists():
+            raise VideoRenderError(404, "视频文件不存在")
+        _safe_unlink(path)
+        metadata_path = self.video_metadata_path(path)
+        if metadata_path.exists():
+            _safe_unlink(metadata_path)
+        remove_artifact_record(
+            db,
+            project_id=project.id,
+            artifact_type="video",
+            filename=path.name,
+        )
+        db.commit()
+
+        remaining = self.list_video_items(project)
+        legacy_path = self.project_legacy_video_file(project)
+        regular_remaining = [
+            item
+            for item in remaining
+            if item.get("filename") != "out.mp4"
+            and self.project_video_file(
+                project,
+                item["filename"],
+            ).exists()
+        ]
+        if regular_remaining:
+            newest_path = self.project_video_file(
+                project,
+                regular_remaining[0]["filename"],
+            )
+            shutil.copy2(newest_path, legacy_path)
+        elif legacy_path.exists():
+            _safe_unlink(legacy_path)
+        return {
+            "success": True,
+            "videos": self.list_video_items(project),
+        }
+
+    def final_video_status(
+        self,
+        db: Session,
+        project_id: str,
+    ) -> dict[str, Any]:
+        project = self.get_project(db, project_id)
+        run_dir = self.validated_run_dir(project)
+        video_path = legacy_video_file(run_dir)
+        exists = video_path.exists()
+        video_mtime = video_path.stat().st_mtime if exists else 0.0
+        latest_input_mtime = 0.0
+        latest_input_path: Path | None = None
+        input_candidates = [
+            run_dir / "reveal_manifest.json",
+            run_dir / "planning" / "visual_contract.json",
+        ]
+        slides_dir = run_dir / "slides"
+        if slides_dir.is_dir():
+            for path in slides_dir.rglob("*"):
+                if (
+                    path.is_file()
+                    and path.suffix.lower()
+                    in {
+                        ".json",
+                        ".mp3",
+                        ".srt",
+                        ".png",
+                        ".jpg",
+                        ".jpeg",
+                    }
+                ):
+                    input_candidates.append(path)
+        for path in input_candidates:
+            if not path.exists():
+                continue
+            mtime = path.stat().st_mtime
+            if mtime > latest_input_mtime:
+                latest_input_mtime = mtime
+                latest_input_path = path
+        stale = bool(
+            exists and latest_input_mtime > video_mtime + 1
+        )
+        return {
+            "exists": exists,
+            "video_url": (
+                f"/api/projects/{project_id}/video"
+                if exists
+                else None
+            ),
+            "size": video_path.stat().st_size if exists else 0,
+            "updated_at": (
+                datetime.fromtimestamp(video_mtime).isoformat(
+                    timespec="seconds"
+                )
+                if exists
+                else None
+            ),
+            "stale": stale,
+            "latest_input_updated_at": (
+                datetime.fromtimestamp(
+                    latest_input_mtime
+                ).isoformat(timespec="seconds")
+                if latest_input_mtime
+                else None
+            ),
+            "latest_input_path": (
+                str(latest_input_path)
+                if latest_input_path
+                else None
+            ),
+        }
+
+    def final_video_download(
+        self,
+        db: Session,
+        project_id: str,
+    ) -> Path:
+        project = self.get_project(db, project_id)
+        path = self.project_legacy_video_file(project)
+        if not path.exists():
+            items = self.list_video_items(project)
+            if items:
+                path = self.project_video_file(
+                    project,
+                    items[0]["filename"],
+                )
+        if not path.exists():
+            raise VideoRenderError(404, "最终视频尚未渲染生成")
+        return path

@@ -1,0 +1,135 @@
+"""Persistent AI Mask settings and prompt configuration."""
+
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+from config_store import get_setting, update_settings
+from ai_mask_engine import (
+    CURRENT_OBJECT_FIELD_RULE,
+    CURRENT_TITLE_AND_ISLAND_RULES,
+    DEFAULT_METHODOLOGY,
+    DEFAULT_OUTPUT_STRUCTURE,
+    DEFAULT_SETTINGS,
+    LEGACY_DEFAULT_METHODOLOGY_V2,
+    LEGACY_DEFAULT_OUTPUT_STRUCTURE_V2,
+    LEGACY_METHODOLOGY_V3,
+    LEGACY_METHODOLOGY_V3_PAGED,
+    LEGACY_OUTPUT_STRUCTURE_V3,
+    LEGACY_STORED_METHODOLOGY_V2,
+    LEGACY_TITLE_RULE,
+    PREVIOUS_OBJECT_FIELD_RULE,
+    PAGED_OBJECT_FIELD_RULE,
+    PREVIOUS_TITLE_AND_ISLAND_RULES,
+    PROMPT_METHOD_KEY,
+    PROMPT_OUTPUT_KEY,
+    SETTING_PREFIX,
+    STATIC_TITLE_RULE,
+    normalize_settings,
+)
+
+
+def compose_ai_mask_full_prompt(methodology: str, output_structure: str) -> str:
+    return (
+        methodology.strip()
+        + "\n\n--- OUTPUT STRUCTURE / 输出结构 ---\n"
+        + output_structure.strip()
+    )
+
+
+def read_ai_mask_prompts() -> tuple[str, str]:
+    methodology = str(
+        get_setting(PROMPT_METHOD_KEY, DEFAULT_METHODOLOGY) or DEFAULT_METHODOLOGY
+    )
+    output_structure = str(
+        get_setting(PROMPT_OUTPUT_KEY, DEFAULT_OUTPUT_STRUCTURE)
+        or DEFAULT_OUTPUT_STRUCTURE
+    )
+    if methodology in {
+        LEGACY_DEFAULT_METHODOLOGY_V2,
+        LEGACY_STORED_METHODOLOGY_V2,
+        # v3 described cluster-merged objects; only a byte-identical built-in
+        # default migrates, an edited prompt is always left alone.
+        LEGACY_METHODOLOGY_V3,
+        LEGACY_METHODOLOGY_V3_PAGED,
+    }:
+        methodology = DEFAULT_METHODOLOGY
+    if output_structure in {
+        LEGACY_DEFAULT_OUTPUT_STRUCTURE_V2,
+        LEGACY_OUTPUT_STRUCTURE_V3,
+    }:
+        output_structure = DEFAULT_OUTPUT_STRUCTURE
+    for old_rule, new_rule in (
+        (LEGACY_TITLE_RULE, CURRENT_TITLE_AND_ISLAND_RULES),
+        (STATIC_TITLE_RULE, CURRENT_TITLE_AND_ISLAND_RULES),
+        (PREVIOUS_TITLE_AND_ISLAND_RULES, CURRENT_TITLE_AND_ISLAND_RULES),
+        (PREVIOUS_OBJECT_FIELD_RULE, CURRENT_OBJECT_FIELD_RULE),
+        (PAGED_OBJECT_FIELD_RULE, CURRENT_OBJECT_FIELD_RULE),
+    ):
+        if old_rule in methodology:
+            methodology = methodology.replace(old_rule, new_rule)
+    return methodology, output_structure
+
+
+def get_ai_mask_settings() -> dict[str, Any]:
+    raw = {
+        key: get_setting(SETTING_PREFIX + key, str(default))
+        for key, default in DEFAULT_SETTINGS.items()
+    }
+    return normalize_settings(raw)
+
+
+LOGGER = logging.getLogger(__name__)
+
+
+def save_ai_mask_settings(payload: dict[str, Any] | None) -> dict[str, Any]:
+    source = payload if isinstance(payload, dict) else {}
+    values = source.get("settings") if isinstance(source.get("settings"), dict) else source
+    submitted = values if isinstance(values, dict) else {}
+    # 局部更新语义：以当前已存储设置为基底，仅合并请求中出现的已知键。
+    # 直接对 payload 做 normalize（内部先合并出厂默认）再全键回写，会把
+    # UI 未暴露的隐藏高级设置（doclayout_model_path、vision_object_batch_size、
+    # provenance_review_routing 等）静默重置为出厂默认。未知键忽略并记录；
+    # "恢复出厂默认"应走单独的显式重置操作，不借普通保存实现。
+    unknown_keys = sorted(
+        str(key) for key in submitted if str(key) not in DEFAULT_SETTINGS
+    )
+    if unknown_keys:
+        LOGGER.warning(
+            "Ignoring unknown AI Mask setting keys in save request: %s",
+            ", ".join(unknown_keys),
+        )
+    merged = {
+        **get_ai_mask_settings(),
+        **{str(key): value for key, value in submitted.items() if str(key) in DEFAULT_SETTINGS},
+    }
+    settings = normalize_settings(merged)
+    updates: dict[str, Any] = {
+        SETTING_PREFIX + key: value for key, value in settings.items()
+    }
+    prompts = source.get("prompts") if isinstance(source.get("prompts"), dict) else {}
+    methodology = str(prompts.get("methodology") or "").strip()
+    output_structure = str(prompts.get("output_structure") or "").strip()
+    if methodology:
+        updates[PROMPT_METHOD_KEY] = methodology
+    if output_structure:
+        updates[PROMPT_OUTPUT_KEY] = output_structure
+    update_settings(updates)
+    return settings
+
+
+def ai_mask_config_payload() -> dict[str, Any]:
+    methodology, output_structure = read_ai_mask_prompts()
+    return {
+        "success": True,
+        "settings": get_ai_mask_settings(),
+        "prompts": {
+            "methodology": methodology,
+            "output_structure": output_structure,
+            "full_prompt": compose_ai_mask_full_prompt(
+                methodology,
+                output_structure,
+            ),
+        },
+    }

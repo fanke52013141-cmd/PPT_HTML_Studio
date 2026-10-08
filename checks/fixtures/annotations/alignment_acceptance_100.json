@@ -1,0 +1,1902 @@
+[
+  {
+    "sample_id": "a001",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到核心概念，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "核心概念",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a002",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到关键结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "关键结论",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a003",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到应用条件，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "应用条件",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a004",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要步骤，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要步骤",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a005",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到实际结果，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "实际结果",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a006",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到核心概念，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "核心概念",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a007",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到关键结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "关键结论",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a008",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到应用条件，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "应用条件",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a009",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要步骤，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要步骤",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a010",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到实际结果，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "实际结果",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a011",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到核心概念，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "核心概念",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a012",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到关键结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "关键结论",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a013",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到应用条件，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "应用条件",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a014",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要步骤，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要步骤",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a015",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到实际结果，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "实际结果",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a016",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到核心概念，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "核心概念",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a017",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到关键结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "关键结论",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a018",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到应用条件，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "应用条件",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a019",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要步骤，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要步骤",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a020",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到实际结果，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "实际结果",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a021",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到核心概念，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "核心概念",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a022",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到关键结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "关键结论",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a023",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到应用条件，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "应用条件",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a024",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要步骤，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要步骤",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a025",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到实际结果，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "实际结果",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a026",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到核心概念，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "核心概念",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a027",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到关键结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "关键结论",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a028",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到应用条件，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "应用条件",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a029",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要步骤，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要步骤",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a030",
+    "category": "普通中文",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到实际结果，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "实际结果",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a031",
+    "category": "重复短语",
+    "text": "我们先提到人工标注。接下来正式讲到人工标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "人工标注",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a032",
+    "category": "重复短语",
+    "text": "我们先提到智能标注。接下来正式讲到智能标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "智能标注",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a033",
+    "category": "重复短语",
+    "text": "我们先提到增长趋势。接下来正式讲到增长趋势，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "增长趋势",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a034",
+    "category": "重复短语",
+    "text": "我们先提到人工标注。接下来正式讲到人工标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "人工标注",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a035",
+    "category": "重复短语",
+    "text": "我们先提到智能标注。接下来正式讲到智能标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "智能标注",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a036",
+    "category": "重复短语",
+    "text": "我们先提到增长趋势。接下来正式讲到增长趋势，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "增长趋势",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a037",
+    "category": "重复短语",
+    "text": "我们先提到人工标注。接下来正式讲到人工标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "人工标注",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a038",
+    "category": "重复短语",
+    "text": "我们先提到智能标注。接下来正式讲到智能标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "智能标注",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a039",
+    "category": "重复短语",
+    "text": "我们先提到增长趋势。接下来正式讲到增长趋势，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "增长趋势",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a040",
+    "category": "重复短语",
+    "text": "我们先提到人工标注。接下来正式讲到人工标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "人工标注",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a041",
+    "category": "重复短语",
+    "text": "我们先提到智能标注。接下来正式讲到智能标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "智能标注",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a042",
+    "category": "重复短语",
+    "text": "我们先提到增长趋势。接下来正式讲到增长趋势，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "增长趋势",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a043",
+    "category": "重复短语",
+    "text": "我们先提到人工标注。接下来正式讲到人工标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "人工标注",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a044",
+    "category": "重复短语",
+    "text": "我们先提到智能标注。接下来正式讲到智能标注，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "智能标注",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a045",
+    "category": "重复短语",
+    "text": "我们先提到增长趋势。接下来正式讲到增长趋势，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      17,
+      21
+    ],
+    "quote": "增长趋势",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a046",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到最后结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "最后结论",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a047",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要原因，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要原因",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a048",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到适用范围，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "适用范围",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a049",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到最后结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "最后结论",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a050",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要原因，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要原因",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a051",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到适用范围，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "适用范围",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a052",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到最后结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "最后结论",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a053",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要原因，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要原因",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a054",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到适用范围，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "适用范围",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a055",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到最后结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "最后结论",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a056",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要原因，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要原因",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a057",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到适用范围，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "适用范围",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a058",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到最后结论，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "最后结论",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a059",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到主要原因，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "主要原因",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a060",
+    "category": "长句后段",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到适用范围，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "适用范围",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a061",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到20%，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      29
+    ],
+    "quote": "20%",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a062",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到2026年，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "2026年",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a063",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到3.14，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "3.14",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a064",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到¥1280，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "¥1280",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a065",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到第12步，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "第12步",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a066",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到20%，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      29
+    ],
+    "quote": "20%",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a067",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到2026年，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "2026年",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a068",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到3.14，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "3.14",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a069",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到¥1280，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "¥1280",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a070",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到第12步，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "第12步",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a071",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到20%，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      29
+    ],
+    "quote": "20%",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a072",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到2026年，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "2026年",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a073",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到3.14，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "3.14",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a074",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到¥1280，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "¥1280",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a075",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到第12步，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "第12步",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a076",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到20%，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      29
+    ],
+    "quote": "20%",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a077",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到2026年，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "2026年",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a078",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到3.14，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "3.14",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a079",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到¥1280，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "¥1280",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a080",
+    "category": "数字金额百分比",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到第12步，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "第12步",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a081",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到GPT模型，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "GPT模型",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a082",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到CPU性能，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "CPU性能",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a083",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到API接口，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "API接口",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a084",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到Qwen模型，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      32
+    ],
+    "quote": "Qwen模型",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a085",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到TTS语音，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "TTS语音",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a086",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到GPT模型，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "GPT模型",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a087",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到CPU性能，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "CPU性能",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a088",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到API接口，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "API接口",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a089",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到Qwen模型，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      32
+    ],
+    "quote": "Qwen模型",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a090",
+    "category": "中英混合",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到TTS语音，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      31
+    ],
+    "quote": "TTS语音",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a091",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到开始绘制，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "开始绘制",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a092",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到完整轨迹，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "完整轨迹",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a093",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到下一阶段，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "下一阶段",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a094",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到关键要点，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "关键要点",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a095",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到最后一步，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "最后一步",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a096",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到开始绘制，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "开始绘制",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a097",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到完整轨迹，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "完整轨迹",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a098",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到下一阶段，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "下一阶段",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a099",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到关键要点，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "关键要点",
+    "split": "held_out",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  },
+  {
+    "sample_id": "a100",
+    "category": "停顿语速",
+    "text": "先介绍背景与方法，并对比不同场景的适用条件，现在讲到最后一步，请观察对应内容的完整勾画过程。",
+    "beat_id": "b1",
+    "range": [
+      26,
+      30
+    ],
+    "quote": "最后一步",
+    "split": "development",
+    "truth_source": "human",
+    "truth_start_sec": null,
+    "predicted_start_sec": null,
+    "reliable": false,
+    "audio_sha256": null,
+    "truth_audio_sha256": null,
+    "reviewer": null
+  }
+]

@@ -1,0 +1,47 @@
+tracked:
+  - AGENTS.md
+  - README.md
+  - server.py
+  - database.py
+  - config_store.py
+  - static/**
+  - .codex/config.toml
+  - .agents/skills/**/SKILL.md
+  - config/**
+  - references/**
+  - schemas/**
+  - templates/**
+  - checks/**
+  - scripts/**
+  - bad_cases/bad_case_log.yaml
+  - .gitignore
+  - .env.example
+  - references/style_reference/README.md
+  - references/style_reference/PPT模板.png
+  - references/style_reference/PPT示例.png
+
+ignored:
+  - runs/**
+  - outputs/**
+  - logs/**
+  - data/**
+  - scripts/remotion/public/runtime/**
+  - "*.mp4"
+  - "*.mov"
+  - "*.wav"
+  - "*.mp3"
+  - "*.png"
+  - "*.jpg"
+  - "*.jpeg"
+  - "*.webp"
+  - references/generated_assets/**
+  - .env
+
+rules:
+  keep_redacted_examples: false
+  do_not_commit_runtime_inputs: true
+  do_not_commit_generated_media: true
+  commit_only_reusable_style_reference_images: true
+  do_not_commit_topic_specific_imagegen_assets: true
+  commit_bad_case_summary_only: true
+

@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+"""Shared helpers for configurable storyboard, image prompt, reveal and TTS profiles."""
+
+from __future__ import annotations
+
+from copy import deepcopy
+from pathlib import Path
+from threading import Lock
+from typing import Any
+
+import yaml
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_PROFILE_PATH = REPO_ROOT / "config" / "pipeline_profiles.yaml"
+
+# Cached values are never returned directly: callers historically received a
+# fresh YAML object and may safely normalize or extend it locally.
+_PROFILE_CACHE: dict[tuple[str, int, int], dict[str, Any]] = {}
+_PROFILE_CACHE_LOCK = Lock()
+
+REVEAL_ACTION_ALIASES = {
+    "cover_wipe_left_to_right": "cover_wipe_left_to_right",
+    "cover_wipe_right_to_left": "cover_wipe_right_to_left",
+    "cover_wipe_top_to_bottom": "cover_wipe_top_to_bottom",
+    "cover_wipe_bottom_to_top": "cover_wipe_bottom_to_top",
+    "wipe_left_to_right": "wipe_left_to_right",
+    "wipe_right_to_left": "wipe_right_to_left",
+    "wipe_top_to_bottom": "wipe_top_to_bottom",
+    "wipe_bottom_to_top": "wipe_bottom_to_top",
+    "soft_zoom_in": "crop_soft_zoom_in",
+    "fade_in": "crop_fade_up",
+    "fade_up": "crop_fade_up",
+    "slide_in_left": "crop_slide_in_left",
+}
+
+
+def read_pipeline_profile(path: Path | None = None) -> dict[str, Any]:
+    profile_path = (path or DEFAULT_PROFILE_PATH).resolve()
+    stat = profile_path.stat()
+    cache_key = (str(profile_path), stat.st_mtime_ns, stat.st_size)
+    with _PROFILE_CACHE_LOCK:
+        cached = _PROFILE_CACHE.get(cache_key)
+        if cached is None:
+            payload = yaml.safe_load(profile_path.read_text(encoding="utf-8-sig")) or {}
+            if not isinstance(payload, dict):
+                raise ValueError(f"Pipeline profile must be a YAML object: {profile_path}")
+            # Keep at most one version of each profile path. This preserves
+            # immediate file-change visibility without an unbounded cache.
+            for old_key in tuple(_PROFILE_CACHE):
+                if old_key[0] == cache_key[0] and old_key != cache_key:
+                    del _PROFILE_CACHE[old_key]
+            _PROFILE_CACHE[cache_key] = payload
+            cached = payload
+    return deepcopy(cached)
+
+
+def _nested_dict(payload: dict[str, Any], *keys: str) -> dict[str, Any]:
+    current: Any = payload
+    for key in keys:
+        if not isinstance(current, dict):
+            return {}
+        current = current.get(key)
+    return current if isinstance(current, dict) else {}
+
+
+def _nested_list(payload: dict[str, Any], *keys: str) -> list[Any]:
+    current: Any = payload
+    for key in keys:
+        if not isinstance(current, dict):
+            return []
+        current = current.get(key)
+    return current if isinstance(current, list) else []
+
+
+def article_size_key(article_content: str) -> str:
+    article_chars = len("".join(str(article_content or "").split()))
+    if article_chars <= 1200:
+        return "short_article"
+    if article_chars <= 3000:
+        return "medium_article"
+    return "long_article"
+
+
+def storyboard_requirements(article_content: str, profile: dict[str, Any]) -> tuple[str, str]:
+    size_key = article_size_key(article_content)
+    storyboard = _nested_dict(profile, "storyboard")
+    slide_count = _nested_dict(storyboard, "slide_count").get(size_key)
+    return str(slide_count or "4-8"), "content_driven"
+
+
+def role_catalog(profile: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    roles = _nested_dict(profile, "storyboard", "roles")
+    return {
+        str(key): value
+        for key, value in roles.items()
+        if isinstance(value, dict) and value.get("enabled") is not False
+    }
+
+
+def storyboard_profile_prompt(article_content: str, profile: dict[str, Any]) -> str:
+    slide_count, anchor_count = storyboard_requirements(article_content, profile)
+    roles = role_catalog(profile)
+    role_lines: list[str] = []
+    for role, cfg in roles.items():
+        label = str(cfg.get("label") or role)
+        description = str(cfg.get("description") or "").strip()
+        role_lines.append(f"- {role}（{label}）：{description}")
+    structure_rules = [
+        f"- {str(item).strip()}"
+        for item in _nested_list(profile, "storyboard", "structure_rules")
+        if str(item).strip()
+    ]
+    presentation_rules = [
+        f"- {str(item).strip()}"
+        for item in _nested_list(profile, "storyboard", "presentation_policy_rules")
+        if str(item).strip()
+    ]
+    required_fields = ", ".join(str(item) for item in _nested_list(profile, "storyboard", "required_slide_fields"))
+    optional_fields = ", ".join(str(item) for item in _nested_list(profile, "storyboard", "optional_slide_fields"))
+    return "\n".join(
+        [
+            "可配置分镜结构要求：",
+            f"- 根据文章长度，本次建议生成 {slide_count} 页 Slide。",
+            "- 视觉锚点数量由内容和独立 Reveal 需求决定；一个完整正文视觉组同样合法，不设置固定上下限。",
+            "- 分镜以演讲稿和正文内容为中心，不要在分镜阶段拆成图示、数据、总结、流程等固定 role。",
+            "- 先在顶层输出 presentation_policy；副标题必须由 AI 做项目级一次性决策，不能逐页随机。",
+            "- presentation_policy.subtitle_policy 只能是 all_slides_have_subtitle、no_slides_have_subtitle 或 optional_subtitles。",
+            f"- Slide 固定结构字段：{required_fields or 'slide_id, main_title, narration'}。",
+            f"- Slide 扩展结构字段：{optional_fields or 'subtitle, core_message, body_content, visual_intent, visual_groups, narration_beats'}。",
+            "- 最小 role 集合：",
+            *role_lines,
+            "- presentation_policy 规则：",
+            *presentation_rules,
+            "- 结构规则：",
+            *structure_rules,
+        ]
+    )
+
+
+def allowed_reveal_actions(profile: dict[str, Any] | None = None) -> set[str]:
+    if profile is None:
+        profile = read_pipeline_profile()
+    configured = {
+        str(item).strip()
+        for item in _nested_list(profile, "reveal", "allowed_actions")
+        if str(item).strip()
+    }
+    configured.update(
+        {
+            "cover_fade_out",
+            "cover_wipe_left_to_right",
+            "cover_wipe_right_to_left",
+            "cover_wipe_top_to_bottom",
+            "cover_wipe_bottom_to_top",
+            "fog_diagonal_erase",
+            "crop_fade_up",
+            "crop_slide_in_left",
+            "crop_soft_zoom_in",
+            "highlight",
+        }
+    )
+    return configured
+
+
+def normalize_reveal_action(action: str, profile: dict[str, Any] | None = None, for_renderer: bool = False) -> str:
+    action = str(action or "").strip() or "crop_fade_up"
+    if for_renderer:
+        return REVEAL_ACTION_ALIASES.get(action, action)
+    if profile is not None and action not in allowed_reveal_actions(profile):
+        return REVEAL_ACTION_ALIASES.get(action, "crop_fade_up")
+    return action
+
+
+def default_reveal_for_role(role: str, profile: dict[str, Any] | None = None) -> dict[str, Any]:
+    if profile is None:
+        profile = read_pipeline_profile()
+    role = str(role or "body_content").strip()
+    defaults = _nested_dict(profile, "reveal", "default_by_role")
+    reveal = defaults.get(role)
+    if not isinstance(reveal, dict):
+        reveal = defaults.get("body_content") or defaults.get("content_body")
+    if not isinstance(reveal, dict):
+        reveal = {"type": "crop_fade_up", "duration": 0.75}
+    result = dict(reveal)
+    result["type"] = normalize_reveal_action(str(result.get("type") or "crop_fade_up"), profile)
+    return result
