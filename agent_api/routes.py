@@ -37,6 +37,12 @@ from agent_contract.models import (
     HtmlSceneSaveRequest,
     HtmlSceneSaveResult,
     HtmlVisualStatusResult,
+    HtmlEditorSaveRequest,
+    HtmlEditorDocumentResult,
+    HtmlEditorPreviewResult,
+    ProjectModelBindingSaveRequest,
+    ProjectModelBindingResult,
+    ProjectModelBindingSaveResult,
     ProjectCreateRequest, ProjectCreateResult, ProjectSummary,
     ProjectListResult, ProjectGetResult,
     ProjectUpdateRequest, ProjectUpdateResult,
@@ -199,6 +205,66 @@ def _contract_slide_or_404(run_dir: str, slide_id: str) -> dict:
         if isinstance(slide, dict) and str(slide.get("slide_id")) == str(slide_id):
             return slide
     raise HTTPException(status_code=404, detail="契约中不存在该 Slide")
+
+
+@router.get("/projects/{project_id}/model-binding", response_model=ProjectModelBindingResult)
+def agent_model_binding_read(project_id: str, db: Session = Depends(get_db)):
+    from project_model_binding_routes import read_binding
+    _html_project_or_404(project_id, db)
+    return ProjectModelBindingResult(project_id=project_id, **_html_editor_web_call(read_binding, project_id, db))
+
+
+@router.put("/projects/{project_id}/model-binding", response_model=ProjectModelBindingSaveResult)
+def agent_model_binding_write(project_id: str, payload: ProjectModelBindingSaveRequest,
+                              db: Session = Depends(get_db)):
+    from project_model_binding_routes import update_binding
+    _html_project_or_404(project_id, db)
+    return ProjectModelBindingSaveResult(project_id=project_id, **_html_editor_web_call(update_binding, project_id, payload, db))
+
+
+def _html_editor_web_call(function, *args):
+    """Keep shared service diagnostics in Agent errors, including revision data."""
+    try:
+        return function(*args)
+    except HTTPException as exc:
+        detail = exc.detail if isinstance(exc.detail, dict) else {}
+        raise AgentAPIError(
+            detail.get("code") or ("CONFLICT" if exc.status_code == 409 else "HTTP_ERROR"),
+            detail.get("message") or str(exc.detail),
+            exc.status_code,
+            details=detail,
+        ) from exc
+
+
+@router.get("/projects/{project_id}/html-visual/{slide_id}/editor", response_model=HtmlEditorDocumentResult)
+def agent_html_editor_read(project_id: str, slide_id: str, db: Session = Depends(get_db)):
+    from html_visual_routes import html_scene_editor_get
+    _html_project_or_404(project_id, db)
+    result = _html_editor_web_call(html_scene_editor_get, project_id, slide_id, db)
+    return HtmlEditorDocumentResult(project_id=project_id, slide_id=slide_id,
+                                   **{k:v for k,v in result.items() if k != "success"})
+
+
+@router.put("/projects/{project_id}/html-visual/{slide_id}/editor", response_model=HtmlSceneSaveResult)
+def agent_html_editor_write(project_id: str, slide_id: str, payload: HtmlEditorSaveRequest,
+                            db: Session = Depends(get_db)):
+    from html_visual_routes import html_scene_editor_put, SceneEditorSaveRequest
+    _html_project_or_404(project_id, db)
+    result = _html_editor_web_call(html_scene_editor_put, project_id, slide_id,
+                                  SceneEditorSaveRequest.model_validate(payload.model_dump()), db)
+    return HtmlSceneSaveResult(project_id=project_id,
+                               **{k:v for k,v in result.items() if k != "success"})
+
+
+@router.post("/projects/{project_id}/html-visual/{slide_id}/editor/preview", response_model=HtmlEditorPreviewResult)
+def agent_html_editor_preview(project_id: str, slide_id: str, payload: HtmlEditorSaveRequest,
+                              db: Session = Depends(get_db)):
+    from html_visual_routes import html_scene_editor_preview, SceneEditorSaveRequest
+    _html_project_or_404(project_id, db)
+    result = _html_editor_web_call(html_scene_editor_preview, project_id, slide_id,
+                                      SceneEditorSaveRequest.model_validate(payload.model_dump()), db)
+    return HtmlEditorPreviewResult(project_id=project_id, slide_id=slide_id,
+                                  **{k:v for k,v in result.items() if k != "success"})
 
 
 @router.get(

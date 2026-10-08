@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.12.0
-- **Contract Hash**: `7d503621e32b96c6`
-- **Total Capabilities**: 41
+- **Agent API Version**: 1.13.0
+- **Contract Hash**: `780335d77ffd5ca2`
+- **Total Capabilities**: 46
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -11,6 +11,11 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 | Capability ID | Version | Status | Method | Agent API Path | MCP Tool | MCP enabled | CLI Command | Service Ref | Long-running | Destructive |
 |---|---|---|---|---|---|---|---|---|---|---|
+| `project_model_binding.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
+| `project_model_binding.write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
+| `html_editor.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
+| `html_editor.write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_write` | Yes | `html editor-write` | `html_scene_editing.save_editor` | No | No |
+| `html_editor.preview` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor/preview` | `ppt_html_editor_preview` | Yes | `html editor-preview` | `html_scene_editing.preview_editor` | No | No |
 | `generation.status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/generation/{stage}/status` | `ppt_generation_status` | Yes | `generation status` | `generation_control.status` | No | No |
 | `generation.stop` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/generation/{stage}/stop` | `ppt_generation_stop` | Yes | `generation stop` | `generation_control.request_stop` | No | No |
 | `identity.get` | 1.0 | stable | GET | `/api/agent/v1/identity` | `ppt_identity_get` | Yes | `identity` | `agent_api.auth / account_service` | No | No |
@@ -66,8 +71,13 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **36** stable tools:
+The MCP server exposes **41** stable tools:
 
+- `ppt_project_model_binding_read` — Read account-scoped HTML project model references and redacted effective summaries; legacy/inherit/fixed modes, no credentials or endpoints.
+- `ppt_project_model_binding_write` — Save HTML project text/image model references with expected_revision and explicit rebind. No-op preserves work; changes apply to future generation only. Stale revision returns 409.
+- `ppt_html_editor_read` — Read stored HTML author scene, motion binding, production capabilities, validated resources and manual overrides under the project lock.
+- `ppt_html_editor_write` — Save schema-validated HTML object/action/beat edits and source-image normalized anchors. Materializes private pixel-anchor assets, protects manual edits, rejects stale revision with 409 and preserves audio.
+- `ppt_html_editor_preview` — Validate draft HTML scene/resources and resolve existing audio beat timing or author clock without saving, TTS or approval. Output still requires confirmed audio and current approval.
 - `ppt_generation_status` — Read the active cooperative generation control for a project stage. Controls are process-local; durable TTS/video results remain in their job APIs.
 - `ppt_generation_stop` — Request a safe-boundary stop for the exact active operation ID. In-flight provider requests and render stages finish before stopping.
 - `ppt_identity_get` — Return the creative account and scopes associated with this Agent connection.

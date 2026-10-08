@@ -62,6 +62,30 @@ def _make_tool_handler(cap: AgentCapability) -> Callable:
 def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[str, Any]:
     """Route a capability ID to the appropriate AgentClient method."""
 
+    if cap_id in {
+        "project_model_binding.read", "project_model_binding.write",
+        "html_editor.read", "html_editor.write", "html_editor.preview",
+    }:
+        from urllib.parse import quote
+        from pydantic import ValidationError
+        from agent_contract.schema import path_parameters_schema
+
+        cap = next(c for c in CAPABILITIES if c.id == cap_id)
+        body = dict(args)
+        path_args = {}
+        for key in path_parameters_schema(cap)["required"]:
+            value = body.pop(key, None)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"Missing or invalid path parameter: {key}")
+            path_args[key] = quote(value, safe="")
+        try:
+            payload = cap.request_model.model_validate(body).model_dump(mode="json")
+        except ValidationError:
+            # Avoid echoing a mistakenly supplied key/endpoint in MCP errors.
+            raise ValueError("Invalid request fields; follow the capability input schema") from None
+        return client._request(cap.agent_api_method, cap.agent_api_path.format(**path_args),
+                               body=None if cap.agent_api_method == "GET" else payload)
+
     if cap_id == "identity.get":
         return client.get_identity()
     elif cap_id == 'generation.status':

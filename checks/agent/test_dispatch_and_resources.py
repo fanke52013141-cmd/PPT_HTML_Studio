@@ -121,10 +121,17 @@ class TestDispatchRouting:
 
     def test_every_advertised_mcp_capability_has_a_dispatch_path(self, mock_client):
         """Adding a tool to the registry must not leave it uncallable."""
+        strict_arguments = {
+            "project_model_binding.read": {"project_id": "p1"},
+            "project_model_binding.write": {"project_id": "p1", "expected_revision": 0, "text": {"mode": "inherit"}, "image": {"mode": "inherit"}},
+            "html_editor.read": {"project_id": "p1", "slide_id": "s1"},
+            "html_editor.write": {"project_id": "p1", "slide_id": "s1", "scene": {}, "binding": None, "expected_revision": 0},
+            "html_editor.preview": {"project_id": "p1", "slide_id": "s1", "scene": {}, "binding": None, "expected_revision": 0},
+        }
         for cap in CAPABILITIES:
             if cap.status == CapabilityStatus.removed or not cap.mcp_enabled:
                 continue
-            tools._dispatch(cap.id, {}, mock_client)
+            tools._dispatch(cap.id, strict_arguments.get(cap.id, {}), mock_client)
 
 
 class TestFormatResult:

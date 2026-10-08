@@ -101,3 +101,25 @@ Python 均为 `.venv/Scripts/python.exe`。pytest 经 checks/conftest.py 隔离 
 发布状态为“编辑器模块工程验证通过，公共集成仍待完成”；不标记真实服务、课程或用户视觉签收通过。
 推送前重新执行30项模块测试、隔离真实浏览器操作和6项 review panel 浏览器检查。
 截图使用隔离测试资源；它是操作证据，不是批准的生产设计。
+
+## 公共 Agent 集成轮：额外 transport 文件需求
+
+2026-10-08 已获授权独占 agent_contract/models/capabilities/versions、agent_api/routes、checks/agent 和生成矩阵。
+事实：MCP definitions 从 registry 自动生成，但 `mcp_server/tools.py::_dispatch` 是手写分派，未知新 capability 会 ValueError。
+CLI `cli/pptctl.py` 已从 `html ...` registry 自动生成子命令，但 `--file` 只为旧 scene_write/review/approve 注册。
+因此需主对话授权这两个文件或自行接入：
+
+- `mcp_server/tools.py`：新增五能力分派，按 registry method/path，通过现有 `AgentClient._request`；
+  从请求参数移除 project_id/slide_id 后用 cap.request_model.model_validate 保留严格未知字段拒绝。
+  新能力：project_model_binding.read/write 与 html_editor.read/write/preview。
+- `cli/pptctl.py`：html 子命令的 file 注册条件增加 project_model_binding.write、html_editor.write、html_editor.preview，required=True；
+  其余现有 cmd_html 会加载 JSON 并调用同一 _dispatch，无需新 transport/client。
+
+准备使用 CLI 名称 html model-read/model-write/editor-read/editor-write/editor-preview。
+此需求未获额外文件授权前不修改 transport，不把 registry schema 可见当成 MCP/CLI 调用通过。
+
+### 后续接线结果（2026-10-08）
+
+后续已授权并完成上述两个 transport 文件接线。五项能力通过真实 MCP handler、CLI 文件输入、Agent HTTP 和共享业务服务的隔离调用测试；接口版本为 1.13.0，生成矩阵检查通过。严格输入、项目归属、HTML 后端门禁、409修订冲突与安全模型摘要保持一致。旧 dispatch 覆盖测试补齐新接口必填参数，未放宽生产校验。
+
+本轮发布前 Agent 与相关 HTML 模块回归481项通过，server composition另3项通过，review panel浏览器11项通过，定向Ruff通过。用户本轮授权推送当前集成代码；发布备注见 `repository-update-2026-10-08.md`。真实提供者、课程闭环和视觉签收仍未完成。

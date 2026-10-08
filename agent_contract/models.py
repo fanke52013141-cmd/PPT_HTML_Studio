@@ -10,7 +10,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Optional, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
+from project_model_binding_models import ProjectModelBindingUpdate
 
 GenerationKind = Literal['storyboard_script', 'storyboard_visual', 'mask', 'tts', 'video']
 
@@ -426,3 +427,91 @@ class HtmlPlanGenerationResult(BaseModel):
 class HtmlTaskResult(BaseModel):
     project_id: str
     task: dict[str, Any]
+
+
+class ProjectModelBindingSaveRequest(ProjectModelBindingUpdate):
+    """Agent projection of the shared strict reference-only Web request."""
+
+
+class ProjectModelBindingReadRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class ProjectModelBindingSelectionResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    mode: Literal["inherit", "fixed", "legacy"]
+    connection_id: str | None
+
+
+class ProjectModelBindingSelectionsResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    text: ProjectModelBindingSelectionResult
+    image: ProjectModelBindingSelectionResult
+
+
+class ProjectModelEffectiveResult(BaseModel):
+    """Safe summary; endpoints, key values and credential references are hidden."""
+    model_config = ConfigDict(extra="forbid")
+    source: str
+    connection_id: str | None
+    provider: str
+    model: str
+    config_hash: str
+    ready: bool
+    error: str
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProjectModelsEffectiveResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    binding_revision: int
+    text: ProjectModelEffectiveResult
+    image: ProjectModelEffectiveResult
+
+
+class ProjectModelBindingResult(BaseModel):
+    project_id: str
+    revision: int
+    bindings: ProjectModelBindingSelectionsResult
+    effective: ProjectModelsEffectiveResult
+
+
+class ProjectModelBindingSaveResult(BaseModel):
+    project_id: str
+    revision: int
+    changed: bool
+
+
+class HtmlEditorReadRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class HtmlEditorSaveRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    scene: dict[str, Any]
+    binding: dict[str, Any] | None
+    expected_revision: StrictInt = Field(ge=0)
+    anchor_overrides: dict[str, list[dict[str, Any]]] = Field(
+        default_factory=dict,
+        description="Image node ID → {id,x,y} source-image normalized anchors (0≤x,y<1). Service materializes integer-pixel resource anchors; player receives normalized anchors. No canvas-coordinate anchors.",
+    )
+
+
+class HtmlEditorDocumentResult(HtmlSceneDocumentResult):
+    binding: dict[str, Any] | None
+    anchor_overrides: dict[str, list[dict[str, Any]]]
+    beats: list[dict[str, Any]]
+    resources: dict[str, Any]
+    capabilities: dict[str, Any]
+    manual: dict[str, Any] | None
+    preview_clock: str
+    audio_status: str
+
+
+class HtmlEditorPreviewResult(BaseModel):
+    project_id: str
+    slide_id: str
+    scene: dict[str, Any]
+    resources: dict[str, Any]
+    clock: Literal["author", "audio_timeline"]
+    audio_status: str
