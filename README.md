@@ -34,7 +34,7 @@
 
 ## 当前阶段
 
-本地原图片应用与独立 HTML E1/E2、共享视觉模块并存，HTML 生产链尚未接入应用。共享视觉 V1 的简化外观已被用户否定；`html_engine/visual/style-review/` 是恢复指定科普参考的校正样板，尚需完成共享能力集成和视觉验收。
+原图片后端与 guided HTML 后端并存。受约束生产、项目资产、审阅/批准、句子动作绑定、持久任务、视频和快照 PPTX 已接入本地应用并通过本轮工程验收；真实模型、真实课程、数字人、PowerPoint 打开及用户视觉评审仍待完成。
 
 **当前执行入口：[HTML 后端开发与验收交接包](docs/plans/html-backend-development/README.md)。** 包含逐项开发任务、固定源码版本的开源借鉴映射、测试输入与验收标准、Agent 提示词和任务清单。应用源码完整发布需独立审计；远端克隆不能假定包含本地完整应用。
 
@@ -78,7 +78,7 @@
 
 ## 数据驱动内核 E1
 
-已实现 [独立内核](html_engine/README.md) 与 [预览入口](html_engine/preview/index.html)。纸飞机/云朵两份 JSON 共用渲染代码，支持资源校验、文字容量、目标几何及确定取帧。现行契约包 0.7.1，限定实施记录见 [E1 交付](docs/plans/e1-data-driven-engine-completion.md)。应用仍运行原图片后端；HTML 集成和真实音频接入待后续阶段。
+已实现 [独立内核](html_engine/README.md) 与 [预览入口](html_engine/preview/index.html)。纸飞机/云朵两份 JSON 共用渲染代码，支持资源校验、文字容量、目标几何及确定取帧。现行契约包 0.7.1，限定实施记录见 [E1 交付](docs/plans/e1-data-driven-engine-completion.md)。当时应用运行原图片后端；此处为 E1 历史记录；当前应用集成见下方更新说明，真实课程音频仍待验收。
 
 ## E2 受约束配方
 
@@ -87,3 +87,7 @@
 ## 用户 Token 课程
 
 [课程预览](html_engine/courses/token/index.html) 和 [实施记录](docs/plans/e2-token-course-validation.md)：五场景复用一个公共三步配方，包含事实修订与实际分词证据。无音频，视觉待审阅。
+
+## 2026-10-08 代码与验收更新
+
+[本轮更新说明](docs/releases/2026-10-08-html-backend-update.md) 记录修复提交、555 项通过的回归、真实输出证据和未完成项。应用源码请使用 [html-studio 分支](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/tree/html-studio)；main 保留规范与独立引擎的精选发布范围。上方实验章节为历史记录，当前状态以更新说明和逐 AC 账本为准。

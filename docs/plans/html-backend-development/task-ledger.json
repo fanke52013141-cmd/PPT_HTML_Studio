@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "date": "2026-10-08",
-  "note": "Plan only. Acceptance.md remains authoritative; visual approval is separate.",
+  "note": "本轮逐项工程复核；任务状态不覆盖未完成 AC，视觉与真实服务单独验收。",
   "tasks": [
     {
       "id": "A00",
@@ -13,9 +13,23 @@
         "AC01"
       ],
       "evidence": [
-        "docs/baseline/html-adaptation-baseline.md"
+        "docs/baseline/html-adaptation-baseline.md",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": null
+      "commit": "8efecc145835705c6534e9cc3bba1a094ee47d38",
+      "historical_status": "passed",
+      "acceptance_results": {
+        "AC01": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "A01",
@@ -30,9 +44,23 @@
       ],
       "evidence": [
         "docs/contracts/html-presentation/runtime/visual-v1/version-0.2.0.md",
-        "docs/contracts/html-presentation/CHANGELOG.md"
+        "docs/contracts/html-presentation/CHANGELOG.md",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "b32b204"
+      "commit": "b32b2041cd27f570b25bac399f6b90d8d0cfa3e3",
+      "historical_status": "passed",
+      "acceptance_results": {
+        "AC02": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "A02",
@@ -41,7 +69,7 @@
         "A01"
       ],
       "scope": "initial_release",
-      "status": "passed",
+      "status": "partial",
       "acceptance": [
         "AC02",
         "AC04"
@@ -49,10 +77,29 @@
       "evidence": [
         "html_engine/visual/evidence/condensation-final.png",
         "html_engine/visual/evidence/evaporation-final.png",
-        "html_engine/visual/evidence/verification.json"
+        "html_engine/visual/evidence/verification.json",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "b32b204",
-      "note": "engineering passed; AC04 user visual review pending_review"
+      "commit": "b32b2041cd27f570b25bac399f6b90d8d0cfa3e3",
+      "historical_status": "passed",
+      "historical_note": "engineering passed; AC04 user visual review pending_review",
+      "acceptance_results": {
+        "AC02": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC04": {
+          "status": "pending_review",
+          "note": "需用户按原科普参考作视觉评审。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "A03",
@@ -61,16 +108,35 @@
         "A02"
       ],
       "scope": "initial_release",
-      "status": "passed",
+      "status": "partial",
       "acceptance": [
         "AC03",
         "AC06"
       ],
       "evidence": [
         "html_engine/visual/effects/registry.json",
-        "html_engine/visual/effects/cache/manifest.json"
+        "html_engine/visual/effects/cache/manifest.json",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "b32b204"
+      "commit": "b32b2041cd27f570b25bac399f6b90d8d0cfa3e3",
+      "historical_status": "passed",
+      "acceptance_results": {
+        "AC03": {
+          "status": "partial",
+          "note": "真实五页测试覆盖三种模板；完整课程与布局容量边界尚未补齐。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC06": {
+          "status": "partial",
+          "note": "效果参考 MISS/HIT、真实附件工程检查通过；真实模型未配置密钥。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "A04",
@@ -85,9 +151,23 @@
       ],
       "evidence": [
         "html_engine/visual/tools/export-frames.cjs",
-        "html_engine/visual/tests/verify.cjs"
+        "html_engine/visual/tests/verify.cjs",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "b32b204"
+      "commit": "b32b2041cd27f570b25bac399f6b90d8d0cfa3e3",
+      "historical_status": "passed",
+      "acceptance_results": {
+        "AC05": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "B01",
@@ -103,9 +183,23 @@
       "evidence": [
         "migrations/0017_project_visual_backend.sql",
         "checks/test_project_visual_backend.py",
-        "docs/agent/capability-matrix.md"
+        "docs/agent/capability-matrix.md",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "6001290"
+      "commit": "600129056bb6a8798d62122e0a72db0fe87dc71f",
+      "historical_status": "passed",
+      "acceptance_results": {
+        "AC08": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "B02",
@@ -124,9 +218,28 @@
         "html_visual_store.py",
         "html_visual_routes.py",
         "checks/test_html_visual_store.py",
-        "docs/downstream-impact.md"
+        "docs/downstream-impact.md",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "5bbb08b"
+      "commit": "5bbb08b11969fcd5e2b4ec541c0f2b23bb9f531a",
+      "historical_status": "passed",
+      "acceptance_results": {
+        "AC09": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC18": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "B03",
@@ -136,7 +249,7 @@
         "B02"
       ],
       "scope": "initial_release",
-      "status": "passed",
+      "status": "partial",
       "acceptance": [
         "AC08",
         "AC20"
@@ -144,9 +257,28 @@
       "evidence": [
         "static/flow.js",
         "checks/test_visible_flow.js",
-        "static/workspace_navigation.js"
+        "static/workspace_navigation.js",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "3e0abe0"
+      "commit": "3e0abe0e44176b10ab1f5cf6a74c6b82bed9bce8",
+      "historical_status": "passed",
+      "acceptance_results": {
+        "AC08": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC20": {
+          "status": "not_run",
+          "note": "未完成真实模型、真实讲稿音频与用户评审的课程全流程。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "C01",
@@ -156,17 +288,31 @@
         "A03"
       ],
       "scope": "initial_release",
-      "status": "passed",
+      "status": "partial",
       "acceptance": [
         "AC07"
       ],
       "evidence": [
         "html_storyboard_planning.py",
         "checks/test_html_storyboard_planning.py",
-        "html_engine/evidence/html-scene-plans/ac07-plan-evidence.json"
+        "html_engine/evidence/html-scene-plans/ac07-plan-evidence.json",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "纯规划层：注册能力门禁（模板/版本/槽位/图标）、beat→动作映射完整性、过渡对象保留、资产归属校验、AC07 证据（三结构）。storyboard_service 编排接入随 C02/C04 的模型调用入口落地。"
+      "commit": "2fb4fb5798a4c592784e4de7115e1c7232feeb44",
+      "historical_status": "passed",
+      "historical_note": "纯规划层：注册能力门禁（模板/版本/槽位/图标）、beat→动作映射完整性、过渡对象保留、资产归属校验、AC07 证据（三结构）。storyboard_service 编排接入随 C02/C04 的模型调用入口落地。",
+      "acceptance_results": {
+        "AC07": {
+          "status": "partial",
+          "note": "beat/对象映射、实际三帧与冻结记录通过；真实模型分镜待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "C02",
@@ -183,10 +329,29 @@
       ],
       "evidence": [
         "html_design_brief.py",
-        "checks/test_html_design_brief.py"
+        "checks/test_html_design_brief.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "纯核已实现并验证：brief（仅注册效果/主题/预算/字幕留白）、候选设计参考（CSS/SVG/Canvas 与独立图片分工）、OSS-04 关键帧清单（过渡对象强制过程三帧）、冻结记录（哈希绑定+差异说明）。模型调用侧（实际效果图生成、输入/输出生成与请求上下文留证）随 C04 服务接入；AC06 的请求上下文检查在模型入口落地时执行。 2026-10-08 实测探测：generate_json_with_configured_llm 返回『未配置大模型 API 密钥』——原项目凭据按隔离设计未复制，blocked-on-service 有实证"
+      "commit": "6190105441a2b1ade7a25aadc13b48c76a490c95",
+      "historical_status": "partial",
+      "historical_note": "纯核已实现并验证：brief（仅注册效果/主题/预算/字幕留白）、候选设计参考（CSS/SVG/Canvas 与独立图片分工）、OSS-04 关键帧清单（过渡对象强制过程三帧）、冻结记录（哈希绑定+差异说明）。模型调用侧（实际效果图生成、输入/输出生成与请求上下文留证）随 C04 服务接入；AC06 的请求上下文检查在模型入口落地时执行。 2026-10-08 实测探测：generate_json_with_configured_llm 返回『未配置大模型 API 密钥』——原项目凭据按隔离设计未复制，blocked-on-service 有实证",
+      "acceptance_results": {
+        "AC06": {
+          "status": "partial",
+          "note": "效果参考 MISS/HIT、真实附件工程检查通过；真实模型未配置密钥。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC07": {
+          "status": "partial",
+          "note": "beat/对象映射、实际三帧与冻结记录通过；真实模型分镜待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "C03",
@@ -202,10 +367,24 @@
       ],
       "evidence": [
         "html_asset_service.py",
-        "checks/test_html_asset_service.py"
+        "checks/test_html_asset_service.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "资产服务核已实现并验证：请求哈希命中复用、真实 PNG 解码（尺寸/alpha bbox/透明声明门禁/边缘带底检测）、归一化锚点登记、清单哈希校验；provider 经注入包装 ai_provider_service，不做整页白底归一化。真实 provider 端到端与图集提取（分区清单/独立输出核验）待接入实际模型后执行（AC10 的真实服务项）。 2026-10-08 实测探测：generate_json_with_configured_llm 返回『未配置大模型 API 密钥』——原项目凭据按隔离设计未复制，blocked-on-service 有实证"
+      "commit": "b31043a855099d2fb4780176e0588f8a53a21a2a",
+      "historical_status": "partial",
+      "historical_note": "资产服务核已实现并验证：请求哈希命中复用、真实 PNG 解码（尺寸/alpha bbox/透明声明门禁/边缘带底检测）、归一化锚点登记、清单哈希校验；provider 经注入包装 ai_provider_service，不做整页白底归一化。真实 provider 端到端与图集提取（分区清单/独立输出核验）待接入实际模型后执行（AC10 的真实服务项）。 2026-10-08 实测探测：generate_json_with_configured_llm 返回『未配置大模型 API 密钥』——原项目凭据按隔离设计未复制，blocked-on-service 有实证",
+      "acceptance_results": {
+        "AC10": {
+          "status": "partial",
+          "note": "真实透明 PNG 质量与资源加载通过；真实生图资产质量待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "C04",
@@ -216,7 +395,7 @@
         "B03"
       ],
       "scope": "initial_release",
-      "status": "passed",
+      "status": "partial",
       "acceptance": [
         "AC04",
         "AC10"
@@ -225,10 +404,29 @@
         "html_visual_review_service.py",
         "html_visual_review_routes.py",
         "html_engine/tools/review-scene.cjs",
-        "checks/test_html_visual_review.py"
+        "checks/test_html_visual_review.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "已实现并验证：模型计划生成（真实 LLM 入口经 json_llm_service 注入；一次有界修复；两次失败保存诊断不放宽校验；AC06/AC07 生成记录含请求上下文哈希与响应哈希）、共享 bundle 浏览器编译/测量/截图（对象级容量诊断）、批准记录绑定 scene/theme/template/layout/asset/runtime 哈希且任一变化失效（409 审阅门禁）。AC04 用户视觉审阅与真实模型实测仍为 pending_review/blocked-on-service；应用 UI 预览面板随工作区集成任务交付。"
+      "commit": "2a5c925fd0d834bd420f6e8ce48dad2c9aab43d1",
+      "historical_status": "passed",
+      "historical_note": "已实现并验证：模型计划生成（真实 LLM 入口经 json_llm_service 注入；一次有界修复；两次失败保存诊断不放宽校验；AC06/AC07 生成记录含请求上下文哈希与响应哈希）、共享 bundle 浏览器编译/测量/截图（对象级容量诊断）、批准记录绑定 scene/theme/template/layout/asset/runtime 哈希且任一变化失效（409 审阅门禁）。AC04 用户视觉审阅与真实模型实测仍为 pending_review/blocked-on-service；应用 UI 预览面板随工作区集成任务交付。",
+      "acceptance_results": {
+        "AC04": {
+          "status": "pending_review",
+          "note": "需用户按原科普参考作视觉评审。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC10": {
+          "status": "partial",
+          "note": "真实透明 PNG 质量与资源加载通过；真实生图资产质量待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "D01",
@@ -237,7 +435,7 @@
         "C04"
       ],
       "scope": "initial_release",
-      "status": "passed",
+      "status": "partial",
       "acceptance": [
         "AC11"
       ],
@@ -245,10 +443,24 @@
         "html_action_editing.py",
         "checks/test_html_action_editing.py",
         "html_engine/visual/tests/actions.test.cjs",
-        "html_engine/visual/evidence/actions-ac11.json"
+        "html_engine/visual/evidence/actions-ac11.json",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "运行时部分完成：Schema 0.3.0（motion enter/exit/emphasize oneOf；0.1.0/0.2.0 显式适配器）、编译器通道规则（enter 必备、通道唯一、时间窗互斥、emphasize 安全区）、渲染器组合求值（exit 淡出不可见、emphasize 有界提升、关系线追踪强调中的目标）。AC11 浏览器证据 5 项：进入前/在场/退出中/退出后不可见、强调 -8px 有界提升、关系线追踪、动作存在时乱序 seek 像素一致。AC04 视觉审阅另行。"
+      "commit": "90f9c6088dddeefcc12003c48e17813863aa634a",
+      "historical_status": "passed",
+      "historical_note": "运行时部分完成：Schema 0.3.0（motion enter/exit/emphasize oneOf；0.1.0/0.2.0 显式适配器）、编译器通道规则（enter 必备、通道唯一、时间窗互斥、emphasize 安全区）、渲染器组合求值（exit 淡出不可见、emphasize 有界提升、关系线追踪强调中的目标）。AC11 浏览器证据 5 项：进入前/在场/退出中/退出后不可见、强调 -8px 有界提升、关系线追踪、动作存在时乱序 seek 像素一致。AC04 视觉审阅另行。",
+      "acceptance_results": {
+        "AC11": {
+          "status": "partial",
+          "note": "引擎动作通过；完整产品对象与动作编辑交互待补齐。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "D02",
@@ -264,9 +476,23 @@
       ],
       "evidence": [
         "html_audio_binder.py",
-        "checks/test_html_audio_binder.py"
+        "checks/test_html_audio_binder.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "5956ad5"
+      "commit": "5956ad5453cd1d8f7b20f5da7fdac5bf49baf6af",
+      "historical_status": "passed",
+      "acceptance_results": {
+        "AC12": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "D03",
@@ -284,10 +510,24 @@
         "html_annotation_targets.py",
         "checks/test_html_annotation_targets.py",
         "html_engine/tools/review-scene.cjs",
-        "html_engine/visual/renderer.cjs"
+        "html_engine/visual/renderer.cjs",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "HTML 批注定位核已实现并验证：图片目标走资产语义锚点+contain 映射（几何报告直接给出变换后锚点）、SVG/全部节点使用登记几何框（渲染器为每个节点输出移动后 box）、文字走 DOM Range（码点区间→UTF-16→getClientRects，换算回 1600×900 画布坐标）、目标删除返回诊断；视口缩放单系数映射构造上 ≤1 逻辑像素，浏览器实测 DOM Range 矩形落位偏差 <1px。全程无 OCR；应用侧 annotation runtime 的后端切换随工作区集成任务接入。"
+      "commit": "e0a4e1459ae0ec58ff9960b1a073ea5ce4ba6787",
+      "historical_status": "passed",
+      "historical_note": "HTML 批注定位核已实现并验证：图片目标走资产语义锚点+contain 映射（几何报告直接给出变换后锚点）、SVG/全部节点使用登记几何框（渲染器为每个节点输出移动后 box）、文字走 DOM Range（码点区间→UTF-16→getClientRects，换算回 1600×900 画布坐标）、目标删除返回诊断；视口缩放单系数映射构造上 ≤1 逻辑像素，浏览器实测 DOM Range 矩形落位偏差 <1px。全程无 OCR；应用侧 annotation runtime 的后端切换随工作区集成任务接入。",
+      "acceptance_results": {
+        "AC13": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "E01",
@@ -305,10 +545,24 @@
       "evidence": [
         "html_render_runner.py",
         "html_engine/tools/export-slide-video.cjs",
-        "checks/test_html_render_runner.py"
+        "checks/test_html_render_runner.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "5956ad5",
-      "note": "runner + engine export verified by live smoke (water-facts + 12s audio -> h264/aac 12.000s); persistent job-store integration and full-course render still pending_review"
+      "commit": "5956ad5453cd1d8f7b20f5da7fdac5bf49baf6af",
+      "historical_status": "passed",
+      "historical_note": "runner + engine export verified by live smoke (water-facts + 12s audio -> h264/aac 12.000s); persistent job-store integration and full-course render still pending_review",
+      "acceptance_results": {
+        "AC14": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "E02",
@@ -324,10 +578,24 @@
       "evidence": [
         "checks/test_html_pptx_snapshot.py",
         "html_render_runner.py",
-        "video_render_service.py"
+        "video_render_service.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "接口级验证通过：html 渲染结果（HtmlRenderResult）与 RemotionRenderResult 同字段（output_path/filename/color_validation），共享 worker 的 _apply_digital_human_composite 对两种后端一致消费；关闭即无占位。真实数字人服务未部署，实测合成 blocked-on-service（AC15 记录）。"
+      "commit": "b11bedbb5bdd48ab918734372e885daeb343a96e",
+      "historical_status": "partial",
+      "historical_note": "接口级验证通过：html 渲染结果（HtmlRenderResult）与 RemotionRenderResult 同字段（output_path/filename/color_validation），共享 worker 的 _apply_digital_human_composite 对两种后端一致消费；关闭即无占位。真实数字人服务未部署，实测合成 blocked-on-service（AC15 记录）。",
+      "acceptance_results": {
+        "AC15": {
+          "status": "blocked",
+          "note": "保留已有接口，未完成真实数字人合成。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "E03",
@@ -336,17 +604,31 @@
         "E01"
       ],
       "scope": "initial_release",
-      "status": "passed",
+      "status": "partial",
       "acceptance": [
         "AC16"
       ],
       "evidence": [
         "html_pptx_snapshot.py",
         "html_engine/tools/export-snapshots.cjs",
-        "checks/test_html_pptx_snapshot.py"
+        "checks/test_html_pptx_snapshot.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "快照/分步 PPTX 核已实现并验证：共享 bundle 渲染显式时间点 → 16:9 图片式 PPTX（精确 12192000x6858000 EMU），manifest 明示 image_only_snapshot 能力边界与页→时间映射；字幕可选，默认演示稿快照不带视频字幕；末 beat 与终态同刻自动去重。pptx_service 路由分派（按 visual_backend）随应用链路任务接入；PowerPoint 实际打开核验待目标软件可用（AC16 记录）。 pptx_service 分派已接入（本轮）。"
+      "commit": "b11bedbb5bdd48ab918734372e885daeb343a96e",
+      "historical_status": "passed",
+      "historical_note": "快照/分步 PPTX 核已实现并验证：共享 bundle 渲染显式时间点 → 16:9 图片式 PPTX（精确 12192000x6858000 EMU），manifest 明示 image_only_snapshot 能力边界与页→时间映射；字幕可选，默认演示稿快照不带视频字幕；末 beat 与终态同刻自动去重。pptx_service 路由分派（按 visual_backend）随应用链路任务接入；PowerPoint 实际打开核验待目标软件可用（AC16 记录）。 pptx_service 分派已接入（本轮）。",
+      "acceptance_results": {
+        "AC16": {
+          "status": "partial",
+          "note": "实际 PPTX 任务/登记/下载/删除通过；PowerPoint 打开待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "E04",
@@ -355,12 +637,27 @@
         "E03"
       ],
       "scope": "optional_followup",
-      "status": "planned",
+      "status": "partial",
       "acceptance": [
         "AC16"
       ],
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        "docs/reviews/2026-10-08-html-optimization.md"
+      ],
+      "commit": null,
+      "historical_status": "planned",
+      "acceptance_results": {
+        "AC16": {
+          "status": "partial",
+          "note": "实际 PPTX 任务/登记/下载/删除通过；PowerPoint 打开待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "F01",
@@ -381,10 +678,24 @@
         "agent_api/routes.py",
         "agent_client/client.py",
         "mcp_server/tools.py",
-        "docs/agent/capability-matrix.md"
+        "docs/agent/capability-matrix.md",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "HTML 操作面注册完成：7 项能力（html_visual.status/scene_read/scene_write、html_review.plan_generate/review/approve/approval_status）在 capabilities/models/Agent API 路由/MCP 分发/CLI 命令同源注册；场景写带 expected_revision（409 冲突语义与 Web 相同）；AGENT_API_VERSION 1.11.0；capability-matrix 重生成；checks/agent 423 项全过。"
+      "commit": "fa8aa6deb3f08b12b5ea97161a75cfcd7c1df2fb",
+      "historical_status": "passed",
+      "historical_note": "HTML 操作面注册完成：7 项能力（html_visual.status/scene_read/scene_write、html_review.plan_generate/review/approve/approval_status）在 capabilities/models/Agent API 路由/MCP 分发/CLI 命令同源注册；场景写带 expected_revision（409 冲突语义与 Web 相同）；AGENT_API_VERSION 1.11.0；capability-matrix 重生成；checks/agent 423 项全过。",
+      "acceptance_results": {
+        "AC17": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "F02",
@@ -401,10 +712,24 @@
       ],
       "evidence": [
         "html_task_store.py",
-        "checks/test_html_task_store.py"
+        "checks/test_html_task_store.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "HTML 任务持久化 store 已实现并验证（AC18）：独立任务类型（html_plan_generate/html_review/html_asset_produce）基于共享 LocalJob 表；同 submission_key 幂等复用（活跃/成功复用、失败限额内原地重试 attempt+1、超限 409 拒绝）；重启恢复把遗留 running/queued 标记 interrupted 且不静默重跑（显式重提交 attempt+1）；取消仅作用于活跃任务，终态结果不被迟到取消覆盖。generation_control 取消检查点由执行入口在各安全边界调用。"
+      "commit": "f4fa3e721b649adcf2248d1b3a8790ca2abe4273",
+      "historical_status": "passed",
+      "historical_note": "HTML 任务持久化 store 已实现并验证（AC18）：独立任务类型（html_plan_generate/html_review/html_asset_produce）基于共享 LocalJob 表；同 submission_key 幂等复用（活跃/成功复用、失败限额内原地重试 attempt+1、超限 409 拒绝）；重启恢复把遗留 running/queued 标记 interrupted 且不静默重跑（显式重提交 attempt+1）；取消仅作用于活跃任务，终态结果不被迟到取消覆盖。generation_control 取消检查点由执行入口在各安全边界调用。",
+      "acceptance_results": {
+        "AC18": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     },
     {
       "id": "F03",
@@ -432,7 +757,7 @@
         "F02"
       ],
       "scope": "initial_release",
-      "status": "passed",
+      "status": "partial",
       "acceptance": [
         "AC01",
         "AC02",
@@ -459,10 +784,222 @@
         "docs/plans/html-backend-development/acceptance-manifest.json",
         "docs/baseline/html-adaptation-baseline.md",
         "pptx_service.py",
-        "checks/test_html_pptx_snapshot.py"
+        "checks/test_html_pptx_snapshot.py",
+        "docs/reviews/2026-10-08-html-optimization.md"
       ],
-      "commit": "this-round",
-      "note": "总验收 manifest 已产出（AC01-AC20 逐项 passed/partial/blocked/pending_review + 命令退出码）；pptx_service 按 visual_backend 分派已接入（html 项目同步走共享 bundle 快照管线，图片路线原样）；E02/E03/F01/F02 证据齐备。放行条件剩余：用户 AC04 视觉结论、用户 AC20 真实课程导览、真实模型服务绑定（C02/C03 尾项）、PowerPoint 打开核验（AC16）。"
+      "commit": "3259fced89e3bda64d6300047a41c99c3f7a7909",
+      "historical_status": "passed",
+      "historical_note": "总验收 manifest 已产出（AC01-AC20 逐项 passed/partial/blocked/pending_review + 命令退出码）；pptx_service 按 visual_backend 分派已接入（html 项目同步走共享 bundle 快照管线，图片路线原样）；E02/E03/F01/F02 证据齐备。放行条件剩余：用户 AC04 视觉结论、用户 AC20 真实课程导览、真实模型服务绑定（C02/C03 尾项）、PowerPoint 打开核验（AC16）。",
+      "acceptance_results": {
+        "AC01": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC02": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC03": {
+          "status": "partial",
+          "note": "真实五页测试覆盖三种模板；完整课程与布局容量边界尚未补齐。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC04": {
+          "status": "pending_review",
+          "note": "需用户按原科普参考作视觉评审。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC05": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC06": {
+          "status": "partial",
+          "note": "效果参考 MISS/HIT、真实附件工程检查通过；真实模型未配置密钥。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC07": {
+          "status": "partial",
+          "note": "beat/对象映射、实际三帧与冻结记录通过；真实模型分镜待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC08": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC09": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC10": {
+          "status": "partial",
+          "note": "真实透明 PNG 质量与资源加载通过；真实生图资产质量待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC11": {
+          "status": "partial",
+          "note": "引擎动作通过；完整产品对象与动作编辑交互待补齐。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC12": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC13": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC14": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC15": {
+          "status": "blocked",
+          "note": "保留已有接口，未完成真实数字人合成。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC16": {
+          "status": "partial",
+          "note": "实际 PPTX 任务/登记/下载/删除通过；PowerPoint 打开待验证。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC17": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC18": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC19": {
+          "status": "passed",
+          "note": "本轮工程验收通过，证据见优化验收报告。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        },
+        "AC20": {
+          "status": "not_run",
+          "note": "未完成真实模型、真实讲稿音频与用户评审的课程全流程。",
+          "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+        }
+      },
+      "optimization_commits": [
+        "21ffb51",
+        "ac823f3efd5853f45f973aaa40a5ecf58fc288d9"
+      ],
+      "note": "当前状态以 acceptance_results 为准；历史状态仅供追溯。"
     }
-  ]
+  ],
+  "code_revision": "ac823f3efd5853f45f973aaa40a5ecf58fc288d9",
+  "acceptance_status": {
+    "AC01": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC02": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC03": {
+      "status": "partial",
+      "note": "真实五页测试覆盖三种模板；完整课程与布局容量边界尚未补齐。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC04": {
+      "status": "pending_review",
+      "note": "需用户按原科普参考作视觉评审。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC05": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC06": {
+      "status": "partial",
+      "note": "效果参考 MISS/HIT、真实附件工程检查通过；真实模型未配置密钥。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC07": {
+      "status": "partial",
+      "note": "beat/对象映射、实际三帧与冻结记录通过；真实模型分镜待验证。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC08": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC09": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC10": {
+      "status": "partial",
+      "note": "真实透明 PNG 质量与资源加载通过；真实生图资产质量待验证。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC11": {
+      "status": "partial",
+      "note": "引擎动作通过；完整产品对象与动作编辑交互待补齐。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC12": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC13": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC14": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC15": {
+      "status": "blocked",
+      "note": "保留已有接口，未完成真实数字人合成。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC16": {
+      "status": "partial",
+      "note": "实际 PPTX 任务/登记/下载/删除通过；PowerPoint 打开待验证。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC17": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC18": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC19": {
+      "status": "passed",
+      "note": "本轮工程验收通过，证据见优化验收报告。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    },
+    "AC20": {
+      "status": "not_run",
+      "note": "未完成真实模型、真实讲稿音频与用户评审的课程全流程。",
+      "evidence": "docs/reviews/2026-10-08-html-optimization.md"
+    }
+  }
 }

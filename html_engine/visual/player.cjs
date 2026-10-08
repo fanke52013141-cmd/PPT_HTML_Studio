@@ -37,7 +37,7 @@ function play() {
   $("play").textContent = "暂停";
   frame = requestAnimationFrame(tick);
 }
-async function apply(source) {
+async function apply(source, projectResources = null) {
   const request = ++generation;
   const staging = document.createElement("div");
   Object.assign(staging.style, {
@@ -51,7 +51,11 @@ async function apply(source) {
   document.body.append(staging);
   let candidate;
   try {
-    candidate = await prepare(compile(source, catalog), pack, staging);
+    const activeCatalog = projectResources ?
+      { ...catalog, assets: [...catalog.assets.filter(a =>
+          !projectResources.assets.some(p => p.id === a.id)), ...projectResources.assets] } : catalog;
+    candidate = await prepare(compile(source, activeCatalog),
+      projectResources ? { ...pack, ...projectResources.pack } : pack, staging);
     candidate.setSubtitleFont(Number($("font").value));
     if (request !== generation) {
       candidate.release();

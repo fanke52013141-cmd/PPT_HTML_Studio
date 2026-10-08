@@ -1,0 +1,6 @@
+{
+  "mutationCallbacks": 30,
+  "panelParent": "LI",
+  "insideActualStepPanel": false,
+  "requestUrl": "/api/projects/p/html-review//plan/generate"
+}

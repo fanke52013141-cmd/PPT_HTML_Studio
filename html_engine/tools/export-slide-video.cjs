@@ -19,12 +19,16 @@ if (!scenePath || !audioPath || !outputPath) {
 const fps = Number(fpsArg || 30);
 if (!Number.isFinite(fps) || fps < 1 || fps > 60) throw new Error("fps out of range");
 const root = path.resolve(__dirname, "..");
+const projectResources = require("./project-resources.cjs").loadProjectResources();
 const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
 const durationMs = Math.round(Number(scene.durationMs));
 if (!Number.isFinite(durationMs) || durationMs < 1000)
   throw new Error("scene durationMs invalid");
 
 const frameCount = Math.ceil((durationMs / 1000) * fps);
+const audioDuration = Number(ffprobeJson(audioPath).format.duration);
+if (!Number.isFinite(audioDuration) || audioDuration <= 0) throw new Error("audio duration invalid");
+const outputDuration = Math.max(frameCount / fps, audioDuration);
 const workDir = fs.mkdtempSync(path.join(os.tmpdir(), "hps-slide-"));
 const framesDir = path.join(workDir, "frames");
 fs.mkdirSync(framesDir);
@@ -75,7 +79,8 @@ function resolveChromePath(playwright) {
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(pathToFileURL(path.join(root, "visual/preview/index.html")).href);
     await page.waitForFunction(() => window.visualPlayer?.ready, {}, { timeout: 20000 });
-    const applied = await page.evaluate((s) => window.visualPlayer.apply(s), scene);
+    await page.evaluate((r) => { window.__projectResources = r; }, projectResources);
+    const applied = await page.evaluate((s) => window.visualPlayer.apply(s, window.__projectResources), scene);
     if (!applied) throw new Error("scene failed to compile/prepare");
     for (let i = 0; i < frameCount; i += 1) {
       const ms = Math.round((i * 1000) / fps);
@@ -98,12 +103,15 @@ function resolveChromePath(playwright) {
     "-framerate", String(fps),
     "-i", path.join(framesDir, "frame-%05d.png"),
     "-i", audioPath,
-    "-vf", "scale=1600:900",
+    "-vf", `scale=1600:900:out_color_matrix=bt709:out_range=tv,tpad=stop_mode=clone:stop_duration=${Math.max(0,outputDuration-frameCount/fps)},setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709`,
+    "-af", "apad",
+    "-t", String(outputDuration),
     "-c:v", "libx264",
     "-pix_fmt", "yuv420p",
     "-colorspace", "bt709",
     "-color_primaries", "bt709",
     "-color_trc", "bt709",
+    "-bsf:v", "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1",
     "-r", String(fps),
     "-c:a", "aac",
     "-b:a", "192k",
@@ -113,6 +121,9 @@ function resolveChromePath(playwright) {
   const video = probe.streams.find((s) => s.codec_type === "video");
   const audio = probe.streams.find((s) => s.codec_type === "audio");
   if (!video || !audio) throw new Error("segment missing video or audio stream");
+  if(video.width!==1600||video.height!==900||video.pix_fmt!=="yuv420p") throw new Error("segment visual format invalid");
+  if([video.color_space,video.color_transfer,video.color_primaries].some(v=>v!=="bt709")) throw new Error("segment color tags invalid: " + JSON.stringify({space:video.color_space,transfer:video.color_transfer,primaries:video.color_primaries}));
+  if(Math.abs(Number(probe.format.duration)-outputDuration)>1/fps+0.05) throw new Error("segment duration mismatch");
   console.log(JSON.stringify({
     format: "hps.visual.slide-video",
     sceneId: scene.id,
