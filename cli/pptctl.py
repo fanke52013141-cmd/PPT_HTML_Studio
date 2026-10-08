@@ -582,6 +582,8 @@ def cmd_html(args: argparse.Namespace) -> None:
     values = {"project_id": args.project}
     if getattr(args,"slide",None): values["slide_id"] = args.slide
     if getattr(args,"job",None): values["job_id"] = args.job
+    for field in ('sheet_id', 'request_key', 'asset_id'):
+        if getattr(args, field, None): values[field] = getattr(args, field)
     if getattr(args,"file",None):
         values.update(json.loads(Path(args.file).read_text(encoding="utf-8")))
     try:
@@ -622,7 +624,10 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--project",required=True)
         if "{slide_id}" in cap.agent_api_path: command.add_argument("--slide",required=True)
         if "{job_id}" in cap.agent_api_path: command.add_argument("--job",required=True)
-        if cap.id in ("html_visual.scene_write", "project_model_binding.write", "html_editor.write", "html_editor.preview"):
+        for field in ('sheet_id', 'request_key', 'asset_id'):
+            if '{' + field + '}' in cap.agent_api_path:
+                command.add_argument('--' + field.replace('_', '-'), required=True)
+        if cap.id in ("html_visual.scene_write", "project_model_binding.write", "html_editor.write", "html_editor.preview", 'html_sheet.generate', 'html_sheet.review', 'html_sheet.accept', 'html_sheet.assess', 'html_sheet.retry'):
             command.add_argument("--file", required=True, help="JSON request matching the registered capability schema")
         elif cap.id in ("html_review.review","html_review.approve"): command.add_argument("--file",help="Optional JSON scene request")
         command.set_defaults(func=cmd_html,capability_id=cap.id)

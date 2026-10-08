@@ -1,0 +1,604 @@
+{
+  "format": "hps.visual.scene",
+  "version": "0.4.0",
+  "id": "editorial-condensation",
+  "name": "冷杯外的水滴",
+  "themeRef": {
+    "id": "amber-editorial",
+    "version": "0.2.0"
+  },
+  "layoutRef": {
+    "id": "editorial-three-columns-v1",
+    "version": "0.2.0"
+  },
+  "templateRef": {
+    "id": "editorial-three-columns-v1",
+    "version": "0.1.0"
+  },
+  "durationMs": 18000,
+  "nodes": [
+    {
+      "id": "header",
+      "slot": "header",
+      "type": "text",
+      "role": "title",
+      "runs": [
+        {
+          "text": "冷杯外的水滴",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "title-rule",
+      "slot": "title-rule",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "accent",
+      "radius": 5
+    },
+    {
+      "id": "definition-surface",
+      "slot": "definition-surface",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "greenWash",
+      "radius": 44
+    },
+    {
+      "id": "headline",
+      "slot": "headline",
+      "type": "text",
+      "role": "headline",
+      "runs": [
+        {
+          "text": "水蒸气遇冷凝结成小水滴",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "intro",
+      "slot": "intro",
+      "type": "text",
+      "role": "intro",
+      "runs": [
+        {
+          "text": "空气中的水蒸气通常不可见。",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "hero-shadow",
+      "slot": "hero-shadow",
+      "type": "shape",
+      "kind": "ellipse",
+      "fill": "blueWash"
+    },
+    {
+      "id": "figure",
+      "slot": "figure",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "blueWash",
+      "radius": 18
+    },
+    {
+      "id": "document-line-1",
+      "slot": "document-line-1",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "accent",
+      "radius": 5
+    },
+    {
+      "id": "document-line-2",
+      "slot": "document-line-2",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "muted",
+      "radius": 5
+    },
+    {
+      "id": "document-line-3",
+      "slot": "document-line-3",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "muted",
+      "radius": 5
+    },
+    {
+      "id": "document-line-4",
+      "slot": "document-line-4",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "muted",
+      "radius": 5
+    },
+    {
+      "id": "document-label",
+      "slot": "document-label",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "空气",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "relation-arrow",
+      "slot": "relation-arrow",
+      "type": "arrow"
+    },
+    {
+      "id": "unit-1",
+      "slot": "unit-1",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "greenWash",
+      "radius": 10
+    },
+    {
+      "id": "unit-2",
+      "slot": "unit-2",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "yellow",
+      "radius": 10
+    },
+    {
+      "id": "unit-3",
+      "slot": "unit-3",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "greenWash",
+      "radius": 10
+    },
+    {
+      "id": "unit-4",
+      "slot": "unit-4",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "yellow",
+      "radius": 10
+    },
+    {
+      "id": "unit-label",
+      "slot": "unit-label",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "水滴",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "subject",
+      "slot": "subject",
+      "type": "image",
+      "assetRef": {
+        "id": "condensation",
+        "version": "0.1.0"
+      },
+      "anchorId": "focus"
+    },
+    {
+      "id": "divider-1",
+      "slot": "divider-1",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "line",
+      "radius": 0
+    },
+    {
+      "id": "divider-2",
+      "slot": "divider-2",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "line",
+      "radius": 0
+    },
+    {
+      "id": "number-surface-1",
+      "slot": "number-surface-1",
+      "type": "shape",
+      "kind": "ellipse",
+      "fill": "accent"
+    },
+    {
+      "id": "number-1",
+      "slot": "number-1",
+      "type": "text",
+      "role": "number",
+      "runs": [
+        {
+          "text": "1",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "card-1",
+      "slot": "card-1",
+      "type": "text",
+      "role": "cardTitle",
+      "runs": [
+        {
+          "text": "空气里有水蒸气",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "card-1-body",
+      "slot": "card-1-body",
+      "type": "text",
+      "role": "cardBody",
+      "runs": [
+        {
+          "text": "水蒸气通常看不见，却存在于空气中。",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "number-surface-2",
+      "slot": "number-surface-2",
+      "type": "shape",
+      "kind": "ellipse",
+      "fill": "accent"
+    },
+    {
+      "id": "number-2",
+      "slot": "number-2",
+      "type": "text",
+      "role": "number",
+      "runs": [
+        {
+          "text": "2",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "card-2",
+      "slot": "card-2",
+      "type": "text",
+      "role": "cardTitle",
+      "runs": [
+        {
+          "text": "遇冷发生凝结",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "card-2-body",
+      "slot": "card-2-body",
+      "type": "text",
+      "role": "cardBody",
+      "runs": [
+        {
+          "text": "较冷的杯壁让水蒸气凝结成水滴。",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "number-surface-3",
+      "slot": "number-surface-3",
+      "type": "shape",
+      "kind": "ellipse",
+      "fill": "accent"
+    },
+    {
+      "id": "number-3",
+      "slot": "number-3",
+      "type": "text",
+      "role": "number",
+      "runs": [
+        {
+          "text": "3",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "card-3",
+      "slot": "card-3",
+      "type": "text",
+      "role": "cardTitle",
+      "runs": [
+        {
+          "text": "杯外水滴来自空气",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "card-3-body",
+      "slot": "card-3-body",
+      "type": "text",
+      "role": "cardBody",
+      "runs": [
+        {
+          "text": "不是杯子里的水漏到了杯壁外。",
+          "emphasis": false
+        }
+      ]
+    }
+  ],
+  "motion": [
+    {
+      "targetId": "header",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "title-rule",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "definition-surface",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "headline",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "intro",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "hero-shadow",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "figure",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "document-line-1",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "document-line-2",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "document-line-3",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "document-line-4",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "document-label",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "relation-arrow",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "unit-1",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "unit-2",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "unit-3",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "unit-4",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "unit-label",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "subject",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "divider-1",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "divider-2",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "number-surface-1",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "number-1",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "card-1",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "card-1-body",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "number-surface-2",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "number-2",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "card-2",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "card-2-body",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "number-surface-3",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "targetId": "number-3",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "card-3",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "card-3-body",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    }
+  ],
+  "beats": [],
+  "source": "Non-Token replacement fixture using shared editorial template and primitives"
+}

@@ -1,0 +1,25 @@
+Create ONE polished, complete Chinese educational presentation page as a VISUAL DESIGN REFERENCE, not an asset sheet. 16:9, exactly 2048x1152. Opaque warm-white background. This will later be rebuilt as editable HTML/CSS/SVG text and shapes with only ONE independent bitmap illustration. Design within that practical boundary. Quality is low at the API level; make the composition carefully art-directed.
+
+Topic: 什么是 Token？
+Design a refined editorial science explainer. Warm ivory #FCFAF5, near-black #29261F headings, readable gray-brown body text, restrained amber/gold #A66D14 accents. Let the existing yellow bulb harmonize with the palette. No pink-green-blue rainbow, no blue-purple wash, no muddy gray gradients. Crisp typography, generous intentional space, confident hierarchy, balanced asymmetry, subtle depth and a few excellent details. Visually appealing and contemporary, neither a dashboard nor a generic PowerPoint template. Do not fill space with decorative containers.
+
+The supplied transparent bulb is a SUBJECT REFERENCE ONLY. Preserve its recognizable yellow bulb, black outline, blue-gray base and surrounding yellow rays, fully visible. Use it as one purposeful illustration with stronger visual presence than a tiny image floating in a large blank box. Do NOT copy the source canvas spacing, do not introduce additional raster illustrations or cartoon characters. No realistic 3D, no watercolor/pencil/painted master aesthetic, no collage, no heavy textures.
+
+Exact authoritative text, all in Chinese except the term Token:
+Main title: 什么是 Token？
+Main definition: 模型处理文本时使用的基本单位
+Small qualification: 具体切分方式取决于模型使用的分词器。
+Point 1 heading: 未必是一个完整的词
+Point 1 body: 可以是词的一部分、标点或其他文本片段。
+Point 2 heading: Token 数量不等于字数
+Point 2 body: 中文、英文和符号可能采用不同切分方式。
+Point 3 heading: 上下文与用量按 Token 衡量
+Point 3 body: 许多服务按输入和输出 Token 计费。
+One simple conceptual relationship: 文本 → Token
+Relationship qualification: 具体切分由分词器决定
+
+Art-direct the WHOLE page: a striking but clean title area, a clearly emphasized definition, three compact readable knowledge sections with tasteful code-reproducible typographic or geometric distinctions, and one coherent conceptual visual incorporating the bulb and abstract text-to-unit relationship. Avoid three identical oversized outlined cards and avoid repeated bulb icons on every point. Align carefully; make reading order effortless. All text must be large enough for a presentation. Use only the authoritative wording above, no invented extra facts. Do not show a concrete Chinese/English tokenization example; no fake numerical counts, prices or tokenizer claims. Abstract blocks can illustrate units without pretending to be exact segmentation.
+
+Reserve the bottom 11 percent of the canvas as calm empty warm-white subtitle space: no text, graphics, footer or illustration there. Keep meaningful content inside generous side margins. No page number, logo, brand, English section label, source footer, browser UI, ruler, grid, checkerboard or annotation reading 概念配图. Do not circle the bulb with a meaningless pointer. No subtitle rendered in this design reference.
+
+Output the finished complete page, not a mockup photographed on a device, not multiple alternatives and not separated cutouts. This is the representative final content frame; later HTML layers will appear independently to the existing narration. Every visible text and simple diagram is a reference for code reconstruction, not an instruction to bake them into a bitmap asset.

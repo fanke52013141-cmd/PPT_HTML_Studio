@@ -32,6 +32,10 @@ function updateStep8LoadingText(stageLabel, elapsedSec, queueAhead) {
   text.innerText = `${stage}${elapsed}...`;
 }
 
+function step8DigitalHumanEnabled() {
+  return window.PPTFlow?.distributionFeatures().digital_human !== false;
+}
+
 async function refreshStep8DigitalHumanStatus(
   projectId = state.currentProject?.id,
   sessionVersion = workspaceNavigationVersion,
@@ -39,6 +43,8 @@ async function refreshStep8DigitalHumanStatus(
   const box = document.getElementById('step8-digital-human-status');
   const message = document.getElementById('step8-digital-human-message');
   if (!projectId || !box || !message || !isCurrentWorkspaceProject(projectId, sessionVersion)) return null;
+  box.hidden = !step8DigitalHumanEnabled();
+  if (!step8DigitalHumanEnabled()) return { enabled: false, canRender: true };
   try {
     const panel = window.DigitalHumanPanel;
     if (!panel || typeof panel.getOutputStatus !== 'function') {
@@ -310,7 +316,7 @@ async function runStep8Render() {
   let keepRenderButtonDisabled = false;
   try {
     const panel = window.DigitalHumanPanel;
-    if (panel?.waitForPendingPersistence) {
+    if (step8DigitalHumanEnabled() && panel?.waitForPendingPersistence) {
       await panel.waitForPendingPersistence();
     }
     const digitalHumanStatus = await refreshStep8DigitalHumanStatus(projectId, sessionVersion);

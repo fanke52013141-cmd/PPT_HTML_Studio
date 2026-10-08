@@ -1,9 +1,9 @@
 {
   "pages": 3,
   "fps": 30,
-  "expected_duration": 6.0,
-  "actual_duration": "6.064000",
-  "seconds": 24.862,
+  "expected_duration": 6.300000000000001,
+  "actual_duration": "6.364000",
+  "seconds": 34.952,
   "audio": "synthetic silence",
   "legacy_binding": "explicit compatibility test",
   "video_stream": {
@@ -14,11 +14,12 @@
     "codec_type": "video",
     "codec_tag_string": "avc1",
     "codec_tag": "0x31637661",
-    "mime_codec_string": "avc1.640028",
     "width": 1600,
     "height": 900,
     "coded_width": 1600,
     "coded_height": 900,
+    "closed_captions": 0,
+    "film_grain": 0,
     "has_b_frames": 2,
     "pix_fmt": "yuv420p",
     "level": 40,
@@ -28,6 +29,7 @@
     "color_primaries": "bt709",
     "chroma_location": "left",
     "field_order": "progressive",
+    "refs": 1,
     "is_avc": "true",
     "nal_length_size": "4",
     "id": "0x1",
@@ -36,11 +38,11 @@
     "time_base": "1/15360",
     "start_pts": 968,
     "start_time": "0.063021",
-    "duration_ts": 92160,
-    "duration": "6.000000",
-    "bit_rate": "410813",
+    "duration_ts": 96768,
+    "duration": "6.300000",
+    "bit_rate": "406808",
     "bits_per_raw_sample": "8",
-    "nb_frames": "180",
+    "nb_frames": "189",
     "extradata_size": 49,
     "disposition": {
       "default": 1,
@@ -66,7 +68,8 @@
     "tags": {
       "language": "und",
       "handler_name": "VideoHandler",
-      "encoder": "Lavc62.28.100 libx264"
+      "vendor_id": "[0][0][0][0]",
+      "encoder": "Lavc61.19.101 libx264"
     }
   }
 }

@@ -1,4 +1,77 @@
 {
+  "incremental_asset_sheet": {
+    "token_delivery": {
+      "status": "partial",
+      "evidence": "docs/research/2026-10-08-image25-sheet-experiment/token-delivery-results.md",
+      "theme": "amber-science@0.2.0_registered",
+      "asset_acceptance": "approved_by_user_and_accepted",
+      "static_scene_approval": "valid",
+      "tts_live": "passed_16.032_seconds",
+      "video_review_preview": "encoded_and_fully_decoded",
+      "approved_static_pptx": "passed_offline_snapshot_export",
+      "audio_confirmation": "pending_user_listening",
+      "formal_application_video_job": "not_run"
+    },
+    "token_closure_live_asset": {
+      "status": "partial",
+      "evidence": "docs/research/2026-10-08-image25-sheet-experiment/closure-token-results.md",
+      "static_review": "passed_11_objects",
+      "real_browser_snapshots": "passed_3_times",
+      "asset_and_scene_human_review": "pending",
+      "production_exports": "not_run",
+      "confirmed_audio": "absent_in_isolated_sample",
+      "additional_image_calls": 0,
+      "batch_efficiency": "unproven"
+    },
+    "local_reference_bulb_live": {
+      "status": "partial",
+      "evidence": "docs/research/2026-10-08-image25-sheet-experiment/bulb-local-reference-results.md",
+      "reference_only_comparison": "two_live_calls_same_prompt_2k_low",
+      "single_extraction": "1/1_both_cases_pending_review",
+      "local_reference_cost_usd": "0.005180",
+      "production_local_reference": "not_integrated",
+      "batch_efficiency_comparison": "not_run"
+    },
+    "prompt_v3_live": {
+      "status": "changes_requested",
+      "evidence": "docs/research/2026-10-08-image25-sheet-experiment/prompt-v3-results.md",
+      "strict_extraction": "0/4",
+      "opt_in_cleanup_extraction": "2/4_pending_review",
+      "production_prompt": "unchanged",
+      "efficiency_comparison": "not_run"
+    },
+    "live_image25_2k_low": {
+      "status": "partial",
+      "evidence": "docs/research/2026-10-08-image25-sheet-experiment/toapis-2k-low-results.md",
+      "contract_version": "0.9.8",
+      "size_background_requests": "passed_two_live_calls",
+      "strict_extraction": "0/4",
+      "opt_in_cleanup_extraction": "3/4_pending_review",
+      "efficiency_comparison": "not_run",
+      "multimodal_assessment": "not_run"
+    },
+    "status": "partial",
+    "evidence": "docs/plans/html-backend-development/progress-application-2026-10-08.md",
+    "contract_version": "0.9.5",
+    "agent_api_version": "1.14.0",
+    "live_providers": "not_run",
+    "visual_signoff": "not_run",
+    "AS05": "partial",
+    "cleanup_advisory_evidence": "docs/plans/html-backend-development/progress-cleanup-2026-10-08.md",
+    "cleanup_contract_version": "0.9.6",
+    "live_advisory": "not_run",
+    "real_sheet_cleanup_extraction": "4/4 candidates, pending review",
+    "action_retry_evidence": "docs/plans/html-backend-development/progress-actions-2026-10-08.md",
+    "action_retry_contract_version": "0.9.7",
+    "action_retry_agent_api": "1.15.0",
+    "live_action_providers": "not_run",
+    "action_retry_verification": {
+      "agent_application_actions": 452,
+      "sheet_service_regression": 62,
+      "browser_checks": 17,
+      "real_providers": "not_run"
+    }
+  },
   "format": "hps.html.acceptance.manifest",
   "version": "1.1.0",
   "date": "2026-10-08",

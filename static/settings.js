@@ -129,8 +129,10 @@ async function loadSettings() {
   document.getElementById('setting-llm-model').value = state.settings.llm_model || '';
   document.getElementById('setting-llm-temp').value = state.settings.llm_temperature || '0.7';
   document.getElementById('setting-llm-max-tokens').value = state.settings.llm_max_tokens || '50000';
-  document.getElementById('setting-annotation-ocr-key').value = state.settings.annotation_ocr_baidu_api_key || '';
-  document.getElementById('setting-annotation-ocr-secret').value = state.settings.annotation_ocr_baidu_secret_key || '';
+  const ocrKeyInput = document.getElementById('setting-annotation-ocr-key');
+  const ocrSecretInput = document.getElementById('setting-annotation-ocr-secret');
+  if (ocrKeyInput) ocrKeyInput.value = state.settings.annotation_ocr_baidu_api_key || '';
+  if (ocrSecretInput) ocrSecretInput.value = state.settings.annotation_ocr_baidu_secret_key || '';
 
   document.getElementById('setting-image-base-url').value = state.settings.image_base_url || '';
   document.getElementById('setting-image-api-key').value = state.settings.image_api_key || '';
@@ -173,6 +175,8 @@ function closeSettingsModal() {
 }
 
 function readSettingsForm() {
+  const ocrKeyInput = document.getElementById('setting-annotation-ocr-key');
+  const ocrSecretInput = document.getElementById('setting-annotation-ocr-secret');
   return {
     llm_provider: document.getElementById('setting-llm-provider').value,
     llm_base_url: document.getElementById('setting-llm-base-url').value.trim(),
@@ -180,8 +184,8 @@ function readSettingsForm() {
     llm_model: document.getElementById('setting-llm-model').value.trim(),
     llm_temperature: document.getElementById('setting-llm-temp').value.trim(),
     llm_max_tokens: document.getElementById('setting-llm-max-tokens').value.trim(),
-    annotation_ocr_baidu_api_key: document.getElementById('setting-annotation-ocr-key').value.trim(),
-    annotation_ocr_baidu_secret_key: document.getElementById('setting-annotation-ocr-secret').value.trim(),
+    ...(ocrKeyInput ? {annotation_ocr_baidu_api_key: ocrKeyInput.value.trim()} : {}),
+    ...(ocrSecretInput ? {annotation_ocr_baidu_secret_key: ocrSecretInput.value.trim()} : {}),
     vision_model: state.settings?.vision_model || document.getElementById('setting-llm-model').value.trim(),
     image_base_url: document.getElementById('setting-image-base-url').value.trim(),
     image_api_key: document.getElementById('setting-image-api-key').value.trim(),

@@ -96,9 +96,10 @@ const distributionProfile = fs.readFileSync(path.join(root, 'static', 'distribut
 if (!(html.includes('distribution_profile.js') && html.indexOf('distribution_profile.js') < html.indexOf('flow.js'))) {
   throw new Error('distribution profile must load before flow.js');
 }
-if (!distributionProfile.includes('window.PPTStudioDistribution = Object.freeze({')
-    || !distributionProfile.includes('digital_human: true')
-    || !distributionProfile.includes('handwritten_annotations: true')) {
+const distributionScope = {};
+require('vm').runInNewContext(distributionProfile, {window: distributionScope, globalThis: distributionScope});
+if (distributionScope.PPTStudioDistribution?.features?.digital_human !== true
+    || distributionScope.PPTStudioDistribution?.features?.handwritten_annotations !== true) {
   throw new Error('repository distribution profile must default to the full edition');
 }
 for (const apiOwner of ['const API =', "headers.set('X-PPT-Studio-Request'", 'window.API = API']) {
@@ -1347,3 +1348,19 @@ if (annotationsEditor.includes('decodeAudioData') || app.includes('decodeAudioDa
 const htmlReviewPanel = fs.readFileSync(path.join(root,'static/html_review_panel.js'),'utf8');
 if (/\bfetch\s*\(/.test(htmlReviewPanel) || htmlReviewPanel.includes('MutationObserver')) throw new Error('HTML review must use API and explicit refresh');
 if (!htmlReviewPanel.includes("getElementById('step-panel-3')")) throw new Error('HTML review belongs in the content panel');
+const sceneEditor = fs.readFileSync(path.join(root,'static/html_scene_editor.js'),'utf8');
+const modelBinding = fs.readFileSync(path.join(root,'static/project_model_binding.js'),'utf8');
+for (const script of ['html_scene_editor.js', 'project_model_binding.js', 'html_asset_sheets.js', 'html_review_panel.js']) {
+  if (!html.includes(`src="${script}?`)) throw new Error(`HTML module must use the application static route: ${script}`);
+  if (!(html.indexOf('api_client.js') < html.indexOf(`src="${script}?`))) throw new Error(`HTML module loads before API: ${script}`);
+}
+if (!(html.indexOf('src="html_scene_editor.js?') < html.indexOf('src="html_review_panel.js?'))) throw new Error('HTML editor must load before review panel');
+for (const cssFile of ['html_scene_edit.css', 'project_model_binding.css', 'html_asset_sheets.css']) {
+  if (!html.includes(cssFile)) throw new Error(`HTML workspace stylesheet missing: ${cssFile}`);
+}
+const sheetUi = fs.readFileSync(path.join(root,'static/html_asset_sheets.js'),'utf8');
+for (const source of [sceneEditor, modelBinding, sheetUi]) {
+  if (/\bfetch\s*\(/.test(source) || source.includes('MutationObserver')) throw new Error('HTML editor/model settings must use shared API and explicit lifecycle');
+}
+if (!htmlReviewPanel.includes('ProjectModelBinding.mount') || !htmlReviewPanel.includes('HtmlSceneEditor.open')) throw new Error('HTML editor/model settings product entries missing');
+if (app.includes('ProjectModelBinding.mount') || app.includes('HtmlSceneEditor.open')) throw new Error('HTML feature mounting must stay out of workflow state');

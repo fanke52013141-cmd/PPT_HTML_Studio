@@ -482,6 +482,16 @@ class ProjectModelBindingSaveResult(BaseModel):
     changed: bool
 
 
+from html_asset_sheet_models import (
+    HtmlSheetReadRequest as HtmlSheetReadRequest,
+    HtmlSheetGenerateRequest as HtmlSheetGenerateRequest,
+    HtmlSheetReviewRequest as HtmlSheetReviewRequest,
+    HtmlSheetAcceptRequest as HtmlSheetAcceptRequest,
+    HtmlSheetResult as HtmlSheetResult,
+    HtmlSheetRetryRequest as HtmlSheetRetryRequest,
+)
+
+
 class HtmlEditorReadRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

@@ -332,7 +332,11 @@ async function prepare(compiled, pack, host) {
           ? "image"
           : "CSS";
       place(node, el);
-      if (node.type === "text") {
+      if (node.type === "shape") {
+        el.style.background = theme.colors[node.fill];
+        el.style.borderRadius = node.kind === "ellipse" ? "50%" : px(node.radius ?? 0);
+        el.setAttribute("aria-hidden", "true");
+      } else if (node.type === "text") {
         textStyle(el, node.role, theme);
         el.style.whiteSpace = "pre-wrap";
         for (const run of node.runs) {

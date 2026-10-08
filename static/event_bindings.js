@@ -250,7 +250,7 @@ function initGlobalEvents() {
   document.getElementById('step6-btn-save-and-tts')?.addEventListener('click', () => saveNarrationAndRunTTS());
   document.getElementById('step6-btn-audio-confirm-next')?.addEventListener('click', async () => {
     const confirmed = await confirmStep7Audio();
-    if (confirmed) navigateToStep(10);
+    if (confirmed) navigateToStep(PPTFlow.nextVisibleStep(6));
   });
   document.getElementById('step10-btn-next')?.addEventListener('click', () => navigateToStep(9));
   document.getElementById('step9-btn-skip')?.addEventListener('click', () => navigateToStep(8));

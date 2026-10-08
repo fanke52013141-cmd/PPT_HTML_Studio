@@ -162,6 +162,7 @@ def produce_scene(
     deps,
     provider: Callable | None = None,
     checkpoint: Callable = lambda: None,
+    model_summary: dict | None = None,
 ) -> dict:
     from html_storyboard_planning import load_template_catalog
 
@@ -171,6 +172,7 @@ def produce_scene(
 
         revision = _read_revision(run_dir)["revision"]
     checkpoint()
+    model_summary = copy.deepcopy(model_summary or {})
     plan = generate_scene_plan(
         contract,
         run_dir=run_dir,
@@ -237,6 +239,7 @@ def produce_scene(
             "prompt": design_prompt,
             "reference_paths": references,
             "brief_sha256": brief["sha256"],
+            "model_config_hash": model_summary.get("image", {}).get("config_hash"),
         }
         request["reference_sha256"] = [
             hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in references
@@ -301,6 +304,7 @@ def produce_scene(
                 "reference_sha256": [
                     hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in references
                 ],
+                "model_config_hash": model_summary.get("image", {}).get("config_hash"),
             },
             HtmlAssetDependencies(
                 lambda prompt, **kw: provider(
@@ -350,9 +354,36 @@ def produce_scene(
     write_json_atomic(candidate_dir / "plan.json", plan)
     write_json_atomic(candidate_dir / "brief.json", brief)
     write_json_atomic(candidate_dir / "freeze.json", freeze)
+    write_json_atomic(candidate_dir / "models.json", model_summary)
     # Review uses a temporary project resource root, retaining file locations.
     with project_artifact_lock(run_dir):
         checkpoint()
+        from html_visual_store import _read_revision, HtmlVisualConflict
+        from html_scene_editing import edit_path, read_json, merge_manual_edits, _validate_binding
+
+        current_revision = _read_revision(run_dir)["revision"]
+        if current_revision != revision:
+            raise HtmlVisualConflict(revision, current_revision)
+        # Reapply only explicit manual deltas to stable IDs, before reviewing.
+        # Missing/changed targets keep the candidate and fail without touching
+        # the current scene, private resources, binding, or approval.
+        manual = read_json(edit_path(run_dir, slide_id))
+        merged = merge_manual_edits(scene, binding, manual)
+        if merged["conflicts"]:
+            write_json_atomic(candidate_dir / "manual-conflicts.json", merged["conflicts"])
+            raise HtmlReviewError(
+                "重新规划与人工修改冲突，请检查保留的候选。",
+                status_code=409,
+                code="MANUAL_EDIT_CONFLICT",
+            )
+        scene, binding = merged["scene"], merged["binding"]
+        _validate_binding(binding, scene, contract.get("narration_beats", []))
+        # Assets added while generation was in flight must never disappear.
+        current_resources = read_json(resources_path, {"assets": []})
+        generated_ids = {a["id"] for a in resources.get("assets", [])}
+        resources["assets"] += [
+            a for a in current_resources.get("assets", []) if a["id"] not in generated_ids
+        ]
         rollback_paths = [
             resources_path,
             scene_path(run_dir, slide_id),
@@ -412,7 +443,8 @@ def produce_scene(
             if current_revision != revision:
                 raise HtmlVisualConflict(revision, current_revision)
             result = save_scene(
-                run_dir, slide_id, scene, revision, lock=project_artifact_lock
+                run_dir, slide_id, scene, revision, lock=project_artifact_lock,
+                allow_manual_replace=bool(manual),
             )
             write_json_atomic(directory / f"binding-{slide_id}.json", binding)
             write_json_atomic(directory / f"plan-{slide_id}.json", plan)

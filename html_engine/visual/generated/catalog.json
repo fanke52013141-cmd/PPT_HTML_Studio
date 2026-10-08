@@ -3,6 +3,390 @@
     {
       "format": "hps.visual.theme",
       "version": "0.2.0",
+      "id": "amber-editorial",
+      "name": "暖白琥珀编辑式科普",
+      "font": {
+        "family": "Microsoft YaHei",
+        "platform": "Windows"
+      },
+      "colors": {
+        "background": "#FCFAF5",
+        "ink": "#24231F",
+        "body": "#625C52",
+        "accent": "#AF6908",
+        "blue": "#AF6908",
+        "green": "#A87823",
+        "muted": "#B7A48B",
+        "panel": "#FFFFFF",
+        "pinkWash": "#F4EBD9",
+        "blueWash": "#F6EFE1",
+        "greenWash": "#FBE6B0",
+        "line": "#F0E5D0",
+        "paper": "#FFFFFF",
+        "purple": "#EDE6D8",
+        "yellow": "#E8AD35",
+        "pink": "#B48028"
+      },
+      "text": {
+        "eyebrow": {
+          "size": 20,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "title": {
+          "size": 80,
+          "weight": 700,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "lead": {
+          "size": 28,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "stepTitle": {
+          "size": 32,
+          "weight": 700,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "body": {
+          "size": 24,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "phase": {
+          "size": 30,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "callout": {
+          "size": 25,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "conclusion": {
+          "size": 26,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "source": {
+          "size": 16,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "subtitle": {
+          "size": 32,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "number": {
+          "size": 38,
+          "weight": 700,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "panel"
+        },
+        "headline": {
+          "size": 36,
+          "weight": 700,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "cardTitle": {
+          "size": 28,
+          "weight": 700,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "cardBody": {
+          "size": 28,
+          "weight": 400,
+          "lineHeight": 1.45,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "caption": {
+          "size": 18,
+          "weight": 400,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "summary": {
+          "size": 26,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "intro": {
+          "size": 28,
+          "weight": 400,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "body"
+        }
+      },
+      "shapes": {
+        "badgeRadius": 22,
+        "labelRadius": 32,
+        "strokeWidth": 2.5,
+        "shadow": {
+          "y": 2,
+          "blur": 6,
+          "opacity": 0.04
+        },
+        "cardRadius": 20,
+        "figureRadius": 24,
+        "iconRadius": 24,
+        "iconStroke": 1.7,
+        "shadowRGB": "69 91 121"
+      },
+      "compatibleLayouts": [
+        "editorial-three-columns-v1"
+      ],
+      "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。",
+      "gradients": {
+        "pink": [
+          "#C28D32",
+          "#9D6B20"
+        ],
+        "blue": [
+          "#F5F0E6",
+          "#EFE9DE"
+        ],
+        "green": [
+          "#F2DEAD",
+          "#EAD3A0"
+        ],
+        "purple": [
+          "#F5F0E6",
+          "#EDE6D8"
+        ],
+        "yellow": [
+          "#BD892D",
+          "#97651A"
+        ]
+      }
+    },
+    {
+      "format": "hps.visual.theme",
+      "version": "0.2.0",
+      "id": "amber-science",
+      "name": "暖白琥珀科普",
+      "font": {
+        "family": "Microsoft YaHei",
+        "platform": "Windows"
+      },
+      "colors": {
+        "background": "#FCFAF5",
+        "ink": "#29261F",
+        "body": "#625D53",
+        "accent": "#A66D14",
+        "blue": "#8D692F",
+        "green": "#A87823",
+        "muted": "#8A8377",
+        "panel": "#FFFFFF",
+        "pinkWash": "#F4EBD9",
+        "blueWash": "#F5F0E6",
+        "greenWash": "#F2E5C9",
+        "line": "#D8D0C0",
+        "paper": "#FFFFFF",
+        "purple": "#EDE6D8",
+        "yellow": "#B48028",
+        "pink": "#B48028"
+      },
+      "text": {
+        "eyebrow": {
+          "size": 20,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "title": {
+          "size": 46,
+          "weight": 700,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "lead": {
+          "size": 28,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "stepTitle": {
+          "size": 32,
+          "weight": 700,
+          "lineHeight": 1.3,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "body": {
+          "size": 24,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "phase": {
+          "size": 30,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "callout": {
+          "size": 25,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "conclusion": {
+          "size": 26,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "source": {
+          "size": 16,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "subtitle": {
+          "size": 32,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "number": {
+          "size": 32,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "headline": {
+          "size": 32,
+          "weight": 700,
+          "lineHeight": 1.4,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "cardTitle": {
+          "size": 29,
+          "weight": 700,
+          "lineHeight": 1.35,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "cardBody": {
+          "size": 22,
+          "weight": 400,
+          "lineHeight": 1.55,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "caption": {
+          "size": 19,
+          "weight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "body"
+        },
+        "summary": {
+          "size": 26,
+          "weight": 700,
+          "lineHeight": 1.5,
+          "letterSpacing": 0,
+          "color": "ink"
+        },
+        "intro": {
+          "size": 23,
+          "weight": 400,
+          "lineHeight": 1.65,
+          "letterSpacing": 0,
+          "color": "body"
+        }
+      },
+      "shapes": {
+        "badgeRadius": 22,
+        "labelRadius": 32,
+        "strokeWidth": 2.5,
+        "shadow": {
+          "y": 2,
+          "blur": 6,
+          "opacity": 0.04
+        },
+        "cardRadius": 20,
+        "figureRadius": 24,
+        "iconRadius": 24,
+        "iconStroke": 1.7,
+        "shadowRGB": "69 91 121"
+      },
+      "compatibleLayouts": [
+        "data-relation-v1",
+        "object-left",
+        "object-right",
+        "process-stage-v1",
+        "science-explanation-v1"
+      ],
+      "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。",
+      "gradients": {
+        "pink": [
+          "#C28D32",
+          "#9D6B20"
+        ],
+        "blue": [
+          "#F5F0E6",
+          "#EFE9DE"
+        ],
+        "green": [
+          "#F2DEAD",
+          "#EAD3A0"
+        ],
+        "purple": [
+          "#F5F0E6",
+          "#EDE6D8"
+        ],
+        "yellow": [
+          "#BD892D",
+          "#97651A"
+        ]
+      }
+    },
+    {
+      "format": "hps.visual.theme",
+      "version": "0.2.0",
       "id": "neutral-science",
       "name": "中性科普（主题切换测试，待视觉批准）",
       "font": {
@@ -465,6 +849,383 @@
             "height": 110
           },
           "maxLines": 1,
+          "align": "left",
+          "z": 2
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "editorial-three-columns-v1",
+      "name": "编辑式概念页：上部主视觉，下部三栏",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 80,
+            "y": 76,
+            "width": 790,
+            "height": 115
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "title-rule": {
+          "box": {
+            "x": 83,
+            "y": 204,
+            "width": 96,
+            "height": 10
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "definition-surface": {
+          "box": {
+            "x": 75,
+            "y": 250,
+            "width": 685,
+            "height": 88
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "headline": {
+          "box": {
+            "x": 103,
+            "y": 268,
+            "width": 630,
+            "height": 63
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "intro": {
+          "box": {
+            "x": 90,
+            "y": 372,
+            "width": 694,
+            "height": 51
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "hero-shadow": {
+          "box": {
+            "x": 805,
+            "y": 379,
+            "width": 683,
+            "height": 25
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "figure": {
+          "box": {
+            "x": 827,
+            "y": 199,
+            "width": 150,
+            "height": 169
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "document-line-1": {
+          "box": {
+            "x": 847,
+            "y": 227,
+            "width": 111,
+            "height": 11
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "document-line-2": {
+          "box": {
+            "x": 847,
+            "y": 253,
+            "width": 111,
+            "height": 11
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "document-line-3": {
+          "box": {
+            "x": 847,
+            "y": 279,
+            "width": 77,
+            "height": 11
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "document-line-4": {
+          "box": {
+            "x": 847,
+            "y": 305,
+            "width": 111,
+            "height": 11
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "document-label": {
+          "box": {
+            "x": 854,
+            "y": 372,
+            "width": 100,
+            "height": 30
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 2
+        },
+        "relation-arrow": {
+          "box": {
+            "x": 990,
+            "y": 269,
+            "width": 45,
+            "height": 35
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "unit-1": {
+          "box": {
+            "x": 1052,
+            "y": 257,
+            "width": 46,
+            "height": 60
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "unit-2": {
+          "box": {
+            "x": 1109,
+            "y": 257,
+            "width": 46,
+            "height": 60
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "unit-3": {
+          "box": {
+            "x": 1166,
+            "y": 257,
+            "width": 46,
+            "height": 60
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "unit-4": {
+          "box": {
+            "x": 1223,
+            "y": 257,
+            "width": 46,
+            "height": 60
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "unit-label": {
+          "box": {
+            "x": 1101,
+            "y": 330,
+            "width": 120,
+            "height": 30
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 2
+        },
+        "subject": {
+          "box": {
+            "x": 1239,
+            "y": 94,
+            "width": 333,
+            "height": 341
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 3
+        },
+        "divider-1": {
+          "box": {
+            "x": 552,
+            "y": 501,
+            "width": 2,
+            "height": 202
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "divider-2": {
+          "box": {
+            "x": 1054,
+            "y": 501,
+            "width": 2,
+            "height": 202
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "number-surface-1": {
+          "box": {
+            "x": 75,
+            "y": 500,
+            "width": 60,
+            "height": 60
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "number-1": {
+          "box": {
+            "x": 77,
+            "y": 506,
+            "width": 56,
+            "height": 52
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 3
+        },
+        "card-1": {
+          "box": {
+            "x": 161,
+            "y": 512,
+            "width": 385,
+            "height": 83
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-1-body": {
+          "box": {
+            "x": 155,
+            "y": 578,
+            "width": 390,
+            "height": 112
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "number-surface-2": {
+          "box": {
+            "x": 585,
+            "y": 500,
+            "width": 60,
+            "height": 60
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "number-2": {
+          "box": {
+            "x": 587,
+            "y": 506,
+            "width": 56,
+            "height": 52
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 3
+        },
+        "card-2": {
+          "box": {
+            "x": 671,
+            "y": 512,
+            "width": 385,
+            "height": 83
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-2-body": {
+          "box": {
+            "x": 665,
+            "y": 578,
+            "width": 390,
+            "height": 112
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "number-surface-3": {
+          "box": {
+            "x": 1082,
+            "y": 500,
+            "width": 60,
+            "height": 60
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "number-3": {
+          "box": {
+            "x": 1084,
+            "y": 506,
+            "width": 56,
+            "height": 52
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 3
+        },
+        "card-3": {
+          "box": {
+            "x": 1168,
+            "y": 512,
+            "width": 385,
+            "height": 83
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-3-body": {
+          "box": {
+            "x": 1162,
+            "y": 578,
+            "width": 390,
+            "height": 112
+          },
+          "maxLines": 3,
           "align": "left",
           "z": 2
         }
@@ -1243,6 +2004,217 @@
         "summary": {
           "kinds": [
             "summary"
+          ],
+          "required": true
+        }
+      }
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "editorial-three-columns-v1",
+      "name": "编辑式三栏概念解释",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "editorial-three-columns-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "header": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "title-rule": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "definition-surface": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "headline": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "intro": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "hero-shadow": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "figure": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "document-line-1": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "document-line-2": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "document-line-3": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "document-line-4": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "document-label": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "relation-arrow": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": true
+        },
+        "unit-1": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "unit-2": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "unit-3": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "unit-4": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "unit-label": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "subject": {
+          "kinds": [
+            "image"
+          ],
+          "required": true
+        },
+        "divider-1": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "divider-2": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "number-surface-1": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "number-1": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-1": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-1-body": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "number-surface-2": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "number-2": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-2-body": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "number-surface-3": {
+          "kinds": [
+            "shape"
+          ],
+          "required": true
+        },
+        "number-3": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-3": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-3-body": {
+          "kinds": [
+            "text"
           ],
           "required": true
         }

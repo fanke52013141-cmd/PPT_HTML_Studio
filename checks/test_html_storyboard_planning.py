@@ -41,6 +41,16 @@ CONTRACT_SLIDE = {
 }
 
 
+def test_scene03_planner_excludes_templates_requiring_scene04_shapes(catalog):
+    assert "explanation-cards-v1" in catalog["templates"]
+    assert "editorial-three-columns-v1" not in catalog["templates"]
+    assert all(
+        "shape" not in rule["kinds"]
+        for template in catalog["templates"].values()
+        for rule in template["slots"].values()
+    )
+
+
 def valid_plan() -> dict:
     return {
         "slide_id": "slide_001",

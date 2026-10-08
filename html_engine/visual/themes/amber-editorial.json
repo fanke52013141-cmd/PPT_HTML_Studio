@@ -1,0 +1,190 @@
+{
+  "format": "hps.visual.theme",
+  "version": "0.2.0",
+  "id": "amber-editorial",
+  "name": "暖白琥珀编辑式科普",
+  "font": {
+    "family": "Microsoft YaHei",
+    "platform": "Windows"
+  },
+  "colors": {
+    "background": "#FCFAF5",
+    "ink": "#24231F",
+    "body": "#625C52",
+    "accent": "#AF6908",
+    "blue": "#AF6908",
+    "green": "#A87823",
+    "muted": "#B7A48B",
+    "panel": "#FFFFFF",
+    "pinkWash": "#F4EBD9",
+    "blueWash": "#F6EFE1",
+    "greenWash": "#FBE6B0",
+    "line": "#F0E5D0",
+    "paper": "#FFFFFF",
+    "purple": "#EDE6D8",
+    "yellow": "#E8AD35",
+    "pink": "#B48028"
+  },
+  "text": {
+    "eyebrow": {
+      "size": 20,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "title": {
+      "size": 80,
+      "weight": 700,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "lead": {
+      "size": 28,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "stepTitle": {
+      "size": 32,
+      "weight": 700,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "body": {
+      "size": 24,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "phase": {
+      "size": 30,
+      "weight": 700,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "callout": {
+      "size": 25,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "conclusion": {
+      "size": 26,
+      "weight": 700,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "source": {
+      "size": 16,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "subtitle": {
+      "size": 32,
+      "weight": 400,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "number": {
+      "size": 38,
+      "weight": 700,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "panel"
+    },
+    "headline": {
+      "size": 36,
+      "weight": 700,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "cardTitle": {
+      "size": 28,
+      "weight": 700,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "cardBody": {
+      "size": 28,
+      "weight": 400,
+      "lineHeight": 1.45,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "caption": {
+      "size": 18,
+      "weight": 400,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "body"
+    },
+    "summary": {
+      "size": 26,
+      "weight": 700,
+      "lineHeight": 1.5,
+      "letterSpacing": 0,
+      "color": "ink"
+    },
+    "intro": {
+      "size": 28,
+      "weight": 400,
+      "lineHeight": 1.3,
+      "letterSpacing": 0,
+      "color": "body"
+    }
+  },
+  "shapes": {
+    "badgeRadius": 22,
+    "labelRadius": 32,
+    "strokeWidth": 2.5,
+    "shadow": {
+      "y": 2,
+      "blur": 6,
+      "opacity": 0.04
+    },
+    "cardRadius": 20,
+    "figureRadius": 24,
+    "iconRadius": 24,
+    "iconStroke": 1.7,
+    "shadowRGB": "69 91 121"
+  },
+  "compatibleLayouts": [
+    "editorial-three-columns-v1"
+  ],
+  "illustrationPolicy": "浅色独立科学插画；单页一个主体；文字、编号、箭头及圈注均由代码实现。禁止水彩手绘主风格与整页图片。",
+  "gradients": {
+    "pink": [
+      "#C28D32",
+      "#9D6B20"
+    ],
+    "blue": [
+      "#F5F0E6",
+      "#EFE9DE"
+    ],
+    "green": [
+      "#F2DEAD",
+      "#EAD3A0"
+    ],
+    "purple": [
+      "#F5F0E6",
+      "#EDE6D8"
+    ],
+    "yellow": [
+      "#BD892D",
+      "#97651A"
+    ]
+  }
+}

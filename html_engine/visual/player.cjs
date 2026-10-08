@@ -103,7 +103,13 @@ function loadSelection() {
   $("definition").value = JSON.stringify(source, null, 2);
   return apply(source);
 }
-$("scene").onchange = loadSelection;
+$("scene").onchange = () => {
+  const scene = scenes.find((s) => s.id === $("scene").value);
+  const theme = catalog.themes.find((t) => t.id === $("theme").value);
+  if (!theme?.compatibleLayouts.includes(scene.layoutRef.id))
+    $("theme").value = scene.themeRef.id;
+  return loadSelection();
+};
 $("theme").onchange = loadSelection;
 $("apply").onclick = () => {
   try {
@@ -136,6 +142,7 @@ $("font").oninput = () => {
 };
 const selected = new URLSearchParams(location.search).get("scene");
 if (scenes.some((s) => s.id === selected)) $("scene").value = selected;
+$("theme").value = scenes.find((s) => s.id === $("scene").value).themeRef.id;
 window.visualPlayer = {
   apply,
   play,

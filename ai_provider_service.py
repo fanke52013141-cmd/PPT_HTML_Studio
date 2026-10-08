@@ -526,6 +526,7 @@ def generate_toapis_image_response(
     size: Optional[str],
     resolution: str = "1k",
     quality: str = "low",
+    transparent_background: bool = False,
     reference_paths: Optional[list[str]] = None,
     timeout: int = TOAPIS_DEFAULT_TASK_TIMEOUT_SECONDS,
     resume_task_id: str = "",
@@ -588,6 +589,13 @@ def generate_toapis_image_response(
                 "resolution": resolution if resolution in {"1k", "2k", "4k"} else "2k",
                 "quality": quality if quality in {"low", "medium", "high"} else "high",
             }
+            if model in {"gpt-image-2.5-flare-vip", "gpt-image-2.5-sunburst-vip"}:
+                # VIP uses exact pixels, unlike the legacy ratio/resolution API.
+                payload["size"] = normalize_image_size(size) or "2048x2048"
+                payload.pop("resolution")
+                payload["quality"] = quality if quality in {"auto", "low", "medium", "high", "xhigh", "max"} else "low"
+            if transparent_background:
+                payload["background"] = "transparent"
             if reference_urls:
                 payload["reference_images"] = reference_urls
             try:
@@ -829,6 +837,7 @@ def generate_image_response(
     public_config: Optional[Dict[str, Any]] = None,
     queue_wait_seconds: Optional[float] = None,
     resume_task_id: str = "",
+    transparent_background: bool = False,
 ) -> Any:
     """Generate an image with provider-specific fallbacks.
 
@@ -844,6 +853,7 @@ def generate_image_response(
             prompt=prompt, size=size,
             resolution=str(config.get("toapis_resolution") or "1k"),
             quality=str(config.get("toapis_quality") or "low"),
+            transparent_background=transparent_background,
             reference_paths=reference_paths,
             timeout=(
                 timeout

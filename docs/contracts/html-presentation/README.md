@@ -1,9 +1,21 @@
 # HTML 演示体系契约
 
-契约包版本：0.9.2。生效日期：2026-10-07。
+契约包版本：0.9.9。生效日期：2026-10-08。
 状态：现行规则基线。HTML guided 应用流程已接入；未完成的视觉、真实服务和课程签收以开发账本为准。E1/E2/P01 格式保持独立。
 
 当前应用运行补充见[生产流程与实现归属](runtime/visual-v1/application-workflow-0.1.0.md)。
+
+整页设计参考重建增量：[编辑式三栏与shape定义卡](runtime/visual-v1/editorial-three-columns-0.4.0.md)。仅scene 0.4.0引入通用矩形/椭圆，保留旧场景词汇；用户已认可生图设计，实际HTML/动态与输出另验，不直接使用整页图片为背景。
+
+新增定义：[项目模型绑定](runtime/visual-v1/project-model-binding-0.1.0.md)、[人工场景编辑](runtime/visual-v1/scene-editor-0.1.0.md)、[多对象素材板候选提取](runtime/visual-v1/asset-sheet-0.1.0.md)。实际集成、隔离测试及未通过项见[本轮开发记录](../../plans/html-backend-development/progress-2026-10-08.md)；候选提取通过不代表 AI 分割和视觉身份审阅通过。
+
+素材板内部生成/分割适配、审阅与接受门禁的增量实现，以及发行版前端检查修复，见[第二轮开发记录](../../plans/html-backend-development/progress-next-2026-10-08.md)。内部服务可调用不等于应用任务/UI/Agent或真实分割提供者已接入。
+
+第三轮已接入素材板应用面板、持久任务和五项公共Agent/MCP/CLI能力，Agent API 1.14.0；工程验证与实际提供者限制见[应用接入记录](../../plans/html-backend-development/progress-application-2026-10-08.md)。mask仍须准确分割服务，未配置时阻断，不将纯色边界处理等同AI分割。
+
+第四轮增加显式微透明残留清理、可追溯诊断及独立多模态辅助审阅服务，原人工接受门禁保持；真实图4/4提取及服务验证见[清理与审阅记录](../../plans/html-backend-development/progress-cleanup-2026-10-08.md)。自动多模态任务调用及真实审阅仍待接入/配置，不能将辅助建议当人工批准。
+
+第五轮接入显式多模态审阅持久任务和单对象独立重试，复用停止/恢复，Web/Agent/MCP/CLI同步，Agent API1.15.0；见[任务与重试记录](../../plans/html-backend-development/progress-actions-2026-10-08.md)。前一轮内部服务限制由此增量更新，真实多模态/单对象图片调用与成本视觉验收仍待配置。
 
 ## 本轮重点
 

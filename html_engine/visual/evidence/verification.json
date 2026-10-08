@@ -4,7 +4,8 @@
     "strict fields and ownership",
     "references, icons, templates and time",
     "legacy 0.1.0 adapter",
-    "four contents / three structures / two themes",
+    "five contents / editorial and legacy templates / four registered themes",
+    "0.4 shapes reject old version, free style and invalid fields",
     "seek pixel determinism",
     "transformed anchor / two viewport sizes",
     "theme preserves semantics and geometry",
@@ -205,6 +206,404 @@
             "y": 349,
             "width": 126,
             "height": 84
+          }
+        }
+      }
+    },
+    {
+      "id": "editorial-condensation",
+      "layout": {
+        "id": "editorial-three-columns-v1",
+        "version": "0.2.0"
+      },
+      "template": {
+        "id": "editorial-three-columns-v1",
+        "version": "0.1.0"
+      },
+      "measurements": {
+        "header": {
+          "lines": 1,
+          "width": 790,
+          "height": 115
+        },
+        "headline": {
+          "lines": 1,
+          "width": 630,
+          "height": 63
+        },
+        "intro": {
+          "lines": 1,
+          "width": 694,
+          "height": 51
+        },
+        "document-label": {
+          "lines": 1,
+          "width": 100,
+          "height": 30
+        },
+        "unit-label": {
+          "lines": 1,
+          "width": 120,
+          "height": 30
+        },
+        "number-1": {
+          "lines": 1,
+          "width": 56,
+          "height": 52
+        },
+        "card-1": {
+          "lines": 1,
+          "width": 385,
+          "height": 83
+        },
+        "card-1-body": {
+          "lines": 2,
+          "width": 390,
+          "height": 112
+        },
+        "number-2": {
+          "lines": 1,
+          "width": 56,
+          "height": 52
+        },
+        "card-2": {
+          "lines": 1,
+          "width": 385,
+          "height": 83
+        },
+        "card-2-body": {
+          "lines": 2,
+          "width": 390,
+          "height": 112
+        },
+        "number-3": {
+          "lines": 1,
+          "width": 56,
+          "height": 52
+        },
+        "card-3": {
+          "lines": 1,
+          "width": 385,
+          "height": 83
+        },
+        "card-3-body": {
+          "lines": 2,
+          "width": 390,
+          "height": 112
+        }
+      },
+      "geometry": {
+        "subject": {
+          "box": {
+            "x": 1239,
+            "y": 94,
+            "width": 333,
+            "height": 341
+          },
+          "placement": {
+            "scale": 0.26555023923444976,
+            "x": 0,
+            "y": 4,
+            "width": 333,
+            "height": 333,
+            "anchor": {
+              "x": 251.47607655502392,
+              "y": 163.33014354066987
+            }
+          },
+          "anchors": {
+            "focus": {
+              "x": 1490.4760765550238,
+              "y": 257.33014354066984
+            }
+          }
+        },
+        "header": {
+          "kind": "text",
+          "box": {
+            "x": 80,
+            "y": 88,
+            "width": 790,
+            "height": 115
+          }
+        },
+        "title-rule": {
+          "kind": "shape",
+          "box": {
+            "x": 83,
+            "y": 204,
+            "width": 96,
+            "height": 10
+          }
+        },
+        "definition-surface": {
+          "kind": "shape",
+          "box": {
+            "x": 75,
+            "y": 250,
+            "width": 685,
+            "height": 88
+          }
+        },
+        "headline": {
+          "kind": "text",
+          "box": {
+            "x": 103,
+            "y": 280,
+            "width": 630,
+            "height": 63
+          }
+        },
+        "intro": {
+          "kind": "text",
+          "box": {
+            "x": 90,
+            "y": 384,
+            "width": 694,
+            "height": 51
+          }
+        },
+        "hero-shadow": {
+          "kind": "shape",
+          "box": {
+            "x": 805,
+            "y": 379,
+            "width": 683,
+            "height": 25
+          }
+        },
+        "figure": {
+          "kind": "shape",
+          "box": {
+            "x": 827,
+            "y": 199,
+            "width": 150,
+            "height": 169
+          }
+        },
+        "document-line-1": {
+          "kind": "shape",
+          "box": {
+            "x": 847,
+            "y": 227,
+            "width": 111,
+            "height": 11
+          }
+        },
+        "document-line-2": {
+          "kind": "shape",
+          "box": {
+            "x": 847,
+            "y": 253,
+            "width": 111,
+            "height": 11
+          }
+        },
+        "document-line-3": {
+          "kind": "shape",
+          "box": {
+            "x": 847,
+            "y": 279,
+            "width": 77,
+            "height": 11
+          }
+        },
+        "document-line-4": {
+          "kind": "shape",
+          "box": {
+            "x": 847,
+            "y": 305,
+            "width": 111,
+            "height": 11
+          }
+        },
+        "document-label": {
+          "kind": "text",
+          "box": {
+            "x": 854,
+            "y": 384,
+            "width": 100,
+            "height": 30
+          }
+        },
+        "relation-arrow": {
+          "kind": "arrow",
+          "box": {
+            "x": 990,
+            "y": 281,
+            "width": 45,
+            "height": 35
+          }
+        },
+        "unit-1": {
+          "kind": "shape",
+          "box": {
+            "x": 1052,
+            "y": 257,
+            "width": 46,
+            "height": 60
+          }
+        },
+        "unit-2": {
+          "kind": "shape",
+          "box": {
+            "x": 1109,
+            "y": 257,
+            "width": 46,
+            "height": 60
+          }
+        },
+        "unit-3": {
+          "kind": "shape",
+          "box": {
+            "x": 1166,
+            "y": 257,
+            "width": 46,
+            "height": 60
+          }
+        },
+        "unit-4": {
+          "kind": "shape",
+          "box": {
+            "x": 1223,
+            "y": 257,
+            "width": 46,
+            "height": 60
+          }
+        },
+        "unit-label": {
+          "kind": "text",
+          "box": {
+            "x": 1101,
+            "y": 342,
+            "width": 120,
+            "height": 30
+          }
+        },
+        "divider-1": {
+          "kind": "shape",
+          "box": {
+            "x": 552,
+            "y": 501,
+            "width": 2,
+            "height": 202
+          }
+        },
+        "divider-2": {
+          "kind": "shape",
+          "box": {
+            "x": 1054,
+            "y": 501,
+            "width": 2,
+            "height": 202
+          }
+        },
+        "number-surface-1": {
+          "kind": "shape",
+          "box": {
+            "x": 75,
+            "y": 500,
+            "width": 60,
+            "height": 60
+          }
+        },
+        "number-1": {
+          "kind": "text",
+          "box": {
+            "x": 77,
+            "y": 518,
+            "width": 56,
+            "height": 52
+          }
+        },
+        "card-1": {
+          "kind": "text",
+          "box": {
+            "x": 161,
+            "y": 524,
+            "width": 385,
+            "height": 83
+          }
+        },
+        "card-1-body": {
+          "kind": "text",
+          "box": {
+            "x": 155,
+            "y": 590,
+            "width": 390,
+            "height": 112
+          }
+        },
+        "number-surface-2": {
+          "kind": "shape",
+          "box": {
+            "x": 585,
+            "y": 500,
+            "width": 60,
+            "height": 60
+          }
+        },
+        "number-2": {
+          "kind": "text",
+          "box": {
+            "x": 587,
+            "y": 518,
+            "width": 56,
+            "height": 52
+          }
+        },
+        "card-2": {
+          "kind": "text",
+          "box": {
+            "x": 671,
+            "y": 524,
+            "width": 385,
+            "height": 83
+          }
+        },
+        "card-2-body": {
+          "kind": "text",
+          "box": {
+            "x": 665,
+            "y": 590,
+            "width": 390,
+            "height": 112
+          }
+        },
+        "number-surface-3": {
+          "kind": "shape",
+          "box": {
+            "x": 1082,
+            "y": 500,
+            "width": 60,
+            "height": 60
+          }
+        },
+        "number-3": {
+          "kind": "text",
+          "box": {
+            "x": 1084,
+            "y": 518,
+            "width": 56,
+            "height": 52
+          }
+        },
+        "card-3": {
+          "kind": "text",
+          "box": {
+            "x": 1168,
+            "y": 524,
+            "width": 385,
+            "height": 83
+          }
+        },
+        "card-3-body": {
+          "kind": "text",
+          "box": {
+            "x": 1162,
+            "y": 590,
+            "width": 390,
+            "height": 112
           }
         }
       }

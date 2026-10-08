@@ -99,6 +99,7 @@
     "scene": {
       "type": "object",
       "additionalProperties": false,
+      "allOf": [{"if": {"properties": {"version": {"const": "0.3.0"}}, "required": ["version"]}, "then": {"properties": {"nodes": {"type": "array", "items": {"type": "object", "properties": {"type": {"not": {"const": "shape"}}}}}}}}],
       "required": [
         "format",
         "version",
@@ -114,7 +115,7 @@
       ],
       "properties": {
         "format": { "const": "hps.visual.scene" },
-        "version": { "const": "0.3.0" },
+        "version": { "enum": ["0.3.0", "0.4.0"] },
         "id": { "$ref": "#/$defs/id" },
         "name": { "type": "string", "minLength": 1, "maxLength": 60 },
         "themeRef": { "$ref": "#/$defs/ref" },
@@ -148,6 +149,20 @@
     },
     "node": {
       "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "slot", "type", "kind", "fill"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "slot": { "$ref": "#/$defs/id" },
+            "type": { "const": "shape" },
+            "kind": { "enum": ["rect", "ellipse"] },
+            "fill": { "enum": ["background", "ink", "body", "accent", "blue", "green", "muted", "panel", "pinkWash", "blueWash", "greenWash", "line", "paper", "purple", "yellow", "pink"] },
+            "radius": { "type": "number", "minimum": 0, "maximum": 60 }
+          },
+          "allOf": [{"if": {"properties": {"kind": {"const": "ellipse"}}, "required": ["kind"]}, "then": {"properties": {"radius": false}}}]
+        },
         {
           "type": "object",
           "additionalProperties": false,
@@ -631,6 +646,7 @@
                 "items": {
                   "enum": [
                     "text",
+                    "shape",
                     "badge",
                     "label",
                     "image",

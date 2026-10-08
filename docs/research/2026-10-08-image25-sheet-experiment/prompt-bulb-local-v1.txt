@@ -1,0 +1,5 @@
+PromptVersion: token-bulb-reference-isolation/0.1.0
+
+Isolate exactly the yellow light-bulb illustration from the attached reference into one 2048x1152 transparent PNG. Preserve its original bulb silhouette, tilt, black outline, filament, screw base, colors and yellow short dash marks. The dash marks are flat solid ink shapes. Exclude all neighboring text, underlines, borders and other objects.
+
+Center this one complete asset with generous empty margins; its full silhouette including the dash marks should occupy approximately half the canvas height. Keep its proportions. Use an unlit flat illustration: no glow, halo, bloom, haze, cast shadow, white sticker border or new decorations. Preserve white interiors as opaque subject content. Only the narrow antialiased contour may be partly transparent; everywhere outside the silhouette and dash marks must have zero alpha. Return only the PNG with real transparency, without a painted background, checkerboard or frame.

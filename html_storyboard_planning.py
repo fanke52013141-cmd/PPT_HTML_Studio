@@ -28,6 +28,7 @@ DEFAULT_CATALOG_PATH = (
 )
 _ALLOWED_ACTIONS = {"enter", "emphasize"}
 _ALLOWED_RENDER_OWNERS = {"code", "image_asset"}
+_PLANNING_NODE_KINDS = {"text", "badge", "label", "image", "arrow", "annotation", "header", "card", "figure", "summary"}
 
 
 class HtmlScenePlanError(ValueError):
@@ -73,6 +74,11 @@ def load_template_catalog(
         if not isinstance(template, dict):
             continue
         template_id = str(template.get("id") or "")
+        # The current plan compiler emits scene 0.3.0. Newly registered author
+        # templates must not become model choices before that compiler supports
+        # their vocabulary/version. No template-id-specific exceptions.
+        if any(set(rule.get("kinds", [])) - _PLANNING_NODE_KINDS for rule in template.get("slots", {}).values()):
+            continue
         if template_id:
             registered[template_id] = template
     icons = _registered_icons(repo_root)

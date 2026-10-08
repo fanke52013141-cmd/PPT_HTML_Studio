@@ -1,0 +1,8 @@
+.html-asset-sheets { padding: 16px; margin-top: 16px; border: 1px solid #eee; border-radius: 12px; }
+.html-sheet-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.html-sheet-form textarea { width: 100%; min-height: 110px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+.html-asset-sheets select, .html-sheet-card input[type="text"] { padding: 8px; border: 1px solid #ddd; border-radius: 8px; }
+.html-sheet-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+.html-sheet-card { padding: 16px; border: 1px solid #eee; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; }
+.html-sheet-card img { width: 100%; height: 220px; object-fit: contain; background-color: #f7f7f7; }
+.html-sheet-card label { display: flex; gap: 8px; align-items: center; }

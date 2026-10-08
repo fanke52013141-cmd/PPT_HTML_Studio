@@ -1,5 +1,9 @@
 # 阶段一：共享视觉定义与统一渲染
 
+2026-10-08（scene 0.4.0）：新增通用rect/ellipse形状、editorial-three-columns-v1和amber-editorial，按已认可生图参考完成33对象Token页。旧词汇与模板保留，自动规划仍为0.3，不能选择新shape模板。5场景/14组浏览器检查通过；原音频复用的新MP4完整解码通过。独立可编辑HTML与输出见[还原执行记录](../../../docs/research/2026-10-08-image25-sheet-experiment/token-editorial-reconstruction-v1.md)，实际新画面视觉批准待审阅；下方阶段一能力限制为历史记录。
+
+2026-10-08：新增 `amber-science@0.2.0` 暖白琥珀主题，复用当前 Schema/组件/布局，定义与限定视觉批准见[主题卡](../../../docs/styles/science-explainer/amber-science.md)。原主题引用不变；当前编排器默认仍是 soft-science，未增加项目主题选择入口。
+
 > 2026-10-08（0.2.0）：按 html-backend 计划 A01—A04，style-review 的实际科普视觉已收编进共享渲染器——新增 header/card/figure/summary 公共组件、图标注册表、渐变/扩展排版主题字段、三个受约束模板（图文讲解/数据关系/对象过程舞台）、效果注册与参考图缓存、帧导出 harness；0.1.0 场景经显式适配器读取。工程验证 13 项通过（4 场景/3 结构/2 主题/乱序 seek 像素一致）；**视觉验收仍 pending_review**，以[0.2.0 版本卡](../../../docs/contracts/html-presentation/runtime/visual-v1/version-0.2.0.md)为准。下方 0.1.0 历史说明保留：用户当时否定的是旧简化视觉，不是本模块的归属模型。
 
 已实现独立格式 0.1.0；[定义卡](../../docs/contracts/html-presentation/runtime/visual-v1/README.md)是本模块的归属契约。预览：[打开两个复用案例](preview/index.html)。这不是应用级 HTML 后端，原图片路线与 E1/E2 保持原样。

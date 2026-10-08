@@ -4,6 +4,13 @@
   "note": "已注册视觉效果目录。组件按 ID 消费效果；场景与模型输出不得引用未注册效果。backend 限定 CSS/SVG/Canvas2D。",
   "effects": [
     {
+      "id": "flat-geometric-shape",
+      "backend": "CSS",
+      "purpose": "通用矩形和椭圆，主题角色填色、固定布局与纯时间显隐",
+      "params": ["scene 0.4.0 kind=rect|ellipse, fill=theme color role, radius=0..60 for rect"],
+      "usedBy": ["shape"]
+    },
+    {
       "id": "card-surface-gradient",
       "backend": "CSS",
       "purpose": "知识卡纸面渐变与轻阴影",

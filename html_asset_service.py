@@ -20,7 +20,7 @@ import io
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 from ai_provider_service import open_validated_image
 
@@ -162,6 +162,7 @@ def produce_asset(
         "anchors": anchors_input,
         "need": need,
         "reference_sha256": request.get("reference_sha256", []),
+        "model_config_hash": request.get("model_config_hash"),
     }
     key = _request_key(normalized_request)
     for entry in manifest.get("assets", []):
@@ -220,6 +221,7 @@ def produce_asset(
         "file": str(stored.relative_to(Path(dependencies.assets_root))),
         "sha256": digest,
         "request_key": key,
+        "model_config_hash": request.get("model_config_hash"),
         "role": role,
         "need": need,
         "transparent_background": transparent,

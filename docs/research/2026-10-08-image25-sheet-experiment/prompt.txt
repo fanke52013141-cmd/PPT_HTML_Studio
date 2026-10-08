@@ -1,0 +1,10 @@
+Edit the provided complete Token explainer image into a reusable four-object asset sheet.
+Output exactly one 1024 x 1024 PNG with a genuinely transparent background.
+Extract only these four objects from the reference, maintaining their recognizable design, colors, black outline style, pose and proportions:
+1. Top-left quadrant (x=0..511, y=0..511): the yellow light bulb, including its short yellow rays.
+2. Top-right quadrant (x=512..1023, y=0..511): the blue-and-white smiling robot, including its raised hand and antenna. Exclude the speech bubble.
+3. Bottom-left quadrant (x=0..511, y=512..1023): the milk-tea cup and straw. Exclude the hearts and surrounding arrows.
+4. Bottom-right quadrant (x=512..1023, y=512..1023): the pink brain icon. Exclude the numbered badge and surrounding text.
+Center each complete object in its own quadrant, with at least 64 pixels of transparent space between its visible outline and every quadrant boundary. Use the available space while preserving proportions; do not crop any object.
+Remove the page background, all text, title, section frames, arrows and unrelated decorations. Do not draw grid lines, quadrant borders, labels, numbers, shadows or a checkerboard. Do not add or duplicate objects. Do not redesign the subjects.
+The reference is an edit target for object identity, not a layout to preserve. Rearrange only the selected four objects into the requested quadrants. Preserve actual PNG alpha transparency.

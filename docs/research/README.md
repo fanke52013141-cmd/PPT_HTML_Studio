@@ -1,5 +1,7 @@
 # 调研与借鉴档案
 
+RES-20261008-04追加：[Token编辑式还原实测](2026-10-08-image25-sheet-experiment/token-editorial-reconstruction-v1.md)。整页设计参考获批准，33对象HTML与原音频视频已实际输出并技术验证；新HTML视觉及灯泡边缘尚待审阅，批量自动化效率仍未量测。
+
 本目录保存分析的来源、判断、验证计划与后续决策，使调研可以被检索、复核和落实。
 **调研文档不是生产契约，也不表示相关功能已经实现。** 正式规则以
 [HTML 演示体系契约](../contracts/html-presentation/README.md) 为准。
@@ -8,6 +10,7 @@
 | --- | --- | --- | --- |
 | RES-20261007-01 | 大语言模型与编程式渲染架构报告 | [借鉴分析](2026-10-07-architecture-report/analysis-and-adoption.md) | 已完成文档分析与一手资料核对，实验未执行 |
 | RES-20261007-02 | Skill 生态与工作流两份报告，结合本项目筛选 | [项目改造借鉴指南](2026-10-07-skill-and-workflow-reports/adaptation-guide.md) | 已核对本地代码与选中一手资料，开发/运行验收未执行 |
+| RES-20261008-04 | image2.5参考图批量拆分与效率对照 | [实验记录](2026-10-08-image25-sheet-experiment/README.md) | 内置生图2次实际实验，均2/4严格提取通过；image2.5专项性能对照待配置 |
 
 **当前开发借鉴主入口：** [项目改造借鉴指南](2026-10-07-skill-and-workflow-reports/adaptation-guide.md)。
 现有语音合成、音频时间/对齐和数字人方案直接复用；报告原文不是整体改造指令。

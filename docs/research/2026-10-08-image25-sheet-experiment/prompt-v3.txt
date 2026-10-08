@@ -1,0 +1,13 @@
+PromptVersion: token-sheet-reference-extraction/0.3.0
+
+Edit the attached Token explainer image into one 2048x2048 transparent PNG containing exactly four separate assets. The reference specifies each asset's identity, visible shape, pose, expression, colors and black outlines. Perform faithful isolation and rearrangement; do not redesign, beautify, add features, or complete parts absent from the reference.
+
+Output placement bounds are [left, top, right, bottom] in pixels; these bounds are instructions, not visible frames. Center each asset inside its own bounds, preserving its aspect ratio. Its entire visible silhouette and any included marks must fit within the bounds:
+- [232, 232, 792, 792]: the yellow light bulb and its original yellow short stroke marks. Treat the marks as solid ink shapes, not emitted light.
+- [1256, 232, 1816, 792]: the blue-white waving robot with antenna. Keep the reference's visible body extent and expression; exclude its speech bubble and nearby yellow marks. Do not add legs or a new expression.
+- [232, 1256, 792, 1816]: the milk-tea cup, lid and straw. Exclude hearts, arrows and neighboring marks.
+- [1256, 1256, 1816, 1816]: the pink brain icon with its original black fold lines. Exclude the number badge; do not add eyes, mouth or a face.
+
+Use a flat, unlit asset presentation. No glow, bloom, halo, cast shadow, ground plane, ambient haze or added highlights. Outside each asset's actual silhouette and included ink marks, alpha must be zero. Do not fill its rectangular bounds. Preserve white subject interiors and solid black outlines as opaque content; partial alpha is only for a narrow antialiased contour, not a soft cloud around the subject. Keep the outer margins and central gutters completely empty.
+
+Return only the single PNG image with real alpha. No background paint, checkerboard, grid lines, borders, titles, text, labels, numbers or extra objects. The only layout change is placing and scaling the four selected reference assets into their specified bounds.

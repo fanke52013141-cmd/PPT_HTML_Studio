@@ -210,6 +210,7 @@ REVEAL_VISUAL_LEAD_SEC = 0.45
 
 from json_llm_service import (
     parse_json_or_repair_with_llm,
+    generate_json_with_configured_llm,
 )
 
 from generation_governor import (
@@ -681,23 +682,23 @@ try:
         configure_html_review_service,
     )
 
-    def _html_plan_json_generator(**kwargs):
-        from json_llm_service import generate_json_with_configured_llm
-
-        return generate_json_with_configured_llm(**kwargs)
-
     configure_html_review_service(
         HtmlReviewDependencies(
             repo_root=Path(REPO_ROOT),
-            json_generator=_html_plan_json_generator,
+            json_generator=generate_json_with_configured_llm,
         )
     )
     from html_workflow_jobs import HtmlWorkflowJobs
     from html_image_provider import configured_image
-    from html_visual_review_routes import configure_html_jobs, _service_deps
+    from html_visual_review_routes import configure_html_jobs
+    from html_visual_review_routes import _service_deps as html_review_service_deps
     from database import SessionLocal as HtmlSessionLocal
-    html_workflow_jobs = HtmlWorkflowJobs(HtmlSessionLocal, _service_deps(), configured_image)
+    html_workflow_jobs = HtmlWorkflowJobs(HtmlSessionLocal, html_review_service_deps(), configured_image)
     configure_html_jobs(html_workflow_jobs)
+    from html_asset_sheet_jobs import HtmlSheetJobs
+    from html_asset_sheet_routes import configure_sheet_jobs, router as html_sheet_router
+    configure_sheet_jobs(HtmlSheetJobs(HtmlSessionLocal, html_workflow_jobs.executor))
+    app.include_router(html_sheet_router)
     app.router.on_startup.append(html_workflow_jobs.recover)
     app.include_router(html_review_router)
 except Exception as exc:
@@ -706,12 +707,6 @@ except Exception as exc:
         exc,
     )
     raise
-
-
-def html_review_service_deps():
-    """Both transports consume the identical configured review dependency record."""
-    from html_visual_review_routes import _service_deps
-    return _service_deps()
 
 
 try:

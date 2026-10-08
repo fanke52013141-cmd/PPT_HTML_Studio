@@ -20,6 +20,8 @@ from enum import Enum
 from typing import Optional, Type
 
 from pydantic import BaseModel
+from html_asset_sheet_models import (HtmlSheetReadRequest, HtmlSheetGenerateRequest,
+                                    HtmlSheetReviewRequest, HtmlSheetAcceptRequest, HtmlSheetResult, HtmlSheetRetryRequest)
 
 from agent_contract.models import (
     ArtifactGetResult,
@@ -112,6 +114,23 @@ class AgentCapability:
 # ---------------------------------------------------------------------------
 
 CAPABILITIES: list[AgentCapability] = [
+    *[
+        AgentCapability(
+            id=f'html_sheet.{name}', version='1.0', status=CapabilityStatus.stable,
+            description=description, request_model=request, response_model=HtmlSheetResult,
+            agent_api_method=method, agent_api_path='/api/agent/v1/projects/{project_id}/html-asset-sheets' + suffix,
+            mcp_tool_name=f'ppt_html_sheet_{name}', cli_command=f'html sheet-{name}',
+            service_ref=f'html_asset_sheet_routes.sheet_{name}', long_running=name in ('generate', 'assess', 'retry'),
+        ) for name, method, suffix, request, description in [
+            ('list', 'GET', '', HtmlSheetReadRequest, 'List account-scoped HTML sheet candidates and latest persisted task for recovery.'),
+            ('generate', 'POST', '/generate', HtmlSheetGenerateRequest, 'Submit a bounded HTML sheet task; freeze image model at submission, keep credentials only in memory. Mask requires configured exact segmentation. Query/stop using HTML task APIs.'),
+            ('read', 'GET', '/{sheet_id}/{request_key}', HtmlSheetReadRequest, 'Verify source/spec/mask/output hashes and read per-object reviews, revision and acceptance. No automatic identity approval.'),
+            ('review', 'PUT', '/{sheet_id}/{request_key}/{asset_id}/review', HtmlSheetReviewRequest, 'Record manual identity and edge decisions with expected_revision. Conflict 409, accepted objects locked; no resources published.'),
+            ('accept', 'POST', '/{sheet_id}/{request_key}/{asset_id}/accept', HtmlSheetAcceptRequest, 'Accept one verified object only after both review gates; additive resources registration, no same-ID overwrite or scene/audio changes.'),
+            ('assess', 'POST', '/{sheet_id}/{request_key}/assess', HtmlSheetReadRequest, 'Submit multimodal advisory task on verified candidates with frozen text model. Empty body; advice never approves resources. Use existing task query/cancel.'),
+            ('retry', 'POST', '/{sheet_id}/{request_key}/{asset_id}/retry', HtmlSheetRetryRequest, 'Regenerate only one unaccepted declared object into an independent candidate. Expected revision, optional corrected need/direction; original assets and human edits preserved.'),
+        ]
+    ],
     AgentCapability(
         id="project_model_binding.read", version="1.0", status=CapabilityStatus.stable,
         description="Read account-scoped HTML project model references and redacted effective summaries; legacy/inherit/fixed modes, no credentials or endpoints.",

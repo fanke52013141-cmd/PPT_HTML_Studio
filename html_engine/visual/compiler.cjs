@@ -4,7 +4,7 @@ const { EngineError, diagnostic } = require("../src/registry.cjs");
 const { imagePlacement } = require("../src/timeline.cjs");
 const icons = require("./icons.cjs");
 
-const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0"];
+const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0"];
 const SCENE_VERSION = "0.3.0";
 const DEFINITION_VERSION = "0.2.0";
 const EXTENDED_TEXT_ROLES = [
@@ -84,7 +84,7 @@ function normalizeTheme(theme) {
 // versions move to the registered 0.2.0 catalog. The adaptation is recorded
 // on the compiled snapshot.
 function adaptScene(scene) {
-  if (scene.version === SCENE_VERSION) return { scene, adaptedFrom: null };
+  if (scene.version === SCENE_VERSION || scene.version === "0.4.0") return { scene, adaptedFrom: null };
   if (scene.version !== "0.1.0" && scene.version !== "0.2.0")
     fail("UNSUPPORTED_VERSION", "/version", scene.version);
   return {
@@ -130,6 +130,8 @@ function compile(input, catalog) {
   const { scene, adaptedFrom } = adaptScene(
     JSON.parse(JSON.stringify(input)),
   );
+  if (scene.version !== "0.4.0" && Array.isArray(scene.nodes) && scene.nodes.some((node) => node?.type === "shape"))
+    fail("UNSUPPORTED_NODE_VERSION", "/nodes", "shape requires scene 0.4.0");
   validate("scene", scene);
   const theme = normalizeTheme(
     structuredClone(resolve(catalog.themes, scene.themeRef, "/themeRef")),

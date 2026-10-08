@@ -1,14 +1,15 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.0",
-  "effective_date": "2026-10-07",
+  "contract_version": "0.9.9",
+  "effective_date": "2026-10-08",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
   "runtime_enforcement": "partial_e1_standalone",
   "notes": [
+    "Scene 0.4.0 editorial reconstruction and shape ownership: runtime/visual-v1/editorial-three-columns-0.4.0.md; legacy scene vocabularies remain pinned and runtime/visual acceptance is separate.",
     "This index is documentation metadata, not a runtime capability registry or validator.",
     "Normative meaning belongs to the referenced document and section.",
     "Rules apply when defining or implementing the corresponding capability; candidate features remain unimplemented.",

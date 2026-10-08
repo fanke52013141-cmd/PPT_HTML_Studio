@@ -101,6 +101,8 @@ HTML readiness 独立判断 scene/assets/review/audio 等真实状态，不造 m
 
 ## C03 独立资产生产与质量
 
+后续增量：用户已确认的多对象素材板/自动拆分任务以[完整开发计划 N00-A](next-development-plan-2026-10-08.md)为执行依据，补充验收见[AS01–AS06](acceptance.md)。先完成对象/槽位/提取定义与真实三路线对照，再接入本任务及 C04/F01/F02；固定槽位裁切已有工具，自动识别/精细抠图/应用编排仍待实现。单主体既有路径保留作为回退，板内多个资源不改变单页预算。
+
 依赖 C02、B02。验收 AC10。
 
 复用 `ai_provider_service.py`、并发治理及样式参考存储的适用能力。不要整段调用 `image_workflow_service.generate_slide_image`：其白底/画布适配/旧步骤失效为图片后端语义。新建小范围资产服务包装现有 provider。

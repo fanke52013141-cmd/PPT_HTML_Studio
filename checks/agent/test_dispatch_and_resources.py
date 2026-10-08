@@ -122,6 +122,13 @@ class TestDispatchRouting:
     def test_every_advertised_mcp_capability_has_a_dispatch_path(self, mock_client):
         """Adding a tool to the registry must not leave it uncallable."""
         strict_arguments = {
+            'html_sheet.list': {'project_id': 'p1'},
+            'html_sheet.generate': {'project_id': 'p1', 'plan': {}},
+            'html_sheet.assess': {'project_id': 'p1', 'sheet_id': 'board', 'request_key': 'a'*64},
+            'html_sheet.retry': {'project_id': 'p1', 'sheet_id': 'board', 'request_key': 'a'*64, 'asset_id': 'one', 'expected_revision': 0},
+            'html_sheet.read': {'project_id': 'p1', 'sheet_id': 'board', 'request_key': 'a'*64},
+            'html_sheet.review': {'project_id': 'p1', 'sheet_id': 'board', 'request_key': 'a'*64, 'asset_id': 'one', 'expected_revision': 0, 'identity': 'approved', 'edge': 'approved'},
+            'html_sheet.accept': {'project_id': 'p1', 'sheet_id': 'board', 'request_key': 'a'*64, 'asset_id': 'one', 'expected_revision': 0},
             "project_model_binding.read": {"project_id": "p1"},
             "project_model_binding.write": {"project_id": "p1", "expected_revision": 0, "text": {"mode": "inherit"}, "image": {"mode": "inherit"}},
             "html_editor.read": {"project_id": "p1", "slide_id": "s1"},

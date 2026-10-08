@@ -1,0 +1,12 @@
+{
+  "format": "hps.html.asset_sheet",
+  "version": "0.1.0",
+  "id": "token_four_objects",
+  "source_sha256": "REPLACE_WITH_OUTPUT_PNG_SHA256",
+  "slots": [
+    {"id": "top_left", "asset_id": "bulb", "role": "illustration", "need": "参考图的黄色灯泡及短光芒，保持原造型", "rect": [0, 0, 512, 512], "method": "source_alpha"},
+    {"id": "top_right", "asset_id": "robot", "role": "illustration", "need": "参考图蓝白机器人，保留举手和天线，排除对话框", "rect": [512, 0, 512, 512], "method": "source_alpha"},
+    {"id": "bottom_left", "asset_id": "tea", "role": "illustration", "need": "参考图奶茶杯和吸管，排除爱心和箭头", "rect": [0, 512, 512, 512], "method": "source_alpha"},
+    {"id": "bottom_right", "asset_id": "brain", "role": "illustration", "need": "参考图粉色大脑图标，排除编号和文字", "rect": [512, 512, 512, 512], "method": "source_alpha"}
+  ]
+}

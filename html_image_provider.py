@@ -60,6 +60,7 @@ def _configured_image(
             api_key=key,
             provider=provider,
             reference_paths=references,
+            transparent_background=transparent_background,
         )
         return extract_image_bytes_from_response(response)
     client = get_openai_client(api_key=key, base_url=base, timeout=120)

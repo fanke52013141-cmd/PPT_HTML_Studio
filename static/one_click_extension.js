@@ -327,12 +327,17 @@
       ${status?.video?.url ? `<br><a href="${esc(status.video.url)}" target="_blank">打开生成视频</a>` : ''}
     `;
     const list = Array.isArray(status?.stages) ? status.stages : [];
+    const features = window.PPTFlow?.distributionFeatures() || {};
     const visibleStages = [
       ['1 导入文章', ['preflight']], ['2 分镜规划', ['storyboard']],
       ['3 图片生成', ['images', 'confirm_images']], ['4 AI 标注', ['ai_mask']],
       ['5 旁白与音频', ['narration', 'tts']], ['6 勾画标注', ['annotation']],
       ['7 数字人讲解', ['digital_human']], ['8 作品输出', ['render']],
-    ];
+    ].filter(([, stageIds]) => {
+      if (stageIds.includes('annotation') && features.handwritten_annotations === false) return false;
+      if (stageIds.includes('digital_human') && features.digital_human === false) return false;
+      return true;
+    });
     const renderReached = list.some(item => item.id === 'render' && item.status !== 'pending');
     const copiedErrors = [];
     stages.innerHTML = visibleStages.map(([title, ids], index) => {
@@ -343,7 +348,7 @@
       else if (members.some(item => item.status === 'running')) cardStatus = state === 'paused' ? 'paused' : 'running';
       else if (members.some(item => item.status === 'paused')) cardStatus = 'paused';
       else if (members.length && ids.every(id => members.some(item => item.id === id && finished(item)))) cardStatus = 'done';
-      else if (!members.length && index >= 5 && index <= 6 && renderReached) cardStatus = 'done';
+      else if (!members.length && (ids.includes('annotation') || ids.includes('digital_human')) && renderReached) cardStatus = 'done';
       const errors = members.flatMap(item => item.blocking_errors?.length ? item.blocking_errors : item.status === 'failed' && item.message ? [item.message] : []);
       const active = members.find(item => item.status === 'running' || item.status === 'failed') || members[members.length - 1];
       const message = errors.length ? `错误：${errors.join(' / ')}` : cardStatus === 'done' ? '' : cardStatus === 'paused' ? '' : active?.message || '';

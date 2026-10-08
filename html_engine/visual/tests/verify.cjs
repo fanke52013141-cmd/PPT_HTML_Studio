@@ -26,6 +26,20 @@ async function main() {
   // Node-side structural checks (no browser required).
   assert(Object.isFrozen(compile(cup, catalog).source));
   for (const s of scenes) compile(s, catalog);
+  const editorial = byId["editorial-condensation"];
+  assert.equal(compile(editorial, catalog).source.version, "0.4.0");
+  const oldVocabulary = clone(editorial);
+  oldVocabulary.version = "0.3.0";
+  assert.throws(() => compile(oldVocabulary, catalog), /UNSUPPORTED_NODE_VERSION/);
+  for (const field of ["fill", "radius", "style"]) {
+    const invalid = clone(editorial);
+    const shape = invalid.nodes.find(n => n.type === "shape");
+    shape[field] = field === "fill" ? "url(javascript:alert(1))" : field === "radius" ? -1 : {};
+    assert.throws(() => compile(invalid, catalog), /INVALID_VISUAL_DEFINITION/);
+  }
+  const ellipseRadius = clone(editorial);
+  ellipseRadius.nodes.find(n => n.kind === "ellipse").radius = 10;
+  assert.throws(() => compile(ellipseRadius, catalog), /INVALID_VISUAL_DEFINITION/);
   // Legacy 0.1.0 documents stay readable through the explicit adapter.
   for (const name of ["condensation", "evaporation"])
     compile(read(`fixtures/legacy-0.1.0/${name}.json`), catalog);
@@ -122,6 +136,14 @@ async function main() {
       {},
       { timeout: 15000 },
     );
+    assert.equal(await page.locator("#theme").inputValue(),
+      await page.evaluate(() => window.visualPlayer.scene.themeRef.id));
+    await page.selectOption("#scene", "editorial-condensation");
+    await page.waitForFunction(() => window.visualPlayer.scene?.id === "editorial-condensation");
+    assert.equal(await page.locator("#theme").inputValue(), "amber-editorial");
+    await page.selectOption("#scene", "condensation");
+    await page.waitForFunction(() => window.visualPlayer.scene?.id === "condensation");
+    assert.equal(await page.locator("#theme").inputValue(), "soft-science");
     const apply = async (s) =>
       assert.equal(
         await page.evaluate((v) => window.visualPlayer.apply(v), s),
@@ -205,20 +227,25 @@ async function main() {
     }
     await page.setViewportSize({ width: 1648, height: 1200 });
     await apply(cup);
-    const themed = clone(cup);
-    themed.themeRef.id = "neutral-science";
     const before = await page.evaluate(
       (t) => window.visualPlayer.seek(t),
       cup.durationMs,
     );
-    await apply(themed);
-    const after = await page.evaluate(
-      (t) => window.visualPlayer.seek(t),
-      cup.durationMs,
-    );
-    assert.deepEqual(before.geometry, after.geometry);
-    assert.deepEqual(before.measurements, after.measurements);
-    assert.deepEqual(themed.nodes, cup.nodes);
+    for (const themeId of ["neutral-science", "amber-science"]) {
+      const themed = clone(cup);
+      themed.themeRef.id = themeId;
+      await apply(themed);
+      const after = await page.evaluate(
+        (t) => window.visualPlayer.seek(t), cup.durationMs,
+      );
+      assert.deepEqual(before.geometry, after.geometry);
+      assert.deepEqual(before.measurements, after.measurements);
+      assert.deepEqual(themed.nodes, cup.nodes);
+      const final = await page.locator(".visual-stage").screenshot();
+      await page.evaluate(() => window.visualPlayer.seek(2500));
+      await page.evaluate((t) => window.visualPlayer.seek(t), cup.durationMs);
+      assert.deepEqual(await page.locator(".visual-stage").screenshot(), final, `Theme ${themeId} seek must be deterministic`);
+    }
     const old = await page.evaluate(() => window.visualPlayer.scene.id);
     const long = clone(cup);
     long.nodes.find((n) => n.id === "headline").runs[0].text =
@@ -242,7 +269,7 @@ async function main() {
     );
     await apply(cup);
     await page.evaluate(() => window.visualPlayer.play());
-    await page.waitForTimeout(250);
+    await page.waitForFunction(() => window.visualPlayer.timeMs > 100, {}, { timeout: 3000 });
     assert((await page.evaluate(() => window.visualPlayer.timeMs)) > 100);
     await page.evaluate(() => window.visualPlayer.pause());
     const paused = await page.evaluate(() => window.visualPlayer.timeMs);
@@ -276,7 +303,8 @@ async function main() {
       "strict fields and ownership",
       "references, icons, templates and time",
       "legacy 0.1.0 adapter",
-      "four contents / three structures / two themes",
+      "five contents / editorial and legacy templates / four registered themes",
+      "0.4 shapes reject old version, free style and invalid fields",
       "seek pixel determinism",
       "transformed anchor / two viewport sizes",
       "theme preserves semantics and geometry",

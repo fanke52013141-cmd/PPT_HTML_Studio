@@ -207,6 +207,56 @@ def _contract_slide_or_404(run_dir: str, slide_id: str) -> dict:
     raise HTTPException(status_code=404, detail="契约中不存在该 Slide")
 
 
+from html_asset_sheet_models import (HtmlSheetResult, HtmlSheetGenerateRequest,
+                                    HtmlSheetReviewRequest, HtmlSheetAcceptRequest, HtmlSheetRetryRequest, HtmlSheetReadRequest)
+
+
+@router.get('/projects/{project_id}/html-asset-sheets', response_model=HtmlSheetResult)
+def agent_sheet_list(project_id: str, db: Session = Depends(get_db)):
+    from html_asset_sheet_routes import sheet_list
+    return _html_editor_web_call(sheet_list, project_id, db)
+
+
+@router.post('/projects/{project_id}/html-asset-sheets/generate', response_model=HtmlSheetResult)
+def agent_sheet_generate(project_id: str, body: HtmlSheetGenerateRequest, db: Session = Depends(get_db)):
+    from html_asset_sheet_routes import sheet_generate
+    return _html_editor_web_call(sheet_generate, project_id, body, db)
+
+
+@router.get('/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}', response_model=HtmlSheetResult)
+def agent_sheet_read(project_id: str, sheet_id: str, request_key: str, db: Session = Depends(get_db)):
+    from html_asset_sheet_routes import sheet_read
+    return _html_editor_web_call(sheet_read, project_id, sheet_id, request_key, db)
+
+
+@router.put('/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/review', response_model=HtmlSheetResult)
+def agent_sheet_review(project_id: str, sheet_id: str, request_key: str, asset_id: str,
+                       body: HtmlSheetReviewRequest, db: Session = Depends(get_db)):
+    from html_asset_sheet_routes import sheet_review
+    return _html_editor_web_call(sheet_review, project_id, sheet_id, request_key, asset_id, body, db)
+
+
+@router.post('/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/accept', response_model=HtmlSheetResult)
+def agent_sheet_accept(project_id: str, sheet_id: str, request_key: str, asset_id: str,
+                       body: HtmlSheetAcceptRequest, db: Session = Depends(get_db)):
+    from html_asset_sheet_routes import sheet_accept
+    return _html_editor_web_call(sheet_accept, project_id, sheet_id, request_key, asset_id, body, db)
+
+
+@router.post('/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/assess', response_model=HtmlSheetResult)
+def agent_sheet_assess(project_id: str, sheet_id: str, request_key: str,
+                       body: HtmlSheetReadRequest, db: Session = Depends(get_db)):
+    from html_asset_sheet_routes import sheet_assess
+    return _html_editor_web_call(sheet_assess, project_id, sheet_id, request_key, body, db)
+
+
+@router.post('/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/retry', response_model=HtmlSheetResult)
+def agent_sheet_retry(project_id: str, sheet_id: str, request_key: str, asset_id: str,
+                      body: HtmlSheetRetryRequest, db: Session = Depends(get_db)):
+    from html_asset_sheet_routes import sheet_retry
+    return _html_editor_web_call(sheet_retry, project_id, sheet_id, request_key, asset_id, body, db)
+
+
 @router.get("/projects/{project_id}/model-binding", response_model=ProjectModelBindingResult)
 def agent_model_binding_read(project_id: str, db: Session = Depends(get_db)):
     from project_model_binding_routes import read_binding

@@ -24,6 +24,9 @@ def path_parameters_schema(cap: AgentCapability) -> dict[str, Any]:
         "checkpoint": "The checkpoint name (for example image_review).",
         "stage": "The pipeline stage name.",
         "artifact_id": "The artifact ID.",
+        "sheet_id": "The asset sheet ID.",
+        "request_key": "The immutable sheet extraction SHA256 request key.",
+        "asset_id": "The candidate asset ID within the sheet.",
     }
     properties: dict[str, Any] = {}
     required: list[str] = []

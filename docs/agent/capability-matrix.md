@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.13.0
-- **Contract Hash**: `780335d77ffd5ca2`
-- **Total Capabilities**: 46
+- **Agent API Version**: 1.15.0
+- **Contract Hash**: `a573062229930246`
+- **Total Capabilities**: 53
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -11,6 +11,13 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 | Capability ID | Version | Status | Method | Agent API Path | MCP Tool | MCP enabled | CLI Command | Service Ref | Long-running | Destructive |
 |---|---|---|---|---|---|---|---|---|---|---|
+| `html_sheet.list` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-asset-sheets` | `ppt_html_sheet_list` | Yes | `html sheet-list` | `html_asset_sheet_routes.sheet_list` | No | No |
+| `html_sheet.generate` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/generate` | `ppt_html_sheet_generate` | Yes | `html sheet-generate` | `html_asset_sheet_routes.sheet_generate` | Yes | No |
+| `html_sheet.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}` | `ppt_html_sheet_read` | Yes | `html sheet-read` | `html_asset_sheet_routes.sheet_read` | No | No |
+| `html_sheet.review` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/review` | `ppt_html_sheet_review` | Yes | `html sheet-review` | `html_asset_sheet_routes.sheet_review` | No | No |
+| `html_sheet.accept` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/accept` | `ppt_html_sheet_accept` | Yes | `html sheet-accept` | `html_asset_sheet_routes.sheet_accept` | No | No |
+| `html_sheet.assess` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/assess` | `ppt_html_sheet_assess` | Yes | `html sheet-assess` | `html_asset_sheet_routes.sheet_assess` | Yes | No |
+| `html_sheet.retry` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/retry` | `ppt_html_sheet_retry` | Yes | `html sheet-retry` | `html_asset_sheet_routes.sheet_retry` | Yes | No |
 | `project_model_binding.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
 | `project_model_binding.write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
 | `html_editor.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
@@ -71,8 +78,15 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **41** stable tools:
+The MCP server exposes **48** stable tools:
 
+- `ppt_html_sheet_list` — List account-scoped HTML sheet candidates and latest persisted task for recovery.
+- `ppt_html_sheet_generate` — Submit a bounded HTML sheet task; freeze image model at submission, keep credentials only in memory. Mask requires configured exact segmentation. Query/stop using HTML task APIs.
+- `ppt_html_sheet_read` — Verify source/spec/mask/output hashes and read per-object reviews, revision and acceptance. No automatic identity approval.
+- `ppt_html_sheet_review` — Record manual identity and edge decisions with expected_revision. Conflict 409, accepted objects locked; no resources published.
+- `ppt_html_sheet_accept` — Accept one verified object only after both review gates; additive resources registration, no same-ID overwrite or scene/audio changes.
+- `ppt_html_sheet_assess` — Submit multimodal advisory task on verified candidates with frozen text model. Empty body; advice never approves resources. Use existing task query/cancel.
+- `ppt_html_sheet_retry` — Regenerate only one unaccepted declared object into an independent candidate. Expected revision, optional corrected need/direction; original assets and human edits preserved.
 - `ppt_project_model_binding_read` — Read account-scoped HTML project model references and redacted effective summaries; legacy/inherit/fixed modes, no credentials or endpoints.
 - `ppt_project_model_binding_write` — Save HTML project text/image model references with expected_revision and explicit rebind. No-op preserves work; changes apply to future generation only. Stale revision returns 409.
 - `ppt_html_editor_read` — Read stored HTML author scene, motion binding, production capabilities, validated resources and manual overrides under the project lock.

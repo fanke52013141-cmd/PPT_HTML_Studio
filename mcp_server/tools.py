@@ -62,7 +62,7 @@ def _make_tool_handler(cap: AgentCapability) -> Callable:
 def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[str, Any]:
     """Route a capability ID to the appropriate AgentClient method."""
 
-    if cap_id in {
+    if cap_id.startswith('html_sheet.') or cap_id in {
         "project_model_binding.read", "project_model_binding.write",
         "html_editor.read", "html_editor.write", "html_editor.preview",
     }:

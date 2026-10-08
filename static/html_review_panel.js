@@ -24,6 +24,7 @@
     if (project?.visual_backend !== 'html') {
       if (section) section.hidden = true;
       window.HtmlSceneEditor?.close();
+      window.HtmlAssetSheets?.close();
       return;
     }
     if (!section) {
@@ -36,10 +37,14 @@
         <button type="button" data-action="review">静态审阅</button>
         <button class="success" type="button" data-action="approve">批准本页</button>
         <button type="button" data-action="edit">编辑对象与动作</button>
+        <button type="button" data-action="models">项目生成模型</button>
+        <button type="button" data-action="sheets">批量生成配图</button>
         <button type="button" data-action="cancel" hidden>停止生产任务</button>
         <div data-html-status role="status"></div>
         <img data-html-preview alt="当前场景的实际渲染" hidden style="max-width:100%">
-        <div data-html-editor></div>`;
+        <div data-html-editor></div>
+        <div data-html-models hidden></div>`;
+      const sheetHost = document.createElement('div'); sheetHost.dataset.htmlSheets = ''; sheetHost.hidden = true; section.append(sheetHost);
       host.prepend(section);
       section.querySelector('[data-html-slide]').addEventListener('change', event => {
         window.PPTStudio.runtime.state.activeSlideIndex = Number(event.target.value);
@@ -48,6 +53,22 @@
       section.addEventListener('click', async event => {
         const button = event.target.closest('button[data-action]');
         if (!button) return;
+        if (button.dataset.action === 'sheets') {
+          const current = context(); const container = section.querySelector('[data-html-sheets]');
+          container.hidden = !container.hidden;
+          if (container.hidden) {window.HtmlAssetSheets?.close(); return;}
+          try {await window.HtmlAssetSheets.open(container, current.project);}
+          catch(error) {status(section, `素材板加载失败：${error.message}`);}
+          return;
+        }
+        if (button.dataset.action === 'models') {
+          const current = context();
+          const container = section.querySelector('[data-html-models]');
+          if (!window.ProjectModelBinding) { status(section, '模型配置模块尚未加载。'); return; }
+          container.hidden = !container.hidden;
+          if (!container.hidden) await window.ProjectModelBinding.mount(container, current.project);
+          return;
+        }
         if (button.dataset.action === 'edit') {
           const current = context();
           if (!current.slideId) { status(section, '请先选择分镜页面。'); return; }
@@ -116,6 +137,14 @@
     if (section.dataset.context !== key) {
       window.HtmlSceneEditor?.close();
       section.querySelector('[data-html-editor]').replaceChildren();
+      if (section.dataset.project !== project.id) {
+        window.HtmlAssetSheets?.close();
+        const sheets = section.querySelector('[data-html-sheets]'); sheets.replaceChildren(); sheets.hidden = true;
+        const modelContainer = section.querySelector('[data-html-models]');
+        modelContainer.replaceChildren();
+        modelContainer.hidden = true;
+        section.dataset.project = project.id;
+      }
       generation++;
       section.dataset.context = key;
       section.querySelector('[data-action="cancel"]').hidden=true;
