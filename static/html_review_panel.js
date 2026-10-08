@@ -23,6 +23,7 @@
     let section = host.querySelector('#html-review-panel-section');
     if (project?.visual_backend !== 'html') {
       if (section) section.hidden = true;
+      window.HtmlSceneEditor?.close();
       return;
     }
     if (!section) {
@@ -34,9 +35,11 @@
         <button class="success" type="button" data-action="produce">生成场景</button>
         <button type="button" data-action="review">静态审阅</button>
         <button class="success" type="button" data-action="approve">批准本页</button>
+        <button type="button" data-action="edit">编辑对象与动作</button>
         <button type="button" data-action="cancel" hidden>停止生产任务</button>
         <div data-html-status role="status"></div>
-        <img data-html-preview alt="当前场景的实际渲染" hidden style="max-width:100%">`;
+        <img data-html-preview alt="当前场景的实际渲染" hidden style="max-width:100%">
+        <div data-html-editor></div>`;
       host.prepend(section);
       section.querySelector('[data-html-slide]').addEventListener('change', event => {
         window.PPTStudio.runtime.state.activeSlideIndex = Number(event.target.value);
@@ -45,6 +48,14 @@
       section.addEventListener('click', async event => {
         const button = event.target.closest('button[data-action]');
         if (!button) return;
+        if (button.dataset.action === 'edit') {
+          const current = context();
+          if (!current.slideId) { status(section, '请先选择分镜页面。'); return; }
+          if (!window.HtmlSceneEditor) { status(section, '场景编辑器脚本尚未接入。'); return; }
+          try { await window.HtmlSceneEditor.open(section.querySelector('[data-html-editor]'), current.project.id, current.slideId); }
+          catch(error) { status(section, `编辑器加载失败：${error.message}`); }
+          return;
+        }
         if (button.dataset.action === 'cancel') {
           if (!activeTask) return;
           try { await API.post(`/api/projects/${encodeURIComponent(activeTask.project)}/html-review/tasks/${encodeURIComponent(activeTask.id)}/cancel`, {}); }
@@ -103,6 +114,8 @@
     select.value=String(Math.max(0,slides.findIndex(s=>(s.slide_id || s.id)===slideId)));
     const key = `${project.id}:${slideId}`;
     if (section.dataset.context !== key) {
+      window.HtmlSceneEditor?.close();
+      section.querySelector('[data-html-editor]').replaceChildren();
       generation++;
       section.dataset.context = key;
       section.querySelector('[data-action="cancel"]').hidden=true;

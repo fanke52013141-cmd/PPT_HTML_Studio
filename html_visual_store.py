@@ -142,6 +142,7 @@ def save_scene(
     expected_revision: int,
     *,
     lock: Callable[[Path], Any] | None = None,
+    allow_manual_replace: bool = False,
 ) -> dict[str, Any]:
     """Store one scene document under optimistic concurrency.
 
@@ -173,6 +174,11 @@ def save_scene(
                     "changed": False,
                     "sha256": _sha256(existing),
                 }
+        manual_path = Path(run_dir) / SCENE_DIR / f"edits-{validate_slide_id(slide_id)}.json"
+        if manual_path.is_file() and not allow_manual_replace:
+            raise HtmlVisualError(
+                "MANUAL_EDIT_CONFLICT: 此页有人工覆盖；重新规划须先合并并检查冲突，不能直接替换"
+            )
         _atomic_write_bytes(path, payload)
         _atomic_write_bytes(
             revision_path(run_dir),

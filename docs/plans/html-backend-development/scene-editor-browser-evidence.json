@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "realBrowser": true,
+  "isolatedFixture": true,
+  "realSharedPlayer": true,
+  "saveReopen": true,
+  "conflictDraftRetained": true,
+  "anchorErrors": [
+    0.008350972334003615,
+    0.012031395092160224,
+    0.012087137665861558
+  ],
+  "seekDeterministic": true,
+  "seekPixelScale": 1600,
+  "errors": []
+}

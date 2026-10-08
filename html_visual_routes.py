@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 
 import html_visual_store as store
 from project_path_service import project_run_dir_or_500
@@ -128,3 +128,112 @@ def html_visual_put(
         html_scene_changed(project, [slide_id])
         db.commit()
     return response
+
+
+class SceneEditorSaveRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    scene: dict[str, Any]
+    binding: dict[str, Any] | None
+    expected_revision: StrictInt = Field(ge=0)
+    anchor_overrides: dict[str, list[dict[str, Any]]] = Field(default_factory=dict)
+
+
+@router.get("/api/projects/{project_id}/html-visual/{slide_id}/editor")
+def html_scene_editor_get(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
+    from html_scene_editing import load_editor, SceneEditError
+    from pipeline_lifecycle import project_artifact_lock
+
+    run_dir = project_run_dir_or_500(_html_project(project_id, db))
+    try:
+        with project_artifact_lock(run_dir):
+            return {"success": True, **load_editor(run_dir, slide_id)}
+    except SceneEditError as exc:
+        raise HTTPException(
+            404 if exc.code == "SCENE_MISSING" else 422,
+            detail={"code": exc.code, "message": str(exc)},
+        ) from exc
+    except store.HtmlVisualError as exc:
+        raise HTTPException(400, detail=str(exc)) from exc
+
+
+@router.put("/api/projects/{project_id}/html-visual/{slide_id}/editor")
+def html_scene_editor_put(
+    project_id: str,
+    slide_id: str,
+    payload: SceneEditorSaveRequest,
+    db: Any = Depends(_get_db),
+):
+    from html_scene_editing import save_editor, SceneEditError
+    from pipeline_lifecycle import project_artifact_lock
+
+    project = _html_project(project_id, db)
+    run_dir = project_run_dir_or_500(project)
+    try:
+        with project_artifact_lock(run_dir):
+            result = save_editor(run_dir, slide_id, **payload.model_dump())
+            if result["changed"]:
+                from invalidation_service import html_scene_changed
+
+                html_scene_changed(project, [slide_id])
+                db.commit()
+        return {"success": True, "slide_id": slide_id, **result}
+    except store.HtmlVisualConflict as exc:
+        raise HTTPException(
+            409,
+            detail={
+                "code": "REVISION_CONFLICT",
+                "message": str(exc),
+                "expected_revision": exc.expected,
+                "current_revision": exc.current,
+            },
+        ) from exc
+    except SceneEditError as exc:
+        raise HTTPException(
+            422, detail={"code": exc.code, "message": str(exc)}
+        ) from exc
+    except store.HtmlVisualError as exc:
+        raise HTTPException(400, detail=str(exc)) from exc
+
+
+@router.get("/api/html-scene-editor/runtime/{name}")
+def html_scene_editor_runtime(name: str):
+    """Only fixed shared bundles; no project data or arbitrary file paths."""
+    from pathlib import Path
+    from fastapi.responses import FileResponse
+
+    if name not in ("data.js", "player.js"):
+        raise HTTPException(404, detail="Unknown runtime file")
+    return FileResponse(
+        Path(__file__).resolve().parent / "html_engine/visual/preview" / name,
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@router.post("/api/projects/{project_id}/html-visual/{slide_id}/editor/preview")
+def html_scene_editor_preview(
+    project_id: str,
+    slide_id: str,
+    payload: SceneEditorSaveRequest,
+    db: Any = Depends(_get_db),
+):
+    from html_scene_editing import preview_editor, SceneEditError
+    from pipeline_lifecycle import project_artifact_lock
+
+    run_dir = project_run_dir_or_500(_html_project(project_id, db))
+    try:
+        with project_artifact_lock(run_dir):
+            return {
+                "success": True,
+                **preview_editor(
+                    run_dir,
+                    slide_id,
+                    payload.scene,
+                    payload.binding,
+                    payload.anchor_overrides,
+                ),
+            }
+    except SceneEditError as exc:
+        raise HTTPException(
+            422, detail={"code": exc.code, "message": str(exc)}
+        ) from exc
