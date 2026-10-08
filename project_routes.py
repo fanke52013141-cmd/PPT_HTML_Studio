@@ -26,6 +26,11 @@ from project_service import (
 
 router = APIRouter()
 
+# The project router already participates in the application composition root.
+from project_model_binding_routes import router as model_binding_router
+
+router.include_router(model_binding_router)
+
 
 @router.get("/api/projects/{project_id}/impacts")
 def get_project_impacts(project_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:

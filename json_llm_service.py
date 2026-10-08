@@ -92,7 +92,7 @@ def parse_json_or_repair_with_llm(
                 logger.warning(
                     "LLM JSON repair with response_format failed for %s, retrying without it: %s",
                     artifact_prefix,
-                    repair_format_error,
+                    type(repair_format_error).__name__,
                 )
                 with governed_llm_request(base_url):
                     repair_response = client.chat.completions.create(
@@ -105,7 +105,7 @@ def parse_json_or_repair_with_llm(
                         ],
                     )
         except Exception as repair_error:
-            logger.error("LLM JSON repair request failed for %s: %s", artifact_prefix, repair_error)
+            logger.error("LLM JSON repair request failed for %s: %s", artifact_prefix, type(repair_error).__name__)
             raise first_error from repair_error
 
         repaired_raw = repair_response.choices[0].message.content.strip()
@@ -133,7 +133,19 @@ def parse_json_or_repair_with_llm(
     return value
 
 
-def generate_json_with_configured_llm(
+def generate_json_with_configured_llm(**kwargs) -> Dict[str, Any]:
+    binding = kwargs.get("model_binding")
+    if binding is not None and hasattr(binding, "require_ready"):
+        binding.require_ready()
+    try:
+        return _generate_json_with_configured_llm(**kwargs)
+    except Exception:
+        if binding is None:
+            raise
+        raise HTTPException(status_code=500, detail="AI 生成失败，请检查模型连接或稍后重试。") from None
+
+
+def _generate_json_with_configured_llm(
     *,
     system_prompt: str,
     user_prompt: str,
@@ -146,15 +158,16 @@ def generate_json_with_configured_llm(
     request_timeout: float = 120.0,
     max_tokens_limit: int | None = None,
 ) -> Dict[str, Any]:
-    llm_api_key = getattr(model_binding, "api_key", None) or get_setting("llm_api_key")
+    llm_api_key = getattr(model_binding, "api_key", None) if model_binding is not None else get_setting("llm_api_key")
     llm_base_url = getattr(model_binding, "endpoint", None) if model_binding is not None else get_setting("llm_base_url")
-    llm_model = getattr(model_binding, "model", None) or get_setting("llm_model")
+    llm_model = getattr(model_binding, "model", None) if model_binding is not None else get_setting("llm_model")
     if not llm_api_key:
         raise HTTPException(status_code=400, detail="未配置大模型 API 密钥，请在系统设置中配置后再试。")
     if not llm_model:
         raise HTTPException(status_code=400, detail="未配置大模型名称，请在系统设置中配置后再试。")
     max_tokens = parse_int_setting(
-        get_setting("llm_max_tokens", str(max_tokens_default)),
+        getattr(model_binding, "max_tokens", None) if getattr(model_binding, "max_tokens", None) is not None
+        else get_setting("llm_max_tokens", str(max_tokens_default)),
         max_tokens_default,
         1024,
         64000,
@@ -184,7 +197,7 @@ def generate_json_with_configured_llm(
                 logger.warning(
                     "AI JSON generation with response_format failed for %s, retrying without it: %s",
                     artifact_prefix,
-                    format_error,
+                    type(format_error).__name__,
                 )
                 with governed_llm_request(llm_base_url):
                     response = client.chat.completions.create(

@@ -1,0 +1,6 @@
+.project-model-binding { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; }
+.project-model-binding p { color: #64748b; font-size: 13px; line-height: 1.6; }
+.project-model-binding fieldset { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 16px 0; }
+.project-model-binding select { width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px; }
+.project-model-binding label { font-size: 13px; }
+.project-model-binding button { margin-right: 8px; }
