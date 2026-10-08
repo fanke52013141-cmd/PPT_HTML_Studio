@@ -1,0 +1,348 @@
+{
+  "format": "hps.visual_ownership_demo",
+  "version": "0.1.0",
+  "topic": "水为什么结冰",
+  "visual_intent": "用三步示意讲清水结冰的过程：先降温散热，再达到0℃冰点，最后凝固放热且温度不变；明确标准大气压与纯水条件，液态水杯与固态冰为两张独立插画，通过代码文字、卡片、箭头和温度刻度组织清晰的科普布局。",
+  "layout": {
+    "canvas": [
+      1600,
+      900
+    ],
+    "content_bottom": 800,
+    "background": "#FBFAF8"
+  },
+  "objects": [
+    {
+      "id": "heading",
+      "role": "heading",
+      "content": "水为什么结冰",
+      "source_beat_ids": [
+        "beat-1",
+        "beat-2",
+        "beat-3"
+      ],
+      "render_owner": "code",
+      "backend": "HTML/CSS",
+      "effect_ids": [
+        "T01"
+      ],
+      "box": {
+        "x": 100,
+        "y": 60,
+        "width": 600,
+        "height": 60
+      },
+      "z": 2,
+      "independent": true,
+      "reason": "标题为纯文本，由HTML/CSS排版控制字阶与字重。"
+    },
+    {
+      "id": "subtitle",
+      "role": "body",
+      "content": "条件：标准大气压 · 纯水",
+      "source_beat_ids": [
+        "beat-2"
+      ],
+      "render_owner": "code",
+      "backend": "HTML/CSS",
+      "effect_ids": [
+        "T02"
+      ],
+      "box": {
+        "x": 100,
+        "y": 130,
+        "width": 500,
+        "height": 36
+      },
+      "z": 2,
+      "independent": true,
+      "reason": "说明文字与重点下划线由HTML/CSS实现，突出前提条件。"
+    },
+    {
+      "id": "step-1-card",
+      "role": "card",
+      "content": "步骤1 降温散热\n水把热量传给更冷的环境，温度逐渐下降。",
+      "source_beat_ids": [
+        "beat-1"
+      ],
+      "render_owner": "code",
+      "backend": "HTML/CSS",
+      "effect_ids": [
+        "L01",
+        "T03"
+      ],
+      "box": {
+        "x": 100,
+        "y": 220,
+        "width": 340,
+        "height": 160
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "知识卡容器与段落文字由HTML/CSS绘制，承载第一步讲解。"
+    },
+    {
+      "id": "step-2-card",
+      "role": "card",
+      "content": "步骤2 达到冰点\n冰点为 0℃，水可以开始结冰。",
+      "source_beat_ids": [
+        "beat-2"
+      ],
+      "render_owner": "code",
+      "backend": "HTML/CSS",
+      "effect_ids": [
+        "L01",
+        "T03",
+        "T05"
+      ],
+      "box": {
+        "x": 630,
+        "y": 220,
+        "width": 340,
+        "height": 160
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "知识卡与温度数值、上下标由HTML/CSS排版，突出冰点概念。"
+    },
+    {
+      "id": "step-3-card",
+      "role": "card",
+      "content": "步骤3 凝固放热\n水继续放热，由液态变成固态冰；凝固过程温度保持不变。",
+      "source_beat_ids": [
+        "beat-3"
+      ],
+      "render_owner": "code",
+      "backend": "HTML/CSS",
+      "effect_ids": [
+        "L01",
+        "T03"
+      ],
+      "box": {
+        "x": 1160,
+        "y": 220,
+        "width": 340,
+        "height": 160
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "知识卡与说明文字由HTML/CSS实现，解释凝固与恒温特点。"
+    },
+    {
+      "id": "water-cup-illustration",
+      "role": "illustration",
+      "content": "装有液态水的透明玻璃杯，水面平静，杯壁无冰，整体为常温液态水状态。",
+      "source_beat_ids": [
+        "beat-1"
+      ],
+      "render_owner": "image",
+      "backend": "image",
+      "effect_ids": [],
+      "box": {
+        "x": 140,
+        "y": 440,
+        "width": 260,
+        "height": 320
+      },
+      "z": 4,
+      "independent": true,
+      "reason": "液态水杯为独立插画资产，不与背景或文本融合。",
+      "asset_brief": "扁平插画风格，透明玻璃杯装约七成蓝色液态水，杯口敞开，无冰块，背景透明。"
+    },
+    {
+      "id": "ice-block-illustration",
+      "role": "illustration",
+      "content": "一块形状规整的固态冰，呈淡蓝色半透明，表面有冰晶纹理，独立放置。",
+      "source_beat_ids": [
+        "beat-3"
+      ],
+      "render_owner": "image",
+      "backend": "image",
+      "effect_ids": [],
+      "box": {
+        "x": 1200,
+        "y": 460,
+        "width": 260,
+        "height": 280
+      },
+      "z": 4,
+      "independent": true,
+      "reason": "固态冰为独立插画资产，与水杯互不接触、互不重叠。",
+      "asset_brief": "扁平插画风格，长方体淡蓝色半透明冰块，表面有简洁冰晶线条，背景透明。"
+    },
+    {
+      "id": "thermometer-scale",
+      "role": "subject",
+      "content": "竖直温度刻度，标注 20℃、0℃、-10℃，0℃位置用红色横线标出冰点。",
+      "source_beat_ids": [
+        "beat-1",
+        "beat-2"
+      ],
+      "render_owner": "code",
+      "backend": "SVG",
+      "effect_ids": [
+        "G07",
+        "G01",
+        "T04",
+        "S05"
+      ],
+      "box": {
+        "x": 520,
+        "y": 430,
+        "width": 80,
+        "height": 340
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "刻度线、数字标签与箭头由SVG代码绘制，示意温度下降与冰点位置。"
+    },
+    {
+      "id": "temp-curve",
+      "role": "subject",
+      "content": "温度随时间变化折线：先下降，到达0℃后保持水平，标注“凝固阶段 温度不变”。",
+      "source_beat_ids": [
+        "beat-2",
+        "beat-3"
+      ],
+      "render_owner": "code",
+      "backend": "SVG",
+      "effect_ids": [
+        "G02",
+        "S05",
+        "T04",
+        "F01"
+      ],
+      "box": {
+        "x": 720,
+        "y": 430,
+        "width": 380,
+        "height": 340
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "折线图与坐标轴、标签由SVG代码生成，直观展示凝固时温度不变，为概念示意无需真实数值样本。"
+    },
+    {
+      "id": "arrow-1-to-2",
+      "role": "relationship",
+      "content": "从步骤1卡片指向步骤2卡片的水平箭头，标注“降温至”。",
+      "source_beat_ids": [
+        "beat-1",
+        "beat-2"
+      ],
+      "render_owner": "code",
+      "backend": "SVG",
+      "effect_ids": [
+        "G01",
+        "S05",
+        "T04"
+      ],
+      "box": {
+        "x": 450,
+        "y": 280,
+        "width": 170,
+        "height": 40
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "步骤间关系箭头与文字标签由SVG代码实现。"
+    },
+    {
+      "id": "arrow-2-to-3",
+      "role": "relationship",
+      "content": "从步骤2卡片指向步骤3卡片的水平箭头，标注“开始凝固”。",
+      "source_beat_ids": [
+        "beat-2",
+        "beat-3"
+      ],
+      "render_owner": "code",
+      "backend": "SVG",
+      "effect_ids": [
+        "G01",
+        "S05",
+        "T04"
+      ],
+      "box": {
+        "x": 980,
+        "y": 280,
+        "width": 170,
+        "height": 40
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "步骤间关系箭头与文字标签由SVG代码实现。"
+    },
+    {
+      "id": "heat-flow-arrow",
+      "role": "relationship",
+      "content": "从水杯向外发散的三条短箭头，表示热量散出。",
+      "source_beat_ids": [
+        "beat-1"
+      ],
+      "render_owner": "code",
+      "backend": "SVG",
+      "effect_ids": [
+        "G01",
+        "S05"
+      ],
+      "box": {
+        "x": 80,
+        "y": 500,
+        "width": 60,
+        "height": 200
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "热量散失的方向箭头由SVG代码绘制，对应降温散热概念。"
+    },
+    {
+      "id": "freeze-label",
+      "role": "label",
+      "content": "凝固过程：液态 → 固态",
+      "source_beat_ids": [
+        "beat-3"
+      ],
+      "render_owner": "code",
+      "backend": "HTML/CSS",
+      "effect_ids": [
+        "T02",
+        "L05"
+      ],
+      "box": {
+        "x": 1130,
+        "y": 580,
+        "width": 260,
+        "height": 40
+      },
+      "z": 3,
+      "independent": true,
+      "reason": "批注式标签与重点词由HTML/CSS排版，指向状态变化。"
+    }
+  ],
+  "relationships": [
+    {
+      "from": "step-1-card",
+      "to": "step-2-card",
+      "meaning": "降温进行到达到冰点",
+      "visual_object_id": "arrow-1-to-2"
+    },
+    {
+      "from": "step-2-card",
+      "to": "step-3-card",
+      "meaning": "达到冰点后开始凝固",
+      "visual_object_id": "arrow-2-to-3"
+    },
+    {
+      "from": "water-cup-illustration",
+      "to": "step-1-card",
+      "meaning": "液态水对应降温散热阶段",
+      "visual_object_id": "heat-flow-arrow"
+    },
+    {
+      "from": "step-3-card",
+      "to": "ice-block-illustration",
+      "meaning": "凝固阶段形成固态冰",
+      "visual_object_id": "freeze-label"
+    }
+  ]
+}

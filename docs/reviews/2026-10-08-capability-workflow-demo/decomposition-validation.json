@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "objects": 13,
+  "code_objects": 11,
+  "image_objects": 2,
+  "beat_coverage": [
+    "beat-1",
+    "beat-2",
+    "beat-3"
+  ],
+  "effect_ids": [
+    "F01",
+    "G01",
+    "G02",
+    "G07",
+    "L01",
+    "L05",
+    "S05",
+    "T01",
+    "T02",
+    "T03",
+    "T04",
+    "T05"
+  ],
+  "scope": "identity/allowlist/ownership/geometry/coverage, not aesthetic approval"
+}

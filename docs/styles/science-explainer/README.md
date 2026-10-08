@@ -1,5 +1,7 @@
 # 初始风格任务书：知识科普
 
+> 2026-10-09 当前工作原则：先把真实代码样板本身打磨得足够美，再将这个审美水准交给生图模型组合。见[代码美术参考资产规范](../../contracts/html-presentation/framework/12-code-art-reference-assets.md)、[资产形成备注](../../assets/code-art-references/formation-notes-2026-10-09.md)与[优化方案](../../plans/visual-foundation-optimization-2026-10-09.md)。当前方案方向比较OK，但美感仍需改进，历史效果板和还原页未升级为已批准生产模板。
+
 > 当前方向：用户已选择恢复最初的柔和彩色科普风。按[当前准入卡](CURRENT-DIRECTION.md)建设，并执行[视觉能力边界表](../../contracts/html-presentation/framework/10-visual-capability-boundaries.md)。下文保留早期探索；新模板须单独验收。
 
 > 最新审阅：2026-10-07 用户认为首版拥挤、缺乏美感，状态 changes_requested。

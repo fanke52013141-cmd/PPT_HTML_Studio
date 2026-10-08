@@ -1,0 +1,58 @@
+{
+  "effects": 61,
+  "errors": [],
+  "sheets": [
+    {
+      "file": "effects-01.png",
+      "title": "几何、路径与描边",
+      "sha256": "4fb26568afca2994b452f422ed98daa61e3948268a3d41c6ed82fd6c0e575325"
+    },
+    {
+      "file": "effects-02.png",
+      "title": "填充、阴影、滤镜与合成",
+      "sha256": "1725e96a7bed88aff023704e5b395b852ec3c13445ee735e5b85c12e00728858"
+    },
+    {
+      "file": "effects-03.png",
+      "title": "文字、标识与信息组合",
+      "sha256": "30571c32c08c4db6ec311a1a2ae3e3e7b9573312e8d55b5b5f60179df428a241"
+    },
+    {
+      "file": "effects-04.png",
+      "title": "数据与Canvas二维示意",
+      "sha256": "882d60e15461b68f3a418fdfbc4fbd58ebaed20111b120f5eecb5fcd0f29032e"
+    },
+    {
+      "file": "effects-05.png",
+      "title": "运动与状态：起始/中间/结束",
+      "sha256": "6776c432217b86f53ca965e4ef6caf1b90360c3b2976aa94be50b8b895d1e483"
+    }
+  ],
+  "canvas": [
+    {
+      "nontransparentPixels": 2736
+    },
+    {
+      "nontransparentPixels": 2003
+    },
+    {
+      "nontransparentPixels": 2655
+    },
+    {
+      "nontransparentPixels": 42500
+    },
+    {
+      "nontransparentPixels": 1592
+    },
+    {
+      "nontransparentPixels": 9000
+    }
+  ],
+  "motionFrames": [
+    0,
+    0.5,
+    1
+  ],
+  "status": "browser demonstration only",
+  "passed": true
+}

@@ -1,0 +1,36 @@
+{
+  "version": "1",
+  "sourceFingerprint": "a7b9473ae06ff719bac0b1526e50f89380848c0c4f9f2bf5a072acfedc7d2fe4",
+  "themeRef": {
+    "id": "soft-science",
+    "version": "0.2.0"
+  },
+  "sha256": "93d64c607e2cbccbad4cfeec27ed0fcdd51383c2bd8b0bdd58412a8a4bebe0e4",
+  "components": [
+    "header",
+    "text",
+    "card",
+    "figure",
+    "summary",
+    "annotation",
+    "arrow",
+    "badge",
+    "label"
+  ],
+  "layouts": [
+    {
+      "id": "science-explanation-v1",
+      "template": "explanation-cards-v1"
+    },
+    {
+      "id": "process-stage-v1",
+      "template": "process-stage-v1"
+    },
+    {
+      "id": "data-relation-v1",
+      "template": "data-relation-v1"
+    }
+  ],
+  "reusable": true,
+  "source": "registered HTML renderer; no generated image"
+}

@@ -1,0 +1,21 @@
+{
+  "format": "hps.static_reconstruction_experiment", "version": "0.1.0",
+  "canvas": {"width": 1600, "height": 900, "contentBottom": 800},
+  "reference": "../generated.png", "theme": "theme.json", "visualStatus": "pending_review",
+  "objects": [
+    {"id": "heading", "kind": "text", "box": [70,24,650,91], "role": "heading", "text": "水为什么结冰", "gradient": true},
+    {"id": "subtitle", "kind": "rich-text", "box": [70,113,750,53], "role": "subtitle", "runs": [{"text": "条件："}, {"text": "标准大气压", "accent": true, "underline": true}, {"text": " · ", "accent": true}, {"text": "纯水", "accent": true, "underline": true}]},
+    {"id": "step-1-card", "kind": "knowledge-card", "box": [42,192,420,174], "variant": "blue", "number": "01", "title": "步骤1  降温散热", "lines": [[{"text": "水把热量传给更冷的环境，"}], [{"text": "温度逐渐下降。"}]]},
+    {"id": "step-2-card", "kind": "knowledge-card", "box": [599,192,404,174], "variant": "pink", "number": "02", "title": "步骤2  达到冰点", "bodyOffset": 90, "lines": [[{"text": "冰点为 "}, {"text": "0℃", "accent": true, "underline": true}, {"text": "，水可以开始结冰。"}]]},
+    {"id": "step-3-card", "kind": "knowledge-card", "box": [1139,192,419,174], "variant": "green", "number": "03", "title": "步骤3  凝固放热", "bodyOffset": 85, "textRole": "denseBody", "lines": [[{"text": "水继续放热，由液态变成固态冰；"}], [{"text": "凝固过程温度保持不变。"}]]},
+    {"id": "arrow-1-to-2", "kind": "relation-arrow", "box": [481,240,102,73], "text": "降温至"},
+    {"id": "arrow-2-to-3", "kind": "relation-arrow", "box": [1020,240,101,73], "text": "开始凝固"},
+    {"id": "water-cup-illustration", "kind": "image", "box": [163,440,230,310], "asset": "water-cup.png", "alt": "透明玻璃杯中的液态水", "shadowBox": [146,714,264,44]},
+    {"id": "ice-block-illustration", "kind": "image", "box": [1265,456,242,233], "asset": "ice-block.png", "alt": "淡蓝色透明固态冰块", "shadowBox": [1258,632,277,58]},
+    {"id": "thermometer-scale", "kind": "temperature-scale", "box": [480,410,150,360], "markers": [{"text": "20℃", "y": 61}, {"text": "0℃", "y": 176, "accent": true}, {"text": "-10℃", "y": 282}], "columnTop": 61, "bulbY": 323},
+    {"id": "temp-curve", "kind": "temperature-plot", "box": [674,418,486,350], "title": "水的温度随时间变化（示意）", "axisTitle": ["温度", "(℃)"], "xTitle": "时间", "ticks": [{"text": "20", "y": 96}, {"text": "0", "y": 216}, {"text": "-10", "y": 274}], "points": [[76,96], [220,216], [470,216]], "phase": ["凝固阶段", "温度不变"]},
+    {"id": "heat-flow-arrow", "kind": "heat-arrows", "box": [47,510,103,160], "text": "热量散出"},
+    {"id": "freeze-label", "kind": "label", "box": [1222,722,336,72], "runs": [{"text": "凝固过程："}, {"text": "液态 → 固态", "accent": true, "bold": true}]}
+  ],
+  "notes": ["Coordinates transcribed from the generated composition, not the proposed LLM boxes.", "The descending schematic starts at the labeled 20℃ tick; no measured data or time duration is implied.", "No audio or motion is generated for this review."]
+}

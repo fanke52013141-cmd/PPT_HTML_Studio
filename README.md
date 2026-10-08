@@ -218,3 +218,13 @@ Pop-Location
 - 新修复优先落在 `server.py`、`static/**` 或正常启动路径中；只有无法安全改大文件时才使用 runtime bridge。
 - 已合并且相对 `main` 没有 ahead commits 的临时分支可以清理。
 - `scripts/remotion` 已提交 `package-lock.json`；可复现验证应使用 `npm ci`。
+
+## 2026-10-09 视觉地基与代码美术资产
+
+当前优先事项：先用真实代码做出足够美的细节、局部组合和完整样页，再把代码本身能达到的审美水准作为生图模型的参考。完整能力目录负责查漏和边界，模型在可实现范围内组合新内容；构思时明确代码/插画职责。
+
+- [详细优化方案](docs/plans/visual-foundation-optimization-2026-10-09.md)：流程、人/AI/程序职责、提示词、纠偏、美感和复用计划。
+- [代码美术参考资产规范](docs/contracts/html-presentation/framework/12-code-art-reference-assets.md)：形成、审阅、版本化、使用与兼容规则。
+- [资产登记及形成备注](docs/assets/code-art-references/README.md)：已有技术效果板、生成提案、透明素材和实际HTML的来源、哈希、过程与限制。
+
+用户认可当前混合方案可以继续，同时明确美感仍需改进。现有示例是试作证据，漂亮代码参考集仍待打磨与审阅；具体细化流程和未来编辑入口保留提案状态。

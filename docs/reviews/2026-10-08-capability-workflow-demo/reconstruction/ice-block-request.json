@@ -1,0 +1,30 @@
+{
+  "model": "gpt-image-2.5-sunburst-vip",
+  "quality": "low",
+  "resolution": "2k",
+  "size": "1:1",
+  "background": "transparent",
+  "reference_sha256": "13f731af7f9342e0728a467510777c8533faad8e61ad74712452fcede7c3873f",
+  "prompt": "这是提取原插画的图片编辑任务，不是设计新插画。只提取参考图右下方的淡蓝色透明冰块。保留原冰块的圆角长方体形状、原视角、冰晶纹理、透明蓝色层次、高光和整体轮廓，保留原插画风格和颜色。移除参考图中全部文字、编号、卡片、箭头、刻度、图表、背景和其他物体。仅一个完整主体，居中，主体四周留适量透明净空，主体不可截断。不要新增装饰、场景或底座。移除原图椭圆地面投影，投影将由HTML代码绘制。背景必须是真实alpha透明，无白色或棋盘格底。尽可能忠实保留参考原物体，不改变主体设计。",
+  "status": "completed",
+  "sha256": "a122e49042c2905765571c168971eb9f5aea9213d3675b104408c449d915062e",
+  "inspection": {
+    "width": 2048,
+    "height": 2048,
+    "alpha_bbox": [
+      0,
+      0,
+      2036,
+      2048
+    ],
+    "has_transparency": true,
+    "fully_transparent": false,
+    "opaque_edges": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    }
+  },
+  "note": "Reference-guided model edit can redraw fine details; no pixel-exact preservation claimed."
+}

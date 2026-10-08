@@ -1,0 +1,11 @@
+{
+  "id": "soft-science-reconstruction", "version": "0.1.0",
+  "font": {"family": "Microsoft YaHei", "hostFiles": ["C:/Windows/Fonts/msyh.ttc", "C:/Windows/Fonts/msyhbd.ttc"]},
+  "colors": {"background": "#FBFAF8", "ink": "#405A7D", "body": "#4D6689", "pink": "#F15D8B", "blue": "#6596DB", "line": "#CFDCEB"},
+  "text": {"heading": 80, "subtitle": 34, "cardTitle": 30, "body": 22, "denseBody": 21, "plotTitle": 23, "label": 25},
+  "card": {"radius": 20, "borderWidth": 1, "padding": 24, "badgeDiameter": 57, "blue": {"fill": "#F4F9FE", "border": "#B3CDF0", "badge": "#B5D1FB"}, "pink": {"fill": "#FDFCFE", "border": "#C5CBE5", "badge": "#FAC9D8"}, "green": {"fill": "#F3FAF8", "border": "#B9DEDC", "badge": "#AFE3CF"}},
+  "label": {"fill": "#EEEDFB", "border": "#C9C4F2", "radius": 18},
+  "illustrationShadow": {"fill": "#C8D9E9", "opacity": 0.37},
+  "strokeWidth": 3.5,
+  "explicitEffectAdditions": [{"id": "F01", "objects": ["heading", "thermometer-scale"], "reason": "Match the generated title's limited gradient and the code-renderable blue thermometer column; capability already illustrated in the fixed catalog."}]
+}

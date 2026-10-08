@@ -1,0 +1,61 @@
+{
+  "format": "hps.static_reconstruction_experiment",
+  "version": "0.1.0",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "contentBottom": 800
+  },
+  "objects": 13,
+  "codeObjects": 11,
+  "imageObjects": 2,
+  "visualStatus": "pending_review",
+  "audioGenerated": false,
+  "assets": {
+    "water-cup.png": {
+      "width": 2048,
+      "height": 2048,
+      "visibleBounds": [
+        439,
+        270,
+        1614,
+        1824
+      ],
+      "sha256": "bcd90448ea3f06c508d58cc8b642411c16aa2c7112f92ef77a439f15eb464679",
+      "alphaVisibleThreshold": 12
+    },
+    "ice-block.png": {
+      "width": 2048,
+      "height": 2048,
+      "visibleBounds": [
+        276,
+        353,
+        1783,
+        1825
+      ],
+      "sha256": "a122e49042c2905765571c168971eb9f5aea9213d3675b104408c449d915062e",
+      "alphaVisibleThreshold": 12
+    }
+  },
+  "fonts": [
+    {
+      "path": "C:/Windows/Fonts/msyh.ttc",
+      "sha256": "d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f",
+      "redistributed": false
+    },
+    {
+      "path": "C:/Windows/Fonts/msyhbd.ttc",
+      "sha256": "4508821b3dffe01f0ef5e5326a3e60df705a44633858811f67b6982dce3f6ee6",
+      "redistributed": false
+    }
+  ],
+  "sourceHashes": {
+    "scene.json": "b39505c0841fae389f3f724d4547c48087a478851b0ee968c977f25b63c2b3b4",
+    "theme.json": "83dfd7eb6f3f6e868ab6ddedb47b07d91c8b5ac47a56662fb5ce7fe56b38d2b3",
+    "renderer.js": "98dbe806dd78c8c7c452cc311a93ca6741858adf2eee0fae4225f7bd7872d9b6",
+    "template.html": "e02baad17b7a8d064f6f94415ea1462608859c78d0a9141a4bfbdff6a7ab175e"
+  },
+  "referenceSha256": "13f731af7f9342e0728a467510777c8533faad8e61ad74712452fcede7c3873f",
+  "htmlSha256": "c57719db023df8b6a7c2bd418e016ba13ff753a3de41302970a6445ad98dca3a",
+  "previewUrl": "http://127.0.0.1:8010/reviews/capability-reconstruction/"
+}

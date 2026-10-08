@@ -1,0 +1,30 @@
+{
+  "model": "gpt-image-2.5-sunburst-vip",
+  "quality": "low",
+  "resolution": "2k",
+  "size": "1:1",
+  "background": "transparent",
+  "reference_sha256": "13f731af7f9342e0728a467510777c8533faad8e61ad74712452fcede7c3873f",
+  "prompt": "这是提取原插画的图片编辑任务，不是设计新插画。只提取参考图左下角装蓝色水的透明玻璃杯。保留原杯口椭圆、杯壁倾斜、蓝色水面、水量、透明高光、杯底与整体轮廓，保留原插画风格和颜色。杯子必须装水，不能出现冰块。移除参考图中全部文字、编号、卡片、箭头、刻度、图表、背景和其他物体。仅一个完整主体，居中，主体四周留适量透明净空，主体不可截断。不要新增装饰、场景或底座。移除原图椭圆地面投影，投影将由HTML代码绘制。背景必须是真实alpha透明，无白色或棋盘格底。尽可能忠实保留参考原物体，不改变主体设计。",
+  "status": "completed",
+  "sha256": "bcd90448ea3f06c508d58cc8b642411c16aa2c7112f92ef77a439f15eb464679",
+  "inspection": {
+    "width": 2048,
+    "height": 2048,
+    "alpha_bbox": [
+      0,
+      21,
+      2034,
+      2048
+    ],
+    "has_transparency": true,
+    "fully_transparent": false,
+    "opaque_edges": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    }
+  },
+  "note": "Reference-guided model edit can redraw fine details; no pixel-exact preservation claimed."
+}

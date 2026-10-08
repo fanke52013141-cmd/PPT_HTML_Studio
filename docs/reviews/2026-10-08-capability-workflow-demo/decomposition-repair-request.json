@@ -1,0 +1,1090 @@
+{
+  "system": "你是科普可视化设计规划模型。先理解讲稿，再做完整画面构成分析、实现分工和对象拆解。只返回一个JSON对象，严格遵守给定字段。不能跳过对象分配直接写生图提示词。代码与插图必须明确分开，代码效果只能引用允许的固定效果ID。不要宣称浏览器示例已在应用生产集成。",
+  "user_input": {
+    "topic": "水为什么结冰",
+    "narration_beats": [
+      {
+        "id": "beat-1",
+        "text": "先看降温这一步。水把热量传给更冷的环境，温度逐渐下降。"
+      },
+      {
+        "id": "beat-2",
+        "text": "在标准大气压下，纯水的冰点是零摄氏度。达到冰点时，水可以开始结冰。"
+      },
+      {
+        "id": "beat-3",
+        "text": "结冰的过程叫凝固。水继续放出热量，由液态变成固态冰，凝固过程中温度保持不变。"
+      }
+    ],
+    "fixed_effect_catalog": {
+      "format": "hps.browser_effect_demo",
+      "version": "0.1.0",
+      "status": "defined; demo rendering required; not production-integrated",
+      "theme": {
+        "background": "#FBFAF8",
+        "ink": "#405574",
+        "blue": "#4B83C9",
+        "pink": "#F4819B",
+        "green": "#4B987D",
+        "purple": "#B1A1EC"
+      },
+      "effects": [
+        {
+          "id": "G01",
+          "name": "直线与方向",
+          "category": "几何与路径",
+          "backend": "SVG",
+          "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "G02",
+          "name": "折线",
+          "category": "几何与路径",
+          "backend": "SVG",
+          "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "G03",
+          "name": "二次贝塞尔曲线",
+          "category": "几何与路径",
+          "backend": "SVG",
+          "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "G04",
+          "name": "三次贝塞尔曲线",
+          "category": "几何与路径",
+          "backend": "SVG",
+          "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "G05",
+          "name": "圆弧",
+          "category": "几何与路径",
+          "backend": "SVG",
+          "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "G06",
+          "name": "圆与椭圆",
+          "category": "几何与路径",
+          "backend": "SVG",
+          "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "G07",
+          "name": "矩形与圆角矩形",
+          "category": "几何与路径",
+          "backend": "SVG",
+          "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "G08",
+          "name": "多边形与星形",
+          "category": "几何与路径",
+          "backend": "SVG",
+          "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "S01",
+          "name": "线宽层级",
+          "category": "描边与连接",
+          "backend": "SVG",
+          "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "S02",
+          "name": "端帽：平/圆/方",
+          "category": "描边与连接",
+          "backend": "SVG",
+          "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "S03",
+          "name": "接头：斜/圆/尖",
+          "category": "描边与连接",
+          "backend": "SVG",
+          "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "S04",
+          "name": "虚线与点线",
+          "category": "描边与连接",
+          "backend": "SVG",
+          "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "S05",
+          "name": "单向与双向箭头",
+          "category": "描边与连接",
+          "backend": "SVG",
+          "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "S06",
+          "name": "内外轮廓",
+          "category": "描边与连接",
+          "backend": "SVG",
+          "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "F01",
+          "name": "纯色填充",
+          "category": "填充与色彩",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "F02",
+          "name": "线性渐变",
+          "category": "填充与色彩",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "F03",
+          "name": "径向渐变",
+          "category": "填充与色彩",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "F04",
+          "name": "多色渐变",
+          "category": "填充与色彩",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "F05",
+          "name": "规则图案填充",
+          "category": "填充与色彩",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+          "allowed_for_demo_style": false,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "F06",
+          "name": "半透明叠层",
+          "category": "填充与色彩",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "E01",
+          "name": "外阴影",
+          "category": "表面、滤镜与合成",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "E02",
+          "name": "内阴影",
+          "category": "表面、滤镜与合成",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "E03",
+          "name": "局部模糊",
+          "category": "表面、滤镜与合成",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+          "allowed_for_demo_style": false,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "E04",
+          "name": "受控发光",
+          "category": "表面、滤镜与合成",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+          "allowed_for_demo_style": false,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "E05",
+          "name": "背景模糊玻璃层",
+          "category": "表面、滤镜与合成",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+          "allowed_for_demo_style": false,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "E06",
+          "name": "简单浮雕表面",
+          "category": "表面、滤镜与合成",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+          "allowed_for_demo_style": false,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "E07",
+          "name": "混合模式",
+          "category": "表面、滤镜与合成",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+          "allowed_for_demo_style": false,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "E08",
+          "name": "裁切与透明遮罩",
+          "category": "表面、滤镜与合成",
+          "backend": "CSS/SVG",
+          "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "T01",
+          "name": "字阶与字重",
+          "category": "文字与标识",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "T02",
+          "name": "重点词与下划线",
+          "category": "文字与标识",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "T03",
+          "name": "段落换行与行距",
+          "category": "文字与标识",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "T04",
+          "name": "标签与编号",
+          "category": "文字与标识",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "T05",
+          "name": "公式与上下标",
+          "category": "文字与标识",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "T06",
+          "name": "沿曲线文字",
+          "category": "文字与标识",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "L01",
+          "name": "知识卡",
+          "category": "容器与信息组合",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "L02",
+          "name": "分组与层级",
+          "category": "容器与信息组合",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "L03",
+          "name": "网格与对齐",
+          "category": "容器与信息组合",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "L04",
+          "name": "时间线与步骤",
+          "category": "容器与信息组合",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "L05",
+          "name": "批注与指示",
+          "category": "容器与信息组合",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "L06",
+          "name": "流程与关系",
+          "category": "容器与信息组合",
+          "backend": "HTML/CSS/SVG",
+          "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "D01",
+          "name": "柱状图",
+          "category": "数据与比例",
+          "backend": "SVG/Canvas",
+          "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "D02",
+          "name": "折线图",
+          "category": "数据与比例",
+          "backend": "SVG/Canvas",
+          "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "D03",
+          "name": "面积图",
+          "category": "数据与比例",
+          "backend": "SVG/Canvas",
+          "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "D04",
+          "name": "饼图与环图",
+          "category": "数据与比例",
+          "backend": "SVG/Canvas",
+          "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "D05",
+          "name": "进度与刻度",
+          "category": "数据与比例",
+          "backend": "SVG/Canvas",
+          "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "D06",
+          "name": "节点关系图",
+          "category": "数据与比例",
+          "backend": "SVG/Canvas",
+          "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "C01",
+          "name": "有限粒子群",
+          "category": "Canvas二维示意",
+          "backend": "Canvas2D",
+          "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "C02",
+          "name": "波形",
+          "category": "Canvas二维示意",
+          "backend": "Canvas2D",
+          "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "C03",
+          "name": "轨迹与尾迹",
+          "category": "Canvas二维示意",
+          "backend": "Canvas2D",
+          "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "C04",
+          "name": "热力色块",
+          "category": "Canvas二维示意",
+          "backend": "Canvas2D",
+          "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "C05",
+          "name": "路径高亮",
+          "category": "Canvas二维示意",
+          "backend": "Canvas2D",
+          "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "C06",
+          "name": "对象组平移",
+          "category": "Canvas二维示意",
+          "backend": "Canvas2D",
+          "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "native browser rendering"
+        },
+        {
+          "id": "M01",
+          "name": "透明度出现",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        },
+        {
+          "id": "M02",
+          "name": "平移入场",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        },
+        {
+          "id": "M03",
+          "name": "缩放强调",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        },
+        {
+          "id": "M04",
+          "name": "二维旋转",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        },
+        {
+          "id": "M05",
+          "name": "描边绘制",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        },
+        {
+          "id": "M06",
+          "name": "遮罩揭示",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        },
+        {
+          "id": "M07",
+          "name": "兼容路径形变",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        },
+        {
+          "id": "M08",
+          "name": "数值递增",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        },
+        {
+          "id": "M09",
+          "name": "沿路径运动",
+          "category": "运动与状态",
+          "backend": "CSS/SVG/JS",
+          "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+          "allowed_for_demo_style": true,
+          "integration_status": "browser_demo_only",
+          "evidence_kind": "three deterministic keyframes"
+        }
+      ]
+    },
+    "instructions": "标题和说明文字、标签、数字、卡片、背景、关系箭头由代码控制。液态水的杯子与固态冰是两个独立插画资产，分别完整、互不接触、不得融合背景或文本。用三个知识点讲清降温、达到冰点、凝固放热且恒温；标准大气压、纯水条件必须保留。不要把凝固画成往水杯加入现成冰块。无需额外装饰。安排规整布局、讲解主次和字幕留白，文字尽量简洁。每个代码对象选实际所需效果，不为覆盖技术名字强塞Canvas。所有对象的box必须位于1600x800内容区内。关系对象必须有代码实现，插画effect_ids为空。两张插画互不重叠。至少8个对象，每个讲稿语块均有对应视觉对象。",
+    "output_schema": {
+      "format": "hps.visual_ownership_demo",
+      "version": "0.1.0",
+      "topic": "水为什么结冰",
+      "visual_intent": "string",
+      "layout": {
+        "canvas": [
+          1600,
+          900
+        ],
+        "content_bottom": 800,
+        "background": "#FBFAF8"
+      },
+      "objects": [
+        {
+          "id": "unique",
+          "role": "heading/body/card/label/relationship/illustration/subject/container/decoration",
+          "content": "actual text or visual description",
+          "source_beat_ids": [
+            "beat-1"
+          ],
+          "render_owner": "code/image",
+          "backend": "HTML/CSS/SVG/Canvas2D/image",
+          "effect_ids": [
+            "T01"
+          ],
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 100,
+            "height": 50
+          },
+          "z": 1,
+          "independent": true,
+          "reason": "why this owner",
+          "asset_brief": "only required for image"
+        }
+      ],
+      "relationships": [
+        {
+          "from": "object-id",
+          "to": "object-id",
+          "meaning": "semantic relationship",
+          "visual_object_id": "code-arrow-id"
+        }
+      ]
+    },
+    "previous_plan": {
+      "format": "hps.visual_ownership_demo",
+      "version": "0.1.0",
+      "topic": "水为什么结冰",
+      "visual_intent": "用三步示意讲清水结冰的过程：先降温散热，再达到0℃冰点，最后凝固放热且温度不变；明确标准大气压与纯水条件，液态水杯与固态冰为两张独立插画，通过代码文字、卡片、箭头和温度刻度组织清晰的科普布局。",
+      "layout": {
+        "canvas": [
+          1600,
+          900
+        ],
+        "content_bottom": 800,
+        "background": "#FBFAF8"
+      },
+      "objects": [
+        {
+          "id": "heading",
+          "role": "heading",
+          "content": "水为什么结冰",
+          "source_beat_ids": [
+            "beat-1",
+            "beat-2",
+            "beat-3"
+          ],
+          "render_owner": "code",
+          "backend": "HTML/CSS/SVG",
+          "effect_ids": [
+            "T01"
+          ],
+          "box": {
+            "x": 100,
+            "y": 60,
+            "width": 600,
+            "height": 60
+          },
+          "z": 2,
+          "independent": true,
+          "reason": "标题为纯文本，由代码排版控制字阶与字重。"
+        },
+        {
+          "id": "subtitle",
+          "role": "body",
+          "content": "条件：标准大气压 · 纯水",
+          "source_beat_ids": [
+            "beat-2"
+          ],
+          "render_owner": "code",
+          "backend": "HTML/CSS/SVG",
+          "effect_ids": [
+            "T02"
+          ],
+          "box": {
+            "x": 100,
+            "y": 130,
+            "width": 500,
+            "height": 36
+          },
+          "z": 2,
+          "independent": true,
+          "reason": "说明文字与重点下划线由代码实现，突出前提条件。"
+        },
+        {
+          "id": "step-1-card",
+          "role": "card",
+          "content": "步骤1 降温散热\n水把热量传给更冷的环境，温度逐渐下降。",
+          "source_beat_ids": [
+            "beat-1"
+          ],
+          "render_owner": "code",
+          "backend": "HTML/CSS/SVG",
+          "effect_ids": [
+            "L01",
+            "T03"
+          ],
+          "box": {
+            "x": 100,
+            "y": 220,
+            "width": 340,
+            "height": 160
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "知识卡容器与段落文字由代码绘制，承载第一步讲解。"
+        },
+        {
+          "id": "step-2-card",
+          "role": "card",
+          "content": "步骤2 达到冰点\n冰点为 0℃，水可以开始结冰。",
+          "source_beat_ids": [
+            "beat-2"
+          ],
+          "render_owner": "code",
+          "backend": "HTML/CSS/SVG",
+          "effect_ids": [
+            "L01",
+            "T03",
+            "T05"
+          ],
+          "box": {
+            "x": 630,
+            "y": 220,
+            "width": 340,
+            "height": 160
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "知识卡与温度数值、上下标由代码排版，突出冰点概念。"
+        },
+        {
+          "id": "step-3-card",
+          "role": "card",
+          "content": "步骤3 凝固放热\n水继续放热，由液态变成固态冰；凝固过程温度保持不变。",
+          "source_beat_ids": [
+            "beat-3"
+          ],
+          "render_owner": "code",
+          "backend": "HTML/CSS/SVG",
+          "effect_ids": [
+            "L01",
+            "T03"
+          ],
+          "box": {
+            "x": 1160,
+            "y": 220,
+            "width": 340,
+            "height": 160
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "知识卡与说明文字由代码实现，解释凝固与恒温特点。"
+        },
+        {
+          "id": "water-cup-illustration",
+          "role": "illustration",
+          "content": "装有液态水的透明玻璃杯，水面平静，杯壁无冰，整体为常温液态水状态。",
+          "source_beat_ids": [
+            "beat-1"
+          ],
+          "render_owner": "image",
+          "backend": "image",
+          "effect_ids": [],
+          "box": {
+            "x": 140,
+            "y": 440,
+            "width": 260,
+            "height": 320
+          },
+          "z": 4,
+          "independent": true,
+          "reason": "液态水杯为独立插画资产，不与背景或文本融合。",
+          "asset_brief": "扁平插画风格，透明玻璃杯装约七成蓝色液态水，杯口敞开，无冰块，背景透明。"
+        },
+        {
+          "id": "ice-block-illustration",
+          "role": "illustration",
+          "content": "一块形状规整的固态冰，呈淡蓝色半透明，表面有冰晶纹理，独立放置。",
+          "source_beat_ids": [
+            "beat-3"
+          ],
+          "render_owner": "image",
+          "backend": "image",
+          "effect_ids": [],
+          "box": {
+            "x": 1200,
+            "y": 460,
+            "width": 260,
+            "height": 280
+          },
+          "z": 4,
+          "independent": true,
+          "reason": "固态冰为独立插画资产，与水杯互不接触、互不重叠。",
+          "asset_brief": "扁平插画风格，长方体淡蓝色半透明冰块，表面有简洁冰晶线条，背景透明。"
+        },
+        {
+          "id": "thermometer-scale",
+          "role": "subject",
+          "content": "竖直温度刻度，标注 20℃、0℃、-10℃，0℃位置用红色横线标出冰点。",
+          "source_beat_ids": [
+            "beat-1",
+            "beat-2"
+          ],
+          "render_owner": "code",
+          "backend": "SVG",
+          "effect_ids": [
+            "G07",
+            "G01",
+            "T04",
+            "S05"
+          ],
+          "box": {
+            "x": 520,
+            "y": 430,
+            "width": 80,
+            "height": 340
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "刻度线、数字标签与箭头由SVG代码绘制，示意温度下降与冰点位置。"
+        },
+        {
+          "id": "temp-curve",
+          "role": "subject",
+          "content": "温度随时间变化折线：先下降，到达0℃后保持水平，标注“凝固阶段 温度不变”。",
+          "source_beat_ids": [
+            "beat-2",
+            "beat-3"
+          ],
+          "render_owner": "code",
+          "backend": "SVG",
+          "effect_ids": [
+            "G02",
+            "S05",
+            "T04",
+            "F01"
+          ],
+          "box": {
+            "x": 720,
+            "y": 430,
+            "width": 380,
+            "height": 340
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "折线图与坐标轴、标签由代码生成，直观展示凝固时温度不变。"
+        },
+        {
+          "id": "arrow-1-to-2",
+          "role": "relationship",
+          "content": "从步骤1卡片指向步骤2卡片的水平箭头，标注“降温至”。",
+          "source_beat_ids": [
+            "beat-1",
+            "beat-2"
+          ],
+          "render_owner": "code",
+          "backend": "SVG",
+          "effect_ids": [
+            "G01",
+            "S05",
+            "T04"
+          ],
+          "box": {
+            "x": 450,
+            "y": 280,
+            "width": 170,
+            "height": 40
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "步骤间关系箭头与文字标签由代码实现。"
+        },
+        {
+          "id": "arrow-2-to-3",
+          "role": "relationship",
+          "content": "从步骤2卡片指向步骤3卡片的水平箭头，标注“开始凝固”。",
+          "source_beat_ids": [
+            "beat-2",
+            "beat-3"
+          ],
+          "render_owner": "code",
+          "backend": "SVG",
+          "effect_ids": [
+            "G01",
+            "S05",
+            "T04"
+          ],
+          "box": {
+            "x": 980,
+            "y": 280,
+            "width": 170,
+            "height": 40
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "步骤间关系箭头与文字标签由代码实现。"
+        },
+        {
+          "id": "heat-flow-arrow",
+          "role": "relationship",
+          "content": "从水杯向外发散的三条短箭头，表示热量散出。",
+          "source_beat_ids": [
+            "beat-1"
+          ],
+          "render_owner": "code",
+          "backend": "SVG",
+          "effect_ids": [
+            "G01",
+            "S05"
+          ],
+          "box": {
+            "x": 80,
+            "y": 500,
+            "width": 60,
+            "height": 200
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "热量散失的方向箭头由代码绘制，对应降温散热概念。"
+        },
+        {
+          "id": "freeze-label",
+          "role": "label",
+          "content": "凝固过程：液态 → 固态",
+          "source_beat_ids": [
+            "beat-3"
+          ],
+          "render_owner": "code",
+          "backend": "HTML/CSS/SVG",
+          "effect_ids": [
+            "T02",
+            "L05"
+          ],
+          "box": {
+            "x": 1130,
+            "y": 580,
+            "width": 260,
+            "height": 40
+          },
+          "z": 3,
+          "independent": true,
+          "reason": "批注式标签与重点词由代码排版，指向状态变化。"
+        }
+      ],
+      "relationships": [
+        {
+          "from": "step-1-card",
+          "to": "step-2-card",
+          "meaning": "降温进行到达到冰点",
+          "visual_object_id": "arrow-1-to-2"
+        },
+        {
+          "from": "step-2-card",
+          "to": "step-3-card",
+          "meaning": "达到冰点后开始凝固",
+          "visual_object_id": "arrow-2-to-3"
+        },
+        {
+          "from": "water-cup-illustration",
+          "to": "step-1-card",
+          "meaning": "液态水对应降温散热阶段",
+          "visual_object_id": "heat-flow-arrow"
+        },
+        {
+          "from": "step-3-card",
+          "to": "ice-block-illustration",
+          "meaning": "凝固阶段形成固态冰",
+          "visual_object_id": "freeze-label"
+        }
+      ]
+    },
+    "validation_error": "Code object lacks a supported effect/backend",
+    "repair_rules": "只修正错误的结构化字段并保留已有画面设计。每个代码对象的backend必须严格为HTML/CSS、SVG、Canvas2D三个字符串之一，不能使用HTML/CSS/SVG组合；图片backend必须为image。温度曲线是讲稿示意，不添加未提供的数值样本与时间数据。返回完整JSON。"
+  },
+  "schema": {
+    "format": "hps.visual_ownership_demo",
+    "version": "0.1.0",
+    "topic": "水为什么结冰",
+    "visual_intent": "string",
+    "layout": {
+      "canvas": [
+        1600,
+        900
+      ],
+      "content_bottom": 800,
+      "background": "#FBFAF8"
+    },
+    "objects": [
+      {
+        "id": "unique",
+        "role": "heading/body/card/label/relationship/illustration/subject/container/decoration",
+        "content": "actual text or visual description",
+        "source_beat_ids": [
+          "beat-1"
+        ],
+        "render_owner": "code/image",
+        "backend": "HTML/CSS/SVG/Canvas2D/image",
+        "effect_ids": [
+          "T01"
+        ],
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 100,
+          "height": 50
+        },
+        "z": 1,
+        "independent": true,
+        "reason": "why this owner",
+        "asset_brief": "only required for image"
+      }
+    ],
+    "relationships": [
+      {
+        "from": "object-id",
+        "to": "object-id",
+        "meaning": "semantic relationship",
+        "visual_object_id": "code-arrow-id"
+      }
+    ]
+  }
+}

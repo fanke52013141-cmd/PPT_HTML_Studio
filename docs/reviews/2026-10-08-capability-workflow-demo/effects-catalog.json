@@ -1,0 +1,625 @@
+{
+  "format": "hps.browser_effect_demo",
+  "version": "0.1.0",
+  "status": "defined; demo rendering required; not production-integrated",
+  "theme": {
+    "background": "#FBFAF8",
+    "ink": "#405574",
+    "blue": "#4B83C9",
+    "pink": "#F4819B",
+    "green": "#4B987D",
+    "purple": "#B1A1EC"
+  },
+  "effects": [
+    {
+      "id": "G01",
+      "name": "直线与方向",
+      "category": "几何与路径",
+      "backend": "SVG",
+      "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "G02",
+      "name": "折线",
+      "category": "几何与路径",
+      "backend": "SVG",
+      "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "G03",
+      "name": "二次贝塞尔曲线",
+      "category": "几何与路径",
+      "backend": "SVG",
+      "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "G04",
+      "name": "三次贝塞尔曲线",
+      "category": "几何与路径",
+      "backend": "SVG",
+      "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "G05",
+      "name": "圆弧",
+      "category": "几何与路径",
+      "backend": "SVG",
+      "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "G06",
+      "name": "圆与椭圆",
+      "category": "几何与路径",
+      "backend": "SVG",
+      "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "G07",
+      "name": "矩形与圆角矩形",
+      "category": "几何与路径",
+      "backend": "SVG",
+      "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "G08",
+      "name": "多边形与星形",
+      "category": "几何与路径",
+      "backend": "SVG",
+      "parameter_bounds": "可见几何位于对象box内；控制点可越界50px；线宽1–8px。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "S01",
+      "name": "线宽层级",
+      "category": "描边与连接",
+      "backend": "SVG",
+      "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "S02",
+      "name": "端帽：平/圆/方",
+      "category": "描边与连接",
+      "backend": "SVG",
+      "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "S03",
+      "name": "接头：斜/圆/尖",
+      "category": "描边与连接",
+      "backend": "SVG",
+      "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "S04",
+      "name": "虚线与点线",
+      "category": "描边与连接",
+      "backend": "SVG",
+      "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "S05",
+      "name": "单向与双向箭头",
+      "category": "描边与连接",
+      "backend": "SVG",
+      "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "S06",
+      "name": "内外轮廓",
+      "category": "描边与连接",
+      "backend": "SVG",
+      "parameter_bounds": "线宽1–8px；端帽/接头固定枚举；虚线2–24px；箭头按端点绑定。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "F01",
+      "name": "纯色填充",
+      "category": "填充与色彩",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "F02",
+      "name": "线性渐变",
+      "category": "填充与色彩",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "F03",
+      "name": "径向渐变",
+      "category": "填充与色彩",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "F04",
+      "name": "多色渐变",
+      "category": "填充与色彩",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "F05",
+      "name": "规则图案填充",
+      "category": "填充与色彩",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+      "allowed_for_demo_style": false,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "F06",
+      "name": "半透明叠层",
+      "category": "填充与色彩",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "纯色/2–3色渐变；透明度0–1；图案限规则点/斜线。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "E01",
+      "name": "外阴影",
+      "category": "表面、滤镜与合成",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "E02",
+      "name": "内阴影",
+      "category": "表面、滤镜与合成",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "E03",
+      "name": "局部模糊",
+      "category": "表面、滤镜与合成",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+      "allowed_for_demo_style": false,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "E04",
+      "name": "受控发光",
+      "category": "表面、滤镜与合成",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+      "allowed_for_demo_style": false,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "E05",
+      "name": "背景模糊玻璃层",
+      "category": "表面、滤镜与合成",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+      "allowed_for_demo_style": false,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "E06",
+      "name": "简单浮雕表面",
+      "category": "表面、滤镜与合成",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+      "allowed_for_demo_style": false,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "E07",
+      "name": "混合模式",
+      "category": "表面、滤镜与合成",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+      "allowed_for_demo_style": false,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "E08",
+      "name": "裁切与透明遮罩",
+      "category": "表面、滤镜与合成",
+      "backend": "CSS/SVG",
+      "parameter_bounds": "阴影偏移0–12px、模糊0–24px；滤镜限示例；不可推导真实物理材质。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "T01",
+      "name": "字阶与字重",
+      "category": "文字与标识",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "T02",
+      "name": "重点词与下划线",
+      "category": "文字与标识",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "T03",
+      "name": "段落换行与行距",
+      "category": "文字与标识",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "T04",
+      "name": "标签与编号",
+      "category": "文字与标识",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "T05",
+      "name": "公式与上下标",
+      "category": "文字与标识",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "T06",
+      "name": "沿曲线文字",
+      "category": "文字与标识",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "字号18–48px、字重400/700；真实文本；公式限可排版表达；图标为简单路径。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "L01",
+      "name": "知识卡",
+      "category": "容器与信息组合",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "L02",
+      "name": "分组与层级",
+      "category": "容器与信息组合",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "L03",
+      "name": "网格与对齐",
+      "category": "容器与信息组合",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "L04",
+      "name": "时间线与步骤",
+      "category": "容器与信息组合",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "L05",
+      "name": "批注与指示",
+      "category": "容器与信息组合",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "L06",
+      "name": "流程与关系",
+      "category": "容器与信息组合",
+      "backend": "HTML/CSS/SVG",
+      "parameter_bounds": "圆角0–24px；边线1–3px；间距12–40px；对象需ID和独立box。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "D01",
+      "name": "柱状图",
+      "category": "数据与比例",
+      "backend": "SVG/Canvas",
+      "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "D02",
+      "name": "折线图",
+      "category": "数据与比例",
+      "backend": "SVG/Canvas",
+      "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "D03",
+      "name": "面积图",
+      "category": "数据与比例",
+      "backend": "SVG/Canvas",
+      "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "D04",
+      "name": "饼图与环图",
+      "category": "数据与比例",
+      "backend": "SVG/Canvas",
+      "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "D05",
+      "name": "进度与刻度",
+      "category": "数据与比例",
+      "backend": "SVG/Canvas",
+      "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "D06",
+      "name": "节点关系图",
+      "category": "数据与比例",
+      "backend": "SVG/Canvas",
+      "parameter_bounds": "必须提供真实数据；示例最多12项；线性坐标；图例与数值为代码。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "C01",
+      "name": "有限粒子群",
+      "category": "Canvas二维示意",
+      "backend": "Canvas2D",
+      "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "C02",
+      "name": "波形",
+      "category": "Canvas二维示意",
+      "backend": "Canvas2D",
+      "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "C03",
+      "name": "轨迹与尾迹",
+      "category": "Canvas二维示意",
+      "backend": "Canvas2D",
+      "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "C04",
+      "name": "热力色块",
+      "category": "Canvas二维示意",
+      "backend": "Canvas2D",
+      "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "C05",
+      "name": "路径高亮",
+      "category": "Canvas二维示意",
+      "backend": "Canvas2D",
+      "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "C06",
+      "name": "对象组平移",
+      "category": "Canvas二维示意",
+      "backend": "Canvas2D",
+      "parameter_bounds": "确定性种子与时间；演示最多48对象；波/粒子/轨迹为示意，非物理仿真。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "native browser rendering"
+    },
+    {
+      "id": "M01",
+      "name": "透明度出现",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    },
+    {
+      "id": "M02",
+      "name": "平移入场",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    },
+    {
+      "id": "M03",
+      "name": "缩放强调",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    },
+    {
+      "id": "M04",
+      "name": "二维旋转",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    },
+    {
+      "id": "M05",
+      "name": "描边绘制",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    },
+    {
+      "id": "M06",
+      "name": "遮罩揭示",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    },
+    {
+      "id": "M07",
+      "name": "兼容路径形变",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    },
+    {
+      "id": "M08",
+      "name": "数值递增",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    },
+    {
+      "id": "M09",
+      "name": "沿路径运动",
+      "category": "运动与状态",
+      "backend": "CSS/SVG/JS",
+      "parameter_bounds": "进度0–1；位移≤80px；缩放0.8–1.2；路径形变需相同命令结构。",
+      "allowed_for_demo_style": true,
+      "integration_status": "browser_demo_only",
+      "evidence_kind": "three deterministic keyframes"
+    }
+  ]
+}

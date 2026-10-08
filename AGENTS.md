@@ -660,3 +660,24 @@ generated caches may be rebuilt, while explicit deletion needs a separate action
 - static/html_review_panel.js owns the HTML step-3 panel only. Use API transport, explicit refresh after data loading, and no body MutationObserver. Keep image controls hidden only for HTML projects; preserve image behavior. Extend checks/test_frontend_quality.js and the real-browser panel regression when changing this owner.
 - Video/PPTX gates require current valid approvals. HTML PPTX uses the existing persistent job/artifact/download lifecycle and is image-only; never call it natively editable.
 - Record passed, partial, pending_review, blocked and not_run separately, with per-AC evidence and real commit hashes. Do not reset inherited changes or apply blanket git renormalize as an audit fix. Use focused diff whitespace checks.
+
+## Code Art Reference Asset Policy (2026-10-09)
+
+For HTML visual design and reference generation, follow
+`docs/contracts/html-presentation/framework/12-code-art-reference-assets.md`.
+First produce beautiful real code details, compositions and complete sample pages,
+then use their reviewed visual quality as the image model's code-art reference.
+A broad technical catalog or a runnable but ordinary screenshot is not visual approval.
+Expose the full readable, theme-admitted expression range and preserve composition
+freedom; declare code/image ownership during conception and freeze exact execution
+inputs after selecting the proposal.
+
+Treat the resulting reference set as a versioned asset: keep source, theme/layout,
+actual screenshots, parameters, resource/font provenance and hashes, render context,
+technical and visual reviews, reuse scope, and formation/correction notes together.
+Register current evidence under `docs/assets/code-art-references/`.
+Archive status, model completion and the user's acceptance of a direction must not
+be promoted to production visual approval. Preserve historical samples and record
+known inconsistencies; issue new adopted revisions instead of silently redefining IDs.
+The detailed optimization flow and future editing controls remain proposals until
+reviewed and implemented. Prioritize the visual foundation before broad engineering.

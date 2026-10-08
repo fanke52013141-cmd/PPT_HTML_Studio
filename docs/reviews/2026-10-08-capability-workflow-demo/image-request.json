@@ -1,0 +1,41 @@
+{
+  "model": "gpt-image-2.5-sunburst-vip",
+  "quality": "low",
+  "resolution": "2k",
+  "size": "16:9",
+  "references": [
+    {
+      "file": "D:\\Program Files (x86)\\PPT_HTML_Studio\\docs\\reviews\\2026-10-08-capability-workflow-demo\\effects-01.png",
+      "role": "code_capability",
+      "sha256": "4fb26568afca2994b452f422ed98daa61e3948268a3d41c6ed82fd6c0e575325"
+    },
+    {
+      "file": "D:\\Program Files (x86)\\PPT_HTML_Studio\\docs\\reviews\\2026-10-08-capability-workflow-demo\\effects-02.png",
+      "role": "code_capability",
+      "sha256": "1725e96a7bed88aff023704e5b395b852ec3c13445ee735e5b85c12e00728858"
+    },
+    {
+      "file": "D:\\Program Files (x86)\\PPT_HTML_Studio\\docs\\reviews\\2026-10-08-capability-workflow-demo\\effects-03.png",
+      "role": "code_capability",
+      "sha256": "30571c32c08c4db6ec311a1a2ae3e3e7b9573312e8d55b5b5f60179df428a241"
+    },
+    {
+      "file": "D:\\Program Files (x86)\\PPT_HTML_Studio\\docs\\reviews\\2026-10-08-capability-workflow-demo\\effects-04.png",
+      "role": "code_capability",
+      "sha256": "882d60e15461b68f3a418fdfbc4fbd58ebaed20111b120f5eecb5fcd0f29032e"
+    },
+    {
+      "file": "D:\\Program Files (x86)\\PPT_HTML_Studio\\docs\\reviews\\2026-10-08-capability-workflow-demo\\effects-05.png",
+      "role": "code_capability",
+      "sha256": "6776c432217b86f53ca965e4ef6caf1b90360c3b2976aa94be50b8b895d1e483"
+    },
+    {
+      "file": "D:\\Program Files (x86)\\PPT_HTML_Studio\\docs\\styles\\science-explainer\\references\\user-style-reference.png",
+      "role": "style_only",
+      "sha256": "0ae52db934f5543acc8fba0372910356f717ba3da308ab88c3fed06b35b63542"
+    }
+  ],
+  "decomposition_sha256": "00a0493abbf410d621b6135b3c76b8d4a624874356bdf4ca01cdaec293174325",
+  "prompt_sha256": "e32976083728712359d4440881ead9286aefe09d3d1904d1c9d1ed9a9569af22",
+  "design_approved": false
+}

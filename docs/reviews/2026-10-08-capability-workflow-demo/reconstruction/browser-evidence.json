@@ -1,0 +1,135 @@
+{
+  "kind": "actual static browser rendering",
+  "errors": [],
+  "audioGenerated": false,
+  "browser": "155.0.8059.12",
+  "dom": {
+    "objects": [
+      {
+        "id": "heading",
+        "kind": "text",
+        "text": "水为什么结冰"
+      },
+      {
+        "id": "subtitle",
+        "kind": "rich-text",
+        "text": "条件：标准大气压 · 纯水"
+      },
+      {
+        "id": "step-1-card",
+        "kind": "knowledge-card",
+        "text": "01\n步骤1 降温散热\n水把热量传给更冷的环境，\n温度逐渐下降。"
+      },
+      {
+        "id": "step-2-card",
+        "kind": "knowledge-card",
+        "text": "02\n步骤2 达到冰点\n冰点为 0℃，水可以开始结冰。"
+      },
+      {
+        "id": "step-3-card",
+        "kind": "knowledge-card",
+        "text": "03\n步骤3 凝固放热\n水继续放热，由液态变成固态冰；\n凝固过程温度保持不变。"
+      },
+      {
+        "id": "arrow-1-to-2",
+        "kind": "relation-arrow",
+        "text": "降温至"
+      },
+      {
+        "id": "arrow-2-to-3",
+        "kind": "relation-arrow",
+        "text": "开始凝固"
+      },
+      {
+        "id": "water-cup-illustration",
+        "kind": "image",
+        "text": "",
+        "visibleMapping": {
+          "natural": [
+            2048,
+            2048
+          ],
+          "visibleBounds": [
+            439,
+            270,
+            1614,
+            1824
+          ],
+          "scale": 0.19574468085106383
+        }
+      },
+      {
+        "id": "ice-block-illustration",
+        "kind": "image",
+        "text": "",
+        "visibleMapping": {
+          "natural": [
+            2048,
+            2048
+          ],
+          "visibleBounds": [
+            276,
+            353,
+            1783,
+            1825
+          ],
+          "scale": 0.15828804347826086
+        }
+      },
+      {
+        "id": "thermometer-scale",
+        "kind": "temperature-scale",
+        "text": "20℃\n0℃\n-10℃"
+      },
+      {
+        "id": "temp-curve",
+        "kind": "temperature-plot",
+        "text": "水的温度随时间变化（示意）\n温度\n(℃)\n20\n0\n-10\n凝固阶段\n温度不变\n时间"
+      },
+      {
+        "id": "heat-flow-arrow",
+        "kind": "heat-arrows",
+        "text": "热量散出"
+      },
+      {
+        "id": "freeze-label",
+        "kind": "label",
+        "text": "凝固过程：\n液态 → 固态"
+      }
+    ],
+    "images": [
+      {
+        "complete": true,
+        "width": 2048,
+        "height": 2048
+      },
+      {
+        "complete": true,
+        "width": 2048,
+        "height": 2048
+      }
+    ],
+    "fontReady": true,
+    "background": "rgb(251, 250, 248)",
+    "audioNodes": 0
+  },
+  "screenshots": [
+    {
+      "file": "html-effect.png",
+      "sha256": "568f0eacd45604cb19880f29d754f254c773f37e84c93cfe62f44a3159ee0b01"
+    },
+    {
+      "file": "review-page.png",
+      "sha256": "b8f8cf67d02f7c839d1df61ba238f1a25b7f9916a2e28a4eeeb8d2ba636174de"
+    },
+    {
+      "file": "comparison.png",
+      "sha256": "c010fd6c98b2d5cee096043f12ccfa3327a6da2f82748855dff3b87338c47903"
+    },
+    {
+      "file": "code-only.png",
+      "sha256": "81e7feda9d38177fc90ad9d1dbb4924137c537ceae14f62555aade5e13f359e5"
+    }
+  ],
+  "status": "rendered"
+}

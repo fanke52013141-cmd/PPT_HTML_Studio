@@ -1,0 +1,402 @@
+{
+  "format": "hps.documentation_asset_inventory",
+  "version": "0.1.0",
+  "created_date": "2026-10-09",
+  "timezone": "Asia/Shanghai",
+  "scope": "Archived trial material and provenance; not a runtime registry or production-approved art set",
+  "principle": "First create beautiful real-code samples, then transmit their aesthetic quality to the image model together with the complete readable admitted capability range.",
+  "files": [
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/README.md",
+      "bytes": 6267,
+      "sha256": "4b1054f48c093e69c229c35f74f742ee8606116b2cb884a9040448bf9d41c198"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/canvas-frame-0.5.png",
+      "bytes": 168275,
+      "sha256": "8e30b06da989a0626fd27b5c7fb8af7728534295185163288557fec8bc7392ba"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/canvas-frame-0.png",
+      "bytes": 167872,
+      "sha256": "882d60e15461b68f3a418fdfbc4fbd58ebaed20111b120f5eecb5fcd0f29032e"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/canvas-frame-1.png",
+      "bytes": 168349,
+      "sha256": "fa91487feec1b59ab60650f1205c7076a2935cd21c56f3665d5724cc09ed91bd"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/decomposition-repair-request.json",
+      "bytes": 41220,
+      "sha256": "97007a7b613f3a45037af19225aafdaf4b5be70cf9a56da95b56f8bba8911423",
+      "original_worktree_sha256": "6c17586890b146804515d50a27eb43f13181670e9e59e1059c3cad3e8d28b56c",
+      "original_worktree_bytes": 42309
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/decomposition-request.json",
+      "bytes": 30429,
+      "sha256": "8fe30af4383a055fcd16a76e5ef0307c5f19229e292fc5126ac5912c286e642b",
+      "original_worktree_sha256": "9c787767f58b153448fb1140324c55d1fe64b3e3e3518d0e21d3fd9a0530ed48",
+      "original_worktree_bytes": 31168
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/decomposition-validation.json",
+      "bytes": 387,
+      "sha256": "85a54b8ca0f1865df390a633b7e773a988266257be91c83ee540ca2f40598f70",
+      "original_worktree_sha256": "a3faf0a972d62dec1deeac7cc71b96907ab29b3f1a61db2e782ed37f5cc4e222",
+      "original_worktree_bytes": 412
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/decomposition.json",
+      "bytes": 9008,
+      "sha256": "e1ab18d2a0f79aa6006111f743188ccdac87e9a868d53500b0927fdadfa8d539",
+      "original_worktree_sha256": "00a0493abbf410d621b6135b3c76b8d4a624874356bdf4ca01cdaec293174325",
+      "original_worktree_bytes": 9355
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/decomposition.raw.json",
+      "bytes": 8966,
+      "sha256": "0544e0889a67097d3297d09e671e7d6a0b86a1af928cee6503a92d78d7e32c4e",
+      "original_worktree_sha256": "cd407b318615a23b377f3f811aff86a3636f494a050fa06369669e4133c8f74f",
+      "original_worktree_bytes": 9313
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/decomposition.repaired.raw.json",
+      "bytes": 9008,
+      "sha256": "e1ab18d2a0f79aa6006111f743188ccdac87e9a868d53500b0927fdadfa8d539",
+      "original_worktree_sha256": "00a0493abbf410d621b6135b3c76b8d4a624874356bdf4ca01cdaec293174325",
+      "original_worktree_bytes": 9355
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/definition.md",
+      "bytes": 2121,
+      "sha256": "ce54e23523f8590bd798213c9c508f0c9050624cfedb144a69e217d5f89fbb49"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/effects-01.png",
+      "bytes": 161184,
+      "sha256": "4fb26568afca2994b452f422ed98daa61e3948268a3d41c6ed82fd6c0e575325"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/effects-02.png",
+      "bytes": 286618,
+      "sha256": "1725e96a7bed88aff023704e5b395b852ec3c13445ee735e5b85c12e00728858"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/effects-03.png",
+      "bytes": 207640,
+      "sha256": "30571c32c08c4db6ec311a1a2ae3e3e7b9573312e8d55b5b5f60179df428a241"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/effects-04.png",
+      "bytes": 167872,
+      "sha256": "882d60e15461b68f3a418fdfbc4fbd58ebaed20111b120f5eecb5fcd0f29032e"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/effects-05.png",
+      "bytes": 123812,
+      "sha256": "6776c432217b86f53ca965e4ef6caf1b90360c3b2976aa94be50b8b895d1e483"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/effects-catalog.json",
+      "bytes": 23806,
+      "sha256": "ffd2f968c2944de07cb06f2676dd2db6540dec04a732a25b28deeb3ad6b4fe2b"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/effects-demo.html",
+      "bytes": 26785,
+      "sha256": "d63a3ef5cb5ccef63b752019ceb66d8341e410f3db6fa34e4240b96b845e54da"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/fixed-generation-rules.txt",
+      "bytes": 1647,
+      "sha256": "4b716db6f36bfa699db964b45b19f91ee47a970cebcf68a94af15964a5baf458",
+      "original_worktree_sha256": "f48425e7c713eeb148cd3093335058ec675ed4e9ec6964a7a738b17de96af46d",
+      "original_worktree_bytes": 1652
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/generated.png",
+      "bytes": 1695057,
+      "sha256": "13f731af7f9342e0728a467510777c8533faad8e61ad74712452fcede7c3873f"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/image-analysis.json",
+      "bytes": 188,
+      "sha256": "a456dd3e06489af699dc384f7d94cc9d132852e608aff8be8d71564fded9d596",
+      "original_worktree_sha256": "786b26727f2f35499337322257e51cb75c240184018e5ee49c81fa94ecc7b319",
+      "original_worktree_bytes": 196
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/image-prompt.txt",
+      "bytes": 12403,
+      "sha256": "e32976083728712359d4440881ead9286aefe09d3d1904d1c9d1ed9a9569af22",
+      "original_worktree_sha256": "2ca179b2c4ad6f0cf39ed36892cb9206ec9a4e2a5aacc2bf1fccd577f190597c",
+      "original_worktree_bytes": 12414
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/image-request.json",
+      "bytes": 1862,
+      "sha256": "85c4c5e579842f457ec322bc6e15dfb45d7d46e93613c864bf6fe33dcb62c30d",
+      "original_worktree_sha256": "382ffab5d7186d94e922f533778a625d30fa0a4c58bd666f3c1aee3d4f1a5bcd",
+      "original_worktree_bytes": 1902
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction-definition.md",
+      "bytes": 2696,
+      "sha256": "1c4c315a5386bf7b9882159af8711711c556f0178057bc428e7ee14a0d2c6b0b"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/README.md",
+      "bytes": 3595,
+      "sha256": "2354441af78ff65a6bce91511dc132cdf820fe962f3ebefcc88eb71a81f93185"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/asset-evidence.json",
+      "bytes": 3047,
+      "sha256": "c927b808a42f8fbfcf4fb240d0ab146ca53715aa8107c97f8005a40d6b96cd41",
+      "original_worktree_sha256": "6c4446122464ee100f570eadb7fa1a4a16b6f9239f7f8bb727997ddfeedad4d0",
+      "original_worktree_bytes": 3108
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/browser-evidence.json",
+      "bytes": 3294,
+      "sha256": "4d8bb4e888338490bfb3f34eb028c2abf5a710b6f3ac37b804f1b23178bce80b"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/build-evidence.json",
+      "bytes": 1832,
+      "sha256": "a13d552651bcab985f594293ba0f4ae02bdcc8f88fa5101f651768580ef3b28c",
+      "original_worktree_sha256": "2597cf14df43ba8a930ef6b33af0da41e34b634b072d7a3e5ec498bdb1fa2f4b",
+      "original_worktree_bytes": 1892
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/code-only.png",
+      "bytes": 126180,
+      "sha256": "81e7feda9d38177fc90ad9d1dbb4924137c537ceae14f62555aade5e13f359e5"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/comparison.png",
+      "bytes": 528921,
+      "sha256": "c010fd6c98b2d5cee096043f12ccfa3327a6da2f82748855dff3b87338c47903"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/html-effect.png",
+      "bytes": 272208,
+      "sha256": "568f0eacd45604cb19880f29d754f254c773f37e84c93cfe62f44a3159ee0b01"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/ice-block-request.json",
+      "bytes": 1442,
+      "sha256": "18cdccb590f6a03f8b0ee81de6ae1d2e6902d0fb6cbe88b1bdc16fa914e80840",
+      "original_worktree_sha256": "1dde69ecb95b232cab2413642843bd95dae293d13adb3e7cdd0cf15e6efbef57",
+      "original_worktree_bytes": 1471
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/ice-block.png",
+      "bytes": 3532138,
+      "sha256": "a122e49042c2905765571c168971eb9f5aea9213d3675b104408c449d915062e"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/renderer.js",
+      "bytes": 11444,
+      "sha256": "98dbe806dd78c8c7c452cc311a93ca6741858adf2eee0fae4225f7bd7872d9b6"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/review-page.png",
+      "bytes": 229984,
+      "sha256": "b8f8cf67d02f7c839d1df61ba238f1a25b7f9916a2e28a4eeeb8d2ba636174de"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/review.html",
+      "bytes": 21180,
+      "sha256": "9df70a03e3f885d5253770ad80b9f9e0964dc88c2059f5fe24462a974238a6e8",
+      "original_worktree_sha256": "4cb1dda9771332e376e1875ee1c1cce73b9abdb32cde22e8793b0f034d5a6e99",
+      "original_worktree_bytes": 21408
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/scene.json",
+      "bytes": 3203,
+      "sha256": "b39505c0841fae389f3f724d4547c48087a478851b0ee968c977f25b63c2b3b4"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/template.html",
+      "bytes": 4964,
+      "sha256": "e02baad17b7a8d064f6f94415ea1462608859c78d0a9141a4bfbdff6a7ab175e"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/theme.json",
+      "bytes": 1123,
+      "sha256": "83dfd7eb6f3f6e868ab6ddedb47b07d91c8b5ac47a56662fb5ce7fe56b38d2b3"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/water-cup-request.json",
+      "bytes": 1479,
+      "sha256": "047aa1eafac8b942457da476f326129b9db0a1940b0962032905e19ebe8b38ba",
+      "original_worktree_sha256": "965775276a2c4f0662d378b12dbe15d63feaf54c48d76129af4e3d307d8a661a",
+      "original_worktree_bytes": 1508
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/water-cup.png",
+      "bytes": 2458982,
+      "sha256": "bcd90448ea3f06c508d58cc8b642411c16aa2c7112f92ef77a439f15eb464679"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/render-evidence.json",
+      "bytes": 1354,
+      "sha256": "6205db602d6294ca3dd79574cfd0ad8ec7952d830009a1f1baa0e447247d2bd2"
+    },
+    {
+      "path": "docs/reviews/2026-10-08-capability-workflow-demo/workflow-demo.html",
+      "bytes": 12044,
+      "sha256": "23c316ac191d3d52c77db215928546f5a40801b6eb517f5c1ebfeb7ce31abbda",
+      "original_worktree_sha256": "08bc4b84dfce2d4d5a89f1bebc4a072a36a964058a9468ee06c12b57f3d57150",
+      "original_worktree_bytes": 12055
+    },
+    {
+      "path": "docs/styles/science-explainer/reusable-style-board-v1/README.md",
+      "bytes": 1646,
+      "sha256": "a39eea5e8042d77bc284381b5485488df5e34639b36aca2b8d1017301db2af3f"
+    },
+    {
+      "path": "docs/styles/science-explainer/reusable-style-board-v1/generation-rules.txt",
+      "bytes": 2689,
+      "sha256": "a8b3f19ae564f7c2eb8a8db71c8dd080da0570f88c3dbcfa0e0571951a6b306d"
+    },
+    {
+      "path": "docs/styles/science-explainer/reusable-style-board-v1/style-board.html",
+      "bytes": 1253011,
+      "sha256": "f3e7e8d8c33e172fcf8f7b01c699579bf96b32860c61b24baed87d3255be87f9"
+    },
+    {
+      "path": "docs/styles/science-explainer/reusable-style-board-v1/style-board.json",
+      "bytes": 762,
+      "sha256": "f454aeefafbcf791b8929ddb04fab6af4e97a32affde802efbd2d878b2625454"
+    },
+    {
+      "path": "docs/styles/science-explainer/reusable-style-board-v1/style-board.png",
+      "bytes": 522968,
+      "sha256": "93d64c607e2cbccbad4cfeec27ed0fcdd51383c2bd8b0bdd58412a8a4bebe0e4"
+    },
+    {
+      "path": "html_engine/tools/capability-workflow-board.cjs",
+      "bytes": 20282,
+      "sha256": "bcfe772f9e1e5d788ca8ec89e9845525b0426b6ea6fa876951e3fd939975c216"
+    },
+    {
+      "path": "html_engine/tools/capture-static-reconstruction.cjs",
+      "bytes": 3005,
+      "sha256": "fc89fdb071778c8fb39c3608e4b9d21fc6980d9b33cb0a04665a603094c1ce09"
+    }
+  ],
+  "assets": [
+    {
+      "id": "reference.browser-effects-demo",
+      "version": "0.1.0",
+      "role": "technical_demo",
+      "source": "docs/reviews/2026-10-08-capability-workflow-demo/effects-demo.html",
+      "authoring_source": "html_engine/tools/capability-workflow-board.cjs",
+      "screenshots": [
+        "docs/reviews/2026-10-08-capability-workflow-demo/effects-01.png",
+        "docs/reviews/2026-10-08-capability-workflow-demo/effects-02.png",
+        "docs/reviews/2026-10-08-capability-workflow-demo/effects-03.png",
+        "docs/reviews/2026-10-08-capability-workflow-demo/effects-04.png",
+        "docs/reviews/2026-10-08-capability-workflow-demo/effects-05.png"
+      ],
+      "effects": 61,
+      "theme_admitted": 55,
+      "technical_review": "Recorded browser rendering; not full parameter-space verification",
+      "visual_review": "Not approved as a production code-art reference",
+      "known_issues": [
+        "Per-effect parameter limits and composition coverage incomplete",
+        "Historical reconstruction uses F01 for gradients although catalog F01 means solid fill",
+        "Reconstruction heading is 80px while earlier catalog says 18–48px"
+      ]
+    },
+    {
+      "id": "reference.early-reusable-style-board",
+      "version": "0.1.0",
+      "role": "historical_style_trial",
+      "source": "docs/styles/science-explainer/reusable-style-board-v1/style-board.html",
+      "screenshot": "docs/styles/science-explainer/reusable-style-board-v1/style-board.png",
+      "visual_review": "Historical candidate; no adoption as current approved art reference"
+    },
+    {
+      "id": "proposal.freezing-water",
+      "version": "0.1.0",
+      "role": "design_proposal",
+      "source": "docs/reviews/2026-10-08-capability-workflow-demo/generated.png",
+      "request": "docs/reviews/2026-10-08-capability-workflow-demo/image-request.json",
+      "method": "Configured image generation with 5 real code screenshots, 1 style reference, rules and LLM decomposition",
+      "model": "gpt-image-2.5-sunburst-vip",
+      "quality": "low",
+      "resolution": "2k",
+      "size": [
+        2048,
+        1152
+      ],
+      "visual_review": "Direction considered viable; aesthetics still need improvement; not code implementation evidence"
+    },
+    {
+      "id": "illustration.freezing-water-cup",
+      "version": "0.1.0",
+      "role": "illustration",
+      "source": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/water-cup.png",
+      "request": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/water-cup-request.json",
+      "method": "Reference-guided model edit, not lossless original-pixel extraction",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha": true,
+      "visual_review": "Separate approval not recorded; glass highlight details redrawn"
+    },
+    {
+      "id": "illustration.freezing-water-ice",
+      "version": "0.1.0",
+      "role": "illustration",
+      "source": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/ice-block.png",
+      "request": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/ice-block-request.json",
+      "method": "Reference-guided model edit, not lossless original-pixel extraction",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha": true,
+      "visual_review": "Separate approval not recorded; ice texture details redrawn"
+    },
+    {
+      "id": "page.freezing-water-static-reconstruction",
+      "version": "0.1.0",
+      "role": "code_art_page_candidate",
+      "source": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/review.html",
+      "sources": [
+        "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/renderer.js",
+        "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/template.html",
+        "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/theme.json",
+        "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/scene.json"
+      ],
+      "screenshot": "docs/reviews/2026-10-08-capability-workflow-demo/reconstruction/html-effect.png",
+      "allocation": {
+        "code_objects": 11,
+        "image_objects": 2,
+        "objects": 13
+      },
+      "technical_review": "Actual browser screenshot and 13-object identity record; static only",
+      "visual_review": "User considers approach viable and explicitly requests better aesthetics; production visual approval not recorded",
+      "font_scope": "Microsoft YaHei on Windows; host font hashes recorded; no system font files redistributed",
+      "reuse_scope": "Single topic experiment; cross-topic reuse not verified"
+    }
+  ],
+  "next_assets": {
+    "roles": [
+      "code_art_detail",
+      "code_art_composition",
+      "code_art_page"
+    ],
+    "status": "To be designed, polished and visually reviewed",
+    "approved_reference_set": false
+  },
+  "sensitive_data_policy": "No API keys, credentials, database, voice/audio, provider logs or duplicate base64 media bundles included.",
+  "hash_basis": "sha256 and bytes cover Git repository bytes after text normalization; original_worktree_* fields retain prior Windows text-byte provenance where different. PNG bytes are unchanged."
+}

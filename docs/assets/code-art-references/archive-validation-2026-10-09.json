@@ -1,0 +1,10 @@
+{
+  "checked": "Git staged publication snapshot",
+  "contract_version": "0.9.4",
+  "markdown_links": "resolved within staged/HEAD tree",
+  "archive_files": 50,
+  "archive_sha256": "all match normalized repository bytes",
+  "sensitive_patterns": "none found",
+  "runtime_implementation_changed": false,
+  "visual_approval": "not granted by verification"
+}

@@ -1,8 +1,8 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.0",
-  "effective_date": "2026-10-07",
+  "contract_version": "0.9.4",
+  "effective_date": "2026-10-09",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
@@ -19,7 +19,8 @@
     "E2 catalog 0.2.0 adds hero-steps recipe; user Token course tested with hps.e2.recipe 0.1.0 and unchanged E1 format. Visual and audio approval pending.",
     "Visual V1 is a separate hps.visual.scene/theme/layout 0.1.0 format. Scoped public/theme/layout/content separation, capacity, anchor, subtitle and resource checks implemented; application backend integration and new visual approval remain pending.",
     "2026-10-08 user review rejected the simplified V1 science appearance. Its technical checks remain valid, but visual production approval is changes_requested. Reference-fidelity style study requires separate visual review; its icons/gradients/panels do not widen V1 0.1.0.",
-    "2026-10-08 HPS-025 clarification: auxiliary English/series/brand/source footer labels are opt-in; preserve provenance in metadata, do not auto-add them from a reference board. Scientific caveats remain content."
+    "2026-10-08 HPS-025 clarification: auxiliary English/series/brand/source footer labels are opt-in; preserve provenance in metadata, do not auto-add them from a reference board. Scientific caveats remain content.",
+    "2026-10-09 code-art reference policy: first make beautiful real-code details/compositions/pages, then convey their reviewed aesthetic quality to the image model with the full readable admitted expression range. Asset formation/source/hash/review provenance documented; existing trial samples are not production-approved. Detailed flow and future controls remain proposals; no runtime/API/format change."
   ],
   "documents": [
     {
@@ -102,6 +103,15 @@
     },
     {
       "path": "runtime/visual-v1/README.md"
+    },
+    {
+      "path": "framework/09-flat-effects.md"
+    },
+    {
+      "path": "framework/12-code-art-reference-assets.md"
+    },
+    {
+      "path": "definitions/code-art-reference-asset.md"
     }
   ],
   "rules": [
@@ -188,7 +198,8 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_e1_standalone",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-010",
@@ -234,7 +245,8 @@
       "section": "## 1. HPS-014：每次生产携带规则与输入版本",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-015",
@@ -306,7 +318,8 @@
       "section": "## HPS-022：风格按样本覆盖与证据发布",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-023",
@@ -333,7 +346,8 @@
       "section": "## HPS-025：内容容量与美术质量分别设门槛",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-026",
@@ -343,7 +357,8 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_e1_standalone",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-027",
@@ -362,7 +377,8 @@
       "section": "## HPS-028：生成任务明确代码层与资产层",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-029",
@@ -389,7 +405,8 @@
       "section": "## HPS-031：统一效果组件，按能力选择实现",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-032",
@@ -398,7 +415,8 @@
       "section": "## HPS-032：效果模板、组件、图谱和页面配方分别交付",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-033",
@@ -408,7 +426,8 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "not_implemented",
-      "clarification": "参考图按组件/主题版本复用，成熟布局不逐页重复生成设计图"
+      "clarification": "参考图按组件/主题版本复用，成熟布局不逐页重复生成设计图",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-034",
@@ -427,7 +446,8 @@
       "section": "## HPS-035：风格白名单与禁止范围",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     },
     {
       "id": "HPS-036",
@@ -445,7 +465,8 @@
       "section": "## HPS-037：能力状态、准入与验收",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "code_art_reference_supplement": "framework/12-code-art-reference-assets.md"
     }
   ],
   "definition_index": "definitions/definition-index.json",

@@ -1,0 +1,20 @@
+{
+  "objects": 13,
+  "images": [
+    {
+      "complete": true,
+      "w": 2048,
+      "h": 2048
+    },
+    {
+      "complete": true,
+      "w": 2048,
+      "h": 2048
+    }
+  ],
+  "resourceError": null,
+  "audioVideo": 0,
+  "comparison": "compare",
+  "flowSelection": "打磨代码美感",
+  "browserErrors": []
+}

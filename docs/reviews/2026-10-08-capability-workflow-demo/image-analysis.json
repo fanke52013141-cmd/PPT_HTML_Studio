@@ -1,0 +1,9 @@
+{
+  "size": [
+    2048,
+    1152
+  ],
+  "expected_background": "#FBFAF8",
+  "bottom_24_rows_exact_fraction": 0.18306477864583334,
+  "bottom_24_rows_within_3_fraction": 0.9999796549479166
+}
