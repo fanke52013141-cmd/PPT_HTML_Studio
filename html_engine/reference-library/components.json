@@ -1,0 +1,302 @@
+{
+  "format": "hps.component-atlas",
+  "version": "0.1.0",
+  "fonts": [
+    {
+      "id": "F01",
+      "family": "Noto Sans SC",
+      "name": "思源黑体",
+      "use": "标题 / 正文"
+    },
+    {
+      "id": "F02",
+      "family": "Noto Serif SC",
+      "name": "思源宋体",
+      "use": "编辑式标题 / 引用"
+    },
+    {
+      "id": "F03",
+      "family": "楷体",
+      "name": "楷体",
+      "use": "少量引语 / 特殊标题"
+    },
+    {
+      "id": "F04",
+      "family": "Arial",
+      "name": "Arial",
+      "use": "西文 / 数字"
+    },
+    {
+      "id": "F05",
+      "family": "Consolas",
+      "name": "Consolas",
+      "use": "代码 / 等宽数字"
+    }
+  ],
+  "items": [
+    {
+      "id": "T01",
+      "name": "主标题",
+      "kind": "title",
+      "category": "文字层级",
+      "categoryNote": "文字保持真实、可改；主次通过字号、字重、行距区分。",
+      "purpose": "页面的第一视觉焦点",
+      "text": "这是主标题",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "T02",
+      "name": "副标题",
+      "kind": "subtitle",
+      "category": "文字层级",
+      "categoryNote": "文字保持真实、可改；主次通过字号、字重、行距区分。",
+      "purpose": "补充主题与范围",
+      "text": "这是副标题",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "T03",
+      "name": "分组标题",
+      "kind": "section",
+      "category": "文字层级",
+      "categoryNote": "文字保持真实、可改；主次通过字号、字重、行距区分。",
+      "purpose": "划分知识层级",
+      "text": "一个清晰的小标题",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "T04",
+      "name": "正文",
+      "kind": "body",
+      "category": "文字层级",
+      "categoryNote": "文字保持真实、可改；主次通过字号、字重、行距区分。",
+      "purpose": "承载主要信息",
+      "text": "正文用于传达信息。保持清晰字距与舒适行距。",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "T05",
+      "name": "解释语",
+      "kind": "explain",
+      "category": "文字层级",
+      "categoryNote": "文字保持真实、可改；主次通过字号、字重、行距区分。",
+      "purpose": "补充原因与限定",
+      "text": "解释语补充背景、原因和条件。",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "T06",
+      "name": "注释与来源",
+      "kind": "caption",
+      "category": "文字层级",
+      "categoryNote": "文字保持真实、可改；主次通过字号、字重、行距区分。",
+      "purpose": "低层级辅助信息",
+      "text": "注：说明条件，避免歧义。",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "T07",
+      "name": "重点强调",
+      "kind": "highlight",
+      "category": "文字层级",
+      "categoryNote": "文字保持真实、可改；主次通过字号、字重、行距区分。",
+      "purpose": "强调一句话中的关键词",
+      "text": "重要的信息",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "T08",
+      "name": "数字与单位",
+      "kind": "number",
+      "category": "文字层级",
+      "categoryNote": "文字保持真实、可改；主次通过字号、字重、行距区分。",
+      "purpose": "让数值与单位层次分明",
+      "text": "128",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "A01",
+      "name": "直线箭头",
+      "kind": "arrow",
+      "category": "箭头与连接",
+      "categoryNote": "方向与端点由代码控制，文字单独排版。",
+      "purpose": "指向与单向关系",
+      "text": "",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "A02",
+      "name": "双向箭头",
+      "kind": "double-arrow",
+      "category": "箭头与连接",
+      "categoryNote": "方向与端点由代码控制，文字单独排版。",
+      "purpose": "双向关系",
+      "text": "",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "A03",
+      "name": "折线箭头",
+      "kind": "elbow",
+      "category": "箭头与连接",
+      "categoryNote": "方向与端点由代码控制，文字单独排版。",
+      "purpose": "绕开对象连接",
+      "text": "",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "A04",
+      "name": "曲线箭头",
+      "kind": "curve",
+      "category": "箭头与连接",
+      "categoryNote": "方向与端点由代码控制，文字单独排版。",
+      "purpose": "柔和转折与引导",
+      "text": "",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "C01",
+      "name": "平面卡片",
+      "kind": "flat-card",
+      "category": "卡片与容器",
+      "categoryNote": "同一个容器结构，可以换填色、边框、圆角与阴影。",
+      "purpose": "背景分组",
+      "text": "卡片标题",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "C02",
+      "name": "描边卡片",
+      "kind": "outline-card",
+      "category": "卡片与容器",
+      "categoryNote": "同一个容器结构，可以换填色、边框、圆角与阴影。",
+      "purpose": "轻量边界",
+      "text": "卡片标题",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "C03",
+      "name": "柔影卡片",
+      "kind": "shadow-card",
+      "category": "卡片与容器",
+      "categoryNote": "同一个容器结构，可以换填色、边框、圆角与阴影。",
+      "purpose": "轻微层次",
+      "text": "卡片标题",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "C04",
+      "name": "编号卡片",
+      "kind": "number-card",
+      "category": "卡片与容器",
+      "categoryNote": "同一个容器结构，可以换填色、边框、圆角与阴影。",
+      "purpose": "有序信息",
+      "text": "步骤标题",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "S01",
+      "name": "矩形 · 圆角矩形",
+      "kind": "rects",
+      "category": "基础形状",
+      "categoryNote": "规则几何擅长结构示意；复杂人物与材质交给图片。",
+      "purpose": "面板与分区",
+      "text": "",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "S02",
+      "name": "圆 · 椭圆",
+      "kind": "circles",
+      "category": "基础形状",
+      "categoryNote": "规则几何擅长结构示意；复杂人物与材质交给图片。",
+      "purpose": "节点与范围",
+      "text": "",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "S03",
+      "name": "三角形 · 六边形",
+      "kind": "polygons",
+      "category": "基础形状",
+      "categoryNote": "规则几何擅长结构示意；复杂人物与材质交给图片。",
+      "purpose": "方向与结构节点",
+      "text": "",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "S04",
+      "name": "线段 · 圆弧",
+      "kind": "lines",
+      "category": "基础形状",
+      "categoryNote": "规则几何擅长结构示意；复杂人物与材质交给图片。",
+      "purpose": "分隔与局部标记",
+      "text": "",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "N01",
+      "name": "胶囊标签",
+      "kind": "pill",
+      "category": "标签与标注",
+      "categoryNote": "标注跟随目标；标签文字、线条和编号独立。",
+      "purpose": "简短分类与状态",
+      "text": "标签文字",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "N02",
+      "name": "编号圆点",
+      "kind": "badge",
+      "category": "标签与标注",
+      "categoryNote": "标注跟随目标；标签文字、线条和编号独立。",
+      "purpose": "步骤与序号",
+      "text": "01",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "N03",
+      "name": "括号标注",
+      "kind": "bracket",
+      "category": "标签与标注",
+      "categoryNote": "标注跟随目标；标签文字、线条和编号独立。",
+      "purpose": "强调一段范围",
+      "text": "一组相关内容",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "N04",
+      "name": "引线标注",
+      "kind": "leader",
+      "category": "标签与标注",
+      "categoryNote": "标注跟随目标；标签文字、线条和编号独立。",
+      "purpose": "指出观察位置",
+      "text": "说明文字",
+      "status": "implemented-reference",
+      "productionAdapter": "not_integrated"
+    }
+  ]
+}

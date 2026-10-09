@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--design-only', action='store_true', help='One opaque full-page design reference; no split or extra illustration call.')
     parser.add_argument('--reference', type=Path, nargs='+', default=[Path('outputs/image25-sheet/reference-original.png')])
     parser.add_argument('--size', default='2048x2048', choices=['2048x2048', '2048x1152'])
+    parser.add_argument('--model', default='gpt-image-2.5-flare-vip', choices=['gpt-image-2.5-flare-vip', 'gpt-image-2.5-sunburst-official'])
     args = parser.parse_args()
     if args.design_only and (args.split_only or len(args.reference) != 1):
         parser.error('Design-only requires one reference and cannot combine with split-only.')
@@ -36,25 +37,34 @@ def main():
     out = args.out
     out.mkdir(parents=True, exist_ok=False)
     key = getpass.getpass('ToAPIs credential (hidden): ')
-    model = 'gpt-image-2.5-flare-vip'
+    model = args.model
     base = 'https://api.toapis.com'
     original_client = httpx.Client
     records = []
     active = {}
+    synchronous_result = None
 
     def save():
         (out / 'evidence.json').write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding='utf-8')
 
     class ObservedClient(original_client):
         def post(self, url, **kwargs):
+            nonlocal synchronous_result
             if str(url).endswith('/images/generations'):
                 payload = kwargs.get('json', {})
+                if model == 'gpt-image-2.5-sunburst-official':
+                    # Experiment-only official contract; do not change production VIP behavior.
+                    payload.pop('resolution', None)
+                    payload['response_format'] = 'b64_json'
+                    payload['metadata'] = {'resolution': '2K', 'orientation': 'landscape' if args.size == '2048x1152' else 'square'}
                 active['wire'] = {k: v for k, v in payload.items() if k != 'reference_images'}
                 active['reference_count'] = len(payload.get('reference_images', []))
                 save()
             response = super().post(url, **kwargs)
             if str(url).endswith('/images/generations'):
                 body = response.json()
+                if response.is_success and isinstance(body.get('data'), list) and body['data']:
+                    synchronous_result = body
                 active['task_id'] = body.get('id')
                 active['submit_http_status'] = response.status_code
                 save()
@@ -109,6 +119,16 @@ def main():
                           elapsed_seconds=round(time.monotonic() - started, 2))
             print(json.dumps({k: v for k, v in active.items() if k not in {'wire'}}, ensure_ascii=False), flush=True)
         except Exception as exc:
+            if synchronous_result is not None:
+                png = provider.extract_image_bytes_from_response(synchronous_result)
+                (out / f'{name}.png').write_bytes(png)
+                image = Image.open(io.BytesIO(png))
+                active.update(status='completed', actual_size=list(image.size), mode=image.mode,
+                              output=f'{name}.png', elapsed_seconds=round(time.monotonic() - started, 2))
+                synchronous_result = None
+                save()
+                print(json.dumps({'test': name, 'status': 'completed', 'actual_size': active['actual_size']}), flush=True)
+                continue
             active['error'] = provider._toapis_safe_diagnostic(str(exc), key)
             active['elapsed_seconds'] = round(time.monotonic() - started, 2)
             print(json.dumps({'test': name, 'error': active['error']}, ensure_ascii=False), flush=True)

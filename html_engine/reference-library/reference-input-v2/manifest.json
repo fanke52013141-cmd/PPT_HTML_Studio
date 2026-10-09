@@ -1,0 +1,77 @@
+{
+  "components": 32,
+  "base": "neutral",
+  "palettes": {
+    "version": "0.1.0",
+    "principle": "中性标准组件独立于配色。按角色选颜色，不将所有元素染成主色。",
+    "palettes": [
+      {
+        "id": "clear",
+        "name": "清爽多彩",
+        "ink": "#24334B",
+        "muted": "#607086",
+        "background": "#FFFFFF",
+        "primary": "#416BDD",
+        "secondary": "#198879",
+        "accent": "#B66A12",
+        "category": "#8054C6",
+        "tints": [
+          "#EEF3FF",
+          "#EAF7F2",
+          "#FFF4DE",
+          "#F4EEFB"
+        ]
+      },
+      {
+        "id": "editorial",
+        "name": "温暖编辑",
+        "ink": "#382F2C",
+        "muted": "#786D66",
+        "background": "#FFFFFF",
+        "primary": "#A64E3A",
+        "secondary": "#647642",
+        "accent": "#A97215",
+        "category": "#7961A0",
+        "tints": [
+          "#FFF0EA",
+          "#F0F4E6",
+          "#FFF5DE",
+          "#F5EFFA"
+        ]
+      },
+      {
+        "id": "science",
+        "name": "冷静科普",
+        "ink": "#24323B",
+        "muted": "#657780",
+        "background": "#FFFFFF",
+        "primary": "#267AB0",
+        "secondary": "#1B8379",
+        "accent": "#AE651E",
+        "category": "#7762BB",
+        "tints": [
+          "#EAF5FC",
+          "#E8F6F3",
+          "#FFF2E4",
+          "#F1EDFA"
+        ]
+      }
+    ],
+    "rules": [
+      "正文保持深色，不按分类逐字换色",
+      "单页选择1主色加1到2辅助角色，四个色相不必全部使用",
+      "相同分类跨页保持同色，不随机配色",
+      "浅面与同色深色文字成对；重要关系不只依靠颜色",
+      "默认强调色不等于警告，状态语义另行明确",
+      "配色参考与风格描述一并输入，参考标签不进入成图"
+    ]
+  },
+  "workflow": [
+    "neutral standard component PNG",
+    "one palette PNG",
+    "unified style description plus exact content",
+    "image generation 2K/low"
+  ],
+  "errors": [],
+  "status": "reference_only_visual_review_pending"
+}

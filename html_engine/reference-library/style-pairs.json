@@ -1,0 +1,165 @@
+{
+  "format": "hps.reference.style-pairs",
+  "version": "0.4.0",
+  "content": {
+    "eyebrow": "把信息组织成清晰的表达",
+    "title": "清楚表达，\n让想法被理解。",
+    "description": "用标题建立重点，用结构连接信息，再用一个主体图帮助理解。",
+    "keyline": "文字、关系与图片，各自承担清晰的职责。",
+    "steps": [
+      {
+        "title": "建立重点",
+        "copy": "标题与关键语形成明确层级。"
+      },
+      {
+        "title": "连接信息",
+        "copy": "编号、关系线与留白组织顺序。"
+      },
+      {
+        "title": "帮助理解",
+        "copy": "独立图片补充主体形态与质感。"
+      }
+    ]
+  },
+  "pairs": [
+    {
+      "id": "PAIR-01",
+      "name": "明快轮廓 × 插画主体",
+      "codeStyleRef": "outline",
+      "codeDescription": "黑体层级 / 较明确线条 / 少量浅色容器",
+      "summary": "温暖强调色连接主体，清晰文字和边界承接信息。",
+      "imageStyle": {
+        "id": "IMG-01",
+        "rendering": "清晰轮廓、少量平涂与局部高光",
+        "material": "不规则边缘的既有插画",
+        "lighting": "正面轻高光",
+        "perspective": "固定斜向灯泡",
+        "referenceAssetRef": "bulb",
+        "status": "existing_asset_reference"
+      },
+      "asset": {
+        "id": "bulb",
+        "path": "html_engine/reference-library/assets/bulb.png",
+        "sha256": "2a4c3cff82353b5b6ac87bb3b0cae233c515c5678231b5943f19512aa03d6018",
+        "source": "outputs/image25-sheet/toapis-bulb-reference-v1/extraction-2-clean/asset-bulb.png",
+        "width": 2048,
+        "height": 1152,
+        "alt": "轮廓插画灯泡",
+        "visualApproval": "pending_for_new_pairing",
+        "slot": {
+          "fit": "contain",
+          "width": 700,
+          "height": 385,
+          "crop": "none"
+        },
+        "provenance": "原字节复用，无重绘、换色或局部修图"
+      },
+      "shared": {
+        "palette": "强调色与主体色彩协调，白色保持主背景",
+        "weight": "主体轮廓较重，代码字重与边界保持清晰",
+        "space": "主体留在独立槽位，主要文字保留稳定留白"
+      },
+      "components": ["T01", "T04", "T05", "A01", "C04"],
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "PAIR-02",
+      "name": "轻立体 × 柔和几何",
+      "codeStyleRef": "depth",
+      "codeDescription": "黑体层级 / 轻细线条 / 柔影与圆角",
+      "summary": "蓝灰与轻层次协调，主体形态成为主要美术焦点。",
+      "imageStyle": {
+        "id": "IMG-02",
+        "rendering": "固定视角轻立体",
+        "material": "细腻纸面、有限明暗层次",
+        "lighting": "左上柔光",
+        "perspective": "固定斜视纸飞机",
+        "referenceAssetRef": "plane",
+        "status": "existing_asset_reference"
+      },
+      "asset": {
+        "id": "plane",
+        "path": "html_engine/reference-library/assets/plane.png",
+        "sha256": "906b8006be7d18ff1d7f964c0194b6343f976c01ffe337cd6af95690653a260b",
+        "source": "html_engine/assets/plane.png",
+        "width": 627,
+        "height": 627,
+        "alt": "蓝色轻立体纸飞机",
+        "visualApproval": "pending_for_new_pairing",
+        "slot": {
+          "fit": "contain",
+          "width": 700,
+          "height": 385,
+          "crop": "none"
+        },
+        "provenance": "原字节复用，无重绘、换色或局部修图"
+      },
+      "shared": {
+        "palette": "强调色与主体色彩协调，白色保持主背景",
+        "weight": "主体体积感较强，代码采用轻线条与柔和层次",
+        "space": "主体留在独立槽位，主要文字保留稳定留白"
+      },
+      "components": ["T01", "T04", "T05", "A01", "C04"],
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "PAIR-03",
+      "name": "暖纸编辑 × 纸质主体",
+      "codeStyleRef": "editorial",
+      "codeDescription": "宋体标题 + 黑体正文 / 细线 / 克制的暖色",
+      "summary": "宋体标题与暖纸色彩搭配，正文和关系保持规整。",
+      "imageStyle": {
+        "id": "IMG-03",
+        "rendering": "暖色固定视角立体插画",
+        "material": "纸张、书页与有限柔光",
+        "lighting": "上方柔光",
+        "perspective": "固定斜视书本",
+        "referenceAssetRef": "book",
+        "status": "existing_asset_reference"
+      },
+      "asset": {
+        "id": "book",
+        "path": "html_engine/reference-library/assets/book.png",
+        "sha256": "492fdcd44803cb88a2393df8857001ca5da5e1d28d4a0b0843766511141763f1",
+        "source": "html_engine/assets/knowledge-book-v1.png",
+        "width": 1536,
+        "height": 1024,
+        "alt": "暖色纸质书本",
+        "visualApproval": "pending_for_new_pairing",
+        "slot": {
+          "fit": "contain",
+          "width": 700,
+          "height": 385,
+          "crop": "none"
+        },
+        "provenance": "原字节复用，无重绘、换色或局部修图"
+      },
+      "shared": {
+        "palette": "强调色与主体色彩协调，白色保持主背景",
+        "weight": "纸面细节较多，代码降低装饰密度并保留留白",
+        "space": "主体留在独立槽位，主要文字保留稳定留白"
+      },
+      "components": ["T01", "T04", "T05", "A01", "C04"],
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    }
+  ],
+  "imageGeneration": {
+    "status": "not_executed_missing_configured_key",
+    "envKey": "OPENAI_API_KEY",
+    "plannedSize": "2048x2048",
+    "plannedQuality": "low",
+    "newImageCalls": 0
+  },
+  "layout": {
+    "id": "PAIR-LAYOUT-01",
+    "boardWidth": 1920,
+    "compositionHeight": 635,
+    "fixedImageSlot": "contain, preserve original bytes"
+  }
+}

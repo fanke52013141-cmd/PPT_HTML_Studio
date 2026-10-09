@@ -1,0 +1,9 @@
+# Actual renderer reference images are deliberate library evidence, not run media.
+!evidence/*.png
+
+# Frozen source assets are deliberate offline reference-pack inputs.
+!assets/
+!assets/*.png
+
+# Canonical screenshots supplied to image generation.
+!reference-input-v2/*.png

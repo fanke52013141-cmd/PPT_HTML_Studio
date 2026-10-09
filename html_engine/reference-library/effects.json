@@ -1,0 +1,393 @@
+{
+  "format": "hps.reference.effects",
+  "version": "0.4.0",
+  "groups": [
+    [
+      "渐变",
+      "线性渐变",
+      "径向渐变",
+      "锥形渐变",
+      "叠层渐变"
+    ],
+    [
+      "阴影",
+      "柔和投影",
+      "硬边投影",
+      "内凹阴影",
+      "多层投影"
+    ],
+    [
+      "描边",
+      "虚线描边",
+      "点线描边",
+      "双线描边",
+      "渐变边框"
+    ],
+    [
+      "光与透明",
+      "透明叠加",
+      "磨砂玻璃",
+      "柔光边缘",
+      "斜面高光"
+    ],
+    [
+      "裁切与遮罩",
+      "圆形裁切",
+      "多边形裁切",
+      "渐隐遮罩",
+      "镂空遮罩"
+    ],
+    [
+      "背景纹理",
+      "细线网格",
+      "点阵纹理",
+      "斜线纹理",
+      "同心环纹理"
+    ],
+    [
+      "文字效果",
+      "渐变文字",
+      "轮廓文字",
+      "文字投影",
+      "重点底线"
+    ]
+  ],
+  "items": [
+    {
+      "id": "E01",
+      "name": "线性渐变",
+      "category": "渐变",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "recommended",
+      "purpose": "背景分区",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E02",
+      "name": "径向渐变",
+      "category": "渐变",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "聚焦装饰",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E03",
+      "name": "锥形渐变",
+      "category": "渐变",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "局部装饰",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E04",
+      "name": "叠层渐变",
+      "category": "渐变",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "柔和背景",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E05",
+      "name": "柔和投影",
+      "category": "阴影",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "recommended",
+      "purpose": "轻量分层",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E06",
+      "name": "硬边投影",
+      "category": "阴影",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "强烈边界",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E07",
+      "name": "内凹阴影",
+      "category": "阴影",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "凹面装饰",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E08",
+      "name": "多层投影",
+      "category": "阴影",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "突出重点",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E09",
+      "name": "虚线描边",
+      "category": "描边",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "recommended",
+      "purpose": "轻量边界",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E10",
+      "name": "点线描边",
+      "category": "描边",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "装饰边界",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E11",
+      "name": "双线描边",
+      "category": "描边",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "装饰边界",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E12",
+      "name": "渐变边框",
+      "category": "描边",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "局部强调",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E13",
+      "name": "透明叠加",
+      "category": "光与透明",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "叠层区分",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E14",
+      "name": "磨砂玻璃",
+      "category": "光与透明",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "局部浮层",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E15",
+      "name": "柔光边缘",
+      "category": "光与透明",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "装饰高光",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E16",
+      "name": "斜面高光",
+      "category": "光与透明",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "柔和表面",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E17",
+      "name": "圆形裁切",
+      "category": "裁切与遮罩",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "recommended",
+      "purpose": "主体裁切",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E18",
+      "name": "多边形裁切",
+      "category": "裁切与遮罩",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "几何裁切",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E19",
+      "name": "渐隐遮罩",
+      "category": "裁切与遮罩",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "边缘收束",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E20",
+      "name": "镂空遮罩",
+      "category": "裁切与遮罩",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "装饰镂空",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E21",
+      "name": "细线网格",
+      "category": "背景纹理",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "recommended",
+      "purpose": "结构底纹",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E22",
+      "name": "点阵纹理",
+      "category": "背景纹理",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "轻量底纹",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E23",
+      "name": "斜线纹理",
+      "category": "背景纹理",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "局部底纹",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E24",
+      "name": "同心环纹理",
+      "category": "背景纹理",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "局部底纹",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E25",
+      "name": "渐变文字",
+      "category": "文字效果",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "local",
+      "purpose": "标题装饰",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E26",
+      "name": "轮廓文字",
+      "category": "文字效果",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "展示性标题",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E27",
+      "name": "文字投影",
+      "category": "文字效果",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "caution",
+      "purpose": "局部标题",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    },
+    {
+      "id": "E28",
+      "name": "重点底线",
+      "category": "文字效果",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "recommendation": "recommended",
+      "purpose": "强调关键词",
+      "implementation": "CSS",
+      "restriction": "文字保持清晰，每页仅选择少量效果；固定参考变体，叠加需验证"
+    }
+  ]
+}

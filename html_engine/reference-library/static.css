@@ -1,0 +1,364 @@
+/* Static reference refinements: typography and geometry first, theme variables second. */
+.board {
+  --muted: #5f6570;
+  font-family: var(--component-font), sans-serif;
+}
+.board-header {
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+}
+.board-header h1 {
+  font-weight: 650;
+  letter-spacing: -0.6px;
+}
+.board-header p {
+  max-width: 1120px;
+}
+.cell {
+  border-color: #e4e7eb;
+  border-radius: 12px;
+}
+.cell-name {
+  font-weight: 550;
+}
+.cell-note {
+  color: #5f6570;
+}
+.sample {
+  height: 140px;
+  margin-bottom: 16px;
+}
+.sample-card {
+  min-height: 104px;
+}
+.sample-card p {
+  max-width: 240px;
+}
+.component svg {
+  color: var(--accent);
+}
+.component svg path[fill="none"] {
+  stroke-width: calc(var(--stroke) * 0.8);
+}
+.title {
+  letter-spacing: -0.5px;
+  font-weight: 650;
+}
+.effect-E05 {
+  box-shadow:
+    0 2px 5px #17191d09,
+    0 8px 18px #17191d12;
+}
+.effect-E08 {
+  box-shadow:
+    0 2px 4px #17191d12,
+    0 18px 28px #17191d2a,
+    0 32px 48px #17191d10;
+}
+.effect-E01 {
+  background: linear-gradient(
+    120deg,
+    var(--tint),
+    color-mix(in srgb, var(--accent) 30%, white)
+  );
+}
+.spec-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.spec-card {
+  min-width: 0;
+  border: 1px solid #e2e6eb;
+  border-radius: 14px;
+  overflow: hidden;
+  background: white;
+}
+.specimen {
+  position: relative;
+  height: 340px;
+  padding: 40px;
+  color: var(--ink);
+  font-family: var(--component-font), sans-serif;
+}
+.spec-kicker {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.spec-heading {
+  font-size: 40px;
+  letter-spacing: -0.8px;
+  line-height: 1.3;
+  font-weight: 650;
+  margin: 0 0 20px;
+  white-space: pre-line;
+}
+.spec-copy {
+  font-size: 18px;
+  line-height: 1.8;
+  margin: 0;
+  max-width: 380px;
+  color: var(--muted);
+}
+.spec-rule {
+  height: 1px;
+  background: var(--line);
+  width: 100%;
+  margin: 26px 0 18px;
+}
+.spec-footnote {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.6px;
+}
+.spec-caption {
+  padding: 18px 26px 20px;
+  border-top: 1px solid #e8ebef;
+}
+.spec-caption strong {
+  font-size: 18px;
+  font-weight: 550;
+}
+.spec-caption p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+.spec-number {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: -5px 0 16px;
+}
+.spec-number strong {
+  font-family: Arial, sans-serif;
+  font-size: 96px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -5px;
+}
+.spec-number span {
+  font-size: 20px;
+  color: var(--muted);
+}
+.spec-small-heading {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+#precision .specimen {
+  height: 250px;
+  padding: 20px 30px;
+}
+#precision svg {
+  width: 100%;
+  height: 200px;
+  display: block;
+  color: var(--accent);
+}
+#precision svg rect {
+  fill: var(--tint);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.graph-label {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  background: white;
+  font-size: 17px;
+  white-space: nowrap;
+}
+.specimen-V02 .graph-label {
+  top: 135px;
+  left: 48%;
+}
+.specimen-V03 .graph-label {
+  left: 20%;
+  top: 69px;
+}
+.graph-secondary {
+  position: absolute;
+  right: 30px;
+  top: 114px;
+  color: var(--muted);
+  font-size: 14px;
+  background: white;
+  padding: 0 8px;
+}
+.specimen-V04 .graph-label {
+  top: 24px;
+}
+.specimen-V05 .graph-label {
+  top: 42px;
+  left: 73%;
+}
+.ring-track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 7;
+}
+.ring-value {
+  position: absolute;
+  left: 26%;
+  top: 107px;
+  font-size: 18px;
+  font-weight: 500;
+}
+.specimen-V06 .graph-label {
+  top: 51px;
+  left: 68%;
+}
+#usage .specimen {
+  height: 330px;
+}
+.effect-usage {
+  height: 250px;
+}
+.effect-usage .effect-object {
+  width: 100%;
+  height: 215px;
+  padding: 26px;
+  border-radius: var(--radius);
+}
+.effect-usage .spec-kicker {
+  margin-bottom: 16px;
+}
+.effect-usage .spec-copy {
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 340px;
+}
+.specimen-X04 .effect-E19 {
+  mask-image: linear-gradient(90deg, black 55%, transparent);
+  background: var(--tint);
+}
+.specimen-X05 .effect-E21 {
+  background-color: white;
+}
+.specimen-X05 .spec-small-heading,
+.specimen-X05 .spec-copy,
+.specimen-X05 .spec-kicker {
+  background: white;
+  width: fit-content;
+}
+.specimen-X06 .spec-heading {
+  font-size: 35px;
+}
+.specimen-X06 .effect-E28 {
+  font: inherit;
+  box-shadow: inset 0 -10px var(--line);
+}
+#fusion .specimen {
+  height: 390px;
+  padding: 0;
+}
+.fusion-image {
+  position: absolute;
+  object-fit: contain;
+  width: 350px;
+  height: 350px;
+  left: 180px;
+  top: 5px;
+}
+.fusion-copy {
+  position: absolute;
+  left: 32px;
+  top: 38px;
+  width: 240px;
+}
+.fusion-copy .spec-heading {
+  font-size: 38px;
+}
+.fusion-copy .spec-copy {
+  font-size: 16px;
+  max-width: 180px;
+}
+.specimen-H01 .fusion-image {
+  width: 300px;
+  height: 300px;
+  left: 260px;
+  top: 88px;
+}
+.specimen-H02 .fusion-image {
+  left: 100px;
+  top: 5px;
+  width: 340px;
+  height: 340px;
+}
+.fusion-leaders {
+  position: absolute;
+  left: 22px;
+  top: 54px;
+  width: calc(100% - 44px);
+  height: 235px;
+  color: var(--accent);
+}
+.fusion-label {
+  position: absolute;
+  background: white;
+  padding: 6px 10px;
+  font-size: 16px;
+  color: var(--ink);
+}
+.label-top {
+  right: 27px;
+  top: 100px;
+}
+.label-bottom {
+  left: 25px;
+  top: 255px;
+}
+.specimen-H03 .fusion-image {
+  left: 60px;
+  top: -10px;
+  width: 370px;
+  height: 370px;
+}
+.fusion-card {
+  position: absolute;
+  left: 185px;
+  right: 28px;
+  bottom: 26px;
+  background: #ffffffed;
+  padding: 23px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow:
+    0 3px 8px #17191d08,
+    0 12px 24px #17191d10;
+}
+.fusion-card .spec-kicker {
+  margin-bottom: 10px;
+}
+.fusion-card .spec-small-heading {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.fusion-card .spec-copy {
+  font-size: 15px;
+  line-height: 1.7;
+}
+.use-note {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.effect-cell .use-note span:first-child {
+  font-weight: 500;
+}
+@media print {
+  .board {
+    break-inside: avoid;
+  }
+}

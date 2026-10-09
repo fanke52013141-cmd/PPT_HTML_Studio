@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "components": 32,
+  "scope": "unified style description only",
+  "source": "original components.html",
+  "appearance": "palette-independent",
+  "errors": [],
+  "output": "PNG references, not another HTML template"
+}

@@ -1,0 +1,79 @@
+{
+  "status": "passed",
+  "components": 32,
+  "effects": 28,
+  "motions": 0,
+  "staticCompositions": 18,
+  "stylePairs": 3,
+  "newImageCalls": 0,
+  "fontSamples": [
+    {
+      "family": "Noto Sans SC",
+      "loaded": true
+    },
+    {
+      "family": "Noto Serif SC",
+      "loaded": true
+    },
+    {
+      "family": "楷体",
+      "loaded": true
+    },
+    {
+      "family": "Arial",
+      "loaded": true
+    },
+    {
+      "family": "Consolas",
+      "loaded": true
+    }
+  ],
+  "actualHeadingFonts": [
+    {
+      "familyName": "Noto Sans SC",
+      "postScriptName": "Noto-Sans-SC-Bold",
+      "isCustomFont": false,
+      "glyphCount": 7
+    }
+  ],
+  "actualEditorialFonts": [
+    {
+      "familyName": "Noto Serif SC",
+      "postScriptName": "Noto-Serif-SC-Bold",
+      "isCustomFont": false,
+      "glyphCount": 12
+    }
+  ],
+  "checks": [
+    "white-background actual DOM/SVG screenshots",
+    "32 previews fit",
+    "style changes preserve IDs and geometry",
+    "safe text",
+    "local image style placement",
+    "zero page errors",
+    "18 static compositions fit text bounds",
+    "actual image readiness",
+    "no motion surface",
+    "all three code styles fit static compositions",
+    "zero network requests",
+    "three frozen style pairs and shared content",
+    "pair text bounds and image readiness",
+    "registered style rejection"
+  ],
+  "visualApproval": "pending",
+  "productionAdapter": "not_integrated",
+  "images": [
+    "code-components.png",
+    "typography.png",
+    "style-pairing.png",
+    "visual-effects.png",
+    "typography-compositions.png",
+    "svg-precision.png",
+    "effect-usage.png",
+    "image-fusion.png",
+    "image-fusion-blue.png",
+    "style-pair-outline.png",
+    "style-pair-depth.png",
+    "style-pair-editorial.png"
+  ]
+}

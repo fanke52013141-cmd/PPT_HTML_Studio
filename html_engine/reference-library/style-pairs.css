@@ -1,0 +1,238 @@
+.pair-board .board-header h1 {
+  font-family: var(--heading-font, var(--component-font)), sans-serif;
+}
+.pair-reference-grid {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 32px;
+  margin-bottom: 34px;
+}
+.pair-source-panel,
+.pair-code-panel {
+  border: 1px solid #e2e6eb;
+  border-radius: 12px;
+  padding: 24px 28px;
+  min-width: 0;
+}
+.panel-heading {
+  font-size: 17px;
+  font-weight: 550;
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+.pair-source-image {
+  width: 100%;
+  height: 210px;
+  object-fit: contain;
+  display: block;
+}
+.source-note {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 18px 0 0;
+}
+.pair-title-sample {
+  font-size: 34px;
+  font-family: var(--heading-font, var(--component-font)), sans-serif;
+}
+.pair-subtitle {
+  font-size: 17px;
+  color: var(--muted);
+  margin: 12px 0 20px;
+}
+.pair-swatches {
+  display: flex;
+  gap: 30px;
+}
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.swatch-chip {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #0000000a;
+}
+.pair-mini-row {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  align-items: center;
+  gap: 28px;
+  margin-top: 18px;
+}
+.pair-mini-row .sample-card {
+  width: 100%;
+  min-height: 90px;
+  border-color: var(--line);
+  border-width: var(--surface-outline, 1.5px);
+}
+.pair-mini-row .sample-card p {
+  max-width: none;
+  margin: 5px 0 0;
+}
+.pair-mini-row .sample-card strong {
+  font-size: 19px;
+}
+.pair-composition {
+  position: relative;
+  height: 635px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: white;
+  padding: 48px 48px 38px;
+  overflow: hidden;
+}
+.pair-hero-copy {
+  position: relative;
+  width: 730px;
+  z-index: 1;
+}
+.pair-eyebrow {
+  font-size: 16px;
+  letter-spacing: 1.2px;
+  font-weight: 500;
+  color: var(--accent);
+}
+.pair-hero-title {
+  font: 650 64px/1.28 var(--heading-font, var(--component-font));
+  letter-spacing: -1.4px;
+  margin: 24px 0 18px;
+  white-space: pre-line;
+}
+.pair-hero-description {
+  font-size: 22px;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 620px;
+  margin: 0;
+}
+.pair-keyline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  font-size: 16px;
+  color: var(--muted);
+}
+.pair-keyline-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.pair-hero-image {
+  position: absolute;
+  left: 1000px;
+  right: 40px;
+  top: 16px;
+  height: 385px;
+}
+.pair-subject {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.pair-steps {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 38px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 80px;
+}
+.pair-step {
+  background: var(--tint);
+  border: var(--surface-outline, 1px) solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 26px 24px 72px;
+  position: relative;
+  min-height: 144px;
+  box-shadow: var(--shadow, none);
+}
+.pair-step strong {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.pair-step p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 9px 0 0;
+}
+.pair-step-index {
+  position: absolute;
+  left: 24px;
+  top: 27px;
+  font:
+    500 16px Arial,
+    sans-serif;
+  color: var(--accent);
+}
+.pair-connectors {
+  position: absolute;
+  left: 0;
+  top: 32px;
+  width: 100%;
+  height: 80px;
+  pointer-events: none;
+  color: var(--accent);
+}
+.pair-connectors path {
+  stroke-width: var(--stroke);
+}
+.pair-shared-rule {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  margin: 24px 0 0;
+}
+.pair-shared-rule strong {
+  font-size: 17px;
+  white-space: nowrap;
+  font-weight: 550;
+}
+.pair-shared-rule p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0;
+}
+/* Base polish applies the same registered tokens throughout, keeping IDs independent of appearance. */
+.spec-heading,
+.title {
+  font-family: var(--heading-font, var(--component-font)), sans-serif;
+}
+#precision svg path:not([stroke-width="7"]) {
+  stroke-width: calc(var(--stroke) * 0.8);
+}
+.sample-card {
+  box-shadow: var(--shadow, none);
+}
+.flat-card .sample-card,
+.outline-card .sample-card {
+  box-shadow: none;
+}
+.effect-usage .effect-E19 {
+  mask-image: none;
+  position: relative;
+  overflow: hidden;
+}
+.effect-usage .effect-E19::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 90px;
+  background: linear-gradient(90deg, transparent, white);
+  pointer-events: none;
+}

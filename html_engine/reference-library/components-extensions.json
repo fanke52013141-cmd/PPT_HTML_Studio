@@ -1,0 +1,70 @@
+{
+  "version": "0.2.0",
+  "scope": "固定结构的静态参考，不是任意图表布局器",
+  "items": [
+    {
+      "id": "R01",
+      "name": "一对多分支",
+      "kind": "branch",
+      "category": "关系与组织",
+      "categoryNote": "节点与连接的数量、方向保持明确。",
+      "purpose": "一个来源连接两个结果"
+    },
+    {
+      "id": "R02",
+      "name": "多对一汇合",
+      "kind": "merge",
+      "category": "关系与组织",
+      "categoryNote": "节点与连接的数量、方向保持明确。",
+      "purpose": "两个输入汇合到同一结果"
+    },
+    {
+      "id": "R03",
+      "name": "循环关系",
+      "kind": "cycle",
+      "category": "关系与组织",
+      "categoryNote": "节点与连接的数量、方向保持明确。",
+      "purpose": "三阶段重复过程，非真实时间比例"
+    },
+    {
+      "id": "R04",
+      "name": "层级关系",
+      "kind": "hierarchy",
+      "category": "关系与组织",
+      "categoryNote": "节点与连接的数量、方向保持明确。",
+      "purpose": "一个父级与三个子级"
+    },
+    {
+      "id": "D01",
+      "name": "数量比较",
+      "kind": "bars",
+      "category": "数据与时间",
+      "categoryNote": "数值与比例由代码控制，示例数据不进入成图。",
+      "purpose": "同一基准的三个数值示例"
+    },
+    {
+      "id": "D02",
+      "name": "部分与整体",
+      "kind": "proportion",
+      "category": "数据与时间",
+      "categoryNote": "数值与比例由代码控制，示例数据不进入成图。",
+      "purpose": "一个比例与其剩余部分"
+    },
+    {
+      "id": "D03",
+      "name": "对照表格",
+      "kind": "matrix",
+      "category": "数据与时间",
+      "categoryNote": "数值与比例由代码控制，示例数据不进入成图。",
+      "purpose": "两个对象在同一维度下比较"
+    },
+    {
+      "id": "D04",
+      "name": "阶段时间线",
+      "kind": "timeline",
+      "category": "数据与时间",
+      "categoryNote": "数值与比例由代码控制，示例数据不进入成图。",
+      "purpose": "三个有序阶段，间距不表示历时"
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "format": "hps.reference.style-pair",
+  "version": "0.4.0",
+  "codeStyles": [
+    {
+      "id": "neutral",
+      "name": "中性基础",
+      "tokens": {
+        "ink": "#17191d",
+        "muted": "#686e78",
+        "accent": "#333a45",
+        "tint": "#f1f3f5",
+        "line": "#d8dde3",
+        "stroke": "2.5px",
+        "radius": "12px",
+        "component-font": "Noto Sans SC",
+        "heading-font": "Noto Sans SC",
+        "shadow": "none",
+        "surface-outline": "1px"
+      }
+    },
+    {
+      "id": "amber",
+      "name": "暖色外观示例",
+      "tokens": {
+        "ink": "#302820",
+        "muted": "#756653",
+        "accent": "#a56518",
+        "tint": "#fff3df",
+        "line": "#e6d5bb",
+        "stroke": "3px",
+        "radius": "18px",
+        "component-font": "Noto Sans SC",
+        "heading-font": "Noto Sans SC",
+        "shadow": "none",
+        "surface-outline": "1px"
+      }
+    },
+    {
+      "id": "blue",
+      "name": "冷色外观示例",
+      "tokens": {
+        "ink": "#202b43",
+        "muted": "#64728a",
+        "accent": "#315fc3",
+        "tint": "#edf3ff",
+        "line": "#ccd9f0",
+        "stroke": "2px",
+        "radius": "6px",
+        "component-font": "Noto Sans SC",
+        "heading-font": "Noto Sans SC",
+        "shadow": "none",
+        "surface-outline": "1px"
+      }
+    },
+    {
+      "id": "outline",
+      "name": "明快轮廓",
+      "tokens": {
+        "ink": "#20201f",
+        "muted": "#66645c",
+        "accent": "#aa730d",
+        "tint": "#fff9e9",
+        "line": "#e7d8af",
+        "stroke": "2.8px",
+        "radius": "14px",
+        "component-font": "Noto Sans SC",
+        "heading-font": "Noto Sans SC",
+        "shadow": "none",
+        "surface-outline": "1.6px"
+      }
+    },
+    {
+      "id": "depth",
+      "name": "轻立体",
+      "tokens": {
+        "ink": "#202e43",
+        "muted": "#627189",
+        "accent": "#39668f",
+        "tint": "#f0f5fa",
+        "line": "#d6e2ed",
+        "stroke": "1.8px",
+        "radius": "20px",
+        "component-font": "Noto Sans SC",
+        "heading-font": "Noto Sans SC",
+        "shadow": "0 3px 7px #24466a06,0 12px 22px #24466a0a",
+        "surface-outline": "1px"
+      }
+    },
+    {
+      "id": "editorial",
+      "name": "暖纸编辑",
+      "tokens": {
+        "ink": "#332c28",
+        "muted": "#756860",
+        "accent": "#a35644",
+        "tint": "#fbf4ed",
+        "line": "#e6d9ce",
+        "stroke": "1.6px",
+        "radius": "5px",
+        "component-font": "Noto Sans SC",
+        "heading-font": "Noto Serif SC",
+        "shadow": "none",
+        "surface-outline": "1px"
+      }
+    }
+  ],
+  "imageStyle": {
+    "id": null,
+    "status": "not_selected",
+    "reference": null,
+    "rendering": null,
+    "material": null,
+    "lighting": null,
+    "perspective": null
+  },
+  "pairing": {
+    "codeStyleRef": "neutral",
+    "imageStyleRef": null,
+    "shared": {
+      "palette": "与所选代码色彩协调",
+      "visualWeight": "主体轮廓与代码线宽协调",
+      "spacing": "独立主体保留留白，文字和关系由代码控制"
+    },
+    "status": "incomplete_without_image_reference"
+  }
+}

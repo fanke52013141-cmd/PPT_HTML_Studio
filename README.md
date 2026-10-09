@@ -34,7 +34,9 @@
 
 ## 当前阶段
 
-最新开发状态与下一步：[开发handoff](docs/plans/html-backend-development/handoff-2026-10-08.md)。素材板生成/审阅/重试公共功能及Image2.5参数已实现；Token整页设计转33对象HTML并复用真实音频的效果已获用户认可。三栏模板自动规划、批量效率及完整课程签收仍待做，完整产品状态不等同于单页批准。
+**后续唯一执行顺序：[视觉参考库收束与详细开发计划](docs/plans/html-backend-development/visual-reference-roadmap-2026-10-09.md)。**
+
+本次固化 [32 项中性标准组件、独立多角色配色与统一风格参考](html_engine/reference-library/README.md)。交付 PNG，HTML 仅内部渲染。被否定的模板已移出当前库，历史批准实例保留。新版多参考生图、可编辑还原和课程量产仍按计划逐项验证，不能把参考库完成等同整个产品完成。
 
 原图片后端与 guided HTML 后端并存。受约束生产、项目资产、审阅/批准、句子动作绑定、持久任务、视频和快照 PPTX 已接入本地应用并通过本轮工程验收；真实模型、真实课程、数字人、PowerPoint 打开及用户视觉评审仍待完成。
 

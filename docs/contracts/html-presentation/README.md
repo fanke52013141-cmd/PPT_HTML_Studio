@@ -1,9 +1,11 @@
 # HTML 演示体系契约
 
-契约包版本：0.9.9。生效日期：2026-10-08。
+契约包版本：0.9.13。生效日期：2026-10-09。
 状态：现行规则基线。HTML guided 应用流程已接入；未完成的视觉、真实服务和课程签收以开发账本为准。E1/E2/P01 格式保持独立。
 
 当前应用运行补充见[生产流程与实现归属](runtime/visual-v1/application-workflow-0.1.0.md)。
+
+当前参考输入统一为 [中性标准组件＋独立配色＋统一风格](../../../html_engine/reference-library/README.md)。32 项静态参考与 PNG 输出已实现；新版美感、多参考真实生图及生产适配分别待验。[定义卡](runtime/visual-v1/reference-library-0.1.0.md)明确能力边界；旧自建页面模板不再作为交付。
 
 整页设计参考重建增量：[编辑式三栏与shape定义卡](runtime/visual-v1/editorial-three-columns-0.4.0.md)。仅scene 0.4.0引入通用矩形/椭圆，保留旧场景词汇；用户已认可生图设计，实际HTML/动态与输出另验，不直接使用整页图片为背景。
 

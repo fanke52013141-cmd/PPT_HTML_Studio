@@ -1,0 +1,56 @@
+{
+  "version": "0.4.0",
+  "sha256": "83532a825c67ac343fd0c48144b1d4aaa3efdd35db4324805102de06bdc34db5",
+  "effects": 28,
+  "motions": 0,
+  "stylePairs": [
+    {
+      "id": "PAIR-01",
+      "codeStyleRef": "outline",
+      "imageStyleRef": "IMG-01",
+      "sha256": "2a4c3cff82353b5b6ac87bb3b0cae233c515c5678231b5943f19512aa03d6018"
+    },
+    {
+      "id": "PAIR-02",
+      "codeStyleRef": "depth",
+      "imageStyleRef": "IMG-02",
+      "sha256": "906b8006be7d18ff1d7f964c0194b6343f976c01ffe337cd6af95690653a260b"
+    },
+    {
+      "id": "PAIR-03",
+      "codeStyleRef": "editorial",
+      "imageStyleRef": "IMG-03",
+      "sha256": "492fdcd44803cb88a2393df8857001ca5da5e1d28d4a0b0843766511141763f1"
+    }
+  ],
+  "staticCompositions": 18,
+  "asset": {
+    "id": "reference-plane",
+    "path": "html_engine/assets/plane.png",
+    "sha256": "906b8006be7d18ff1d7f964c0194b6343f976c01ffe337cd6af95690653a260b",
+    "source": "复用本地既有纸飞机素材；仅作参考搭配，生产身份与边缘未批准",
+    "slot": "H01–H03固定627×627源图片等比contain；换图须重验留白、裁切和锚点",
+    "anchors": {
+      "outline": [
+        85,
+        449
+      ],
+      "direction": [
+        555,
+        344
+      ]
+    },
+    "visualApproval": "pending",
+    "width": 627,
+    "height": 627
+  },
+  "components": 32,
+  "fonts": [
+    "Noto Sans SC",
+    "Noto Serif SC",
+    "楷体",
+    "Arial",
+    "Consolas"
+  ],
+  "productionAdapter": "not_integrated"
+}

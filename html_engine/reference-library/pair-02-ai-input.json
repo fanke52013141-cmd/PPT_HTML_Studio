@@ -1,0 +1,30 @@
+{
+  "referenceVersion": "0.4.0",
+  "pairRef": "PAIR-02",
+  "codeStyleRef": "depth",
+  "imageStyle": {
+    "id": "IMG-02",
+    "rendering": "固定视角轻立体",
+    "material": "细腻纸面、有限明暗层次",
+    "lighting": "左上柔光",
+    "perspective": "固定斜视纸飞机",
+    "referenceAssetRef": "plane",
+    "status": "existing_asset_reference"
+  },
+  "shared": {
+    "palette": "强调色与主体色彩协调，白色保持主背景",
+    "weight": "主体体积感较强，代码采用轻线条与柔和层次",
+    "space": "主体留在独立槽位，主要文字保留稳定留白"
+  },
+  "componentRefs": [
+    "T01",
+    "T04",
+    "T05",
+    "A01",
+    "C04"
+  ],
+  "contentSource": "必须附准确文案与关系，不使用图板样例文字",
+  "canvas": "按当前项目画布比例",
+  "subtitleSafeArea": "按当前项目要求另附",
+  "status": "reference_only_pending_visual_review"
+}

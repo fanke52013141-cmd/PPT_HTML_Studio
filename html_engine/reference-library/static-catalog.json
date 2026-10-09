@@ -1,0 +1,194 @@
+{
+  "format": "hps.static.reference",
+  "version": "0.3.0",
+  "items": [
+    {
+      "id": "P01",
+      "name": "标题与导语",
+      "category": "排版",
+      "purpose": "用行长与留白建立主次",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "P02",
+      "name": "编号与两行标题",
+      "category": "排版",
+      "purpose": "用序号和断行形成节奏",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "P03",
+      "name": "数字与单位",
+      "category": "排版",
+      "purpose": "用字阶与基线突出数值",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "V01",
+      "name": "标签直线",
+      "category": "关系",
+      "purpose": "端点、箭头与标签共享秩序",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "V02",
+      "name": "曲线连接",
+      "category": "关系",
+      "purpose": "平滑路径与小箭头保持轻盈",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "V03",
+      "name": "圆角分支",
+      "category": "关系",
+      "purpose": "固定双分支，转角保留呼吸空间",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "V04",
+      "name": "括号分组",
+      "category": "关系",
+      "purpose": "范围与内部对象分层表达",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "V05",
+      "name": "环形与刻度",
+      "category": "关系",
+      "purpose": "纯几何示意，生产数据另行绑定",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "V06",
+      "name": "引线与锚点",
+      "category": "关系",
+      "purpose": "小端点与标签轻量连接",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "X01",
+      "name": "柔影信息卡",
+      "category": "效果用法",
+      "purpose": "常规使用：轻量分层",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "sample": "清楚承接信息",
+      "copy": "投影集中在卡片附近，保持文字与留白为主。"
+    },
+    {
+      "id": "X02",
+      "name": "重点浮层",
+      "category": "效果用法",
+      "purpose": "局部强调：更明显的高度",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "sample": "建立一个视觉重心",
+      "copy": "阴影区分层级，同一画面仅保留少量重点。"
+    },
+    {
+      "id": "X03",
+      "name": "柔和渐变面板",
+      "category": "效果用法",
+      "purpose": "局部使用：安静的背景",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "sample": "让背景退后一步",
+      "copy": "亮度缓慢过渡，文字保持清晰的深浅对比。"
+    },
+    {
+      "id": "X04",
+      "name": "边缘渐隐",
+      "category": "效果用法",
+      "purpose": "装饰使用：边缘过渡",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "sample": "柔和收束边界",
+      "copy": "主体内容留在实区，渐隐只处理边缘。"
+    },
+    {
+      "id": "X05",
+      "name": "轻网格信息区",
+      "category": "效果用法",
+      "purpose": "局部使用：结构感底纹",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "sample": "细节服务于秩序",
+      "copy": "纹理低对比，文字区域保持安静和清晰。"
+    },
+    {
+      "id": "X06",
+      "name": "文字局部底线",
+      "category": "效果用法",
+      "purpose": "常规使用：强调关键词",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated",
+      "sample": "",
+      "copy": ""
+    },
+    {
+      "id": "H01",
+      "name": "主体与排版",
+      "category": "图片融合",
+      "purpose": "同一画面协调图片与文字重心",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "H02",
+      "name": "主体与标注",
+      "category": "图片融合",
+      "purpose": "固定图片锚点；换图需重新定位",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    },
+    {
+      "id": "H03",
+      "name": "主体与容器",
+      "category": "图片融合",
+      "purpose": "有限叠放，保留轮廓与阅读区域",
+      "status": "implemented-reference",
+      "visualApproval": "pending",
+      "productionAdapter": "not_integrated"
+    }
+  ],
+  "asset": {
+    "id": "reference-plane",
+    "path": "html_engine/assets/plane.png",
+    "sha256": "906b8006be7d18ff1d7f964c0194b6343f976c01ffe337cd6af95690653a260b",
+    "source": "复用本地既有纸飞机素材；仅作参考搭配，生产身份与边缘未批准",
+    "slot": "H01–H03固定627×627源图片等比contain；换图须重验留白、裁切和锚点",
+    "anchors": {
+      "outline": [85, 449],
+      "direction": [555, 344]
+    },
+    "visualApproval": "pending",
+    "width": 627,
+    "height": 627
+  }
+}

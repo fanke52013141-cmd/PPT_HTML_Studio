@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>通用代码组件 · 白底截图板</title>
+    <style>
+      /*STYLE*/
+      /*STATIC_STYLE*/
+      /*PAIR_STYLE*/
+    </style>
+  </head>
+  <body>
+    <p style="padding:16px 32px;background:#fff">内部渲染与历史实验页；现行交付请查看 <a href="reference-input-v2/standard-components.png">中性组件 PNG</a>、<a href="reference-input-v2/palette-clear.png">配色 PNG</a>及 <a href="reference-input-v2/style-description.png">统一风格 PNG</a>。</p>
+    <nav class="toolbar">
+      <a href="#pair-01">历史实验示例</a> <a href="#atlas">组件总板</a
+      ><a href="#typography">文字细节板</a><a href="#effects">视觉效果</a
+      ><a href="#composition">排版组合</a><a href="#precision">精细 SVG</a
+      ><a href="#fusion">图片融合</a><a href="#pairing">历史配对实验</a
+      ><label
+        >基础板换肤
+        <select id="skin">
+          <option value="neutral">中性标准</option>
+          <option value="amber">暖色示例</option>
+          <option value="blue">冷色示例</option>
+        </select></label
+      ><label
+        >试放参考图片
+        <input
+          type="file"
+          id="image-file"
+          accept="image/png,image/jpeg,image/webp" /></label
+      ><span class="help" id="upload-status"
+        >图片只在本地显示；下方白板可直接截图。</span
+      >
+    </nav>
+    <main>
+      <div id="style-pairs"></div>
+      <article class="board" id="composition">
+        <header class="board-header">
+          <div>
+            <h1>排版组合 · 中性的精致</h1>
+            <p>用字重、行长、基线与留白组织信息。</p>
+          </div>
+          <div class="version">3 组通用组合<br />静态参考 0.3</div>
+        </header>
+        <div id="composition-body" class="spec-grid"></div>
+        <footer class="board-footer">
+          按编号选用；参考文字与说明不进入成片。图片为既有素材，示例不替代生产身份审阅；结构与文字由代码控制。
+        </footer>
+      </article>
+      <article class="board" id="precision">
+        <header class="board-header">
+          <div>
+            <h1>精细 SVG · 关系与秩序</h1>
+            <p>统一线宽、端点、转角与标注距离。</p>
+          </div>
+          <div class="version">6 组实际矢量<br />静态参考 0.3</div>
+        </header>
+        <div id="precision-body" class="spec-grid"></div>
+        <footer class="board-footer">
+          按编号选用；参考文字与说明不进入成片。图片为既有素材，示例不替代生产身份审阅；结构与文字由代码控制。
+        </footer>
+      </article>
+      <article class="board" id="usage">
+        <header class="board-header">
+          <div>
+            <h1>效果用法 · 服务于内容</h1>
+            <p>层次、渐变与纹理各有用途；按需要选择。</p>
+          </div>
+          <div class="version">6 组静态用法<br />静态参考 0.3</div>
+        </header>
+        <div id="usage-body" class="spec-grid"></div>
+        <footer class="board-footer">
+          按编号选用；参考文字与说明不进入成片。图片为既有素材，示例不替代生产身份审阅；结构与文字由代码控制。
+        </footer>
+      </article>
+      <article class="board" id="fusion">
+        <header class="board-header">
+          <div>
+            <h1>图片融合 · 同一画面的协调</h1>
+            <p>一个独立主体，分别搭配排版、标注与容器。</p>
+          </div>
+          <div class="version">3 组实际融合<br />静态参考 0.3</div>
+        </header>
+        <div id="fusion-body" class="spec-grid"></div>
+        <footer class="board-footer">
+          按编号选用；参考文字与说明不进入成片。图片为既有素材，示例不替代生产身份审阅；结构与文字由代码控制。
+        </footer>
+      </article>
+      <article class="board component-reference" id="atlas" data-skin="neutral">
+        <header class="board-header">
+          <div>
+            <h1>代码视觉组件 · 标准参考</h1>
+            <p>按编号选组件；字体、颜色、线宽与圆角可换，组件结构不变。</p>
+          </div>
+          <div class="version">
+            HTML · CSS · SVG<br />静态参考 0.3 / 实际代码效果
+          </div>
+        </header>
+        <div id="atlas-body"></div>
+        <footer class="board-footer">
+          <strong>给 AI：</strong
+          >参照组件效果组织文字与关系；复杂人物、实物、材质采用独立图片。<br />分类名、编号与说明只用于选型，不进入成片。此板展示有限的已实现参考组件，非全部浏览器能力。
+        </footer>
+      </article>
+      <article class="board" id="typography" data-skin="neutral">
+        <header class="board-header">
+          <div>
+            <h1>文字系统 · 字形与层级</h1>
+            <p>先选字体，再分配文字角色；不要把所有文字设成同样大小。</p>
+          </div>
+          <div class="version">中文 / 西文 / 数字<br />本机字体实测样例</div>
+        </header>
+        <div id="type-body"></div>
+        <footer class="board-footer">
+          默认组件使用思源黑体。标题 42 / 副标题 30 / 小标题 25 / 正文 21 /
+          解释语 19 / 注释 16 px。<br />字号是本板展示尺寸，整页应用应等比处理并实测容量。其他环境须提供对应字体，不能假设字形完全相同。
+        </footer>
+      </article>
+      <article class="board" id="effects">
+        <header class="board-header">
+          <div>
+            <h1>视觉效果 · 中性基础</h1>
+            <p>效果与风格分开：灰阶展示实现能力，换肤再赋予色彩。</p>
+          </div>
+          <div class="version">
+            28 项实际 CSS 效果<br />阴影 / 渐变 / 透明 / 遮罩 / 纹理
+          </div>
+        </header>
+        <div id="effects-body"></div>
+        <footer class="board-footer">
+          按 E
+          编号选择效果；基础白板保持中性。磨砂示例使用板内几何背景。每项为固定参考实现，叠加效果需要另行验证；未接入生产场景。
+        </footer>
+      </article>
+      <article class="board" id="pairing">
+        <header class="board-header">
+          <div>
+            <h1>整页视觉方向 = 图片风格 + 代码风格</h1>
+            <p>两份参考各管一层，共同约束配色、视觉重量与留白。</p>
+          </div>
+          <div class="version">
+            给生图 AI 的组合说明<br />左侧需放入所选图片风格
+          </div>
+        </header>
+        <div class="pair-grid">
+          <section class="pair-panel">
+            <span class="badge-note">A / 图片层</span>
+            <h2>主体的画法与质感</h2>
+            <p>参考材质、光照、视角与造型；不照搬原图文字、版式或知识数据。</p>
+            <div class="image-slot" id="image-slot">
+              <p>把图片风格参考放在这里<br /><small>尚未选择图片风格</small></p>
+            </div>
+          </section>
+          <section class="pair-panel">
+            <span class="badge-note">B / 代码层</span>
+            <h2>文字、关系与容器</h2>
+            <p>
+              同一组件可换外观。按总板编号选择，再统一字体、色彩、线宽、圆角和阴影。
+            </p>
+            <div id="skins" class="skins"></div>
+          </section>
+        </div>
+        <div class="pair-rule">
+          <strong>生成完整设计稿：</strong>图片层遵循 A，文字与几何层遵循
+          B；两层统一配色和层级。<br /><strong>最终还原：</strong
+          >标题、数据、标签、箭头用代码；图片只保留独立主体与必要的美术细节。
+        </div>
+        <footer class="board-footer">
+          附上本次准确文案、画布比例和字幕留白要求。设计图用于审美参考，不替代结构化内容；如超出所列组件，应明确提出新增设计需求。
+        </footer>
+      </article>
+    </main>
+    <script>
+      /*DATA*/
+    </script>
+    <script>
+      /*SCRIPT*/
+    </script>
+    <script>
+      /*EFFECTS*/
+    </script>
+    <script>
+      /*STATIC*/
+    </script>
+    <script>
+      /*PAIRS*/
+    </script>
+  </body>
+</html>

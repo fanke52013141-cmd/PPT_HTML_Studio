@@ -1,0 +1,30 @@
+{
+  "referenceVersion": "0.4.0",
+  "pairRef": "PAIR-03",
+  "codeStyleRef": "editorial",
+  "imageStyle": {
+    "id": "IMG-03",
+    "rendering": "暖色固定视角立体插画",
+    "material": "纸张、书页与有限柔光",
+    "lighting": "上方柔光",
+    "perspective": "固定斜视书本",
+    "referenceAssetRef": "book",
+    "status": "existing_asset_reference"
+  },
+  "shared": {
+    "palette": "强调色与主体色彩协调，白色保持主背景",
+    "weight": "纸面细节较多，代码降低装饰密度并保留留白",
+    "space": "主体留在独立槽位，主要文字保留稳定留白"
+  },
+  "componentRefs": [
+    "T01",
+    "T04",
+    "T05",
+    "A01",
+    "C04"
+  ],
+  "contentSource": "必须附准确文案与关系，不使用图板样例文字",
+  "canvas": "按当前项目画布比例",
+  "subtitleSafeArea": "按当前项目要求另附",
+  "status": "reference_only_pending_visual_review"
+}
