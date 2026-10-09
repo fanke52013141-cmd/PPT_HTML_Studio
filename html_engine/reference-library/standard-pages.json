@@ -1,0 +1,300 @@
+{
+  "version": "1.0.0",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "scope": "static-reference-only",
+  "pages": [
+    {
+      "id": "overview",
+      "title": "标准组件 · 黑白灰基线",
+      "note": "真实文字、精确关系、柔和层次；配色由独立风格参考控制。",
+      "kind": "overview",
+      "ids": []
+    },
+    {
+      "id": "component-01",
+      "title": "文字层级",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "component",
+      "ids": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08"
+      ]
+    },
+    {
+      "id": "component-02",
+      "title": "箭头与连接",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "component",
+      "ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04"
+      ]
+    },
+    {
+      "id": "component-03",
+      "title": "卡片与容器",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "component",
+      "ids": [
+        "C01",
+        "C02",
+        "C03",
+        "C04"
+      ]
+    },
+    {
+      "id": "component-04",
+      "title": "基础形状",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "component",
+      "ids": [
+        "S01",
+        "S02",
+        "S03",
+        "S04"
+      ]
+    },
+    {
+      "id": "component-05",
+      "title": "标签与标注",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "component",
+      "ids": [
+        "N01",
+        "N02",
+        "N03",
+        "N04"
+      ]
+    },
+    {
+      "id": "component-06",
+      "title": "关系与组织",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "component",
+      "ids": [
+        "R01",
+        "R02",
+        "R03",
+        "R04"
+      ]
+    },
+    {
+      "id": "component-07",
+      "title": "数据与时间",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "component",
+      "ids": [
+        "D01",
+        "D02",
+        "D03",
+        "D04"
+      ]
+    },
+    {
+      "id": "variant-08",
+      "title": "标题呈现",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "variant",
+      "ids": [
+        "PV01",
+        "PV02",
+        "PV03",
+        "PV04"
+      ]
+    },
+    {
+      "id": "variant-09",
+      "title": "重点与解释",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "variant",
+      "ids": [
+        "PV05",
+        "PV06",
+        "PV07",
+        "PV08"
+      ]
+    },
+    {
+      "id": "variant-10",
+      "title": "容器层次",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "variant",
+      "ids": [
+        "PV09",
+        "PV10",
+        "PV11",
+        "PV12"
+      ]
+    },
+    {
+      "id": "variant-11",
+      "title": "标签与标记",
+      "note": "按编号调用；组件结构与配色独立。",
+      "kind": "variant",
+      "ids": [
+        "PV13",
+        "PV14",
+        "PV15",
+        "PV16"
+      ]
+    },
+    {
+      "id": "effect-12",
+      "title": "渐变",
+      "note": "以灰阶展示材质与层次，效果不替代信息结构。",
+      "kind": "effect",
+      "ids": [
+        "E01",
+        "E02",
+        "E03",
+        "E04"
+      ]
+    },
+    {
+      "id": "effect-13",
+      "title": "阴影",
+      "note": "以灰阶展示材质与层次，效果不替代信息结构。",
+      "kind": "effect",
+      "ids": [
+        "E05",
+        "E06",
+        "E07",
+        "E08"
+      ]
+    },
+    {
+      "id": "effect-14",
+      "title": "描边",
+      "note": "以灰阶展示材质与层次，效果不替代信息结构。",
+      "kind": "effect",
+      "ids": [
+        "E09",
+        "E10",
+        "E11",
+        "E12"
+      ]
+    },
+    {
+      "id": "effect-15",
+      "title": "光与透明",
+      "note": "以灰阶展示材质与层次，效果不替代信息结构。",
+      "kind": "effect",
+      "ids": [
+        "E13",
+        "E14",
+        "E15",
+        "E16"
+      ]
+    },
+    {
+      "id": "effect-16",
+      "title": "裁切与遮罩",
+      "note": "以灰阶展示材质与层次，效果不替代信息结构。",
+      "kind": "effect",
+      "ids": [
+        "E17",
+        "E18",
+        "E19",
+        "E20"
+      ]
+    },
+    {
+      "id": "effect-17",
+      "title": "背景纹理",
+      "note": "以灰阶展示材质与层次，效果不替代信息结构。",
+      "kind": "effect",
+      "ids": [
+        "E21",
+        "E22",
+        "E23",
+        "E24"
+      ]
+    },
+    {
+      "id": "effect-18",
+      "title": "文字效果",
+      "note": "以灰阶展示材质与层次，效果不替代信息结构。",
+      "kind": "effect",
+      "ids": [
+        "E25",
+        "E26",
+        "E27",
+        "E28"
+      ]
+    },
+    {
+      "id": "composition-19",
+      "title": "排版",
+      "note": "通用组合示例；文字、关系与图片保持独立。",
+      "kind": "composition",
+      "ids": [
+        "P01",
+        "P02",
+        "P03"
+      ]
+    },
+    {
+      "id": "composition-20",
+      "title": "关系",
+      "note": "通用组合示例；文字、关系与图片保持独立。",
+      "kind": "composition",
+      "ids": [
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V06"
+      ]
+    },
+    {
+      "id": "composition-21",
+      "title": "效果用法",
+      "note": "通用组合示例；文字、关系与图片保持独立。",
+      "kind": "composition",
+      "ids": [
+        "X01",
+        "X02",
+        "X03",
+        "X04",
+        "X05",
+        "X06"
+      ]
+    },
+    {
+      "id": "composition-22",
+      "title": "图片融合",
+      "note": "通用组合示例；文字、关系与图片保持独立。",
+      "kind": "composition",
+      "ids": [
+        "H01",
+        "H02",
+        "H03"
+      ]
+    },
+    {
+      "id": "fonts",
+      "title": "字体 · 五种表达",
+      "note": "字体是文字气质的基础；本机字体可用性不等于跨平台已打包。",
+      "kind": "font",
+      "ids": [
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05"
+      ]
+    }
+  ]
+}

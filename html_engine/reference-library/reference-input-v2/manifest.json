@@ -1,5 +1,7 @@
 {
   "components": 32,
+  "presentationVariants": 16,
+  "presentationCatalog": "../presentation-variants.json",
   "base": "neutral",
   "palettes": {
     "version": "0.1.0",

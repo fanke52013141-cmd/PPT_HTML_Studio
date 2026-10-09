@@ -1,0 +1,3 @@
+# Generated HTML is hash-sealed in build/standard manifests; preserve exact bytes.
+components.html -text
+standard-library.html -text

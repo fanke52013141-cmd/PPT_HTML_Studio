@@ -5,6 +5,13 @@ const fs = require("fs"),
   { chromium } = require("../node_modules/playwright");
 const root = __dirname,
   out = path.join(root, "reference-input-v2");
+// Write via a sibling temporary file so an open preview does not see partial PNG bytes.
+async function capture(locator, filename) {
+  const target = path.join(out, filename);
+  const temporary = target + ".tmp";
+  fs.writeFileSync(temporary, await locator.screenshot());
+  fs.renameSync(temporary, target);
+}
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({
@@ -34,9 +41,7 @@ const root = __dirname,
     });
     await page.evaluate(() => document.fonts.ready);
     assert.equal(await page.locator("#atlas .cell").count(), 32);
-    await page
-      .locator("#atlas")
-      .screenshot({ path: path.join(out, "standard-components.png") });
+    await capture(page.locator("#atlas"), "standard-components.png");
     for (const [i, name] of [
       "typography",
       "arrows",
@@ -46,10 +51,21 @@ const root = __dirname,
       "relationships",
       "data-time",
     ].entries())
-      await page
-        .locator("#atlas > .section, #atlas-body > .section")
-        .nth(i)
-        .screenshot({ path: path.join(out, name + ".png") });
+      await capture(
+        page.locator("#atlas > .section, #atlas-body > .section").nth(i),
+        name + ".png",
+      );
+    await capture(page.locator("#variants"), "presentations-neutral.png");
+    for (const [i, name] of [
+      "titles",
+      "emphasis",
+      "containers",
+      "labels",
+    ].entries())
+      await capture(
+        page.locator("#variants .variant-section").nth(i),
+        "presentations-" + name + ".png",
+      );
     const data = JSON.parse(
       fs.readFileSync(path.join(root, "palettes.json"), "utf8"),
     );
@@ -120,16 +136,58 @@ const root = __dirname,
         content:
           "#palette-preview .board-header{border-bottom:1px solid #e5e8ed;margin-bottom:60px}#palette-preview .board-header h1{font-size:52px}.palette-row{display:grid;grid-template-columns:repeat(4,1fr);gap:40px}.palette-panel{display:flex;flex-direction:column;gap:35px;align-items:center}.palette-swatch{height:142px;width:100%;border-radius:20px;color:white;padding:26px 28px}.palette-swatch span{display:block;font-size:22px;margin-bottom:14px}.palette-swatch strong{font:500 26px Arial}.palette-panel .sample-card{width:370px;padding:26px 28px;min-height:145px;border-radius:20px}.palette-panel .sample-card strong{font-size:26px}.palette-panel .sample-card p{font-size:20px}.palette-panel .highlight{font-size:28px}.palette-rules{border-top:1px solid #e5e8ed;margin-top:72px;padding-top:22px;color:var(--muted);font-size:25px;line-height:1.8}.palette-rules p{margin:5px 0}",
       });
-      await page
-        .locator("#palette-preview")
-        .screenshot({ path: path.join(out, "palette-" + palette.id + ".png") });
+      assert.deepEqual(
+        await page
+          .locator("#palette-preview .sample-card")
+          .evaluateAll((cards) =>
+            cards.flatMap((card) => {
+              const box = card.getBoundingClientRect();
+              return [...card.querySelectorAll("strong,p")]
+                .filter((t) => {
+                  const range = document.createRange();
+                  range.selectNodeContents(t);
+                  return [...range.getClientRects()].some(
+                    (r) =>
+                      r.left < box.left ||
+                      r.right > box.right ||
+                      r.top < box.top ||
+                      r.bottom > box.bottom,
+                  );
+                })
+                .map((t) => t.textContent);
+            }),
+          ),
+        [],
+        "Palette text must fit actual card bounds",
+      );
+      await capture(
+        page.locator("#palette-preview"),
+        "palette-" + palette.id + ".png",
+      );
     }
+    await page.evaluate((p) => {
+      const board = document.querySelector("#variants");
+      board.style.setProperty("--ink", p.ink);
+      board.style.setProperty("--muted", p.muted);
+      board.querySelector("h1").textContent = "同一组件 · 配色与层次";
+      board.querySelector(".version").textContent =
+        "16 种实际呈现 / 清爽多彩\n四列示范四种颜色角色";
+      board.querySelectorAll(".cell").forEach((cell, i) => {
+        const color = p[["primary", "secondary", "accent", "category"][i % 4]];
+        cell.style.setProperty("--accent", color);
+        cell.style.setProperty("--tint", p.tints[i % 4]);
+        cell.style.setProperty("--line", color + "38");
+      });
+    }, data.palettes[0]);
+    await capture(page.locator("#variants"), "presentations-clear.png");
     assert.deepEqual(errors, []);
     fs.writeFileSync(
       path.join(out, "manifest.json"),
       JSON.stringify(
         {
           components: 32,
+          presentationVariants: 16,
+          presentationCatalog: "../presentation-variants.json",
           base: "neutral",
           palettes: data,
           workflow: [

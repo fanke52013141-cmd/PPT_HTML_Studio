@@ -1,6 +1,15 @@
 {
   "status": "passed",
   "components": 32,
+  "presentationVariants": 16,
+  "variantChecks": {
+    "failures": [],
+    "distinctEmphasis": true,
+    "parentMapping": true,
+    "rejectUnknown": true,
+    "rejectMismatch": true,
+    "safeText": true
+  },
   "effects": 28,
   "motions": 0,
   "staticCompositions": 18,
@@ -36,6 +45,14 @@
       "glyphCount": 7
     }
   ],
+  "actualVariantFonts": [
+    {
+      "familyName": "Noto Serif SC",
+      "postScriptName": "Noto-Serif-SC-Bold",
+      "isCustomFont": false,
+      "glyphCount": 6
+    }
+  ],
   "actualEditorialFonts": [
     {
       "familyName": "Noto Serif SC",
@@ -47,6 +64,8 @@
   "checks": [
     "white-background actual DOM/SVG screenshots",
     "32 previews fit",
+    "16 presentation variants fit and preserve parent identity",
+    "distinct emphasis appearances and invalid variant rejection",
     "style changes preserve IDs and geometry",
     "safe text",
     "local image style placement",
@@ -64,6 +83,7 @@
   "productionAdapter": "not_integrated",
   "images": [
     "code-components.png",
+    "presentation-variants.png",
     "typography.png",
     "style-pairing.png",
     "visual-effects.png",

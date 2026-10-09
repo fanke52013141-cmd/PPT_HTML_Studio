@@ -36,7 +36,7 @@
 
 **后续唯一执行顺序：[视觉参考库收束与详细开发计划](docs/plans/html-backend-development/visual-reference-roadmap-2026-10-09.md)。**
 
-本次固化 [32 项中性标准组件、独立多角色配色与统一风格参考](html_engine/reference-library/README.md)。交付 PNG，HTML 仅内部渲染。被否定的模板已移出当前库，历史批准实例保留。新版多参考生图、可编辑还原和课程量产仍按计划逐项验证，不能把参考库完成等同整个产品完成。
+后续以 [标准组件库 1.0](html_engine/reference-library/STANDARD-LIBRARY.md) 为静态组件基线：24 张黑白灰参考页、32 个基础组件、16 种呈现变体、28 种效果、18 个组合及 5 种字体。组件源代码、截图、编号查询和验证记录一同保存；配色与图片风格独立输入。见 [发布交接备注](html_engine/reference-library/HANDOFF-1.0.md)。被否定的模板不再作为入口，历史批准实例保留。生产适配和课程量产仍按计划验证。
 
 原图片后端与 guided HTML 后端并存。受约束生产、项目资产、审阅/批准、句子动作绑定、持久任务、视频和快照 PPTX 已接入本地应用并通过本轮工程验收；真实模型、真实课程、数字人、PowerPoint 打开及用户视觉评审仍待完成。
 

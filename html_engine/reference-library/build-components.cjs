@@ -15,6 +15,20 @@ componentCatalog.items.push(
     productionAdapter: "not_integrated",
   })),
 );
+const variants = JSON.parse(read("presentation-variants.json"));
+const variantIds = new Set();
+for (const variant of variants.items) {
+  if (
+    !/^PV\d{2}$/.test(variant.id) ||
+    variantIds.has(variant.id) ||
+    !/^[a-z]+(?:-[a-z]+)*$/.test(variant.className) ||
+    !componentCatalog.items.some((c) => c.id === variant.componentRef) ||
+    typeof variant.value !== "string" ||
+    [...variant.value].length > 36
+  )
+    throw Error("INVALID_PRESENTATION_VARIANT: " + variant.id);
+  variantIds.add(variant.id);
+}
 const staticAsset = fs.readFileSync(
   path.resolve(root, "../..", staticCatalog.asset.path),
 );
@@ -40,6 +54,7 @@ for (const [key, value] of Object.entries({
   STYLE: read("components.css"),
   STATIC_STYLE: read("static.css"),
   STATIC: read("static.js"),
+  VARIANTS: read("presentation-variants.js"),
   PAIR_STYLE: read("style-pairs.css"),
   PAIRS: read("style-pairs.js"),
   DATA:
@@ -48,7 +63,9 @@ for (const [key, value] of Object.entries({
     ";window.StylePairAssets=" +
     JSON.stringify(pairAssets) +
     ";" +
-    "window.ComponentCatalog=" +
+    "window.PresentationVariants=" +
+    read("presentation-variants.json").replace(/</g, "\\u003c") +
+    ";window.ComponentCatalog=" +
     JSON.stringify(componentCatalog).replace(/</g, "\\u003c") +
     ";window.StyleCatalog=" +
     read("styles.json").replace(/</g, "\\u003c") +
@@ -72,6 +89,8 @@ fs.writeFileSync(
       sha256: crypto.createHash("sha256").update(html).digest("hex"),
       effects: JSON.parse(read("effects.json")).items.length,
       motions: 0,
+      presentationVariants: JSON.parse(read("presentation-variants.json")).items
+        .length,
       stylePairs: pairCatalog.pairs.map((p) => ({
         id: p.id,
         codeStyleRef: p.codeStyleRef,
@@ -107,3 +126,4 @@ for (const pair of pairCatalog.pairs) {
   );
 }
 console.log("Built static component boards and three style pairs");
+require("./build-standard-library.cjs");

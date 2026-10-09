@@ -11,12 +11,19 @@
     </style>
   </head>
   <body>
-    <p style="padding:16px 32px;background:#fff">内部渲染与历史实验页；现行交付请查看 <a href="reference-input-v2/standard-components.png">中性组件 PNG</a>、<a href="reference-input-v2/palette-clear.png">配色 PNG</a>及 <a href="reference-input-v2/style-description.png">统一风格 PNG</a>。</p>
+    <p style="padding: 16px 32px; background: #fff">
+      内部渲染与历史实验页；现行交付请查看
+      <a href="reference-input-v2/standard-components.png">中性组件 PNG</a>、<a
+        href="reference-input-v2/palette-clear.png"
+        >配色 PNG</a
+      >及 <a href="reference-input-v2/style-description.png">统一风格 PNG</a>。
+    </p>
     <nav class="toolbar">
       <a href="#pair-01">历史实验示例</a> <a href="#atlas">组件总板</a
-      ><a href="#typography">文字细节板</a><a href="#effects">视觉效果</a
-      ><a href="#composition">排版组合</a><a href="#precision">精细 SVG</a
-      ><a href="#fusion">图片融合</a><a href="#pairing">历史配对实验</a
+      ><a href="#variants">呈现变体</a><a href="#typography">文字细节板</a
+      ><a href="#effects">视觉效果</a><a href="#composition">排版组合</a
+      ><a href="#precision">精细 SVG</a><a href="#fusion">图片融合</a
+      ><a href="#pairing">历史配对实验</a
       ><label
         >基础板换肤
         <select id="skin">
@@ -114,8 +121,22 @@
         </header>
         <div id="type-body"></div>
         <footer class="board-footer">
-          默认组件使用思源黑体。标题 42 / 副标题 30 / 小标题 25 / 正文 21 /
-          解释语 19 / 注释 16 px。<br />字号是本板展示尺寸，整页应用应等比处理并实测容量。其他环境须提供对应字体，不能假设字形完全相同。
+          默认组件使用思源黑体。标题 46 / 副标题 30 / 小标题 25 / 正文 21 /
+          解释语 18 / 注释 16 px。<br />字号是本板展示尺寸，整页应用应等比处理并实测容量。其他环境须提供对应字体，不能假设字形完全相同。
+        </footer>
+      </article>
+      <article class="board component-reference" id="variants">
+        <header class="board-header">
+          <div>
+            <h1>同一组件 · 更多呈现</h1>
+            <p>结构保持统一，通过字体、边线、浅面与层次表达不同视觉重量。</p>
+          </div>
+          <div class="version">16 个静态外观变体<br />中性基础 · 配色另选</div>
+        </header>
+        <div id="variants-body"></div>
+        <footer class="board-footer">
+          按 PV
+          编号引用对应组件；呈现变体不增加语义组件。样例文字和参考标签不进入成图。
         </footer>
       </article>
       <article class="board" id="effects">
@@ -137,8 +158,10 @@
       <article class="board" id="pairing">
         <header class="board-header">
           <div>
-            <h1>整页视觉方向 = 图片风格 + 代码风格</h1>
-            <p>两份参考各管一层，共同约束配色、视觉重量与留白。</p>
+            <h1>统一视觉方向 · 实现分工示例</h1>
+            <p>
+              组件、独立配色与统一风格共同约束整页外观。此区仅用于本地图片试放。
+            </p>
           </div>
           <div class="version">
             给生图 AI 的组合说明<br />左侧需放入所选图片风格
@@ -177,6 +200,9 @@
     </script>
     <script>
       /*SCRIPT*/
+    </script>
+    <script>
+      /*VARIANTS*/
     </script>
     <script>
       /*EFFECTS*/

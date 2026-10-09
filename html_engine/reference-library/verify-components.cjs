@@ -3,12 +3,18 @@ const fs = require("fs"),
   assert = require("node:assert/strict");
 const { pathToFileURL } = require("url");
 const { chromium } = require("../node_modules/playwright");
+async function capture(locator, target) {
+  const temporary = target + ".tmp";
+  fs.writeFileSync(temporary, await locator.screenshot());
+  fs.renameSync(temporary, target);
+}
 (async () => {
   const browser = await chromium.launch({
     headless: true,
     executablePath: process.env.HPS_CHROME,
   });
-  const out = path.join(__dirname, "evidence");
+  const out =
+    process.env.HPS_REFERENCE_EVIDENCE || path.join(__dirname, "evidence");
   fs.mkdirSync(out, { recursive: true });
   try {
     const page = await browser.newPage({
@@ -34,6 +40,78 @@ const { chromium } = require("../node_modules/playwright");
     await page.evaluate(() => document.fonts.ready);
     assert.equal(await page.locator("#atlas .cell").count(), 32);
     assert.equal(await page.locator("#typography .font-cell").count(), 5);
+    assert.equal(await page.locator("#variants [data-variant-id]").count(), 16);
+    const variantChecks = await page.evaluate(() => {
+      const samples = [...document.querySelectorAll("#variants .sample")];
+      const failures = [];
+      for (const sample of samples) {
+        const component = sample.querySelector(".component");
+        const box = sample.getBoundingClientRect();
+        const rect = component.getBoundingClientRect();
+        if (
+          rect.left < box.left ||
+          rect.top < box.top ||
+          rect.right > box.right ||
+          rect.bottom > box.bottom ||
+          component.scrollWidth > component.clientWidth + 1
+        )
+          failures.push(component.dataset.variantId);
+        for (const text of component.querySelectorAll("span,strong,p")) {
+          const range = document.createRange();
+          range.selectNodeContents(text);
+          if (
+            [...range.getClientRects()].some(
+              (r) =>
+                r.left < box.left ||
+                r.right > box.right ||
+                r.top < box.top ||
+                r.bottom > box.bottom,
+            )
+          )
+            failures.push(component.dataset.variantId + ":text");
+        }
+      }
+      const style = (id) =>
+        getComputedStyle(
+          document.querySelector(`[data-variant-id="${id}"] .sample-text`),
+        );
+      const distinctEmphasis =
+        style("PV06").borderBottomStyle === "solid" &&
+        style("PV07").borderRadius === "40px" &&
+        style("PV05").borderBottomStyle === "none";
+      const parentMapping = window.PresentationVariants.items.every(
+        (v) =>
+          document.querySelector(`[data-variant-id="${v.id}"]`).dataset
+            .componentId === v.componentRef,
+      );
+      const reject = (id, variant, expected) => {
+        try {
+          window.ComponentAtlas.render(id, "文字", variant);
+          return false;
+        } catch (e) {
+          return e.message === expected;
+        }
+      };
+      return {
+        failures,
+        distinctEmphasis,
+        parentMapping,
+        rejectUnknown: reject("T01", "BAD", "UNKNOWN_PRESENTATION_VARIANT"),
+        rejectMismatch: reject("C01", "PV01", "VARIANT_COMPONENT_MISMATCH"),
+        safeText:
+          window.ComponentAtlas.render("T01", "<img src=x>", "PV02")
+            .textContent === "<img src=x>" &&
+          !window.ComponentAtlas.render(
+            "T01",
+            "<img src=x>",
+            "PV02",
+          ).querySelector("img"),
+      };
+    });
+    assert.deepEqual(variantChecks.failures, []);
+    for (const [name, value] of Object.entries(variantChecks))
+      if (name !== "failures") assert.equal(value, true, name);
+
     const overflow = await page
       .locator("#atlas .sample")
       .evaluateAll((samples) =>
@@ -54,6 +132,7 @@ const { chromium } = require("../node_modules/playwright");
     assert.deepEqual(overflow, []);
     for (const [id, name] of [
       ["atlas", "code-components"],
+      ["variants", "presentation-variants"],
       ["typography", "typography"],
       ["pairing", "style-pairing"],
       ["effects", "visual-effects"],
@@ -65,9 +144,7 @@ const { chromium } = require("../node_modules/playwright");
       ["pair-02", "style-pair-depth"],
       ["pair-03", "style-pair-editorial"],
     ])
-      await page
-        .locator("#" + id)
-        .screenshot({ path: path.join(out, name + ".png") });
+      await capture(page.locator("#" + id), path.join(out, name + ".png"));
     assert.equal(await page.locator("#effects .effect-cell").count(), 28);
     assert.equal(await page.locator(".pair-board").count(), 3);
     await page.evaluate(async () => {
@@ -208,6 +285,19 @@ const { chromium } = require("../node_modules/playwright");
       ),
       JSON.stringify(actualFonts),
     );
+    const variantFontQuery = await cdp.send("DOM.querySelector", {
+      nodeId: doc.root.nodeId,
+      selector: '[data-variant-id="PV03"] .sample-text',
+    });
+    const variantFonts = await cdp.send("CSS.getPlatformFontsForNode", {
+      nodeId: variantFontQuery.nodeId,
+    });
+    assert(
+      variantFonts.fonts.some(
+        (f) => f.glyphCount > 0 && f.familyName.includes("Noto Serif SC"),
+      ),
+      "PV03 must use actual Noto Serif SC glyphs",
+    );
     const before = await page
       .locator("#atlas .cell")
       .evaluateAll((es) =>
@@ -243,9 +333,10 @@ const { chromium } = require("../node_modules/playwright");
       );
       assert.equal(await page.locator(".spec-card").count(), 18);
     }
-    await page
-      .locator("#fusion")
-      .screenshot({ path: path.join(out, "image-fusion-blue.png") });
+    await capture(
+      page.locator("#fusion"),
+      path.join(out, "image-fusion-blue.png"),
+    );
     assert(
       await page.evaluate(() =>
         window.StylePairs.catalog.pairs.every(
@@ -289,6 +380,8 @@ const { chromium } = require("../node_modules/playwright");
     const result = {
       status: "passed",
       components: 32,
+      presentationVariants: 16,
+      variantChecks,
       effects: 28,
       motions: 0,
       staticCompositions: 18,
@@ -296,10 +389,13 @@ const { chromium } = require("../node_modules/playwright");
       newImageCalls: 0,
       fontSamples: fonts,
       actualHeadingFonts: actualFonts.fonts,
+      actualVariantFonts: variantFonts.fonts,
       actualEditorialFonts: editorialFonts.fonts,
       checks: [
         "white-background actual DOM/SVG screenshots",
         "32 previews fit",
+        "16 presentation variants fit and preserve parent identity",
+        "distinct emphasis appearances and invalid variant rejection",
         "style changes preserve IDs and geometry",
         "safe text",
         "local image style placement",
@@ -317,6 +413,7 @@ const { chromium } = require("../node_modules/playwright");
       productionAdapter: "not_integrated",
       images: [
         "code-components.png",
+        "presentation-variants.png",
         "typography.png",
         "style-pairing.png",
         "visual-effects.png",

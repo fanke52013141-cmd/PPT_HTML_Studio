@@ -52,14 +52,14 @@
 .effect-E08 {
   box-shadow:
     0 2px 4px #17191d12,
-    0 18px 28px #17191d2a,
+    0 16px 30px #17191d16,
     0 32px 48px #17191d10;
 }
 .effect-E01 {
   background: linear-gradient(
     120deg,
     var(--tint),
-    color-mix(in srgb, var(--accent) 30%, white)
+    color-mix(in srgb, var(--accent) 12%, white)
   );
 }
 .spec-grid {

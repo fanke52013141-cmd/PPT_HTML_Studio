@@ -1,8 +1,9 @@
 {
   "version": "0.4.0",
-  "sha256": "83532a825c67ac343fd0c48144b1d4aaa3efdd35db4324805102de06bdc34db5",
+  "sha256": "c5e6b16d5985a271e9b0667d396d9693c2dce1f30e80c887b56de4b88217403f",
   "effects": 28,
   "motions": 0,
+  "presentationVariants": 16,
   "stylePairs": [
     {
       "id": "PAIR-01",

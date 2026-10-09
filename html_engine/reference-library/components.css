@@ -619,136 +619,349 @@ body {
   background: transparent;
 }
 
-/* Standard component polish: neutral form first; palettes are independent inputs. */
+/* Neutral reference: typography, geometry and depth precede color. */
+.component-reference {
+  --ink: #242832;
+  --muted: #626b78;
+  --accent: #414956;
+  --tint: #f2f4f7;
+  --line: #dce1e8;
+  --radius: 18px;
+  --stroke: 2px;
+}
 .component-reference .board-header {
-  border-bottom: 1px solid #dfe3e9;
-  padding-bottom: 32px;
-  margin-bottom: 30px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 30px;
+  margin-bottom: 34px;
+}
+.component-reference .board-header h1 {
+  font-size: 44px;
+  font-weight: 650;
+  letter-spacing: -1px;
 }
 .component-reference .section {
-  margin-top: 38px;
+  margin-top: 42px;
 }
 .component-reference .section-head {
-  margin-bottom: 20px;
   gap: 28px;
+  margin-bottom: 22px;
 }
 .component-reference .section-head h2 {
-  font-size: 27px;
-  letter-spacing: -0.6px;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+.component-reference .section-head p {
+  font-size: 16px;
 }
 .component-reference .grid {
-  gap: 24px;
+  gap: 28px;
 }
 .component-reference .cell {
   border: 0;
+  border-top: 1px solid #e9ecf0;
   border-radius: 0;
-  padding: 0 0 10px;
+  padding: 14px 0 8px;
 }
 .component-reference .sample {
-  height: 166px;
-  padding: 20px;
-  background: linear-gradient(145deg, #fafbfc, #f5f6f8);
-  border: 1px solid #edf0f3;
-  border-radius: 20px;
-  margin-bottom: 17px;
+  height: 190px;
+  padding: 24px;
+  background: white;
+  border: 0;
+  margin-bottom: 16px;
 }
 .component-reference .cell-name {
   padding: 0 10px;
-  font-size: 19px;
+  font-size: 18px;
+  font-weight: 550;
 }
 .component-reference .cell-note {
   padding: 0 10px;
-  font-size: 15px;
-  margin-top: 5px;
+  font-size: 14px;
+  margin: 5px 0 0;
+  color: var(--muted);
 }
 .component-reference .component.title {
   font-size: 46px;
-  letter-spacing: -1.4px;
-  font-weight: 750;
+  font-weight: 700;
+  letter-spacing: -1.2px;
+  line-height: 1.28;
 }
 .component-reference .component.subtitle {
-  font-size: 31px;
+  font-size: 30px;
+  font-weight: 450;
   letter-spacing: -0.4px;
-  font-weight: 550;
+}
+.component-reference .component.section {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.component-reference .component.body {
+  font-size: 21px;
+  line-height: 1.8;
+  letter-spacing: 0.1px;
+}
+.component-reference .component.explain {
+  border-left: 2px solid var(--line);
+  padding-left: 18px;
+  font-size: 18px;
+  line-height: 1.8;
+}
+.component-reference .component.caption {
+  font-size: 16px;
+  line-height: 1.7;
+}
+.component-reference .component.highlight {
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
 }
 .component-reference .component.highlight span {
+  padding: 3px 7px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 4px;
   background: linear-gradient(
-    transparent 52%,
-    var(--line) 52%,
-    var(--line) 91%,
-    transparent 91%
+    transparent 55%,
+    var(--line) 55%,
+    var(--line) 92%,
+    transparent 92%
   );
-  padding: 3px 8px;
 }
 .component-reference .component.number strong {
   font-size: 68px;
-  font-weight: 600;
-  letter-spacing: -3px;
+  font-weight: 500;
+  letter-spacing: -2.5px;
+  font-variant-numeric: tabular-nums;
+}
+.component-reference .component.number .unit {
+  font-size: 17px;
 }
 .component-reference .sample-card {
-  width: 310px;
-  min-height: 114px;
+  width: 326px;
+  min-height: 118px;
   border-radius: 18px;
-  padding: 22px 24px;
-  background: #fff;
-}
-.component-reference .flat-card .sample-card {
-  background: var(--tint);
-}
-.component-reference .outline-card .sample-card {
-  border: 1px solid var(--line);
-}
-.component-reference .shadow-card .sample-card {
-  border: 1px solid #ffffff;
-  box-shadow:
-    0 2px 3px #17253605,
-    0 12px 22px #17253612,
-    0 24px 35px #17253605;
-}
-.component-reference .number-card .sample-card {
-  padding-left: 76px;
-  background: var(--tint);
-}
-.component-reference .card-index {
-  left: 22px;
-  top: 24px;
-  width: 38px;
-  height: 38px;
-  font-weight: 600;
-  background: var(--ink);
-}
-.component-reference .sample-card p {
-  font-size: 15px;
-  line-height: 1.75;
+  padding: 26px 28px;
 }
 .component-reference .sample-card strong {
-  font-size: 22px;
-  letter-spacing: -0.4px;
+  display: block;
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
-.component-reference .component svg path[stroke-width="2.5"] {
-  stroke-width: 2;
+.component-reference .sample-card p {
+  max-width: 100%;
+  margin: 9px 0 0;
+  font-size: 16px;
+  line-height: 1.75;
+}
+.component-reference .flat-card .sample-card {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--tint) 82%, white),
+    var(--tint)
+  );
+}
+.component-reference .outline-card .sample-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.component-reference .shadow-card .sample-card {
+  background: white;
+  border: 1px solid #edf0f4;
+  box-shadow:
+    0 1px 2px #18253805,
+    0 9px 18px #18253809,
+    0 24px 38px #18253808;
+}
+.component-reference .number-card .sample-card {
+  padding-left: 82px;
+  border: 1px solid var(--line);
+  background: linear-gradient(145deg, var(--tint), white);
+}
+.component-reference .card-index {
+  left: 24px;
+  top: 29px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  font: 600 15px Arial;
+  background: var(--accent);
 }
 .component-reference .component svg {
   width: 310px;
   height: 104px;
 }
+.component-reference .component svg path[fill="none"] {
+  stroke-width: 2;
+}
+.component-reference .component svg rect[stroke],
+.component-reference .component svg circle[stroke] {
+  stroke-width: 1.4;
+}
 .component-reference .pill span {
   border: 1px solid var(--line);
   background: white;
-  padding: 11px 25px;
-  font-weight: 500;
-  box-shadow: 0 3px 8px #17253606;
+  padding: 11px 24px;
+  font-size: 20px;
+  font-weight: 450;
+  box-shadow: 0 2px 5px #18253804;
 }
 .component-reference .badge span {
   width: 64px;
   height: 64px;
-  background: var(--ink);
-  box-shadow: 0 6px 14px #17253614;
+  background: var(--accent);
+  box-shadow: 0 5px 12px #18253810;
+  font-weight: 500;
+}
+.component-reference .bracket span {
+  font-size: 21px;
+  padding: 12px 25px;
+}
+.component-reference .bracket span:before,
+.component-reference .bracket span:after {
+  border-width: 1.5px;
+  width: 10px;
+}
+.component-reference .leader-text {
+  font-size: 18px;
+}
+
+/* Registered appearance variants always retain the parent component ID. */
+.component-reference .presentation-variant.title {
+  font-size: 32px;
+  line-height: 1.45;
+  letter-spacing: -0.8px;
+}
+.component-reference .title-rule {
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 18px;
+}
+.component-reference .title-serif {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.component-reference .title-panel {
+  padding: 12px 20px;
+  background: linear-gradient(115deg, var(--tint), white);
+  border-radius: 12px;
+}
+.component-reference .component.highlight.emphasis-wash span {
+  background: var(--tint);
+  padding: 5px 11px;
+  border-radius: 7px;
+}
+.component-reference .component.highlight.emphasis-line span {
+  background: none;
+  border-bottom: 2px solid var(--accent);
+  border-radius: 0;
+  padding: 0 0 5px;
+}
+.component-reference .component.highlight.emphasis-pill span {
+  display: inline-block;
+  background: var(--tint);
+  border: 1px solid var(--line);
+  border-radius: 40px;
+  padding: 8px 20px;
+  font-size: 24px;
+}
+.component-reference .component.explain.explain-quote {
+  max-width: 318px;
+  padding: 16px 20px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  background: var(--tint);
+  font-size: 20px;
+  line-height: 1.8;
+  color: var(--ink);
+}
+.component-reference .card-wash .sample-card {
+  background: linear-gradient(135deg, white, var(--tint));
+  border: 1px solid var(--line);
+}
+.component-reference .card-outline .sample-card {
+  border-radius: 10px;
+  border-color: color-mix(in srgb, var(--accent) 28%, white);
+}
+.component-reference .card-lift .sample-card {
+  box-shadow:
+    0 2px 4px #18253807,
+    0 14px 32px #18253812;
+  border-color: white;
+}
+.component-reference .card-indexed .sample-card {
+  background: white;
+  border-color: var(--line);
+}
+.component-reference .card-indexed .card-index {
+  color: var(--accent);
+  background: var(--tint);
+  border: 1px solid var(--line);
+}
+.component-reference .label-wash span {
+  background: var(--tint);
+  border-color: transparent;
+  box-shadow: none;
+}
+.component-reference .label-dot span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: none;
+  padding: 0;
+  box-shadow: none;
+}
+.component-reference .label-dot span:before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.component-reference .badge-soft span {
+  background: linear-gradient(145deg, white, var(--tint));
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 3px 8px #18253807;
+}
+
+/* Quiet effect-board chrome; individual effects keep their distinct purpose. */
+#effects .cell {
+  border: 0;
+  border-top: 1px solid #e4e8ee;
+  border-radius: 0;
+  padding: 18px 12px;
+}
+#effects .effect-object {
+  border-radius: 16px;
+}
+#effects .section {
+  margin-top: 38px;
+}
+#effects .board-header {
+  border-bottom: 1px solid var(--line);
+}
+#effects .use-note {
+  color: var(--muted);
+}
+.effect-E05 {
+  box-shadow:
+    0 1px 3px #17253608,
+    0 12px 28px #17253613;
+}
+.effect-E08 {
+  box-shadow:
+    0 2px 4px #17253609,
+    0 12px 24px #17253610,
+    0 26px 40px #17253608;
 }
 .effect-E25 {
-  background: linear-gradient(90deg, var(--accent), #aeb3ba);
+  background: linear-gradient(90deg, var(--accent), #8d96a3);
   background-clip: text;
   color: transparent;
 }
@@ -757,9 +970,12 @@ body {
   -webkit-text-stroke: 1.2px var(--accent);
 }
 .effect-E27 {
-  text-shadow: 3px 5px 0 var(--line);
+  text-shadow: 2px 3px 0 var(--line);
 }
 .effect-E28 {
-  box-shadow: inset 0 -14px var(--line);
+  box-shadow: inset 0 -12px var(--line);
   border-radius: 0;
+}
+.component-reference .component.proportion svg circle[stroke] {
+  stroke-width: 12;
 }

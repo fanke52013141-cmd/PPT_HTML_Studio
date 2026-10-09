@@ -1,0 +1,150 @@
+{
+  "version": "0.1.0",
+  "scope": "静态参考外观变体；复用原组件语义，不新增生产能力",
+  "items": [
+    {
+      "id": "PV01",
+      "componentRef": "T01",
+      "name": "纯文字标题",
+      "className": "title-clean",
+      "category": "标题呈现",
+      "value": "让重点被看见",
+      "purpose": "靠字阶与留白建立焦点"
+    },
+    {
+      "id": "PV02",
+      "componentRef": "T01",
+      "name": "边线标题",
+      "className": "title-rule",
+      "category": "标题呈现",
+      "value": "让重点被看见",
+      "purpose": "细边线建立章节起点"
+    },
+    {
+      "id": "PV03",
+      "componentRef": "T01",
+      "name": "编辑式标题",
+      "className": "title-serif",
+      "category": "标题呈现",
+      "value": "让重点被看见",
+      "purpose": "宋体笔画体现阅读气质"
+    },
+    {
+      "id": "PV04",
+      "componentRef": "T01",
+      "name": "浅面标题",
+      "className": "title-panel",
+      "category": "标题呈现",
+      "value": "让重点被看见",
+      "purpose": "浅色承托，保留文字主次"
+    },
+    {
+      "id": "PV05",
+      "componentRef": "T07",
+      "name": "衬底强调",
+      "className": "emphasis-wash",
+      "category": "重点与解释",
+      "value": "重要的信息",
+      "purpose": "局部浅面，不涂满整句话"
+    },
+    {
+      "id": "PV06",
+      "componentRef": "T07",
+      "name": "细线强调",
+      "className": "emphasis-line",
+      "category": "重点与解释",
+      "value": "重要的信息",
+      "purpose": "紧贴文字基线，保持轻盈"
+    },
+    {
+      "id": "PV07",
+      "componentRef": "T07",
+      "name": "胶囊强调",
+      "className": "emphasis-pill",
+      "category": "重点与解释",
+      "value": "重要的信息",
+      "purpose": "独立术语使用，避免正文堆叠"
+    },
+    {
+      "id": "PV08",
+      "componentRef": "T05",
+      "name": "引语解释",
+      "className": "explain-quote",
+      "category": "重点与解释",
+      "value": "清晰的结构，让理解自然发生。",
+      "purpose": "边线与留白容纳一段解释"
+    },
+    {
+      "id": "PV09",
+      "componentRef": "C01",
+      "name": "柔和浅面",
+      "className": "card-wash",
+      "category": "容器层次",
+      "value": "清楚的结构",
+      "purpose": "低对比表面支持信息分组"
+    },
+    {
+      "id": "PV10",
+      "componentRef": "C02",
+      "name": "精细描边",
+      "className": "card-outline",
+      "category": "容器层次",
+      "value": "清楚的结构",
+      "purpose": "减少视觉重量，边界保持明确"
+    },
+    {
+      "id": "PV11",
+      "componentRef": "C03",
+      "name": "柔光浮层",
+      "className": "card-lift",
+      "category": "容器层次",
+      "value": "清楚的结构",
+      "purpose": "接触与扩散双层阴影表现轻微高度"
+    },
+    {
+      "id": "PV12",
+      "componentRef": "C04",
+      "name": "编号分区",
+      "className": "card-indexed",
+      "category": "容器层次",
+      "value": "清楚的结构",
+      "purpose": "编号、标题、正文各有位置"
+    },
+    {
+      "id": "PV13",
+      "componentRef": "N01",
+      "name": "细边标签",
+      "className": "label-outline",
+      "category": "标签与标记",
+      "value": "分类标签",
+      "purpose": "轻边界，适合辅助分类"
+    },
+    {
+      "id": "PV14",
+      "componentRef": "N01",
+      "name": "浅面标签",
+      "className": "label-wash",
+      "category": "标签与标记",
+      "value": "分类标签",
+      "purpose": "浅色承担角色，不抢正文"
+    },
+    {
+      "id": "PV15",
+      "componentRef": "N01",
+      "name": "色点标签",
+      "className": "label-dot",
+      "category": "标签与标记",
+      "value": "分类标签",
+      "purpose": "颜色与文字共同指示分类"
+    },
+    {
+      "id": "PV16",
+      "componentRef": "N02",
+      "name": "柔面编号",
+      "className": "badge-soft",
+      "category": "标签与标记",
+      "value": "01",
+      "purpose": "明暗与边界表现编号层次"
+    }
+  ]
+}

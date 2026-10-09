@@ -1,0 +1,114 @@
+{
+  "version": "1.0.0",
+  "agentStaticReview": "completed",
+  "userAestheticApproval": "pending",
+  "sourceSha256": "246dd18b294af9693b6e89a1ef2953ef887553e289e9cbe57073f3693eadd68a",
+  "reviewedPages": [
+    {
+      "id": "overview",
+      "sha256": "2a12095d6ad48fe1d63668b9e9d6921ad12b817055e96012a1b3934a680a29cc"
+    },
+    {
+      "id": "component-01",
+      "sha256": "652b9b365c3a7544199a341dd72db1beeb4b55cd71cad5ef8cb0fd598ccb8d21"
+    },
+    {
+      "id": "component-02",
+      "sha256": "ba4fa70c5a3d668058292bc1021e2a44d9869cc8db321fbd421d11ba3711730c"
+    },
+    {
+      "id": "component-03",
+      "sha256": "310873ffc4465fdc9ccbfc51520ae84ed4776e6d2f877c40f2677cec20dbc4e5"
+    },
+    {
+      "id": "component-04",
+      "sha256": "44966662c8ec6031a079d411b34ab37aa026d78cb51fca8eb60b808a85b60661"
+    },
+    {
+      "id": "component-05",
+      "sha256": "56b0446fc014ca00397143e8b03bbee40d480a41507e70a8caae2aeeeb86f0b3"
+    },
+    {
+      "id": "component-06",
+      "sha256": "e237bf4200941c1deacf1da567c5dd4315a63c24b57bc1846de156bf8183b1fb"
+    },
+    {
+      "id": "component-07",
+      "sha256": "4d7f72be0976ff084e62d077bdfa49993dca758f86f373286f872a9477179bef"
+    },
+    {
+      "id": "variant-08",
+      "sha256": "05c76c9a384b71a5c1dc67edfa3f8bb54ca143ee7fc9c098554024524f87c96b"
+    },
+    {
+      "id": "variant-09",
+      "sha256": "9910cb58fbe01d055ea48d061daeb5a7f2bd6017f82bc8936a53449d0a9e1ef8"
+    },
+    {
+      "id": "variant-10",
+      "sha256": "913db2cce787950037650a711b4302412eb9c1cbfff57a37d4e9b8e6ab1c22b4"
+    },
+    {
+      "id": "variant-11",
+      "sha256": "d423e75ee2a25ac2abe7a62e44cc9fbb0a7c49e343abb611e54c85f86c5114c7"
+    },
+    {
+      "id": "effect-12",
+      "sha256": "f8dbc89a9e822bace07beca56492f39a0ec30db53efab9ecdb4dd30db9ceed0f"
+    },
+    {
+      "id": "effect-13",
+      "sha256": "1f931464ca7bf746c8c05773a44625af48f84ce5dd76c6c7fa4301e913655ee3"
+    },
+    {
+      "id": "effect-14",
+      "sha256": "a69f1d8586d5989f791db54a26f63bf103b18c410aaede4c14de63459473b42c"
+    },
+    {
+      "id": "effect-15",
+      "sha256": "afc0eea6d2776189332f413e38d37e89c92fab2c3c60bf4e686b28a31de269c8"
+    },
+    {
+      "id": "effect-16",
+      "sha256": "282aa04d4af2174beb414e0ad5d7a60aba07cbf396813102eaafb534b0a4142c"
+    },
+    {
+      "id": "effect-17",
+      "sha256": "94ffec52347587654e1df57bc40daf7a0f2eec73b7f4b89babf2407a889a9ba5"
+    },
+    {
+      "id": "effect-18",
+      "sha256": "9cd7a24c107bf296cfc0531beae22ea0d5a072bdf683d04e0a50bdc19f68cbb8"
+    },
+    {
+      "id": "composition-19",
+      "sha256": "107f19820ccdee27c423831aedc90288ecd2ca8348b97dee13b00a9e0bbfd604"
+    },
+    {
+      "id": "composition-20",
+      "sha256": "be2045bfcf5007d2cfcfd352db2f59d7b9dd353ebe62262041144de3a34f8fb6"
+    },
+    {
+      "id": "composition-21",
+      "sha256": "0d9d7da87fac7e30b6a28881c09e74e8b32387564b5a8fcb0584350823514d86"
+    },
+    {
+      "id": "composition-22",
+      "sha256": "e2979b9ad0d7f506b59400efe5a9b1c643c3bf5714c2ebab3fe15b50affa2591"
+    },
+    {
+      "id": "fonts",
+      "sha256": "0f98142c9c149ae449481249abbfd848f0846cab8c9f7323c14713f4e25dcae4"
+    }
+  ],
+  "requirements": {
+    "allCatalogPagesBeautified": true,
+    "editableComponentStylesSaved": true,
+    "fullClassificationScreenshotsSaved": true,
+    "neutralOnlyVerified": true,
+    "independentPalettesPreserved": true,
+    "allRegisteredEntriesCallable": true
+  },
+  "scope": "static-reference-library",
+  "productionAdapter": "not_integrated"
+}

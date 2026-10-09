@@ -16,7 +16,7 @@
   }
   const line = (d) =>
     `<path d="${d}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-  function render(id, value) {
+  function render(id, value, variantId) {
     const item = catalog.items.find((x) => x.id === id);
     if (!item) throw Error("UNKNOWN_COMPONENT");
     if (
@@ -24,17 +24,29 @@
       (typeof value !== "string" || [...value].length > 36)
     )
       throw Error("TEXT_CAPACITY");
+    const variant =
+      variantId === undefined
+        ? null
+        : window.PresentationVariants.items.find((v) => v.id === variantId);
+    if (variantId !== undefined && !variant)
+      throw Error("UNKNOWN_PRESENTATION_VARIANT");
+    if (variant && variant.componentRef !== id)
+      throw Error("VARIANT_COMPONENT_MISMATCH");
     const el = text("div", "component " + item.kind, "");
+    if (variant) {
+      el.classList.add("presentation-variant", variant.className);
+      el.dataset.variantId = variant.id;
+    }
     const v = value ?? item.text;
     const shapes = {
       branch:
         line(
-          "M74 50H145V20H225M145 50V80H225M215 10L225 20L215 30M215 70L225 80L215 90",
+          "M74 50H145V20H214M145 50V80H214M204 12L214 20L204 28M204 72L214 80L204 88",
         ) +
-        '<circle cx="55" cy="50" r="18" fill="var(--tint)" stroke="currentColor"/>',
+        '<circle cx="55" cy="50" r="18" fill="var(--tint)" stroke="currentColor"/><rect x="226" y="7" width="52" height="26" rx="8" fill="var(--tint)" stroke="currentColor"/><rect x="226" y="67" width="52" height="26" rx="8" fill="var(--tint)" stroke="currentColor"/>',
       merge:
-        line("M50 20H130V50H245M50 80H130V50M235 40L245 50L235 60") +
-        '<circle cx="35" cy="20" r="10" fill="var(--tint)" stroke="currentColor"/><circle cx="35" cy="80" r="10" fill="var(--tint)" stroke="currentColor"/>',
+        line("M51 20H130V50H222M51 80H130V50M212 42L222 50L212 58") +
+        '<circle cx="35" cy="20" r="12" fill="var(--tint)" stroke="currentColor"/><circle cx="35" cy="80" r="12" fill="var(--tint)" stroke="currentColor"/><rect x="236" y="34" width="46" height="32" rx="9" fill="var(--tint)" stroke="currentColor"/>',
       cycle:
         line(
           "M108 26Q150 0 193 26M181 13L193 26L177 28M213 44Q239 77 181 84M194 72L181 84L198 91M119 83Q58 72 89 38M75 43L89 38L91 52",
@@ -50,7 +62,7 @@
         '<rect x="25" y="6" width="250" height="88" rx="10" fill="var(--tint)"/><path d="M25 36H275M150 6V94M25 65H275" fill="none" stroke="var(--line)"/><g font-size="14" fill="var(--ink)" text-anchor="middle"><text x="87" y="27">对象 A</text><text x="210" y="27">对象 B</text><text x="87" y="57">相同维度</text><text x="210" y="57">相同维度</text><text x="87" y="85">特征一</text><text x="210" y="85">特征二</text></g>',
       timeline:
         line("M42 42H258") +
-        '<g fill="currentColor"><circle cx="45" cy="42" r="7"/><circle cx="150" cy="42" r="7"/><circle cx="255" cy="42" r="7"/></g><g font-size="14" fill="var(--ink)" text-anchor="middle"><text x="45" y="76">开始</text><text x="150" y="76">发展</text><text x="255" y="76">完成</text></g>',
+        '<g fill="var(--tint)"><circle cx="45" cy="42" r="12"/><circle cx="150" cy="42" r="12"/><circle cx="255" cy="42" r="12"/></g><g fill="currentColor"><circle cx="45" cy="42" r="5"/><circle cx="150" cy="42" r="5"/><circle cx="255" cy="42" r="5"/></g><g font-size="14" fill="var(--ink)" text-anchor="middle"><text x="45" y="76">开始</text><text x="150" y="76">发展</text><text x="255" y="76">完成</text></g>',
       arrow: line("M30 50H266M254 38L266 50L254 62"),
       "double-arrow": line("M32 50H268M44 38L32 50L44 62M256 38L268 50L256 62"),
       elbow: line("M35 75H155V25H266M254 13L266 25L254 37"),
@@ -68,10 +80,7 @@
       const card = text("div", "sample-card", "");
       if (item.kind === "number-card")
         card.append(text("span", "card-index", "01"));
-      card.append(
-        text("strong", "", v),
-        text("p", "", "内容与外观分开，替换文字即可复用。"),
-      );
+      card.append(text("strong", "", v), text("p", "", "层级清楚，信息易读。"));
       el.append(card);
     } else if (item.kind === "number") {
       el.append(text("strong", "", v), text("span", "unit", "单位"));
