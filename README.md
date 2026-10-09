@@ -34,6 +34,8 @@
 
 ## 当前阶段
 
+[流程先行与并行开发计划](docs/plans/workflow-first-parallel-2026-10-09/README.md)细化七步制作职责、人工确认、失败恢复和多对话文件分工，配合下方视觉参考库路线执行。
+
 **后续唯一执行顺序：[视觉参考库收束与详细开发计划](docs/plans/html-backend-development/visual-reference-roadmap-2026-10-09.md)。**
 
 后续以 [标准组件库 1.0](html_engine/reference-library/STANDARD-LIBRARY.md) 为静态组件基线：24 张黑白灰参考页、32 个基础组件、16 种呈现变体、28 种效果、18 个组合及 5 种字体。组件源代码、截图、编号查询和验证记录一同保存；配色与图片风格独立输入。见 [发布交接备注](html_engine/reference-library/HANDOFF-1.0.md)。被否定的模板不再作为入口，历史批准实例保留。生产适配和课程量产仍按计划验证。

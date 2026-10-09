@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-09",
+  "timezone": "Asia/Shanghai",
+  "scope": "Local workflow source/document audit, focused existing regressions, and online main baseline comparison; planning only",
+  "repository": "D:/Program Files (x86)/PPT_HTML_Studio",
+  "head": "edd477a99e520dd45c5026bab0038e7f0a6031f8",
+  "branch": "html-studio",
+  "origin_main_before_publish": "2b24469",
+  "origin_main_reference_library": "Standard library 1.0: 24 static pages, 32 base components, 16 variants, 28 static effects, 18 compositions, five fonts; production scene adapter and full course acceptance remain separate",
+  "working_tree": "dirty with substantial pre-existing changes; HEAD alone is not a reproducible source snapshot",
+  "checks": [
+    {
+      "command": ".\\.venv\\Scripts\\python.exe -m pytest checks/test_html_workflow_acceptance.py checks/test_html_audio_preview.py checks/test_html_motion_service.py -q",
+      "exit_code": 1,
+      "passed": 48,
+      "failed": 1,
+      "warnings": 1,
+      "reported_seconds": 20.89,
+      "failed_test": "checks/test_html_motion_service.py::test_actual_production_preserves_manual_and_reports_identity_conflict",
+      "failure": "Expected HtmlReviewError was not raised at line 244",
+      "source_analysis": "Second call changes only the mock generator closure output. Unchanged effective input hits the existing plan cache, so the replacement object plan never executes. This is a regression coverage gap, not evidence of a failed manual-edit guard.",
+      "next_action": "Use a legitimate changed input to create a cache miss, assert generator invocation and new plan contents, then verify conflict diagnostics and preservation of prior documents. Keep cache-hit behavior in a separate test.",
+      "data_scope": "existing checks/conftest.py isolation and test fixtures",
+      "provider_scope": "controlled fixtures; not a real provider quality test"
+    },
+    {
+      "command": "node checks/test_visible_flow.js",
+      "exit_code": 0,
+      "output": ["visible flow checks passed", "html backend flow checks passed"]
+    }
+  ],
+  "source_risks_not_runtime_reproduced": [
+    "Mixed status sources between HTML workflow facts and legacy content/planning/output step status",
+    "Audio status depends on scene existence and joint audio preview readiness",
+    "Unreviewed style packages have no explicit production admission gate in the style loader",
+    "Project-wide revision may cause safe conflicts between concurrent page production tasks"
+  ],
+  "not_performed": [
+    "Production code changes or test repairs",
+    "Live app restart or user project mutation",
+    "Real provider requests in this turn",
+    "User visual/audio/rhythm approvals",
+    "Full course acceptance or actual digital-human integration",
+    "Creating implementation chats, committing or publishing"
+  ]
+}
