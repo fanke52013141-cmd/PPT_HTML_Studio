@@ -11,6 +11,7 @@ RES-20261008-04追加：[Token编辑式还原实测](2026-10-08-image25-sheet-ex
 | RES-20261007-01 | 大语言模型与编程式渲染架构报告 | [借鉴分析](2026-10-07-architecture-report/analysis-and-adoption.md) | 已完成文档分析与一手资料核对，实验未执行 |
 | RES-20261007-02 | Skill 生态与工作流两份报告，结合本项目筛选 | [项目改造借鉴指南](2026-10-07-skill-and-workflow-reports/adaptation-guide.md) | 已核对本地代码与选中一手资料，开发/运行验收未执行 |
 | RES-20261008-04 | image2.5参考图批量拆分与效率对照 | [实验记录](2026-10-08-image25-sheet-experiment/README.md) | 内置生图2次实际实验，均2/4严格提取通过；image2.5专项性能对照待配置 |
+| RES-20261010-C01 | V1 动作时间求值与 Anime.js 候选逐帧对照 | [C 线实验记录](../../html_engine/motion-research/README.md) | 22 个动作时间样本和 7 个 SVG leader 样本完成；未采用 Anime.js 为生产时钟，未做视频导出或用户节奏审批 |
 
 **当前开发借鉴主入口：** [项目改造借鉴指南](2026-10-07-skill-and-workflow-reports/adaptation-guide.md)。
 现有语音合成、音频时间/对齐和数字人方案直接复用；报告原文不是整体改造指令。
@@ -32,3 +33,5 @@ RES-20261008-04追加：[Token编辑式还原实测](2026-10-08-image25-sheet-ex
 
 RES-20261007-03：[huashu-art-motion 源码借鉴分析](2026-10-07-huashu-art-motion/analysis-and-adoption.md)。
 已完成锁定源码与现有契约对照；场景/镜头/动作扩展为待定义方案，不代表已实现。
+
+RES-20261010-C01 为 HPS-008 时间求值要求补充 V1 运行时的实测证据；实验候选与决定记录在独立的 C 线实验卡。此记录不改变 RES-20261007-03 的借鉴判断，也不把 Anime.js 纳入生产依赖。

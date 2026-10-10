@@ -1,0 +1,2 @@
+# Fixed offline example attachments are deliberate reference fixtures.
+!examples/**/*.png

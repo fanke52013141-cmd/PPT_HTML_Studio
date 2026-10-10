@@ -228,7 +228,12 @@ def test_beat_binding_reacts_to_sentence_timing_not_total_length():
             {"targetId": "n", "type": "enter", "startMs": 5000, "durationMs": 500}
         ],
     }
-    binding = {"actions": {"n:enter": {"beatId": "b2", "offsetMs": 0}}}
+    binding = {
+        "format": "hps.html.motion_binding",
+        "version": "0.1.0",
+        "mode": "beat_ids",
+        "actions": {"n:enter": {"beatId": "b2", "edge": "start", "offsetMs": 0}},
+    }
     times = []
     for start in (1, 8):
         timeline = {

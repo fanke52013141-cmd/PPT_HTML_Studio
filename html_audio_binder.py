@@ -85,6 +85,81 @@ def _audio_duration_sec(audio_timeline: dict[str, Any]) -> float:
     return float(duration)
 
 
+def _binding_actions(
+    scene: dict[str, Any],
+    binding: dict[str, Any] | None,
+    beat_ids: set[str],
+) -> dict[str, dict[str, Any]]:
+    """Validate explicit motion bindings before using any of them.
+
+    The editor validates persisted documents too, but this module is also used
+    directly by readiness and render paths. A malformed explicit binding must
+    never silently fall back to the scene's authored absolute time.
+    """
+    motions = scene.get("motion")
+    if not isinstance(motions, list):
+        raise AudioBindingError("SCENE_MOTION_INVALID", "场景动作列表格式不合法")
+
+    valid_actions: set[str] = set()
+    for action in motions:
+        if (
+            not isinstance(action, dict)
+            or not isinstance(action.get("targetId"), str)
+            or not action["targetId"]
+            or not isinstance(action.get("type"), str)
+            or not action["type"]
+        ):
+            raise AudioBindingError("SCENE_MOTION_INVALID", "动作目标或类型缺失")
+        key = f"{action['targetId']}:{action['type']}"
+        if key in valid_actions:
+            raise AudioBindingError(
+                "SCENE_MOTION_INVALID", f"动作身份重复：{key}"
+            )
+        valid_actions.add(key)
+
+    if binding is None:
+        return {}
+    if (
+        not isinstance(binding, dict)
+        or set(binding) != {"format", "version", "mode", "actions"}
+        or binding.get("format") != "hps.html.motion_binding"
+        or binding.get("version") != "0.1.0"
+        or binding.get("mode") != "beat_ids"
+        or not isinstance(binding.get("actions"), dict)
+    ):
+        raise AudioBindingError("AUDIO_BINDING_INVALID", "动作语块绑定格式不合法")
+
+    actions = binding["actions"]
+    stale = sorted(set(actions) - valid_actions)
+    if stale:
+        raise AudioBindingError(
+            "AUDIO_BINDING_TARGET_GONE", f"绑定目标已不存在：{', '.join(stale)}"
+        )
+    for key, link in actions.items():
+        if (
+            not isinstance(link, dict)
+            or set(link) != {"beatId", "edge", "offsetMs"}
+            or not isinstance(link.get("beatId"), str)
+            or not link["beatId"]
+        ):
+            raise AudioBindingError(
+                "AUDIO_BINDING_INVALID", f"绑定字段错误：{key}"
+            )
+        if link["beatId"] not in beat_ids:
+            raise AudioBindingError(
+                "AUDIO_BEAT_MISSING", f"缺少语块 {link['beatId']}"
+            )
+        if (
+            link.get("edge") not in ("start", "end")
+            or type(link.get("offsetMs")) is not int
+            or abs(link["offsetMs"]) > 120000
+        ):
+            raise AudioBindingError(
+                "AUDIO_BINDING_INVALID", f"边界或偏移错误：{key}"
+            )
+    return actions
+
+
 def bind_scene_to_audio(
     scene: dict[str, Any],
     audio_timeline: dict[str, Any],
@@ -132,6 +207,7 @@ def bind_scene_to_audio(
         raise AudioBindingError(
             "SCENE_MOTION_MISSING", "场景缺少动作定义，不能绑定讲解时间"
         )
+    binding_actions = _binding_actions(scene, binding, set(windows))
     for action in motions:
         start_ms = action.get("startMs")
         duration = action.get("durationMs")
@@ -141,18 +217,10 @@ def bind_scene_to_audio(
             raise AudioBindingError(
                 "SCENE_MOTION_INVALID", f"动作时间不合法：{action.get('targetId')}"
             )
-        link = (
-            (binding or {})
-            .get("actions", {})
-            .get(f"{action['targetId']}:{action['type']}")
-        )
-        if link:
-            if link["beatId"] not in windows:
-                raise AudioBindingError(
-                    "AUDIO_BEAT_MISSING", f"缺少语块 {link['beatId']}"
-                )
+        link = binding_actions.get(f"{action['targetId']}:{action['type']}")
+        if link is not None:
             edge = 1 if link.get("edge") == "end" else 0
-            new_start = windows[link["beatId"]][edge] + int(link.get("offsetMs", 0))
+            new_start = windows[link["beatId"]][edge] + link["offsetMs"]
             new_duration = int(duration)
             if new_start < 0 or new_start >= duration_ms:
                 raise AudioBindingError("AUDIO_OFFSET_OVERFLOW", "手工偏移越过作品边界")

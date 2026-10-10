@@ -1,0 +1,294 @@
+{
+  "format": "hps.visual.reference-request-package",
+  "version": "1.0.0",
+  "mode": "standard",
+  "createdBy": "offline-catalog-assembler",
+  "catalogVersion": "1.0.0",
+  "catalogSnapshotSha256": "9e999fb743dabe48158bb2abd91138b15922cea2ff22cf354248f5c96cf4d3e3",
+  "cacheKey": "1348c0e8670da38f9f1e4af87f41d27b26cdbe15e7eec95805f4d3065f17ce09",
+  "exactContent": {
+    "path": "content.json",
+    "sha256": "e5cea7bfc0df1772849adacc15eb82144f41c65e7d67090db12f7b45ee5e90a9"
+  },
+  "visualGuidance": {
+    "path": "visual-guidance.json",
+    "sha256": "e104d158375b93086eb346d77930eaf8318e0dae2bfe856e073316bcac5fdae1"
+  },
+  "selectionRationale": {
+    "task": "说明液态水蒸发与水蒸气冷凝这两个方向相反的状态变化",
+    "references": [
+      {
+        "id": "T01",
+        "rationale": "需要一个清楚的页面主标题层级。"
+      },
+      {
+        "id": "T04",
+        "rationale": "页面包含准确的简短解释文字。"
+      },
+      {
+        "id": "A02",
+        "rationale": "两个变化方向需要清楚表达为相反方向。"
+      },
+      {
+        "id": "C03",
+        "rationale": "两种状态变化需要可区分的信息容器。"
+      },
+      {
+        "id": "R03",
+        "rationale": "需要检查循环/往返关系的表达参考，但该图只作视觉参考，不是生产循环图模板。"
+      }
+    ],
+    "palette": {
+      "id": "neutral",
+      "rationale": "未选择配色，按黑灰白中性基础标准组包。"
+    },
+    "style": {
+      "id": "neutral-baseline",
+      "rationale": "使用风格描述 neutral-baseline。"
+    }
+  },
+  "palette": {
+    "id": "neutral",
+    "version": "1.0.0"
+  },
+  "style": {
+    "id": "neutral-baseline",
+    "version": "1.0.0",
+    "source": {
+      "path": "html_engine/visual/catalog/neutral-style.json",
+      "fileSha256": "42d22c18d46432a0f1c7491df257f84808a7fb6c788464c62114c3197c894ce8",
+      "recordSha256": "6a98020928ac72b40c1d8dfb3e07306ed3ac1a74c800aedf7f6f44c65e21bb51"
+    }
+  },
+  "selectedReferences": [
+    {
+      "id": "T01",
+      "version": "0.1.0",
+      "type": "base-component",
+      "name": "主标题",
+      "category": "文字层级",
+      "status": "available",
+      "pageId": "page:component-01",
+      "source": {
+        "path": "html_engine/reference-library/components.json",
+        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "recordSha256": "626373d620f0ada7f1c6ca8d04a9ca0a39a537663992bc2911ee510dfa35623b"
+      },
+      "screenshots": [
+        {
+          "packagePath": "attachments/classification/component-01.png",
+          "sourcePath": "html_engine/reference-library/standard/component-01.png",
+          "sha256": "652b9b365c3a7544199a341dd72db1beeb4b55cd71cad5ef8cb0fd598ccb8d21",
+          "paletteId": null
+        }
+      ],
+      "rationale": "需要一个清楚的页面主标题层级。",
+      "productionMapping": {
+        "status": "candidate-only",
+        "directAdapter": false,
+        "candidateRuntimeIds": [
+          "runtime-node:text"
+        ],
+        "gap": "语义上接近文字节点；标准库呈现、文字角色、布局槽位和字体尺寸没有自动适配器。"
+      }
+    },
+    {
+      "id": "T04",
+      "version": "0.1.0",
+      "type": "base-component",
+      "name": "正文",
+      "category": "文字层级",
+      "status": "available",
+      "pageId": "page:component-01",
+      "source": {
+        "path": "html_engine/reference-library/components.json",
+        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "recordSha256": "1e74ce196c8ccd7ad43dd7cada09177eb8e6bb27b3d866f7e24552208cf69487"
+      },
+      "screenshots": [
+        {
+          "packagePath": "attachments/classification/component-01.png",
+          "sourcePath": "html_engine/reference-library/standard/component-01.png",
+          "sha256": "652b9b365c3a7544199a341dd72db1beeb4b55cd71cad5ef8cb0fd598ccb8d21",
+          "paletteId": null
+        }
+      ],
+      "rationale": "页面包含准确的简短解释文字。",
+      "productionMapping": {
+        "status": "candidate-only",
+        "directAdapter": false,
+        "candidateRuntimeIds": [
+          "runtime-node:text"
+        ],
+        "gap": "语义上接近文字节点；标准库呈现、文字角色、布局槽位和字体尺寸没有自动适配器。"
+      }
+    },
+    {
+      "id": "A02",
+      "version": "0.1.0",
+      "type": "base-component",
+      "name": "双向箭头",
+      "category": "箭头与连接",
+      "status": "available",
+      "pageId": "page:component-02",
+      "source": {
+        "path": "html_engine/reference-library/components.json",
+        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "recordSha256": "189a5b9ba74122b7fc5cfd6f1a198c1f0282ff561e95b9b0a0a9fab4a702b6d0"
+      },
+      "screenshots": [
+        {
+          "packagePath": "attachments/classification/component-02.png",
+          "sourcePath": "html_engine/reference-library/standard/component-02.png",
+          "sha256": "ba4fa70c5a3d668058292bc1021e2a44d9869cc8db321fbd421d11ba3711730c",
+          "paletteId": null
+        }
+      ],
+      "rationale": "两个变化方向需要清楚表达为相反方向。",
+      "productionMapping": {
+        "status": "candidate-only",
+        "directAdapter": false,
+        "candidateRuntimeIds": [
+          "runtime-node:arrow"
+        ],
+        "gap": "只可作为箭头概念参考；生产箭头几何来自受约束布局，静态参考线型/路由没有参数适配器。"
+      }
+    },
+    {
+      "id": "C03",
+      "version": "0.1.0",
+      "type": "base-component",
+      "name": "柔影卡片",
+      "category": "卡片与容器",
+      "status": "available",
+      "pageId": "page:component-03",
+      "source": {
+        "path": "html_engine/reference-library/components.json",
+        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "recordSha256": "7c21a52bbf7b59be5a0d6de75a0ad59694aedc5425dda06bdb59387b85786b45"
+      },
+      "screenshots": [
+        {
+          "packagePath": "attachments/classification/component-03.png",
+          "sourcePath": "html_engine/reference-library/standard/component-03.png",
+          "sha256": "310873ffc4465fdc9ccbfc51520ae84ed4776e6d2f877c40f2677cec20dbc4e5",
+          "paletteId": null
+        }
+      ],
+      "rationale": "两种状态变化需要可区分的信息容器。",
+      "productionMapping": {
+        "status": "candidate-only",
+        "directAdapter": false,
+        "candidateRuntimeIds": [
+          "runtime-node:card"
+        ],
+        "gap": "语义上接近卡片节点；静态变体、卡片尺寸和槽位仍需显式生产定义。"
+      }
+    },
+    {
+      "id": "R03",
+      "version": "0.2.0",
+      "type": "fixed-structure-example",
+      "name": "循环关系",
+      "category": "关系与组织",
+      "status": "available",
+      "pageId": "page:component-06",
+      "source": {
+        "path": "html_engine/reference-library/components-extensions.json",
+        "fileSha256": "90ad48dfc1c7c38074c08f20d06c53322b886e1d13d7774b825ed23dc0bd315e",
+        "recordSha256": "71db27976af930453ddd8077cd82e03474cce3f8fd039876948bbc8cbc74163c"
+      },
+      "screenshots": [
+        {
+          "packagePath": "attachments/classification/component-06.png",
+          "sourcePath": "html_engine/reference-library/standard/component-06.png",
+          "sha256": "e237bf4200941c1deacf1da567c5dd4315a63c24b57bc1846de156bf8183b1fb",
+          "paletteId": null
+        }
+      ],
+      "rationale": "需要检查循环/往返关系的表达参考，但该图只作视觉参考，不是生产循环图模板。",
+      "productionMapping": {
+        "status": "none",
+        "directAdapter": false,
+        "candidateRuntimeIds": [],
+        "gap": "固定拓扑截图不是任意关系图；生产没有这些参考 ID 的自动布局或数据适配器。"
+      }
+    }
+  ],
+  "attachments": [
+    {
+      "path": "attachments/classification/component-01.png",
+      "sourcePath": "html_engine/reference-library/standard/component-01.png",
+      "role": "classification",
+      "sha256": "652b9b365c3a7544199a341dd72db1beeb4b55cd71cad5ef8cb0fd598ccb8d21",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "attachments/classification/component-02.png",
+      "sourcePath": "html_engine/reference-library/standard/component-02.png",
+      "role": "classification",
+      "sha256": "ba4fa70c5a3d668058292bc1021e2a44d9869cc8db321fbd421d11ba3711730c",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "attachments/classification/component-03.png",
+      "sourcePath": "html_engine/reference-library/standard/component-03.png",
+      "role": "classification",
+      "sha256": "310873ffc4465fdc9ccbfc51520ae84ed4776e6d2f877c40f2677cec20dbc4e5",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "attachments/classification/component-06.png",
+      "sourcePath": "html_engine/reference-library/standard/component-06.png",
+      "role": "classification",
+      "sha256": "e237bf4200941c1deacf1da567c5dd4315a63c24b57bc1846de156bf8183b1fb",
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "provider": {
+    "requestCreated": false,
+    "callMade": false
+  },
+  "files": [
+    {
+      "path": "content.json",
+      "sha256": "e5cea7bfc0df1772849adacc15eb82144f41c65e7d67090db12f7b45ee5e90a9",
+      "size": 594
+    },
+    {
+      "path": "visual-guidance.json",
+      "sha256": "e104d158375b93086eb346d77930eaf8318e0dae2bfe856e073316bcac5fdae1",
+      "size": 2830
+    },
+    {
+      "path": "NOT-A-MODEL-REQUEST.md",
+      "sha256": "6a10eee2377ae079343cfe8956df6eca66fb7d77d23d747bd75d2463faf293b1",
+      "size": 344
+    },
+    {
+      "path": "attachments/classification/component-01.png",
+      "sha256": "652b9b365c3a7544199a341dd72db1beeb4b55cd71cad5ef8cb0fd598ccb8d21",
+      "size": 101505
+    },
+    {
+      "path": "attachments/classification/component-02.png",
+      "sha256": "ba4fa70c5a3d668058292bc1021e2a44d9869cc8db321fbd421d11ba3711730c",
+      "size": 51507
+    },
+    {
+      "path": "attachments/classification/component-03.png",
+      "sha256": "310873ffc4465fdc9ccbfc51520ae84ed4776e6d2f877c40f2677cec20dbc4e5",
+      "size": 91056
+    },
+    {
+      "path": "attachments/classification/component-06.png",
+      "sha256": "e237bf4200941c1deacf1da567c5dd4315a63c24b57bc1846de156bf8183b1fb",
+      "size": 67054
+    }
+  ],
+  "manifestSha256": "165bb35f2c8cd57db43f23de3e9b1c7aed3c6e8e6cff81dbd9ddc85c20a4e390"
+}

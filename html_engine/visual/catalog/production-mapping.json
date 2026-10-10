@@ -1,0 +1,22 @@
+{
+  "format": "hps.visual.reference-production-mapping",
+  "version": "0.1.0",
+  "rules": [
+    { "pattern": "^T0[1-8]$", "candidateRuntimeIds": ["runtime-node:text"], "gap": "语义上接近文字节点；标准库呈现、文字角色、布局槽位和字体尺寸没有自动适配器。" },
+    { "pattern": "^A0[1-4]$", "candidateRuntimeIds": ["runtime-node:arrow"], "gap": "只可作为箭头概念参考；生产箭头几何来自受约束布局，静态参考线型/路由没有参数适配器。" },
+    { "pattern": "^C0[1-4]$", "candidateRuntimeIds": ["runtime-node:card"], "gap": "语义上接近卡片节点；静态变体、卡片尺寸和槽位仍需显式生产定义。" },
+    { "pattern": "^S0[12]$", "candidateRuntimeIds": ["runtime-node:shape"], "gap": "仅矩形/椭圆有近似运行时 shape；参考展示尺寸、身份和布局不构成场景映射。" },
+    { "pattern": "^S0[34]$", "candidateRuntimeIds": [], "gap": "当前运行时 shape 仅接受 rect/ellipse，没有三角形、六边形、任意线段或圆弧参考适配器。" },
+    { "pattern": "^N01$", "candidateRuntimeIds": ["runtime-node:label"], "gap": "语义相近；参考外观、目标锚定与生产标签角色没有自动映射。" },
+    { "pattern": "^N02$", "candidateRuntimeIds": ["runtime-node:badge"], "gap": "语义相近；参考外观与生产 tone/slot 值没有自动映射。" },
+    { "pattern": "^N0[34]$", "candidateRuntimeIds": ["runtime-node:annotation"], "gap": "生产 annotation 仅有 target/anchor/radius/label 身份；括号、引线及参考几何不由目录转换。" },
+    { "pattern": "^R0[1-4]$", "candidateRuntimeIds": [], "gap": "固定拓扑截图不是任意关系图；生产没有这些参考 ID 的自动布局或数据适配器。" },
+    { "pattern": "^D0[1-4]$", "candidateRuntimeIds": [], "gap": "固定示例不是任意图表或真实数据接口；生产没有这些参考 ID 的自动映射。" },
+    { "pattern": "^PV[0-9]{2}$", "candidateRuntimeIds": [], "gap": "呈现变体复用参考组件语义，不是生产 theme、layout 或 scene 节点参数。" },
+    { "pattern": "^E05$", "candidateRuntimeIds": ["runtime-effect:soft-shadow"], "gap": "仅效果方向相似；生产阴影参数范围与运行渲染不由静态效果 ID 驱动。" },
+    { "pattern": "^E0[124]$", "candidateRuntimeIds": ["runtime-effect:card-surface-gradient", "runtime-effect:icon-bubble-gradient"], "gap": "局部渐变能力存在，但效果位置、参数、容器和色角色不与参考效果 ID 一一对应。" },
+    { "pattern": "^E[0-9]{2}$", "candidateRuntimeIds": [], "gap": "静态效果参考尚无该 ID 的生产效果适配器；目录截图不代表运行时能力。" },
+    { "pattern": "^(P|V|X|H)[0-9]{2}$", "candidateRuntimeIds": [], "gap": "固定组合示例不是 production template；不得由截图推导可变数据、关系或布局能力。" },
+    { "pattern": "^F0[1-5]$", "candidateRuntimeIds": [], "gap": "本机字体参考没有随生产资源打包；当前生产 theme 字段锁定 Microsoft YaHei/Windows。" }
+  ]
+}

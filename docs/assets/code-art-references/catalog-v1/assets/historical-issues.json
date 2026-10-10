@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "items": [
+    {
+      "id": "HIST-F01-GRADIENT-MISREFERENCE",
+      "title": "历史记录中的 F01 渐变错引",
+      "status": "not-reproduced-from-current-source",
+      "reportedBy": "docs/plans/workflow-first-parallel-2026-10-09/workstreams.md D01",
+      "currentObservation": "当前标准库中 F01 是 Noto Sans SC 字体条目，渐变静态效果为 E01–E04。交接记录未指明原错误文件、字节或重现步骤，因此本条保留为历史审计事项，不推测或改写旧源。",
+      "preserveSourcePaths": [
+        "html_engine/reference-library/components.json",
+        "html_engine/reference-library/effects.json",
+        "html_engine/reference-library/standard/manifest.json",
+        "html_engine/reference-library/standard-library.html"
+      ]
+    },
+    {
+      "id": "HIST-PAPER-PLANE-TITLE-WRAP",
+      "title": "B 样页标题断词与字号修订",
+      "status": "fixed-in-current-sample-only",
+      "reportedBy": "docs/plans/workflow-first-parallel-2026-10-09/deliveries/B.md",
+      "currentObservation": "纸飞机样页曾在“同/一”之间换行；B 线调整样页字号和标题宽度后重排并重导六张截图。当前条目记录的是样页局部修订，不据此扩大任意字号/标题长度的生产支持范围。",
+      "preserveSourcePaths": [
+        "html_engine/reference-library/samples/output/verification.json"
+      ]
+    }
+  ]
+}

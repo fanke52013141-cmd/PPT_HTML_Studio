@@ -1,0 +1,95 @@
+{
+  "format": "hps.visual.scene",
+  "version": "0.4.0",
+  "id": "motion-neutral-fixture",
+  "name": "黑灰白动作边界 fixture",
+  "themeRef": {
+    "id": "research-neutral-monochrome",
+    "version": "0.2.0"
+  },
+  "layoutRef": {
+    "id": "editorial-three-columns-v1",
+    "version": "0.2.0"
+  },
+  "durationMs": 8000,
+  "nodes": [
+    {
+      "id": "header",
+      "slot": "header",
+      "type": "text",
+      "role": "title",
+      "runs": [{ "text": "固定动作边界测试", "emphasis": false }]
+    },
+    {
+      "id": "title-rule",
+      "slot": "title-rule",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "ink",
+      "radius": 5
+    },
+    {
+      "id": "definition-surface",
+      "slot": "definition-surface",
+      "type": "shape",
+      "kind": "rect",
+      "fill": "panel",
+      "radius": 20
+    },
+    {
+      "id": "headline",
+      "slot": "headline",
+      "type": "text",
+      "role": "headline",
+      "runs": [{ "text": "同一输入时间必须得到同一画面", "emphasis": false }]
+    }
+  ],
+  "motion": [
+    {
+      "targetId": "header",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "targetId": "title-rule",
+      "type": "enter",
+      "startMs": 337,
+      "durationMs": 777,
+      "offsetX": 0,
+      "offsetY": 8
+    },
+    {
+      "targetId": "definition-surface",
+      "type": "enter",
+      "startMs": 599,
+      "durationMs": 733,
+      "offsetX": 0,
+      "offsetY": 10
+    },
+    {
+      "targetId": "headline",
+      "type": "enter",
+      "startMs": 1103,
+      "durationMs": 701,
+      "offsetX": 0,
+      "offsetY": 18
+    },
+    {
+      "targetId": "headline",
+      "type": "emphasize",
+      "startMs": 2501,
+      "durationMs": 900
+    },
+    {
+      "targetId": "headline",
+      "type": "exit",
+      "startMs": 6001,
+      "durationMs": 601
+    }
+  ],
+  "beats": [],
+  "source": "C 动作回归固定输入；黑灰白文字与形状，仅供工程实验。"
+}

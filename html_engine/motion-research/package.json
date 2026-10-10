@@ -1,0 +1,12 @@
+{
+  "name": "hps-motion-research",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Isolated motion-library comparison; not a production runtime dependency.",
+  "scripts": {
+    "verify": "node ../../checks/html_motion_v1/verify.cjs"
+  },
+  "devDependencies": {
+    "animejs": "4.5.0"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "清爽轻立体",
+  "version": "0.1.0",
+  "componentSource": "components.json + components.js; unchanged IDs and DOM",
+  "appearanceSource": "unified style, palette supplied separately",
+  "style": "纯白背景；思源黑体建立清楚层级；文字保持深色，主色、辅助色与强调色按所附配色方案选择；轻细线、圆角、少量浅色渐变和柔和阴影；主体采用固定视角、左上柔光、细腻纸面和有限立体明暗。所有元素服从同一种清爽、轻盈、准确的视觉语言。",
+  "avoid": [
+    "手绘笔触",
+    "手写字体",
+    "粗黑描边",
+    "密集拼贴",
+    "复杂背景",
+    "强烈光效"
+  ],
+  "inputRules": [
+    "按标准组件参考选择文字、箭头、卡片与形状，不重新发明组件外观",
+    "风格描述图约束整个页面，包括独立图片主体",
+    "准确文案与语义关系由另附内容给出，不复制参考板文字、ID、标签或说明",
+    "按任务选标准组件/效果/SVG板，不必一次传入全部"
+  ],
+  "generationDefaults": {
+    "resolution": "2K",
+    "quality": "low"
+  }
+}

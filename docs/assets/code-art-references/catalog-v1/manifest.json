@@ -1,0 +1,321 @@
+{
+  "format": "hps.visual.reference-catalog-assets",
+  "version": "1.0.0",
+  "catalogVersion": "1.0.0",
+  "catalogSnapshotSha256": "9e999fb743dabe48158bb2abd91138b15922cea2ff22cf354248f5c96cf4d3e3",
+  "source": "generated from current source files; copied PNGs are unmodified",
+  "files": [
+    {
+      "path": "assets/historical-issues.json",
+      "sourcePath": "html_engine/visual/catalog/historical-issues.json",
+      "role": "historical-issue-register",
+      "status": "available",
+      "sha256": "488aeb25e1af69d9b77177c41a04dc12e6c4eec203630c418464121c0101bc30",
+      "size": 1442
+    },
+    {
+      "path": "assets/palettes/palette-clear.png",
+      "sourcePath": "html_engine/reference-library/reference-input-v2/palette-clear.png",
+      "role": "palette-reference",
+      "status": "available",
+      "sha256": "f8804642515923c842fd39c44fbbb1dc62483f35b0738aa2a4f149a10ee2a7fe",
+      "size": 178567
+    },
+    {
+      "path": "assets/palettes/palette-editorial.png",
+      "sourcePath": "html_engine/reference-library/reference-input-v2/palette-editorial.png",
+      "role": "palette-reference",
+      "status": "available",
+      "sha256": "75c2e29b5542a811791de356c4fadc46bb02d6ce6fa03bfbaf05d527a111710e",
+      "size": 177207
+    },
+    {
+      "path": "assets/palettes/palette-science.png",
+      "sourcePath": "html_engine/reference-library/reference-input-v2/palette-science.png",
+      "role": "palette-reference",
+      "status": "available",
+      "sha256": "9f63d1aa5df158fdac494796ab54843b5fc1661ed53b73aa7aa1aee5301ca091",
+      "size": 178997
+    },
+    {
+      "path": "assets/samples/course-everyday-clear.png",
+      "sourcePath": "html_engine/reference-library/samples/output/course-everyday-clear.png",
+      "role": "sample-page",
+      "status": "pending-review",
+      "sha256": "3bb4938c3a1fa6b58a4da0c1adecc3c3fadeb57ff42d1b1308116b8b6c11afc1",
+      "size": 443555
+    },
+    {
+      "path": "assets/samples/course-everyday-editorial.png",
+      "sourcePath": "html_engine/reference-library/samples/output/course-everyday-editorial.png",
+      "role": "sample-page",
+      "status": "pending-review",
+      "sha256": "0e3968fb542919146d9f44730ba2d4eb1b80a8a655013dbffd8a56323d4b3064",
+      "size": 451791
+    },
+    {
+      "path": "assets/samples/course-everyday-science.png",
+      "sourcePath": "html_engine/reference-library/samples/output/course-everyday-science.png",
+      "role": "sample-page",
+      "status": "pending-review",
+      "sha256": "dbb567cf1ad549b2451893c31635cd2b53bdd9d4fec715a1df91e6951fea603a",
+      "size": 465016
+    },
+    {
+      "path": "assets/samples/paper-plane-clear.png",
+      "sourcePath": "html_engine/reference-library/samples/output/paper-plane-clear.png",
+      "role": "sample-page",
+      "status": "experimental",
+      "sha256": "049b20f87d376cd66e62fb232c5532f756d1c494cdc3c6c374e2c667929f10d4",
+      "size": 449767
+    },
+    {
+      "path": "assets/samples/paper-plane-editorial.png",
+      "sourcePath": "html_engine/reference-library/samples/output/paper-plane-editorial.png",
+      "role": "sample-page",
+      "status": "experimental",
+      "sha256": "f78f34ce1b08e1205cbac6e51a374dc187f392806d372c96090cdf26810503f4",
+      "size": 457443
+    },
+    {
+      "path": "assets/samples/paper-plane-science.png",
+      "sourcePath": "html_engine/reference-library/samples/output/paper-plane-science.png",
+      "role": "sample-page",
+      "status": "experimental",
+      "sha256": "30c0c1258d888350c31bfae0826267c81d893e41450d33b5cbd63c9f075afe5b",
+      "size": 496963
+    },
+    {
+      "path": "assets/standard-pages/component-01.png",
+      "sourcePath": "html_engine/reference-library/standard/component-01.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "652b9b365c3a7544199a341dd72db1beeb4b55cd71cad5ef8cb0fd598ccb8d21",
+      "size": 101505
+    },
+    {
+      "path": "assets/standard-pages/component-02.png",
+      "sourcePath": "html_engine/reference-library/standard/component-02.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "ba4fa70c5a3d668058292bc1021e2a44d9869cc8db321fbd421d11ba3711730c",
+      "size": 51507
+    },
+    {
+      "path": "assets/standard-pages/component-03.png",
+      "sourcePath": "html_engine/reference-library/standard/component-03.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "310873ffc4465fdc9ccbfc51520ae84ed4776e6d2f877c40f2677cec20dbc4e5",
+      "size": 91056
+    },
+    {
+      "path": "assets/standard-pages/component-04.png",
+      "sourcePath": "html_engine/reference-library/standard/component-04.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "44966662c8ec6031a079d411b34ab37aa026d78cb51fca8eb60b808a85b60661",
+      "size": 65440
+    },
+    {
+      "path": "assets/standard-pages/component-05.png",
+      "sourcePath": "html_engine/reference-library/standard/component-05.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "56b0446fc014ca00397143e8b03bbee40d480a41507e70a8caae2aeeeb86f0b3",
+      "size": 64128
+    },
+    {
+      "path": "assets/standard-pages/component-06.png",
+      "sourcePath": "html_engine/reference-library/standard/component-06.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "e237bf4200941c1deacf1da567c5dd4315a63c24b57bc1846de156bf8183b1fb",
+      "size": 67054
+    },
+    {
+      "path": "assets/standard-pages/component-07.png",
+      "sourcePath": "html_engine/reference-library/standard/component-07.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "4d7f72be0976ff084e62d077bdfa49993dca758f86f373286f872a9477179bef",
+      "size": 77432
+    },
+    {
+      "path": "assets/standard-pages/composition-19.png",
+      "sourcePath": "html_engine/reference-library/standard/composition-19.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "107f19820ccdee27c423831aedc90288ecd2ca8348b97dee13b00a9e0bbfd604",
+      "size": 110440
+    },
+    {
+      "path": "assets/standard-pages/composition-20.png",
+      "sourcePath": "html_engine/reference-library/standard/composition-20.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "be2045bfcf5007d2cfcfd352db2f59d7b9dd353ebe62262041144de3a34f8fb6",
+      "size": 93114
+    },
+    {
+      "path": "assets/standard-pages/composition-21.png",
+      "sourcePath": "html_engine/reference-library/standard/composition-21.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "0d9d7da87fac7e30b6a28881c09e74e8b32387564b5a8fcb0584350823514d86",
+      "size": 158642
+    },
+    {
+      "path": "assets/standard-pages/composition-22.png",
+      "sourcePath": "html_engine/reference-library/standard/composition-22.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "e2979b9ad0d7f506b59400efe5a9b1c643c3bf5714c2ebab3fe15b50affa2591",
+      "size": 127340
+    },
+    {
+      "path": "assets/standard-pages/effect-12.png",
+      "sourcePath": "html_engine/reference-library/standard/effect-12.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "f8dbc89a9e822bace07beca56492f39a0ec30db53efab9ecdb4dd30db9ceed0f",
+      "size": 89302
+    },
+    {
+      "path": "assets/standard-pages/effect-13.png",
+      "sourcePath": "html_engine/reference-library/standard/effect-13.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "1f931464ca7bf746c8c05773a44625af48f84ce5dd76c6c7fa4301e913655ee3",
+      "size": 55983
+    },
+    {
+      "path": "assets/standard-pages/effect-14.png",
+      "sourcePath": "html_engine/reference-library/standard/effect-14.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "a69f1d8586d5989f791db54a26f63bf103b18c410aaede4c14de63459473b42c",
+      "size": 53918
+    },
+    {
+      "path": "assets/standard-pages/effect-15.png",
+      "sourcePath": "html_engine/reference-library/standard/effect-15.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "afc0eea6d2776189332f413e38d37e89c92fab2c3c60bf4e686b28a31de269c8",
+      "size": 72306
+    },
+    {
+      "path": "assets/standard-pages/effect-16.png",
+      "sourcePath": "html_engine/reference-library/standard/effect-16.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "282aa04d4af2174beb414e0ad5d7a60aba07cbf396813102eaafb534b0a4142c",
+      "size": 58684
+    },
+    {
+      "path": "assets/standard-pages/effect-17.png",
+      "sourcePath": "html_engine/reference-library/standard/effect-17.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "94ffec52347587654e1df57bc40daf7a0f2eec73b7f4b89babf2407a889a9ba5",
+      "size": 53573
+    },
+    {
+      "path": "assets/standard-pages/effect-18.png",
+      "sourcePath": "html_engine/reference-library/standard/effect-18.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "9cd7a24c107bf296cfc0531beae22ea0d5a072bdf683d04e0a50bdc19f68cbb8",
+      "size": 73810
+    },
+    {
+      "path": "assets/standard-pages/fonts.png",
+      "sourcePath": "html_engine/reference-library/standard/fonts.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "0f98142c9c149ae449481249abbfd848f0846cab8c9f7323c14713f4e25dcae4",
+      "size": 82136
+    },
+    {
+      "path": "assets/standard-pages/overview.png",
+      "sourcePath": "html_engine/reference-library/standard/overview.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "2a12095d6ad48fe1d63668b9e9d6921ad12b817055e96012a1b3934a680a29cc",
+      "size": 123147
+    },
+    {
+      "path": "assets/standard-pages/variant-08.png",
+      "sourcePath": "html_engine/reference-library/standard/variant-08.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "05c76c9a384b71a5c1dc67edfa3f8bb54ca143ee7fc9c098554024524f87c96b",
+      "size": 86505
+    },
+    {
+      "path": "assets/standard-pages/variant-09.png",
+      "sourcePath": "html_engine/reference-library/standard/variant-09.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "9910cb58fbe01d055ea48d061daeb5a7f2bd6017f82bc8936a53449d0a9e1ef8",
+      "size": 75735
+    },
+    {
+      "path": "assets/standard-pages/variant-10.png",
+      "sourcePath": "html_engine/reference-library/standard/variant-10.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "913db2cce787950037650a711b4302412eb9c1cbfff57a37d4e9b8e6ab1c22b4",
+      "size": 112110
+    },
+    {
+      "path": "assets/standard-pages/variant-11.png",
+      "sourcePath": "html_engine/reference-library/standard/variant-11.png",
+      "role": "classification-page",
+      "status": "available",
+      "sha256": "d423e75ee2a25ac2abe7a62e44cc9fbb0a7c49e343abb611e54c85f86c5114c7",
+      "size": 70553
+    },
+    {
+      "path": "assets/style-experiments/style-description.json",
+      "sourcePath": "html_engine/reference-library/reference-input-v2/style-description.json",
+      "role": "experimental-style-description",
+      "status": "experimental",
+      "sha256": "4b7509369713b6aa8f9a0d9d326821dc091b0c38b583ca1b58d007e1c216275f",
+      "size": 1128
+    },
+    {
+      "path": "assets/style-experiments/style-description.png",
+      "sourcePath": "html_engine/reference-library/reference-input-v2/style-description.png",
+      "role": "experimental-style",
+      "status": "experimental",
+      "sha256": "5bfd5ea5d8d9ba6f270896e4ac8cb9a7b47acda733b7202864a9806173cbd3d1",
+      "size": 251383
+    },
+    {
+      "path": "assets/styles/neutral-style.json",
+      "sourcePath": "html_engine/visual/catalog/neutral-style.json",
+      "role": "default-style-description",
+      "status": "available",
+      "sha256": "42d22c18d46432a0f1c7491df257f84808a7fb6c788464c62114c3197c894ce8",
+      "size": 1511
+    },
+    {
+      "path": "catalog.json",
+      "sourcePath": "html_engine/visual/catalog/catalog.json",
+      "role": "machine-catalog",
+      "status": "available",
+      "sha256": "72410a4f05ed6b57c16feffdd73ee2575971896ba3f6ed5cb60e8fbecca99ac7",
+      "size": 361559
+    },
+    {
+      "path": "README.md",
+      "sourcePath": "html_engine/visual/catalog/catalog.json",
+      "role": "human-index",
+      "status": "available",
+      "sha256": "8f9cd4670835e5d07a283bf6a84c97d859880efd2a51953d292469fb0100f06a",
+      "size": 7244
+    }
+  ]
+}

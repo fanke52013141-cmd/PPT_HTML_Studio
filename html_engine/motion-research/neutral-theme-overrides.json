@@ -1,0 +1,29 @@
+{
+  "id": "research-neutral-monochrome",
+  "name": "C 线黑灰白动作测试",
+  "colors": {
+    "background": "#FFFFFF",
+    "ink": "#111111",
+    "body": "#333333",
+    "accent": "#111111",
+    "blue": "#444444",
+    "green": "#666666",
+    "muted": "#777777",
+    "panel": "#FFFFFF",
+    "pinkWash": "#EEEEEE",
+    "blueWash": "#DDDDDD",
+    "greenWash": "#F5F5F5",
+    "line": "#999999",
+    "paper": "#FFFFFF",
+    "purple": "#555555",
+    "yellow": "#BBBBBB",
+    "pink": "#888888"
+  },
+  "gradients": {
+    "pink": ["#EEEEEE", "#BBBBBB"],
+    "blue": ["#DDDDDD", "#999999"],
+    "green": ["#F5F5F5", "#AAAAAA"],
+    "purple": ["#CCCCCC", "#888888"],
+    "yellow": ["#E5E5E5", "#AAAAAA"]
+  }
+}

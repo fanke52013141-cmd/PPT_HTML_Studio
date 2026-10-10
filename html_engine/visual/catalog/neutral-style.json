@@ -1,0 +1,26 @@
+{
+  "id": "neutral-baseline",
+  "version": "1.0.0",
+  "name": "黑灰白中性基础风格",
+  "status": "available",
+  "default": true,
+  "type": "unified-style-description",
+  "paletteId": "neutral",
+  "style": "纯白背景，以黑色和深灰承载标题、正文与关键关系，以中灰区分辅助层级，以浅灰表达容器和边界。保持标准组件的真实文字、清楚字阶、充足留白、轻细线条、适度圆角和克制阴影。所有颜色均为中性灰阶，不引入色相、彩色主体或主题专属组件。",
+  "preserve": [
+    "准确文字、数字、标注与关系由独立内容提供并保持可编辑。",
+    "按所选标准组件参考学习比例、字阶、线条与层次，不复制图中的样例内容、编号、标签或说明。",
+    "图片如有使用，仅作为独立主体；图片风格不会改变文字和关系的语义。"
+  ],
+  "avoid": [
+    "未经显式选择加入彩色配色或彩色主题图",
+    "手绘笔触、手写字体、粗黑描边、密集拼贴、复杂背景和强烈光效",
+    "把整页参考图当作最终画面或把文字、数据、关系烘焙进图片"
+  ],
+  "derivation": {
+    "source": "html_engine/reference-library/reference-input-v2/style-description.json",
+    "basis": "沿用统一风格描述的分工、留白、线条和克制层次；颜色约束来自用户 2026-10-10 指定的黑灰白默认基础标准。",
+    "paletteIndependent": true,
+    "sourceImageAttachedByDefault": false
+  }
+}

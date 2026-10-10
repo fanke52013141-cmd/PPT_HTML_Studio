@@ -1,0 +1,2 @@
+# Fixed engineering comparison evidence; not runtime user outputs.
+!results/*.png

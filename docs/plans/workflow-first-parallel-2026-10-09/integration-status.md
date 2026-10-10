@@ -1,5 +1,9 @@
 # A 线集成状态
 
+## 2026-10-10 C/D 收束增量
+
+C/D 实现和固定证据已由主对话复验，发布交接见 [CD-RELEASE-EF-HANDOFF.md](CD-RELEASE-EF-HANDOFF.md)。C 的严格 binder 与旧简写 fixture 有冲突，现已用既有合法格式修正测试输入；89 项联合回归通过。D 的离线目录/参考装配 8 项测试与41文件一致性检查通过。没有接入真实供应商、没有采用 Anime.js 生产时钟；exit 生命周期、生产参考包接线与真实导出/课程签收仍未完成。默认黑灰白基线保持，E/F 尚未启动。
+
 更新：2026-10-10。基线：`7499e4a5b4f40842f6dd4d559a8067550b15a86e`；实际工作区 `D:\software\PPT_HTML_Studio`。事实来源和接口见 [interface-baseline.md](interface-baseline.md)，写入边界见 [ownership.json](ownership.json)，实现证据见 [A 线交付](deliveries/A.md)。
 
 | 范围 | 定义与实现状态 | 验证结论 |

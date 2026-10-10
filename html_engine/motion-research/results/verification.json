@@ -1,0 +1,325 @@
+{
+  "format": "hps.c.motion-verification",
+  "version": "0.1.0",
+  "environment": {
+    "node": "v24.11.0",
+    "browser": "154.0.4258.62",
+    "executablePath": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+  },
+  "currentRuntime": {
+    "source": "html_engine/visual/renderer.cjs",
+    "publicSeek": "window.visualPlayer.seek(ms)",
+    "implementationTimeSampling": "renderAt(ms), recomputed from the input time"
+  },
+  "candidate": {
+    "name": "Anime.js",
+    "version": "4.5.0",
+    "license": "MIT",
+    "seekControlled": true,
+    "productionDependency": false,
+    "npmPackage": "animejs@4.5.0"
+  },
+  "fixture": {
+    "path": "checks/html_motion_v1/fixtures/neutral-actions.json",
+    "sha256": "818d5828ffccc81a04c5a66578de22ac86976303737ed58bb69c98c552df0671",
+    "nodeTypes": [
+      "text",
+      "shape"
+    ],
+    "nodeCount": 4,
+    "actionTypes": [
+      "enter",
+      "emphasize",
+      "exit"
+    ],
+    "sampleTimesMs": [
+      0,
+      336.999,
+      337,
+      337.001,
+      1113.999,
+      1114,
+      1102.999,
+      1103,
+      1453.5,
+      1804,
+      2500.999,
+      2501,
+      2951,
+      3401,
+      6000.999,
+      6001,
+      6301.5,
+      6602,
+      7300,
+      2501,
+      337,
+      0
+    ],
+    "maxAbsError": 0.00004480309577914454,
+    "tolerance": 0.0001,
+    "pixelComparisons": [
+      {
+        "timeMs": 0,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 336.999,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 337,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 337.001,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 1113.999,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 1114,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 1102.999,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 1103,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 1453.5,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 1804,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 2500.999,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 2501,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 2951,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 3401,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 6000.999,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 6001,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 6301.5,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 6602,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 7300,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 2501,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 337,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      },
+      {
+        "timeMs": 0,
+        "changedChannels": 0,
+        "maxChannelDelta": 0,
+        "width": 1592,
+        "height": 896
+      }
+    ],
+    "totalChangedChannels": 0,
+    "maximumChannelDelta": 0,
+    "pausedFrameStable": true,
+    "replaySeekStable": true
+  },
+  "svgAnnotation": {
+    "sourceScene": "html_engine/visual/scenes/evaporation-process.json",
+    "sourceSceneSha256": "2ccafda3e4a79834b35b6a6a4e1311f6898ec9e3dadbd20ca4e150ff7882d5e6",
+    "target": "annotation",
+    "implementedAs": "SVG ring and leader path; leader stroke-dashoffset follows enter progress",
+    "sampleTimesMs": [
+      8799.999,
+      8800,
+      9000.5,
+      9200,
+      9600,
+      8900,
+      9200
+    ],
+    "maxAbsError": 0,
+    "tolerance": 0.000001,
+    "samples": [
+      {
+        "timeMs": 8799.999,
+        "currentRendererOffset": 1,
+        "animeSeekOffset": 1,
+        "absError": 0
+      },
+      {
+        "timeMs": 8800,
+        "currentRendererOffset": 1,
+        "animeSeekOffset": 1,
+        "absError": 0
+      },
+      {
+        "timeMs": 9000.5,
+        "currentRendererOffset": 0.8430462895507813,
+        "animeSeekOffset": 0.8430462895507813,
+        "absError": 0
+      },
+      {
+        "timeMs": 9200,
+        "currentRendererOffset": 0.5,
+        "animeSeekOffset": 0.5,
+        "absError": 0
+      },
+      {
+        "timeMs": 9600,
+        "currentRendererOffset": 0,
+        "animeSeekOffset": 0,
+        "absError": 0
+      },
+      {
+        "timeMs": 8900,
+        "currentRendererOffset": 0.95703125,
+        "animeSeekOffset": 0.95703125,
+        "absError": 0
+      },
+      {
+        "timeMs": 9200,
+        "currentRendererOffset": 0.5,
+        "animeSeekOffset": 0.5,
+        "absError": 0
+      }
+    ]
+  },
+  "candidateSeek": {
+    "directBackwardSeekFromMs": 7300,
+    "directBackwardSeekToMs": 2501,
+    "directBackwardSeekAbsError": 1,
+    "resetBeforeSeek": true,
+    "resetThenSeekMatchesCurrentRuntime": true
+  },
+  "outputFiles": [
+    {
+      "path": "html_engine/motion-research/results/enter-middle.png",
+      "bytes": 22684,
+      "sha256": "38e8bd897d91c343d4721a95682599381bbaa67a312ab98aab022fbefb9e023e"
+    },
+    {
+      "path": "html_engine/motion-research/results/emphasize-peak.png",
+      "bytes": 32227,
+      "sha256": "e0341e89c4ce5795cbf1c0c4291e883081599e14095cc5be242b57793c4d0e7a"
+    },
+    {
+      "path": "html_engine/motion-research/results/exit-middle.png",
+      "bytes": 31533,
+      "sha256": "6fcba1edf89e0fa56906eae910a2f4478d4d3bd126462aa2676a774027b8797d"
+    },
+    {
+      "path": "html_engine/motion-research/results/svg-annotation-middle.png",
+      "bytes": 245136,
+      "sha256": "1eea4a2ee08ad4689b90d61f69459a646ad051407c2429131075359429c544a2"
+    }
+  ],
+  "sourceHashes": {
+    "renderer": "d489d7590a087a996b51980767864bb02205cc2b06976679fcda70aac21a904f",
+    "compiler": "8d92c4c9006471a36fe363fc30836e59f3f142eb61613c49835e0c1aca6c5cef",
+    "previewBundle": "cbcfea10201b9079aeec0cc6d95490c71d7e0a1a4b0c6e9d15be6df123f8cb03",
+    "catalog": "6e20f9b6a8a05bbd2978fcfdc029c7e1211151c724787cbf43fe5e34923ca74a",
+    "animePackageLock": "58114de043b8ce34a678e7cfdb0b923af89cbab802c361f530f9d926bbcc4f43",
+    "animeLicense": "3f3e835a9952cfc2a6ca836fb95b3257c981f24fa3ef51249055acb09931897b"
+  },
+  "observations": {
+    "fixtureSamples": 22,
+    "candidateSnapshots": 22,
+    "ttsInvocations": 0
+  }
+}
