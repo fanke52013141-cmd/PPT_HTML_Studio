@@ -2,7 +2,7 @@
 import hashlib
 import json
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageChops
 
 root = Path(__file__).resolve().parent
 output = root / 'standard'
@@ -16,7 +16,9 @@ for entry in manifest['files'] + [{'filename': 'contact-sheet.png'}]:
         if 'sha256' in entry:
             assert image.size == (1920, 1080), path
             assert hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], path
-        assert all(r == g == b for r, g, b in image.convert('RGB').get_flattened_data()), path
+        red, green, blue = image.convert('RGB').split()
+        assert ImageChops.difference(red, green).getbbox() is None, path
+        assert ImageChops.difference(green, blue).getbbox() is None, path
         results.append({'page': path.name, 'size': image.size, 'grayscale': True})
 (output / 'pixel-verification.json').write_text(json.dumps(results, indent=2) + '\n', encoding='utf-8')
 print('Verified 24 full pages and contact sheet: neutral pixels, dimensions, source and image hashes')

@@ -8,3 +8,4 @@
 # Canonical screenshots supplied to image generation.
 !reference-input-v2/*.png
 !standard/*.png
+!samples/output/*.png

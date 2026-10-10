@@ -185,15 +185,33 @@ class VideoRenderService:
     ) -> dict[str, Any]:
         project = self.get_project(db, project_id)
         slide_ids = self._read_contract_slide_ids(project.run_dir)
-        if (getattr(project, "visual_backend", "image") or "image") == "html":
-            from html_input_manifest import html_readiness
-            ready = html_readiness(project.run_dir, Path(__file__).resolve().parent, slide_ids)
-            if not ready["ready"]:
-                raise VideoRenderError(409, "HTML 输入或视觉批准未就绪：" +
-                                       "; ".join(x["message"] for x in ready["issues"]))
-            missing_bindings = [slide for slide in slide_ids if not (Path(project.run_dir)/"planning/html_visual"/f"binding-{slide}.json").is_file()]
-            if missing_bindings:
-                raise VideoRenderError(409,"页面缺少语块动作绑定，请重新生成场景："+", ".join(missing_bindings))
+        is_html_project = (getattr(project, "visual_backend", "image") or "image") == "html"
+        if is_html_project:
+            from html_creation_workflow import target_readiness
+
+            readiness = target_readiness(
+                project.run_dir,
+                Path(__file__).resolve().parent,
+                slide_ids,
+                "video",
+            )
+            audio_confirmation_issues = {
+                "AUDIO_CONFIRMATION_STALE",
+                "AUDIO_CONFIRMATION_REQUIRED",
+                "AUDIO_ARTIFACTS_INCOMPLETE",
+                "AUDIO_NOT_GENERATED",
+            }
+            blocking_issues = [
+                issue
+                for issue in readiness["issues"]
+                if issue.get("code") not in audio_confirmation_issues
+            ]
+            if blocking_issues:
+                raise VideoRenderError(
+                    409,
+                    "HTML 视频输入未就绪："
+                    + "; ".join(issue["message"] for issue in blocking_issues),
+                )
         else:
             provenance_errors = validate_visual_provenance_set(
                 project.run_dir,

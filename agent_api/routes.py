@@ -323,13 +323,19 @@ def agent_html_editor_preview(project_id: str, slide_id: str, payload: HtmlEdito
 )
 def agent_html_visual_status(project_id: str, db: Session = Depends(get_db)):
     project = _html_project_or_404(project_id, db)
-    from project_path_service import project_run_dir_or_500, read_current_slide_ids_or_404
+    from project_path_service import project_run_dir_or_500
+    from visual_contract_service import read_contract_slide_ids
+    from html_creation_workflow import project_status
 
     run_dir = project_run_dir_or_500(project)
-    status = html_scene_store.read_status(run_dir, read_current_slide_ids_or_404(project))
-    from html_input_manifest import html_readiness
-    readiness = html_readiness(run_dir, Path(__file__).resolve().parents[1], read_current_slide_ids_or_404(project))
-    return HtmlVisualStatusResult(project_id=project_id, **status, ready=readiness["ready"], issues=readiness["issues"])
+    status = project_status(
+        project,
+        run_dir=run_dir,
+        repo_root=Path(__file__).resolve().parents[1],
+        slide_ids=read_contract_slide_ids(run_dir),
+        db=db,
+    )
+    return HtmlVisualStatusResult(project_id=project_id, **status)
 
 
 @router.get(

@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.15.0
-- **Contract Hash**: `a573062229930246`
+- **Agent API Version**: 1.16.0
+- **Contract Hash**: `5c63dd23605c7b11`
 - **Total Capabilities**: 53
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -30,7 +30,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_review.produce` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
 | `html_review.task_status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}` | `ppt_html_task_status` | Yes | `html task-status` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
 | `html_review.task_cancel` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}/cancel` | `ppt_html_task_cancel` | Yes | `html task-cancel` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
-| `html_visual.status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/status` | `ppt_html_visual_status` | Yes | `html status` | `html_visual_store.read_status` | No | No |
+| `html_visual.status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/status` | `ppt_html_visual_status` | Yes | `html status` | `html_creation_workflow.project_status` | No | No |
 | `html_visual.scene_read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_read` | Yes | `html scene-read` | `html_visual_store.load_scene_with_revision` | No | No |
 | `html_visual.scene_write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_write` | Yes | `html scene-write` | `html_visual_store.save_scene` | No | No |
 | `html_review.plan_generate` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/plan/generate` | `ppt_html_plan_generate` | Yes | `html plan-generate` | `html_visual_review_service.generate_scene_plan` | No | No |
@@ -99,7 +99,7 @@ The MCP server exposes **48** stable tools:
 - `ppt_html_produce` — HTML production workflow: produce; persisted task and registered render gates.
 - `ppt_html_task_status` — HTML production workflow: task_status; persisted task and registered render gates.
 - `ppt_html_task_cancel` — HTML production workflow: task_cancel; persisted task and registered render gates.
-- `ppt_html_visual_status` — Read per-slide html scene readiness for an html-backend project (revision, present/expected counts).
+- `ppt_html_visual_status` — Read shared Web/Agent HTML workflow stages, current visual approval readiness, and PPTX/video-specific gates.
 - `ppt_html_scene_read` — Read one slide's stored html scene document with its revision and content hash.
 - `ppt_html_scene_write` — Write one slide's html scene document with expected-revision optimistic concurrency (409 on conflict); html-backend projects only.
 - `ppt_html_plan_generate` — Generate a constrained scene plan for one slide through the configured LLM (registered templates/slots/icons only) and record AC06/AC07 evidence.

@@ -66,19 +66,23 @@ class SceneSaveRequest(BaseModel):
 @router.get("/api/projects/{project_id}/html-visual/status")
 def html_visual_status(project_id: str, db: Any = Depends(_get_db)):
     project = _html_project(project_id, db)
-    from project_path_service import read_current_slide_ids_or_404
+    from visual_contract_service import read_contract_slide_ids
 
     run_dir = project_run_dir_or_500(project)
-    slide_ids = read_current_slide_ids_or_404(project)
-    from html_input_manifest import html_readiness
+    slide_ids = read_contract_slide_ids(run_dir)
     from pathlib import Path
+    from html_creation_workflow import project_status
 
-    readiness = html_readiness(run_dir, Path(__file__).resolve().parent, slide_ids)
     return {
         "success": True,
-        **store.read_status(run_dir, slide_ids),
-        "ready": readiness["ready"],
-        "issues": readiness["issues"],
+        "project_id": project_id,
+        **project_status(
+            project,
+            run_dir=run_dir,
+            repo_root=Path(__file__).resolve().parent,
+            slide_ids=slide_ids,
+            db=db,
+        ),
     }
 
 

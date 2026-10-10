@@ -41,6 +41,39 @@ def _job_to_dict(job) -> Dict[str, Any]:
     }
 
 
+def recent_task_summaries(db, project_id: str, *, limit: int = 20) -> list[Dict[str, Any]]:
+    """Return safe, project-scoped task facts for workflow status reads.
+
+    Inputs, result payloads, and idempotency keys stay on the task endpoints;
+    the status projection exposes only lifecycle facts needed for recovery.
+    """
+    from database import LocalJob
+
+    safe_limit = max(1, min(int(limit), 100))
+    jobs = (
+        db.query(LocalJob)
+        .filter(
+            LocalJob.project_id == project_id,
+            LocalJob.job_type.in_(TASK_TYPES),
+        )
+        .order_by(LocalJob.created_at.desc())
+        .limit(safe_limit)
+        .all()
+    )
+    return [
+        {
+            "id": job.id,
+            "type": job.job_type,
+            "status": job.status,
+            "stage": job.stage,
+            "attempt": int(job.get_payload().get("attempt", 1)),
+            "error": job.error,
+            "updated_at": job.updated_at.isoformat() if job.updated_at else None,
+        }
+        for job in jobs
+    ]
+
+
 def submit_task(
     db,
     *,

@@ -146,7 +146,7 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
     )  # identical source need/ref bytes reuse one asset
     assert all(c["transparent_background"] for c in calls if c["size"] == "1024x1024")
     write(
-        ROOT / "docs/reviews/2026-10-08-html-optimization/production-benchmark.json",
+        tmp_path / "production-benchmark.json",
         {"provider": "stub; renderer real", "pages": measurements},
     )
 

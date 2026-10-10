@@ -1,13 +1,13 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.15",
-  "effective_date": "2026-10-09",
+  "contract_version": "0.9.16",
+  "effective_date": "2026-10-10",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
-  "runtime_enforcement": "partial_e1_standalone",
+  "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
     "Standard reference library 1.0: 24 neutral 1920x1080 pages, 32 components, 16 variants, 28 effects, 18 compositions and 5 fonts. Built-in image design study reconstructed in code; full Agent static review completed. User aesthetic approval and production integration remain separate.",
     "Scene 0.4.0 editorial reconstruction and shape ownership: runtime/visual-v1/editorial-three-columns-0.4.0.md; legacy scene vocabularies remain pinned and runtime/visual acceptance is separate.",
@@ -21,7 +21,8 @@
     "E2 catalog 0.2.0 adds hero-steps recipe; user Token course tested with hps.e2.recipe 0.1.0 and unchanged E1 format. Visual and audio approval pending.",
     "Visual V1 is a separate hps.visual.scene/theme/layout 0.1.0 format. Scoped public/theme/layout/content separation, capacity, anchor, subtitle and resource checks implemented; application backend integration and new visual approval remain pending.",
     "2026-10-08 user review rejected the simplified V1 science appearance. Its technical checks remain valid, but visual production approval is changes_requested. Reference-fidelity style study requires separate visual review; its icons/gradients/panels do not widen V1 0.1.0.",
-    "2026-10-08 HPS-025 clarification: auxiliary English/series/brand/source footer labels are opt-in; preserve provenance in metadata, do not auto-add them from a reference board. Scientific caveats remain content."
+    "2026-10-08 HPS-025 clarification: auxiliary English/series/brand/source footer labels are opt-in; preserve provenance in metadata, do not auto-add them from a reference board. Scientific caveats remain content.",
+    "2026-10-10: runtime/visual-v1/application-workflow-0.2.0.md defines a read-only seven-stage HTML workflow projection and separate snapshot PPTX/video gates. Web and Agent share the projection; no database migration, new human approval, or image-backend behavior change."
   ],
   "documents": [
     {
@@ -104,6 +105,9 @@
     },
     {
       "path": "runtime/visual-v1/README.md"
+    },
+    {
+      "path": "runtime/visual-v1/application-workflow-0.2.0.md"
     }
   ],
   "rules": [
@@ -382,7 +386,8 @@
       "section": "## HPS-030：分阶段验收、影响范围与兼容",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_application_workflow",
+      "runtime_scope": "runtime/visual-v1/application-workflow-0.2.0.md; read-only stage projection and target-specific readiness only"
     },
     {
       "id": "HPS-031",

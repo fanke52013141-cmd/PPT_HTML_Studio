@@ -375,6 +375,7 @@ class HtmlVisualStatusResult(BaseModel):
     scenes_present: int
     scenes_expected: int
     slides: dict[str, Any] = Field(default_factory=dict)
+    workflow: dict[str, Any] = Field(default_factory=dict)
 
 
 class HtmlSceneDocumentResult(BaseModel):

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>标准组件库 1.0 · 内容样页</title>
+    <link rel="stylesheet" href="../components.css" />
+    <link rel="stylesheet" href="../standard-library.css" />
+    <link rel="stylesheet" href="sample.css" />
+    <script defer src="sample.js"></script>
+  </head>
+  <body>
+    <nav class="sample-toolbar" aria-label="样页预览控制">
+      <div class="sample-toolbar-group" role="group" aria-label="内容主题">
+        <button type="button" data-page-target="course-everyday" aria-pressed="true">
+          水的状态变化
+        </button>
+        <button type="button" data-page-target="paper-plane" aria-pressed="false">
+          纸飞机主题复用
+        </button>
+      </div>
+      <label class="palette-control">
+        配色参考
+        <select id="palette-select" aria-label="选择独立配色">
+          <option value="clear">清爽多彩</option>
+          <option value="editorial">温暖编辑</option>
+          <option value="science" selected>冷静科普</option>
+        </select>
+      </label>
+      <span class="toolbar-note">样页画布 1920 × 1080 · 静态 · 代码文字与关系可编辑</span>
+    </nav>
+
+    <main class="sample-stage">
+      <article
+        class="sample-slide component-reference standard-surface"
+        id="course-everyday"
+        data-page-id="course-everyday"
+        data-source="html_engine/recipes/course-everyday.recipe.json"
+        data-sources="https://www.usgs.gov/water-science-school/science/evaporation-and-water-cycle https://www.usgs.gov/water-science-school/science/condensation-and-water-cycle"
+      >
+        <header class="sample-header">
+          <div class="sample-heading">
+            <p class="sample-eyebrow" data-component-id="N01" data-instance-id="water-topic-label">
+              水的状态变化
+            </p>
+            <h1 class="component title" data-component-id="T01" data-instance-id="water-title">
+              衣物晾干、冷饮杯外结露：水如何进出空气
+            </h1>
+            <p class="component subtitle" data-component-id="T02" data-instance-id="water-subtitle">
+              蒸发让液态水进入空气；凝结让水蒸气回到液态。熟悉的现象，指向相反方向的变化。
+            </p>
+          </div>
+        </header>
+
+        <section class="water-comparison" aria-label="蒸发与凝结对照">
+          <article class="concept-card" data-instance-id="evaporation-card" data-component-id="C03">
+            <div class="concept-art role-primary" data-geometry-anchor="evaporation-art">
+              <span class="art-label">过程示意</span>
+              <img
+                src="../../assets/evaporation-v1.png"
+                alt="水容器上方有分子示意，表示液态水进入空气"
+              />
+              <p class="art-caption" data-component-id="T06">水容器与分子模型，不是衣物实物图</p>
+            </div>
+            <div class="concept-copy">
+              <span class="state-label role-primary" data-component-id="N01" data-instance-id="evaporation-state">
+                液态 → 气态
+              </span>
+              <h2 class="component section" data-component-id="T03" data-instance-id="evaporation-title">
+                蒸发
+              </h2>
+              <p class="component body" data-component-id="T04" data-instance-id="evaporation-body">
+                蒸发是液态水变成水蒸气的过程；水不必先沸腾。湿衣物变干时，水进入周围空气；它没有凭空消失，只是换了状态。
+              </p>
+              <p class="component explain" data-component-id="T05" data-instance-id="evaporation-note">
+                配图展示同一相变机制，不把容器误说成衣物本身。
+              </p>
+            </div>
+          </article>
+
+          <div class="comparison-link" data-component-id="A02" data-instance-id="opposite-directions" aria-label="两个方向相反的相变">
+            <svg viewBox="0 0 88 40" role="img" aria-label="双向关系箭头">
+              <path d="M12 13H76M66 5L76 13L66 21M76 27H12M22 19L12 27L22 35" />
+            </svg>
+            <span>方向相反</span>
+          </div>
+
+          <article class="concept-card" data-instance-id="condensation-card" data-component-id="C03">
+            <div class="concept-art role-secondary" data-geometry-anchor="condensation-art">
+              <span class="art-label">生活观察</span>
+              <img
+                src="../../assets/condensation-v1.png"
+                alt="冰水杯外侧形成水滴，表示周围水蒸气凝结"
+              />
+              <p class="art-caption" data-component-id="T06">杯外水滴来自周围空气</p>
+            </div>
+            <div class="concept-copy">
+              <span class="state-label role-secondary" data-component-id="N01" data-instance-id="condensation-state">
+                气态 → 液态
+              </span>
+              <h2 class="component section" data-component-id="T03" data-instance-id="condensation-title">
+                凝结
+              </h2>
+              <p class="component body" data-component-id="T04" data-instance-id="condensation-body">
+                凝结是水蒸气变成液态水的过程。冷饮杯外的水滴来自杯子周围的空气，并不是杯中液体漏出。
+              </p>
+              <p class="component explain" data-component-id="T05" data-instance-id="condensation-note">
+                水蒸气通常不可见；图中的小球仅为分子示意，不代表真实大小或数量。
+              </p>
+            </div>
+          </article>
+        </section>
+
+        <footer class="sample-footer">
+          <p data-component-id="T06" data-instance-id="water-caveat">
+            看见的是水滴；看不见的水蒸气，仍在空气中。
+          </p>
+          <span>双对象比较 · 2 个既有独立图像资产 · 文字与关系由代码控制</span>
+        </footer>
+      </article>
+
+      <article
+        class="sample-slide component-reference standard-surface"
+        id="paper-plane"
+        data-page-id="paper-plane"
+        data-source="html_engine/examples/paper-plane.scene.json"
+        data-source-status="现有 E1 设计探索场景；仅作为第二主题复用与容量测试，不是用户确认课程"
+        hidden
+      >
+        <header class="sample-header plane-header">
+          <div class="sample-heading">
+            <p class="sample-eyebrow" data-component-id="N01" data-instance-id="plane-topic-label">
+              第二主题 · 素材与代码分工
+            </p>
+            <h1 class="component title" data-component-id="T01" data-instance-id="plane-title">
+              纸飞机穿过云层：怎样让独立素材、运动轨迹和讲解文字在同一张页面共存
+            </h1>
+            <p class="component subtitle" data-component-id="T02" data-instance-id="plane-subtitle">
+              复用现有 E1 设计探索内容；用长标题、长说明和多个路径标签检查同一视觉组件能否换主题。
+            </p>
+          </div>
+        </header>
+
+        <section class="plane-layout" aria-label="纸飞机场景静态构图">
+          <div class="trajectory-board" data-instance-id="flight-scene" data-geometry-anchor="flight-scene">
+            <div class="trajectory-kicker" data-component-id="T03">一段路径，三个可读位置</div>
+            <img class="cloud-asset" src="../../assets/cloud-large.png" alt="独立云层图片素材" />
+            <svg class="trajectory-path" viewBox="0 0 1040 500" aria-label="纸飞机的示意路径">
+              <defs>
+                <marker id="flight-arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+                  <path d="M1 1L10 6L1 11" />
+                </marker>
+              </defs>
+              <path class="path-shadow" d="M64 378C215 370 268 150 432 146S652 324 786 273S904 147 1002 128" />
+              <path class="path-main" d="M64 378C215 370 268 150 432 146S652 324 786 273S904 147 1002 128" marker-end="url(#flight-arrow)" />
+              <circle class="path-point" cx="64" cy="378" r="9" />
+              <circle class="path-point" cx="432" cy="146" r="9" />
+              <circle class="path-point" cx="786" cy="273" r="9" />
+            </svg>
+            <img class="plane-asset" src="../../assets/plane.png" alt="沿示意路径飞行的纸飞机独立图片素材" />
+            <span class="path-tag tag-start" data-component-id="N01" data-instance-id="path-start">起点</span>
+            <span class="path-tag tag-middle" data-component-id="N01" data-instance-id="path-middle">经过位置</span>
+            <span class="path-tag tag-end" data-component-id="N01" data-instance-id="path-end">终点</span>
+            <span class="path-note" data-component-id="T06">示意路径 · 非测量数据</span>
+          </div>
+
+          <aside class="component card-outline role-surface" data-component-id="C02" data-instance-id="plane-object-map">
+            <div class="sample-card">
+              <span class="map-label role-primary" data-component-id="N01">对象分工</span>
+              <h2 class="component section" data-component-id="T03" data-instance-id="plane-map-title">
+                图片与代码各管一部分
+              </h2>
+              <ul class="object-map">
+                <li data-instance-id="plane-object-row">
+                  <span class="object-mark role-primary">01</span>
+                  <span><strong>纸飞机</strong><small>既有独立 PNG 素材</small></span>
+                </li>
+                <li data-instance-id="cloud-object-row">
+                  <span class="object-mark role-secondary">02</span>
+                  <span><strong>云层</strong><small>既有独立 PNG 素材</small></span>
+                </li>
+                <li data-instance-id="path-object-row">
+                  <span class="object-mark role-emphasis">03</span>
+                  <span><strong>轨迹、箭头与标签</strong><small>独立 SVG 与 HTML 文字</small></span>
+                </li>
+              </ul>
+              <p class="component explain" data-component-id="T05" data-instance-id="plane-explanation">
+                纸飞机和云层沿用现有透明图片；路径、方向与位置文字保持为代码对象，可逐项编辑。图中弧线只用于说明对象分工，不代表实测飞行路线或空气动力学计算。
+              </p>
+            </div>
+          </aside>
+        </section>
+
+        <footer class="sample-footer">
+          <p data-component-id="T06" data-instance-id="plane-caveat">
+            来源记录：本地 E1 设计探索场景；本页是静态结构与容量试制。
+          </p>
+          <span>第二主题 · 2 个既有独立图像资产 · 3 个代码控制的位置标签</span>
+        </footer>
+      </article>
+    </main>
+
+    <script id="sample-palette-data" type="application/json">
+      {
+        "version": "0.1.0",
+        "palettes": [
+          {
+            "id": "clear",
+            "name": "清爽多彩",
+            "ink": "#24334B",
+            "muted": "#607086",
+            "background": "#FFFFFF",
+            "primary": "#416BDD",
+            "secondary": "#198879",
+            "accent": "#B66A12",
+            "category": "#8054C6",
+            "tints": ["#EEF3FF", "#EAF7F2", "#FFF4DE", "#F4EEFB"]
+          },
+          {
+            "id": "editorial",
+            "name": "温暖编辑",
+            "ink": "#382F2C",
+            "muted": "#786D66",
+            "background": "#FFFFFF",
+            "primary": "#A64E3A",
+            "secondary": "#647642",
+            "accent": "#A97215",
+            "category": "#7961A0",
+            "tints": ["#FFF0EA", "#F0F4E6", "#FFF5DE", "#F5EFFA"]
+          },
+          {
+            "id": "science",
+            "name": "冷静科普",
+            "ink": "#24323B",
+            "muted": "#657780",
+            "background": "#FFFFFF",
+            "primary": "#267AB0",
+            "secondary": "#1B8379",
+            "accent": "#AE651E",
+            "category": "#7762BB",
+            "tints": ["#EAF5FC", "#E8F6F3", "#FFF2E4", "#F1EDFA"]
+          }
+        ]
+      }
+    </script>
+  </body>
+</html>

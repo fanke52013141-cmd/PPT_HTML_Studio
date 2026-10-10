@@ -1,0 +1,89 @@
+{
+  "baseline_head": "7499e4a5b4f40842f6dd4d559a8067550b15a86e",
+  "workspace": "D:/software/PPT_HTML_Studio",
+  "branch": "main",
+  "initial_worktree": "clean",
+  "owners": {
+    "A": {
+      "exclusive": [
+        "docs/plans/workflow-first-parallel-2026-10-09/interface-baseline.md",
+        "docs/plans/workflow-first-parallel-2026-10-09/ownership.json",
+        "docs/plans/workflow-first-parallel-2026-10-09/integration-status.md",
+        "docs/plans/workflow-first-parallel-2026-10-09/deliveries/A.md",
+        "docs/contracts/html-presentation/README.md",
+        "docs/contracts/html-presentation/CHANGELOG.md",
+        "docs/contracts/html-presentation/contract-index.json",
+        "docs/contracts/html-presentation/runtime/visual-v1/application-workflow-0.2.0.md",
+        "html_creation_workflow.py",
+        "html_visual_store.py",
+        "html_visual_review_service.py",
+        "html_input_manifest.py",
+        "html_workflow_jobs.py",
+        "html_task_store.py",
+        "html_visual_routes.py",
+        "video_render_service.py",
+        "html_visual_review_routes.py",
+        "static/flow.js",
+        "static/workflow_state.js",
+        "static/workspace_navigation.js",
+        "static/event_bindings.js",
+        "static/index.html",
+        "agent_contract/",
+        "agent_api/routes.py",
+        "agent_client/",
+        "checks/test_html_creation_workflow.py",
+        "checks/test_html_workflow_acceptance.py",
+        "checks/test_visible_flow.js"
+      ],
+      "shared_integration_owned_by_A": [
+        "server.py",
+        "html_engine/visual/schema.json",
+        "html_engine/visual/compiler.cjs",
+        "html_engine/visual/renderer.cjs",
+        "html_engine/visual/player.cjs",
+        "html_engine/visual/build.cjs",
+        "html_engine/visual/effects/registry.json",
+        "html_engine/visual/generated/",
+        "html_engine/visual/preview/",
+        "capability matrix/Agent client/MCP/CLI generated contracts"
+      ]
+    },
+    "B": {
+      "exclusive": [
+        "html_engine/reference-library/",
+        "B dedicated sample pages, CSS/JS, screenshots, catalog and tests",
+        "docs/plans/workflow-first-parallel-2026-10-09/deliveries/B.md"
+      ],
+      "excluded_from_A_edits": true
+    },
+    "C": {
+      "exclusive": [
+        "html_audio_binder.py",
+        "html_audio_preview_service.py",
+        "html_motion_service.py",
+        "html_action_editing.py",
+        "static/html_motion_editor.js",
+        "static/html_motion_editor.css",
+        "C dedicated tests"
+      ]
+    },
+    "E": {
+      "exclusive": [
+        "html_production_service.py",
+        "html_design_brief.py",
+        "html_style_package.py",
+        "html_asset_service.py",
+        "html_image_provider.py",
+        "html_model_bindings.py",
+        "static/html_review_panel.js",
+        "E dedicated tests"
+      ]
+    }
+  },
+  "rules": [
+    "Do not switch branches or run reset, clean, stash, whole-worktree staging, commit, push, or a second real application service.",
+    "Only the named owner edits an exclusive file; A may add isolated cross-line tests and integration glue without changing another line's implementation module.",
+    "Do not edit html_engine/reference-library/ for A work.",
+    "Do not treat implementation plans as product approval or real-provider/visual evidence."
+  ]
+}

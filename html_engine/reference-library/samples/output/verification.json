@@ -1,0 +1,229 @@
+{
+  "status": "passed",
+  "scope": "static HTML reference sample; no production renderer or schema integration",
+  "baseline": "7499e4a5b4f40842f6dd4d559a8067550b15a86e",
+  "fontEvidence": {
+    "available": true,
+    "renderedFamily": "\"Noto Sans SC\""
+  },
+  "actualFonts": [
+    {
+      "familyName": "Noto Sans SC",
+      "postScriptName": "Noto-Sans-SC-Bold",
+      "isCustomFont": false,
+      "glyphCount": 19
+    }
+  ],
+  "checks": [
+    "two static 1920x1080 pages load offline with decoded existing local assets",
+    "course text, relationship, and source references remain code-controlled",
+    "second topic is labeled as an E1 design-exploration reuse/capacity test",
+    "long title, long explanatory copy, and three path labels fit without overflow",
+    "all three independent palettes preserve component IDs, instance identities, and geometry",
+    "primary and secondary palette roles remain distinct; accent and category roles are retained",
+    "at most two independent image assets are used per page",
+    "Noto Sans SC is available and used for rendered Chinese glyphs",
+    "no page errors or remote network requests"
+  ],
+  "userVisualApproval": "pending",
+  "productionMapping": "proposal required; static reference IDs do not imply scene support",
+  "pages": [
+    {
+      "id": "course-everyday",
+      "source": "html_engine/recipes/course-everyday.recipe.json",
+      "sourceStatus": null,
+      "titleCharacters": 19,
+      "longestBodyCharacters": 52,
+      "assetCount": 2,
+      "assets": [
+        {
+          "src": "../../assets/evaporation-v1.png",
+          "loaded": true,
+          "width": 1254,
+          "height": 1254
+        },
+        {
+          "src": "../../assets/condensation-v1.png",
+          "loaded": true,
+          "width": 1254,
+          "height": 1254
+        }
+      ],
+      "componentIds": [
+        "A02",
+        "C03",
+        "N01",
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06"
+      ],
+      "instanceIds": [
+        "water-topic-label",
+        "water-title",
+        "water-subtitle",
+        "evaporation-card",
+        "evaporation-state",
+        "evaporation-title",
+        "evaporation-body",
+        "evaporation-note",
+        "opposite-directions",
+        "condensation-card",
+        "condensation-state",
+        "condensation-title",
+        "condensation-body",
+        "condensation-note",
+        "water-caveat"
+      ],
+      "palettes": [
+        {
+          "id": "clear",
+          "name": "清爽多彩",
+          "primary": "#416BDD",
+          "secondary": "#198879",
+          "accent": "#B66A12",
+          "category": "#8054C6",
+          "primaryColor": "rgb(65, 107, 221)",
+          "secondaryColor": "rgb(25, 136, 121)",
+          "image": {
+            "filename": "course-everyday-clear.png",
+            "sha256": "3bb4938c3a1fa6b58a4da0c1adecc3c3fadeb57ff42d1b1308116b8b6c11afc1",
+            "width": 1920,
+            "height": 1080
+          }
+        },
+        {
+          "id": "editorial",
+          "name": "温暖编辑",
+          "primary": "#A64E3A",
+          "secondary": "#647642",
+          "accent": "#A97215",
+          "category": "#7961A0",
+          "primaryColor": "rgb(166, 78, 58)",
+          "secondaryColor": "rgb(100, 118, 66)",
+          "image": {
+            "filename": "course-everyday-editorial.png",
+            "sha256": "0e3968fb542919146d9f44730ba2d4eb1b80a8a655013dbffd8a56323d4b3064",
+            "width": 1920,
+            "height": 1080
+          }
+        },
+        {
+          "id": "science",
+          "name": "冷静科普",
+          "primary": "#267AB0",
+          "secondary": "#1B8379",
+          "accent": "#AE651E",
+          "category": "#7762BB",
+          "primaryColor": "rgb(38, 122, 176)",
+          "secondaryColor": "rgb(27, 131, 121)",
+          "image": {
+            "filename": "course-everyday-science.png",
+            "sha256": "dbb567cf1ad549b2451893c31635cd2b53bdd9d4fec715a1df91e6951fea603a",
+            "width": 1920,
+            "height": 1080
+          }
+        }
+      ]
+    },
+    {
+      "id": "paper-plane",
+      "source": "html_engine/examples/paper-plane.scene.json",
+      "sourceStatus": "现有 E1 设计探索场景；仅作为第二主题复用与容量测试，不是用户确认课程",
+      "titleCharacters": 33,
+      "longestBodyCharacters": 71,
+      "assetCount": 2,
+      "assets": [
+        {
+          "src": "../../assets/cloud-large.png",
+          "loaded": true,
+          "width": 627,
+          "height": 627
+        },
+        {
+          "src": "../../assets/plane.png",
+          "loaded": true,
+          "width": 627,
+          "height": 627
+        }
+      ],
+      "componentIds": [
+        "C02",
+        "N01",
+        "T01",
+        "T02",
+        "T03",
+        "T05",
+        "T06"
+      ],
+      "instanceIds": [
+        "plane-topic-label",
+        "plane-title",
+        "plane-subtitle",
+        "flight-scene",
+        "path-start",
+        "path-middle",
+        "path-end",
+        "plane-object-map",
+        "plane-map-title",
+        "plane-object-row",
+        "cloud-object-row",
+        "path-object-row",
+        "plane-explanation",
+        "plane-caveat"
+      ],
+      "palettes": [
+        {
+          "id": "clear",
+          "name": "清爽多彩",
+          "primary": "#416BDD",
+          "secondary": "#198879",
+          "accent": "#B66A12",
+          "category": "#8054C6",
+          "primaryColor": "rgb(65, 107, 221)",
+          "secondaryColor": "rgb(25, 136, 121)",
+          "image": {
+            "filename": "paper-plane-clear.png",
+            "sha256": "049b20f87d376cd66e62fb232c5532f756d1c494cdc3c6c374e2c667929f10d4",
+            "width": 1920,
+            "height": 1080
+          }
+        },
+        {
+          "id": "editorial",
+          "name": "温暖编辑",
+          "primary": "#A64E3A",
+          "secondary": "#647642",
+          "accent": "#A97215",
+          "category": "#7961A0",
+          "primaryColor": "rgb(166, 78, 58)",
+          "secondaryColor": "rgb(100, 118, 66)",
+          "image": {
+            "filename": "paper-plane-editorial.png",
+            "sha256": "f78f34ce1b08e1205cbac6e51a374dc187f392806d372c96090cdf26810503f4",
+            "width": 1920,
+            "height": 1080
+          }
+        },
+        {
+          "id": "science",
+          "name": "冷静科普",
+          "primary": "#267AB0",
+          "secondary": "#1B8379",
+          "accent": "#AE651E",
+          "category": "#7762BB",
+          "primaryColor": "rgb(38, 122, 176)",
+          "secondaryColor": "rgb(27, 131, 121)",
+          "image": {
+            "filename": "paper-plane-science.png",
+            "sha256": "30c0c1258d888350c31bfae0826267c81d893e41450d33b5cbd63c9f075afe5b",
+            "width": 1920,
+            "height": 1080
+          }
+        }
+      ]
+    }
+  ]
+}
