@@ -240,7 +240,7 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
     root = Path(repo_root or Path(__file__).parent).resolve()
     run = Path(run_dir).resolve()
     slide_id = validate_slide_id(slide_id)
-    if target not in {"html_preview", "video"}:
+    if target not in {"html_preview", "video", "pptx"}:
         raise SnapshotError("SNAPSHOT_TARGET_UNSUPPORTED")
     with project_artifact_lock(run):
         revision = _read_revision(run)["revision"]
@@ -251,6 +251,13 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
         if scene.get("id") != slide_id:
             raise SnapshotError("SNAPSHOT_SCENE_ID_MISMATCH")
         _no_secrets(scene)
+        if target == "pptx":
+            from html_input_manifest import html_readiness
+            if not html_readiness(run, root, [slide_id])["ready"]:
+                raise SnapshotError("SNAPSHOT_PPTX_GATES_REQUIRED")
+            capture.add("input/author-scene.json", json_bytes(scene))
+            scene = {**scene, "beats": []}
+            capture.add("input/scene.json", json_bytes(scene))
         if target == "video":
             from html_input_manifest import html_readiness
             from tts_artifacts import confirmation_status, artifact_paths, CONFIRMATION_HASH_KEYS, confirmation_path
@@ -315,7 +322,7 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
           try {
             await Promise.all([...document.fonts].map(f=>f.load()));
             const player=document.createElement('script');player.src='player.js';
-            player.onload=()=>{const timer=setInterval(()=>{if(window.visualPlayer?.ready){window.visualPlayer.seek(window.visualPlayer.scene.durationMs);clearInterval(timer);}},50);};
+            player.onload=()=>{if(new URLSearchParams(location.search).has('export'))return;const timer=setInterval(()=>{if(window.visualPlayer?.ready){window.visualPlayer.seek(window.visualPlayer.scene.durationMs);clearInterval(timer);}},50);};
             document.body.append(player);
           } catch { document.getElementById('status').textContent='未应用：SNAPSHOT_FONT_LOAD_FAILED'; }
         })();
@@ -324,5 +331,5 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
         capture.add("preview/index.html", html.encode("utf-8"))
         capture.add("preview/data.js", b"window.VisualData=" + json_bytes({"catalog": catalog, "scenes": [scene], "pack": pack}).replace(b"<", b"\\u003c") + b";")
         return _commit(run, capture, {"kind": "render", "slide_id": slide_id, "target": target,
-            "clock": "author" if target == "html_preview" else "confirmed_audio_inputs",
+            "clock": "confirmed_audio_inputs" if target == "video" else "author",
             "scene_digest": digest(json_bytes(scene)), "font_scope": "local_only", "approval_granted": False}, revision)

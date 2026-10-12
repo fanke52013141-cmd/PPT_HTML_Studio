@@ -8,7 +8,7 @@ RES-20261008-04追加：[Token编辑式还原实测](2026-10-08-image25-sheet-ex
 
 | 编号 | 主题 | 阅读入口 | 状态 |
 | --- | --- | --- | --- |
-| RES-20261012-01 | 手绘视频方案的生产稳定性经验 | [可执行优化方案](../plans/html-production-stability-2026-10-12.md) | 原文归档；S00、S01/S04基础和S02已部分实施，S02故障注入/模拟供应商证据见[收束交接](../plans/workflow-first-parallel-2026-10-09/deliveries/S02-RECONCILIATION.md)。其余工作及真实付费查单待实施/验收 |
+| RES-20261012-01 | 手绘视频方案的生产稳定性经验 | [可执行优化方案](../plans/html-production-stability-2026-10-12.md) | 原文归档；S00、S01/S04基础和S02已部分实施，S02故障注入/模拟供应商证据见[收束交接](../plans/workflow-first-parallel-2026-10-09/deliveries/S02-RECONCILIATION.md)。S03最小重建和S05正式快照导出已接线，S05工程证据见[交接](../plans/workflow-first-parallel-2026-10-09/deliveries/S05.md)；其余工作及真实付费查单/课程签收待实施/验收 |
 | RES-20261007-01 | 大语言模型与编程式渲染架构报告 | [借鉴分析](2026-10-07-architecture-report/analysis-and-adoption.md) | 已完成文档分析与一手资料核对，实验未执行 |
 | RES-20261007-02 | Skill 生态与工作流两份报告，结合本项目筛选 | [项目改造借鉴指南](2026-10-07-skill-and-workflow-reports/adaptation-guide.md) | 已核对本地代码与选中一手资料，开发/运行验收未执行 |
 | RES-20261008-04 | image2.5参考图批量拆分与效率对照 | [实验记录](2026-10-08-image25-sheet-experiment/README.md) | 内置生图2次实际实验，均2/4严格提取通过；image2.5专项性能对照待配置 |

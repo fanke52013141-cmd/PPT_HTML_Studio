@@ -479,11 +479,34 @@ class VideoRenderService:
         if not output_filename:
             return False
         try:
-            return self.project_video_file(
+            path = self.project_video_file(
                 project,
                 output_filename,
-            ).is_file()
-        except (OSError, VideoRenderError):
+            )
+            if not path.is_file():
+                return False
+            if getattr(project, "visual_backend", "image") == "html":
+                # A succeeded task is not proof that its file is still intact/current.
+                from html_build_snapshot import fresh_hash, safe_file
+                from html_export_snapshot import verify_course, verify_runtime_identity
+                from html_frozen_video import validate_video
+                metadata = json.loads(self.artifacts.video_metadata_path(path).read_text(encoding="utf-8"))
+                evidence = metadata["export_evidence"]
+                if evidence["fingerprint"] != self.current_render_input_fingerprint(project):
+                    return False
+                course = safe_file(Path(project.run_dir) / "planning/html_visual/export-builds", evidence["snapshot_id"])
+                manifest = verify_course(course)
+                for entry in manifest["files"]:
+                    if entry["path"].startswith("tools/") and fresh_hash(self.config.repo_root / "html_engine" / entry["path"]) != entry["sha256"]:
+                        return False
+                verify_runtime_identity(evidence["runtime"])
+                valid = evidence["final_validation"]
+                if fresh_hash(path) != valid["sha256"]:
+                    return False
+                validate_video(self.dependencies.html_runner, path, evidence["validation"]["fps"], evidence["validation"]["frames"])
+                return evidence["fingerprint"] == self.current_render_input_fingerprint(project)
+            return True
+        except Exception:
             return False
 
     @staticmethod
@@ -681,6 +704,9 @@ class VideoRenderService:
         # 创建时的 queued，前端始终显示"排队中"，且 _prune_tasks_locked
         # 的活动任务保护集合恒为空。
         self._set_task_status(task_id, "rendering")
+        export_evidence = None
+        html_published_path = None
+        html_registered = False
         db = self.dependencies.session_factory()
         try:
             project = (
@@ -712,10 +738,14 @@ class VideoRenderService:
                     if self.dependencies.html_runner is None:
                         raise RuntimeError("HTML 渲染后端未配置")
                     runner = self.dependencies.html_runner
+                runner_options = {}
+                if runner is self.dependencies.html_runner:
+                    runner_options["fingerprint_factory"] = lambda: self.current_render_input_fingerprint(project)
                 result = runner.run(
                     project,
                     output_dir=self.project_video_dir(project),
                     set_stage=lambda stage: self._controlled_stage(project_id, task_id, stage),
+                    **runner_options,
                 )
                 render_elapsed = round(time.time() - render_started, 1)
                 logger.info(
@@ -724,12 +754,17 @@ class VideoRenderService:
                 )
                 # 数字人讲解合成：启用时把圆形/矩形窗口叠加到渲染视频上
                 composite_started = time.time()
+                export_evidence = getattr(result, "export_evidence", None)
+                composite_project = project
+                if export_evidence:
+                    from types import SimpleNamespace
+                    composite_project = SimpleNamespace(id=project.id, run_dir=export_evidence["frozen_run_dir"])
                 result, dh_composited = self._apply_digital_human_composite(
-                    project,
+                    composite_project,
                     result,
                     task_id,
                 )
-                if self._submission_key(project) != submission_at_start:
+                if not export_evidence and self._submission_key(project) != submission_at_start:
                     raise RuntimeError(
                         "渲染期间项目输入已变化；旧成品保留，请检查修改后重新生成。"
                     )
@@ -740,10 +775,20 @@ class VideoRenderService:
                         project.id, composite_elapsed,
                     )
                 self._set_task_stage(task_id, "finalizing")
-                render_fingerprint = (
-                    self.current_render_input_fingerprint(project)
-                )
-                visual_settings = self.artifacts.visual_settings(project)
+                if export_evidence:
+                    from html_frozen_video import validate_video
+                    from html_export_snapshot import verify_course, verify_runtime_identity
+                    from dataclasses import replace
+                    probe, validation = validate_video(runner, result.output_path,
+                        export_evidence["validation"]["fps"], export_evidence["validation"]["frames"])
+                    verify_course(export_evidence["course_path"])
+                    verify_runtime_identity(export_evidence["runtime"])
+                    export_evidence = {**export_evidence, "final_validation": validation}
+                    result = replace(result, probe=probe, export_evidence=export_evidence)
+                render_fingerprint = (export_evidence["fingerprint"] if export_evidence
+                                      else self.current_render_input_fingerprint(project))
+                visual_settings = (render_fingerprint.get("visual_settings") if export_evidence
+                                   else self.artifacts.visual_settings(project))
                 render_completed_at = utc_now_naive()
                 project_created_at = getattr(project, "created_at", None)
                 project_total_elapsed_sec: int | None = None
@@ -776,25 +821,40 @@ class VideoRenderService:
                         "digital_human_composite": composite_elapsed,
                     },
                 }
-                artifact = self.artifacts.record_rendered_video(
-                    db,
-                    project,
-                    result.output_path,
-                    result.output_filename,
-                    render_metadata=render_metadata,
-                    render_fingerprint=render_fingerprint,
-                )
-                invalidation_service.complete_stage(project, 8)
-                from project_impact_service import resolve_impacts
-
-                # The render that was just published covers the current
-                # project-wide output. Keep unrelated page review items.
-                resolve_impacts(
-                    project.run_dir,
-                    affected=("output",),
-                    snapshot=output_impacts_at_start,
-                )
-                db.commit()
+                from pipeline_lifecycle import project_artifact_lock
+                with project_artifact_lock(project.run_dir):
+                    if export_evidence:
+                        db.refresh(project)
+                    historical = bool(export_evidence) and render_fingerprint != self.current_render_input_fingerprint(project)
+                    if export_evidence:
+                        import os
+                        from dataclasses import replace
+                        destination = self.project_video_dir(project) / result.output_filename
+                        os.replace(result.output_path, destination)
+                        html_published_path = destination
+                        result = replace(result, output_path=destination)
+                        render_metadata["export_evidence"] = export_evidence
+                        render_metadata["historical"] = historical
+                        render_metadata["manifest"] = "planning/html_visual/export-builds/" + export_evidence["snapshot_id"] + "/manifest.json"
+                    record_options = {"make_current": False} if export_evidence else {}
+                    artifact = self.artifacts.record_rendered_video(
+                        db, project, result.output_path, result.output_filename,
+                        render_metadata=render_metadata, render_fingerprint=render_fingerprint,
+                        **record_options,
+                    )
+                    if not historical:
+                        invalidation_service.complete_stage(project, 8)
+                        from project_impact_service import resolve_impacts
+                        resolve_impacts(project.run_dir, affected=("output",), snapshot=output_impacts_at_start)
+                    db.commit()
+                    html_registered = bool(export_evidence)
+                    if export_evidence and not historical:
+                        self.artifacts.publish_default(project, result.output_path)
+                if export_evidence:
+                    import shutil
+                    work = Path(export_evidence["work_dir"])
+                    assert work.resolve().parent == (Path(project.run_dir) / "planning/html_visual/export-work").resolve()
+                    shutil.rmtree(work)
                 video = self.video_item(project, result.output_path)
                 videos = self.list_video_items(project)
                 self._set_task_status(
@@ -821,6 +881,15 @@ class VideoRenderService:
                     error=str(exc),
                 )
         finally:
+            if html_published_path is not None and not html_registered:
+                html_published_path.unlink(missing_ok=True)
+                self.artifacts.video_metadata_path(html_published_path).unlink(missing_ok=True)
+            if export_evidence:
+                import shutil
+                work = Path(export_evidence["work_dir"])
+                if work.exists():
+                    assert work.resolve().parent == (Path(project.run_dir) / "planning/html_visual/export-work").resolve()
+                    shutil.rmtree(work)
             generation_control.finish(project_id, 'video', task_id)
             db.close()
             # R2-006: 只释放显式移交的锁;locked() 探测可能误释放他人持有的锁。
@@ -996,11 +1065,18 @@ class VideoRenderService:
         # 合成后的成片必须重新过 bt709 颜色门禁（审查 M-07）：
         # sidecar 的颜色声明必须描述最终交付文件，而非被替换前的渲染产物。
         # 校验失败会删除成片并抛错 → 整个渲染任务按失败处理，绝不输出颜色失实文件。
-        fresh_validation = self.runner._validate_render_color(
-            project,
-            result.output_path,
-            set_stage=lambda stage: self._set_task_stage(task_id, stage),
-        )
+        if getattr(result, "export_evidence", None):
+            # HTML has its own format contract; do not invoke image/Remotion gates against a frozen HTML run.
+            from html_frozen_video import validate_video
+            evidence = result.export_evidence
+            _, validation = validate_video(self.dependencies.html_runner, result.output_path,
+                evidence["validation"]["fps"], evidence["validation"]["frames"])
+            fresh_validation = {"standard": "bt709", "tagged": True, "pipeline": "html_snapshot", **validation}
+        else:
+            fresh_validation = self.runner._validate_render_color(
+                project, result.output_path,
+                set_stage=lambda stage: self._set_task_stage(task_id, stage),
+            )
         logger.info(
             "[digital-human] composite success for %s: %s",
             project.id,

@@ -13,22 +13,30 @@ const { pathToFileURL } = require("url");
 
 const [scenePath, audioPath, outputPath, fpsArg] = process.argv.slice(2);
 if (!scenePath || !audioPath || !outputPath) {
-  console.error("usage: export-slide-video.cjs <scene.json> <audio> <out.mp4> [fps]");
+  console.error(
+    "usage: export-slide-video.cjs <scene.json> <audio> <out.mp4> [fps]",
+  );
   process.exit(2);
 }
 const fps = Number(fpsArg || 30);
-if (!Number.isFinite(fps) || fps < 1 || fps > 60) throw new Error("fps out of range");
+if (!Number.isFinite(fps) || fps < 1 || fps > 60)
+  throw new Error("fps out of range");
 const root = path.resolve(__dirname, "..");
-const projectResources = require("./project-resources.cjs").loadProjectResources();
+const snapshotRoot = process.env.HPS_HTML_SNAPSHOT;
+const projectResources = snapshotRoot
+  ? null
+  : require("./project-resources.cjs").loadProjectResources();
 const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
 const durationMs = Math.round(Number(scene.durationMs));
 if (!Number.isFinite(durationMs) || durationMs < 1000)
   throw new Error("scene durationMs invalid");
 
-const frameCount = Math.ceil((durationMs / 1000) * fps);
+const sceneFrames = Math.ceil((durationMs / 1000) * fps);
 const audioDuration = Number(ffprobeJson(audioPath).format.duration);
-if (!Number.isFinite(audioDuration) || audioDuration <= 0) throw new Error("audio duration invalid");
-const outputDuration = Math.max(frameCount / fps, audioDuration);
+if (!Number.isFinite(audioDuration) || audioDuration <= 0)
+  throw new Error("audio duration invalid");
+const frameCount = Math.max(sceneFrames, Math.ceil(audioDuration * fps));
+const outputDuration = frameCount / fps;
 const workDir = fs.mkdtempSync(path.join(os.tmpdir(), "hps-slide-"));
 const framesDir = path.join(workDir, "frames");
 fs.mkdirSync(framesDir);
@@ -40,7 +48,9 @@ process.on("exit", () => {
 });
 
 function ffmpeg(args) {
-  const result = spawnSync(process.env.FFMPEG_BIN || "ffmpeg", args, { encoding: "utf8" });
+  const result = spawnSync(process.env.FFMPEG_BIN || "ffmpeg", args, {
+    encoding: "utf8",
+  });
   if (result.status !== 0)
     throw new Error("ffmpeg failed: " + (result.stderr || "").slice(-800));
 }
@@ -48,7 +58,15 @@ function ffmpeg(args) {
 function ffprobeJson(target) {
   const result = spawnSync(
     process.env.FFPROBE_BIN || "ffprobe",
-    ["-v", "error", "-print_format", "json", "-show_format", "-show_streams", target],
+    [
+      "-v",
+      "error",
+      "-print_format",
+      "json",
+      "-show_format",
+      "-show_streams",
+      target,
+    ],
     { encoding: "utf8" },
   );
   if (result.status !== 0)
@@ -56,12 +74,13 @@ function ffprobeJson(target) {
   return JSON.parse(result.stdout);
 }
 
-
 (async () => {
   const playwright = require("playwright");
   const browser = await playwright.chromium.launch({
     headless: true,
-    executablePath: require("./browser-runtime.cjs").resolveBrowser(playwright.chromium),
+    executablePath: require("./browser-runtime.cjs").resolveBrowser(
+      playwright.chromium,
+    ),
   });
   const errors = [];
   try {
@@ -70,14 +89,47 @@ function ffprobeJson(target) {
       deviceScaleFactor: 1,
     });
     page.on("pageerror", (e) => errors.push(e.message));
-    await page.goto(pathToFileURL(path.join(root, "visual/preview/index.html")).href);
-    await page.waitForFunction(() => window.visualPlayer?.ready, {}, { timeout: 20000 });
-    await page.evaluate((r) => { window.__projectResources = r; }, projectResources);
-    const applied = await page.evaluate((s) => window.visualPlayer.apply(s, window.__projectResources), scene);
-    if (!applied) throw new Error("scene failed to compile/prepare");
+    if (snapshotRoot) await page.route(/^https?:/, (route) => route.abort());
+
+    await page.goto(
+      pathToFileURL(
+        snapshotRoot
+          ? path.join(snapshotRoot, "preview/index.html")
+          : path.join(root, "visual/preview/index.html"),
+      ).href + (snapshotRoot ? "?export=1" : ""),
+    );
+    await page.waitForFunction(
+      () => window.visualPlayer?.ready,
+      {},
+      { timeout: 20000 },
+    );
+    await page.evaluate(() => document.fonts.ready);
+    // Export pixels are the canonical canvas, independent of review chrome padding.
+    await page.addStyleTag({
+      content:
+        "main{max-width:none!important;width:1600px!important;padding:0!important;margin:0!important}#viewport{width:1600px!important;height:900px!important;border-radius:0!important}.visual-stage{transform:none!important;width:1600px!important;height:900px!important}",
+    });
+    if (snapshotRoot) {
+      const frozen = await page.evaluate(() => window.visualPlayer.scene);
+      if (JSON.stringify(frozen) !== JSON.stringify(scene))
+        throw new Error("SNAPSHOT_SCENE_MISMATCH");
+      await page.evaluate(() => window.visualPlayer.pause());
+    } else {
+      await page.evaluate((r) => {
+        window.__projectResources = r;
+      }, projectResources);
+      const applied = await page.evaluate(
+        (s) => window.visualPlayer.apply(s, window.__projectResources),
+        scene,
+      );
+      if (!applied) throw new Error("scene failed to compile/prepare");
+    }
     for (let i = 0; i < frameCount; i += 1) {
-      const ms = Math.round((i * 1000) / fps);
-      const result = await page.evaluate((t) => window.visualPlayer.seek(t), ms);
+      const ms = Math.min(durationMs, Math.round((i * 1000) / fps));
+      const result = await page.evaluate(
+        (t) => window.visualPlayer.seek(t),
+        ms,
+      );
       if (result.timeMs !== ms) throw new Error(`seek mismatch at frame ${i}`);
       const shot = await page.locator(".visual-stage").screenshot();
       fs.writeFileSync(
@@ -93,40 +145,76 @@ function ffprobeJson(target) {
   // duration equals the audio length, the last frame holds visually.
   ffmpeg([
     "-y",
-    "-framerate", String(fps),
-    "-i", path.join(framesDir, "frame-%05d.png"),
-    "-i", audioPath,
-    "-vf", `scale=1600:900:out_color_matrix=bt709:out_range=tv,tpad=stop_mode=clone:stop_duration=${Math.max(0,outputDuration-frameCount/fps)},setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709`,
-    "-af", "apad",
-    "-t", String(outputDuration),
-    "-c:v", "libx264",
-    "-pix_fmt", "yuv420p",
-    "-colorspace", "bt709",
-    "-color_primaries", "bt709",
-    "-color_trc", "bt709",
-    "-bsf:v", "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1",
-    "-r", String(fps),
-    "-c:a", "aac",
-    "-b:a", "192k",
+    "-framerate",
+    String(fps),
+    "-i",
+    path.join(framesDir, "frame-%05d.png"),
+    "-i",
+    audioPath,
+    "-vf",
+    `scale=1600:900:out_color_matrix=bt709:out_range=tv,tpad=stop_mode=clone:stop_duration=${Math.max(0, outputDuration - frameCount / fps)},setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709`,
+    "-af",
+    "apad",
+    "-t",
+    String(outputDuration),
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-colorspace",
+    "bt709",
+    "-color_primaries",
+    "bt709",
+    "-color_trc",
+    "bt709",
+    "-bsf:v",
+    "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1",
+    "-r",
+    String(fps),
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
     outputPath,
   ]);
   const probe = ffprobeJson(outputPath);
   const video = probe.streams.find((s) => s.codec_type === "video");
   const audio = probe.streams.find((s) => s.codec_type === "audio");
-  if (!video || !audio) throw new Error("segment missing video or audio stream");
-  if(video.width!==1600||video.height!==900||video.pix_fmt!=="yuv420p") throw new Error("segment visual format invalid");
-  if([video.color_space,video.color_transfer,video.color_primaries].some(v=>v!=="bt709")) throw new Error("segment color tags invalid: " + JSON.stringify({space:video.color_space,transfer:video.color_transfer,primaries:video.color_primaries}));
-  if(Math.abs(Number(probe.format.duration)-outputDuration)>1/fps+0.05) throw new Error("segment duration mismatch");
-  console.log(JSON.stringify({
-    format: "hps.visual.slide-video",
-    sceneId: scene.id,
-    frames: frameCount,
-    fps,
-    width: video.width,
-    height: video.height,
-    durationSec: Number(probe.format.duration),
-    audioCodec: audio.codec_name,
-  }));
+  if (!video || !audio)
+    throw new Error("segment missing video or audio stream");
+  if (
+    video.width !== 1600 ||
+    video.height !== 900 ||
+    video.pix_fmt !== "yuv420p"
+  )
+    throw new Error("segment visual format invalid");
+  if (
+    [video.color_space, video.color_transfer, video.color_primaries].some(
+      (v) => v !== "bt709",
+    )
+  )
+    throw new Error(
+      "segment color tags invalid: " +
+        JSON.stringify({
+          space: video.color_space,
+          transfer: video.color_transfer,
+          primaries: video.color_primaries,
+        }),
+    );
+  if (Math.abs(Number(probe.format.duration) - outputDuration) > 1 / fps + 0.05)
+    throw new Error("segment duration mismatch");
+  console.log(
+    JSON.stringify({
+      format: "hps.visual.slide-video",
+      sceneId: scene.id,
+      frames: frameCount,
+      fps,
+      width: video.width,
+      height: video.height,
+      durationSec: Number(probe.format.duration),
+      audioCodec: audio.codec_name,
+    }),
+  );
 })().catch((e) => {
   console.error(e);
   process.exitCode = 1;

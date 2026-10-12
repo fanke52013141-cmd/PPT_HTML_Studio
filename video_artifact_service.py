@@ -409,6 +409,7 @@ class VideoArtifactService:
         *,
         render_metadata: dict[str, Any],
         render_fingerprint: dict[str, Any],
+        make_current: bool = True,
     ) -> Any:
         self.write_render_metadata(output_path, render_metadata)
         artifact = record_artifact(
@@ -421,11 +422,19 @@ class VideoArtifactService:
             source_fingerprint=render_fingerprint,
             metadata=render_metadata,
         )
-        shutil.copy2(
-            output_path,
-            self.project_legacy_video_file(project),
-        )
+        if make_current:
+            self.publish_default(project, output_path)
         return artifact
+
+    def publish_default(self, project: Project, output_path: Path) -> None:
+        import uuid
+        legacy = self.project_legacy_video_file(project)
+        temporary = legacy.with_name(legacy.name + "." + uuid.uuid4().hex + ".tmp")
+        try:
+            shutil.copy2(output_path, temporary)
+            os.replace(temporary, legacy)
+        finally:
+            temporary.unlink(missing_ok=True)
 
     def list_videos(
         self,
@@ -695,6 +704,7 @@ class VideoArtifactService:
             item
             for item in remaining
             if item.get("filename") != "out.mp4"
+            and (getattr(project, "visual_backend", "image") != "html" or item.get("artifact_state") == "current")
             and self.project_video_file(
                 project,
                 item["filename"],
@@ -755,6 +765,12 @@ class VideoArtifactService:
         stale = bool(
             exists and latest_input_mtime > video_mtime + 1
         )
+        if getattr(project, "visual_backend", "image") == "html" and exists:
+            current_items = [item for item in self.list_video_items(project)
+                             if item.get("artifact_state") == "current"]
+            # Author/source hashes decide HTML freshness; same-size/mtime edits are meaningful.
+            stale = not any(sha256_file(self.project_video_file(project, item["filename"])) == sha256_file(video_path)
+                            for item in current_items)
         return {
             "exists": exists,
             "video_url": (
@@ -794,6 +810,8 @@ class VideoArtifactService:
         path = self.project_legacy_video_file(project)
         if not path.exists():
             items = self.list_video_items(project)
+            if getattr(project, "visual_backend", "image") == "html":
+                items = [item for item in items if item.get("artifact_state") == "current"]
             if items:
                 path = self.project_video_file(
                     project,

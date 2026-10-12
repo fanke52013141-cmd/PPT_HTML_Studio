@@ -5,7 +5,7 @@ description: Produce and verify editable HTML slides from this repository's slid
 
 # 可编辑 HTML 生产与局部修复
 
-Skill 版本：1.3.0（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
+Skill 版本：1.4.0（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
 
 本文代码与文档路径均相对仓库根目录；`references/`、`evaluation/` 相对本 Skill 目录。
 先读 `docs/contracts/html-presentation/README.md`，再读其下 `runtime/visual-v1/application-production-0.3.0.md`、`scene-repair-0.1.0.md` 和 `candidate-layout-agent-0.1.0.md`。从 `agent_contract.capabilities` 获取实际可调用能力和请求 Schema。参考图谱不等于运行组件目录。保持内容、场景、资源、绑定为唯一源；DOM/截图/视频为派生物。
@@ -17,6 +17,10 @@ Skill 版本：1.3.0（2026-10-12）。目标是交付实际可打开、可编�
 - 初稿使用生产入口；未保存的容量失败使用内部候选 Agent；已保存作品使用局部修复入口。资源、网络、Schema 错误先定位失败边界，不能用排版循环掩盖。
 - 文案语义重写、增删节点或换模板回到权威内容和新规划；新图片走素材服务。禁止运行时 Agent 任意修改组件源码或生产 CSS。
 - 默认黑灰白基线；保留用户已选风格和人工修改。通过字号层次、间距、对齐、线条与灰阶改善美感，不以不断缩小文字作为通用解法。
+
+## 正式导出
+
+正式 PPTX/视频先读 `docs/contracts/html-presentation/runtime/visual-v1/formal-export-0.1.0.md`，沿用原导出任务入口。任务固定整课有序快照，视频以页内缓存和整数帧重组；不得手动搬移缓存或强开 allow_legacy_unbound 绕过批准/音频/binding 门禁。检查作品 metadata.export_evidence 和实际可下载文件：分段命中也必须 hash/格式/全解码通过，数字人合成后再次校验最终文件。PPTX 仍为图片式页面，不能宣称可逐对象编辑。historical=true 是旧输入的有效历史结果，不能说成当前项目已完成；检查当前 artifact_state，不以成功任务代替当前输入签收。源码/工具/字体变化须重验，工程通过不代表视觉或真实供应商验收。
 
 ## 初稿
 

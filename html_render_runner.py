@@ -34,6 +34,7 @@ class HtmlRenderResult:
     # Same field name as RemotionRenderResult so the shared worker
     # (metadata, digital-human composite) treats both backends alike.
     color_validation: dict[str, Any] | None = None
+    export_evidence: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -176,11 +177,23 @@ class HtmlRenderRunner:
         except Exception as exc:
             raise HtmlRenderError(500, "HTML 渲染输出无法解析") from exc
 
-    def _concat(self, segments: list[Path], output_path: Path) -> None:
+    def _concat(
+        self, segments: list[Path], output_path: Path, *, frame_counts=None, fps=30
+    ) -> None:
         deps = self.dependencies
         concat_list = output_path.with_suffix(".concat.txt")
         concat_list.write_text(
-            "".join(f"file '{segment.as_posix()}'\n" for segment in segments),
+            "".join(
+                "file '"
+                + segment.as_posix().replace("'", "'\\''")
+                + "'\n"
+                + (
+                    f"duration {frame_counts[index] / fps:.12f}\n"
+                    if frame_counts is not None
+                    else ""
+                )
+                for index, segment in enumerate(segments)
+            ),
             encoding="utf-8",
         )
         result = deps.run_subprocess_bounded(
@@ -193,8 +206,22 @@ class HtmlRenderRunner:
                 "0",
                 "-i",
                 str(concat_list),
-                "-c",
-                "copy",
+                *(
+                    ["-c", "copy"]
+                    if frame_counts is None
+                    else [
+                        "-c:v",
+                        "copy",
+                        "-af",
+                        "aresample=async=1:first_pts=0,apad",
+                        "-c:a",
+                        "aac",
+                        "-b:a",
+                        "192k",
+                        "-t",
+                        str(sum(frame_counts) / fps),
+                    ]
+                ),
                 str(output_path),
             ],
             capture_output=True,
@@ -211,7 +238,7 @@ class HtmlRenderRunner:
         deps = self.dependencies
         result = deps.run_subprocess_bounded(
             [
-                deps.ffprobe_bin,
+                self._media_env().get("FFPROBE_BIN", deps.ffprobe_bin),
                 "-v",
                 "error",
                 "-print_format",
@@ -266,7 +293,17 @@ class HtmlRenderRunner:
         output_dir: Path,
         set_stage: Callable[[str], None],
         fps: int = 30,
+        fingerprint_factory: Callable[[], dict] | None = None,
     ) -> HtmlRenderResult:
+        if not self.dependencies.allow_legacy_unbound:
+            from html_frozen_video import run_frozen
+
+            try:
+                return run_frozen(
+                    self, project, output_dir, set_stage, fps, fingerprint_factory
+                )
+            except (ValueError, OSError) as exc:
+                raise HtmlRenderError(409, str(exc)) from exc
         from datetime import datetime
         import uuid
 

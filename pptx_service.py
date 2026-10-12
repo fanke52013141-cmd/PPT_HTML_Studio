@@ -472,73 +472,15 @@ class PptxExportService:
 
         快照为同步小任务：页数 = 已存场景数；产物登记进 artifact 记录，
         失败保留旧产物并给出对象级原因。"""
-        import uuid
-        from datetime import datetime
-
-        from html_pptx_snapshot import (
-            HtmlSnapshotDependencies,
-            build_snapshot_pptx,
-            render_snapshots,
-            snapshot_plan_for_scene,
-        )
-        from html_visual_store import load_scene_with_revision
-        from project_path_service import (
-            project_run_dir_or_500,
-            read_current_slide_ids_or_404,
-        )
-
-        run_dir = project_run_dir_or_500(project)
-        slide_ids = read_current_slide_ids_or_404(project)
-        deps = HtmlSnapshotDependencies(
-            run_dir=Path(run_dir),
-            repo_root=(
-                getattr(self.dependencies, "repo_root", None)
-                or self.dependencies.runs_root.parent
-            )
-        )
-        out_dir = Path(run_dir) / "presentations"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        pages: list[dict[str, Any]] = []
-        images = []
-        for index, slide_id in enumerate(slide_ids, start=1):
-            document = load_scene_with_revision(run_dir, slide_id)
-            if document is None:
-                raise PptxServiceError(
-                    409, f"页面 {slide_id} 尚未保存 HTML 场景，无法导出快照"
-                )
-            scene = {**document["scene"], "beats": []}
-            plan = snapshot_plan_for_scene(scene)
-            slide_dir = out_dir / f"{index:03d}-{slide_id}"
-            slide_images = render_snapshots(
-                scene, [page["timeMs"] for page in plan],
-                slide_dir, deps=deps,
-            )
-            for page, image in zip(plan, slide_images):
-                pages.append({
-                    "slide_id": slide_id,
-                    "timeMs": page["timeMs"],
-                    "label": f"{slide_id}:{page['label']}",
-                })
-                images.append(image)
-        filename = filename or (
-            "pptx_"
-            + datetime.now().strftime("%Y%m%d_%H%M%S")
-            + f"_{uuid.uuid4().hex[:6]}.pptx"
-        )
-        out_path = out_dir / filename
-        manifest = build_snapshot_pptx(pages, images, out_path)
+        from html_pptx_snapshot import export_frozen_pptx
         from pipeline_lifecycle import write_json_atomic
-        fingerprint = presentation_input_fingerprint(run_dir)
-        metadata = {"content_mode":"html_snapshot", "slide_count":len(pages),
-                    "snapshot_manifest":manifest,"source_fingerprint":fingerprint}
-        write_json_atomic(presentation_sidecar(out_path),metadata)
-        out_path.with_suffix(".pptx.manifest.json").unlink(missing_ok=True)
-        return {
-            "path": str(out_path), "filename": filename,
-            "size_bytes": out_path.stat().st_size,
-            "fingerprint": fingerprint,
-            "metadata": metadata,
-        }
+        run_dir = self.project_run_dir(project)
+        root = getattr(self.dependencies, "repo_root", None) or self.dependencies.runs_root.parent
+        filename = filename or ("pptx_" + uuid.uuid4().hex + ".pptx")
+        result = export_frozen_pptx(run_dir, root, filename,
+                                    lambda: presentation_input_fingerprint(run_dir))
+        write_json_atomic(presentation_sidecar(Path(result["path"])), result["metadata"])
+        return result
 
     def submit(self, job_id: str) -> None:
         self.executor.submit(self.run_job, job_id)
@@ -670,46 +612,54 @@ class PptxExportService:
                     ),
                 )
             output_path = Path(result["path"])
-            if queued_digest and presentation_input_fingerprint(self.project_run_dir(project))["digest"] != queued_digest:
-                raise RuntimeError("PPTX 生成期间输入已变化，请重新提交导出")
-            artifact = ArtifactRecord(
-                id=uuid.uuid4().hex,
-                project_id=project.id,
-                artifact_type="pptx",
-                filename=result["filename"],
-                relative_path=(
-                    f"presentations/{result['filename']}"
-                ),
-                mime_type=PPTX_MIME_TYPE,
-                size_bytes=result["size_bytes"],
-                source_fingerprint=json.dumps(
-                    result["fingerprint"],
-                    ensure_ascii=False,
-                    sort_keys=True,
-                ),
-                metadata_json=json.dumps(
-                    result["metadata"],
-                    ensure_ascii=False,
-                    sort_keys=True,
-                ),
-            )
-            db.add(artifact)
-            invalidation_service.complete_stage(project, 8)
-            job = (
-                db.query(LocalJob)
-                .filter(LocalJob.id == job_id)
-                .first()
-            )
-            if not job:
-                raise RuntimeError("PPTX 导出任务记录不存在")
-            job.status = "succeeded"
-            job.stage = "completed"
-            job.progress = 100
-            job.error = None
-            job.result_artifact_id = artifact.id
-            job.finished_at = datetime.now()
-            job.updated_at = datetime.now()
-            db.commit()
+            from pipeline_lifecycle import project_artifact_lock
+            with project_artifact_lock(self.project_run_dir(project)):
+                db.refresh(project)
+                historical = result["fingerprint"]["digest"] != presentation_input_fingerprint(self.project_run_dir(project))["digest"]
+                if mode != "html_snapshot" and historical:
+                    raise RuntimeError("PPTX 生成期间输入已变化，请重新提交导出")
+                result["metadata"]["historical"] = historical
+                from pipeline_lifecycle import write_json_atomic
+                write_json_atomic(presentation_sidecar(output_path), result["metadata"])
+                artifact = ArtifactRecord(
+                    id=uuid.uuid4().hex,
+                    project_id=project.id,
+                    artifact_type="pptx",
+                    filename=result["filename"],
+                    relative_path=(
+                        f"presentations/{result['filename']}"
+                    ),
+                    mime_type=PPTX_MIME_TYPE,
+                    size_bytes=result["size_bytes"],
+                    source_fingerprint=json.dumps(
+                        result["fingerprint"],
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    ),
+                    metadata_json=json.dumps(
+                        result["metadata"],
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    ),
+                )
+                db.add(artifact)
+                if not historical:
+                    invalidation_service.complete_stage(project, 8)
+                job = (
+                    db.query(LocalJob)
+                    .filter(LocalJob.id == job_id)
+                    .first()
+                )
+                if not job:
+                    raise RuntimeError("PPTX 导出任务记录不存在")
+                job.status = "succeeded"
+                job.stage = "completed"
+                job.progress = 100
+                job.error = None
+                job.result_artifact_id = artifact.id
+                job.finished_at = datetime.now()
+                job.updated_at = datetime.now()
+                db.commit()
         except PptxReadinessError as exc:
             self.fail_job(
                 db,

@@ -162,6 +162,11 @@ def test_pptx_service_dispatches_html_projects_to_snapshots(tmp_path, scene) -> 
         def commit(self):
             pass
 
+    from html_visual_store import save_scene
+    from html_visual_review_service import approve_scene, HtmlReviewDependencies
+    scene = {**scene, "id": "s1"}
+    save_scene(run_dir, "s1", scene, 0)
+    approve_scene(scene, run_dir=run_dir, deps=HtmlReviewDependencies(repo_root=REPO_ROOT, json_generator=lambda **kw: {}), reviewer="test_fixture")
     result = service._export_html_snapshots(FakeDb(), project)
     assert result["metadata"]["content_mode"] == "html_snapshot"
     assert Path(result["path"]).is_file()
