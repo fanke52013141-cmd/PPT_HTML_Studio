@@ -49,6 +49,11 @@ class HtmlWorkflowJobs:
         options = HtmlProduceRequest.model_validate(options or {}).model_dump()
         frozen = self.freeze_models(project) if self.freeze_models is not None else None
         model_summary = frozen.summary() if frozen is not None else {"source": "injected"}
+        # Reconcile before building a new revision-dependent submission key.
+        # Otherwise an already-saved page would be generated again as a new job.
+        recovered = self.reconcile_project(db, project, contract, options, model_summary)
+        if recovered is not None:
+            return {**recovered, "reused": True, "reconciled": True}
         from html_build_snapshot import create_generation_snapshot
         snapshot = create_generation_snapshot(
             project.run_dir, contract, repo_root=self.deps.repo_root,
@@ -144,6 +149,8 @@ class HtmlWorkflowJobs:
                 if provider is not None:
                     provider = stages.wrap(provider, "image")
                 extra["stage_record"] = stages.record
+                from html_production_recovery import seal_author_commit
+                extra["commit_record"] = partial(seal_author_commit, db, job_id, attempt, run_dir, snapshot_id)
                 result = produce_scene(
                     contract,
                     run_dir=run_dir,
@@ -159,7 +166,6 @@ class HtmlWorkflowJobs:
                 project = project_or_404(db, project_id)
                 if result["saved"]["changed"]:
                     html_scene_changed(project, [contract["slide_id"]])
-                    db.commit()
                 store.mark_succeeded(db, job_id, result, expected_attempt=attempt)
         except Exception as exc:
             db.rollback()
@@ -178,6 +184,69 @@ class HtmlWorkflowJobs:
     def recover(self):
         db = self.session_factory()
         try:
-            return store.recover_interrupted(db)
+            count = store.recover_interrupted(db)
+            from database import Project, LocalJob
+            projects = db.query(Project).join(LocalJob, LocalJob.project_id == Project.id).filter(
+                LocalJob.job_type == "html_plan_generate", LocalJob.status.in_(("failed", "interrupted")),
+            ).distinct().all()
+            for project in projects:
+                with account_scope(project.account_id):
+                    self.reconcile_project(db, project)
+            return count
         finally:
             db.close()
+
+    def reconcile_project(self, db, project, contract=None, options=None, model_summary=None):
+        from database import LocalJob
+        from html_production_recovery import reconcile_responses, reconcile_author_commit
+        from html_build_snapshot import safe_file, verify_snapshot
+        import json
+        lookups = {}
+        for kind, function in (("json", self.deps.json_generator), ("image", self.provider)):
+            if callable(getattr(function, "lookup", None)):
+                lookups[kind] = function.lookup
+        jobs = db.query(LocalJob).filter(LocalJob.project_id == project.id,
+            LocalJob.job_type == "html_plan_generate", LocalJob.status.in_(("failed", "interrupted", "succeeded")),
+        ).order_by(LocalJob.created_at.desc()).all()
+        recovered = None
+        for job in jobs:
+            snapshot_id = job.get_payload().get("input", {}).get("snapshot_id")
+            if not snapshot_id:
+                continue
+            try:
+                folder = safe_file(project.run_dir, "planning/html_visual/builds/" + snapshot_id)
+                verify_snapshot(folder)
+                if contract is not None and (
+                    json.loads((folder / "input/contract.json").read_text(encoding="utf-8")) != contract
+                    or json.loads((folder / "input/options.json").read_text(encoding="utf-8")) != options
+                    or job.get_payload().get("input", {}).get("model_summary") != model_summary
+                ):
+                    continue
+                result = reconcile_author_commit(db, job.id, project)
+                if result is not None:
+                    if contract is not None:
+                        return result
+                    recovered = recovered or result
+                else:
+                    job_lookups = dict(lookups)
+                    from html_image_provider import configured_image, lookup_toapis_result
+                    if self.provider is configured_image and self.freeze_models is not None:
+                        def native_lookup(record):
+                            bound = self.freeze_models(project)
+                            expected = job.get_payload().get("input", {}).get("model_summary", {}).get("image", {})
+                            if bound.image.config_hash != expected.get("config_hash"):
+                                raise store.HtmlTaskError("PROVIDER_CONNECTION_CHANGED", 409)
+                            return lookup_toapis_result(record, model_binding=bound.image)
+                        job_lookups["toapis"] = native_lookup
+                    reconcile_responses(db, job.id, project.run_dir, lookups=job_lookups)
+            except Exception:
+                # No blind retry and no startup-wide failure on one broken receipt.
+                db.rollback()
+                current = store._job(db, job.id)
+                if current.status in {"failed", "interrupted"}:
+                    store._transition(db, current, ("failed", "interrupted"), {
+                        "error": "RECOVERY_RECONCILIATION_BLOCKED：回执、版本或供应商结果需核实",
+                    })
+                    if contract is not None:
+                        raise store.HtmlTaskError("RECOVERY_RECONCILIATION_BLOCKED：请先核实已有作品或供应商回执", 409) from None
+        return recovered

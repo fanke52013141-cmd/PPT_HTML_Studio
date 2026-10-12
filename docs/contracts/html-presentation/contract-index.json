@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.23",
+  "contract_version": "0.9.24",
   "effective_date": "2026-10-12",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,7 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-12 S02 reconciliation: durable response receipts, ToAPIs task-ID persistence and resume-only polling, and write-ahead/sealed author commit recovery implemented; real paid provider reconciliation is not tested. ID-less unknown outcomes remain blocked.",
     "2026-10-12 S02: production consumes verified generation snapshots; LocalJob checkpoints and attempt-fenced returned-response reuse implemented. Unknown outcomes and corrupt artifacts block retries; provider reconciliation and post-save crash reconciliation remain pending.",
     "2026-10-12 S01/S04 first local snapshot and static QA: actual resource/font/bundle bytes frozen, evidence hashes matched; automatic production/resume and formal export wiring remain pending.",
     "2026-10-12 S00: target-specific local preflight CLI and shared Chromium resolution; no provider connection or approval implied. See preflight-0.1.0.md.",
@@ -33,6 +34,9 @@
     "2026-10-10 E: application-production-0.3.0 defines neutral reference packages, explicit design checkpoint, single-subject retry and provenance fingerprints; Agent 1.17.0. Real provider and user acceptance remain separate."
   ],
   "documents": [
+    {
+      "path": "runtime/visual-v1/production-recovery-0.2.0.md"
+    },
     {
       "path": "runtime/visual-v1/production-recovery-0.1.0.md"
     },
@@ -223,7 +227,8 @@
       "section": "## 7. 人工编辑与 AI 生成边界",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_application_html",
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; attempt-fenced recovery preserves author/approval boundaries"
     },
     {
       "id": "HPS-011",
@@ -232,7 +237,8 @@
       "section": "## 8. 版本、编辑影响与任务快照",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_application_html",
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; production snapshots and commit reconciliation, selective rebuild remains pending"
     },
     {
       "id": "HPS-012",
@@ -260,7 +266,8 @@
       "section": "## 1. HPS-014：每次生产携带规则与输入版本",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "partial_application_html",
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity, formal snapshot export remains pending"
     },
     {
       "id": "HPS-015",

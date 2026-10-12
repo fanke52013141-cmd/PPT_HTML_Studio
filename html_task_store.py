@@ -40,6 +40,7 @@ def _job_to_dict(job) -> Dict[str, Any]:
         "result": payload.get("result"),
         "snapshot_id": payload.get("input", {}).get("snapshot_id"),
         "stages": payload.get("production_stages", {}),
+        "reconciliation": payload.get("reconciliation"),
     }
 
 

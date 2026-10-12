@@ -10,6 +10,7 @@ from contextlib import ExitStack
 def configured_image(
     prompt, *, size="1024x1024", reference_paths=None, transparent_background=True,
     model_binding=None,
+    resume_task_id="", on_task_submitted=None,
 ):
     if model_binding is not None:
         model_binding.require_ready()
@@ -17,6 +18,7 @@ def configured_image(
         return _configured_image(
             prompt, size=size, reference_paths=reference_paths,
             transparent_background=transparent_background, model_binding=model_binding,
+            resume_task_id=resume_task_id, on_task_submitted=on_task_submitted,
         )
     except Exception:
         # SDK initialization, request and close errors can contain auth headers.
@@ -26,6 +28,7 @@ def configured_image(
 def _configured_image(
     prompt, *, size="1024x1024", reference_paths=None, transparent_background=True,
     model_binding=None,
+    resume_task_id="", on_task_submitted=None,
 ):
     from config_store import get_setting
     from ai_provider_service import (
@@ -62,8 +65,12 @@ def _configured_image(
             reference_paths=references,
             transparent_background=transparent_background,
             public_config={"toapis_resolution": "2k", "toapis_quality": "low"},
+            **({"resume_task_id": resume_task_id, "timeout": 30} if resume_task_id else {}),
+            **({"on_task_submitted": on_task_submitted} if on_task_submitted is not None else {}),
         )
         return extract_image_bytes_from_response(response)
+    if resume_task_id:
+        raise ValueError("当前图片供应商不支持按任务 ID 对账，禁止重新提交。")
     client = get_openai_client(api_key=key, base_url=base, timeout=120)
     try:
         with ExitStack() as stack:
@@ -90,3 +97,12 @@ def _configured_image(
             return extract_image_bytes_from_response(response)
     finally:
         client.close()
+
+
+configured_image.supports_upstream_task = True
+
+
+def lookup_toapis_result(record, *, model_binding):
+    """Resume the paid task only; no reference uploads or image POST."""
+    result = configured_image("", model_binding=model_binding, resume_task_id=record["upstream_task_id"])
+    return {"request_id": record["request_id"], "state": "succeeded", "result": result}

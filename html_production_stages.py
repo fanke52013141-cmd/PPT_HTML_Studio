@@ -64,8 +64,16 @@ class ProductionStages:
         path.parent.mkdir(parents=True, exist_ok=True)
         from html_visual_store import _atomic_write_bytes
         _atomic_write_bytes(path, data)
-        self._persist(key, {"state": "returned", "stage": stage, "kind": kind,
-                            "file": relative, "sha256": identity})
+        job = self.checkpoint()
+        previous = job.get_payload().get("production_stages", {}).get(key, {})
+        record = {**previous, "state": "returned", "stage": stage, "kind": kind,
+                  "file": relative, "sha256": identity}
+        if key.startswith(("json:", "image:")):
+            from html_production_recovery import receipt_path, write_receipt
+            write_receipt(receipt_path(self.run, self.job_id, digest(key.encode())), {
+                "job_id": self.job_id, "snapshot_id": self.snapshot_id, "key": key, "record": record,
+            })
+        self._persist(key, record)
         return value
 
     def wrap(self, function, kind):
@@ -96,11 +104,33 @@ class ProductionStages:
                 return value
             if sum(k.startswith(("json:", "image:")) for k in records) >= self.MAX_CALLS:
                 raise store.HtmlTaskError("阶段模型调用预算已耗尽", 409)
-            self._persist(key, {"state": "intent", "stage": kind + "_request", "kind": kind})
+            request_id = digest(json_bytes({"job": self.job_id, "snapshot": self.snapshot_id,
+                                            "key": key, "attempt": self.attempt}))
+            lookup_supported = callable(getattr(function, "lookup", None)) and callable(getattr(function, "invoke_with_request_id", None))
+            intent = {"state": "intent", "stage": kind + "_request", "kind": kind,
+                      "attempt": self.attempt, "request_id": request_id, "lookup_supported": lookup_supported}
+            self._persist(key, intent)
+            from functools import partial
+            original = function
+            while isinstance(original, partial):
+                original = original.func
+            native_tasks = kind == "image" and getattr(original, "supports_upstream_task", False)
+            def submitted(task_id):
+                import re
+                if not isinstance(task_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,256}", task_id):
+                    raise store.HtmlTaskError("PROVIDER_TASK_ID_INVALID", 409)
+                self.checkpoint()
+                record = {**intent, "upstream_task_id": task_id, "lookup_supported": True}
+                from html_production_recovery import receipt_path, write_receipt
+                write_receipt(receipt_path(self.run, self.job_id, "upstream-" + digest(key.encode())), {
+                    "job_id": self.job_id, "snapshot_id": self.snapshot_id, "key": key, "record": record,
+                })
+                self._persist(key, record)
             try:
-                value = function(*args, **kwargs)
+                value = function.invoke_with_request_id(request_id, *args, **kwargs) if lookup_supported else function(*args, **kwargs, **({"on_task_submitted": submitted} if native_tasks else {}))
             except Exception:
-                self._persist(key, {"state": "unknown", "stage": kind + "_unknown", "kind": kind})
+                previous = self.checkpoint().get_payload().get("production_stages", {}).get(key, intent)
+                self._persist(key, {**previous, "state": "unknown", "stage": kind + "_unknown"})
                 raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：供应商结果待核实，禁止自动重复请求", 409) from None
             # Persist raw returned bytes/JSON before validation or downstream work.
             self._save(key, value, kind + "_returned", kind)

@@ -193,6 +193,7 @@ def produce_scene(
     model_summary: dict | None = None,
     options: dict | None = None,
     stage_record: Callable = lambda name, value: None,
+    commit_record: Callable = lambda result, paths, **kwargs: None,
 ) -> dict:
     from html_storyboard_planning import load_template_catalog
 
@@ -514,12 +515,6 @@ def produce_scene(
                 raise HtmlVisualConflict(revision, current_revision)
             if definition_identity(deps.repo_root) != definitions:
                 raise HtmlReviewError("修复期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
-            result = save_scene(
-                run_dir, slide_id, scene, revision, lock=project_artifact_lock,
-                allow_manual_replace=bool(manual),
-            )
-            write_json_atomic(directory / f"binding-{slide_id}.json", binding)
-            write_json_atomic(directory / f"plan-{slide_id}.json", plan)
             provenance = {"format": "hps.html.production_provenance", "version": "0.1.0",
                           "model_summary": model_summary, "themeRef": scene["themeRef"],
                           "design_candidate_key": selection.design_candidate_key,
@@ -531,23 +526,68 @@ def produce_scene(
                 paths += [pack_root / f["path"] for f in package["manifest"]["files"]]
                 provenance["reference_package_key"] = package["manifest"]["cacheKey"]
                 provenance["files"] = [{"path": str(p.relative_to(run_dir)), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths]
-            write_json_atomic(directory / f"production-provenance-{slide_id}.json", provenance)
+            from html_visual_store import _document_bytes
+            def metadata_bytes(value):
+                return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+            pending = {
+                scene_path(run_dir, slide_id): _document_bytes(scene),
+                directory / f"binding-{slide_id}.json": metadata_bytes(binding),
+                directory / f"plan-{slide_id}.json": metadata_bytes(plan),
+                directory / f"production-provenance-{slide_id}.json": metadata_bytes(provenance),
+                resources_path: resources_path.read_bytes() if resources_path.exists() else None,
+            }
             material_paths = [resources_path, directory / f"binding-{slide_id}.json",
                               directory / f"plan-{slide_id}.json",
                               directory / f"production-provenance-{slide_id}.json"]
-            if not result["changed"] and any(
-                (p.read_bytes() if p.exists() else None) != previous[p] for p in material_paths
-            ):
-                result = {**result, "revision": revision + 1, "changed": True}
-                write_json_atomic(revision_path(run_dir), {"revision": revision + 1, "last_sha256": result["sha256"]})
+            scene_changed = pending[scene_path(run_dir, slide_id)] != previous[scene_path(run_dir, slide_id)]
+            changed = scene_changed or any(pending[p] != previous[p] for p in material_paths)
+            result = {"revision": revision + int(changed), "changed": changed,
+                      "sha256": hashlib.sha256(pending[scene_path(run_dir, slide_id)]).hexdigest()}
+            revision_state = {"revision": result["revision"], "last_sha256": result["sha256"]}
+            pending[revision_path(run_dir)] = (
+                json.dumps(revision_state, ensure_ascii=False, indent=2).encode("utf-8") if scene_changed
+                else metadata_bytes(revision_state) if changed else previous[revision_path(run_dir)]
+            )
             if resumed:
-                write_json_atomic(candidate_dir / "design-acceptance.json", {
+                pending[candidate_dir / "design-acceptance.json"] = metadata_bytes({
                     "format": "hps.html.design_acceptance", "version": "0.1.0",
                     "design_candidate_key": selection.design_candidate_key,
                     "scope": "design reference only; actual HTML visual approval remains required",
                     "saved_revision": result["revision"], "scene_sha256": result["sha256"],
-                    "provenance_sha256": hashlib.sha256((directory / f"production-provenance-{slide_id}.json").read_bytes()).hexdigest(),
+                    "provenance_sha256": hashlib.sha256(pending[directory / f"production-provenance-{slide_id}.json"]).hexdigest(),
                 })
+            else:
+                pending[candidate_dir / "design-acceptance.json"] = previous[candidate_dir / "design-acceptance.json"]
+            output = {
+                "design_candidate_key": selection.design_candidate_key,
+                "scene": scene, "plan": plan, "review": report,
+                "layout_agent": layout_agent, "saved": result,
+                "message": "已生成实际场景；请查看截图后批准。",
+            }
+            # Receipt seals all author files while the author lock is held.
+            commit_paths = list(rollback_paths)
+            if report.get("screenshot"):
+                from html_build_snapshot import safe_file
+                commit_paths.append(safe_file(run_dir, report["screenshot"].replace("\\", "/")))
+            for asset in resources.get("assets", []):
+                asset_file = asset.get("file")
+                relative = asset_file if isinstance(asset_file, str) else (asset_file or {}).get("path")
+                if relative and relative.replace("\\", "/").startswith(("planning/", "project/")):
+                    from html_build_snapshot import safe_file
+                    commit_paths.append(safe_file(run_dir, relative.replace("\\", "/").removeprefix("project/")))
+            from html_build_snapshot import safe_file
+            commit_paths.extend(safe_file(run_dir, item["path"].replace("\\", "/")) for item in provenance["files"])
+            # Write-ahead expected hashes cover the gap before the final seal.
+            commit_record(output, commit_paths, expected=pending)
+            saved_scene = save_scene(run_dir, slide_id, scene, revision, lock=project_artifact_lock,
+                                     allow_manual_replace=bool(manual))
+            for path in material_paths[1:]:
+                _atomic_write_bytes(path, pending[path])
+            if changed and not saved_scene["changed"]:
+                _atomic_write_bytes(revision_path(run_dir), pending[revision_path(run_dir)])
+            if resumed:
+                _atomic_write_bytes(candidate_dir / "design-acceptance.json", pending[candidate_dir / "design-acceptance.json"])
+            commit_record(output, commit_paths)
             committed = True
         finally:
             if not committed:
@@ -556,12 +596,4 @@ def produce_scene(
                         path.unlink(missing_ok=True)
                     else:
                         _atomic_write_bytes(path, payload)
-    return {
-        "design_candidate_key": selection.design_candidate_key,
-        "scene": scene,
-        "plan": plan,
-        "review": report,
-        "layout_agent": layout_agent,
-        "saved": result,
-        "message": "已生成实际场景；请查看截图后批准。",
-    }
+    return output

@@ -531,6 +531,7 @@ def generate_toapis_image_response(
     timeout: int = TOAPIS_DEFAULT_TASK_TIMEOUT_SECONDS,
     resume_task_id: str = "",
     queue_wait_seconds: Optional[float] = None,
+    on_task_submitted: Optional[Any] = None,
 ) -> dict[str, Any]:
     """Upload local references, submit a ToAPIs task, then retain its result URL.
 
@@ -549,7 +550,7 @@ def generate_toapis_image_response(
     headers = {"Authorization": f"Bearer {api_key}"}
     reference_urls: list[str] = []
     with httpx.Client(timeout=30, trust_env=False, follow_redirects=True) as client:
-        for path in reference_paths or []:
+        for path in ([] if resume_task_id else reference_paths or []):
 
             def _upload_reference(path: str = path) -> httpx.Response:
                 with open(path, "rb") as source:
@@ -621,6 +622,8 @@ def generate_toapis_image_response(
             task_id = task.get("id") if isinstance(task, dict) else None
             if not isinstance(task_id, str) or not task_id:
                 raise RuntimeError("ToAPIs 创建图片任务未返回任务 ID")
+        if on_task_submitted is not None:
+            on_task_submitted(task_id)
         try:
             task_timeout = int(timeout or TOAPIS_DEFAULT_TASK_TIMEOUT_SECONDS)
         except (TypeError, ValueError):
@@ -838,6 +841,7 @@ def generate_image_response(
     queue_wait_seconds: Optional[float] = None,
     resume_task_id: str = "",
     transparent_background: bool = False,
+    on_task_submitted: Optional[Any] = None,
 ) -> Any:
     """Generate an image with provider-specific fallbacks.
 
@@ -862,6 +866,7 @@ def generate_image_response(
             ),
             resume_task_id=resume_task_id,
             queue_wait_seconds=queue_wait_seconds,
+            **({"on_task_submitted": on_task_submitted} if on_task_submitted is not None else {}),
         )
     if client is None:
         raise RuntimeError("图片服务客户端未初始化")

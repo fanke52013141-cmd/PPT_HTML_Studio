@@ -49,3 +49,25 @@ def test_html_adapter_passes_transparency_without_using_live_settings(monkeypatc
     binding = SimpleNamespace(require_ready=lambda: None, api_key='fixture', endpoint='https://api.toapis.com', model='gpt-image-2.5-flare-vip', provider='toapis')
     assert html_image_provider.configured_image('fixture', size='2048x2048', transparent_background=True, model_binding=binding) == b'fixture'
     assert captured['transparent_background'] is True
+
+
+def test_resume_does_not_upload_references_or_submit(monkeypatch):
+    events = []
+    class Client:
+        def __init__(self, **kwargs):
+            pass
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+        def post(self, *args, **kwargs):
+            raise AssertionError('resume must not upload or submit')
+        def get(self, url, **kwargs):
+            events.append(url)
+            return SimpleNamespace(status_code=200, json=lambda: {'status': 'completed', 'result': {'data': [{'url': 'https://example.test/output.png'}]}}, headers={})
+    monkeypatch.setattr(provider.httpx, 'Client', Client)
+    monkeypatch.setattr(provider, '_governed_image_request', lambda base, operation, **kwargs: operation())
+    result = provider.generate_toapis_image_response(api_key='fixture', base_url='https://example.test',
+        model='fixture', prompt='', size=None, resume_task_id='existing-task', reference_paths=['nonexistent.png'])
+    assert result['toapis_task_id'] == 'existing-task'
+    assert len(events) == 1 and events[0].endswith('/existing-task')

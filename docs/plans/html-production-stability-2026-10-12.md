@@ -2,6 +2,8 @@
 
 日期：2026-10-12。状态：待实施方案；本文完成的是设计与本地代码核对，不代表新增能力已实现或验收。
 
+执行增量：S00、S01/S04 基础与 S02 核心已交付；S02 结果对账及作者提交恢复接线见 [收束交接](workflow-first-parallel-2026-10-09/deliveries/S02-RECONCILIATION.md)。下文保留原任务拆分，不将未实施的 S03/S05—S08 视为完成。
+
 实施前先审阅 [整体流程图](html-production-flow-review-2026-10-12.md)，明确生产顺序、独立分支、审阅与返工路径后再开工。
 
 研究编号 RES-20261012-01；[参考原文](../research/2026-10-12-production-stability/source-report.txt)、[来源与代码基线](../research/2026-10-12-production-stability/source-and-baseline.json)。外部文档的“现有/建议/示例”分别对待，未独立审计对方项目源码。正式行为以 [HTML 契约](../contracts/html-presentation/README.md)为准；以下新增字段、文件名和接口为实现提案，须先完成定义卡与兼容设计。
