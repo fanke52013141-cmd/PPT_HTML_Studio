@@ -1,0 +1,24 @@
+{
+  "format": "hps.html.runtime_skill_registry",
+  "version": "0.1.0",
+  "default_mode": "runtime_skill",
+  "skills": [
+    {
+      "id": "candidate-layout-repair",
+      "version": "0.1.0",
+      "stage": "candidate_capacity_repair",
+      "input_contract": "candidate-layout-input/0.1.0",
+      "output_contract": "candidate-layout-decision/0.1.0",
+      "body": {
+        "path": "config/html_runtime_skills/candidate-layout-repair-0.1.0.md",
+        "sha256": "fc9794601a921b51f304a9b6007bd5e307444bc0543e85abdf67cb6a070915e6"
+      },
+      "references": {
+        "layout-evidence": {
+          "path": "config/html_runtime_skills/layout-evidence-0.1.0.md",
+          "sha256": "2fe507f2f649c5b0dd4a8de91148cd2f4a51e4c398f2ad07badaed347062719f"
+        }
+      }
+    }
+  ]
+}

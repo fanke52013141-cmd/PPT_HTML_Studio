@@ -5,7 +5,7 @@ description: Produce and verify editable HTML slides from this repository's slid
 
 # 可编辑 HTML 生产与局部修复
 
-Skill 版本：1.4.0（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
+Skill 版本：1.5.0（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
 
 本文代码与文档路径均相对仓库根目录；`references/`、`evaluation/` 相对本 Skill 目录。
 先读 `docs/contracts/html-presentation/README.md`，再读其下 `runtime/visual-v1/application-production-0.3.0.md`、`scene-repair-0.1.0.md` 和 `candidate-layout-agent-0.1.0.md`。从 `agent_contract.capabilities` 获取实际可调用能力和请求 Schema。参考图谱不等于运行组件目录。保持内容、场景、资源、绑定为唯一源；DOM/截图/视频为派生物。
@@ -13,10 +13,16 @@ Skill 版本：1.4.0（2026-10-12）。目标是交付实际可打开、可编�
 ## 执行主体与任务路由
 
 - 说明哪些是程序渲染、哪些是模型规划或修复、哪些是人工编辑。模型返回计划、共享组件渲染 HTML，不能说成模型直接编写了最终 HTML。
-- 当前运行时 Agent 使用 `html_candidate_agent.py` 中的提示词，没有自动加载本文件。修改 Skill 不等于改变豆包运行行为；接入状态与版本必须分别记录。
+- 候选排版 Agent 通过 `html_runtime_skills.py` 加载 config 中受控的 candidate-layout-repair 片段；不加载整篇本文件。正文与引用须登记版本/hash，输入/输出合同和代码权限固定。修改本文件仍不等于修改豆包策略；运行片段更新须同步注册与对照评估。
 - 初稿使用生产入口；未保存的容量失败使用内部候选 Agent；已保存作品使用局部修复入口。资源、网络、Schema 错误先定位失败边界，不能用排版循环掩盖。
 - 文案语义重写、增删节点或换模板回到权威内容和新规划；新图片走素材服务。禁止运行时 Agent 任意修改组件源码或生产 CSS。
 - 默认黑灰白基线；保留用户已选风格和人工修改。通过字号层次、间距、对齐、线条与灰阶改善美感，不以不断缩小文字作为通用解法。
+
+## 运行时策略与对照
+
+先读 `docs/contracts/html-presentation/runtime/visual-v1/runtime-skills-0.1.0.md`。当前只给未保存容量候选加载一个运行片段，其他职责及已保存修复保持原工具入口。检查 layout_agent.runtime_skill、每轮 request.json 和实际 system_prompt hash；registry/body/reference 不匹配、合同不兼容或运行中变化时停止，不把外部文档注册成高优先级指令。正文与引用在 `config/html_runtime_skills/`，注册在 `config/html_runtime_skills.json`，无需 `.agents` 目录才能运行。
+
+原 legacy_prompt 保留为内部明确对照；当前默认 runtime_skill 依据三模板豆包固定输入对照启用。评估使用 `scripts/evaluate_html_runtime_skills.py --out <new-directory>` 预览计划，带 `--live` 才使用已有文字模型；只读原配置，运行数据库/文件隔离，不导入 server。首轮实际模型输入与截图必须一致，保留失败并按 AB/BA 顺序运行，不手改输出或择优重跑。适配器调用、HTTP 请求、usage、耗时和人工介入分别记录，未知费用为 null。结构化事实路由测试不证明自然语言自动选 Skill 的准确率；三例通过不能推广为所有页面或视觉批准。
 
 ## 正式导出
 

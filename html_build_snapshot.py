@@ -179,11 +179,15 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
         # Pin the actual planner/runtime definitions; not just their IDs.
         for name in ["html_storyboard_planning.py", "html_visual_review_service.py", "html_reference_package.py",
                      "html_production_service.py", "html_design_brief.py", "html_image_provider.py",
-                     "html_production_models.py", "html_candidate_agent.py", "html_scene_repair.py",
+                     "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py",
                      "json_llm_service.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
                      "html_rebuild_plan.py", "html_scene_editing.py", "html_input_manifest.py", "invalidation_service.py", "project_impact_service.py",
                      "html_task_store.py", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:
             capture.read(root / name, "source/" + name)
+        from html_runtime_skills import runtime_source_files
+        for record in runtime_source_files(root):
+            if digest(capture.read(safe_file(root, record["path"]), "source/" + record["path"])) != record["sha256"]:
+                raise SnapshotError("SNAPSHOT_SKILL_SOURCE_CHANGED")
         for directory in ("themes", "layouts", "templates"):
             for p in sorted((root / "html_engine/visual" / directory).glob("*.json")):
                 capture.read(p, "definitions/" + directory + "/" + p.name)

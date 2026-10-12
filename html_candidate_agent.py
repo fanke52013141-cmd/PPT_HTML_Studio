@@ -17,6 +17,8 @@ import html_scene_editing as editor
 from html_scene_repair import PARTS, candidate_from_document
 from html_visual_review_service import HtmlReviewError, review_scene
 from pipeline_lifecycle import write_json_atomic
+from html_build_snapshot import digest, fresh_hash, json_bytes
+from html_runtime_skills import load_runtime_skill
 
 PROMPT_VERSION = "candidate-layout-agent/0.1.0"
 SYSTEM_PROMPT = """你是受限 HTML 排版修复 Agent。根据实际诊断截图、对象几何和文字测量，
@@ -45,10 +47,27 @@ class CandidateState(TypedDict):
 
 
 def repair_candidate(
-    scene, binding, *, run_dir, deps, manual=None, checkpoint=lambda: None, max_rounds=3
+    scene,
+    binding,
+    *,
+    run_dir,
+    deps,
+    manual=None,
+    checkpoint=lambda: None,
+    max_rounds=3,
+    prompt_mode=None,
 ):
     if type(max_rounds) is not int or not 1 <= max_rounds <= 3:
         raise ValueError("candidate repair budget must be 1..3")
+    selection = load_runtime_skill(deps.repo_root, mode=prompt_mode)
+    system_prompt = SYSTEM_PROMPT + (
+        "\n\n受控排版修复策略：\n" + selection.fragment if selection.fragment else ""
+    )
+    prompt_version = (
+        PROMPT_VERSION
+        if selection.mode == "legacy_prompt"
+        else "candidate-layout-agent/0.2.0"
+    )
     run = Path(run_dir)
     audit = (
         run
@@ -69,6 +88,7 @@ def repair_candidate(
 
     def evaluate(state):
         checkpoint()
+        selection.verify()
         report = review_scene(state["scene"], run_dir=run, deps=deps)
         folder = audit / str(state["round"])
         folder.mkdir(exist_ok=True)
@@ -104,6 +124,7 @@ def repair_candidate(
 
     def decide(state):
         checkpoint()
+        selection.verify()
         payload = {
             "nodes": [
                 {
@@ -119,24 +140,46 @@ def repair_candidate(
             "slots": layout["slots"],
             "textDefaults": theme["text"],
             "protectedPaths": editor.manual_protected_paths(manual),
-            "diagnostic": state["report"]["diagnostic"],
+            # Keep decision evidence, exclude mutable screenshot paths and report bookkeeping.
+            # Both modes consume the same payload, so paired evaluation changes only the strategy.
+            "diagnostic": {
+                k: v
+                for k, v in state["report"]["diagnostic"].items()
+                if k
+                in {
+                    "passed",
+                    "diagnosticOnly",
+                    "capacityIssues",
+                    "geometry",
+                    "measurements",
+                    "pageErrors",
+                }
+            },
             "previousOperationError": state["error"],
             "remainingDecisions": max_rounds - state["round"],
         }
         prompts = {
-            "system_prompt": SYSTEM_PROMPT,
+            "system_prompt": system_prompt,
             "user_prompt": json.dumps(payload, ensure_ascii=False),
             "schema_hint": '{"action":"patch","operations":[{"targetId":"registered ID","kind":"set_text_style or set_presentation","part":"required for text style","values":{}}]} or {"action":"stop","message":"reason"}',
         }
         folder = audit / str(state["round"])
-        write_json_atomic(
-            folder / "request.json", {"version": PROMPT_VERSION, **prompts}
+        image_paths = [str((run / state["report"]["image"]).resolve())]
+        request_identity = {
+            "version": prompt_version,
+            "runtime_skill": selection.identity,
+            "prompt_sha256": digest(system_prompt.encode("utf-8")),
+            "image_sha256": [fresh_hash(Path(p)) for p in image_paths],
+        }
+        request_identity["request_id"] = digest(
+            json_bytes({**request_identity, **prompts})
         )
+        write_json_atomic(folder / "request.json", {**request_identity, **prompts})
         response = deps.json_generator(
             **prompts,
             run_dir=str(run),
             artifact_prefix=f"layout-agent-{scene['id']}-{state['round']}",
-            image_paths=[str((run / state["report"]["image"]).resolve())],
+            image_paths=image_paths,
         )
         write_json_atomic(folder / "response.json", response)
         history.append({"round": state["round"], "response": response})
@@ -150,6 +193,7 @@ def repair_candidate(
 
     def apply(state):
         checkpoint()
+        selection.verify()
         if state["stopped"]:
             return {}
         try:
@@ -225,12 +269,20 @@ def repair_candidate(
         result = graph.compile().invoke(initial, {"recursion_limit": 16})
     except Exception:
         write_json_atomic(
-            audit / "result.json", {"status": "execution_failed", "rounds": history}
+            audit / "result.json",
+            {
+                "status": "execution_failed",
+                "rounds": history,
+                "runtime_skill": selection.identity,
+                "prompt_version": prompt_version,
+            },
         )
         raise
     summary = {
         "framework": "LangGraph",
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": prompt_version,
+        "runtime_skill": selection.identity,
+        "prompt_sha256": digest(system_prompt.encode("utf-8")),
         "rounds": history,
         "passed": bool(result["report"].get("passed")),
         "stopped": result["stopped"],

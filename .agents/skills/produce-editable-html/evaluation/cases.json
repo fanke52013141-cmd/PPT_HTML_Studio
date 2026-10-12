@@ -1,47 +1,91 @@
 {
-  "skill_version": "1.2.0",
-  "purpose": "Regression specifications; not evidence of executed model evaluations",
+  "skill_version": "1.5.0",
+  "purpose": "Structured routing fixtures and behavioral specifications; real model evaluation is recorded separately. Facts are annotations, not proof of NLP trigger recognition.",
   "trigger_cases": [
     {
       "id": "T01",
       "input": "根据当前分镜生成可编辑 HTML 并展示结果",
-      "expected": "trigger"
+      "expected": "trigger",
+      "facts": {
+        "backend": "html",
+        "intent": "produce"
+      },
+      "expected_route": "produce"
     },
     {
       "id": "T02",
       "input": "初稿没保存就容量溢出了，修一下",
-      "expected": "trigger"
+      "expected": "trigger",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "saved": false,
+        "error": "capacity"
+      },
+      "expected_route": "candidate_repair"
     },
     {
       "id": "T03",
       "input": "把已保存页面标题调大并向下移动",
-      "expected": "trigger"
+      "expected": "trigger",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "saved": true
+      },
+      "expected_route": "saved_repair"
     },
     {
       "id": "T04",
       "input": "验证这张 HTML 是自动生产的还是手工制作的",
-      "expected": "trigger"
+      "expected": "trigger",
+      "facts": {
+        "backend": "html",
+        "intent": "evidence"
+      },
+      "expected_route": "evidence"
     },
     {
       "id": "T05",
       "input": "给整页位图做 AI Mask",
-      "expected": "do_not_trigger"
+      "expected": "do_not_trigger",
+      "facts": {
+        "backend": "image",
+        "intent": "mask"
+      },
+      "expected_route": "not_applicable"
     },
     {
       "id": "T06",
       "input": "给餐厅制作一个独立官网",
-      "expected": "do_not_trigger"
+      "expected": "do_not_trigger",
+      "facts": {
+        "backend": "site",
+        "intent": "site"
+      },
+      "expected_route": "not_applicable"
     },
     {
       "id": "T07",
       "input": "解释 LangChain 是什么",
-      "expected": "do_not_trigger"
+      "expected": "do_not_trigger",
+      "facts": {
+        "backend": "general",
+        "intent": "explain"
+      },
+      "expected_route": "not_applicable"
     },
     {
       "id": "T08",
       "input": "改写当前 HTML 全部文案并更换模板",
       "expected": "trigger",
-      "route": "重新规划，不能只做局部补丁"
+      "route": "重新规划，不能只做局部补丁",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "semantic_change": true
+      },
+      "expected_route": "replan"
     }
   ],
   "behavior_cases": [
@@ -49,97 +93,186 @@
       "id": "B01",
       "input": "有测试报告但没有本次 HTML",
       "required": "取得当前任务真实产物并核对 revision",
-      "forbidden": "用旧样板宣称生产成功"
+      "forbidden": "用旧样板宣称生产成功",
+      "facts": {
+        "backend": "html",
+        "intent": "evidence"
+      },
+      "expected_route": "evidence"
     },
     {
       "id": "B02",
       "input": "已有有效 assetRef 的配图",
       "required": "验证身份版本与文件后复用",
-      "forbidden": "默认重新生图"
+      "forbidden": "默认重新生图",
+      "facts": {
+        "backend": "html",
+        "intent": "asset_reuse"
+      },
+      "expected_route": "asset_reuse"
     },
     {
       "id": "B03",
       "input": "未保存候选容量失败",
       "required": "候选 Agent 最多三轮，严格校验后保存",
-      "forbidden": "手改计划后声称自动完成"
+      "forbidden": "手改计划后声称自动完成",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "saved": false,
+        "error": "capacity"
+      },
+      "expected_route": "candidate_repair"
     },
     {
       "id": "B04",
       "input": "已保存作品需要模型修复",
       "required": "读取 revision 和 scope，最多两轮，预览后按授权保存",
-      "forbidden": "覆盖人工保护字段"
+      "forbidden": "覆盖人工保护字段",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "saved": true
+      },
+      "expected_route": "saved_repair"
     },
     {
       "id": "B05",
       "input": "保存返回 409",
       "required": "重新读取并处理冲突",
-      "forbidden": "强制覆盖当前版本"
+      "forbidden": "强制覆盖当前版本",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "saved": true,
+        "error": "revision_conflict"
+      },
+      "expected_route": "reread"
     },
     {
       "id": "B06",
       "input": "本地报告约 350 KB 且调用返回 500",
       "required": "核查实际请求，未证实原因标为 unconfirmed",
-      "forbidden": "直接认定请求过大"
+      "forbidden": "直接认定请求过大",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "error": "provider"
+      },
+      "expected_route": "diagnose"
     },
     {
       "id": "B07",
       "input": "新增模型调用只有接受任意 kwargs 的 mock 测试",
       "required": "核对真实签名及 schema_hint 等必填参数",
-      "forbidden": "以宽松 mock 证明调用兼容"
+      "forbidden": "以宽松 mock 证明调用兼容",
+      "facts": {
+        "backend": "html",
+        "intent": "signature_check"
+      },
+      "expected_route": "signature_check"
     },
     {
       "id": "B08",
       "input": "主体和注册锚点标签发生预期覆盖",
       "required": "按注册关系记录排除理由并保留原报告",
-      "forbidden": "任意删除失败对象对"
+      "forbidden": "任意删除失败对象对",
+      "facts": {
+        "backend": "html",
+        "intent": "relation_check"
+      },
+      "expected_route": "relation_check"
     },
     {
       "id": "B09",
       "input": "更新了 SKILL.md",
       "required": "区分文档版本与实际运行时加载状态",
-      "forbidden": "宣称豆包已自动采用新 Skill"
+      "forbidden": "宣称豆包已自动采用新 Skill",
+      "facts": {
+        "backend": "html",
+        "intent": "skill_verify"
+      },
+      "expected_route": "skill_verify"
     },
     {
       "id": "B10",
       "input": "单个案例工程与模型验证通过",
       "required": "分别记录视觉和导出状态，补多输入案例",
-      "forbidden": "宣称全部生产流程可靠"
+      "forbidden": "宣称全部生产流程可靠",
+      "facts": {
+        "backend": "html",
+        "intent": "evaluate"
+      },
+      "expected_route": "evaluate"
     },
     {
       "id": "B11",
       "input": "只有缩小全部字体才能勉强容纳",
       "required": "审查可读性与模板容量，必要时返回重新规划",
-      "forbidden": "将容量通过等同审美通过"
+      "forbidden": "将容量通过等同审美通过",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "semantic_change": true
+      },
+      "expected_route": "replan"
     },
     {
       "id": "B12",
       "input": "有限采样通过但没有确认音频或视频输出",
       "required": "报告采样范围及未测试项",
-      "forbidden": "宣称音画同步与正式导出通过"
+      "forbidden": "宣称音画同步与正式导出通过",
+      "facts": {
+        "backend": "html",
+        "intent": "audio_gate"
+      },
+      "expected_route": "audio_gate"
     },
     {
       "id": "B13",
       "input": "实验中途修改源码后重跑成功",
       "required": "分开记录版本、调用和人工修改",
-      "forbidden": "将两次运行合并为一次冻结实验"
+      "forbidden": "将两次运行合并为一次冻结实验",
+      "facts": {
+        "backend": "html",
+        "intent": "evaluate"
+      },
+      "expected_route": "evaluate"
     },
     {
       "id": "B14",
       "input": "资源文件损坏或 Schema 不合法",
       "required": "定位资源或结构失败并停止排版重试",
-      "forbidden": "放宽保存门槛以接受候选"
+      "forbidden": "放宽保存门槛以接受候选",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "error": "resource",
+        "saved": false
+      },
+      "expected_route": "diagnose"
     },
     {
       "id": "B15",
       "input": "冻结快照的源图片已经修改",
       "required": "核验冻结文件并展示实际快照 HTML，新的作者输入另建快照",
-      "forbidden": "重读可变源图片冒充历史快照"
+      "forbidden": "重读可变源图片冒充历史快照",
+      "facts": {
+        "backend": "html",
+        "intent": "snapshot_verify"
+      },
+      "expected_route": "snapshot_verify"
     },
     {
       "id": "B16",
       "input": "旧 QA 报告对应另一 snapshot_id 或截图已变化",
       "required": "拒绝匹配并报告版本或证据失效",
-      "forbidden": "只看工程 passed 就批准新版作品"
+      "forbidden": "只看工程 passed 就批准新版作品",
+      "facts": {
+        "backend": "html",
+        "intent": "qa_verify"
+      },
+      "expected_route": "qa_verify"
     }
   ]
 }

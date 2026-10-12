@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.26",
+  "contract_version": "0.9.27",
   "effective_date": "2026-10-12",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,7 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-12 S06: candidate capacity repair loads a registered runtime fragment and references with contract/path/hash checks, generation snapshots and outgoing prompt identities. All 24 annotated routes are executable; three-template real Doubao AB/BA evaluation supports default runtime_skill. No general success-rate or aesthetic claim. See runtime-skills-0.1.0.md.",
     "2026-10-12 S05: ordered course/page snapshots drive formal PPTX/video exports; isolated staging, frame-based verified segment reuse, full decode after composition, conditional historical registration; no new DB/API capabilities. See formal-export-0.1.0.md.",
     "2026-10-12 S03: pure per-page rebuild plans, actual-byte input capture, editor/repair dry-run and save, impact ledger and production/recovery result wiring. Reuse still requires artifact validation; video segment caching and unattended full-stage execution are not implemented. Agent1.19.0 optional rebuild_plan output fields.",
     "2026-10-12 S02 reconciliation: durable response receipts, ToAPIs task-ID persistence and resume-only polling, and write-ahead/sealed author commit recovery implemented; real paid provider reconciliation is not tested. ID-less unknown outcomes remain blocked.",
@@ -36,6 +37,9 @@
     "2026-10-10 E: application-production-0.3.0 defines neutral reference packages, explicit design checkpoint, single-subject retry and provenance fingerprints; Agent 1.17.0. Real provider and user acceptance remain separate."
   ],
   "documents": [
+    {
+      "path": "runtime/visual-v1/runtime-skills-0.1.0.md"
+    },
     {
       "path": "runtime/visual-v1/formal-export-0.1.0.md"
     },
@@ -236,7 +240,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; attempt-fenced recovery preserves author/approval boundaries; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; attempt-fenced recovery preserves author/approval boundaries; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation."
     },
     {
       "id": "HPS-011",
@@ -246,7 +250,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md and minimal-rebuild-0.1.0.md; snapshots, commit reconciliation and selective rebuild plans/editor wiring; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md and minimal-rebuild-0.1.0.md; snapshots, commit reconciliation and selective rebuild plans/editor wiring; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation."
     },
     {
       "id": "HPS-012",
@@ -265,8 +269,8 @@
       "section": "## 10. 验证、诊断与美感验收",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "partial_e1_standalone",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
+      "runtime_validation": "partial_application_html",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation."
     },
     {
       "id": "HPS-014",
@@ -276,7 +280,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation."
     },
     {
       "id": "HPS-015",

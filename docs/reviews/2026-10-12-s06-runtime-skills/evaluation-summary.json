@@ -1,0 +1,141 @@
+{
+  "format": "hps.review.runtime_skill_evaluation_summary",
+  "version": "0.1.0",
+  "experiment_id": "44719297cf43c49196e374bc141571ea4484c5ca629f5c5acaaac22d5cf0932c",
+  "model": {
+    "provider": "openai",
+    "model": "doubao-seed-2-1-pro-260915",
+    "config_digest": "1c122721f7017965ac5033fc1e39b9eb2df6e24943a2b0761bfcfd9dff42d7d8"
+  },
+  "execution": "real_model",
+  "samples": 3,
+  "max_decisions_per_arm": 2,
+  "order": "AB/BA/AB",
+  "metrics": {
+    "legacy_prompt": {
+      "cases": 3,
+      "engineering_passed": 2,
+      "adapter_calls": 4,
+      "manual_intervention_required": 1,
+      "elapsed_seconds": 81.418,
+      "cost": null
+    },
+    "runtime_skill": {
+      "cases": 3,
+      "engineering_passed": 3,
+      "adapter_calls": 3,
+      "manual_intervention_required": 0,
+      "elapsed_seconds": 49.56,
+      "cost": null
+    }
+  },
+  "http_attempts": 7,
+  "usage": {
+    "prompt_tokens": 34374,
+    "completion_tokens": 2088,
+    "total_tokens": 36462
+  },
+  "comparability": [
+    {
+      "case_id": "condensation",
+      "same_first_model_input": true
+    },
+    {
+      "case_id": "water-facts",
+      "same_first_model_input": true
+    },
+    {
+      "case_id": "evaporation-process",
+      "same_first_model_input": true
+    }
+  ],
+  "case_results": [
+    {
+      "case_id": "condensation",
+      "mode": "legacy_prompt",
+      "engineering_passed": true,
+      "adapter_calls": 1,
+      "http_attempts": 1,
+      "error": null
+    },
+    {
+      "case_id": "condensation",
+      "mode": "runtime_skill",
+      "engineering_passed": true,
+      "adapter_calls": 1,
+      "http_attempts": 1,
+      "error": null
+    },
+    {
+      "case_id": "water-facts",
+      "mode": "runtime_skill",
+      "engineering_passed": true,
+      "adapter_calls": 1,
+      "http_attempts": 1,
+      "error": null
+    },
+    {
+      "case_id": "water-facts",
+      "mode": "legacy_prompt",
+      "engineering_passed": true,
+      "adapter_calls": 1,
+      "http_attempts": 1,
+      "error": null
+    },
+    {
+      "case_id": "evaporation-process",
+      "mode": "legacy_prompt",
+      "engineering_passed": false,
+      "adapter_calls": 2,
+      "http_attempts": 2,
+      "error": {
+        "type": "HtmlReviewError",
+        "code": "CANDIDATE_AGENT_REJECTED"
+      }
+    },
+    {
+      "case_id": "evaporation-process",
+      "mode": "runtime_skill",
+      "engineering_passed": true,
+      "adapter_calls": 1,
+      "http_attempts": 1,
+      "error": null
+    }
+  ],
+  "activation": {
+    "default_mode": "runtime_skill",
+    "loaded_skill": [
+      {
+        "body": {
+          "path": "config/html_runtime_skills/candidate-layout-repair-0.1.0.md",
+          "sha256": "fc9794601a921b51f304a9b6007bd5e307444bc0543e85abdf67cb6a070915e6"
+        },
+        "content_sha256": "10ff7291f608f1b4421f41d163ad9a6aa117ce760657bf61335840fc990542c4",
+        "id": "candidate-layout-repair",
+        "references": {
+          "layout-evidence": {
+            "path": "config/html_runtime_skills/layout-evidence-0.1.0.md",
+            "sha256": "2fe507f2f649c5b0dd4a8de91148cd2f4a51e4c398f2ad07badaed347062719f"
+          }
+        },
+        "version": "0.1.0"
+      }
+    ],
+    "published_prompt_sha256": "de99eca90d34fa15d87c75ddaf323e257e6c9193b44ff0272205a2e452103ebe",
+    "matches_tested_prompt_bytes": true,
+    "changes_since_experiment": "Move identical fragment bytes from Codex-only directory to config for portable packaging; promote default mode; refine source capture/guards. Old source archive matches frozen run-start hashes."
+  },
+  "status": {
+    "engineering": "passed",
+    "real_model": "passed_in_three_fixed_samples",
+    "visual": "pending_user_review",
+    "audio": "not_tested",
+    "export": "not_tested"
+  },
+  "limitations": [
+    "Three paired samples are not a general success-rate estimate.",
+    "All routing fixtures use annotated structured facts, not measured NLP routing accuracy.",
+    "Costs unavailable; no paid image/TTS/digital-human requests."
+  ],
+  "local_evidence_directory": "outputs/s06-runtime-skills-evaluation-2026-10-12"
+}
