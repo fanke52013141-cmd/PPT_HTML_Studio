@@ -126,6 +126,7 @@ def test_scene_edit_get_preview_write_reopen_and_conflict(api):
     preview=client.post(url+'/preview',json=data)
     assert preview.status_code==200,preview.text
     assert preview.json()['clock']=='author'
+    assert preview.json()['rebuild_plan']['format']=='hps.html.rebuild_plan'
     assert before==(run/'planning/html_visual/revision.json').read_bytes()
     web=client.post(f"/api/projects/{ids['html']}/html-visual/condensation/editor/preview",json=data).json()
     assert {k:v for k,v in preview.json().items() if k not in ('project_id','slide_id')}=={k:v for k,v in web.items() if k!='success'}

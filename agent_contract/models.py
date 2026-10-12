@@ -397,6 +397,7 @@ class HtmlSceneSaveResult(BaseModel):
     revision: int
     changed: bool
     sha256: str
+    rebuild_plan: dict[str, Any] | None = None
 
 
 class HtmlSceneBodyRequest(BaseModel):
@@ -525,6 +526,7 @@ class HtmlEditorDocumentResult(HtmlSceneDocumentResult):
     manual: dict[str, Any] | None
     preview_clock: str
     audio_status: str
+    rebuild_plan: dict[str, Any] | None = None
 
 
 class HtmlEditorPreviewResult(BaseModel):
@@ -534,3 +536,4 @@ class HtmlEditorPreviewResult(BaseModel):
     resources: dict[str, Any]
     clock: Literal["author", "audio_timeline"]
     audio_status: str
+    rebuild_plan: dict[str, Any] | None = None

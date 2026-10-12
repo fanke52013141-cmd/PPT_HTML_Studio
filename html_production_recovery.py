@@ -165,7 +165,7 @@ def reconcile_author_commit(db, job_id, project):
         if job.status == "succeeded":
             return store._job_to_dict(job)
         if result["saved"]["changed"]:
-            html_scene_changed(project, [slide])
+            html_scene_changed(project, [slide], rebuild_plan=result.get("rebuild_plan"))
         payload["result"] = result
         payload["reconciliation"] = {"kind": "author_commit", "attempt": attempt}
         # Commit invalidation's DB change and task terminal state together.

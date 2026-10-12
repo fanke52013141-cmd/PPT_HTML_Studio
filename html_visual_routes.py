@@ -178,7 +178,7 @@ def html_scene_editor_put(
             if result["changed"]:
                 from invalidation_service import html_scene_changed
 
-                html_scene_changed(project, [slide_id])
+                html_scene_changed(project, [slide_id], rebuild_plan=result.get("rebuild_plan"))
                 db.commit()
         return {"success": True, "slide_id": slide_id, **result}
     except store.HtmlVisualConflict as exc:
@@ -270,7 +270,7 @@ def _repair_dispatch(mode, project_id, slide_id, payload, db):
                 result = function(run_dir, slide_id, body)
             if mode == "save" and result["changed"]:
                 from invalidation_service import html_scene_changed
-                html_scene_changed(project, [slide_id])
+                html_scene_changed(project, [slide_id], rebuild_plan=result.get("rebuild_plan"))
                 db.commit()
         return {"success":True, "slide_id":slide_id, **result}
     except store.HtmlVisualConflict as exc:

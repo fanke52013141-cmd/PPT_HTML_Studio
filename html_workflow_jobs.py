@@ -165,7 +165,7 @@ class HtmlWorkflowJobs:
 
                 project = project_or_404(db, project_id)
                 if result["saved"]["changed"]:
-                    html_scene_changed(project, [contract["slide_id"]])
+                    html_scene_changed(project, [contract["slide_id"]], rebuild_plan=result.get("rebuild_plan"))
                 store.mark_succeeded(db, job_id, result, expected_attempt=attempt)
         except Exception as exc:
             db.rollback()
@@ -239,6 +239,12 @@ class HtmlWorkflowJobs:
                             return lookup_toapis_result(record, model_binding=bound.image)
                         job_lookups["toapis"] = native_lookup
                     reconcile_responses(db, job.id, project.run_dir, lookups=job_lookups)
+                    if contract is not None:
+                        pending = store._job(db, job.id).get_payload().get("production_stages", {})
+                        if any(record.get("state") in {"intent", "unknown"} for record in pending.values()):
+                            # A newer code/definition snapshot must not bypass an
+                            # unresolved paid request for the same semantic input.
+                            raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：先核实原请求，禁止用新快照重复生成", 409)
             except Exception:
                 # No blind retry and no startup-wide failure on one broken receipt.
                 db.rollback()

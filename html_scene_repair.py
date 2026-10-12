@@ -172,8 +172,10 @@ def candidate_from_document(run, slide, request, doc):
             "runtime": runtime,
         }
     )
+    from html_rebuild_plan import scene_rebuild
     return {
         "candidate_key": key,
+        "rebuild_plan": scene_rebuild(slide, doc["scene"], scene, doc["binding"], binding),
         "scene": scene,
         "binding": binding,
         "preview": preview,

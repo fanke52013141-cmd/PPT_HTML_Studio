@@ -99,9 +99,15 @@ def load_editor(run, slide):
     doc = store.load_scene_with_revision(run, slide)
     if doc is None:
         raise SceneEditError("SCENE_MISSING", "请先生成此页场景")
+    from html_rebuild_plan import current_scene_plan
+    binding = read_json(binding_path(run, slide))
+    try:
+        rebuild_plan = current_scene_plan(read_json(Path(run) / store.SCENE_DIR / f"rebuild-{slide}.json"), slide, doc["scene"], binding)
+    except (OSError, ValueError, TypeError):
+        rebuild_plan = None  # Derived diagnostics never replace the author source.
     return {
         **doc,
-        "binding": read_json(binding_path(run, slide)),
+        "binding": binding,
         "anchor_overrides": {},
         "beats": beats_for(run, slide),
         "resources": resources(run),
@@ -109,6 +115,7 @@ def load_editor(run, slide):
         "manual": read_json(edit_path(run, slide)),
         "preview_clock": "author",
         "audio_status": "作者时钟；输出使用已确认音频的语块绑定",
+        "rebuild_plan": rebuild_plan,
     }
 
 
@@ -261,6 +268,7 @@ def preview_editor(run, slide, scene, binding, anchor_overrides=None):
     scene = copy.deepcopy(scene)
     project = resources(run)
     assets, _, _ = _anchor_variants(run, scene, anchor_overrides or {}, project)
+    author_candidate = copy.deepcopy(scene)
     # Variants use the original pixel pack in previews; save materializes them.
     runtime_assets = [
         a
@@ -287,7 +295,10 @@ def preview_editor(run, slide, scene, binding, anchor_overrides=None):
             raise SceneEditError(exc.code, str(exc)) from exc
         clock = "audio_timeline"
     _compile(scene, assets)
+    from html_rebuild_plan import scene_rebuild
+    original = store.load_scene(run, slide)
     return {
+        "rebuild_plan": scene_rebuild(slide, original, author_candidate, read_json(binding_path(run, slide)), binding),
         "scene": scene,
         "resources": {"assets": runtime_assets, "pack": project["pack"]},
         "clock": clock,
@@ -426,11 +437,14 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
         except AudioBindingError as exc:
             raise SceneEditError(exc.code, str(exc)) from exc
     changed = scene != document["scene"] or binding != existing_binding
+    from html_rebuild_plan import scene_rebuild
+    rebuild_plan = scene_rebuild(slide, document["scene"], scene, existing_binding, binding)
     if not changed:
         return {
             "revision": expected_revision,
             "changed": False,
             "sha256": document["sha256"],
+            "rebuild_plan": rebuild_plan,
         }
     previous = read_json(edit_path(run, slide))
     protected = manual_protected_paths(previous)
@@ -461,6 +475,7 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
             store.revision_path(run): store._document_bytes(
                 {"revision": expected_revision + 1}
             ),
+            directory / f"rebuild-{slide}.json": store._document_bytes(rebuild_plan),
         }
     )
     if anchor_overrides:
@@ -483,4 +498,5 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
         "revision": expected_revision + 1,
         "changed": True,
         "sha256": _digest(scene),
+        "rebuild_plan": rebuild_plan,
     }

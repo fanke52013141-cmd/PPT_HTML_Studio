@@ -141,6 +141,7 @@ def record_impact(
     reason: str,
     slide_ids: Iterable[str] = (),
     source_version: str | None = None,
+    details: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Record an edit's recoverable downstream effect.
 
@@ -180,6 +181,10 @@ def record_impact(
                 })
                 existing.pop("resolved_at", None)
                 existing.pop("resolved_by", None)
+                if details is not None:
+                    existing["details"] = dict(details)
+                else:
+                    existing.pop("details", None)
                 changed = True
                 continue
             items.append({
@@ -197,6 +202,7 @@ def record_impact(
                 "status": "pending",
                 "created_at": now,
                 "updated_at": now,
+                **({"details": dict(details)} if details is not None else {}),
             })
             changed = True
         if changed:

@@ -177,7 +177,7 @@ def test_http_revision_and_smallest_invalidation(scene_run, monkeypatch):
     monkeypatch.setattr(
         invalidation_service,
         "html_scene_changed",
-        lambda p, ids: invalidations.append((p.id, ids)),
+        lambda p, ids, *, rebuild_plan=None: invalidations.append((p.id, ids)),
     )
     client = TestClient(app)
     url = "/api/projects/isolated/html-visual/condensation/editor"

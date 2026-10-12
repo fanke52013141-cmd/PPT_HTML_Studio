@@ -35,7 +35,7 @@ from project_storage import planning_path, safe_child
 LOGGER = logging.getLogger(__name__)
 
 
-def _record_content_impact(project: Any, reason: str, slide_ids: Iterable[str] = ()) -> None:
+def _record_content_impact(project: Any, reason: str, slide_ids: Iterable[str] = (), *, details=None) -> None:
     """Bind a real business edit to its current project/page input version."""
     normalized = tuple(dict.fromkeys(str(value).strip() for value in slide_ids if str(value).strip()))
     if IMPACT_RULES[reason].scope == "slide" and normalized:
@@ -43,6 +43,7 @@ def _record_content_impact(project: Any, reason: str, slide_ids: Iterable[str] =
             record_impact(
                 project.run_dir, reason=reason, slide_ids=(slide_id,),
                 source_version=impact_source_version(project.run_dir, reason, slide_id),
+                **({"details": details} if details is not None else {}),
             )
     else:
         record_impact(
@@ -329,7 +330,7 @@ def mask_content_changed(project: Any) -> InvalidationReport:
     )
 
 
-def html_scene_changed(project: Any, slide_ids: Iterable[str]) -> InvalidationReport:
+def html_scene_changed(project: Any, slide_ids: Iterable[str], *, rebuild_plan=None) -> InvalidationReport:
     """A changed HTML scene document invalidates that slide's HTML preview
     and output composition. Audio confirmation and narration inputs stay
     reusable: theme or wording changes never retrigger TTS (AC09)."""
@@ -338,7 +339,8 @@ def html_scene_changed(project: Any, slide_ids: Iterable[str]) -> InvalidationRe
     statuses = project.get_step_status()
     mark_selected_stale(statuses, (8,))
     project.set_step_status(statuses)
-    _record_content_impact(project, "html_scene_changed", normalized_ids)
+    _record_content_impact(project, "html_scene_changed", normalized_ids,
+                           details={"html_rebuild_plan": rebuild_plan} if rebuild_plan is not None else None)
     return InvalidationReport(
         reason="html_scene_changed",
         affected_steps=(8,),

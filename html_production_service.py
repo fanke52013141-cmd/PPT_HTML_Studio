@@ -202,6 +202,10 @@ def produce_scene(
         from html_visual_store import _read_revision
 
         revision = _read_revision(run_dir)["revision"]
+        from html_visual_store import load_scene
+        from pipeline_lifecycle import read_json_file
+        original_scene = load_scene(run_dir, slide_id)
+        original_binding = read_json_file(run_dir / f"planning/html_visual/binding-{slide_id}.json")
     checkpoint()
     model_summary = copy.deepcopy(model_summary or {})
     from html_production_models import HtmlProduceRequest
@@ -508,6 +512,9 @@ def produce_scene(
                 write_json_atomic(candidate_dir / "freeze.json", freeze)
             checkpoint()
             stage_record("review", report)
+            from html_rebuild_plan import scene_rebuild
+            rebuild_plan = scene_rebuild(slide_id, original_scene, scene, original_binding, binding)
+            stage_record("rebuild", rebuild_plan)
             from html_visual_store import _read_revision, HtmlVisualConflict
 
             current_revision = _read_revision(run_dir)["revision"]
@@ -562,6 +569,7 @@ def produce_scene(
                 "design_candidate_key": selection.design_candidate_key,
                 "scene": scene, "plan": plan, "review": report,
                 "layout_agent": layout_agent, "saved": result,
+                "rebuild_plan": rebuild_plan,
                 "message": "已生成实际场景；请查看截图后批准。",
             }
             # Receipt seals all author files while the author lock is held.

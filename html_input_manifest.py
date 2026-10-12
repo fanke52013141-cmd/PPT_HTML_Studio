@@ -9,21 +9,18 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
-
-
-@lru_cache(maxsize=512)
-def _cached_hash(path: str, modified: int, size: int) -> str:
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 def _hash(path: Path) -> str | None:
     if not path.is_file():
         return None
-    stat = path.stat()
-    return _cached_hash(str(path.resolve()), stat.st_mtime_ns, stat.st_size)
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(256 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def resolved_scene_inputs(
