@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.21",
+  "contract_version": "0.9.22",
   "effective_date": "2026-10-12",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,7 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-12 S01/S04 first local snapshot and static QA: actual resource/font/bundle bytes frozen, evidence hashes matched; automatic production/resume and formal export wiring remain pending.",
     "2026-10-12 S00: target-specific local preflight CLI and shared Chromium resolution; no provider connection or approval implied. See preflight-0.1.0.md.",
     "Unsaved capacity-failed candidates enter a bounded LangGraph layout agent; diagnostic-only screenshots do not approve work. See runtime/visual-v1/candidate-layout-agent-0.1.0.md.",
     "Explicit visual_groups.available_assets assetRef offers are reused only when source bytes, identity/version and plan image reference validate; new generation and manual design gates remain distinct.",
@@ -120,6 +121,9 @@
     },
     {
       "path": "runtime/visual-v1/preflight-0.1.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/input-snapshot-0.1.0.md"
     }
   ],
   "rules": [

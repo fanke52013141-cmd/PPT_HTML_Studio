@@ -1,6 +1,6 @@
 # Skill 拆分与迭代机制
 
-本次为 produce-editable-html 1.1.0，完善一个现有 Skill，不宣称已经接入六个运行时 Skill。
+当前为 produce-editable-html 1.2.0，完善一个现有 Skill，不宣称已经接入六个运行时 Skill。
 
 ## 建议的六项职责
 
@@ -43,7 +43,7 @@
 ```json
 {
   "case_id": "example",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "runtime_skill_loaded": false,
   "input_hash": null,
   "runtime_revision": null,
