@@ -50,7 +50,7 @@ test("catalog is source-backed and keeps reference counts separate from runtime 
     runtimeEffects: 8,
     runtimeLayouts: 6,
     runtimeTemplates: 4,
-    runtimeThemes: 4,
+    runtimeThemes: 5,
   });
   assert.equal(catalog.references.length, 99);
   assert.equal(catalog.styles.find((item) => item.default).id, "neutral-baseline");

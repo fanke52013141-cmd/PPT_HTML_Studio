@@ -56,19 +56,12 @@ function ffprobeJson(target) {
   return JSON.parse(result.stdout);
 }
 
-function resolveChromePath(playwright) {
-  if (process.env.HPS_CHROME) return process.env.HPS_CHROME;
-  const discovered = playwright.chromium.executablePath();
-  if (discovered && fs.existsSync(discovered)) return discovered;
-  // Validated Chromium on this machine; same fallback as visual/tests/verify.cjs.
-  return "C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1247/chrome-win64/chrome.exe";
-}
 
 (async () => {
   const playwright = require("playwright");
   const browser = await playwright.chromium.launch({
     headless: true,
-    executablePath: resolveChromePath(playwright),
+    executablePath: require("./browser-runtime.cjs").resolveBrowser(playwright.chromium),
   });
   const errors = [];
   try {

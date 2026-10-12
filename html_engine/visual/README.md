@@ -1,5 +1,9 @@
 # 阶段一：共享视觉定义与统一渲染
 
+2026-10-10 候选诊断：渲染器 diagnostic 模式只收集容量错误供未保存初稿修复，Schema/字体/资源校验保持；报告不可作为通过。正常播放器和最终保存仍严格失败。见 [定义卡](../../docs/contracts/html-presentation/runtime/visual-v1/candidate-layout-agent-0.1.0.md)。
+
+2026-10-10 E：新增 `neutral-baseline@0.2.0` 严格黑灰白主题，复用注册组件、布局与微软雅黑；新应用生产默认使用，旧场景主题不改。设计参考确认与实际 HTML 审批分离；相关定义见[应用生产 0.3.0](../../docs/contracts/html-presentation/runtime/visual-v1/application-production-0.3.0.md)。这不表示全部静态参考组件已适配生产，也不表示新页面已获视觉批准。
+
 2026-10-08（scene 0.4.0）：新增通用rect/ellipse形状、editorial-three-columns-v1和amber-editorial，按已认可生图参考完成33对象Token页。旧词汇与模板保留，自动规划仍为0.3，不能选择新shape模板。5场景/14组浏览器检查通过；原音频复用的新MP4完整解码通过。独立可编辑HTML与输出见[还原执行记录](../../../docs/research/2026-10-08-image25-sheet-experiment/token-editorial-reconstruction-v1.md)，实际新画面视觉批准待审阅；下方阶段一能力限制为历史记录。
 
 2026-10-08：新增 `amber-science@0.2.0` 暖白琥珀主题，复用当前 Schema/组件/布局，定义与限定视觉批准见[主题卡](../../../docs/styles/science-explainer/amber-science.md)。原主题引用不变；当前编排器默认仍是 soft-science，未增加项目主题选择入口。
@@ -60,3 +64,5 @@ node visual/tests/verify.cjs
 当前能力：单场景、固定镜头、最多一张独立主体、CSS文字与标签、SVG箭头/圈注、透明度与平移入场、统一时钟。没有连续流体/角色动画、群组/镜头/旋转缩放、任意路径、自动排版、应用数据库编辑、自动生成流程、音频/数字人接入或视频/PPTX导出。未来导出必须直接驱动同一 renderAt，不能另造一个视频布局。
 
 容量和区域检查是技术门槛；局部遮挡、插画边缘质量、小屏观看及整体美感仍须人工审阅。冷杯实验获用户“还OK”的限定反馈，这不等于所有新布局/主题均已批准。本阶段是在既有构图上固化可复用工程，不新增一轮任意生图来替换已验证目标。
+
+2026-10-10：scene0.5受限实例presentation覆盖，由compiler解析布局，renderer应用公开文字部位后测量；旧场景不增加默认覆盖。定义和验收见scene-repair-0.1.0合同与工作流交付记录。

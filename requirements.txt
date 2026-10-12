@@ -13,3 +13,6 @@ numpy>=2.0.0
 
 # DocLayout-YOLO (optional: ONNX CPU layout detection)
 onnxruntime>=1.17.0
+
+# Bounded HTML candidate layout agent
+langgraph==1.2.14

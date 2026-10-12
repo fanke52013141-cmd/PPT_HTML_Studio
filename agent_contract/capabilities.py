@@ -20,6 +20,9 @@ from enum import Enum
 from typing import Optional, Type
 
 from pydantic import BaseModel
+from html_production_models import HtmlProduceRequest
+from html_repair_models import RepairRequest, RepairSaveRequest, TemporalRequest, RepairGenerateRequest, RepairResult
+from agent_contract.models import HtmlDesignCandidateResult
 from html_asset_sheet_models import (HtmlSheetReadRequest, HtmlSheetGenerateRequest,
                                     HtmlSheetReviewRequest, HtmlSheetAcceptRequest, HtmlSheetResult, HtmlSheetRetryRequest)
 
@@ -148,6 +151,38 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_model_binding_service.save_project_model_binding",
     ),
     AgentCapability(
+        id="html_repair.preview", version="1.0", status=CapabilityStatus.stable,
+        description="Bounded HTML local repair preview; registered instance styles and actions, frozen revision, protected manual fields, actual finite temporal checks. Does not approve aesthetics.",
+        request_model=RepairRequest, response_model=RepairResult,
+        agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview",
+        mcp_tool_name="ppt_html_repair_preview", cli_command="html repair-preview",
+        service_ref="html_scene_repair.preview_repair",
+    ),
+    AgentCapability(
+        id="html_repair.save", version="1.0", status=CapabilityStatus.stable,
+        description="Bounded HTML local repair save; registered instance styles and actions, frozen revision, protected manual fields, actual finite temporal checks. Does not approve aesthetics.",
+        request_model=RepairSaveRequest, response_model=RepairResult,
+        agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save",
+        mcp_tool_name="ppt_html_repair_save", cli_command="html repair-save",
+        service_ref="html_scene_repair.save_repair",
+    ),
+    AgentCapability(
+        id="html_repair.evidence", version="1.0", status=CapabilityStatus.stable,
+        description="Bounded HTML local repair evidence; registered instance styles and actions, frozen revision, protected manual fields, actual finite temporal checks. Does not approve aesthetics.",
+        request_model=TemporalRequest, response_model=RepairResult,
+        agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence",
+        mcp_tool_name="ppt_html_repair_evidence", cli_command="html repair-evidence",
+        service_ref="html_scene_repair.evidence",
+    ),
+    AgentCapability(
+        id="html_repair.generate", version="1.0", status=CapabilityStatus.stable,
+        description="Bounded HTML local repair generate; registered instance styles and actions, frozen revision, protected manual fields, actual finite temporal checks. Does not approve aesthetics.",
+        request_model=RepairGenerateRequest, response_model=RepairResult,
+        agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate",
+        mcp_tool_name="ppt_html_repair_generate", cli_command="html repair-generate",
+        service_ref="html_scene_repair.generate_repair",
+    ),
+    AgentCapability(
         id="html_editor.read", version="1.0", status=CapabilityStatus.stable,
         description="Read stored HTML author scene, motion binding, production capabilities, validated resources and manual overrides under the project lock.",
         request_model=HtmlEditorReadRequest, response_model=HtmlEditorDocumentResult,
@@ -212,13 +247,23 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_service.ProjectService.create",
     ),
     AgentCapability(
-        id="html_review.produce", version="1.0", status=CapabilityStatus.stable,
-        description="HTML production workflow: produce; persisted task and registered render gates.",
-        request_model=BaseModel, response_model=HtmlTaskResult,
+        id="html_review.produce", version="1.1", status=CapabilityStatus.stable,
+        description="Generate a neutral design candidate and stop for review; resume with design_candidate_key, revise with design_instruction, or retry the single subject using asset_instruction and the accepted key. HTML approval remains separate.",
+        request_model=HtmlProduceRequest, response_model=HtmlTaskResult,
         agent_api_method="POST",
         agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce",
         mcp_tool_name="ppt_html_produce", cli_command="html produce",
         service_ref="html_workflow_jobs.HtmlWorkflowJobs",
+        long_running=True,
+    ),
+    AgentCapability(
+        id="html_review.design_current", version="1.0", status=CapabilityStatus.stable,
+        description="Read the current immutable design checkpoint, image URL and stale status; never approves a design or HTML scene.",
+        request_model=BaseModel, response_model=HtmlDesignCandidateResult,
+        agent_api_method="GET",
+        agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/design/current",
+        mcp_tool_name="ppt_html_design_current", cli_command="html design-current",
+        service_ref="html_design_candidates.current_design",
     ),
     AgentCapability(
         id="html_review.task_status", version="1.0", status=CapabilityStatus.stable,

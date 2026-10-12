@@ -18,7 +18,7 @@
       "runtimeEffects": 8,
       "runtimeLayouts": 6,
       "runtimeTemplates": 4,
-      "runtimeThemes": 4
+      "runtimeThemes": 5
     },
     "sourceOfCounts": "counted from standard-pages.json, components.json, components-extensions.json, presentation-variants.json, effects.json, static-catalog.json, and live V1 runtime sources"
   },
@@ -272,7 +272,7 @@
     },
     {
       "path": "html_engine/visual/schema.json",
-      "sha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126"
+      "sha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5"
     },
     {
       "path": "html_engine/visual/templates/data-relation-v1.json",
@@ -297,6 +297,10 @@
     {
       "path": "html_engine/visual/themes/amber-science.json",
       "sha256": "8a20630d5540cd9c7e6dec02da992c33c732dd2596eed71a3e9bfb7568521a19"
+    },
+    {
+      "path": "html_engine/visual/themes/neutral-baseline.json",
+      "sha256": "17e7ab61863c46589f525814fbae0c7a8b3fb02f3c59083fafeed394320790d0"
     },
     {
       "path": "html_engine/visual/themes/neutral-science.json",
@@ -6084,7 +6088,7 @@
         "status": "none",
         "directAdapter": false,
         "candidateRuntimeIds": [],
-        "gap": "This offline descriptor is not registered in the V1 runtime theme directory or application settings."
+        "gap": "The descriptor itself is not a runtime theme adapter. E registers neutral-baseline@0.2.0 separately as grayscale properties on existing components; this does not map all static references into production capabilities or approve a template."
       },
       "default": true,
       "source": {
@@ -7108,7 +7112,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
         "recordSha256": "1779e4bc562190518bef0d299ced5b32d252db3b94f8a2a100be3f5c706048be"
       },
       "screenshot": null,
@@ -7130,7 +7134,11 @@
       "purpose": "当前 V1 scene schema 接受的节点类型。",
       "parameterRange": {
         "required": [],
-        "schema": {}
+        "schema": {
+          "presentation": {
+            "$ref": "#/$defs/presentation"
+          }
+        }
       },
       "status": "available",
       "implementationStatus": "registered-runtime",
@@ -7144,8 +7152,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "766b996055241e35be56f44f0d459a3fd3df86958433207ec07fa2f1a3fae7d0"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "4ef65f4f0a3c5139f19938ec757c80aa89d2c4549f89e98f2b54de76d662dd83"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7181,6 +7189,9 @@
               "green",
               "accent"
             ]
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7196,8 +7207,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "dc0f56ff8cabb6b55376c62abc0569ca274d614a0464bf07c5ba31e9b0e85dee"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "7e1b9f2bafa1348e15f22906303fa47802527d6b5e69a41f772a529203a4f333"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7239,6 +7250,9 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 120
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7254,8 +7268,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "9c45d7a2740784346df6448350f08bc8afba1810ce3f1cc8e55fb2b089dd0818"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "f377c7d93d2770ed9c6138f13ad9321e23a8a60d8958bd4204221cf39f5208a4"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7282,6 +7296,9 @@
           },
           "note": {
             "$ref": "#/$defs/caption"
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7297,8 +7314,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "a8364487f8d51207d110cabcc19cfd127cbd85825711e63582291fa4fcf6e1c2"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "55f087a49ca40a8f6530060286ea720be17193869359ac364e7042fd7d789af6"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7332,6 +7349,9 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 40
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7347,8 +7367,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "b777d347f6ad8cb241849b0472e5b468b7e02ef81fe81a7f9fbe41819c06653a"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "b1057fbd41c4dc4ad70b6ef587db13f8246893f889561eea7f34314979aec704"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7378,6 +7398,9 @@
           },
           "anchorId": {
             "$ref": "#/$defs/id"
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7393,8 +7416,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "4892d3afa01172ee90cfef4615d28f13fab865d10f9048dec1a295f9cf362911"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "6ef8497635172c224efcd175dafe1cfa0cec22b66e9dc14d5a119a167fa4cd64"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7438,6 +7461,9 @@
               "green",
               "accent"
             ]
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7453,8 +7479,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "9503c1b92c69e520b7458b13de2e11900862fc693d68aea633c50d41597df4fe"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "d438e5306b2dabeb38f34d128eed867482e51ad80584ef285ace738c384587e0"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7509,6 +7535,9 @@
             "type": "number",
             "minimum": 0,
             "maximum": 60
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7524,8 +7553,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "960c1febaf659f47a43a9669ff1df8a5eae916d254eef650722f5c8f59c5bbcb"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "0587fb4992b4a6c6f04565e07bb14dce73066e7a8ce6a447a71cbaa205b05593"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7570,6 +7599,9 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 40
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7585,8 +7617,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "d0b4a17d72aeee69f261b7d2219ff05a595e315c1e7f7e1490c56820e5401e13"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "992266d45945f11445294e59094ce43b251b76fa3b71c845d5f069d877af42b8"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7616,6 +7648,9 @@
           },
           "runs": {
             "type": "array"
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
           }
         }
       },
@@ -7631,8 +7666,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "27dc8d9ab20bb0ff2ce5fc2235924d36de6a35f0570bd66c25a0dd16ee323126",
-        "recordSha256": "8f6acc7d1a8b25581031b768124a62884e77788fc4e7cf6c5892e965ba3564be"
+        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "recordSha256": "87c4f3d65f419df6fc952fea94ab74ff9a8ab5eddb12b4ae685281b8300d86d5"
       },
       "screenshot": null,
       "productionMapping": {
@@ -8403,6 +8438,125 @@
       }
     },
     {
+      "id": "runtime-theme:neutral-baseline",
+      "version": "0.2.0",
+      "type": "runtime-theme",
+      "category": "production-theme",
+      "name": "黑灰白标准基线（实际页面仍需视觉审阅）",
+      "purpose": "production-theme 的实际运行时登记源。",
+      "parameterRange": {
+        "font": {
+          "family": "Microsoft YaHei",
+          "platform": "Windows"
+        },
+        "colorRoles": [
+          "background",
+          "ink",
+          "body",
+          "accent",
+          "blue",
+          "green",
+          "muted",
+          "panel",
+          "pinkWash",
+          "blueWash",
+          "greenWash",
+          "line",
+          "paper",
+          "purple",
+          "yellow",
+          "pink"
+        ],
+        "textRoles": [
+          "eyebrow",
+          "title",
+          "lead",
+          "stepTitle",
+          "body",
+          "phase",
+          "callout",
+          "conclusion",
+          "source",
+          "subtitle",
+          "number",
+          "headline",
+          "cardTitle",
+          "cardBody",
+          "caption",
+          "summary",
+          "intro"
+        ],
+        "compatibleLayouts": [
+          "data-relation-v1",
+          "object-left",
+          "object-right",
+          "process-stage-v1",
+          "science-explanation-v1"
+        ],
+        "shapeTokens": {
+          "badgeRadius": 22,
+          "labelRadius": 32,
+          "strokeWidth": 2.5,
+          "shadow": {
+            "y": 2,
+            "blur": 6,
+            "opacity": 0.04
+          },
+          "cardRadius": 20,
+          "figureRadius": 24,
+          "iconRadius": 24,
+          "iconStroke": 1.7,
+          "shadowRGB": "34 34 34"
+        },
+        "gradients": {
+          "pink": [
+            "#eeeeee",
+            "#aaaaaa"
+          ],
+          "blue": [
+            "#eeeeee",
+            "#aaaaaa"
+          ],
+          "green": [
+            "#eeeeee",
+            "#aaaaaa"
+          ],
+          "purple": [
+            "#eeeeee",
+            "#aaaaaa"
+          ],
+          "yellow": [
+            "#eeeeee",
+            "#aaaaaa"
+          ]
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/themes/neutral-baseline.json",
+        "fileSha256": "17e7ab61863c46589f525814fbae0c7a8b3fb02f3c59083fafeed394320790d0",
+        "recordSha256": "f4cb1af87aa01a905140f003894500e1aa67bb8ab3cbf486a36269f4151d1780"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-theme:neutral-baseline"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-theme:neutral-science",
       "version": "0.2.0",
       "type": "runtime-theme",
@@ -8646,5 +8800,5 @@
     "providerCallMade": false,
     "note": "离线装配参考包；不调用生图供应商，不代表真实生图请求已接入。"
   },
-  "snapshotSha256": "9e999fb743dabe48158bb2abd91138b15922cea2ff22cf354248f5c96cf4d3e3"
+  "snapshotSha256": "26aba4f7ee9e122e3b866969d6959433c9ed2a6a449f8777e271e99e7e923d6f"
 }

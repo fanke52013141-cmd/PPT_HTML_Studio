@@ -157,6 +157,7 @@ def _generate_json_with_configured_llm(
     model_binding: Any = None,
     request_timeout: float = 120.0,
     max_tokens_limit: int | None = None,
+    image_paths: list[str] | None = None,
 ) -> Dict[str, Any]:
     llm_api_key = getattr(model_binding, "api_key", None) if model_binding is not None else get_setting("llm_api_key")
     llm_base_url = getattr(model_binding, "endpoint", None) if model_binding is not None else get_setting("llm_base_url")
@@ -174,6 +175,27 @@ def _generate_json_with_configured_llm(
     )
     if max_tokens_limit is not None:
         max_tokens = min(max_tokens, max(1024, int(max_tokens_limit)))
+    user_content = user_prompt
+    if image_paths:
+        import base64
+        from pathlib import Path
+        from PIL import Image
+        import io
+        if len(image_paths) > 4:
+            raise HTTPException(400, "一次修复最多4张截图")
+        root = Path(run_dir).resolve()
+        parts = [{"type":"text", "text":user_prompt}]
+        for name in image_paths:
+            path = Path(name).resolve()
+            if not path.is_relative_to(root) or path.suffix.lower() != ".png" or path.stat().st_size > 8*1024*1024:
+                raise HTTPException(400, "截图路径或字节预算不合法")
+            data = path.read_bytes()
+            with Image.open(io.BytesIO(data)) as image:
+                if image.format != "PNG" or image.width*image.height > 4_000_000:
+                    raise HTTPException(400, "截图格式或像素预算不合法")
+                image.verify()
+            parts.append({"type":"image_url","image_url":{"url":"data:image/png;base64,"+base64.b64encode(data).decode("ascii")}})
+        user_content = parts
     client = get_openai_client(api_key=llm_api_key, base_url=llm_base_url, timeout=request_timeout)
     started = time.monotonic()
     logger.info("JSON task %s: model=%s input_chars=%s max_tokens=%s timeout=%ss", artifact_prefix, llm_model, len(system_prompt) + len(user_prompt), max_tokens, request_timeout)
@@ -188,7 +210,7 @@ def _generate_json_with_configured_llm(
                         response_format={"type": "json_object"},
                         messages=[
                             {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_prompt},
+                            {"role": "user", "content": user_content},
                         ],
                     )
             except Exception as format_error:
@@ -206,7 +228,7 @@ def _generate_json_with_configured_llm(
                         max_tokens=max_tokens,
                         messages=[
                             {"role": "system", "content": system_prompt + "\n只输出纯 JSON，不要 Markdown，不要解释。"},
-                            {"role": "user", "content": user_prompt},
+                            {"role": "user", "content": user_content},
                         ],
                     )
         except HTTPException:

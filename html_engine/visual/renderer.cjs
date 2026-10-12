@@ -67,9 +67,7 @@ function themeStylesheet(theme) {
     s = theme.shapes,
     shadow = `0 ${s.shadowY}px ${s.shadowBlur}px rgb(${s.shadowRGB} / ${s.shadowOpacity})`;
   const bubbleBackground = (tone) =>
-    g[tone]
-      ? `linear-gradient(135deg, ${g[tone][0]}, ${g[tone][1]})`
-      : c[tone];
+    g[tone] ? `linear-gradient(135deg, ${g[tone][0]}, ${g[tone][1]})` : c[tone];
   const rule = (selector, declarations) =>
     `${selector}{${Object.entries(declarations)
       .map(([k, v]) => `${k}:${v}`)
@@ -129,10 +127,13 @@ function themeStylesheet(theme) {
       "border-radius": px(s.iconRadius),
       display: "grid",
       "place-items": "center",
-      "box-shadow":
-        "inset 0 1px 1px rgb(255 255 255 / 0.7), 0 5px 14px rgb(69 91 121 / 0.06)",
+      "box-shadow": `inset 0 1px 1px rgb(255 255 255 / 0.7), 0 5px 14px rgb(${s.shadowRGB} / 0.06)`,
     }),
-    rule(".v-icon-bubble svg", { width: "34px", height: "34px", color: "#ffffff" }),
+    rule(".v-icon-bubble svg", {
+      width: "34px",
+      height: "34px",
+      color: "#ffffff",
+    }),
     rule(".v-card-copy", { flex: "1", "min-width": "0", "max-height": "80px" }),
     rule(".v-card-title", {
       margin: "0 0 4px",
@@ -214,7 +215,7 @@ function themeStylesheet(theme) {
       "font-size": px(theme.text.caption.size),
       "line-height": String(theme.text.caption.lineHeight),
       color: c.body,
-      "box-shadow": "0 4px 18px rgb(69 91 121 / 0.06)",
+      "box-shadow": `0 4px 18px rgb(${s.shadowRGB} / 0.06)`,
     }),
     rule(".v-summary", {
       display: "flex",
@@ -284,7 +285,7 @@ function measureOverflow(el, width, id, stage) {
   return { lines: 1, width, height: bounds.height / scale };
 }
 
-async function prepare(compiled, pack, host) {
+async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
   const { source: scene, theme, layout } = compiled;
   if (!fontPresent(theme.font.family))
     fail("FONT_UNAVAILABLE", "/theme/font", theme.font.family);
@@ -301,7 +302,31 @@ async function prepare(compiled, pack, host) {
   const elements = new Map(),
     states = new Map(),
     geometry = {},
-    measurements = {};
+    measurements = {},
+    capacityIssues = [];
+  // Candidate diagnosis only: all schema/font/resource gates still execute.
+  // Production callers retain strict capacity failure by default.
+  function checkedMeasure(fn, el, limit, id) {
+    try {
+      return fn(el, limit, id, stage);
+    } catch (error) {
+      if (!diagnostic || error.code !== "CONTENT_CAPACITY_EXCEEDED") throw error;
+      const style = getComputedStyle(el);
+      const box = el.getBoundingClientRect();
+      const scale = stage.getBoundingClientRect().width / 1600;
+      const issue = {
+        code: error.code, target: id, message: error.message,
+        available: typeof limit === "number" ? { width: limit } : limit,
+        measured: { width: box.width / scale, height: box.height / scale,
+          scrollWidth: el.scrollWidth, scrollHeight: el.scrollHeight,
+          clientWidth: el.clientWidth, clientHeight: el.clientHeight },
+        typography: { fontSizePx: parseFloat(style.fontSize),
+          lineHeight: style.lineHeight, weight: style.fontWeight },
+      };
+      capacityIssues.push(issue);
+      return { ...issue.measured, failed: true };
+    }
+  }
   const motionsByTarget = new Map();
   for (const action of scene.motion) {
     const list = motionsByTarget.get(action.targetId) || [];
@@ -334,7 +359,8 @@ async function prepare(compiled, pack, host) {
       place(node, el);
       if (node.type === "shape") {
         el.style.background = theme.colors[node.fill];
-        el.style.borderRadius = node.kind === "ellipse" ? "50%" : px(node.radius ?? 0);
+        el.style.borderRadius =
+          node.kind === "ellipse" ? "50%" : px(node.radius ?? 0);
         el.setAttribute("aria-hidden", "true");
       } else if (node.type === "text") {
         textStyle(el, node.role, theme);
@@ -371,14 +397,20 @@ async function prepare(compiled, pack, host) {
           span,
           {
             ...layout.slots[node.slot],
-            box: { ...layout.slots[node.slot].box, width: layout.slots[node.slot].box.width - 32 },
+            box: {
+              ...layout.slots[node.slot].box,
+              width: layout.slots[node.slot].box.width - 32,
+            },
           },
           node.id,
         ]);
       } else if (node.type === "image") {
         el.classList.add("v-subject");
         const asset = assetById.get(node.assetRef.id),
-          p = imagePlacement({ ...node, box: layout.slots[node.slot].box }, asset);
+          p = imagePlacement(
+            { ...node, box: layout.slots[node.slot].box },
+            asset,
+          );
         const img = resources.images.get(asset.id);
         Object.assign(img.style, {
           position: "absolute",
@@ -418,20 +450,39 @@ async function prepare(compiled, pack, host) {
         copy.append(title, body);
         el.append(bubble, copy);
         const slot = layout.slots[node.slot];
-        textNodes.push([title, { ...slot, box: { ...slot.box, height: 46 } }, node.id]);
-        textNodes.push([body, { ...slot, box: { ...slot.box, height: slot.box.height - 56 } }, node.id]);
+        textNodes.push([
+          title,
+          { ...slot, box: { ...slot.box, height: 46 } },
+          node.id,
+        ]);
+        textNodes.push([
+          body,
+          { ...slot, box: { ...slot.box, height: slot.box.height - 56 } },
+          node.id,
+        ]);
       } else if (node.type === "figure") {
         el.classList.add("v-figure");
-        el.append(Object.assign(document.createElement("div"), { className: "v-figure-halo" }));
+        el.append(
+          Object.assign(document.createElement("div"), {
+            className: "v-figure-halo",
+          }),
+        );
         if (node.tag) {
           const tag = document.createElement("div");
           tag.className = "v-figure-tag";
           tag.append(icon(node.tag.icon));
-          tag.append(Object.assign(document.createElement("span"), { textContent: node.tag.text }));
+          tag.append(
+            Object.assign(document.createElement("span"), {
+              textContent: node.tag.text,
+            }),
+          );
           el.append(tag);
           textNodes.push([
             tag.querySelector("span"),
-            { ...layout.slots[node.slot], box: { ...layout.slots[node.slot].box, height: 40 } },
+            {
+              ...layout.slots[node.slot],
+              box: { ...layout.slots[node.slot].box, height: 40 },
+            },
             node.id + ":tag",
           ]);
         }
@@ -439,11 +490,19 @@ async function prepare(compiled, pack, host) {
           const note = document.createElement("div");
           note.className = "v-figure-note";
           note.append(icon(node.note.icon));
-          note.append(Object.assign(document.createElement("span"), { textContent: node.note.text }));
+          note.append(
+            Object.assign(document.createElement("span"), {
+              textContent: node.note.text,
+            }),
+          );
           el.append(note);
           textNodes.push([
             note.querySelector("span"),
-            { ...layout.slots[node.slot], box: { ...layout.slots[node.slot].box, height: 40 }, maxLines: 2 },
+            {
+              ...layout.slots[node.slot],
+              box: { ...layout.slots[node.slot].box, height: 40 },
+              maxLines: 2,
+            },
             node.id + ":note",
           ]);
         }
@@ -453,7 +512,11 @@ async function prepare(compiled, pack, host) {
           const heading = document.createElement("div");
           heading.className = "v-summary-heading";
           heading.append(icon(node.heading.icon));
-          heading.append(Object.assign(document.createElement("span"), { textContent: node.heading.text }));
+          heading.append(
+            Object.assign(document.createElement("span"), {
+              textContent: node.heading.text,
+            }),
+          );
           el.append(heading);
         }
         const flow = document.createElement("div");
@@ -476,7 +539,11 @@ async function prepare(compiled, pack, host) {
         el.append(takeaway);
         const slot = layout.slots[node.slot];
         overflowChecks.push([flow, slot.box.width - 620, node.id]);
-        textNodes.push([takeaway, { ...slot, box: { ...slot.box, width: 540 } }, node.id + ":takeaway"]);
+        textNodes.push([
+          takeaway,
+          { ...slot, box: { ...slot.box, width: 540 } },
+          node.id + ":takeaway",
+        ]);
       } else {
         const svg = vector("svg");
         attributes(svg, {
@@ -515,6 +582,35 @@ async function prepare(compiled, pack, host) {
         if (node.type === "annotation") el.classList.add("v-annotation");
         if (node.type === "arrow") el.style.display = "flex";
       }
+      const selectors = {
+        text: { text: null },
+        label: { text: null },
+        badge: { text: null },
+        header: { title: ".v-page-title" },
+        card: { title: ".v-card-title", body: ".v-card-body" },
+        figure: { tag: ".v-figure-tag span", note: ".v-figure-note span" },
+        summary: {
+          heading: ".v-summary-heading span",
+          from: ".v-state-from",
+          to: ".v-state-to",
+          term: ".v-term",
+          takeaway: ".v-takeaway",
+        },
+      };
+      for (const [part, style] of Object.entries(
+        node.presentation?.typography || {},
+      )) {
+        const selector = selectors[node.type]?.[part];
+        const target = selector ? el.querySelector(selector) : el;
+        if (!target) fail("UNSUPPORTED_TEXT_PART", node.id, part);
+        if (style.fontSizePx !== undefined)
+          target.style.fontSize = px(style.fontSizePx);
+        if (style.weight !== undefined)
+          target.style.fontWeight = String(style.weight);
+        if (style.lineHeight !== undefined)
+          target.style.lineHeight = String(style.lineHeight);
+        if (style.align !== undefined) target.style.textAlign = style.align;
+      }
       elements.set(node.id, el);
       stage.append(el);
     }
@@ -547,10 +643,11 @@ async function prepare(compiled, pack, host) {
     };
     resize();
     textNodes.forEach(
-      ([el, slot, id]) => (measurements[id] = measure(el, slot, id, stage)),
+      ([el, slot, id]) => (measurements[id] = checkedMeasure(measure, el, slot, id)),
     );
     overflowChecks.forEach(
-      ([el, width, id]) => (measurements[id] = measureOverflow(el, width, id, stage)),
+      ([el, width, id]) =>
+        (measurements[id] = checkedMeasure(measureOverflow, el, width, id)),
     );
     function checkSubtitles(size) {
       subtitleText.style.fontSize = px(size);
@@ -609,7 +706,7 @@ async function prepare(compiled, pack, host) {
         states.set(node.id, state);
         const el = elements.get(node.id);
         el.style.opacity = String(opacity);
-        el.style.transform = `translate(${state.x}px,${state.y}px)`;
+        el.style.transform = `translate3d(${state.x}px,${state.y}px,0)`;
         if (node.type === "image") {
           const asset = assetById.get(node.assetRef.id),
             b = layout.slots[node.slot].box,
@@ -677,7 +774,12 @@ async function prepare(compiled, pack, host) {
           if (geometry[node.id].box === undefined) {
             geometry[node.id] = {
               ...geometry[node.id],
-              box: { x: b.x + s.x, y: b.y + s.y, width: b.width, height: b.height },
+              box: {
+                x: b.x + s.x,
+                y: b.y + s.y,
+                width: b.width,
+                height: b.height,
+              },
             };
           }
           continue;
@@ -693,7 +795,7 @@ async function prepare(compiled, pack, host) {
           (ms < b.endMs || (ms === scene.durationMs && b.endMs === ms)),
       );
       subtitleText.textContent = beat?.text || "";
-      return { timeMs: ms, geometry, measurements, subtitleFont: subtitleSize };
+      return { timeMs: ms, geometry, measurements, capacityIssues, subtitleFont: subtitleSize };
     }
     const observer = new ResizeObserver(resize);
     observer.observe(host);

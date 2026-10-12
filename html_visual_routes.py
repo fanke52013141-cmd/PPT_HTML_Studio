@@ -241,3 +241,61 @@ def html_scene_editor_preview(
         raise HTTPException(
             422, detail={"code": exc.code, "message": str(exc)}
         ) from exc
+
+
+from html_repair_models import RepairRequest, RepairSaveRequest, TemporalRequest, RepairGenerateRequest
+
+
+def _repair_dispatch(mode, project_id, slide_id, payload, db):
+    import html_scene_repair as repair
+    from html_scene_editing import SceneEditError
+    from pipeline_lifecycle import project_artifact_lock
+    project = _html_project(project_id, db)
+    run_dir = project_run_dir_or_500(project)
+    try:
+        with project_artifact_lock(run_dir):
+            body = payload.model_dump(mode="json")
+            if mode == "generate":
+                from functools import partial
+                from project_model_binding_service import freeze_project_models, ModelBindingError
+                from html_visual_review_routes import _service_deps
+                try:
+                    frozen = freeze_project_models(project, required=("text",))
+                except ModelBindingError as exc:
+                    raise HTTPException(400, "文字模型连接不可用，请检查项目模型配置") from exc
+                result = repair.generate_repair(run_dir, slide_id, body,
+                    partial(_service_deps().json_generator, model_binding=frozen.text))
+            else:
+                function = {"preview":repair.preview_repair,"save":repair.save_repair,"evidence":repair.evidence}[mode]
+                result = function(run_dir, slide_id, body)
+            if mode == "save" and result["changed"]:
+                from invalidation_service import html_scene_changed
+                html_scene_changed(project, [slide_id])
+                db.commit()
+        return {"success":True, "slide_id":slide_id, **result}
+    except store.HtmlVisualConflict as exc:
+        raise HTTPException(409, detail={"code":"REVISION_CONFLICT","expected_revision":exc.expected,"current_revision":exc.current}) from exc
+    except SceneEditError as exc:
+        raise HTTPException(422, detail={"code":exc.code,"message":str(exc)}) from exc
+    except store.HtmlVisualError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@router.post("/api/projects/{project_id}/html-visual/{slide_id}/repair/preview")
+def html_repair_preview(project_id: str, slide_id: str, payload: RepairRequest, db: Any = Depends(_get_db)):
+    return _repair_dispatch("preview", project_id, slide_id, payload, db)
+
+
+@router.post("/api/projects/{project_id}/html-visual/{slide_id}/repair/save")
+def html_repair_save(project_id: str, slide_id: str, payload: RepairSaveRequest, db: Any = Depends(_get_db)):
+    return _repair_dispatch("save", project_id, slide_id, payload, db)
+
+
+@router.post("/api/projects/{project_id}/html-visual/{slide_id}/repair/evidence")
+def html_repair_evidence(project_id: str, slide_id: str, payload: TemporalRequest, db: Any = Depends(_get_db)):
+    return _repair_dispatch("evidence", project_id, slide_id, payload, db)
+
+
+@router.post("/api/projects/{project_id}/html-visual/{slide_id}/repair/generate")
+def html_repair_generate(project_id: str, slide_id: str, payload: RepairGenerateRequest, db: Any = Depends(_get_db)):
+    return _repair_dispatch("generate", project_id, slide_id, payload, db)

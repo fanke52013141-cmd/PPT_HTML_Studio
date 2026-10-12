@@ -22,6 +22,7 @@ Exit code is non-zero when a required check fails.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -127,6 +128,12 @@ def env_report() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--html-target", choices=("static_html", "generate_existing", "generate_new_images", "snapshot_pptx", "video"))
+    parser.add_argument("--html-scene", help="actual scene JSON for local renderer checking")
+    parser.add_argument("--output-dir", help="existing writable output directory")
+    parser.add_argument("--model-readiness", help="JSON containing boolean text/image configuration readiness, never credentials")
+    parser.add_argument("--min-free-bytes", type=int, default=64 * 1024 * 1024)
+    parser.add_argument("--json", action="store_true", help="HTML mode machine-readable result")
     parser.add_argument("--run-dir", help="optional project run directory to structurally check")
     parser.add_argument("--stage", choices=STAGE_ORDER, default="step8", help="highest stage for --run-dir artifact checks")
     parser.add_argument(
@@ -135,6 +142,30 @@ def main() -> int:
         help="skip scripts/cleanup_step1_dead_code.py --check",
     )
     args = parser.parse_args()
+
+    if args.html_target:
+        # This branch must precede every legacy startup check and composition import.
+        sys.path.insert(0, str(REPO_ROOT))
+        from html_preflight import inspect_html_preflight
+        try:
+            scene = json.loads(Path(args.html_scene).read_text(encoding="utf-8-sig")) if args.html_scene else None
+            readiness = json.loads(Path(args.model_readiness).read_text(encoding="utf-8-sig")) if args.model_readiness else {}
+            if not isinstance(readiness, dict) or set(readiness) - {"text", "image"} or any(type(v) is not bool for v in readiness.values()):
+                raise ValueError()
+            if scene is not None and not isinstance(scene, dict):
+                raise ValueError()
+            report = inspect_html_preflight(args.html_target, repo_root=REPO_ROOT,
+                run_dir=args.run_dir, scene=scene, output_dir=args.output_dir,
+                model_readiness=readiness, min_free_bytes=args.min_free_bytes)
+        except (OSError, ValueError, TypeError):
+            report = {"ready": False, "checks": [{"code": "REQUEST_INVALID", "passed": False,
+                "message": "检查 scene、就绪标记文件与空间预算；不要提供密钥"}]}
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        else:
+            for item in report["checks"]:
+                print(f"{'PASS' if item['passed'] else 'FAIL'} {item['code']}: {item['message']}")
+        return 0 if report["ready"] else 1
 
     if not (REPO_ROOT / "server.py").exists():
         print(f"FAIL expected to run inside repository root containing server.py: {REPO_ROOT}")

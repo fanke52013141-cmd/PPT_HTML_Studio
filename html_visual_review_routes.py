@@ -13,6 +13,7 @@ import html_visual_review_service as review
 from html_storyboard_planning import plan_evidence
 from html_visual_store import load_scene_with_revision
 from project_path_service import project_run_dir_or_500
+from html_production_models import HtmlProduceRequest
 
 router = APIRouter()
 
@@ -199,7 +200,7 @@ def approval_status(
 
 
 @router.post("/api/projects/{project_id}/html-review/{slide_id}/produce")
-def produce(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
+def produce(project_id: str, slide_id: str, db: Any = Depends(_get_db), payload: HtmlProduceRequest | None = None):
     project = _html_project(project_id, db)
     run_dir = project_run_dir_or_500(project)
     if _jobs is None:
@@ -207,10 +208,42 @@ def produce(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
     from html_task_store import HtmlTaskError
 
     try:
-        task = _jobs.submit(db, project, _contract_slide(run_dir, slide_id))
+        options = payload.model_dump() if payload else None
+        task = _jobs.submit(db, project, _contract_slide(run_dir, slide_id), options=options)
     except HtmlTaskError as exc:
         raise HTTPException(exc.status_code, str(exc))
     return {"success": True, "task": task}
+
+
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/design/current")
+def design_current(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
+    from html_design_candidates import current_design
+    run_dir = project_run_dir_or_500(_html_project(project_id, db))
+    try:
+        result = current_design(run_dir=run_dir, contract=_contract_slide(run_dir, slide_id), repo_root=_service_deps().repo_root)
+        if result["design"]:
+            result["design"]["image_url"] = f"/api/projects/{project_id}/html-review/{slide_id}/design/{result['design']['key']}/image"
+        return {"success": True, **result}
+    except review.HtmlReviewError as exc:
+        raise HTTPException(exc.status_code, detail={"code": exc.code, "message": str(exc)}) from exc
+
+
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/design/{key}/image")
+def design_image(project_id: str, slide_id: str, key: str, db: Any = Depends(_get_db)):
+    from fastapi.responses import FileResponse
+    from html_design_candidates import candidate_directory
+    from artifact_fingerprint import sha256_json, sha256_file
+    import json
+    run_dir = project_run_dir_or_500(_html_project(project_id, db))
+    try:
+        directory = candidate_directory(run_dir, slide_id, key)
+        record = json.loads((directory / "candidate.json").read_text(encoding="utf-8"))
+        image = directory / "design-reference.png"
+        if sha256_json(record) != key or sha256_file(image) != record["image_sha256"]:
+            raise ValueError("hash")
+    except (ValueError, KeyError, OSError) as exc:
+        raise HTTPException(404, "设计候选不存在或字节已变化") from exc
+    return FileResponse(image, media_type="image/png", headers={"Cache-Control": "no-store"})
 
 
 def _task(project_id, job_id, db):

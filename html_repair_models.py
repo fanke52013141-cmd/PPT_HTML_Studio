@@ -1,0 +1,41 @@
+"""Public request contracts for bounded HTML repair. No provider or database imports."""
+
+from typing import Any, Literal
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
+
+
+class RepairOperation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    targetId: str = Field(pattern=r"^[a-z][a-z0-9.-]{0,63}$")
+    kind: Literal["set_presentation", "set_text_style", "set_motion", "set_binding"]
+    part: str | None = None
+    action: Literal["enter", "exit", "emphasize"] | None = None
+    values: dict[str, Any]
+
+
+class TemporalRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_revision: StrictInt = Field(ge=0)
+    time_range_ms: tuple[float, float] | None = None
+    step_ms: StrictInt = Field(default=250, ge=16, le=1000)
+    overlap_pairs: list[tuple[str, str]] = Field(default_factory=list, max_length=40)
+
+
+class RepairRequest(TemporalRequest):
+    operations: list[RepairOperation] = Field(min_length=1, max_length=20)
+    source: Literal["human", "ai"] = "ai"
+    scope: list[str] = Field(default_factory=list, max_length=40)
+
+
+class RepairSaveRequest(RepairRequest):
+    candidate_key: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class RepairGenerateRequest(TemporalRequest):
+    instruction: str = Field(min_length=1, max_length=4000)
+    scope: list[str] = Field(min_length=1, max_length=40)
+
+
+class RepairResult(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    success: bool = True

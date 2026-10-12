@@ -353,7 +353,31 @@ def merge_manual_edits(candidate, binding, manual):
     return {"scene": result, "binding": links, "conflicts": conflicts}
 
 
-def save_editor(run, slide, scene, binding, expected_revision, anchor_overrides=None):
+def protected_edit_paths(before, after, prefix):
+    """Stable object/action IDs, so protection never depends on array order."""
+    def named(value):
+        if isinstance(value, list) and value and all(isinstance(n, dict) and ("id" in n or "targetId" in n) for n in value):
+            return {n.get("id") or f"{n['targetId']}:{n['type']}": named(n) for n in value}
+        if isinstance(value, dict):
+            return {k: named(v) for k, v in value.items()}
+        return value
+    def diff(a, b, path):
+        if isinstance(a, dict) and isinstance(b, dict):
+            return [p for k in a.keys() | b.keys() for p in diff(a.get(k), b.get(k), path + [k])]
+        return [] if a == b else [path]
+    return diff(named(before or {}), named(after or {}), [prefix])
+
+
+def manual_protected_paths(manual):
+    if not manual:
+        return []
+    if "protected_paths" in manual:
+        return manual["protected_paths"]
+    # Older records were all manual: retain their conservative protection.
+    return protected_edit_paths(manual["base_scene"], manual["scene"], "scene") + protected_edit_paths(manual.get("base_binding"), manual.get("binding"), "binding")
+
+
+def save_editor(run, slide, scene, binding, expected_revision, anchor_overrides=None, *, origin="human"):
     """Caller must hold project_artifact_lock across this operation."""
     document = store.load_scene_with_revision(run, slide)
     if not document:
@@ -376,6 +400,8 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
         raise SceneEditError("SCENE_ID_INVALID", "页面 ID 不一致")
     # Editing is deliberately narrower than raw authoring: stable structure.
     for key in set(scene) | set(document["scene"]):
+        if key == "version" and scene.get("version") == "0.5.0" and document["scene"].get("version") in ("0.3.0", "0.4.0"):
+            continue  # Explicit instance-edit upgrade; no other structure changes.
         if key not in ("nodes", "motion") and scene.get(key) != document["scene"].get(
             key
         ):
@@ -407,7 +433,14 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
             "sha256": document["sha256"],
         }
     previous = read_json(edit_path(run, slide))
+    protected = manual_protected_paths(previous)
+    if origin == "human":
+        protected += protected_edit_paths(document["scene"], scene, "scene") + protected_edit_paths(existing_binding, binding, "binding")
+    elif origin != "ai":
+        raise SceneEditError("EDIT_ORIGIN_INVALID", "编辑来源不合法")
     manual = {
+        "protected_paths": sorted(set(tuple(p) for p in protected)),
+        "last_origin": origin,
         "format": "hps.html.scene_edits",
         "version": "0.1.0",
         "slide_id": slide,

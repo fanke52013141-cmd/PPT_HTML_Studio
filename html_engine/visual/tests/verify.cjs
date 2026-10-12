@@ -115,11 +115,11 @@ async function main() {
   const browser = await chromium.launch({
     headless: true,
     executablePath:
-      process.env.HPS_CHROME ||
-      "C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1247/chrome-win64/chrome.exe",
+      require("../../tools/browser-runtime.cjs").resolveBrowser(chromium),
   });
   const page = await browser.newPage({
-    viewport: { width: 1648, height: 1200 },
+    // Keep space for the preview shell; set its logical stage scale below.
+    viewport: { width: 1656, height: 1200 },
     deviceScaleFactor: 1,
   });
   const errors = [];
@@ -131,11 +131,15 @@ async function main() {
   };
   try {
     await page.goto(pathToFileURL(path.join(root, "preview/index.html")).href);
+    // The normal preview caps main at 1640px (1592px stage). Exact pixel
+    // comparisons use the canonical 1600px stage, avoiding fractional GPU AA.
+    await page.addStyleTag({ content: "main { max-width: 1648px; }" });
     await page.waitForFunction(
       () => window.visualPlayer?.ready,
       {},
       { timeout: 15000 },
     );
+    assert.equal(await page.locator("#viewport").evaluate((el) => el.clientWidth), 1600);
     assert.equal(await page.locator("#theme").inputValue(),
       await page.evaluate(() => window.visualPlayer.scene.themeRef.id));
     await page.selectOption("#scene", "editorial-condensation");
@@ -161,7 +165,7 @@ async function main() {
       await page.evaluate((t) => window.visualPlayer.seek(t), s.durationMs);
       assert(
         first.equals(await page.locator(".visual-stage").screenshot()),
-        "Random seeking must return identical pixels",
+        `Random seeking must return identical pixels: ${s.id}`,
       );
       fs.mkdirSync(path.join(root, "evidence"), { recursive: true });
       fs.writeFileSync(path.join(root, "evidence", s.id + "-final.png"), first);
@@ -268,8 +272,15 @@ async function main() {
       0,
     );
     await apply(cup);
-    await page.evaluate(() => window.visualPlayer.play());
-    await page.waitForFunction(() => window.visualPlayer.timeMs > 100, {}, { timeout: 3000 });
+    await page.evaluate(() => {
+      const nativeRaf = window.requestAnimationFrame;
+      window.requestAnimationFrame = (callback) => nativeRaf((time) => {
+        window.requestAnimationFrame = nativeRaf;
+        callback(time - 1000);
+      });
+      window.visualPlayer.play();
+    });
+    await page.waitForFunction(() => window.visualPlayer.timeMs > 100, {}, { timeout: 10000 });
     assert((await page.evaluate(() => window.visualPlayer.timeMs)) > 100);
     await page.evaluate(() => window.visualPlayer.pause());
     const paused = await page.evaluate(() => window.visualPlayer.timeMs);

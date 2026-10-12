@@ -24,19 +24,12 @@ const root = path.resolve(__dirname, "..");
 const projectResources = require("./project-resources.cjs").loadProjectResources();
 const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
 
-function resolveChromePath(playwright) {
-  if (process.env.HPS_CHROME) return process.env.HPS_CHROME;
-  const discovered = playwright.chromium.executablePath();
-  if (discovered && fs.existsSync(discovered)) return discovered;
-  // Validated Chromium on this machine; same fallback as visual/tests/verify.cjs.
-  return "C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1247/chrome-win64/chrome.exe";
-}
 
 (async () => {
   const playwright = require("playwright");
   const browser = await playwright.chromium.launch({
     headless: true,
-    executablePath: resolveChromePath(playwright),
+    executablePath: require("./browser-runtime.cjs").resolveBrowser(playwright.chromium),
   });
   try {
     const page = await browser.newPage({
@@ -48,10 +41,13 @@ function resolveChromePath(playwright) {
     await page.goto(pathToFileURL(path.join(root, "visual/preview/index.html")).href);
     await page.waitForFunction(() => window.visualPlayer?.ready, {}, { timeout: 20000 });
     await page.evaluate((r) => { window.__projectResources = r; }, projectResources);
+    await page.evaluate((d) => { window.__candidateDiagnostic = d; },
+      Boolean(process.env.HPS_CANDIDATE_DIAGNOSTIC));
     const applied = await page.evaluate(
       async (s) => {
         try {
-          return { ok: await window.visualPlayer.apply(s, window.__projectResources) };
+          const method = window.__candidateDiagnostic ? "diagnose" : "apply";
+          return { ok: await window.visualPlayer[method](s, window.__projectResources) };
         } catch (e) {
           return { ok: false, error: String(e && e.message || e) };
         }
@@ -129,7 +125,9 @@ function resolveChromePath(playwright) {
       reportPath,
       JSON.stringify(
         {
-          passed: pageErrors.length === 0,
+          passed: !process.env.HPS_CANDIDATE_DIAGNOSTIC && pageErrors.length === 0,
+          diagnosticOnly: Boolean(process.env.HPS_CANDIDATE_DIAGNOSTIC),
+          capacityIssues: result.capacityIssues,
           sceneId: scene.id || null,
           durationMs: result.timeMs,
           measuredObjects: Object.keys(result.measurements || {}).length,

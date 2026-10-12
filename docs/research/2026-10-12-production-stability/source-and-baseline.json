@@ -1,0 +1,19 @@
+{
+  "research_id": "RES-20261012-01",
+  "review_date": "2026-10-12",
+  "source_name": "手绘视频创作系统_完整流程与稳定性实施方案.txt",
+  "source_sha256": "b9da5fa69642f48f8a30321c313528d2b4e75384738f000da9ecadc12e7b19bd",
+  "source_claims": "User-supplied design report; upstream implementation not independently audited",
+  "repository_head": "25610ce0ea35eb5a650534d8ade7762f793a802b",
+  "working_tree_dirty": true,
+  "code_evidence": {
+    "html_task_store.py": "3930713085c5eb519dc60558ddfd0bec49f5835f9b1f1b6d8527a9a0d388e120",
+    "html_workflow_jobs.py": "aca42a2005432d1749f8fcdccae2c5d03bedeffb28095192f8c388c9aabc714e",
+    "html_input_manifest.py": "73d57a634d847123353ca2f637860a66319620cae831fdd6216a6c0cdfe542ea",
+    "html_render_runner.py": "74cad8eb150b08f21f06876dd61670855a869de810ffa3cbfcf9fa3e99f66dc9",
+    "html_candidate_agent.py": "fa25f7f2114671857dc4e629c9984ee11a62e6304cdb00dd19bb044d413cba72",
+    "html_scene_repair.py": "ec36907086dd654d405b37eba052d3e50bddba646636d6dcb300367df6c4fb14",
+    "invalidation_service.py": "232a6fa30652c446fc0839c9d963d86b8a6b8d91fb8fb11be498022246f7fd60"
+  },
+  "validation": "Read-only code inspection; no fault-injection or provider evaluation executed for this plan"
+}

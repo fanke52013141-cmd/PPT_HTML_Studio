@@ -39,3 +39,5 @@ iframe 使用原 shared player/data bundle，preview/apply/seek 不另写渲染�
 无效字段、悬空绑定、越界锚点、重复通道和容量问题明确报告，不能偷偷缩字。
 
 定义完成；实现、工程测试、共同接入与真实服务/视觉签收分开见 scene-editor-handoff.md。
+
+2026-10-10增量：受限实例覆盖与局部修复见[scene-repair-0.1.0](scene-repair-0.1.0.md)，新字段仅scene0.5；旧字段不变。

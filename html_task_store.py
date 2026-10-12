@@ -211,7 +211,7 @@ def mark_succeeded(
         ("running",),
         {
             "status": "succeeded",
-            "stage": "succeeded",
+            "stage": result.get("stage", "succeeded"),
             "error": None,
             "result_artifact_id": None,
             "payload_json": json_dumps(payload),

@@ -30,6 +30,8 @@ import html_visual_store as html_scene_store
 from agent_contract.models import (
     HtmlApprovalResult,
     HtmlTaskResult,
+    HtmlProduceRequest,
+    HtmlDesignCandidateResult,
     HtmlPlanGenerationResult,
     HtmlReviewReportResult,
     HtmlSceneBodyRequest,
@@ -1718,10 +1720,17 @@ def agent_digital_human_generate_full(
 
 
 @router.post("/projects/{project_id}/html-review/{slide_id}/produce", response_model=HtmlTaskResult)
-def agent_html_produce(project_id: str, slide_id: str, db: Session = Depends(get_db)):
+def agent_html_produce(project_id: str, slide_id: str, db: Session = Depends(get_db), payload: HtmlProduceRequest | None = None):
     from html_visual_review_routes import produce
     _html_project_or_404(project_id, db)
-    return HtmlTaskResult(project_id=project_id, task=produce(project_id, slide_id, db)["task"])
+    return HtmlTaskResult(project_id=project_id, task=produce(project_id, slide_id, db, payload)["task"])
+
+
+@router.get("/projects/{project_id}/html-review/{slide_id}/design/current", response_model=HtmlDesignCandidateResult)
+def agent_html_design_current(project_id: str, slide_id: str, db: Session = Depends(get_db)):
+    from html_visual_review_routes import design_current
+    _html_project_or_404(project_id, db)
+    return HtmlDesignCandidateResult(project_id=project_id, design=design_current(project_id, slide_id, db)["design"])
 
 
 @router.get("/projects/{project_id}/html-review/tasks/{job_id}", response_model=HtmlTaskResult)
@@ -1736,3 +1745,29 @@ def agent_html_task_cancel(project_id: str, job_id: str, db: Session = Depends(g
     from html_visual_review_routes import task_cancel
     _html_project_or_404(project_id, db)
     return HtmlTaskResult(project_id=project_id, task=task_cancel(project_id, job_id, db)["task"])
+
+from html_repair_models import RepairRequest, RepairSaveRequest, TemporalRequest, RepairGenerateRequest, RepairResult
+
+
+@router.post("/projects/{project_id}/html-visual/{slide_id}/repair/preview", response_model=RepairResult)
+def agent_html_repair_preview(project_id: str, slide_id: str, payload: RepairRequest, db: Session = Depends(get_db)):
+    from html_visual_routes import html_repair_preview
+    return _html_editor_web_call(html_repair_preview, project_id, slide_id, payload, db)
+
+
+@router.post("/projects/{project_id}/html-visual/{slide_id}/repair/save", response_model=RepairResult)
+def agent_html_repair_save(project_id: str, slide_id: str, payload: RepairSaveRequest, db: Session = Depends(get_db)):
+    from html_visual_routes import html_repair_save
+    return _html_editor_web_call(html_repair_save, project_id, slide_id, payload, db)
+
+
+@router.post("/projects/{project_id}/html-visual/{slide_id}/repair/evidence", response_model=RepairResult)
+def agent_html_repair_evidence(project_id: str, slide_id: str, payload: TemporalRequest, db: Session = Depends(get_db)):
+    from html_visual_routes import html_repair_evidence
+    return _html_editor_web_call(html_repair_evidence, project_id, slide_id, payload, db)
+
+
+@router.post("/projects/{project_id}/html-visual/{slide_id}/repair/generate", response_model=RepairResult)
+def agent_html_repair_generate(project_id: str, slide_id: str, payload: RepairGenerateRequest, db: Session = Depends(get_db)):
+    from html_visual_routes import html_repair_generate
+    return _html_editor_web_call(html_repair_generate, project_id, slide_id, payload, db)

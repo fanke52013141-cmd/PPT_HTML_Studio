@@ -4,7 +4,7 @@ const { EngineError, diagnostic } = require("../src/registry.cjs");
 const { imagePlacement } = require("../src/timeline.cjs");
 const icons = require("./icons.cjs");
 
-const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0"];
+const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"];
 const SCENE_VERSION = "0.3.0";
 const DEFINITION_VERSION = "0.2.0";
 const EXTENDED_TEXT_ROLES = [
@@ -76,7 +76,8 @@ function normalizeTheme(theme) {
     },
   };
   for (const tone of ["pink", "blue", "green", "purple", "yellow"])
-    if (theme.gradients?.[tone]) resolved.gradients[tone] = theme.gradients[tone];
+    if (theme.gradients?.[tone])
+      resolved.gradients[tone] = theme.gradients[tone];
   return { ...theme, ...resolved };
 }
 // Explicit adapter: 0.1.0 scene documents are upgraded to the 0.2.0 shape.
@@ -84,7 +85,11 @@ function normalizeTheme(theme) {
 // versions move to the registered 0.2.0 catalog. The adaptation is recorded
 // on the compiled snapshot.
 function adaptScene(scene) {
-  if (scene.version === SCENE_VERSION || scene.version === "0.4.0") return { scene, adaptedFrom: null };
+  if (
+    scene.version === SCENE_VERSION ||
+    ["0.4.0", "0.5.0"].includes(scene.version)
+  )
+    return { scene, adaptedFrom: null };
   if (scene.version !== "0.1.0" && scene.version !== "0.2.0")
     fail("UNSUPPORTED_VERSION", "/version", scene.version);
   return {
@@ -99,7 +104,11 @@ function adaptScene(scene) {
 }
 function validateTemplate(scene, layout, catalog) {
   if (!scene.templateRef) return null;
-  const template = resolve(catalog.templates, scene.templateRef, "/templateRef");
+  const template = resolve(
+    catalog.templates,
+    scene.templateRef,
+    "/templateRef",
+  );
   validate("template", template);
   if (
     template.layoutRef.id !== layout.id ||
@@ -127,10 +136,12 @@ function checkIcon(name, path) {
   if (!icons.isRegistered(name)) fail("UNKNOWN_ICON", path, name);
 }
 function compile(input, catalog) {
-  const { scene, adaptedFrom } = adaptScene(
-    JSON.parse(JSON.stringify(input)),
-  );
-  if (scene.version !== "0.4.0" && Array.isArray(scene.nodes) && scene.nodes.some((node) => node?.type === "shape"))
+  const { scene, adaptedFrom } = adaptScene(JSON.parse(JSON.stringify(input)));
+  if (
+    !["0.4.0", "0.5.0"].includes(scene.version) &&
+    Array.isArray(scene.nodes) &&
+    scene.nodes.some((node) => node?.type === "shape")
+  )
     fail("UNSUPPORTED_NODE_VERSION", "/nodes", "shape requires scene 0.4.0");
   validate("scene", scene);
   const theme = normalizeTheme(
@@ -141,6 +152,37 @@ function compile(input, catalog) {
   );
   validate("theme", theme);
   validate("layout", layout);
+  const publicTextParts = {
+    text: ["text"],
+    label: ["text"],
+    badge: ["text"],
+    header: ["title"],
+    card: ["title", "body"],
+    figure: ["tag", "note"],
+    summary: ["heading", "from", "to", "term", "takeaway"],
+  };
+  for (const node of scene.nodes) {
+    const p = node.presentation;
+    if (!p) continue;
+    const slot = layout.slots[node.slot];
+    if (!slot) fail("UNRESOLVED_SLOT", "/nodes", node.slot);
+    for (const part of Object.keys(p.typography || {})) {
+      if (
+        !(publicTextParts[node.type] || []).includes(part) ||
+        (["tag", "note", "heading"].includes(part) && !node[part])
+      )
+        fail("UNSUPPORTED_TEXT_PART", node.id, part);
+    }
+    slot.box = {
+      ...slot.box,
+      x: slot.box.x + (p.offsetX || 0),
+      y: slot.box.y + (p.offsetY || 0),
+      width: p.width ?? slot.box.width,
+      height: p.height ?? slot.box.height,
+    };
+    if (slot.box.x < 0 || slot.box.y < 0)
+      fail("CONTENT_SAFE_ZONE", node.id, "negative base coordinate");
+  }
   if (!theme.compatibleLayouts.includes(layout.id))
     fail("INCOMPATIBLE_THEME_LAYOUT", "/layoutRef", layout.id);
   for (const node of scene.nodes) {

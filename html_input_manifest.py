@@ -94,6 +94,19 @@ def resolved_scene_inputs(
             run / "planning/html_visual" / f"binding-{scene['id']}.json"
         ),
     }
+    provenance_path = run / "planning/html_visual" / f"production-provenance-{scene['id']}.json"
+    if provenance_path.is_file():
+        # Legacy scenes without E provenance retain their old fingerprint shape.
+        files["production_provenance"] = _hash(provenance_path)
+        provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+        if provenance.get("format") != "hps.html.production_provenance" or provenance.get("version") != "0.1.0":
+            raise ValueError("Invalid HTML production provenance")
+        for entry in provenance.get("files", []):
+            path = (run / entry["path"]).resolve()
+            if not path.is_relative_to(run.resolve()):
+                raise ValueError("HTML production reference escapes project")
+            actual = _hash(path)
+            files[f"production_reference/{entry['path']}"] = actual if actual == entry["sha256"] else None
     payload["digest"] = hashlib.sha256(
         json.dumps(
             payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")

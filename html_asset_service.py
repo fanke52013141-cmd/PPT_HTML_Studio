@@ -164,6 +164,8 @@ def produce_asset(
         "reference_sha256": request.get("reference_sha256", []),
         "model_config_hash": request.get("model_config_hash"),
     }
+    if request.get("generation_parameters") is not None:
+        normalized_request["generation_parameters"] = request["generation_parameters"]
     key = _request_key(normalized_request)
     for entry in manifest.get("assets", []):
         if entry.get("id") == asset_id and entry.get("request_key") == key:

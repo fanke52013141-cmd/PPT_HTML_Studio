@@ -23,7 +23,8 @@ function seek(ms) {
 }
 function tick(now) {
   if (!playing) return;
-  const ms = Math.min(current.scene.durationMs, now - epoch);
+  // RAF's frame timestamp can precede play() within the same browser frame.
+  const ms = Math.max(0, Math.min(current.scene.durationMs, now - epoch));
   seek(ms);
   if (ms === current.scene.durationMs) pause();
   else frame = requestAnimationFrame(tick);
@@ -37,7 +38,7 @@ function play() {
   $("play").textContent = "暂停";
   frame = requestAnimationFrame(tick);
 }
-async function apply(source, projectResources = null) {
+async function apply(source, projectResources = null, diagnostic = false) {
   const request = ++generation;
   const staging = document.createElement("div");
   Object.assign(staging.style, {
@@ -55,7 +56,8 @@ async function apply(source, projectResources = null) {
       { ...catalog, assets: [...catalog.assets.filter(a =>
           !projectResources.assets.some(p => p.id === a.id)), ...projectResources.assets] } : catalog;
     candidate = await prepare(compile(source, activeCatalog),
-      projectResources ? { ...pack, ...projectResources.pack } : pack, staging);
+      projectResources ? { ...pack, ...projectResources.pack } : pack, staging,
+      { diagnostic });
     candidate.setSubtitleFont(Number($("font").value));
     if (request !== generation) {
       candidate.release();
@@ -74,7 +76,7 @@ async function apply(source, projectResources = null) {
     current = candidate;
     $("seek").max = source.durationMs;
     seek(0);
-    status("就绪 · 定义、字体、资产与容量检查通过");
+    status(diagnostic ? "候选诊断 · 不可作为通过或批准" : "就绪 · 定义、字体、资产与容量检查通过");
     return true;
   } catch (e) {
     candidate?.release();
@@ -145,6 +147,7 @@ if (scenes.some((s) => s.id === selected)) $("scene").value = selected;
 $("theme").value = scenes.find((s) => s.id === $("scene").value).themeRef.id;
 window.visualPlayer = {
   apply,
+  diagnose: (source, resources) => apply(source, resources, true),
   play,
   pause,
   seek,

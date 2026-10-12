@@ -35,6 +35,34 @@ from html_design_brief import (
 from html_asset_service import HtmlAssetDependencies, produce_asset
 
 
+def supplied_asset_ids(plan, contract, run_dir, repo_root):
+    """Only explicitly supplied, matching, validated resources bypass generation."""
+    offered = {}
+    for group in contract.get("visual_groups", []):
+        for item in group.get("available_assets", []):
+            ref = item.get("assetRef", {})
+            if not ref.get("id") or not ref.get("version"):
+                raise HtmlReviewError("提供的素材缺少身份或版本", code="SUPPLIED_ASSET_INVALID")
+            offered[ref["id"]] = ref["version"]
+    used = [need for need in plan["assets"] if need["render_owner"] == "image_asset" and need["id"] in offered]
+    if not used:
+        return set()
+    from html_scene_editing import resources as validated_resources
+
+    project = validated_resources(run_dir)
+    catalog = json.loads((repo_root / "html_engine/visual/generated/catalog.json").read_text(encoding="utf-8"))
+    available = {a["id"]: a for a in catalog["assets"] + project["assets"]}
+    reused = set()
+    for need in used:
+        asset = available.get(need["id"])
+        content = plan["slots"].get(need.get("slot"), {})
+        expected = {"id": need["id"], "version": offered[need["id"]]}
+        if not asset or asset["version"] != expected["version"] or content.get("assetRef") != expected:
+            raise HtmlReviewError("提供素材的身份、版本或图片引用不一致", code="SUPPLIED_ASSET_INVALID")
+        reused.add(need["id"])
+    return reused
+
+
 def compile_plan(plan: dict, contract: dict, catalog: dict) -> tuple[dict, dict]:
     """Content fills registered slots; IDs and time are resolved by code."""
     if plan["templateRef"]["id"] not in catalog["templates"]:
@@ -138,7 +166,7 @@ def compile_plan(plan: dict, contract: dict, catalog: dict) -> tuple[dict, dict]
         "version": "0.3.0",
         "id": slide_id,
         "name": name,
-        "themeRef": {"id": "soft-science", "version": "0.2.0"},
+        "themeRef": {"id": "neutral-baseline", "version": "0.2.0"},
         "layoutRef": plan["layoutRef"],
         "templateRef": plan["templateRef"],
         "durationMs": duration,
@@ -163,6 +191,7 @@ def produce_scene(
     provider: Callable | None = None,
     checkpoint: Callable = lambda: None,
     model_summary: dict | None = None,
+    options: dict | None = None,
 ) -> dict:
     from html_storyboard_planning import load_template_catalog
 
@@ -173,18 +202,33 @@ def produce_scene(
         revision = _read_revision(run_dir)["revision"]
     checkpoint()
     model_summary = copy.deepcopy(model_summary or {})
-    plan = generate_scene_plan(
+    from html_production_models import HtmlProduceRequest
+    from html_design_candidates import definition_identity, load_design, save_design
+    from html_reference_package import assemble_reference, design_prompt, verify_package, PROMPT_VERSION
+    from runtime_support import run_subprocess_killable
+
+    selection = HtmlProduceRequest.model_validate(options or {})
+    definitions = definition_identity(deps.repo_root)
+    resumed = None
+    if selection.design_candidate_key:
+        resumed, package, accepted_image = load_design(
+            run_dir=run_dir, contract=contract, key=selection.design_candidate_key,
+            revision=revision, definitions=definitions, model_summary=model_summary,
+        )
+    plan = copy.deepcopy(resumed["plan"]) if resumed else generate_scene_plan(
         contract,
         run_dir=run_dir,
         repo_root=deps.repo_root,
         json_generator=deps.json_generator,
     )
-    brief = build_design_brief(
+    brief = copy.deepcopy(resumed["brief"]) if resumed else build_design_brief(
         plan,
-        theme="soft-science",
+        theme="neutral-baseline",
         asset_budget=1,
         effect_registry=load_effect_registry(deps.repo_root),
     )
+    reused_assets = supplied_asset_ids(plan, contract, run_dir, deps.repo_root) if not selection.asset_instruction else set()
+    new_asset_needs = [need for need in brief["asset_needs"] if need["id"] not in reused_assets]
     checkpoint()
     # Registered templates provide a reusable visual target; this is not a
     # fabricated image-model design. New generated assets are independently gated.
@@ -194,24 +238,16 @@ def produce_scene(
         "keyframes": required_keyframes(plan),
     }
     references = []
-    if brief["asset_needs"] and provider is not None:
-        from runtime_support import run_subprocess_killable
-
-        atlas_result = run_subprocess_killable(
-            ["node", str(deps.repo_root / "html_engine/visual/tools/effect-cache.cjs")],
-            cwd=str(deps.repo_root / "html_engine"),
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout_sec=120,
-        )
-        if atlas_result.returncode:
-            raise HtmlReviewError("效果参考图构建失败")
-        atlas = json.loads(atlas_result.stdout)
-        references = [
-            str(deps.repo_root / "html_engine/visual/effects/cache" / atlas["file"])
-        ]
+    if resumed:
+        candidate = copy.deepcopy(resumed["candidate"])
+        references = package["references"] + [str(accepted_image)]
+    elif new_asset_needs and provider is not None:
+        package_path = run_dir / "planning/html_visual/reference-packages" / sha256_json(
+            {"plan": plan, "brief": brief, "definitions": definitions})
+        package = assemble_reference(plan, brief, repo_root=deps.repo_root,
+                                     directory=package_path, runner=run_subprocess_killable)
+        package["directory"] = str(package_path.relative_to(run_dir))
+        references = package["references"]
         design_path = (
             run_dir
             / "planning/html_visual/candidates"
@@ -219,40 +255,29 @@ def produce_scene(
             / "design-reference.png"
         )
         design_path.parent.mkdir(parents=True, exist_ok=True)
-        design_input = {
-            "templateRef": plan["templateRef"],
-            "layoutRef": plan["layoutRef"],
-            "slots": plan["slots"],
-            "asset_needs": brief["asset_needs"],
-            "effects": [
-                {"id": e["id"], "backend": e["backend"]} for e in brief["effects"]
-            ],
-        }
-        design_prompt = (
-            "PromptVersion: html-design-reference/0.1.0。科普画面设计参考。遵守附件效果库，文字/关系线/图标/卡片只能使用"
-            "附件标注的 CSS/SVG/Canvas 效果；独立主体插画为图片资产。"
-            "16:9，底部1/9留白给字幕。不要额外栏目、品牌和来源页脚。"
-            "最终结构由下面的注册槽位计划确定："
-            + json.dumps(design_input, ensure_ascii=False)
-        )
+        prompt = design_prompt(package, instruction=selection.design_instruction)
         request = {
-            "prompt": design_prompt,
+            "prompt": prompt,
             "reference_paths": references,
             "brief_sha256": brief["sha256"],
             "model_config_hash": model_summary.get("image", {}).get("config_hash"),
+            "reference_package_key": package["manifest"]["cacheKey"],
+            "image_policy": {"quality": "low", "resolution_hint": "2K", "transparent_background": False},
         }
         request["reference_sha256"] = [
             hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in references
         ]
         key = sha256_json(request)
+        design_path = design_path.with_name("design-" + key + ".png")
         key_path = design_path.with_suffix(".request.json")
         if (
             not design_path.is_file()
             or not key_path.is_file()
             or json.loads(key_path.read_text(encoding="utf-8")).get("key") != key
+            or json.loads(key_path.read_text(encoding="utf-8")).get("response_sha256") != hashlib.sha256(design_path.read_bytes()).hexdigest()
         ):
             image = provider(
-                design_prompt,
+                prompt,
                 size="1536x1024",
                 reference_paths=references,
                 transparent_background=False,
@@ -265,18 +290,35 @@ def produce_scene(
                 key_path,
                 {
                     "key": key,
+                    "prompt_version": PROMPT_VERSION,
+                    "reference_package_key": package["manifest"]["cacheKey"],
+                    "response_sha256": hashlib.sha256(image).hexdigest(),
+                    "transparent_background": False,
+                    "provider_boundary_called": True,
                     "reference_sha256": [
                         hashlib.sha256(Path(p).read_bytes()).hexdigest()
                         for p in references
                     ],
                 },
             )
-        references.append(str(design_path))
         candidate = {
             **candidate,
             "name": "generated-reference",
+            "request_key": key,
             "sha256": hashlib.sha256(design_path.read_bytes()).hexdigest(),
         }
+        checkpoint()
+        refreshed = verify_package(package_path)
+        if refreshed["manifest"]["manifestSha256"] != package["manifest"]["manifestSha256"]:
+            raise HtmlReviewError("请求期间参考包已变化", code="REFERENCE_PACKAGE_INVALID")
+        if definition_identity(deps.repo_root) != definitions:
+            raise HtmlReviewError("生成期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
+        return save_design(run_dir=run_dir, contract=contract, revision=revision,
+                           definitions=definitions, model_summary=model_summary,
+                           plan=plan, brief=brief, candidate=candidate,
+                           package=package, design_path=design_path)
+    elif selection.design_instruction:
+        raise HtmlReviewError("纯代码页面无需图片设计修改", code="DESIGN_NOT_REQUIRED")
     freeze = freeze_design(
         brief,
         candidate,
@@ -288,7 +330,11 @@ def produce_scene(
         if resources_path.is_file()
         else {"assets": []}
     )
-    for need in brief["asset_needs"]:
+    if selection.asset_instruction:
+        from html_scene_editing import edit_path
+        if edit_path(run_dir, slide_id).exists():
+            raise HtmlReviewError("此页有人工作品覆盖，请先检查对象编辑；素材返工不会自动替换人工资源", code="MANUAL_EDIT_CONFLICT", status_code=409)
+    for need in new_asset_needs:
         if provider is None:
             raise HtmlReviewError(
                 "独立资产需要配置图片服务", code="IMAGE_PROVIDER_MISSING"
@@ -298,13 +344,14 @@ def produce_scene(
                 "id": need["id"],
                 "role": need["role"],
                 "need": need["need"],
-                "prompt": need["need"] + "。独立主体，透明底，无文字标签，完整边界。",
+                "prompt": need["need"] + "。只用黑灰白，匹配设计参考的材质和光照。独立主体，透明底，无文字标签，完整边界。" + ("本轮主体修改方向：" + selection.asset_instruction if selection.asset_instruction else ""),
                 "transparent_background": True,
                 "size": "1024x1024",
                 "reference_sha256": [
                     hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in references
                 ],
                 "model_config_hash": model_summary.get("image", {}).get("config_hash"),
+                "generation_parameters": {"quality": "low", "resolution_hint": "2K"},
             },
             HtmlAssetDependencies(
                 lambda prompt, **kw: provider(
@@ -320,6 +367,7 @@ def produce_scene(
             "project-"
             + hashlib.sha256(f"{slide_id}:{entry['id']}".encode()).hexdigest()[:32]
         )
+        entry.pop("cache", None)  # Transport cache telemetry is not author input.
         original_id = need["id"]
         for asset in plan["assets"]:
             if asset["id"] == original_id:
@@ -364,6 +412,11 @@ def produce_scene(
         current_revision = _read_revision(run_dir)["revision"]
         if current_revision != revision:
             raise HtmlVisualConflict(revision, current_revision)
+        if definition_identity(deps.repo_root) != definitions:
+            raise HtmlReviewError("生成期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
+        if resumed:
+            load_design(run_dir=run_dir, contract=contract, key=selection.design_candidate_key,
+                        revision=revision, definitions=definitions, model_summary=model_summary)
         # Reapply only explicit manual deltas to stable IDs, before reviewing.
         # Missing/changed targets keep the candidate and fail without touching
         # the current scene, private resources, binding, or approval.
@@ -390,6 +443,8 @@ def produce_scene(
             revision_path(run_dir),
             directory / f"binding-{slide_id}.json",
             directory / f"plan-{slide_id}.json",
+            directory / f"production-provenance-{slide_id}.json",
+            candidate_dir / "design-acceptance.json",
         ]
         previous = {p: p.read_bytes() if p.is_file() else None for p in rollback_paths}
         committed = False
@@ -397,6 +452,14 @@ def produce_scene(
             if resources.get("assets"):
                 write_json_atomic(resources_path, resources)
             report = review_scene(scene, run_dir=run_dir, deps=deps)
+            layout_agent = None
+            if not report.get("passed") and "CONTENT_CAPACITY_EXCEEDED" in str(report.get("message", "")):
+                from html_candidate_agent import repair_candidate
+
+                repaired = repair_candidate(scene, binding, run_dir=run_dir, deps=deps,
+                                            manual=manual, checkpoint=checkpoint)
+                scene, binding, report = repaired["scene"], repaired["binding"], repaired["report"]
+                layout_agent = repaired["summary"]
             if not report.get("passed"):
                 raise HtmlReviewError(
                     "候选场景静态审阅未通过："
@@ -442,12 +505,42 @@ def produce_scene(
             current_revision = _read_revision(run_dir)["revision"]
             if current_revision != revision:
                 raise HtmlVisualConflict(revision, current_revision)
+            if definition_identity(deps.repo_root) != definitions:
+                raise HtmlReviewError("修复期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
             result = save_scene(
                 run_dir, slide_id, scene, revision, lock=project_artifact_lock,
                 allow_manual_replace=bool(manual),
             )
             write_json_atomic(directory / f"binding-{slide_id}.json", binding)
             write_json_atomic(directory / f"plan-{slide_id}.json", plan)
+            provenance = {"format": "hps.html.production_provenance", "version": "0.1.0",
+                          "model_summary": model_summary, "themeRef": scene["themeRef"],
+                          "design_candidate_key": selection.design_candidate_key,
+                          "files": [], "supplied_asset_ids": sorted(reused_assets),
+                          "layout_agent": layout_agent}
+            if resumed:
+                pack_root = run_dir / resumed["reference_package"]
+                paths = [pack_root / "manifest.json", accepted_image]
+                paths += [pack_root / f["path"] for f in package["manifest"]["files"]]
+                provenance["reference_package_key"] = package["manifest"]["cacheKey"]
+                provenance["files"] = [{"path": str(p.relative_to(run_dir)), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths]
+            write_json_atomic(directory / f"production-provenance-{slide_id}.json", provenance)
+            material_paths = [resources_path, directory / f"binding-{slide_id}.json",
+                              directory / f"plan-{slide_id}.json",
+                              directory / f"production-provenance-{slide_id}.json"]
+            if not result["changed"] and any(
+                (p.read_bytes() if p.exists() else None) != previous[p] for p in material_paths
+            ):
+                result = {**result, "revision": revision + 1, "changed": True}
+                write_json_atomic(revision_path(run_dir), {"revision": revision + 1, "last_sha256": result["sha256"]})
+            if resumed:
+                write_json_atomic(candidate_dir / "design-acceptance.json", {
+                    "format": "hps.html.design_acceptance", "version": "0.1.0",
+                    "design_candidate_key": selection.design_candidate_key,
+                    "scope": "design reference only; actual HTML visual approval remains required",
+                    "saved_revision": result["revision"], "scene_sha256": result["sha256"],
+                    "provenance_sha256": hashlib.sha256((directory / f"production-provenance-{slide_id}.json").read_bytes()).hexdigest(),
+                })
             committed = True
         finally:
             if not committed:
@@ -457,9 +550,11 @@ def produce_scene(
                     else:
                         _atomic_write_bytes(path, payload)
     return {
+        "design_candidate_key": selection.design_candidate_key,
         "scene": scene,
         "plan": plan,
         "review": report,
+        "layout_agent": layout_agent,
         "saved": result,
         "message": "已生成实际场景；请查看截图后批准。",
     }

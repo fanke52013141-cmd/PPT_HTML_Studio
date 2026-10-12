@@ -61,12 +61,19 @@ def _configured_image(
             provider=provider,
             reference_paths=references,
             transparent_background=transparent_background,
+            public_config={"toapis_resolution": "2k", "toapis_quality": "low"},
         )
         return extract_image_bytes_from_response(response)
     client = get_openai_client(api_key=key, base_url=base, timeout=120)
     try:
         with ExitStack() as stack:
             params = {"model": model, "prompt": prompt, "size": size, "n": 1}
+            if "gpt-image" in model.lower():
+                params["quality"] = "low"
+            if "gpt-image-2.5" in model.lower():
+                # This OpenAI-compatible model uses provider metadata for 2K;
+                # measured response dimensions, not this hint, are evidence.
+                params["extra_body"] = {"metadata": {"resolution": "2K"}}
             if transparent_background:
                 params["background"] = "transparent"
             if references:

@@ -4,6 +4,22 @@
   window.__htmlReviewPanelReady = true;
   let generation = 0;
   let activeTask = null;
+  let designCandidate = null;
+  let acceptedDesignKey = null;
+  function showAssetRetry(section, key) {
+    acceptedDesignKey = key;
+    section.querySelector('[data-html-asset-retry]').hidden = !key;
+  }
+  function showDesign(section, design, base) {
+    designCandidate = design;
+    const box = section.querySelector('[data-html-design]');
+    box.hidden = !design;
+    if (!design) return;
+    const image = box.querySelector('img');
+    image.src = design.image_url || `${base}/design/${encodeURIComponent(design.key)}/image`;
+    box.querySelector('[data-action="accept-design"]').disabled = Boolean(design.stale);
+    box.querySelector('[data-design-state]').textContent = design.stale ? '内容或修订已变化，请重新生成设计。' : '这是设计参考。确认后生成独立素材和实际 HTML；最终页面仍需审阅。';
+  }
   function context() {
     const state = window.PPTStudio?.runtime?.state;
     const project = state?.currentProject;
@@ -22,6 +38,7 @@
     if (host.dataset.htmlMode !== mode) host.dataset.htmlMode = mode;
     let section = host.querySelector('#html-review-panel-section');
     if (project?.visual_backend !== 'html') {
+      if (section && !section.hidden) {generation++; activeTask=null; designCandidate=null; acceptedDesignKey=null;}
       if (section) section.hidden = true;
       window.HtmlSceneEditor?.close();
       window.HtmlAssetSheets?.close();
@@ -33,7 +50,7 @@
       section.className = "card soft-outline";
       section.innerHTML = `<style>#step-panel-3[data-html-mode="true"] .step3-toolbar-row,#step-panel-3[data-html-mode="true"] #step3-images-grid{display:none!important}</style><h3>HTML 场景生产与审阅</h3>
         <label>分镜页面 <select data-html-slide></select></label>
-        <button class="success" type="button" data-action="produce">生成场景</button>
+        <button class="success" type="button" data-action="produce">生成设计与场景</button>
         <button type="button" data-action="review">静态审阅</button>
         <button class="success" type="button" data-action="approve">批准本页</button>
         <button type="button" data-action="edit">编辑对象与动作</button>
@@ -41,6 +58,17 @@
         <button type="button" data-action="sheets">批量生成配图</button>
         <button type="button" data-action="cancel" hidden>停止生产任务</button>
         <div data-html-status role="status"></div>
+        <div data-html-design hidden>
+          <p data-design-state></p>
+          <img alt="待确认的黑灰白页面设计参考" style="max-width:100%">
+          <label>设计修改方向 <textarea data-design-instruction maxlength="2000" placeholder="例如：加强标题层级，减少卡片边框"></textarea></label>
+          <button type="button" data-action="revise-design">修改设计参考</button>
+          <button class="success" type="button" data-action="accept-design">确认设计并生成实际页面</button>
+        </div>
+        <div data-html-asset-retry hidden>
+          <label>主体素材修改方向 <textarea data-asset-instruction maxlength="2000" placeholder="例如：简化细节，增强主体轮廓"></textarea></label>
+          <button type="button" data-action="retry-asset">仅返工主体素材</button>
+        </div>
         <img data-html-preview alt="当前场景的实际渲染" hidden style="max-width:100%">
         <div data-html-editor></div>
         <div data-html-models hidden></div>`;
@@ -90,7 +118,21 @@
         section.querySelectorAll('button:not([data-action="cancel"])').forEach(b=>b.disabled=true);
         status(section, '处理中…');
         try {
-          let result = await API.post(`${base}/${button.dataset.action}`, {});
+          let action = button.dataset.action;
+          let payload = {};
+          if (action === 'accept-design') {
+            if (!designCandidate || designCandidate.stale) throw new Error('请先生成并审阅当前设计。');
+            payload = {design_candidate_key: designCandidate.key}; action = 'produce';
+          } else if (action === 'revise-design') {
+            const instruction = section.querySelector('[data-design-instruction]').value.trim();
+            if (!instruction) throw new Error('请填写本轮设计修改方向。');
+            payload = {design_instruction: instruction}; action = 'produce';
+          } else if (action === 'retry-asset') {
+            const instruction = section.querySelector('[data-asset-instruction]').value.trim();
+            if (!acceptedDesignKey || !instruction) throw new Error('请填写主体素材修改方向，并确认当前设计仍有效。');
+            payload = {design_candidate_key: acceptedDesignKey, asset_instruction: instruction}; action = 'produce';
+          }
+          let result = await API.post(`${base}/${action}`, payload);
           if (result.task) {
             let task = result.task;
             activeTask = {id:task.id,project:current.project.id,slide:current.slideId};
@@ -105,7 +147,13 @@
             if (result.review?.screenshot) result.review.screenshot_url = `${base}/screenshot`;
           }
           if (token !== generation || context().project?.id !== current.project.id || context().slideId !== current.slideId) return;
-          if (result.review) {
+          if (result.stage === 'design_review' && result.design) {
+            showAssetRetry(section, null);
+            showDesign(section, result.design, base);
+            status(section, result.message);
+          } else if (result.review) {
+            showDesign(section, null, base);
+            if (result.design_candidate_key) showAssetRetry(section, result.design_candidate_key);
             status(section, result.review.passed ? '静态检查通过，请查看画面后决定是否批准。' : `检查未通过：${result.review.message || result.review.code}`);
             if (result.review.screenshot_url) {
               const image = section.querySelector('[data-html-preview]');
@@ -117,7 +165,13 @@
           }
           else status(section, result.message || '场景已生成，可以静态审阅。');
         } catch(error) { if (token === generation) status(section, `操作失败：${error.message}`); }
-        finally { activeTask=null; section.querySelector('[data-action="cancel"]').hidden=true; section.querySelectorAll('button').forEach(b=>b.disabled=false); }
+        finally {
+          if (token === generation) {
+            activeTask=null; section.querySelector('[data-action="cancel"]').hidden=true;
+            section.querySelectorAll('button').forEach(b=>b.disabled=false);
+            if (designCandidate?.stale) section.querySelector('[data-action="accept-design"]').disabled=true;
+          }
+        }
       });
     }
     section.hidden = false;
@@ -146,10 +200,29 @@
         section.dataset.project = project.id;
       }
       generation++;
+      designCandidate = null;
+      showAssetRetry(section, null);
+      showDesign(section, null, '');
+      section.querySelector('[data-design-instruction]').value = '';
+      section.querySelector('[data-asset-instruction]').value = '';
+      section.querySelectorAll('button').forEach(b=>b.disabled=false);
       section.dataset.context = key;
       section.querySelector('[data-action="cancel"]').hidden=true;
-      status(section, slideId ? '先生成场景，查看实际画面，再批准。' : '请先选择分镜页面。');
+      status(section, slideId ? '先生成设计参考，确认后生成实际页面，再审阅批准。' : '请先选择分镜页面。');
       section.querySelector('[data-html-preview]').hidden = true;
+      if (slideId) {
+        const token = generation;
+        const base = `/api/projects/${encodeURIComponent(project.id)}/html-review/${encodeURIComponent(slideId)}`;
+        API.get(`${base}/design/current`).then(result => {
+          if (token !== generation || section.hidden) return;
+          if (result.design?.status === 'needs_review') {
+            showDesign(section, result.design, base);
+            status(section, result.design.stale ? '旧设计已过期，请重新生成。' : '已恢复待确认的设计参考。');
+          } else if (result.design?.status === 'accepted_for_reconstruction' && !result.design.stale) {
+            showAssetRetry(section, result.design.key);
+          }
+        }).catch(error => {if (token === generation) status(section, `设计恢复失败：${error.message}`);});
+      }
     }
   }
   document.addEventListener('DOMContentLoaded', refresh);

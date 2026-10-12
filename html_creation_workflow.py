@@ -356,6 +356,22 @@ def project_status(
 
         tasks = recent_task_summaries(db, project.id)
 
+    from html_design_candidates import current_design
+    design_candidates = {}
+    try:
+        candidate_contract = _read_json(run / "planning/visual_contract.json")
+    except (ValueError, OSError):
+        candidate_contract = {}
+    for slide_id in slides:
+        try:
+            contract_slide = next((s for s in (candidate_contract or {}).get("slides", []) if s.get("slide_id") == slide_id), None)
+            if contract_slide:
+                design_candidates[slide_id] = current_design(run_dir=run, contract=contract_slide, repo_root=repo)["design"]
+        except (ValueError, OSError, KeyError):
+            design_candidates[slide_id] = {"status": "invalid"}
+    if any(d and d.get("status") == "needs_review" for d in design_candidates.values()):
+        design_state = "needs_review"
+
     workflow = {
         "format": WORKFLOW_FORMAT,
         "version": WORKFLOW_VERSION,
@@ -384,6 +400,7 @@ def project_status(
                 review_status=visual_review_status,
                 source="saved scene + current approval fingerprint",
                 issues=design_issues,
+                design_candidates=design_candidates,
                 slides={
                     slide_id: item
                     for slide_id, item in _visual_slide_facts(run, repo, slides).items()

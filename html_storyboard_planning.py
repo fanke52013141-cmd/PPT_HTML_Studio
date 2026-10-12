@@ -96,26 +96,11 @@ def _registered_icons(repo_root: str | Path) -> List[str]:
     )
     if not icons_path.is_file():
         raise HtmlScenePlanError("ICON_REGISTRY_MISSING", "共享图标注册表不存在")
-    ids: List[str] = []
-    in_paths = False
-    for line in icons_path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped.startswith("const paths = {"):
-            in_paths = True
-            continue
-        if in_paths:
-            if stripped.startswith("};"):
-                break
-            if stripped.startswith("//") or not stripped:
-                continue
-            name = stripped.split(":", 1)[0].strip()
-            if name.startswith("[") or name.startswith('"'):
-                try:
-                    name = json.loads(name)
-                except Exception:
-                    pass
-            if isinstance(name, str) and name:
-                ids.append(name)
+    import re
+    source = icons_path.read_text(encoding="utf-8")
+    block = source.split("const paths = {", 1)[-1].split("};", 1)[0]
+    # Match registry property names, never multiline SVG path values.
+    ids = re.findall(r"^\s*([a-z][a-z0-9.-]{0,63}):\s*\[", block, re.MULTILINE)
     if not ids:
         raise HtmlScenePlanError("ICON_REGISTRY_CORRUPT", "共享图标注册表为空")
     return sorted(ids)

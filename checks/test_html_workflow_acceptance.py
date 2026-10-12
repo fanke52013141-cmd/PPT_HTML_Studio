@@ -100,7 +100,7 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
             )
             # Provider boundary is stubbed; PNG/resource loading and rendering are real.
             image = Image.new("RGBA", (128, 128))
-            ImageDraw.Draw(image).ellipse((16, 16, 112, 112), fill="#aaccee")
+            ImageDraw.Draw(image).ellipse((16, 16, 112, 112), fill="#aaaaaa")
             buffer = io.BytesIO()
             image.save(buffer, "PNG")
             return buffer.getvalue()
@@ -110,6 +110,11 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
         )
         started = time.perf_counter()
         result = produce_scene(contract, run_dir=tmp_path, deps=deps, provider=provider)
+        if result.get("stage") == "design_review":
+            # Explicit fixture review decision, not real human visual approval.
+            assert load_scene_with_revision(tmp_path, contract["slide_id"]) is None
+            result = produce_scene(contract, run_dir=tmp_path, deps=deps, provider=provider,
+                                   options={"design_candidate_key": result["design"]["key"]})
         measurements.append(
             {
                 "slide": contract["slide_id"],
@@ -142,8 +147,8 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
     assert len({m["template"] for m in measurements}) == 3
     assert sum(c["size"] == "1536x1024" for c in calls) == 3
     assert (
-        sum(c["size"] == "1024x1024" for c in calls) == 2
-    )  # identical source need/ref bytes reuse one asset
+        sum(c["size"] == "1024x1024" for c in calls) == 3
+    )  # Changed relevant classification bytes must change asset cache identity.
     assert all(c["transparent_background"] for c in calls if c["size"] == "1024x1024")
     write(
         tmp_path / "production-benchmark.json",

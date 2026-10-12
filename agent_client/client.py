@@ -111,6 +111,14 @@ class AgentClient:
         except URLError as e:
             raise AgentClientError(f"Connection failed: {e.reason}", status_code=0)
 
+    def html_repair(self, project_id: str, slide_id: str, mode: str, payload: dict) -> dict[str, Any]:
+        from agent_contract.capabilities import CAPABILITIES
+        from urllib.parse import quote
+        capability = next(c for c in CAPABILITIES if c.id == f"html_repair.{mode}")
+        body = capability.request_model.model_validate(payload).model_dump(mode="json")
+        return self._request(capability.agent_api_method, capability.agent_api_path.format(
+            project_id=quote(project_id, safe=""), slide_id=quote(slide_id, safe="")), body=body, timeout=300)
+
     # ---- Project operations ----
 
     def get_identity(self) -> dict[str, Any]:
@@ -412,8 +420,11 @@ class AgentClient:
             "GET", f"/projects/{project_id}/html-review/{slide_id}/approval"
         )
 
-    def produce_html_scene(self, project_id: str, slide_id: str) -> dict[str, Any]:
-        return self._request("POST", f"/projects/{project_id}/html-review/{slide_id}/produce")
+    def produce_html_scene(self, project_id: str, slide_id: str, **options) -> dict[str, Any]:
+        return self._request("POST", f"/projects/{project_id}/html-review/{slide_id}/produce", body=options or None)
+
+    def get_html_design_current(self, project_id: str, slide_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/projects/{project_id}/html-review/{slide_id}/design/current")
 
     def html_task_status(self, project_id: str, job_id: str) -> dict[str, Any]:
         return self._request("GET", f"/projects/{project_id}/html-review/tasks/{job_id}")

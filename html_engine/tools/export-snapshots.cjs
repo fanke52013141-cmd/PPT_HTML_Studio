@@ -17,18 +17,12 @@ const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
 const times = JSON.parse(fs.readFileSync(timesPath, "utf8"));
 if (!Array.isArray(times) || !times.length) throw new Error("times invalid");
 
-function resolveChromePath(playwright) {
-  if (process.env.HPS_CHROME) return process.env.HPS_CHROME;
-  const discovered = playwright.chromium.executablePath();
-  if (discovered && fs.existsSync(discovered)) return discovered;
-  return "C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1247/chrome-win64/chrome.exe";
-}
 
 (async () => {
   const playwright = require("playwright");
   const browser = await playwright.chromium.launch({
     headless: true,
-    executablePath: resolveChromePath(playwright),
+    executablePath: require("./browser-runtime.cjs").resolveBrowser(playwright.chromium),
   });
   try {
     const page = await browser.newPage({

@@ -548,7 +548,7 @@ function buildCatalog({ root = path.resolve(__dirname, "../..") } = {}) {
       status: "none",
       directAdapter: false,
       candidateRuntimeIds: [],
-      gap: "This offline descriptor is not registered in the V1 runtime theme directory or application settings.",
+      gap: "The descriptor itself is not a runtime theme adapter. E registers neutral-baseline@0.2.0 separately as grayscale properties on existing components; this does not map all static references into production capabilities or approve a template.",
     },
     default: true,
     source: sourceRef(root, "html_engine/visual/catalog/neutral-style.json", neutralStyle),

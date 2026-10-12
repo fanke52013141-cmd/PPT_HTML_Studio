@@ -430,6 +430,14 @@ class HtmlTaskResult(BaseModel):
     task: dict[str, Any]
 
 
+from html_production_models import HtmlProduceRequest as HtmlProduceRequest
+
+
+class HtmlDesignCandidateResult(BaseModel):
+    project_id: str
+    design: dict[str, Any] | None
+
+
 class ProjectModelBindingSaveRequest(ProjectModelBindingUpdate):
     """Agent projection of the shared strict reference-only Web request."""
 

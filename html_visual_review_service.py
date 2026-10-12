@@ -91,6 +91,15 @@ def _registered_capabilities(repo_root: Path) -> Dict[str, Any]:
     schema = json.loads(
         (repo_root / "html_engine/visual/schema.json").read_text(encoding="utf-8")
     )
+    def resolved(value):
+        if isinstance(value, dict):
+            if "$ref" in value:
+                return resolved(schema["$defs"][value["$ref"].split("/")[-1]])
+            return {k: resolved(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [resolved(v) for v in value]
+        return value
+    available_kinds = {kind for template in catalog["templates"].values() for rule in template["slots"].values() for kind in rule["kinds"]}
     node_contracts = {
         item["properties"]["type"]["const"]: {
             "required": [
@@ -99,11 +108,13 @@ def _registered_capabilities(repo_root: Path) -> Dict[str, Any]:
             "properties": {
                 k: v
                 for k, v in item["properties"].items()
-                if k not in ("id", "slot", "type")
+                if k not in ("id", "slot", "type", "presentation")
             },
         }
         for item in schema["$defs"]["node"]["oneOf"]
+        if item["properties"]["type"]["const"] in available_kinds
     }
+    node_contracts = resolved(node_contracts)
     return {"catalog": catalog, "effects": effects, "node_contracts": node_contracts}
 
 
@@ -145,10 +156,17 @@ def build_plan_generation_prompts(
         + ", ".join(capabilities["catalog"]["icons"])
         + "\n已注册效果："
         + ", ".join(sorted(capabilities["effects"]["effects"]))
-        + "\nPromptVersion:html-plan-0.2.0。每个内容槽位必须在 objects 中有一个同 kind 对象，"
+        + "\nPromptVersion:html-plan-0.4.0。每个内容槽位必须在 objects 中有一个同 kind 对象，"
         "beats.target.objectId 只能引用本次对象；同一动作只绑定一个语块。"
         "图片 assetRef 可引用用户给出的已有资产；需新资产时在 assets 声明 image_asset 和 need，"
         "只生成独立主体，不生成整页。text 的 runs 每项为{text,emphasis}。"
+        + "\n必须输出的顶层结构：" + _plan_schema_hint()
+        + '\n格式示例片段："templateRef":{"id":"已选模板ID","version":"0.1.0"}, '
+          '"slots":{"槽位ID":{"kind":"text","role":"callout","runs":[{"text":"本页原文","emphasis":false}]}}, '
+          '"objects":[{"id":"稳定对象ID","slot":"槽位ID","kind":"text"}], '
+          '"beats":[{"id":"输入语块ID","target":{"objectId":"稳定对象ID","action":"enter"}}]。'
+          '这只是字段示例，替换示例ID并补齐全部必需槽位。不要输出template/content/actions等替代字段；'
+          'slots存内容，objects只存身份/槽位/kind，beats映射单一已注册动作。'
         + "\n槽位内容字段契约（kind 对应 type，不输出 id/slot/type）："
         + json.dumps(capabilities.get("node_contracts", {}), ensure_ascii=False)
     )
@@ -192,6 +210,7 @@ def generate_scene_plan(
     prefix = artifact_prefix or f"html_scene_plan_{contract_slide.get('slide_id')}"
     attempts: List[Dict[str, Any]] = []
     plan = None
+    previous_response = None
     last_failure: Optional[HtmlScenePlanError] = None
     for round_index in (1, 2):
         repair_note = ""
@@ -202,11 +221,13 @@ def generate_scene_plan(
             )
         response = json_generator(
             system_prompt=prompts["system_prompt"] + repair_note,
-            user_prompt=prompts["user_prompt"],
+            user_prompt=(prompts["user_prompt"] if previous_response is None else json.dumps({"task":json.loads(prompts["user_prompt"]),"invalid_plan":previous_response,"diagnostic":{"code":last_failure.code,"message":str(last_failure)}},ensure_ascii=False)),
             run_dir=str(run_dir),
             artifact_prefix=prefix,
             schema_hint=prompts["schema_hint"],
         )
+        previous_response = response
+        _write_json(Path(run_dir) / REVIEW_DIR / f"{prefix}-round-{round_index}.json", {"prompts": prompts, "response": response})
         response_sha256 = _sha256_bytes(
             json.dumps(response, ensure_ascii=False, sort_keys=True).encode("utf-8")
         )
@@ -282,6 +303,7 @@ def review_scene(
     *,
     run_dir: str | Path,
     deps: HtmlReviewDependencies,
+    diagnostic: bool = False,
 ) -> Dict[str, Any]:
     """Compile + measure + screenshot one scene via the shared bundle."""
     from html_visual_store import validate_slide_id, HtmlVisualError
@@ -296,6 +318,7 @@ def review_scene(
     scene_tmp = review_dir / f"scene-{scene.get('id')}.under-review.json"
     report_path = review_dir / f"report-{scene.get('id')}.json"
     screenshot_path = review_dir / f"review-{scene.get('id')}.png"
+    screenshot_path.unlink(missing_ok=True)  # Never reuse a previous passing screenshot.
     scene_tmp.write_text(
         json.dumps(scene, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -313,7 +336,9 @@ def review_scene(
         encoding="utf-8",
         errors="replace",
         timeout_sec=deps.stage_timeout_sec,
-        env=resource_environment(run_dir),
+        env={**resource_environment(run_dir), "HPS_CANDIDATE_DIAGNOSTIC": "1"}
+        if diagnostic else {k: v for k, v in resource_environment(run_dir).items()
+                            if k != "HPS_CANDIDATE_DIAGNOSTIC"},
     )
     if result.returncode != 0:
         raise HtmlReviewError(

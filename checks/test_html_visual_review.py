@@ -226,3 +226,24 @@ def test_review_routes_registered_and_gated() -> None:
     ).parent.joinpath("html_visual_review_routes.py").read_text(encoding="utf-8")
     assert "仅适用于 HTML 后端项目" in routes_source
     assert "import server" not in routes_source
+
+
+def test_first_request_contains_consumable_output_contract_and_resolved_refs():
+    caps = review._registered_capabilities(REPO_ROOT)
+    assert caps["catalog"]["icons"] == ["air","arrow","check","droplet","eye","lightbulb","molecule","thermometer"]
+    prompt = review.build_plan_generation_prompts(CONTRACT_SLIDE, caps)
+    assert "必须输出的顶层结构" in prompt["system_prompt"]
+    assert '"slots"' in prompt["system_prompt"] and '"objects"' in prompt["system_prompt"]
+    assert "$ref" not in prompt["system_prompt"]
+    assert "shape" not in caps["node_contracts"]
+
+
+def test_structure_retry_includes_failed_output_and_original_task(tmp_path):
+    bad = model_plan()
+    bad["templateRef"]["id"] = "not-registered"
+    service, calls = deps(tmp_path, [bad, model_plan()])
+    review.generate_scene_plan(CONTRACT_SLIDE, run_dir=tmp_path, repo_root=REPO_ROOT, json_generator=service.json_generator)
+    body = json.loads(calls[1]["user_prompt"])
+    assert body["invalid_plan"] == bad
+    assert body["task"]["slide"]["slide_id"] == CONTRACT_SLIDE["slide_id"]
+    assert body["diagnostic"]["code"]

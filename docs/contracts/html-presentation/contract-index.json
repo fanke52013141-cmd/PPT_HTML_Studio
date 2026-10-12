@@ -1,14 +1,19 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.16",
-  "effective_date": "2026-10-10",
+  "contract_version": "0.9.21",
+  "effective_date": "2026-10-12",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-12 S00: target-specific local preflight CLI and shared Chromium resolution; no provider connection or approval implied. See preflight-0.1.0.md.",
+    "Unsaved capacity-failed candidates enter a bounded LangGraph layout agent; diagnostic-only screenshots do not approve work. See runtime/visual-v1/candidate-layout-agent-0.1.0.md.",
+    "Explicit visual_groups.available_assets assetRef offers are reused only when source bytes, identity/version and plan image reference validate; new generation and manual design gates remain distinct.",
+    "Scene 0.5.0 constrained instance typography/layout and local repair: runtime/visual-v1/scene-repair-0.1.0.md. Shared editor, finite temporal evidence and bounded multimodal repair. Real model and aesthetics recorded separately.",
+    "Design Prompt 0.3.0 consumes registered layout canvas and active slot boxes; real built-in image validation is distinct from configured provider/API and HTML acceptance.",
     "Standard reference library 1.0: 24 neutral 1920x1080 pages, 32 components, 16 variants, 28 effects, 18 compositions and 5 fonts. Built-in image design study reconstructed in code; full Agent static review completed. User aesthetic approval and production integration remain separate.",
     "Scene 0.4.0 editorial reconstruction and shape ownership: runtime/visual-v1/editorial-three-columns-0.4.0.md; legacy scene vocabularies remain pinned and runtime/visual acceptance is separate.",
     "This index is documentation metadata, not a runtime capability registry or validator.",
@@ -22,7 +27,8 @@
     "Visual V1 is a separate hps.visual.scene/theme/layout 0.1.0 format. Scoped public/theme/layout/content separation, capacity, anchor, subtitle and resource checks implemented; application backend integration and new visual approval remain pending.",
     "2026-10-08 user review rejected the simplified V1 science appearance. Its technical checks remain valid, but visual production approval is changes_requested. Reference-fidelity style study requires separate visual review; its icons/gradients/panels do not widen V1 0.1.0.",
     "2026-10-08 HPS-025 clarification: auxiliary English/series/brand/source footer labels are opt-in; preserve provenance in metadata, do not auto-add them from a reference board. Scientific caveats remain content.",
-    "2026-10-10: runtime/visual-v1/application-workflow-0.2.0.md defines a read-only seven-stage HTML workflow projection and separate snapshot PPTX/video gates. Web and Agent share the projection; no database migration, new human approval, or image-backend behavior change."
+    "2026-10-10: runtime/visual-v1/application-workflow-0.2.0.md defines a read-only seven-stage HTML workflow projection and separate snapshot PPTX/video gates. Web and Agent share the projection; no database migration, new human approval, or image-backend behavior change.",
+    "2026-10-10 E: application-production-0.3.0 defines neutral reference packages, explicit design checkpoint, single-subject retry and provenance fingerprints; Agent 1.17.0. Real provider and user acceptance remain separate."
   ],
   "documents": [
     {
@@ -108,6 +114,12 @@
     },
     {
       "path": "runtime/visual-v1/application-workflow-0.2.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/application-production-0.3.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/preflight-0.1.0.md"
     }
   ],
   "rules": [

@@ -14,8 +14,12 @@
       "additionalProperties": false,
       "required": ["id", "version"],
       "properties": {
-        "id": { "$ref": "#/$defs/id" },
-        "version": { "const": "0.2.0" }
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "version": {
+          "const": "0.2.0"
+        }
       }
     },
     "assetRef": {
@@ -23,8 +27,12 @@
       "additionalProperties": false,
       "required": ["id", "version"],
       "properties": {
-        "id": { "$ref": "#/$defs/id" },
-        "version": { "const": "0.1.0" }
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "version": {
+          "const": "0.1.0"
+        }
       }
     },
     "templateRef": {
@@ -32,8 +40,12 @@
       "additionalProperties": false,
       "required": ["id", "version"],
       "properties": {
-        "id": { "$ref": "#/$defs/id" },
-        "version": { "const": "0.1.0" }
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "version": {
+          "const": "0.1.0"
+        }
       }
     },
     "hexColor": {
@@ -45,10 +57,24 @@
       "additionalProperties": false,
       "required": ["size", "weight", "lineHeight", "letterSpacing", "color"],
       "properties": {
-        "size": { "type": "number", "minimum": 12, "maximum": 80 },
-        "weight": { "enum": [400, 700] },
-        "lineHeight": { "type": "number", "minimum": 1, "maximum": 1.8 },
-        "letterSpacing": { "type": "number", "minimum": -1, "maximum": 3 },
+        "size": {
+          "type": "number",
+          "minimum": 12,
+          "maximum": 80
+        },
+        "weight": {
+          "enum": [400, 700]
+        },
+        "lineHeight": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1.8
+        },
+        "letterSpacing": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 3
+        },
         "color": {
           "enum": [
             "background",
@@ -99,7 +125,62 @@
     "scene": {
       "type": "object",
       "additionalProperties": false,
-      "allOf": [{"if": {"properties": {"version": {"const": "0.3.0"}}, "required": ["version"]}, "then": {"properties": {"nodes": {"type": "array", "items": {"type": "object", "properties": {"type": {"not": {"const": "shape"}}}}}}}}],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "version": {
+                "const": "0.3.0"
+              }
+            },
+            "required": ["version"]
+          },
+          "then": {
+            "properties": {
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "not": {
+                        "const": "shape"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "version": {
+                "enum": ["0.3.0", "0.4.0"]
+              }
+            },
+            "required": ["version"]
+          },
+          "then": {
+            "properties": {
+              "nodes": {
+                "items": {
+                  "not": {
+                    "required": ["presentation"],
+                    "type": "object",
+                    "properties": {
+                      "presentation": {}
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            }
+          }
+        }
+      ],
       "required": [
         "format",
         "version",
@@ -114,13 +195,29 @@
         "source"
       ],
       "properties": {
-        "format": { "const": "hps.visual.scene" },
-        "version": { "enum": ["0.3.0", "0.4.0"] },
-        "id": { "$ref": "#/$defs/id" },
-        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
-        "themeRef": { "$ref": "#/$defs/ref" },
-        "layoutRef": { "$ref": "#/$defs/ref" },
-        "templateRef": { "$ref": "#/$defs/templateRef" },
+        "format": {
+          "const": "hps.visual.scene"
+        },
+        "version": {
+          "enum": ["0.3.0", "0.4.0", "0.5.0"]
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "themeRef": {
+          "$ref": "#/$defs/ref"
+        },
+        "layoutRef": {
+          "$ref": "#/$defs/ref"
+        },
+        "templateRef": {
+          "$ref": "#/$defs/templateRef"
+        },
         "durationMs": {
           "type": "number",
           "minimum": 1000,
@@ -130,21 +227,31 @@
           "type": "array",
           "minItems": 1,
           "maxItems": 40,
-          "items": { "$ref": "#/$defs/node" }
+          "items": {
+            "$ref": "#/$defs/node"
+          }
         },
         "motion": {
           "type": "array",
           "minItems": 1,
           "maxItems": 40,
-          "items": { "$ref": "#/$defs/motion" }
+          "items": {
+            "$ref": "#/$defs/motion"
+          }
         },
         "beats": {
           "type": "array",
           "minItems": 0,
           "maxItems": 60,
-          "items": { "$ref": "#/$defs/beat" }
+          "items": {
+            "$ref": "#/$defs/beat"
+          }
         },
-        "source": { "type": "string", "minLength": 1, "maxLength": 500 }
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
       }
     },
     "node": {
@@ -154,24 +261,82 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type", "kind", "fill"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "shape" },
-            "kind": { "enum": ["rect", "ellipse"] },
-            "fill": { "enum": ["background", "ink", "body", "accent", "blue", "green", "muted", "panel", "pinkWash", "blueWash", "greenWash", "line", "paper", "purple", "yellow", "pink"] },
-            "radius": { "type": "number", "minimum": 0, "maximum": 60 }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "shape"
+            },
+            "kind": {
+              "enum": ["rect", "ellipse"]
+            },
+            "fill": {
+              "enum": [
+                "background",
+                "ink",
+                "body",
+                "accent",
+                "blue",
+                "green",
+                "muted",
+                "panel",
+                "pinkWash",
+                "blueWash",
+                "greenWash",
+                "line",
+                "paper",
+                "purple",
+                "yellow",
+                "pink"
+              ]
+            },
+            "radius": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 60
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           },
-          "allOf": [{"if": {"properties": {"kind": {"const": "ellipse"}}, "required": ["kind"]}, "then": {"properties": {"radius": false}}}]
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "kind": {
+                    "const": "ellipse"
+                  }
+                },
+                "required": ["kind"]
+              },
+              "then": {
+                "properties": {
+                  "radius": false
+                }
+              }
+            }
+          ]
         },
         {
           "type": "object",
           "additionalProperties": false,
           "required": ["id", "slot", "type", "role", "runs"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "text" },
-            "role": { "$ref": "#/$defs/textRole" },
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "text"
+            },
+            "role": {
+              "$ref": "#/$defs/textRole"
+            },
             "runs": {
               "type": "array",
               "minItems": 1,
@@ -186,9 +351,14 @@
                     "minLength": 1,
                     "maxLength": 300
                   },
-                  "emphasis": { "type": "boolean" }
+                  "emphasis": {
+                    "type": "boolean"
+                  }
                 }
               }
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
             }
           }
         },
@@ -197,11 +367,26 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type", "text", "tone"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "badge" },
-            "text": { "type": "string", "minLength": 1, "maxLength": 3 },
-            "tone": { "enum": ["blue", "green", "accent"] }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "badge"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 3
+            },
+            "tone": {
+              "enum": ["blue", "green", "accent"]
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           }
         },
         {
@@ -209,12 +394,29 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type", "text", "role", "tone"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "label" },
-            "text": { "type": "string", "minLength": 1, "maxLength": 40 },
-            "role": { "enum": ["eyebrow", "phase", "conclusion"] },
-            "tone": { "enum": ["blue", "green", "accent"] }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "label"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "role": {
+              "enum": ["eyebrow", "phase", "conclusion"]
+            },
+            "tone": {
+              "enum": ["blue", "green", "accent"]
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           }
         },
         {
@@ -222,11 +424,24 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type", "assetRef", "anchorId"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "image" },
-            "assetRef": { "$ref": "#/$defs/assetRef" },
-            "anchorId": { "$ref": "#/$defs/id" }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "image"
+            },
+            "assetRef": {
+              "$ref": "#/$defs/assetRef"
+            },
+            "anchorId": {
+              "$ref": "#/$defs/id"
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           }
         },
         {
@@ -234,9 +449,18 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "arrow" }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "arrow"
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           }
         },
         {
@@ -252,13 +476,29 @@
             "labelId"
           ],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "annotation" },
-            "targetId": { "$ref": "#/$defs/id" },
-            "anchorId": { "$ref": "#/$defs/id" },
-            "radius": { "type": "number", "minimum": 4, "maximum": 60 },
-            "labelId": { "$ref": "#/$defs/id" }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "annotation"
+            },
+            "targetId": {
+              "$ref": "#/$defs/id"
+            },
+            "anchorId": {
+              "$ref": "#/$defs/id"
+            },
+            "radius": {
+              "type": "number",
+              "minimum": 4,
+              "maximum": 60
+            },
+            "labelId": {
+              "$ref": "#/$defs/id"
+            }
           }
         },
         {
@@ -266,11 +506,28 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type", "number", "title"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "header" },
-            "number": { "type": "string", "minLength": 1, "maxLength": 4 },
-            "title": { "type": "string", "minLength": 1, "maxLength": 40 }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "header"
+            },
+            "number": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           }
         },
         {
@@ -278,13 +535,34 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type", "tone", "icon", "title", "body"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "card" },
-            "tone": { "$ref": "#/$defs/tone" },
-            "icon": { "$ref": "#/$defs/iconName" },
-            "title": { "type": "string", "minLength": 1, "maxLength": 40 },
-            "body": { "type": "string", "minLength": 1, "maxLength": 120 }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "card"
+            },
+            "tone": {
+              "$ref": "#/$defs/tone"
+            },
+            "icon": {
+              "$ref": "#/$defs/iconName"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "body": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           }
         },
         {
@@ -292,11 +570,24 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "figure" },
-            "tag": { "$ref": "#/$defs/caption" },
-            "note": { "$ref": "#/$defs/caption" }
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "figure"
+            },
+            "tag": {
+              "$ref": "#/$defs/caption"
+            },
+            "note": {
+              "$ref": "#/$defs/caption"
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           }
         },
         {
@@ -304,17 +595,31 @@
           "additionalProperties": false,
           "required": ["id", "slot", "type", "from", "to", "term", "takeaway"],
           "properties": {
-            "id": { "$ref": "#/$defs/id" },
-            "slot": { "$ref": "#/$defs/id" },
-            "type": { "const": "summary" },
-            "heading": { "$ref": "#/$defs/caption" },
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "summary"
+            },
+            "heading": {
+              "$ref": "#/$defs/caption"
+            },
             "from": {
               "type": "object",
               "additionalProperties": false,
               "required": ["text", "tone"],
               "properties": {
-                "text": { "type": "string", "minLength": 1, "maxLength": 8 },
-                "tone": { "$ref": "#/$defs/tone" }
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8
+                },
+                "tone": {
+                  "$ref": "#/$defs/tone"
+                }
               }
             },
             "to": {
@@ -322,12 +627,29 @@
               "additionalProperties": false,
               "required": ["text", "tone"],
               "properties": {
-                "text": { "type": "string", "minLength": 1, "maxLength": 8 },
-                "tone": { "$ref": "#/$defs/tone" }
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8
+                },
+                "tone": {
+                  "$ref": "#/$defs/tone"
+                }
               }
             },
-            "term": { "type": "string", "minLength": 1, "maxLength": 24 },
-            "takeaway": { "type": "string", "minLength": 1, "maxLength": 40 }
+            "term": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 24
+            },
+            "takeaway": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
           }
         }
       ]
@@ -337,8 +659,14 @@
       "additionalProperties": false,
       "required": ["icon", "text"],
       "properties": {
-        "icon": { "$ref": "#/$defs/iconName" },
-        "text": { "type": "string", "minLength": 1, "maxLength": 40 }
+        "icon": {
+          "$ref": "#/$defs/iconName"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        }
       }
     },
     "iconName": {
@@ -350,14 +678,41 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["targetId", "type", "startMs", "durationMs", "offsetX", "offsetY"],
+          "required": [
+            "targetId",
+            "type",
+            "startMs",
+            "durationMs",
+            "offsetX",
+            "offsetY"
+          ],
           "properties": {
-            "targetId": { "$ref": "#/$defs/id" },
-            "type": { "const": "enter" },
-            "startMs": { "type": "number", "minimum": 0, "maximum": 120000 },
-            "durationMs": { "type": "number", "minimum": 1, "maximum": 10000 },
-            "offsetX": { "type": "number", "minimum": -100, "maximum": 100 },
-            "offsetY": { "type": "number", "minimum": -100, "maximum": 100 }
+            "targetId": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "enter"
+            },
+            "startMs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 120000
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "offsetX": {
+              "type": "number",
+              "minimum": -100,
+              "maximum": 100
+            },
+            "offsetY": {
+              "type": "number",
+              "minimum": -100,
+              "maximum": 100
+            }
           }
         },
         {
@@ -365,10 +720,22 @@
           "additionalProperties": false,
           "required": ["targetId", "type", "startMs", "durationMs"],
           "properties": {
-            "targetId": { "$ref": "#/$defs/id" },
-            "type": { "const": "exit" },
-            "startMs": { "type": "number", "minimum": 0, "maximum": 120000 },
-            "durationMs": { "type": "number", "minimum": 1, "maximum": 10000 }
+            "targetId": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "exit"
+            },
+            "startMs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 120000
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000
+            }
           }
         },
         {
@@ -376,10 +743,22 @@
           "additionalProperties": false,
           "required": ["targetId", "type", "startMs", "durationMs"],
           "properties": {
-            "targetId": { "$ref": "#/$defs/id" },
-            "type": { "const": "emphasize" },
-            "startMs": { "type": "number", "minimum": 0, "maximum": 120000 },
-            "durationMs": { "type": "number", "minimum": 1, "maximum": 10000 }
+            "targetId": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "emphasize"
+            },
+            "startMs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 120000
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000
+            }
           }
         }
       ]
@@ -389,9 +768,21 @@
       "additionalProperties": false,
       "required": ["startMs", "endMs", "text"],
       "properties": {
-        "startMs": { "type": "number", "minimum": 0, "maximum": 120000 },
-        "endMs": { "type": "number", "minimum": 1, "maximum": 120000 },
-        "text": { "type": "string", "minLength": 1, "maxLength": 300 }
+        "startMs": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 120000
+        },
+        "endMs": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 120000
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
       }
     },
     "theme": {
@@ -410,17 +801,31 @@
         "illustrationPolicy"
       ],
       "properties": {
-        "format": { "const": "hps.visual.theme" },
-        "version": { "const": "0.2.0" },
-        "id": { "$ref": "#/$defs/id" },
-        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "format": {
+          "const": "hps.visual.theme"
+        },
+        "version": {
+          "const": "0.2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
         "font": {
           "type": "object",
           "additionalProperties": false,
           "required": ["family", "platform"],
           "properties": {
-            "family": { "enum": ["Microsoft YaHei"] },
-            "platform": { "const": "Windows" }
+            "family": {
+              "enum": ["Microsoft YaHei"]
+            },
+            "platform": {
+              "const": "Windows"
+            }
           }
         },
         "colors": {
@@ -441,33 +846,75 @@
             "line"
           ],
           "properties": {
-            "background": { "$ref": "#/$defs/hexColor" },
-            "ink": { "$ref": "#/$defs/hexColor" },
-            "body": { "$ref": "#/$defs/hexColor" },
-            "accent": { "$ref": "#/$defs/hexColor" },
-            "blue": { "$ref": "#/$defs/hexColor" },
-            "green": { "$ref": "#/$defs/hexColor" },
-            "muted": { "$ref": "#/$defs/hexColor" },
-            "panel": { "$ref": "#/$defs/hexColor" },
-            "pinkWash": { "$ref": "#/$defs/hexColor" },
-            "blueWash": { "$ref": "#/$defs/hexColor" },
-            "greenWash": { "$ref": "#/$defs/hexColor" },
-            "line": { "$ref": "#/$defs/hexColor" },
-            "paper": { "$ref": "#/$defs/hexColor" },
-            "purple": { "$ref": "#/$defs/hexColor" },
-            "yellow": { "$ref": "#/$defs/hexColor" },
-            "pink": { "$ref": "#/$defs/hexColor" }
+            "background": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "ink": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "body": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "accent": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "blue": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "green": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "muted": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "panel": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "pinkWash": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "blueWash": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "greenWash": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "line": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "paper": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "purple": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "yellow": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "pink": {
+              "$ref": "#/$defs/hexColor"
+            }
           }
         },
         "gradients": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "pink": { "$ref": "#/$defs/gradientPair" },
-            "blue": { "$ref": "#/$defs/gradientPair" },
-            "green": { "$ref": "#/$defs/gradientPair" },
-            "purple": { "$ref": "#/$defs/gradientPair" },
-            "yellow": { "$ref": "#/$defs/gradientPair" }
+            "pink": {
+              "$ref": "#/$defs/gradientPair"
+            },
+            "blue": {
+              "$ref": "#/$defs/gradientPair"
+            },
+            "green": {
+              "$ref": "#/$defs/gradientPair"
+            },
+            "purple": {
+              "$ref": "#/$defs/gradientPair"
+            },
+            "yellow": {
+              "$ref": "#/$defs/gradientPair"
+            }
           }
         },
         "text": {
@@ -487,23 +934,57 @@
             "number"
           ],
           "properties": {
-            "eyebrow": { "$ref": "#/$defs/textStyle" },
-            "title": { "$ref": "#/$defs/textStyle" },
-            "lead": { "$ref": "#/$defs/textStyle" },
-            "intro": { "$ref": "#/$defs/textStyle" },
-            "stepTitle": { "$ref": "#/$defs/textStyle" },
-            "body": { "$ref": "#/$defs/textStyle" },
-            "phase": { "$ref": "#/$defs/textStyle" },
-            "callout": { "$ref": "#/$defs/textStyle" },
-            "conclusion": { "$ref": "#/$defs/textStyle" },
-            "source": { "$ref": "#/$defs/textStyle" },
-            "subtitle": { "$ref": "#/$defs/textStyle" },
-            "number": { "$ref": "#/$defs/textStyle" },
-            "headline": { "$ref": "#/$defs/textStyle" },
-            "cardTitle": { "$ref": "#/$defs/textStyle" },
-            "cardBody": { "$ref": "#/$defs/textStyle" },
-            "caption": { "$ref": "#/$defs/textStyle" },
-            "summary": { "$ref": "#/$defs/textStyle" }
+            "eyebrow": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "title": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "lead": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "intro": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "stepTitle": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "body": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "phase": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "callout": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "conclusion": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "source": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "number": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "headline": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "cardTitle": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "cardBody": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "caption": {
+              "$ref": "#/$defs/textStyle"
+            },
+            "summary": {
+              "$ref": "#/$defs/textStyle"
+            }
           }
         },
         "shapes": {
@@ -511,13 +992,41 @@
           "additionalProperties": false,
           "required": ["badgeRadius", "labelRadius", "strokeWidth", "shadow"],
           "properties": {
-            "badgeRadius": { "type": "number", "minimum": 0, "maximum": 40 },
-            "labelRadius": { "type": "number", "minimum": 0, "maximum": 60 },
-            "strokeWidth": { "type": "number", "minimum": 1, "maximum": 5 },
-            "cardRadius": { "type": "number", "minimum": 0, "maximum": 40 },
-            "figureRadius": { "type": "number", "minimum": 0, "maximum": 40 },
-            "iconRadius": { "type": "number", "minimum": 0, "maximum": 40 },
-            "iconStroke": { "type": "number", "minimum": 0.5, "maximum": 4 },
+            "badgeRadius": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 40
+            },
+            "labelRadius": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 60
+            },
+            "strokeWidth": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5
+            },
+            "cardRadius": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 40
+            },
+            "figureRadius": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 40
+            },
+            "iconRadius": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 40
+            },
+            "iconStroke": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 4
+            },
             "shadowRGB": {
               "type": "string",
               "pattern": "^[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}$"
@@ -527,9 +1036,21 @@
               "additionalProperties": false,
               "required": ["y", "blur", "opacity"],
               "properties": {
-                "y": { "type": "number", "minimum": 0, "maximum": 8 },
-                "blur": { "type": "number", "minimum": 0, "maximum": 26 },
-                "opacity": { "type": "number", "minimum": 0, "maximum": 0.15 }
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 8
+                },
+                "blur": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 26
+                },
+                "opacity": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0.15
+                }
               }
             }
           }
@@ -539,7 +1060,9 @@
           "minItems": 1,
           "maxItems": 8,
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/id" }
+          "items": {
+            "$ref": "#/$defs/id"
+          }
         },
         "illustrationPolicy": {
           "type": "string",
@@ -552,33 +1075,55 @@
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
-      "items": { "$ref": "#/$defs/hexColor" }
+      "items": {
+        "$ref": "#/$defs/hexColor"
+      }
     },
     "layout": {
       "type": "object",
       "additionalProperties": false,
       "required": ["format", "version", "id", "name", "canvas", "slots"],
       "properties": {
-        "format": { "const": "hps.visual.layout" },
-        "version": { "const": "0.2.0" },
-        "id": { "$ref": "#/$defs/id" },
-        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "format": {
+          "const": "hps.visual.layout"
+        },
+        "version": {
+          "const": "0.2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
         "canvas": {
           "type": "object",
           "additionalProperties": false,
           "required": ["width", "height", "contentBottom", "subtitleHeight"],
           "properties": {
-            "width": { "const": 1600 },
-            "height": { "const": 900 },
-            "contentBottom": { "const": 800 },
-            "subtitleHeight": { "const": 100 }
+            "width": {
+              "const": 1600
+            },
+            "height": {
+              "const": 900
+            },
+            "contentBottom": {
+              "const": 800
+            },
+            "subtitleHeight": {
+              "const": 100
+            }
           }
         },
         "slots": {
           "type": "object",
           "minProperties": 1,
           "maxProperties": 40,
-          "propertyNames": { "$ref": "#/$defs/id" },
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
@@ -589,10 +1134,26 @@
                 "additionalProperties": false,
                 "required": ["x", "y", "width", "height"],
                 "properties": {
-                  "x": { "type": "number", "minimum": 0, "maximum": 1600 },
-                  "y": { "type": "number", "minimum": 0, "maximum": 1600 },
-                  "width": { "type": "number", "minimum": 1, "maximum": 1600 },
-                  "height": { "type": "number", "minimum": 1, "maximum": 1600 }
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1600
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1600
+                  },
+                  "width": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 1600
+                  },
+                  "height": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 1600
+                  }
                 }
               },
               "maxLines": {
@@ -600,8 +1161,14 @@
                 "minimum": 1,
                 "maximum": 6
               },
-              "align": { "enum": ["left", "center", "right"] },
-              "z": { "type": "integer", "minimum": 0, "maximum": 20 }
+              "align": {
+                "enum": ["left", "center", "right"]
+              },
+              "z": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 20
+              }
             }
           }
         }
@@ -620,19 +1187,33 @@
         "slots"
       ],
       "properties": {
-        "format": { "const": "hps.visual.template" },
-        "version": { "const": "0.1.0" },
-        "id": { "$ref": "#/$defs/id" },
-        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "format": {
+          "const": "hps.visual.template"
+        },
+        "version": {
+          "const": "0.1.0"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
         "structure": {
           "enum": ["explanation-cards", "data-relation", "process-stage"]
         },
-        "layoutRef": { "$ref": "#/$defs/ref" },
+        "layoutRef": {
+          "$ref": "#/$defs/ref"
+        },
         "slots": {
           "type": "object",
           "minProperties": 1,
           "maxProperties": 40,
-          "propertyNames": { "$ref": "#/$defs/id" },
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
@@ -659,7 +1240,9 @@
                   ]
                 }
               },
-              "required": { "type": "boolean" }
+              "required": {
+                "type": "boolean"
+              }
             }
           }
         }
@@ -674,13 +1257,20 @@
         "additionalProperties": false,
         "required": ["id", "version", "path", "sha256", "anchors", "source"],
         "properties": {
-          "id": { "$ref": "#/$defs/id" },
-          "version": { "const": "0.1.0" },
+          "id": {
+            "$ref": "#/$defs/id"
+          },
+          "version": {
+            "const": "0.1.0"
+          },
           "path": {
             "type": "string",
             "pattern": "^[a-zA-Z0-9_./-]+\\.png$"
           },
-          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
           "anchors": {
             "type": "array",
             "minItems": 1,
@@ -690,14 +1280,123 @@
               "additionalProperties": false,
               "required": ["id", "x", "y"],
               "properties": {
-                "id": { "$ref": "#/$defs/id" },
-                "x": { "type": "integer", "minimum": 0 },
-                "y": { "type": "integer", "minimum": 0 }
+                "id": {
+                  "$ref": "#/$defs/id"
+                },
+                "x": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "y": {
+                  "type": "integer",
+                  "minimum": 0
+                }
               }
             }
           },
-          "source": { "type": "string", "minLength": 1, "maxLength": 500 }
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
         }
+      }
+    },
+    "instanceTextStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "fontSizePx": {
+          "type": "number",
+          "minimum": 12,
+          "maximum": 80,
+          "default": 28
+        },
+        "weight": {
+          "enum": [400, 700]
+        },
+        "lineHeight": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1.8
+        },
+        "align": {
+          "enum": ["left", "center", "right"]
+        }
+      },
+      "default": {
+        "fontSizePx": 28
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "offsetX": {
+          "type": "number",
+          "minimum": -400,
+          "maximum": 400,
+          "default": 0
+        },
+        "offsetY": {
+          "type": "number",
+          "minimum": -400,
+          "maximum": 400,
+          "default": 0
+        },
+        "width": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 1600
+        },
+        "height": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 800
+        },
+        "typography": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "text": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "title": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "body": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "tag": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "note": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "heading": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "from": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "to": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "term": {
+              "$ref": "#/$defs/instanceTextStyle"
+            },
+            "takeaway": {
+              "$ref": "#/$defs/instanceTextStyle"
+            }
+          }
+        }
+      },
+      "default": {
+        "offsetX": 0,
+        "offsetY": 0
       }
     }
   }

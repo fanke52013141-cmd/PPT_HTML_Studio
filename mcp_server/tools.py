@@ -62,7 +62,7 @@ def _make_tool_handler(cap: AgentCapability) -> Callable:
 def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[str, Any]:
     """Route a capability ID to the appropriate AgentClient method."""
 
-    if cap_id.startswith('html_sheet.') or cap_id in {
+    if cap_id.startswith(('html_sheet.', 'html_repair.')) or cap_id in {
         "project_model_binding.read", "project_model_binding.write",
         "html_editor.read", "html_editor.write", "html_editor.preview",
     }:
@@ -278,7 +278,10 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
         )
 
     if cap_id == "html_review.produce":
-        return client.produce_html_scene(args.get("project_id", ""), args.get("slide_id", ""))
+        return client.produce_html_scene(args.get("project_id", ""), args.get("slide_id", ""),
+            **{k: args[k] for k in ("design_candidate_key", "design_instruction", "asset_instruction") if k in args})
+    if cap_id == "html_review.design_current":
+        return client.get_html_design_current(args.get("project_id", ""), args.get("slide_id", ""))
     if cap_id == "html_review.task_status":
         return client.html_task_status(args.get("project_id", ""), args.get("job_id", ""))
     if cap_id == "html_review.task_cancel":

@@ -1348,6 +1348,9 @@ if (annotationsEditor.includes('decodeAudioData') || app.includes('decodeAudioDa
 const htmlReviewPanel = fs.readFileSync(path.join(root,'static/html_review_panel.js'),'utf8');
 if (/\bfetch\s*\(/.test(htmlReviewPanel) || htmlReviewPanel.includes('MutationObserver')) throw new Error('HTML review must use API and explicit refresh');
 if (!htmlReviewPanel.includes("getElementById('step-panel-3')")) throw new Error('HTML review belongs in the content panel');
+for (const token of ['design_candidate_key', 'design_instruction', 'accept-design', 'design/current', 'design_review']) {
+  if (!htmlReviewPanel.includes(token)) throw new Error(`HTML design checkpoint missing: ${token}`);
+}
 const sceneEditor = fs.readFileSync(path.join(root,'static/html_scene_editor.js'),'utf8');
 const modelBinding = fs.readFileSync(path.join(root,'static/project_model_binding.js'),'utf8');
 for (const script of ['html_scene_editor.js', 'project_model_binding.js', 'html_asset_sheets.js', 'html_review_panel.js']) {

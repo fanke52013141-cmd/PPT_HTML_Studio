@@ -28,7 +28,7 @@ class HtmlWorkflowJobs:
             freeze_project_models if provider is configured_image else None
         )
 
-    def submit(self, db, project, contract):
+    def submit(self, db, project, contract, options=None):
         from html_input_manifest import _hash
 
         root = self.deps.repo_root / "html_engine/visual"
@@ -43,13 +43,20 @@ class HtmlWorkflowJobs:
             + sorted((root / "templates").glob("*.json"))
         )
         current = load_scene_with_revision(project.run_dir, contract["slide_id"])
+        from html_visual_store import _read_revision
+        from html_production_models import HtmlProduceRequest
+        from html_design_candidates import definition_identity
+        options = HtmlProduceRequest.model_validate(options or {}).model_dump()
         frozen = self.freeze_models(project) if self.freeze_models is not None else None
         model_summary = frozen.summary() if frozen is not None else {"source": "injected"}
         key = sha256_json(
             {
                 "contract": contract,
+                "options": options,
+                "visual_reference_definitions": definition_identity(self.deps.repo_root),
                 "model_summary": model_summary,
                 "scene_hash": current["sha256"] if current else None,
+                "project_revision": _read_revision(project.run_dir)["revision"],
                 "definitions": {
                     str(p.relative_to(root)): _hash(p) for p in definition_files
                 },
@@ -77,10 +84,11 @@ class HtmlWorkflowJobs:
                     get_current_account_id(),
                     task["attempt"],
                     frozen,
+                    options,
                 )
         return task
 
-    def run(self, job_id, project_id, run_dir, contract, account_id, attempt=None, frozen=None):
+    def run(self, job_id, project_id, run_dir, contract, account_id, attempt=None, frozen=None, options=None):
         db = self.session_factory()
         try:
             with account_scope(account_id):
@@ -103,6 +111,8 @@ class HtmlWorkflowJobs:
 
                 deps, provider = self.deps, self.provider
                 extra = {}
+                if options:
+                    extra["options"] = options
                 if frozen is not None:
                     deps = replace(self.deps, json_generator=partial(
                         self.deps.json_generator, model_binding=frozen.text,

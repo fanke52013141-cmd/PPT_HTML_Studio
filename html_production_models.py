@@ -1,0 +1,17 @@
+"""One strict request contract shared by Web, Agent and MCP."""
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+class HtmlProduceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    design_candidate_key: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    design_instruction: str = Field(default="", max_length=2000)
+    asset_instruction: str = Field(default="", max_length=2000)
+
+    @model_validator(mode="after")
+    def exclusive(self):
+        if self.design_candidate_key and self.design_instruction:
+            raise ValueError("确认候选与修改设计不能同时提交")
+        if self.asset_instruction and not self.design_candidate_key:
+            raise ValueError("局部素材返工必须复用明确的已确认设计候选")
+        return self

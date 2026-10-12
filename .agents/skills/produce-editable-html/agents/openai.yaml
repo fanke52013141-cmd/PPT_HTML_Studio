@@ -1,0 +1,4 @@
+interface:
+  display_name: "可编辑 HTML 生产与修复"
+  short_description: "生成并验证实际 HTML，按证据修复排版并保留人工编辑与失败记录"
+  default_prompt: "使用 $produce-editable-html 判断当前是初稿生产、未保存候选修复还是已保存作品修改，调用现有工具，验证实际 HTML 并明确模型参与和验收范围。"
