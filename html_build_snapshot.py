@@ -180,7 +180,8 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
         for name in ["html_storyboard_planning.py", "html_visual_review_service.py", "html_reference_package.py",
                      "html_production_service.py", "html_design_brief.py", "html_image_provider.py",
                      "html_production_models.py", "html_candidate_agent.py", "html_scene_repair.py",
-                     "json_llm_service.py", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:
+                     "json_llm_service.py", "html_workflow_jobs.py", "html_production_stages.py",
+                     "html_task_store.py", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:
             capture.read(root / name, "source/" + name)
         for directory in ("themes", "layouts", "templates"):
             for p in sorted((root / "html_engine/visual" / directory).glob("*.json")):

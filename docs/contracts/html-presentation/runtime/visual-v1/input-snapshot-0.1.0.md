@@ -25,4 +25,4 @@ QA 验证必须给出要匹配的快照与证据目录；报告内容改动、�
 
 CLI：scripts/html_snapshot_check.py 的 freeze-generation、freeze-render、verify、review。创建需要 --run-dir 与 --expected-revision；生成快照加 --contract，渲染加 --slide；检查加 --snapshot。错误只返回受控代码，不回显原始秘密。
 
-实现：html_build_snapshot.py、html_snapshot_review.py、html_quality_report.py 与 review-snapshot.cjs。首版没有让自动生产任务消费生成快照，也没有实现图恢复或完整的无进展修复策略；这些属于 S02、后续 S04 与 S05 接线。
+实现：html_build_snapshot.py、html_snapshot_review.py、html_quality_report.py 与 review-snapshot.cjs。首版为独立入口；后续 S02 已接实际生产消费与安全恢复，见 [增量定义卡](production-recovery-0.1.0.md)。完整无进展修复策略和 S05 正式导出接线尚未实现。

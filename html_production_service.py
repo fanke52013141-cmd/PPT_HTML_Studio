@@ -192,6 +192,7 @@ def produce_scene(
     checkpoint: Callable = lambda: None,
     model_summary: dict | None = None,
     options: dict | None = None,
+    stage_record: Callable = lambda name, value: None,
 ) -> dict:
     from html_storyboard_planning import load_template_catalog
 
@@ -229,6 +230,8 @@ def produce_scene(
     )
     reused_assets = supplied_asset_ids(plan, contract, run_dir, deps.repo_root) if not selection.asset_instruction else set()
     new_asset_needs = [need for need in brief["asset_needs"] if need["id"] not in reused_assets]
+    stage_record("plan", plan)
+    stage_record("brief", brief)
     checkpoint()
     # Registered templates provide a reusable visual target; this is not a
     # fabricated image-model design. New generated assets are independently gated.
@@ -313,6 +316,7 @@ def produce_scene(
             raise HtmlReviewError("请求期间参考包已变化", code="REFERENCE_PACKAGE_INVALID")
         if definition_identity(deps.repo_root) != definitions:
             raise HtmlReviewError("生成期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
+        stage_record("design", candidate)
         return save_design(run_dir=run_dir, contract=contract, revision=revision,
                            definitions=definitions, model_summary=model_summary,
                            plan=plan, brief=brief, candidate=candidate,
@@ -392,7 +396,9 @@ def produce_scene(
         resources["assets"] = [
             a for a in resources["assets"] if a["id"] != entry["id"]
         ] + [entry]
+        stage_record("asset:" + original_id, entry)
     scene, binding = compile_plan(plan, contract, load_template_catalog(deps.repo_root))
+    stage_record("compile", {"scene": scene, "binding": binding})
     checkpoint()
     directory = run_dir / "planning/html_visual"
     # Candidate resources/definitions stay separate until review succeeds; a
@@ -500,6 +506,7 @@ def produce_scene(
                 )
                 write_json_atomic(candidate_dir / "freeze.json", freeze)
             checkpoint()
+            stage_record("review", report)
             from html_visual_store import _read_revision, HtmlVisualConflict
 
             current_revision = _read_revision(run_dir)["revision"]

@@ -353,7 +353,7 @@ def test_pptx_real_job_registers_downloadable_artifact():
     db.close()
 
 
-def test_production_job_runs_and_persists_result():
+def test_production_job_runs_and_persists_result(monkeypatch):
     from html_workflow_jobs import HtmlWorkflowJobs
     from database import LocalJob
 
@@ -382,20 +382,43 @@ def test_production_job_runs_and_persists_result():
             self.args = args
 
     capture = Capture()
+    calls = []
+    def generator(**kw):
+        calls.append(kw)
+        return copy.deepcopy(plan)
     jobs = HtmlWorkflowJobs(
         SessionLocal,
         HtmlReviewDependencies(
-            repo_root=ROOT, json_generator=lambda **kw: copy.deepcopy(plan)
+            repo_root=ROOT, json_generator=generator
         ),
         executor=capture,
     )
     task = jobs.submit(db, project, contract)
     assert jobs.submit(db, project, contract)["reused"]
+    import html_production_service
+    real_review = html_production_service.review_scene
+    def fail_review(*args, **kw):
+        raise RuntimeError("injected failure after compile")
+    monkeypatch.setattr(html_production_service, "review_scene", fail_review)
+    capture.args[0](*capture.args[1:])
+    db.expire_all()
+    failed = db.query(LocalJob).filter(LocalJob.id == task["id"]).one()
+    assert failed.status == "failed"
+    assert "phase:compile" in failed.get_payload()["production_stages"]
+    monkeypatch.setattr(html_production_service, "review_scene", real_review)
+    retry = jobs.submit(db, project, contract)
+    assert retry["id"] == task["id"] and retry["attempt"] == 2
+    # Deliberately mutate executor's original argument after submission.
+    # The saved page must still come from the verified snapshot.
+    original_id = contract["slide_id"]
+    contract["slide_id"] = "caller-mutated"
     capture.args[0](*capture.args[1:])
     db.expire_all()
     job = db.query(LocalJob).filter(LocalJob.id == task["id"]).one()
     assert job.status == "succeeded", job.error
     assert job.get_payload()["result"]["review"]["passed"]
+    assert job.get_payload()["result"]["scene"]["id"] == original_id
+    assert len(calls) == 1
     db.close()
 
 

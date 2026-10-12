@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.22",
+  "contract_version": "0.9.23",
   "effective_date": "2026-10-12",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,7 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-12 S02: production consumes verified generation snapshots; LocalJob checkpoints and attempt-fenced returned-response reuse implemented. Unknown outcomes and corrupt artifacts block retries; provider reconciliation and post-save crash reconciliation remain pending.",
     "2026-10-12 S01/S04 first local snapshot and static QA: actual resource/font/bundle bytes frozen, evidence hashes matched; automatic production/resume and formal export wiring remain pending.",
     "2026-10-12 S00: target-specific local preflight CLI and shared Chromium resolution; no provider connection or approval implied. See preflight-0.1.0.md.",
     "Unsaved capacity-failed candidates enter a bounded LangGraph layout agent; diagnostic-only screenshots do not approve work. See runtime/visual-v1/candidate-layout-agent-0.1.0.md.",
@@ -32,6 +33,9 @@
     "2026-10-10 E: application-production-0.3.0 defines neutral reference packages, explicit design checkpoint, single-subject retry and provenance fingerprints; Agent 1.17.0. Real provider and user acceptance remain separate."
   ],
   "documents": [
+    {
+      "path": "runtime/visual-v1/production-recovery-0.1.0.md"
+    },
     {
       "path": "README.md"
     },

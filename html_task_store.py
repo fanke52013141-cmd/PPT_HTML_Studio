@@ -38,6 +38,8 @@ def _job_to_dict(job) -> Dict[str, Any]:
         "submission_key": payload.get("submission_key"),
         "error": job.error,
         "result": payload.get("result"),
+        "snapshot_id": payload.get("input", {}).get("snapshot_id"),
+        "stages": payload.get("production_stages", {}),
     }
 
 
@@ -105,6 +107,10 @@ def submit_task(
             continue
         if job.status in ACTIVE_STATUSES or job.status == "succeeded":
             return {**_job_to_dict(job), "reused": True}
+        if job.status == "cancelled" and job_payload.get("input", {}).get("snapshot_id"):
+            raise HtmlTaskError("已取消的快照任务不会恢复；请更改输入后创建新任务", 409)
+        if any(record.get("state") in {"intent", "unknown"} for record in job_payload.get("production_stages", {}).values()):
+            raise HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：外部请求结果不确定，需核实后处理，禁止盲目重试", 409)
         attempt = int(job_payload.get("attempt", 1))
         if attempt >= MAX_ATTEMPTS:
             raise HtmlTaskError(

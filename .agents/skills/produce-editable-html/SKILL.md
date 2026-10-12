@@ -5,7 +5,7 @@ description: Produce and verify editable HTML slides from this repository's slid
 
 # 可编辑 HTML 生产与局部修复
 
-Skill 版本：1.2.0（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
+Skill 版本：1.2.1（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
 
 本文代码与文档路径均相对仓库根目录；`references/`、`evaluation/` 相对本 Skill 目录。
 先读 `docs/contracts/html-presentation/README.md`，再读其下 `runtime/visual-v1/application-production-0.3.0.md`、`scene-repair-0.1.0.md` 和 `candidate-layout-agent-0.1.0.md`。从 `agent_contract.capabilities` 获取实际可调用能力和请求 Schema。参考图谱不等于运行组件目录。保持内容、场景、资源、绑定为唯一源；DOM/截图/视频为派生物。
@@ -28,7 +28,7 @@ Skill 版本：1.2.0（2026-10-12）。目标是交付实际可打开、可编�
 
 ## 局部修复
 
-在需要复现一页输入或核对检查版本时，先读 `docs/contracts/html-presentation/runtime/visual-v1/input-snapshot-0.1.0.md`。使用 `scripts/html_snapshot_check.py freeze-render --run-dir <run> --slide <id> --expected-revision <revision>`，随后 `review --snapshot <path>` 检查固定输入，展示返回的实际 HTML。generation 快照用于保存规划输入；尚未由自动生产任务消费。QA 校验必须匹配期望快照和证据目录，不能只看报告的 passed。此入口目前只检查静态终态，不批准视觉、不证明动态/音频/导出通过；不能替代下述作者编辑 API。
+在需要复现一页输入或核对检查版本时，先读 `docs/contracts/html-presentation/runtime/visual-v1/input-snapshot-0.1.0.md`。使用 `scripts/html_snapshot_check.py freeze-render --run-dir <run> --slide <id> --expected-revision <revision>`，随后 `review --snapshot <path>` 检查固定输入，展示返回的实际 HTML。generation 快照已由生产任务消费；恢复规则见 `docs/contracts/html-presentation/runtime/visual-v1/production-recovery-0.1.0.md`。同输入失败/中断可显式重提交，已返回响应复用但归一化与实际检查重做。intent/unknown、坏产物或过期 revision 必须先诊断；不要修改阶段账本或换一个无意义参数绕过阻断重复生图。取消不恢复；作者已保存而任务中断时先读取现有作品核实。QA 校验必须匹配期望快照和证据目录，不能只看报告的 passed。此入口目前只检查静态终态，不批准视觉、不证明动态/音频/导出通过；不能替代下述作者编辑 API。
 
 1. 读html_editor.read，冻结revision；选定公开对象ID和scope。暂停帧仅用于定位，基础属性会影响对象整个生命周期。
 2. 根据问题选set_presentation、set_text_style、set_motion或set_binding；字段以生产Schema为准。字体/布局需scene0.5，服务显式升级；annotation不能覆盖其坐标空间。

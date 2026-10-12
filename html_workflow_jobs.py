@@ -49,9 +49,18 @@ class HtmlWorkflowJobs:
         options = HtmlProduceRequest.model_validate(options or {}).model_dump()
         frozen = self.freeze_models(project) if self.freeze_models is not None else None
         model_summary = frozen.summary() if frozen is not None else {"source": "injected"}
+        from html_build_snapshot import create_generation_snapshot
+        snapshot = create_generation_snapshot(
+            project.run_dir, contract, repo_root=self.deps.repo_root,
+            expected_revision=_read_revision(project.run_dir)["revision"], options=options,
+            model_identity={name: {"provider": part.get("provider"), "model": part.get("model"),
+                                  "config_digest": part.get("config_hash")}
+                            for name in ("text", "image") if (part := model_summary.get(name))},
+        )
         key = sha256_json(
             {
                 "contract": contract,
+                "snapshot_id": snapshot["snapshot_id"],
                 "options": options,
                 "visual_reference_definitions": definition_identity(self.deps.repo_root),
                 "model_summary": model_summary,
@@ -72,6 +81,7 @@ class HtmlWorkflowJobs:
                     "slide_id": contract["slide_id"],
                     "account_id": get_current_account_id(),
                     "model_summary": model_summary,
+                    "snapshot_id": snapshot["snapshot_id"],
                 },
             )
             if not task["reused"] or task.get("retried"):
@@ -110,6 +120,17 @@ class HtmlWorkflowJobs:
                         raise store.HtmlTaskError("任务已停止；候选产物保留")
 
                 deps, provider = self.deps, self.provider
+                from html_production_stages import ProductionStages
+                job = store._job(db, job_id, attempt)
+                snapshot_id = job.get_payload().get("input", {}).get("snapshot_id")
+                if not snapshot_id:
+                    raise store.HtmlTaskError("旧任务没有输入快照，请重新提交", 409)
+                stages = ProductionStages(db, job_id, attempt, run_dir, snapshot_id, self.deps.repo_root)
+                stages.checkpoint()
+                import json
+                # The executor consumes the frozen inputs, never the mutable caller object.
+                contract = json.loads((stages.folder / "input/contract.json").read_text(encoding="utf-8"))
+                options = json.loads((stages.folder / "input/options.json").read_text(encoding="utf-8"))
                 extra = {}
                 if options:
                     extra["options"] = options
@@ -119,12 +140,16 @@ class HtmlWorkflowJobs:
                     ))
                     provider = partial(self.provider, model_binding=frozen.image)
                     extra["model_summary"] = frozen.summary()
+                deps = replace(deps, json_generator=stages.wrap(deps.json_generator, "json"))
+                if provider is not None:
+                    provider = stages.wrap(provider, "image")
+                extra["stage_record"] = stages.record
                 result = produce_scene(
                     contract,
                     run_dir=run_dir,
                     deps=deps,
                     provider=provider,
-                    checkpoint=checkpoint,
+                    checkpoint=stages.checkpoint,
                     **extra,
                 )
                 checkpoint()
