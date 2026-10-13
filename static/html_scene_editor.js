@@ -33,6 +33,7 @@
     if (s.doc.scene.nodes.some((n) => n.presentation))
       s.doc.scene.version = "0.5.0";
     s.dirty = true;
+    s.impact.hidden = true;
     remember(s);
     notify(s, "有未保存修改；预览校验后保存。");
   }
@@ -497,6 +498,7 @@
     s.frame.contentWindow.visualPlayer.seek(Number(s.seek.value));
     mark(s);
     s.previewSnapshot = JSON.stringify(snapshot(s));
+    showImpact(s, resolved.rebuild_plan);
     notify(
       s,
       `修订 ${s.doc.revision}${s.dirty ? " · 本地草稿" : ""} · ${resolved.audio_status}`,
@@ -507,6 +509,10 @@
     s.root.inert = true;
     s.save.disabled = true;
     try {
+      if (s.dirty && s.previewSnapshot !== JSON.stringify(snapshot(s))) {
+        if (await preview(s)) notify(s, "已展示本次重建影响；查看后再次点击保存修改。");
+        return;
+      }
       if (!(await preview(s))) return;
       const payload = { ...snapshot(s), expected_revision: s.doc.revision };
       const result = await API.put(s.url, payload);
@@ -539,6 +545,24 @@
       s.root.inert = false;
     }
   }
+  const impactLabels = {scene_plan:'内容规划',asset_generation:'生成素材',asset_qa:'素材检查',scene_compile:'场景编译',static_qa:'静态检查',temporal_qa:'动画检查',visual_approval:'视觉审阅',tts:'旁白音频',audio_alignment:'音频对齐',audio_confirmation:'音频确认',subtitles:'字幕',motion_binding:'动作绑定',page_video:'本页视频',course_video:'课程视频',course_qa:'课程检查',subtitle_offsets:'字幕时间',course_order:'课程顺序',reference_qa:'引用检查',future_task_identity:'后续生成任务身份'};
+  function showImpact(s, plan) {
+    s.impact.replaceChildren();
+    s.impact.hidden=!plan;
+    if (!plan) return;
+    s.impact.append(el('h4', '本次修改的重建影响'));
+    if (plan.no_op) s.impact.append(el('p','内容未变化，无需重建。'));
+    for (const [id,page] of Object.entries(plan.pages || {})) {
+      const reasonLabels={page_added:'新增页面',page_removed:'删除页面',scene_changed:'页面文字或外观变化',motion_changed:'动作变化',registered_structure_changed:'模板或对象结构变化',asset_reference_changed:'素材引用变化',binding_changed:'动作绑定变化',narration_input_changed:'旁白内容变化',audio_artifacts_changed:'音频产物变化',referenced_asset_bytes_changed:'引用图片内容变化',themes_definition_changed:'主题变化',layouts_definition_changed:'布局变化',templates_definition_changed:'模板变化',font_bytes_or_family_changed:'字体变化',shared_runtime_changed:'共享播放器变化'};
+      const reasons=[...new Set(page.rebuild.flatMap(r=>r.reasons || []))];
+      if(reasons.length) s.impact.append(el('p', `页面 ${id} · 原因：${reasons.map(r=>reasonLabels[r] || r).join('、')}`));
+      s.impact.append(el('p', `页面 ${id} · 需要重做：${page.rebuild.map(r=>impactLabels[r.stage] || r.stage).join('、') || '无'}`));
+      s.impact.append(el('p', `可复用：${page.reuse.map(r=>impactLabels[r] || r).join('、') || '无'}`));
+    }
+    const stages=plan.project?.rebuild || [];
+    if(stages.length) s.impact.append(el('p',`课程需要重做：${stages.map(r=>impactLabels[r.stage] || r.stage).join('、')}`));
+    s.impact.append(el('p','复用需核验实际产物；页面与音频批准仍按各自规则检查。'));
+  }
   async function open(host, projectId, slideId) {
     if (active) remember(active);
     const token = ++generation,
@@ -556,6 +580,10 @@
     const status = el("p", "", { role: "status" });
     status.dataset.editorStatus = "";
     root.append(status);
+    const impact=el('section','');
+    impact.dataset.rebuildImpact='';
+    impact.hidden=true;
+    root.append(impact);
     const grid = el("div", "");
     grid.className = "hse-grid";
     root.append(grid);
@@ -587,6 +615,7 @@
     const s = {
       root,
       status,
+      impact,
       list,
       props,
       frame,
@@ -719,6 +748,7 @@
     s[target].push(snapshot(s));
     Object.assign(s.doc, s[source].pop());
     s.dirty = true;
+    s.impact.hidden = true;
     remember(s);
     nodeList(s);
     properties(s);

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from html_delivery_status import delivery_evidence
+
 from concurrent.futures import Executor, ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
@@ -194,6 +196,8 @@ class PptxExportService:
                 or "full_slide_bitmap"
             ),
             "artifact_state": state,
+            "historical": bool(metadata.get("historical")),
+            "export_evidence": delivery_evidence(metadata),
             "is_current": state == "current",
             "is_stale": state == "stale",
             "exists": exists,

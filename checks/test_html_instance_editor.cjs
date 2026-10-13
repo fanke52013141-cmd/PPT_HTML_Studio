@@ -5,6 +5,7 @@ const fs = require("fs"),
   assert = require("node:assert/strict");
 const { spawn } = require("child_process");
 const { chromium } = require("../html_engine/node_modules/playwright");
+const { resolveBrowser } = require("../html_engine/tools/browser-runtime.cjs");
 (async () => {
   const root = path.resolve(__dirname, ".."),
     run = fs.mkdtempSync(path.join(os.tmpdir(), "hps-editor-browser-"));
@@ -35,9 +36,7 @@ const { chromium } = require("../html_engine/node_modules/playwright");
     });
     browser = await chromium.launch({
       headless: true,
-      executablePath:
-        process.env.HPS_CHROME ||
-        "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+      executablePath: resolveBrowser(chromium),
     });
     const page = await browser.newPage({
         viewport: { width: 1500, height: 1100 },
@@ -66,6 +65,14 @@ const { chromium } = require("../html_engine/node_modules/playwright");
     );
     await font.fill("28");
     await font.blur();
+    await page.getByRole("button", { name: "保存修改", exact: true }).click();
+    await page.waitForFunction(() =>
+      document.querySelector('[data-editor-status]')?.textContent.includes('已展示本次重建影响'),
+    );
+    assert.match(await page.locator('[data-rebuild-impact]').textContent(), /需要重做/);
+    const evidence = path.join(root, 'outputs/s07-validation');
+    fs.mkdirSync(evidence, {recursive:true});
+    await page.screenshot({path:path.join(evidence,'editor-rebuild-impact.png'),fullPage:true});
     await page.getByRole("button", { name: "保存修改", exact: true }).click();
     await page.waitForFunction(() =>
       document

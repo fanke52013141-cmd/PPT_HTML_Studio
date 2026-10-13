@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.19.0
-- **Contract Hash**: `7e882229dff7c77c`
-- **Total Capabilities**: 58
+- **Agent API Version**: 1.21.0
+- **Contract Hash**: `d433c01eb5333931`
+- **Total Capabilities**: 60
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -20,10 +20,10 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_sheet.retry` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/retry` | `ppt_html_sheet_retry` | Yes | `html sheet-retry` | `html_asset_sheet_routes.sheet_retry` | Yes | No |
 | `project_model_binding.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
 | `project_model_binding.write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
-| `html_repair.preview` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
-| `html_repair.save` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
-| `html_repair.evidence` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
-| `html_repair.generate` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_scene_repair.generate_repair` | No | No |
+| `html_repair.preview` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
+| `html_repair.save` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
+| `html_repair.evidence` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
+| `html_repair.generate` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_scene_repair.generate_repair` | No | No |
 | `html_editor.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
 | `html_editor.write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_write` | Yes | `html editor-write` | `html_scene_editing.save_editor` | No | No |
 | `html_editor.preview` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor/preview` | `ppt_html_editor_preview` | Yes | `html editor-preview` | `html_scene_editing.preview_editor` | No | No |
@@ -33,7 +33,9 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
 | `html_review.produce` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
 | `html_review.design_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/design/current` | `ppt_html_design_current` | Yes | `html design-current` | `html_design_candidates.current_design` | No | No |
-| `html_review.task_status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}` | `ppt_html_task_status` | Yes | `html task-status` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
+| `html_review.task_status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}` | `ppt_html_task_status` | Yes | `html task-status` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
+| `html_review.task_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/task/current` | `ppt_html_task_current` | Yes | `html task-current` | `html_task_store.current_slide_task` | No | No |
+| `html_review.task_resume` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}/resume` | `ppt_html_task_resume` | Yes | `html task-resume` | `html_workflow_jobs.HtmlWorkflowJobs.resume` | No | No |
 | `html_review.task_cancel` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}/cancel` | `ppt_html_task_cancel` | Yes | `html task-cancel` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
 | `html_visual.status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/status` | `ppt_html_visual_status` | Yes | `html status` | `html_creation_workflow.project_status` | No | No |
 | `html_visual.scene_read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_read` | Yes | `html scene-read` | `html_visual_store.load_scene_with_revision` | No | No |
@@ -83,7 +85,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **53** stable tools:
+The MCP server exposes **55** stable tools:
 
 - `ppt_html_sheet_list` — List account-scoped HTML sheet candidates and latest persisted task for recovery.
 - `ppt_html_sheet_generate` — Submit a bounded HTML sheet task; freeze image model at submission, keep credentials only in memory. Mask requires configured exact segmentation. Query/stop using HTML task APIs.
@@ -94,10 +96,10 @@ The MCP server exposes **53** stable tools:
 - `ppt_html_sheet_retry` — Regenerate only one unaccepted declared object into an independent candidate. Expected revision, optional corrected need/direction; original assets and human edits preserved.
 - `ppt_project_model_binding_read` — Read account-scoped HTML project model references and redacted effective summaries; legacy/inherit/fixed modes, no credentials or endpoints.
 - `ppt_project_model_binding_write` — Save HTML project text/image model references with expected_revision and explicit rebind. No-op preserves work; changes apply to future generation only. Stale revision returns 409.
-- `ppt_html_repair_preview` — Bounded HTML local repair preview; registered instance styles and actions, frozen revision, protected manual fields, actual finite temporal checks. Does not approve aesthetics.
-- `ppt_html_repair_save` — Bounded HTML local repair save; registered instance styles and actions, frozen revision, protected manual fields, actual finite temporal checks. Does not approve aesthetics.
-- `ppt_html_repair_evidence` — Bounded HTML local repair evidence; registered instance styles and actions, frozen revision, protected manual fields, actual finite temporal checks. Does not approve aesthetics.
-- `ppt_html_repair_generate` — Bounded HTML local repair generate; registered instance styles and actions, frozen revision, protected manual fields, actual finite temporal checks. Does not approve aesthetics.
+- `ppt_html_repair_preview` — Bounded HTML local repair preview; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
+- `ppt_html_repair_save` — Bounded HTML local repair save; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
+- `ppt_html_repair_evidence` — Bounded HTML local repair evidence; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
+- `ppt_html_repair_generate` — Bounded HTML local repair generate; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
 - `ppt_html_editor_read` — Read stored HTML author scene, motion binding, production capabilities, validated resources and manual overrides under the project lock.
 - `ppt_html_editor_write` — Save schema-validated HTML object/action/beat edits and source-image normalized anchors. Materializes private pixel-anchor assets, protects manual edits, rejects stale revision with 409 and preserves audio.
 - `ppt_html_editor_preview` — Validate draft HTML scene/resources and resolve existing audio beat timing or author clock without saving, TTS or approval. Output still requires confirmed audio and current approval.
@@ -107,7 +109,9 @@ The MCP server exposes **53** stable tools:
 - `ppt_project_create` — Create a project with canvas, production/presentation mode, versioned creation configuration, and optional course/chapter ownership.
 - `ppt_html_produce` — Generate a neutral design candidate and stop for review; resume with design_candidate_key, revise with design_instruction, or retry the single subject using asset_instruction and the accepted key. HTML approval remains separate.
 - `ppt_html_design_current` — Read the current immutable design checkpoint, image URL and stale status; never approves a design or HTML scene.
-- `ppt_html_task_status` — HTML production workflow: task_status; persisted task and registered render gates.
+- `ppt_html_task_status` — Read persisted HTML task, page, stage, repair/Skill progress, reuse, input freshness and recovery advice; success is not visual approval.
+- `ppt_html_task_current` — Read the latest persisted production task for this page, independently of the project history limit; validates frozen input freshness. Returns null when absent.
+- `ppt_html_task_resume` — Explicitly continue the original frozen production request. Unknown outcomes, cancellation, changed inputs and exhausted budgets remain blocked; active submissions reuse the same task.
 - `ppt_html_task_cancel` — HTML production workflow: task_cancel; persisted task and registered render gates.
 - `ppt_html_visual_status` — Read shared Web/Agent HTML workflow stages, current visual approval readiness, and PPTX/video-specific gates.
 - `ppt_html_scene_read` — Read one slide's stored html scene document with its revision and content hash.

@@ -20,11 +20,16 @@ class ProductionStages:
         job = store._job(self.db, self.job_id, self.attempt)
         if job.status != "running":
             raise store.HtmlTaskError("任务已停止；拒绝迟到产物", 409)
+        self.verify_inputs()
+        return job
+
+    def verify_inputs(self, *, check_revision=True):
+        """Read-only source verification, also used by task presentation."""
         manifest = verify_snapshot(self.folder)
         if manifest["snapshot_id"] != self.snapshot_id or manifest["kind"] != "generation":
             raise store.HtmlTaskError("生成快照身份不匹配", 409)
         from html_visual_store import _read_revision
-        if _read_revision(self.run)["revision"] != manifest["source_revision"]:
+        if check_revision and _read_revision(self.run)["revision"] != manifest["source_revision"]:
             raise store.HtmlTaskError("生成快照版本已过期，请重新提交", 409)
         # Execute installed code only when it still matches the frozen closure.
         for entry in manifest["files"]:
@@ -41,7 +46,7 @@ class ProductionStages:
                 target = safe_file(self.run, path.removeprefix("project/")) if path.startswith("project/") or path.startswith("planning/") else safe_file(self.root, path)
             if target is not None and (not target.is_file() or fresh_hash(target) != entry["sha256"]):
                 raise store.HtmlTaskError("快照依赖已变化，请重新提交", 409)
-        return job
+        return manifest
 
     def _persist(self, key, record):
         job = self.checkpoint()
@@ -54,6 +59,12 @@ class ProductionStages:
     def record(self, name, value):
         """Deterministic stage evidence; never bypass final review on recovery."""
         self._save("phase:" + name, value, name, "json")
+
+    def progress(self, value):
+        job = self.checkpoint()
+        payload = job.get_payload()
+        payload["progress"] = {**payload.get("progress", {}), **value}
+        store._transition(self.db, job, ("running",), {"payload_json": store.json_dumps(payload)})
 
     def _save(self, key, value, stage, kind):
         self.checkpoint()
@@ -94,6 +105,7 @@ class ProductionStages:
                 if not path.is_file() or fresh_hash(path) != previous["sha256"]:
                     raise store.HtmlTaskError("STAGE_ARTIFACT_INVALID：已返回产物损坏，不能自动重复调用", 409)
                 data = path.read_bytes()
+                self.progress({"reused_stages": sorted(set(payload.get("progress", {}).get("reused_stages", []) + [key]))})
                 if kind == "image":
                     from ai_provider_service import open_validated_image
                     open_validated_image(data)

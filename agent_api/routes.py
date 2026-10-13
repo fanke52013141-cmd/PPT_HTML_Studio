@@ -1746,6 +1746,24 @@ def agent_html_task_cancel(project_id: str, job_id: str, db: Session = Depends(g
     _html_project_or_404(project_id, db)
     return HtmlTaskResult(project_id=project_id, task=task_cancel(project_id, job_id, db)["task"])
 
+
+@router.post("/projects/{project_id}/html-review/tasks/{job_id}/resume", response_model=HtmlTaskResult)
+def agent_html_task_resume(project_id: str, job_id: str, db: Session = Depends(get_db)):
+    from html_visual_review_routes import task_resume
+    _html_project_or_404(project_id, db)
+    return HtmlTaskResult(project_id=project_id, task=task_resume(project_id, job_id, db)["task"])
+
+
+from agent_contract.models import HtmlCurrentTaskResult
+
+
+@router.get("/projects/{project_id}/html-review/{slide_id}/task/current", response_model=HtmlCurrentTaskResult)
+def agent_html_task_current(project_id: str, slide_id: str, db: Session = Depends(get_db)):
+    from html_visual_review_routes import current_task
+    _html_project_or_404(project_id, db)
+    return HtmlCurrentTaskResult(project_id=project_id, slide_id=slide_id,
+                                 task=current_task(project_id, slide_id, db)["task"])
+
 from html_repair_models import RepairRequest, RepairSaveRequest, TemporalRequest, RepairGenerateRequest, RepairResult
 
 

@@ -354,7 +354,7 @@ def project_status(
     if db is not None and getattr(project, "id", None):
         from html_task_store import recent_task_summaries
 
-        tasks = recent_task_summaries(db, project.id)
+        tasks = recent_task_summaries(db, project.id, run_dir=run)
 
     from html_design_candidates import current_design
     design_candidates = {}

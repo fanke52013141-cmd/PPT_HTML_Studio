@@ -50,6 +50,17 @@ def run(case, **options):
     return produce_scene(case.contract, run_dir=case.run, deps=case.deps, provider=case.provider, options=options)
 
 
+@pytest.mark.parametrize('model,size', [('gpt-image-1.5', '1536x1024'), ('gpt-image-2.5-flare-vip', '1280x720')])
+def test_design_size_preserves_legacy_capability_and_records_actual_dimensions(case, model, size):
+    first = produce_scene(case.contract, run_dir=case.run, deps=case.deps, provider=case.provider,
+                          model_summary={'image': {'model': model}})
+    assert first['stage'] == 'design_review'
+    assert case.requests[0]['size'] == size
+    receipt = json.loads(next((case.run/'planning/html_visual/candidates/e1').glob('design-*.request.json')).read_text(encoding='utf-8'))
+    assert receipt['requested_size'] == size
+    assert receipt['actual_size'] == [128, 128] and receipt['size_verified'] is False
+
+
 def test_failed_unsaved_candidate_routes_agent_before_save(case, monkeypatch):
     calls = []
     def agent(scene, binding, **kw):
@@ -229,7 +240,6 @@ def test_asset_failure_keeps_existing_scene_and_receipt(case):
 
 
 def test_neutral_theme_reuses_registered_geometry():
-    from html_storyboard_planning import load_template_catalog
     catalog = json.loads((ROOT / "html_engine/visual/generated/catalog.json").read_text(encoding="utf-8"))
     theme = json.loads((ROOT / "html_engine/visual/themes/neutral-baseline.json").read_text(encoding="utf-8"))
     assert any(t["id"] == theme["id"] for t in catalog["themes"])
@@ -252,7 +262,7 @@ def test_gray_reference_removes_runtime_tones_without_changing_literal_text():
     assert content["title"] == "蓝色也是正文事实"
 
 
-def test_sdk_receives_attachment_bytes_and_low_2k_hint(tmp_path, monkeypatch):
+def test_sdk_receives_attachment_bytes_and_low_1k_hint(tmp_path, monkeypatch):
     import ai_provider_service as service
     from html_image_provider import configured_image
     path = tmp_path / "reference.png"
@@ -270,12 +280,12 @@ def test_sdk_receives_attachment_bytes_and_low_2k_hint(tmp_path, monkeypatch):
     binding = SimpleNamespace(require_ready=lambda: None, api_key="fixture-only", endpoint="https://fixture.invalid/v1", model="gpt-image-2.5-sunburst-official", provider="openai")
     assert configured_image("fixture", reference_paths=[path], transparent_background=False, model_binding=binding) == b"response"
     assert seen[0]["image"] == [path.read_bytes()] and "background" not in seen[0]
-    assert seen[0]["quality"] == "low" and seen[0]["extra_body"]["metadata"]["resolution"] == "2K"
+    assert seen[0]["quality"] == "low" and seen[0]["extra_body"]["metadata"]["resolution"] == "1K"
     configured_image("fixture", reference_paths=[path], model_binding=binding)
     assert seen[1]["background"] == "transparent" and len(closed) == 2
 
 
-def test_toapis_receives_2k_low_and_actual_paths(tmp_path, monkeypatch):
+def test_toapis_receives_1k_low_and_actual_paths(tmp_path, monkeypatch):
     import ai_provider_service as service
     from html_image_provider import configured_image
     seen = []
@@ -285,7 +295,7 @@ def test_toapis_receives_2k_low_and_actual_paths(tmp_path, monkeypatch):
     binding = SimpleNamespace(require_ready=lambda: None, api_key="fixture-only", endpoint="https://fixture.invalid", model="fixture", provider="toapis")
     path = tmp_path / "ref.png"; path.write_bytes(png())
     configured_image("fixture", reference_paths=[path], transparent_background=False, model_binding=binding)
-    assert seen[0]["public_config"] == {"toapis_resolution": "2k", "toapis_quality": "low"}
+    assert seen[0]["public_config"] == {"toapis_resolution": "1k", "toapis_quality": "low"}
     assert seen[0]["reference_paths"] == [str(path)] and not seen[0]["transparent_background"]
 
 

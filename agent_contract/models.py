@@ -431,6 +431,12 @@ class HtmlTaskResult(BaseModel):
     task: dict[str, Any]
 
 
+class HtmlCurrentTaskResult(BaseModel):
+    project_id: str
+    slide_id: str
+    task: dict[str, Any] | None
+
+
 from html_production_models import HtmlProduceRequest as HtmlProduceRequest
 
 

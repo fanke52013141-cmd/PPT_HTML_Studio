@@ -63,7 +63,12 @@ def supplied_asset_ids(plan, contract, run_dir, repo_root):
     return reused
 
 
-def compile_plan(plan: dict, contract: dict, catalog: dict) -> tuple[dict, dict]:
+def compile_plan(
+    plan: dict,
+    contract: dict,
+    catalog: dict,
+    relation_resolutions: list[dict] | None = None,
+) -> tuple[dict, dict]:
     """Content fills registered slots; IDs and time are resolved by code."""
     if plan["templateRef"]["id"] not in catalog["templates"]:
         raise HtmlReviewError("模板未注册")
@@ -103,6 +108,57 @@ def compile_plan(plan: dict, contract: dict, catalog: dict) -> tuple[dict, dict]
                 node["assetRef"] = {"id": need["id"], "version": "0.1.0"}
             node.setdefault("anchorId", "focus")
         nodes.append(node)
+
+    # Resolve explicit asset/slot identities to node IDs. A unique image or
+    # label alone does not prove that an unknown model reference means it.
+    nodes_by_id = {node["id"]: node for node in nodes}
+    objects_by_slot = {obj["slot"]: obj for obj in plan["objects"]}
+    asset_slot_by_id = {
+        asset["id"]: asset.get("slot")
+        for asset in plan["assets"]
+        if asset.get("render_owner") == "image_asset" and asset.get("slot")
+    }
+    for annotation in (node for node in nodes if node["type"] == "annotation"):
+        original_target_id = annotation["targetId"]
+        target = nodes_by_id.get(original_target_id)
+        if target is None:
+            target_slot = asset_slot_by_id.get(original_target_id)
+            slot_object = objects_by_slot.get(target_slot or original_target_id)
+            if slot_object and slot_object["kind"] == "image":
+                target = nodes_by_id.get(slot_object["id"])
+        if not target or target["type"] != "image":
+            raise HtmlReviewError(
+                f"标注 {annotation['id']} 未能唯一对应到图片对象",
+                code="ANNOTATION_TARGET_UNRESOLVED",
+            )
+        if target.get("anchorId") != annotation["anchorId"]:
+            raise HtmlReviewError(
+                f"标注 {annotation['id']} 与图片焦点不一致",
+                code="ANNOTATION_ANCHOR_MISMATCH",
+            )
+
+        original_label_id = annotation["labelId"]
+        label = nodes_by_id.get(original_label_id)
+        if label is None:
+            label_slot = objects_by_slot.get(original_label_id)
+            if label_slot and label_slot["kind"] == "text":
+                label = nodes_by_id.get(label_slot["id"])
+        if not label or label["type"] != "text":
+            raise HtmlReviewError(
+                f"标注 {annotation['id']} 未能唯一对应到文字标签",
+                code="ANNOTATION_LABEL_UNRESOLVED",
+            )
+        if original_target_id != target["id"] or original_label_id != label["id"]:
+            if relation_resolutions is not None:
+                relation_resolutions.append({
+                    "annotation_id": annotation["id"],
+                    "target": {"requested": original_target_id, "resolved": target["id"]},
+                    "label": {"requested": original_label_id, "resolved": label["id"]},
+                    "basis": "explicit asset/slot identity with matching image anchor",
+                })
+            annotation["targetId"] = target["id"]
+            annotation["labelId"] = label["id"]
+
     duration = max(12000, len(plan["beats"]) * 3500)
     if duration > 120000:
         raise HtmlReviewError("语块过多，请拆页")
@@ -193,6 +249,7 @@ def produce_scene(
     model_summary: dict | None = None,
     options: dict | None = None,
     stage_record: Callable = lambda name, value: None,
+    progress_record: Callable = lambda value: None,
     commit_record: Callable = lambda result, paths, **kwargs: None,
 ) -> dict:
     from html_storyboard_planning import load_template_catalog
@@ -208,6 +265,11 @@ def produce_scene(
         original_binding = read_json_file(run_dir / f"planning/html_visual/binding-{slide_id}.json")
     checkpoint()
     model_summary = copy.deepcopy(model_summary or {})
+    # Preserve legacy GPT Image standard-size support. Current Flare/native
+    # custom-size models use the shared 1K widescreen request.
+    image_model = str(model_summary.get("image", {}).get("model", "")).lower()
+    design_size = "1536x1024" if image_model.startswith("gpt-image-1") else "1280x720"
+    design_dimensions = tuple(int(value) for value in design_size.split("x"))
     from html_production_models import HtmlProduceRequest
     from html_design_candidates import definition_identity, load_design, save_design
     from html_reference_package import assemble_reference, design_prompt, verify_package, PROMPT_VERSION
@@ -270,7 +332,7 @@ def produce_scene(
             "brief_sha256": brief["sha256"],
             "model_config_hash": model_summary.get("image", {}).get("config_hash"),
             "reference_package_key": package["manifest"]["cacheKey"],
-            "image_policy": {"quality": "low", "resolution_hint": "2K", "transparent_background": False},
+            "image_policy": {"quality": "low", "resolution_hint": "1K", "size": design_size, "transparent_background": False},
         }
         request["reference_sha256"] = [
             hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in references
@@ -286,13 +348,13 @@ def produce_scene(
         ):
             image = provider(
                 prompt,
-                size="1536x1024",
+                size=design_size,
                 reference_paths=references,
                 transparent_background=False,
             )
             from ai_provider_service import open_validated_image
 
-            open_validated_image(image)
+            measured_image = open_validated_image(image)
             design_path.write_bytes(image)
             write_json_atomic(
                 key_path,
@@ -303,6 +365,9 @@ def produce_scene(
                     "response_sha256": hashlib.sha256(image).hexdigest(),
                     "transparent_background": False,
                     "provider_boundary_called": True,
+                    "requested_size": design_size,
+                    "actual_size": list(measured_image.size),
+                    "size_verified": measured_image.size == design_dimensions,
                     "reference_sha256": [
                         hashlib.sha256(Path(p).read_bytes()).hexdigest()
                         for p in references
@@ -360,7 +425,7 @@ def produce_scene(
                     hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in references
                 ],
                 "model_config_hash": model_summary.get("image", {}).get("config_hash"),
-                "generation_parameters": {"quality": "low", "resolution_hint": "2K"},
+                "generation_parameters": {"quality": "low", "resolution_hint": "1K"},
             },
             HtmlAssetDependencies(
                 lambda prompt, **kw: provider(
@@ -402,8 +467,12 @@ def produce_scene(
             a for a in resources["assets"] if a["id"] != entry["id"]
         ] + [entry]
         stage_record("asset:" + original_id, entry)
-    scene, binding = compile_plan(plan, contract, load_template_catalog(deps.repo_root))
-    stage_record("compile", {"scene": scene, "binding": binding})
+    relation_resolutions: list[dict] = []
+    scene, binding = compile_plan(
+        plan, contract, load_template_catalog(deps.repo_root), relation_resolutions,
+    )
+    stage_record("compile", {"scene": scene, "binding": binding,
+                             "relation_resolutions": relation_resolutions})
     checkpoint()
     directory = run_dir / "planning/html_visual"
     # Candidate resources/definitions stay separate until review succeeds; a
@@ -468,7 +537,7 @@ def produce_scene(
                 from html_candidate_agent import repair_candidate
 
                 repaired = repair_candidate(scene, binding, run_dir=run_dir, deps=deps,
-                                            manual=manual, checkpoint=checkpoint)
+                                            manual=manual, checkpoint=checkpoint, progress=progress_record)
                 scene, binding, report = repaired["scene"], repaired["binding"], repaired["report"]
                 layout_agent = repaired["summary"]
             if not report.get("passed"):
@@ -526,7 +595,8 @@ def produce_scene(
                           "model_summary": model_summary, "themeRef": scene["themeRef"],
                           "design_candidate_key": selection.design_candidate_key,
                           "files": [], "supplied_asset_ids": sorted(reused_assets),
-                          "layout_agent": layout_agent}
+                          "layout_agent": layout_agent,
+                          "plan_relation_resolutions": relation_resolutions}
             if resumed:
                 pack_root = run_dir / resumed["reference_package"]
                 paths = [pack_root / "manifest.json", accepted_image]

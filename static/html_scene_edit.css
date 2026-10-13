@@ -13,3 +13,17 @@
 .html-scene-editor [role=status]{white-space:pre-wrap;overflow-wrap:anywhere;max-height:150px;overflow:auto}
 .html-scene-editor pre{max-height:300px;overflow:auto;white-space:pre-wrap}.html-scene-editor .hse-anchor{border-bottom:1px solid #e5e7eb;padding:8px 0}
 @media(max-width:1100px){.html-scene-editor .hse-grid{grid-template-columns:140px minmax(0,1fr)}.html-scene-editor aside{grid-column:1/-1;max-height:500px}}
+/* S07 status evidence stays readable in narrow workspaces. */
+#html-review-panel-section[hidden], #html-review-panel-section [hidden] {
+  display: none !important;
+}
+[data-html-task] p, [data-rebuild-impact] p, .html-delivery-evidence {
+  overflow-wrap: anywhere;
+}
+.html-delivery-evidence { display: block; }
+[data-rebuild-impact]:not([hidden]) {
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid var(--border-color, #d8dde5);
+  border-radius: 8px;
+}

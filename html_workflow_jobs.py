@@ -28,7 +28,7 @@ class HtmlWorkflowJobs:
             freeze_project_models if provider is configured_image else None
         )
 
-    def submit(self, db, project, contract, options=None):
+    def submit(self, db, project, contract, options=None, *, expected_snapshot=None):
         from html_input_manifest import _hash
 
         root = self.deps.repo_root / "html_engine/visual"
@@ -62,6 +62,8 @@ class HtmlWorkflowJobs:
                                   "config_digest": part.get("config_hash")}
                             for name in ("text", "image") if (part := model_summary.get(name))},
         )
+        if expected_snapshot is not None and snapshot["snapshot_id"] != expected_snapshot:
+            raise store.HtmlTaskError("原任务代码、模型或依赖已变化；不能作为原请求继续", 409)
         key = sha256_json(
             {
                 "contract": contract,
@@ -87,6 +89,8 @@ class HtmlWorkflowJobs:
                     "account_id": get_current_account_id(),
                     "model_summary": model_summary,
                     "snapshot_id": snapshot["snapshot_id"],
+                    "source_revision": _read_revision(project.run_dir)["revision"],
+                    "contract_sha256": sha256_json(contract),
                 },
             )
             if not task["reused"] or task.get("retried"):
@@ -102,6 +106,30 @@ class HtmlWorkflowJobs:
                     options,
                 )
         return task
+
+    def resume(self, db, project, job):
+        """Explicit retry of the frozen request, through the original submit path."""
+        import json
+        from html_build_snapshot import safe_file, verify_snapshot
+        from html_visual_store import _read_revision
+
+        if job.job_type != "html_plan_generate":
+            raise store.HtmlTaskError("此入口仅用于场景生产任务", 409)
+        if job.status in store.ACTIVE_STATUSES or job.status == "succeeded":
+            return {**store._job_to_dict(job), "reused": True}
+        if not store.recovery_action(job)["can_resume"]:
+            raise store.HtmlTaskError("该任务不能直接继续；请先核实原请求或已有作品", 409)
+        try:
+            folder = safe_file(project.run_dir, "planning/html_visual/builds/" + job.get_payload()["input"]["snapshot_id"])
+            manifest = verify_snapshot(folder)
+            contract = json.loads((folder / "input/contract.json").read_text(encoding="utf-8"))
+            options = json.loads((folder / "input/options.json").read_text(encoding="utf-8"))
+            current = next((s for s in json.loads((Path(project.run_dir) / "planning/visual_contract.json").read_text(encoding="utf-8")).get("slides", []) if s.get("slide_id") == contract["slide_id"]), None)
+            if current != contract or _read_revision(project.run_dir)["revision"] != manifest["source_revision"]:
+                raise ValueError("revision changed")
+        except (ValueError, OSError, KeyError) as exc:
+            raise store.HtmlTaskError("原任务输入或版本已变化；请重新读取当前页面", 409) from exc
+        return self.submit(db, project, contract, options=options, expected_snapshot=manifest["snapshot_id"])
 
     def run(self, job_id, project_id, run_dir, contract, account_id, attempt=None, frozen=None, options=None):
         db = self.session_factory()
@@ -149,6 +177,7 @@ class HtmlWorkflowJobs:
                 if provider is not None:
                     provider = stages.wrap(provider, "image")
                 extra["stage_record"] = stages.record
+                extra["progress_record"] = stages.progress
                 from html_production_recovery import seal_author_commit
                 extra["commit_record"] = partial(seal_author_commit, db, job_id, attempt, run_dir, snapshot_id)
                 result = produce_scene(

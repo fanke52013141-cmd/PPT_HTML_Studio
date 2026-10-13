@@ -41,10 +41,68 @@ def _job_to_dict(job) -> Dict[str, Any]:
         "snapshot_id": payload.get("input", {}).get("snapshot_id"),
         "stages": payload.get("production_stages", {}),
         "reconciliation": payload.get("reconciliation"),
+        "slide_id": payload.get("input", {}).get("slide_id"),
+        "stage": job.stage,
+        "source_revision": payload.get("input", {}).get("source_revision"),
+        "progress": payload.get("progress", {}),
+        "recovery": recovery_action(job),
     }
 
 
-def recent_task_summaries(db, project_id: str, *, limit: int = 20) -> list[Dict[str, Any]]:
+def recovery_action(job):
+    """Display advice only; resubmission still enforces all recovery gates."""
+    payload = job.get_payload()
+    unknown = any(r.get("state") in {"intent", "unknown"}
+                  for r in payload.get("production_stages", {}).values())
+    blocked = unknown or "RECONCILIATION_BLOCKED" in (job.error or "")
+    resumable = (job.job_type == "html_plan_generate"
+                 and job.status in {"failed", "interrupted"}
+                 and int(payload.get("attempt", 1)) < MAX_ATTEMPTS
+                 and bool(payload.get("input", {}).get("snapshot_id"))
+                 and not blocked)
+    return {"can_resume": resumable, "requires_verification": blocked,
+            "reason": "external_outcome_unknown" if blocked else
+                      "resume_original_request" if resumable else "not_resumable"}
+
+
+def task_view(job, run_dir, *, verify_dependencies=True):
+    import json
+    from pathlib import Path
+    from artifact_fingerprint import sha256_json
+    from html_visual_store import _read_revision
+
+    value = _job_to_dict(job)
+    result = value.get("result") or {}
+    expected = (result.get("saved") or {}).get("revision", value.get("source_revision"))
+    if verify_dependencies and job.job_type == "html_plan_generate" and value.get("snapshot_id"):
+        from html_production_stages import ProductionStages
+        try:
+            verifier = ProductionStages(None, job.id, None, run_dir, value["snapshot_id"], Path(__file__).resolve().parent)
+            manifest = verifier.verify_inputs(check_revision=False)
+            expected = manifest["source_revision"] if expected is None else expected
+            frozen_contract = json.loads((verifier.folder / "input/contract.json").read_text(encoding="utf-8"))
+        except (ValueError, OSError, KeyError):
+            value["input_state"] = "stale"
+            value["recovery"] = {**value["recovery"], "can_resume": False, "reason": "dependencies_changed"}
+            return value
+    else:
+        frozen_contract = None
+    current = _read_revision(run_dir)["revision"]
+    value["input_state"] = "unknown" if expected is None else "current" if expected == current else "stale"
+    if value["input_state"] == "current" and job.job_type == "html_plan_generate":
+        identity = job.get_payload().get("input", {}).get("contract_sha256") or (sha256_json(frozen_contract) if frozen_contract else None)
+        try:
+            slides = json.loads((Path(run_dir) / "planning/visual_contract.json").read_text(encoding="utf-8")).get("slides", [])
+            contract = next((s for s in slides if s.get("slide_id") == value["slide_id"]), None)
+            value["input_state"] = "unknown" if not identity else "current" if contract and sha256_json(contract) == identity else "stale"
+        except (OSError, ValueError, TypeError):
+            value["input_state"] = "unknown"
+    if value["input_state"] != "current":
+        value["recovery"] = {**value["recovery"], "can_resume": False, "reason": "input_changed"}
+    return value
+
+
+def recent_task_summaries(db, project_id: str, *, limit: int = 20, run_dir=None) -> list[Dict[str, Any]]:
     """Return safe, project-scoped task facts for workflow status reads.
 
     Inputs, result payloads, and idempotency keys stay on the task endpoints;
@@ -63,8 +121,10 @@ def recent_task_summaries(db, project_id: str, *, limit: int = 20) -> list[Dict[
         .limit(safe_limit)
         .all()
     )
-    return [
-        {
+    summaries = []
+    for job in jobs:
+        value = task_view(job, run_dir, verify_dependencies=False) if run_dir else _job_to_dict(job)
+        summaries.append({
             "id": job.id,
             "type": job.job_type,
             "status": job.status,
@@ -72,9 +132,24 @@ def recent_task_summaries(db, project_id: str, *, limit: int = 20) -> list[Dict[
             "attempt": int(job.get_payload().get("attempt", 1)),
             "error": job.error,
             "updated_at": job.updated_at.isoformat() if job.updated_at else None,
-        }
-        for job in jobs
-    ]
+            "slide_id": job.get_payload().get("input", {}).get("slide_id"),
+            "snapshot_id": job.get_payload().get("input", {}).get("snapshot_id"),
+            "source_revision": job.get_payload().get("input", {}).get("source_revision"),
+            "progress": job.get_payload().get("progress", {}),
+            "recovery": value["recovery"],
+            "input_state": value.get("input_state", "unknown"),
+        })
+    return summaries
+
+
+def current_slide_task(db, project_id, slide_id, run_dir):
+    from database import LocalJob
+    from sqlalchemy import func
+    job = db.query(LocalJob).filter(
+        LocalJob.project_id == project_id, LocalJob.job_type == "html_plan_generate",
+        func.json_extract(LocalJob.payload_json, "$.input.slide_id") == slide_id,
+    ).order_by(LocalJob.created_at.desc(), LocalJob.id.desc()).first()
+    return task_view(job, run_dir) if job else None
 
 
 def submit_task(

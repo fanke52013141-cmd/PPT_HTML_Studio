@@ -4,6 +4,7 @@
   window.__htmlReviewPanelReady = true;
   let generation = 0;
   let activeTask = null;
+  let lastTask = null;
   let designCandidate = null;
   let acceptedDesignKey = null;
   function showAssetRetry(section, key) {
@@ -30,6 +31,86 @@
     const target = section.querySelector('[data-html-status]');
     if (target.textContent !== message) target.textContent = message;
   }
+  const stageLabels = {queued:'等待处理',running:'正在处理',plan:'内容规划',brief:'设计规划',design:'设计参考',compile:'编译场景',review:'页面检查',rebuild:'重建影响',json_request:'模型请求',json_returned:'模型已返回',image_request:'图片请求',image_returned:'图片已返回',image_unknown:'图片结果待核实',json_unknown:'模型结果待核实',design_review:'等待设计确认'};
+  const taskStatusLabels={queued:'等待处理',running:'生产中',succeeded:'任务结束',failed:'生产失败',interrupted:'任务中断',cancelled:'已停止'};
+  function taskFacts(section, task) {
+    lastTask = task;
+    const box = section.querySelector('[data-html-task]');
+    box.replaceChildren();
+    section.querySelector('[data-action="resume"]').hidden=true;
+    section.querySelector('[data-action="cancel"]').hidden=true;
+    if (!task) return;
+    const line = text => {const p=document.createElement('p');p.textContent=text;box.append(p);};
+    line(`页面 ${task.slide_id || '未知'} · ${taskStatusLabels[task.status] || task.status} · ${stageLabels[task.stage] || task.stage || ''} · 第 ${task.attempt || 1} 次尝试`);
+    if (task.input_state === 'stale') line('此任务对应旧输入，不能作为当前页面完成结果。');
+    if (task.snapshot_id) line(`输入版本：${task.snapshot_id}`);
+    const progress=task.progress || {};
+    if (progress.repair_round != null) line(`排版修复：${progress.repair_round} / ${progress.max_rounds} 轮`);
+    for (const skill of progress.runtime_skill?.skills || []) line(`已加载 Skill：${skill.id} ${skill.version}`);
+    const returned=Object.values(task.stages || {}).filter(s=>s.state==='returned');
+    if (returned.length) line(`已记录阶段：${returned.map(s=>stageLabels[s.stage] || s.stage).join('、')}`);
+    if (progress.reused_stages?.length) line(`已复用 ${progress.reused_stages.length} 个原请求结果；后续检查仍需通过。`);
+    if (task.error) line(`失败原因：${task.error}`);
+    if (task.recovery?.requires_verification) line('供应商结果或回执需先核实，不能直接重复请求。');
+    const resume=section.querySelector('[data-action="resume"]');
+    resume.hidden=!task.recovery?.can_resume || task.input_state !== 'current';
+    resume.disabled=false;
+    section.querySelector('[data-action="cancel"]').hidden=!['queued','running'].includes(task.status);
+  }
+  async function followTask(section, task, current, token) {
+    if (token !== generation) return null;
+    if (!['queued','running'].includes(task.status) && !task.input_state) {
+      task=(await API.get(`/api/projects/${encodeURIComponent(current.project.id)}/html-review/tasks/${encodeURIComponent(task.id)}`)).task;
+      if(token!==generation) return null;
+    }
+    activeTask={id:task.id,project:current.project.id,slide:current.slideId};
+    while (token === generation) {
+      taskFacts(section, task);
+      if (!['queued','running'].includes(task.status)) return task;
+      status(section, '任务正在处理，阶段状态会自动更新。');
+      await new Promise(resolve=>setTimeout(resolve,900));
+      if (token !== generation) return null;
+      try {
+        task=(await API.get(`/api/projects/${encodeURIComponent(current.project.id)}/html-review/tasks/${encodeURIComponent(task.id)}`)).task;
+      } catch(error) {
+        if (token === generation) status(section, `状态连接中断，正在重试：${error.message}`);
+      }
+    }
+    return null;
+  }
+  async function restoreTask(section, current, token) {
+    try {
+      const response=await API.get(`/api/projects/${encodeURIComponent(current.project.id)}/html-review/${encodeURIComponent(current.slideId)}/task/current`);
+      if (token !== generation) return;
+      if (!response.task) return;
+      section.querySelectorAll('[data-action="produce"],[data-action="accept-design"],[data-action="revise-design"],[data-action="retry-asset"]').forEach(b=>b.disabled=true);
+      const task=await followTask(section,response.task,current,token);
+      if (!task || token !== generation) return;
+      if (task.status !== 'succeeded') status(section, task.error || taskStatusLabels[task.status] || '任务状态待检查');
+      else if (task.input_state === 'stale') status(section,'旧任务已结束；当前页面需要重新检查。');
+      else if (task.input_state === 'unknown') status(section,'旧任务缺少完整版本信息，请重新检查当前页面。');
+      else if (task.result?.stage !== 'design_review') status(section,'已恢复生产记录；可编辑实际页面，审阅后再批准。');
+      if (task.status === 'succeeded' && task.input_state === 'current') {
+        const base=`/api/projects/${encodeURIComponent(current.project.id)}/html-review/${encodeURIComponent(current.slideId)}`;
+        if(task.result?.stage === 'design_review') {
+          const design=await API.get(`${base}/design/current`);
+          if(token!==generation) return;
+          showDesign(section,design.design,base);
+        } else if(task.result?.review?.screenshot) {
+          const image=section.querySelector('[data-html-preview]');
+          image.src=`${base}/screenshot`; image.hidden=false;
+        }
+      }
+    } catch(error) {if(token===generation) status(section,`任务恢复失败：${error.message}`);}
+    finally {
+      if(token===generation) {
+        activeTask=null;
+        section.querySelectorAll('[data-action="produce"],[data-action="accept-design"],[data-action="revise-design"],[data-action="retry-asset"]').forEach(b=>b.disabled=false);
+        if(designCandidate?.stale) section.querySelector('[data-action="accept-design"]').disabled=true;
+        section.querySelector('[data-action="resume"]').disabled=false;
+      }
+    }
+  }
   function refresh() {
     const host = document.getElementById('step-panel-3');
     if (!host) return;
@@ -40,6 +121,7 @@
     if (project?.visual_backend !== 'html') {
       if (section && !section.hidden) {generation++; activeTask=null; designCandidate=null; acceptedDesignKey=null;}
       if (section) section.hidden = true;
+      if (section) {section.dataset.context=''; taskFacts(section,null);}
       window.HtmlSceneEditor?.close();
       window.HtmlAssetSheets?.close();
       return;
@@ -57,7 +139,7 @@
         <button type="button" data-action="models">项目生成模型</button>
         <button type="button" data-action="sheets">批量生成配图</button>
         <button type="button" data-action="cancel" hidden>停止生产任务</button>
-        <div data-html-status role="status"></div>
+        <div data-html-status role="status"></div><div data-html-task aria-label="生产任务记录"></div><button type="button" data-action="resume" hidden>继续原生产任务</button>
         <div data-html-design hidden>
           <p data-design-state></p>
           <img alt="待确认的黑灰白页面设计参考" style="max-width:100%">
@@ -132,17 +214,12 @@
             if (!acceptedDesignKey || !instruction) throw new Error('请填写主体素材修改方向，并确认当前设计仍有效。');
             payload = {design_candidate_key: acceptedDesignKey, asset_instruction: instruction}; action = 'produce';
           }
-          let result = await API.post(`${base}/${action}`, payload);
+          let result = action === 'resume' ? await API.post(`/api/projects/${encodeURIComponent(current.project.id)}/html-review/tasks/${encodeURIComponent(lastTask.id)}/resume`, {}) : await API.post(`${base}/${action}`, payload);
           if (result.task) {
-            let task = result.task;
-            activeTask = {id:task.id,project:current.project.id,slide:current.slideId};
-            section.querySelector('[data-action="cancel"]').hidden=false;
-            while (task.status === 'queued' || task.status === 'running') {
-              await new Promise(resolve => setTimeout(resolve, 700));
-              if (token !== generation) return;
-              task = (await API.get(`/api/projects/${encodeURIComponent(current.project.id)}/html-review/tasks/${encodeURIComponent(task.id)}`)).task;
-            }
-            if (task.status !== 'succeeded') throw new Error(task.error || `任务${task.status}`);
+            const task = await followTask(section,result.task,current,token);
+            if (!task || token !== generation) return;
+            if (task.status !== 'succeeded') throw new Error(task.error || taskStatusLabels[task.status] || '任务状态待检查');
+            if (task.input_state === 'stale') throw new Error('任务对应旧输入，请重新读取当前页面。');
             result = task.result;
             if (result.review?.screenshot) result.review.screenshot_url = `${base}/screenshot`;
           }
@@ -200,6 +277,8 @@
         section.dataset.project = project.id;
       }
       generation++;
+      activeTask=null;
+      taskFacts(section,null);
       designCandidate = null;
       showAssetRetry(section, null);
       showDesign(section, null, '');
@@ -212,6 +291,7 @@
       section.querySelector('[data-html-preview]').hidden = true;
       if (slideId) {
         const token = generation;
+        restoreTask(section,{project,slideId},token);
         const base = `/api/projects/${encodeURIComponent(project.id)}/html-review/${encodeURIComponent(slideId)}`;
         API.get(`${base}/design/current`).then(result => {
           if (token !== generation || section.hidden) return;

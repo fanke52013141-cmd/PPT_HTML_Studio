@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from html_delivery_status import delivery_evidence
+
 from dataclasses import dataclass
 from datetime import datetime
 import json
@@ -342,6 +344,8 @@ class VideoArtifactService:
             ),
             "is_speed_variant": abs(playback_rate - 1.0) > 0.001,
             "artifact_state": artifact_state,
+            "historical": bool(metadata.get("historical")),
+            "export_evidence": delivery_evidence(metadata),
             "is_current": artifact_state == "current",
             "is_stale": artifact_state == "stale",
             "is_legacy": artifact_state == "legacy",

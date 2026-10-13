@@ -145,7 +145,7 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
         )
         assert len(binding["actions"]) == len(contract["narration_beats"])
     assert len({m["template"] for m in measurements}) == 3
-    assert sum(c["size"] == "1536x1024" for c in calls) == 3
+    assert sum(c["size"] == "1280x720" for c in calls) == 3
     assert (
         sum(c["size"] == "1024x1024" for c in calls) == 3
     )  # Changed relevant classification bytes must change asset cache identity.

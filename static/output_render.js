@@ -131,7 +131,7 @@ function startStep8RenderPolling(
       if (renderBtn) renderBtn.disabled = false;
 
       if (res.status === 'success') {
-        showToast('🎉 视频渲染成功！');
+        showToast(state.currentProject?.visual_backend === 'html' && !(res.videos || [res.video]).some(item=>item?.artifact_state === 'current' && !item.historical) ? '视频已生成，保存为历史候选；当前输入仍需导出。' : '🎉 视频渲染成功！');
         showStep8VideoResult(res.videos || (res.video ? [res.video] : []));
         refreshCurrentProjectStatus(8).catch(() => {});
       } else if (res.status === 'error') {
@@ -569,6 +569,17 @@ async function runStep8PptxExport() {
   }
 }
 
+function htmlDeliveryDetails(item) {
+  if (!item.export_evidence?.snapshot_id) return '';
+  const evidence=item.export_evidence;
+  const pages=evidence.pages || [];
+  return `<div class="step8-pptx-meta html-delivery-evidence">课程版本：${escHtml(evidence.snapshot_id)} · 已复用 ${pages.filter(p=>p.reused).length} / ${pages.length} 页</div>`;
+}
+function htmlDeliveryBadge(item) {
+  if (item.artifact_state === 'current' && !item.historical) return '<span class="step8-current-badge">当前有效交付</span>';
+  if (item.artifact_state === 'invalid' || item.artifact_state === 'missing') return '<span class="step8-legacy-badge">文件缺失或损坏</span>';
+  return '<span class="step8-legacy-badge">历史候选 · 当前输入需重新导出</span>';
+}
 function showStep8PptxResults(artifacts) {
   const box = document.getElementById('step8-pptx-result-box');
   const list = document.getElementById('step8-pptx-list');
@@ -581,7 +592,7 @@ function showStep8PptxResults(artifacts) {
   }
   list.innerHTML = items.map((item, index) => {
     const created = item.created_at ? new Date(item.created_at).toLocaleString() : '';
-    const stateBadge = item.artifact_state === 'current'
+    const stateBadge = state.currentProject?.visual_backend === 'html' ? htmlDeliveryBadge(item) : item.artifact_state === 'current'
       ? '<span class="step8-current-badge">当前内容</span>'
       : item.artifact_state === 'stale'
         ? '<span class="step8-legacy-badge">输入已变化</span>'
@@ -593,7 +604,7 @@ function showStep8PptxResults(artifacts) {
         </div>
         <div class="step8-pptx-main">
           <div class="step8-pptx-name">
-            <strong>${index === 0 ? '最新 PPTX' : `历史 PPTX ${index + 1}`}</strong>
+            <strong>${state.currentProject?.visual_backend === 'html' ? (item.artifact_state === 'current' && !item.historical ? '当前 PPTX' : '历史 PPTX') : index === 0 ? '最新 PPTX' : `历史 PPTX ${index + 1}`}</strong>
             ${stateBadge}
           </div>
           <div class="step8-pptx-meta">
@@ -602,6 +613,7 @@ function showStep8PptxResults(artifacts) {
             <span>${escHtml(created || item.filename || '')}</span>
           </div>
         </div>
+        ${htmlDeliveryDetails(item)}
         <div class="step8-pptx-actions">
           ${item.exists ? `
             <a href="${item.download_url}" download class="btn success">
@@ -653,7 +665,7 @@ function showStep8VideoResult(videos) {
       const totalElapsed = idx === 0
         ? formatProjectTotalElapsed(item.project_total_elapsed_sec)
         : '';
-      const artifactBadge = item.artifact_state === 'current'
+      const artifactBadge = state.currentProject?.visual_backend === 'html' ? htmlDeliveryBadge(item) : item.artifact_state === 'current'
         ? '<span class="step8-current-badge">精确 RLE Mask · 当前</span>'
         : item.artifact_state === 'stale'
           ? '<span class="step8-legacy-badge">输入已变化 · 需重渲染</span>'
@@ -664,12 +676,13 @@ function showStep8VideoResult(videos) {
         <div class="step8-video-card">
           <div class="step8-video-card-head">
             <strong>
-              ${idx === 0 ? '最新渲染' : `历史版本 ${idx + 1}`}
+              ${state.currentProject?.visual_backend === 'html' ? (item.artifact_state === 'current' && !item.historical ? '当前视频' : '历史视频') : idx === 0 ? '最新渲染' : `历史版本 ${idx + 1}`}
               ${item.is_speed_variant ? `<span class="step8-speed-badge">${escHtml(speedLabel)} 调速版</span>` : ''}
               ${artifactBadge}
             </strong>
             <span>${escHtml(created || item.filename || '')}</span>
           </div>
+          ${htmlDeliveryDetails(item)}
           ${totalElapsed ? `<div class="step8-video-total-elapsed">总耗时：${escHtml(totalElapsed)}</div>` : ''}
           <div class="video-preview-box">
             <video src="${escHtml(url)}" data-video-filename="${escHtml(item.filename || '')}" controls playsinline preload="metadata"></video>

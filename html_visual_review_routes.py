@@ -228,6 +228,14 @@ def design_current(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
         raise HTTPException(exc.status_code, detail={"code": exc.code, "message": str(exc)}) from exc
 
 
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/task/current")
+def current_task(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
+    from html_task_store import current_slide_task
+    run_dir = project_run_dir_or_500(_html_project(project_id, db))
+    _contract_slide(run_dir, slide_id)
+    return {"success": True, "task": current_slide_task(db, project_id, slide_id, run_dir)}
+
+
 @router.get("/api/projects/{project_id}/html-review/{slide_id}/design/{key}/image")
 def design_image(project_id: str, slide_id: str, key: str, db: Any = Depends(_get_db)):
     from fastapi.responses import FileResponse
@@ -267,9 +275,24 @@ def _task(project_id, job_id, db):
 
 @router.get("/api/projects/{project_id}/html-review/tasks/{job_id}")
 def task_status(project_id: str, job_id: str, db: Any = Depends(_get_db)):
-    from html_task_store import _job_to_dict
+    from html_task_store import task_view
 
-    return {"success": True, "task": _job_to_dict(_task(project_id, job_id, db))}
+    project = _html_project(project_id, db)
+    return {"success": True, "task": task_view(_task(project_id, job_id, db), project_run_dir_or_500(project))}
+
+
+@router.post("/api/projects/{project_id}/html-review/tasks/{job_id}/resume")
+def task_resume(project_id: str, job_id: str, db: Any = Depends(_get_db)):
+    from html_task_store import HtmlTaskError, task_view
+    project = _html_project(project_id, db)
+    job = _task(project_id, job_id, db)
+    if _jobs is None:
+        raise HTTPException(503, "HTML 生产任务服务未配置")
+    try:
+        resumed = _jobs.resume(db, project, job)
+        return {"success": True, "task": {**resumed, **task_view(_task(project_id, resumed["id"], db), project_run_dir_or_500(project))}}
+    except HtmlTaskError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
 
 
 @router.post("/api/projects/{project_id}/html-review/tasks/{job_id}/cancel")

@@ -431,3 +431,9 @@ class AgentClient:
 
     def html_task_cancel(self, project_id: str, job_id: str) -> dict[str, Any]:
         return self._request("POST", f"/projects/{project_id}/html-review/tasks/{job_id}/cancel")
+
+    def html_task_resume(self, project_id: str, job_id: str) -> dict[str, Any]:
+        return self._request("POST", f"/projects/{project_id}/html-review/tasks/{job_id}/resume")
+
+    def html_task_current(self, project_id: str, slide_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/projects/{project_id}/html-review/{slide_id}/task/current")

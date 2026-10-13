@@ -64,7 +64,7 @@ def _configured_image(
             provider=provider,
             reference_paths=references,
             transparent_background=transparent_background,
-            public_config={"toapis_resolution": "2k", "toapis_quality": "low"},
+            public_config={"toapis_resolution": "1k", "toapis_quality": "low"},
             **({"resume_task_id": resume_task_id, "timeout": 30} if resume_task_id else {}),
             **({"on_task_submitted": on_task_submitted} if on_task_submitted is not None else {}),
         )
@@ -78,9 +78,9 @@ def _configured_image(
             if "gpt-image" in model.lower():
                 params["quality"] = "low"
             if "gpt-image-2.5" in model.lower():
-                # This OpenAI-compatible model uses provider metadata for 2K;
+                # This OpenAI-compatible model uses provider metadata for 1K;
                 # measured response dimensions, not this hint, are evidence.
-                params["extra_body"] = {"metadata": {"resolution": "2K"}}
+                params["extra_body"] = {"metadata": {"resolution": "1K"}}
             if transparent_background:
                 params["background"] = "transparent"
             if references:

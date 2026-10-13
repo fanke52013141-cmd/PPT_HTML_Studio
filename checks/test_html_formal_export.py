@@ -339,9 +339,15 @@ def test_default_fps_and_real_frozen_presenter_composite(course, monkeypatch):
         set_stage=lambda stage: None,
     )
     assert result.export_evidence["validation"]["fps"] == 30
-    assert (
-        result.export_evidence["validation"]["frames"] == 37
-    )  # MP3 tail is never truncated
+    import math
+    # MP3 encoder padding varies by installed FFmpeg. Check the actual input
+    # duration, rather than assuming that every build emits a 37th frame.
+    audio_probe = json.loads(subprocess.run(
+        ["ffprobe", "-v", "error", "-show_format", "-of", "json", str(run / "slides/s1/voice.mp3")],
+        capture_output=True, check=True,
+    ).stdout)
+    expected_frames = math.ceil(max(1.2, float(audio_probe["format"]["duration"])) * 30)
+    assert result.export_evidence["validation"]["frames"] == expected_frames
     frozen = Path(result.export_evidence["frozen_run_dir"])
     before = fresh_hash(source)
     source.write_bytes(b"changed live source")
@@ -359,6 +365,6 @@ def test_default_fps_and_real_frozen_presenter_composite(course, monkeypatch):
         SimpleNamespace(id="fixture", run_dir=str(frozen)), result, "fixture-task"
     )
     assert used and composed.color_validation["full_decode"] == "passed"
-    _, validation = validate_video(production, composed.output_path, 30, 37)
+    _, validation = validate_video(production, composed.output_path, 30, expected_frames)
     assert validation["full_decode"] == "passed"
     cleanup(result)
