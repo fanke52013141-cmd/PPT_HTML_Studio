@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "checks": [
     "apply-with-exit-and-emphasize",
+    "code object geometry tracks motion and snapshots remain immutable",
     "exit boundary: hidden before / visible / fade / gone",
     "emphasize bounded lift",
     "relation line tracks emphasized target",

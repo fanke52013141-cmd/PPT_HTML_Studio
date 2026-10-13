@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import copy
 
 import pytest
 
@@ -23,6 +24,16 @@ def compiled():
                                 "type": "emphasize", "expectedState": {"visible": True, "meaning": beat["visualIntent"]}})
     plan = normalize(plan, CONTRACT_SLIDE)
     return compile_plan(plan, CONTRACT_SLIDE, CATALOG)
+
+
+def test_compiler_accepts_application_page_ids_with_underscores():
+    from test_html_object_decomposition import decomposition_plan, normalize
+
+    source = copy.deepcopy(SOURCE)
+    plan = decomposition_plan()
+    frozen = normalize(plan, source)
+    scene, _binding = compile_plan(frozen, source, CATALOG)
+    assert scene["id"] == "slide_001"
 
 
 def timeline():

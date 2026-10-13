@@ -107,7 +107,7 @@ def _derive(snapshot, folder):
     return report_checks(status["engineering"], evaluations), evaluations
 
 
-def review_semantic_scene(scene, *, run_dir, deps):
+def review_semantic_scene(scene, *, run_dir, deps, evidence_dir=None, review_id=None):
     from html_visual_store import load_scene_with_revision
     from html_snapshot_review import review_snapshot
     run, root = Path(run_dir).resolve(), Path(deps.repo_root).resolve()
@@ -123,7 +123,14 @@ def review_semantic_scene(scene, *, run_dir, deps):
     plan, bound, spec = _inputs(snapshot)
     base = run / "planning/html_visual/semantic-review"
     base.mkdir(parents=True, exist_ok=True)
-    folder = Path(tempfile.mkdtemp(prefix="review-", dir=base))
+    if evidence_dir is None:
+        folder = Path(tempfile.mkdtemp(prefix="review-", dir=base))
+    else:
+        folder = safe_file(run, str(evidence_dir))
+        if not folder.is_relative_to(base.resolve()):
+            raise SemanticQAError("SEMANTIC_EVIDENCE_PATH_INVALID")
+        folder.mkdir(parents=True, exist_ok=True)
+    stable_review_id = str(review_id or folder.name)
     engineering = review_snapshot(snapshot, repo_root=root, output_dir=folder / "engineering-work",
                                   temporal={"sampling_mode": "output_frames", "fps": 30, "overlap_policy": "registered"})
     shutil.copytree(Path(engineering["report_path"]).parent, folder / "engineering")
@@ -145,10 +152,14 @@ def review_semantic_scene(scene, *, run_dir, deps):
         (folder / f"request-{index}.json").write_bytes(json_bytes(prompts))
         frames = [f for f in raw["frames"] if f["beatId"] == beat["id"]]
         try:
-            response = deps.json_generator(**prompts, run_dir=str(run), artifact_prefix=f"semantic-{scene['id']}-{folder.name}-{index}",
+            response = deps.json_generator(**prompts, run_dir=str(run), artifact_prefix=f"semantic-{scene['id']}-{stable_review_id}-{index}",
                                           image_paths=[str(safe_file(folder, f["file"])) for f in frames])
             json_bytes(response)
         except Exception as error:
+            if type(error).__name__ == "HtmlTaskError":
+                # The persistent course job must reconcile the original
+                # provider request before it can continue this review.
+                raise
             # Provider/config errors are pending, never evidence of semantic pass.
             response = {"unavailable": True, "error_type": type(error).__name__}
         (folder / f"response-{index}.json").write_bytes(json_bytes(response))

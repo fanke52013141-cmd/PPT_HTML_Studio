@@ -314,9 +314,9 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
   stage.className = "visual-stage";
   const elements = new Map(),
     states = new Map(),
-    geometry = {},
     measurements = {},
     capacityIssues = [];
+  let geometry = {};
   // Candidate diagnosis only: all schema/font/resource gates still execute.
   // Production callers retain strict capacity failure by default.
   function checkedMeasure(fn, el, limit, id) {
@@ -702,6 +702,9 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
       if (!Number.isFinite(ms) || ms < 0 || ms > scene.durationMs)
         fail("INVALID_TIME", "timeMs", String(ms));
       time = ms;
+      // Each result owns a fresh geometry snapshot. Text/shape boxes otherwise
+      // retained coordinates from the first seek and polluted temporal QA.
+      geometry = {};
       for (const node of scene.nodes) {
         const actions = motionsByTarget.get(node.id) || [];
         const enter = actions.find((a) => a.type === "enter");

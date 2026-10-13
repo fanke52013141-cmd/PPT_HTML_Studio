@@ -297,6 +297,8 @@ def produce_scene(
         run_dir=run_dir,
         repo_root=deps.repo_root,
         json_generator=deps.json_generator,
+        plan_version="0.3.0",
+        asset_budget=1,
     )
     brief = copy.deepcopy(resumed["brief"]) if resumed else build_design_brief(
         plan,
@@ -320,11 +322,11 @@ def produce_scene(
     if resumed:
         candidate = copy.deepcopy(resumed["candidate"])
         references = package["references"] + [str(accepted_image)]
-    elif new_asset_needs and provider is not None:
+    elif provider is not None and (new_asset_needs or plan.get("version") == "0.3.0"):
         package_path = run_dir / "planning/html_visual/reference-packages" / sha256_json(
             {"plan": plan, "brief": brief, "definitions": definitions})
         package = assemble_reference(plan, brief, repo_root=deps.repo_root,
-                                     directory=package_path, runner=run_subprocess_killable)
+                                     directory=package_path, runner=run_subprocess_killable, run_dir=run_dir)
         package["directory"] = str(package_path.relative_to(run_dir))
         references = package["references"]
         design_path = (
@@ -400,6 +402,8 @@ def produce_scene(
                            definitions=definitions, model_summary=model_summary,
                            plan=plan, brief=brief, candidate=candidate,
                            package=package, design_path=design_path)
+    elif plan.get("version") == "0.3.0" and provider is None:
+        raise HtmlReviewError("新语义场景必须先生成并确认设计参考；图片服务未配置", code="IMAGE_PROVIDER_MISSING", status_code=409)
     elif selection.design_instruction:
         raise HtmlReviewError("纯代码页面无需图片设计修改", code="DESIGN_NOT_REQUIRED")
     freeze = freeze_design(
@@ -417,6 +421,7 @@ def produce_scene(
         from html_scene_editing import edit_path
         if edit_path(run_dir, slide_id).exists():
             raise HtmlReviewError("此页有人工作品覆盖，请先检查对象编辑；素材返工不会自动替换人工资源", code="MANUAL_EDIT_CONFLICT", status_code=409)
+    generated_asset_bindings = {}
     for need in new_asset_needs:
         if provider is None:
             raise HtmlReviewError(
@@ -452,19 +457,27 @@ def produce_scene(
         )
         entry.pop("cache", None)  # Transport cache telemetry is not author input.
         original_id = need["id"]
-        for asset in plan["assets"]:
-            if asset["id"] == original_id:
-                asset["id"] = entry["id"]
+        object_id = next(obj["id"] for obj in plan["objects"] if obj["slot"] == need["slot"])
+        semantics = next(obj for obj in plan.get("objectSemantics", []) if obj["objectId"] == object_id)
+        requested_anchors = list(semantics.get("requiredAnchors") or [])
         entry["file"] = "planning/html_visual/assets/" + entry["file"]
-        # This default is a generic subject center, never a scientific feature.
+        # Keep the author plan immutable: generated project asset IDs belong to
+        # the compiled scene/resource binding, not the semantic plan hash.
+        # A single declared anchor can use the derived subject center as a
+        # reviewable candidate; multiple distinct anchors need explicit mapping.
         if not entry["anchors"]:
-            # A generic subject center, not a guessed scientific detail. Users
-            # inspect this target in the actual preview before approval.
+            if len(requested_anchors) > 1:
+                raise HtmlReviewError(
+                    "生成素材含多个独立语义锚点，当前生产器不能推测其坐标；请拆分素材或先明确锚点",
+                    status_code=409,
+                    code="GENERATED_ANCHOR_MAPPING_REQUIRED",
+                )
             x, y, right, bottom = entry["alpha_bbox"]
             px, py = (x + right) // 2, (y + bottom) // 2
+            anchor_id = requested_anchors[0] if requested_anchors else "focus"
             entry["anchors"] = [
                 {
-                    "id": "focus",
+                    "id": anchor_id,
                     "x": px,
                     "y": py,
                     "nx": px / entry["size"]["width"],
@@ -472,6 +485,18 @@ def produce_scene(
                 }
             ]
             entry["anchor_semantics"] = "derived_subject_center; requires visual review"
+        generated_asset_bindings[need["slot"]] = {
+            "assetRef": {"id": entry["id"], "version": entry["version"]},
+            "anchors": entry["anchors"],
+        }
+        if requested_anchors and not set(requested_anchors).issubset(
+            {anchor["id"] for anchor in entry["anchors"]}
+        ):
+            raise HtmlReviewError(
+                "生成素材未能解析规划声明的语义锚点，不能静默替换",
+                status_code=409,
+                code="GENERATED_ANCHOR_MAPPING_REQUIRED",
+            )
         resources["assets"] = [
             a for a in resources["assets"] if a["id"] != entry["id"]
         ] + [entry]
@@ -480,6 +505,17 @@ def produce_scene(
     scene, binding = compile_plan(
         plan, contract, load_template_catalog(deps.repo_root), relation_resolutions,
     )
+    for node in scene["nodes"]:
+        generated = generated_asset_bindings.get(node.get("slot"))
+        if generated and node.get("type") == "image":
+            node["assetRef"] = generated["assetRef"]
+            declared = {anchor["id"] for anchor in generated["anchors"]}
+            if node.get("anchorId") not in declared:
+                raise HtmlReviewError(
+                    "生成素材未返回场景所需锚点，不能静默替换",
+                    status_code=409,
+                    code="GENERATED_ANCHOR_MAPPING_REQUIRED",
+                )
     stage_record("compile", {"scene": scene, "binding": binding,
                              "relation_resolutions": relation_resolutions})
     checkpoint()
@@ -540,16 +576,30 @@ def produce_scene(
         try:
             if resources.get("assets"):
                 write_json_atomic(resources_path, resources)
-            report = review_scene(scene, run_dir=run_dir, deps=deps)
+            # A new scene is not persisted yet. Run only the deterministic
+            # engineering diagnostics here; the A04 semantic review requires
+            # the saved scene, confirmed audio and real beat timeline and is
+            # scheduled after TTS by the HTML course pipeline.
+            report = review_scene(
+                scene,
+                run_dir=run_dir,
+                deps=deps,
+                diagnostic=scene.get("version") == "0.6.0",
+            )
+            diagnostic_only = report.get("diagnosticOnly") is True
             layout_agent = None
-            if not report.get("passed") and "CONTENT_CAPACITY_EXCEEDED" in str(report.get("message", "")):
+            capacity_failed = bool(report.get("capacityIssues")) or "CONTENT_CAPACITY_EXCEEDED" in str(report.get("message", ""))
+            if not report.get("passed") and capacity_failed:
                 from html_candidate_agent import repair_candidate
 
                 repaired = repair_candidate(scene, binding, run_dir=run_dir, deps=deps,
                                             manual=manual, checkpoint=checkpoint, progress=progress_record)
                 scene, binding, report = repaired["scene"], repaired["binding"], repaired["report"]
                 layout_agent = repaired["summary"]
-            if not report.get("passed"):
+            engineering_passed = bool(report.get("passed")) or (
+                diagnostic_only and not report.get("pageErrors") and not report.get("capacityIssues")
+            )
+            if not engineering_passed:
                 raise HtmlReviewError(
                     "候选场景静态审阅未通过："
                     + str(report.get("message") or report.get("code")),

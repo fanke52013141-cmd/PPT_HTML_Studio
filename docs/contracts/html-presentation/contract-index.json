@@ -1,14 +1,16 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.35",
-  "effective_date": "2026-10-13",
+  "contract_version": "0.9.36",
+  "effective_date": "2026-10-14",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-14 implementation supplement: reconstruction-audit0.1.0 records layout-guide real attachments, verified package reuse and independent per-seek geometry snapshots. Token instance calibration improves locally; fresh generated-image to template fidelity and full course acceptance remain unverified. No new scene or API format.",
+    "2026-10-14 A05: runtime/visual-v1/course-orchestration-0.1.0.md integrates HTML course scheduling into the existing one-click/Agent path, reuses generation and semantic-review LocalJobs, and preserves design/audio/scene approval gates; real course and provider acceptance remain A06.",
     "2026-10-13 A04: independent semantic_quality_report0.1.0, per-beat real-audio start/mid/end snapshot frames, deterministic coverage/source/state gates and source-cited multimodal evaluation. Engineering/semantic/audio/human remain separate; new scene approval/output require valid semantic evidence. Project model binding, strict no-text-repair response, Agent1.25.0 review/approve/status1.1; real provider accuracy and course acceptance pending. See runtime/visual-v1/semantic-qa-0.1.0.md.",
     "2026-10-13 A03: scene0.6.0 explicit node states and actionId, binding0.2.0 exact narration and real beat windows; no new-format proportional fallback. Shared compiler/player/editor/repair/output dispatch implemented, Agent1.24.0. Legacy default and autonomous course integration remain A05; semantic/audio/human acceptance pending. See runtime/visual-v1/semantic-motion-0.6.0.md.",
     "2026-10-13 A02: scene_plan0.3.0 object roles/ownership, initial/beat/end states, independent-subject budget and selected real project anchors; design_brief0.2.0 and subject/design prompts preserve narration states. Existing PNG attachments reverified; anchors/bytes changes block stale plans. Agent1.23.0; A03 compilation, paid generation, semantic QA and course acceptance pending. See runtime/visual-v1/object-decomposition-0.3.0.md.",
@@ -152,6 +154,9 @@
     },
     {
       "path": "runtime/visual-v1/input-snapshot-0.1.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/course-orchestration-0.1.0.md"
     }
   ],
   "rules": [
@@ -207,8 +212,8 @@
       "section": "### 2.3 身份的生命周期",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "partial_e1_standalone",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
+      "runtime_validation": "partial_application_html",
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; A05 runtime/visual-v1/course-orchestration-0.1.0.md: shared one-click/Agent HTML scheduling over generation and semantic-review LocalJobs, page/object identity separation, schema/validator freshness, frozen input/model identity, recovery and human gates; real course/provider/export acceptance remains A06."
     },
     {
       "id": "HPS-007",
@@ -238,7 +243,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_e1_standalone",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending."
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration integrated in A05; real course acceptance pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending; A05 runtime/visual-v1/course-orchestration-0.1.0.md: shared one-click/Agent HTML scheduling over generation and semantic-review LocalJobs, page/object identity separation, schema/validator freshness, frozen input/model identity, recovery and human gates; real course/provider/export acceptance remains A06."
     },
     {
       "id": "HPS-010",
@@ -248,7 +253,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; attempt-fenced recovery preserves author/approval boundaries; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; attempt-fenced recovery preserves author/approval boundaries; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration integrated in A05; real course acceptance pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending; A05 runtime/visual-v1/course-orchestration-0.1.0.md: shared one-click/Agent HTML scheduling over generation and semantic-review LocalJobs, page/object identity separation, schema/validator freshness, frozen input/model identity, recovery and human gates; real course/provider/export acceptance remains A06."
     },
     {
       "id": "HPS-011",
@@ -258,7 +263,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md and minimal-rebuild-0.1.0.md; snapshots, commit reconciliation and selective rebuild plans/editor wiring; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md and minimal-rebuild-0.1.0.md; snapshots, commit reconciliation and selective rebuild plans/editor wiring; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration integrated in A05; real course acceptance pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending; A05 runtime/visual-v1/course-orchestration-0.1.0.md: shared one-click/Agent HTML scheduling over generation and semantic-review LocalJobs, page/object identity separation, schema/validator freshness, frozen input/model identity, recovery and human gates; real course/provider/export acceptance remains A06."
     },
     {
       "id": "HPS-012",
@@ -278,7 +283,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending."
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration integrated in A05; real course acceptance pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending; A05 runtime/visual-v1/course-orchestration-0.1.0.md: shared one-click/Agent HTML scheduling over generation and semantic-review LocalJobs, page/object identity separation, schema/validator freshness, frozen input/model identity, recovery and human gates; real course/provider/export acceptance remains A06."
     },
     {
       "id": "HPS-014",
@@ -288,7 +293,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending; A05 runtime/visual-v1/course-orchestration-0.1.0.md: shared one-click/Agent HTML scheduling over generation and semantic-review LocalJobs, page/object identity separation, schema/validator freshness, frozen input/model identity, recovery and human gates; real course/provider/export acceptance remains A06."
     },
     {
       "id": "HPS-015",
@@ -417,8 +422,8 @@
       "section": "## HPS-028：生成任务明确代码层与资产层",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented",
-      "runtime_scope": "A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending."
+      "runtime_validation": "partial_application_html",
+      "runtime_scope": "A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration integrated in A05; real course acceptance pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending; A05 runtime/visual-v1/course-orchestration-0.1.0.md: shared one-click/Agent HTML scheduling over generation and semantic-review LocalJobs, page/object identity separation, schema/validator freshness, frozen input/model identity, recovery and human gates; real course/provider/export acceptance remains A06."
     },
     {
       "id": "HPS-029",
@@ -437,7 +442,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_workflow",
-      "runtime_scope": "runtime/visual-v1/application-workflow-0.2.0.md; read-only stage projection and target-specific readiness only; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending."
+      "runtime_scope": "runtime/visual-v1/application-workflow-0.2.0.md; read-only stage projection and target-specific readiness only; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending.; A03 runtime/visual-v1/semantic-motion-0.6.0.md: explicit node states/action IDs, real-audio binding, shared player/editor/output dispatch; semantic QA/course orchestration integrated in A05; real course acceptance pending.; A04 runtime/visual-v1/semantic-qa-0.1.0.md: source-bound semantic evidence/independent evaluation and new-scene approval gates; model accuracy, listening and real course acceptance pending; A05 runtime/visual-v1/course-orchestration-0.1.0.md: shared one-click/Agent HTML scheduling over generation and semantic-review LocalJobs, page/object identity separation, schema/validator freshness, frozen input/model identity, recovery and human gates; real course/provider/export acceptance remains A06."
     },
     {
       "id": "HPS-031",

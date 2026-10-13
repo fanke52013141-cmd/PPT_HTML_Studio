@@ -11,8 +11,8 @@ from artifact_fingerprint import sha256_json
 from pipeline_lifecycle import write_json_atomic
 from html_visual_review_service import HtmlReviewError
 
-PROMPT_VERSION = "html-design-reference/0.3.0"
-SEMANTIC_PROMPT_VERSION = "html-design-reference/0.4.0"
+PROMPT_VERSION = "html-design-reference/0.3.1"
+SEMANTIC_PROMPT_VERSION = "html-design-reference/0.4.1"
 
 
 def _fail(message):
@@ -129,6 +129,15 @@ def assemble_reference(plan, brief, *, repo_root, directory, runner, run_dir=Non
                "selectionReasons": {id: "按当前计划的文字、容器、关系或标注类型选取；仅借鉴外观。" for id in ids},
                "content": content}
     directory = Path(directory)
+    if (directory / "manifest.json").is_file():
+        cached = verify_package(directory)
+        attached = {entry["sha256"] for entry in cached["manifest"]["attachments"]
+                    if entry.get("type") == "subject-reference"}
+        if cached["content"] != content or attached != {subject["sha256"] for _, subject in subjects}:
+            _fail("已有参考包不匹配当前布局或主体；请使用新版本目录")
+        if not any(entry.get("type") == "layout-guide" for entry in cached["manifest"]["attachments"]):
+            _fail("已有参考包没有布局参考；请使用新版本目录")
+        return cached
     input_path = directory.parent / (directory.name + "-input.json")
     write_json_atomic(input_path, request)
     result = runner(["node", str(Path(repo_root) / "html_engine/tools/catalog-assemble.cjs"),
@@ -139,6 +148,8 @@ def assemble_reference(plan, brief, *, repo_root, directory, runner, run_dir=Non
         raise HtmlReviewError("分类参考包装配失败，请检查源定义或保留的包", code="REFERENCE_ASSEMBLY_FAILED")
     if subjects:
         _attach_subjects(directory, subjects)
+    from html_layout_reference import attach_layout_guide
+    attach_layout_guide(directory)
     return verify_package(directory)
 
 
@@ -204,6 +215,7 @@ def design_prompt(package, *, instruction=""):
         f"PromptVersion: {PROMPT_VERSION}。生成一张完整页面的设计参考。"
         "只使用黑、灰、白；白色背景。精细字阶、充足留白、清晰线条、柔和灰阶阴影和渐变。"
         "附件分类图只供美感与组件外观参考，不复制其样例文字、数字、编号或栏目。"
+        "layout-guide附件只用于槽位位置与比例，编号、英文槽位名及字幕预留提示不得进入成品。"
         "准确文字和结构以下面的内容为准，注册槽位不改变；文字、卡片和关系由代码复刻，独立主体为图片。"
         "layoutGeometry是代码布局真值：坐标相对于canvas，按比例适配输出尺寸。"
         "每个槽位保持给定位置与范围，不重排、不新增关系；全部正文、标签、说明和结论完整呈现。"
@@ -228,12 +240,14 @@ def _semantic_design_prompt(package, *, instruction):
     return (
         f"PromptVersion:{SEMANTIC_PROMPT_VERSION}。生成一张完整页面的设计参考，保留已认可的视觉方向。"
         "分类附件仅供组件外观与材质参考，样例文字不属于本课；subjectAttachments标明实际主体附件与素材身份，"
+        "layout-guide附件是确定性布局参考，保持其位置与比例；不把编号、英文槽位名、边框或字幕提示画入成品。"
         "这些已有主体保持形象与归属，不改成另一对象。讲稿和准确槽位内容决定表达，"
         "objectSemantics 对应的对象职责和 sequence 的初始/逐句/结束状态必须能由独立组件承载。"
         "本图可展示最终构图，但不能把终态所有对象在初始阶段可见当成制作计划。"
         "input、处理和output、容量/预留关系分别由代码文字、容器与关系组件承担；"
         "图片只承担单独主体，不烘焙文字、数字、价格、箭头或多阶段，不发明数值、容量或换算比例。"
-        "layoutGeometry保持注册槽位、阅读顺序和字幕安全区；不超出资产预算，不增加未声明主体。"
+        "layoutGeometry坐标以canvas为基准，等比映射到输出；逐槽保持给定矩形，不重排、不交换标题与简介。"
+        "canvas.contentBottom以下留空；不超出资产预算，不增加未声明主体。"
         "配色与材质沿用风格指导，不另改审美；16:9，底部1/9留空，不加品牌或来源页脚。"
         "锚点须后续实际定位，不把通用focus冒充具体部位；设计图不证明组件重建或语义QA通过。"
         "风格指导：" + json.dumps(package["guidance"]["style"], ensure_ascii=False)

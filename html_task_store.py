@@ -55,7 +55,7 @@ def recovery_action(job):
     unknown = any(r.get("state") in {"intent", "unknown"}
                   for r in payload.get("production_stages", {}).values())
     blocked = unknown or "RECONCILIATION_BLOCKED" in (job.error or "")
-    resumable = (job.job_type == "html_plan_generate"
+    resumable = (job.job_type in {"html_plan_generate", "html_review"}
                  and job.status in {"failed", "interrupted"}
                  and int(payload.get("attempt", 1)) < MAX_ATTEMPTS
                  and bool(payload.get("input", {}).get("snapshot_id"))
@@ -74,7 +74,7 @@ def task_view(job, run_dir, *, verify_dependencies=True):
     value = _job_to_dict(job)
     result = value.get("result") or {}
     expected = (result.get("saved") or {}).get("revision", value.get("source_revision"))
-    if verify_dependencies and job.job_type == "html_plan_generate" and value.get("snapshot_id"):
+    if verify_dependencies and job.job_type in {"html_plan_generate", "html_review"} and value.get("snapshot_id"):
         from html_production_stages import ProductionStages
         try:
             verifier = ProductionStages(None, job.id, None, run_dir, value["snapshot_id"], Path(__file__).resolve().parent)
@@ -96,6 +96,24 @@ def task_view(job, run_dir, *, verify_dependencies=True):
             contract = next((s for s in slides if s.get("slide_id") == value["slide_id"]), None)
             value["input_state"] = "unknown" if not identity else "current" if contract and sha256_json(contract) == identity else "stale"
         except (OSError, ValueError, TypeError):
+            value["input_state"] = "unknown"
+    if value["input_state"] == "current" and job.job_type == "html_review":
+        source = job.get_payload().get("input", {})
+        try:
+            slides = json.loads((Path(run_dir) / "planning/visual_contract.json").read_text(encoding="utf-8")).get("slides", [])
+            contract = next((s for s in slides if s.get("slide_id") == value["slide_id"]), None)
+            from html_visual_store import load_scene_with_revision
+            document = load_scene_with_revision(run_dir, value["slide_id"])
+            from html_input_manifest import resolved_scene_inputs
+            current_digest = resolved_scene_inputs(document["scene"], run_dir, Path(__file__).resolve().parent)["digest"] if document else None
+            current_scene = document.get("sha256") if document else None
+            value["input_state"] = (
+                "current" if contract and sha256_json(contract) == source.get("contract_sha256")
+                and current_scene == source.get("scene_sha256")
+                and current_digest == source.get("semantic_input_digest")
+                else "stale"
+            )
+        except (OSError, ValueError, TypeError, KeyError):
             value["input_state"] = "unknown"
     if value["input_state"] != "current":
         value["recovery"] = {**value["recovery"], "can_resume": False, "reason": "input_changed"}

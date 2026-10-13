@@ -951,6 +951,8 @@ def agent_pipeline_status(
         blocking_errors=op.blocking_errors,
         warnings=op.warnings,
         artifacts=op.artifacts,
+        workflow_type=status_dict.get("workflow_type", "legacy_image"),
+        course=status_dict.get("html_course"),
     ).model_dump()
 
 

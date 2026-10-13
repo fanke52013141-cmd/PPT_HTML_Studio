@@ -205,6 +205,8 @@ class PipelineStatusResult(BaseModel):
     blocking_errors: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     artifacts: list[dict[str, Any]] = Field(default_factory=list)
+    workflow_type: str = Field("legacy_image", description="legacy_image / html_course")
+    course: Optional[dict[str, Any]] = Field(None, description="HTML 课程调度的授权范围、输入/模型快照、逐页任务、成本回报和恢复状态")
 
 
 class PipelineResumeRequest(BaseModel):

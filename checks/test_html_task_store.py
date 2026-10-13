@@ -104,3 +104,25 @@ def test_cancel_only_touches_active_tasks(db) -> None:
 def test_unknown_task_type_rejected(db) -> None:
     with pytest.raises(store.HtmlTaskError):
         _submit(db, key="x:1", task_type="video_render")
+
+
+def test_semantic_review_unknown_result_blocks_retry_on_same_local_job(db) -> None:
+    task = _submit(db, key="semantic-review:slide_001:v1", task_type="html_review",
+                   project_id="semantic-review-project",
+                   payload={"slide_id": "slide_001", "snapshot_id": "snapshot-v1"})
+    store.mark_running(db, task["id"])
+    job = db.query(LocalJob).filter(LocalJob.id == task["id"]).first()
+    payload = job.get_payload()
+    payload["production_stages"] = {"json:review": {"state": "unknown"}}
+    job.payload_json = store.json_dumps(payload)
+    db.commit()
+    store.mark_failed(db, task["id"], "EXTERNAL_OUTCOME_UNKNOWN")
+
+    current = db.query(LocalJob).filter(LocalJob.id == task["id"]).first()
+    recovery = store.recovery_action(current)
+    assert recovery["requires_verification"] is True
+    assert recovery["can_resume"] is False
+    with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
+        _submit(db, key="semantic-review:slide_001:v1", task_type="html_review",
+                project_id="semantic-review-project",
+                payload={"slide_id": "slide_001", "snapshot_id": "snapshot-v1"})

@@ -1,5 +1,7 @@
 # V1 共享视觉定义：阶段一实施卡
 
+2026-10-14 A05：[整课调度卡](course-orchestration-0.1.0.md) 已接入现有一键与 Agent 入口，复用 `LocalJob` 实现逐页生成、语义审阅及安全恢复。用户设计、音频和作品审批门禁保持独立；真实课程与付费模型验收仍属 A06。
+
 > 2026-10-08：用户否定V1科普预览的简化风格；此卡的公共/风格分离和技术范围保留，视觉生产批准未通过。视觉纠偏见[参考特征检查](../../../../styles/science-explainer/reference-fidelity-review.md)。渐变/图标/面板样板不自动成为本格式的新增字段。
 
 格式 `hps.visual.scene` / `hps.visual.theme` / `hps.visual.layout`，各为 0.1.0。

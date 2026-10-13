@@ -44,6 +44,22 @@ async function main() {
     );
     evidence.checks.push("apply-with-exit-and-emphasize");
 
+    const moving = scene.motion.find(a => a.type === "enter" && (a.offsetX || a.offsetY) &&
+      scene.nodes.find(n => n.id === a.targetId)?.type !== "image");
+    assert.ok(moving, "fixture must contain a moving code object");
+    const snapshots = await page.evaluate(a => {
+      const first = window.visualPlayer.seek(a.startMs).geometry;
+      const original = JSON.stringify(first);
+      const last = window.visualPlayer.seek(a.startMs + a.durationMs).geometry;
+      return {first, last, original, retained: JSON.stringify(first)};
+    }, moving);
+    assert.equal(snapshots.retained, snapshots.original, "later seek must not mutate earlier geometry");
+    const begin = snapshots.first[moving.targetId].box, end = snapshots.last[moving.targetId].box;
+    assert.ok(Math.abs((begin.y - end.y) - (moving.offsetY || 0)) < 0.001);
+    assert.ok(Math.abs((begin.x - end.x) - (moving.offsetX || 0)) < 0.001);
+    evidence.checks.push("code object geometry tracks motion and snapshots remain immutable");
+    await page.evaluate(() => window.visualPlayer.seek(0));
+
     const opacityOf = (id) =>
       page.evaluate(
         (t) =>

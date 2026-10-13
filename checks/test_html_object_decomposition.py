@@ -188,7 +188,10 @@ def test_real_package_hashes_narration_states_and_minimal_prompt(tmp_path):
     assert package["content"]["narrationDesign"]["sequence"] == frozen["visualSequence"]
     assert package["references"] and all(Path(path).is_file() for path in package["references"])
     prompt = design_prompt(package)
-    assert "html-design-reference/0.4.0" in prompt
+    assert "html-design-reference/0.4.1" in prompt
+    guides = [entry for entry in package["manifest"]["attachments"] if entry.get("type") == "layout-guide"]
+    assert len(guides) == 1
+    assert (guides[0]["width"], guides[0]["height"]) == (1280, 720)
     assert CONTRACT_SLIDE["narration_beats"][0]["spoken_text"] in prompt
     assert "source_sha256" not in prompt and "anchor_checks" not in prompt
     content_file = tmp_path / "package" / package["manifest"]["exactContent"]["path"]

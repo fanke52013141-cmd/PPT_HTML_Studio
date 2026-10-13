@@ -347,3 +347,21 @@ class TestJsonSchemaGeneration:
             schema = model.model_json_schema()
             assert isinstance(schema, dict)
             assert "properties" in schema, f"{model.__name__} schema has no properties"
+
+
+def test_pipeline_status_keeps_html_course_schedule_details():
+    course = {
+        "status": "waiting_for_audio_approval",
+        "current_stage": "tts",
+        "pages": {"slide_001": {"generation_job_id": "html-job-1", "status": "scene_saved_engineering_passed"}},
+        "cost": {"state": "provider_cost_not_reported", "amount": None, "currency": None},
+    }
+    value = PipelineStatusResult(
+        operation_id="run-1", project_id="project-1", status="waiting_for_user",
+        current_stage="tts", workflow_type="html_course", course=course,
+    )
+
+    payload = value.model_dump()
+    assert payload["workflow_type"] == "html_course"
+    assert payload["course"]["pages"]["slide_001"]["generation_job_id"] == "html-job-1"
+    assert payload["course"]["cost"]["amount"] is None

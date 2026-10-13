@@ -122,7 +122,8 @@ def test_resume_preserves_frozen_design_options_and_reuses_active(case, monkeypa
     monkeypatch.setattr(service, "submit", lambda *args, **kwargs: calls.append((args, kwargs)) or {"id": job.id})
     assert service.resume(db, project, job)["id"] == job.id
     assert calls[0][0][2] == contract
-    assert calls[0][1] == {"options": options, "expected_snapshot": "a" * 64}
+    assert calls[0][1] == {"options": options, "expected_snapshot": "a" * 64,
+                           "expected_model_summary": None}
     # New content must not be overwritten by continuing the old request.
     (Path(project.run_dir) / "planning/visual_contract.json").write_text(json.dumps({"slides": [{"slide_id": "s1", "title": "new"}]}), encoding="utf-8")
     with pytest.raises(store.HtmlTaskError):
@@ -179,8 +180,10 @@ def test_real_resubmission_keeps_job_budget_and_blocks_model_change(case):
     assert len(calls) == 2
     store.mark_failed(db, task['id'], 'interrupted')
     service.freeze_models = lambda _: SimpleNamespace(summary=lambda: {'text': {'provider': 'changed', 'model': 'other', 'config_hash': 'new'}})
-    with pytest.raises(store.HtmlTaskError, match='代码、模型或依赖已变化'):
+    with pytest.raises(store.HtmlTaskError) as error:
         service.resume(db, project, db.get(LocalJob, task['id']))
+    assert error.value.status_code == 409
+    assert "模型版本" in str(error.value)
     assert len(calls) == 2
 
 

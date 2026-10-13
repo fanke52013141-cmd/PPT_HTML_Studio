@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.25.0
-- **Contract Hash**: `66cdf426af56ca26`
+- **Agent API Version**: 1.26.0
+- **Contract Hash**: `d34ef2e52f4f770b`
 - **Total Capabilities**: 60
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -48,9 +48,9 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `project.get` | 1.3 | stable | GET | `/api/agent/v1/projects/{project_id}` | `ppt_project_get` | Yes | `project show` | `project_service.ProjectService.get` | No | No |
 | `project.update` | 1.3 | stable | PATCH | `/api/agent/v1/projects/{project_id}` | `ppt_project_update` | Yes | `project update` | `project_service.ProjectService.update` | No | No |
 | `source.set` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/source` | `ppt_source_set` | Yes | `source set` | `article_service.import_article / generate_article_from_topic` | No | No |
-| `pipeline.run` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/runs` | `ppt_pipeline_run` | Yes | `run start` | `one_click_orchestrator.start_one_click` | Yes | No |
-| `pipeline.status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/runs/latest` | `ppt_pipeline_status` | Yes | `run status` | `one_click_orchestrator.get_one_click_status` | No | No |
-| `pipeline.resume` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/runs/latest/resume` | `ppt_pipeline_resume` | Yes | `run resume` | `one_click_orchestrator.start_one_click` | Yes | No |
+| `pipeline.run` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/runs` | `ppt_pipeline_run` | Yes | `run start` | `one_click_orchestrator.start_one_click` | Yes | No |
+| `pipeline.status` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/runs/latest` | `ppt_pipeline_status` | Yes | `run status` | `one_click_orchestrator.get_one_click_status` | No | No |
+| `pipeline.resume` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/runs/latest/resume` | `ppt_pipeline_resume` | Yes | `run resume` | `one_click_orchestrator.start_one_click` | Yes | No |
 | `pipeline.stream` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/runs/latest/stream` | `ppt_pipeline_stream` | No | `run stream` | `agent_api.routes.agent_pipeline_stream` | Yes | No |
 | `checkpoint.approve` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/checkpoints/{checkpoint}/approve` | `ppt_checkpoint_approve` | Yes | `approve` | `one_click_orchestrator (stage gating)` | No | No |
 | `stage.get` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/stages/{stage}` | `ppt_stage_get` | Yes | `stage get` | `various service read functions` | No | No |
@@ -124,9 +124,9 @@ The MCP server exposes **55** stable tools:
 - `ppt_project_get` — Get project details including article/contract status, slide IDs, and mask mode.
 - `ppt_project_update` — Update project name, description, AI mode, production mode, or presentation mode.
 - `ppt_source_set` — Set project source content — either direct article text or a topic for AI generation.
-- `ppt_pipeline_run` — Start or resume the automated pipeline. Supports stop_at checkpoints.
-- `ppt_pipeline_status` — Get current pipeline status including stage progress and blocking errors.
-- `ppt_pipeline_resume` — Resume a paused or failed pipeline from the last checkpoint.
+- `ppt_pipeline_run` — Start or resume the shared automated pipeline. HTML projects use resumable course scheduling with design, audio and scene approval gates.
+- `ppt_pipeline_status` — Get current pipeline status including stage progress, blocking errors, and HTML course page/task/input/model/recovery details when applicable.
+- `ppt_pipeline_resume` — Resume the original paused or failed pipeline and its HTML page/review LocalJobs from the last verified checkpoint.
 - `ppt_checkpoint_approve` — Approve or reject a pipeline checkpoint to continue or halt.
 - `ppt_stage_get` — Get detailed data for a specific pipeline stage (storyboard, narration, etc.).
 - `ppt_image_regenerate` — Regenerate a single slide image with optional modification instruction.

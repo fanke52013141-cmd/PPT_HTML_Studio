@@ -109,10 +109,12 @@ def test_stop_resume_real_package_and_no_duplicate_planning(case):
     pack = verify_package(case.run / record["reference_package"])
     assert pack["manifest"]["palette"]["id"] == "neutral"
     assert pack["manifest"]["style"]["id"] == "neutral-baseline"
-    assert all(a["role"] == "classification" for a in pack["manifest"]["attachments"])
+    assert all(a.get("role") == "classification" or a.get("type") == "layout-guide"
+               for a in pack["manifest"]["attachments"])
+    assert sum(a.get("type") == "layout-guide" for a in pack["manifest"]["attachments"]) == 1
     assert pack["references"] == case.requests[0]["reference_paths"]
-    assert "黑、灰、白" in case.requests[0]["prompt"]
-    assert "html-design-reference/0.3.0" in case.requests[0]["prompt"]
+    assert "配色与材质沿用风格指导" in case.requests[0]["prompt"]
+    assert "html-design-reference/0.4.1" in case.requests[0]["prompt"]
     catalog = json.loads((ROOT / "html_engine/visual/generated/catalog.json").read_text(encoding="utf-8"))
     layout = next(value for value in catalog["layouts"] if value["id"] == record["plan"]["layoutRef"]["id"])
     geometry = pack["content"]["layoutGeometry"]
@@ -134,16 +136,16 @@ def test_stop_resume_real_package_and_no_duplicate_planning(case):
     assert not repeated["saved"]["changed"] and len(case.requests) == 2
 
 
-def test_explicit_supplied_asset_reuses_bytes_without_image_provider(case):
+def test_semantic_scene_still_requires_design_provider_with_supplied_asset(case):
     case.contract["visual_groups"] = [{"id": "subject", "available_assets": [
         {"assetRef": {"id": "condensation", "version": "0.1.0"}}
     ]}]
-    result = produce_scene(case.contract, run_dir=case.run, deps=case.deps, provider=None)
-    assert result["review"]["passed"]
-    assert result["saved"]["changed"]
+    with pytest.raises(HtmlReviewError) as rejected:
+        produce_scene(case.contract, run_dir=case.run, deps=case.deps, provider=None)
+    assert rejected.value.code == "IMAGE_PROVIDER_MISSING"
     assert len(case.llm_calls) == 1
     assert not case.requests
-    assert next(n for n in result["scene"]["nodes"] if n["type"] == "image")["assetRef"]["id"] == "condensation"
+    assert load_scene_with_revision(case.run, "e1") is None
 
 
 def test_supplied_asset_version_mismatch_cannot_generate_or_save(case):

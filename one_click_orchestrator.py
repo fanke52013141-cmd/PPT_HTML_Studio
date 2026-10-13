@@ -139,6 +139,7 @@ class OneClickDependencies:
     write_project_log: Callable[..., None]
     inspect_tts_preflight: Callable[[dict[str, Any]], dict[str, Any]]
     pipeline_service_factory: Callable[[Any, str], Any]
+    html_workflow_jobs: Any = None
 
 
 _DEPENDENCIES: OneClickDependencies | None = None
@@ -419,6 +420,14 @@ def _pause_at_stage_boundary(
             "message": f"已在{current_stage or '当前'}阶段完成后暂停，后续阶段不会执行",
         }
     )
+    course = status.get("html_course")
+    if isinstance(course, dict):
+        course["status"] = "paused"
+        course["current_message"] = status["message"]
+        history = course.setdefault("history", [])
+        history.append({"at": _now(), "event": "user_pause", "stage": current_stage,
+                        "message": status["message"]})
+        del history[:-200]
     _save_status(project, status)
     return True
 
@@ -545,6 +554,14 @@ def _fail_stage(
     status["status"] = "paused" if pause else "failed"
     status["current_stage"] = stage_id
     status["completed_at"] = _now()
+    course = status.get("html_course")
+    if isinstance(course, dict):
+        course["status"] = "paused" if pause else "failed"
+        course["current_message"] = _safe_text(error, 1200)
+        history = course.setdefault("history", [])
+        history.append({"at": _now(), "event": "stage_blocked" if pause else "stage_failed",
+                        "stage": stage_id, "message": _safe_text(error, 1200)})
+        del history[:-200]
     _save_status(project, status)
 
 
@@ -569,6 +586,11 @@ def _complete(
     status["current_stage"] = ""
     status["completed_at"] = _now()
     status["video"] = video
+    course = status.get("html_course")
+    if isinstance(course, dict):
+        course["status"] = "completed"
+        course["video"] = video
+        course["current_message"] = "课程制作完成"
     _save_status(project, status)
     # [同步 step_status 20260814] 一键生成完成时，把已完成的 stage 同步到数据库 step_status。
     # 必须复用 _run_pipeline 中持有 project ORM 对象的同一个 db session；另开 session 的
@@ -577,11 +599,16 @@ def _complete(
     try:
         current = project.get_step_status() if hasattr(project, "get_step_status") else {}
         updated = dict(current)
+        stage_to_step = dict(_STAGE_TO_STEP)
+        if status.get("workflow_type") == "html_course":
+            # HTML's independent semantic review lives inside the HTML scene
+            # step; it is not the image backend's legacy AI Mask step.
+            stage_to_step["ai_mask"] = "3"
         completed_steps = sorted({
             int(step_key)
             for stage in (status.get("stages") or [])
             if stage.get("status") == "done"
-            for step_key in [_STAGE_TO_STEP.get(stage.get("id", ""))]
+            for step_key in [stage_to_step.get(stage.get("id", ""))]
             if step_key
         })
         # 升序复用 complete_step，保证步骤状态与手动流程一致（含 in_progress 收敛）。
@@ -814,6 +841,40 @@ def _resume_status(project: Any, project_id: str, run_id: str, mode: str) -> tup
     status = _initial_status(project_id, run_id)
     status["requested_mode"] = mode
     return status, 0
+
+
+def _resume_html_status(project: Any, project_id: str, run_id: str, mode: str) -> tuple[dict[str, Any], int]:
+    """Resume HTML courses from their own stage and artifact checks.
+
+    The legacy image resume policy requires full-slide PNGs; applying it to
+    HTML would incorrectly rewind a valid course to image generation.
+    """
+    previous = _status_for_project(project, project_id)
+    if previous.get("workflow_type") != "html_course":
+        status = _initial_status(project_id, run_id)
+        status.update({"workflow_type": "html_course", "requested_mode": mode})
+        return status, 0
+    if mode == "resume" and previous.get("status") in ("waiting_for_review", "waiting_for_user"):
+        status = previous
+        status.update({"run_id": run_id, "requested_mode": mode, "completed_at": ""})
+        return status, _stage_index(str(status.get("review_next_stage") or "preflight"))
+    if mode == "resume" and previous.get("status") in {"paused", "running", "failed", "completed"}:
+        stage_id = str(previous.get("current_stage") or ("render" if previous.get("status") == "completed" else "preflight"))
+        if stage_id not in {item[0] for item in STAGES}:
+            stage_id = "preflight"
+        status = previous
+        status.update({
+            "run_id": run_id, "status": "running", "completed_at": "", "video": None,
+            "requested_mode": mode, "effective_start_stage": stage_id,
+        })
+        return status, _stage_index(stage_id)
+    status = _initial_status(project_id, run_id)
+    status.update({"workflow_type": "html_course", "requested_mode": mode})
+    return status, 0
+
+
+def _is_html_project(project: Any) -> bool:
+    return str(getattr(project, "visual_backend", "image") or "image").strip().lower() == "html"
 
 
 def _preflight_errors(dependencies: OneClickDependencies, project: Any) -> list[str]:
@@ -1058,6 +1119,7 @@ def _run_pipeline(
     stop_at: str = "",
     approved_checkpoint: str = "",
     account_id: str = "default",
+    original_request: dict[str, Any] | None = None,
 ) -> None:
     account_context_token = set_current_account_id(account_id)
     db = dependencies.session_factory()
@@ -1067,7 +1129,10 @@ def _run_pipeline(
         project = db.query(project_model).filter(project_model.id == project_id).first()
         if not project:
             return
-        status, start_index = _resume_status(project, project_id, run_id, mode)
+        if _is_html_project(project):
+            status, start_index = _resume_html_status(project, project_id, run_id, mode)
+        else:
+            status, start_index = _resume_status(project, project_id, run_id, mode)
         if status.get("status") == "waiting_for_review":
             checkpoint = str(status.get("review_checkpoint") or "")
             if not checkpoint or checkpoint != approved_checkpoint:
@@ -1131,6 +1196,24 @@ def _run_pipeline(
         # A request can arrive between worker startup and the first operation.
         # Do not run preflight in that case; a smart resume revalidates it.
         if _pause_at_stage_boundary(project, status, project_id):
+            return
+
+        if _is_html_project(project):
+            from html_course_pipeline import run_html_course_pipeline
+            run_html_course_pipeline(
+                dependencies=dependencies,
+                jobs=dependencies.html_workflow_jobs,
+                db=db,
+                project=project,
+                services=services,
+                status=status,
+                project_id=project_id,
+                run_id=run_id,
+                mode=mode,
+                start_from=start_from,
+                stop_at=stop_at,
+                original_request=original_request,
+            )
             return
 
         if should_run("preflight") or mode == "resume":
@@ -1674,12 +1757,8 @@ def start_one_click(
             if approved_checkpoint != expected:
                 raise ValueError(f"项目正在等待审查点 {expected} 的审批")
         run_id = uuid.uuid4().hex[:12]
-        status, _start_index = _resume_status(
-            project,
-            project_id,
-            run_id,
-            mode,
-        )
+        resume_status = _resume_html_status if _is_html_project(project) else _resume_status
+        status, _start_index = resume_status(project, project_id, run_id, mode)
         # A prior worker may have exited through a review/manual boundary
         # before consuming an earlier request. A new explicit run is a new
         # user intent, so it must not inherit that stale pause signal.
@@ -1702,6 +1781,8 @@ def start_one_click(
                 dependencies, project_id, run_id, mode, start_from, stop_at,
                 approved_checkpoint,
                 str(getattr(project, "account_id", None) or get_current_account_id()),
+                {key: (payload or {}).get(key) for key in ("mode", "start_from", "stop_at", "approved_checkpoint")
+                 if (payload or {}).get(key) is not None},
             ),
             daemon=True,
         )

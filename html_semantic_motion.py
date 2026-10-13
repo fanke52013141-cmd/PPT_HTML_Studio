@@ -11,13 +11,21 @@ from html_object_decomposition import narration_design
 
 def compile_semantic_motion(plan: dict, contract: dict, nodes: list) -> tuple[dict, dict]:
     from html_visual_review_service import HtmlReviewError
+    from html_visual_store import HtmlVisualError, validate_slide_id
 
     narration_design(plan)
     from html_scene_plan_models import FrozenSemanticBeat
     frozen = [FrozenSemanticBeat.model_validate(b).model_dump(exclude_none=True) for b in plan["beats"]]
     if normalize_semantic_beats(plan, contract) != frozen:
         raise HtmlReviewError("讲稿映射已变化，须重新规划", code="SEMANTIC_SOURCE_CHANGED")
-    if any(not re.fullmatch(r"[a-z][a-z0-9.-]{0,63}", oid) for oid in [plan["slide_id"], *[node["id"] for node in nodes]]):
+    try:
+        validate_slide_id(plan["slide_id"])
+    except (HtmlVisualError, TypeError):
+        raise HtmlReviewError("页面ID不符合项目场景身份合同", code="SEMANTIC_RUNTIME_ID") from None
+    if any(
+        not isinstance(node, dict) or not isinstance(node.get("id"), str)
+        or not re.fullmatch(r"[a-z][a-z0-9.-]{0,63}", node["id"]) for node in nodes
+    ):
         raise HtmlReviewError("运行对象ID不符合注册场景身份合同", code="SEMANTIC_RUNTIME_ID")
     duration = max(12000, len(plan["beats"]) * 3500)
     if duration > 120000:

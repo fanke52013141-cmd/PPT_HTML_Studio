@@ -45,6 +45,8 @@ def resolved_scene_inputs(
     for filename in (
         "preview/player.js",
         "generated/catalog.json",
+        "generated/validators.cjs",
+        "schema.json",
         "assets.json",
         "preview/data.js",
         "icons.cjs",

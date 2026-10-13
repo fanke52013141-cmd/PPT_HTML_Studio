@@ -2,10 +2,15 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../static/one_click_extension.js'), 'utf8');
-const block = source.slice(source.indexOf('    const visibleStages = ['), source.indexOf('    // 阶段变化时同步切换'));
-function render(list, state, features = {}) {
+const block = source.slice(source.indexOf('    const visibleStages = isHtmlCourse(status) ? ['), source.indexOf('    // 阶段变化时同步切换'));
+function render(list, state, features = {}, workflowType = 'standard') {
   const stages = {innerHTML: '', querySelectorAll: () => []};
-  vm.runInNewContext(block, {list, state, stages, features, esc: x => String(x), statusLabel: x => x});
+  const status = {stages: list, workflow_type: workflowType};
+  vm.runInNewContext(block, {
+    list, state, status, stages, features,
+    isHtmlCourse: value => value?.workflow_type === 'html_course',
+    esc: x => String(x), statusLabel: x => x,
+  });
   return stages.innerHTML;
 }
 const paused = render([{id:'narration',status:'done'},{id:'tts',status:'running',message:'synthesizing'}], 'paused');
@@ -26,4 +31,12 @@ assert.match(light, /8 作品输出.*?done/s);
 const partial = render([{id:'render',status:'done'}], 'completed', {handwritten_annotations:false, digital_human:true});
 assert.equal((partial.match(/<article/g) || []).length, 7);
 assert.match(partial, /7 数字人讲解.*?done/s);
+const htmlCourse = render([
+  {id:'storyboard', status:'done'}, {id:'images', status:'done'},
+  {id:'confirm_images', status:'running'}, {id:'tts', status:'pending'},
+  {id:'ai_mask', status:'pending'}, {id:'render', status:'pending'},
+], 'running', {}, 'html_course');
+assert.equal((htmlCourse.match(/<article/g) || []).length, 6);
+assert.match(htmlCourse, /3 HTML 复刻与工程 QA.*?running/s);
+assert.match(htmlCourse, /4 原 TTS 配音与真实时间绑定.*?pending/s);
 console.log('one-click visible progress checks passed');

@@ -1,6 +1,8 @@
 # HTML 演示体系契约
 
-契约包版本：0.9.35。生效日期：2026-10-13。
+契约包版本：0.9.36。生效日期：2026-10-14。
+
+2026-10-14 A05：[系统内部课程制作调度](runtime/visual-v1/course-orchestration-0.1.0.md) 已接入普通一键入口：沿用 HTML 页面生成/语义审阅 `LocalJob`、冻结输入与恢复门禁；设计图确认、用户试听及逐页作品批准仍由现有界面完成，门禁通过后调用原视频导出。Agent `pipeline.run/status/resume` 共用此入口，状态附带整课/逐页任务和有明确范围的成本回报；未知供应商结果不自动重发。图像工作流保持原行为。工程回归不代表付费模型、真实课程审美或导出验收，A06仍需真实课程签收。见[A05记录](../../plans/html-backend-development/progress-a05-2026-10-14.md)。
 
 2026-10-13 A04：[独立语义QA合同](runtime/visual-v1/semantic-qa-0.1.0.md) 接入新场景既有review/approve/status入口；冻结真实时间轴、规划与三帧证据，确定性检查及独立多模态评估分别记录engineering/semantic/audio/human。缺证据、低置信和无法判断不授予通过，新场景批准/输出须有效语义报告；旧静态路线保留。沿用项目模型绑定，Agent API1.25.0，review/approve/status1.1；真实模型语义效果和课程签收仍待验。见[A04记录](../../plans/html-backend-development/progress-narration-a04-2026-10-13.md)。下方历史条目以本增量为准。
 

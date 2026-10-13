@@ -1092,6 +1092,7 @@ try:
                 db,
                 project_id,
             ),
+            html_workflow_jobs=html_workflow_jobs,
         )
     )
     configure_pipeline_service_factory(

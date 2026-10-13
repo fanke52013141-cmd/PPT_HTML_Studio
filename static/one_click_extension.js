@@ -49,6 +49,16 @@
     tts: '5 旁白与音频 · 语音合成',
     render: '8 作品输出 · 渲染视频',
   };
+  const HTML_STAGE_LABELS = {
+    preflight: '预检查',
+    storyboard: '权威分镜与语义来源',
+    narration: '课程旁白',
+    images: '生图设计参考与确认',
+    confirm_images: 'HTML 场景复刻与工程 QA',
+    tts: '原 TTS 配音与试听确认',
+    ai_mask: '逐句独立语义 QA 与场景批准',
+    render: '正式视频导出',
+  };
   const STATUS_LABELS = {
     idle: '未开始',
     running: '进行中',
@@ -56,13 +66,28 @@
     done: '已完成',
     failed: '需要处理',
     paused: '已暂停',
+    waiting_for_user: '等待用户操作',
+    waiting_for_review: '等待你批准',
     cancelled: '已取消',
     pending: '待处理',
     success: '已完成',
   };
 
-  function stageLabel(value) {
+  function isHtmlCourse(status) {
+    return status?.workflow_type === 'html_course';
+  }
+
+  function stageLabel(value, status) {
+    if (isHtmlCourse(status)) return HTML_STAGE_LABELS[value] || value || '准备中';
     return STAGE_LABELS[value] || value || '准备中';
+  }
+
+  function stageStep(value, status) {
+    if (isHtmlCourse(status)) {
+      return ({preflight: 1, storyboard: 2, narration: 6, images: 3,
+        confirm_images: 3, tts: 6, ai_mask: 3, render: 8})[value] || 0;
+    }
+    return STAGE_TO_STEP[value] || 0;
   }
 
   function statusLabel(value) {
@@ -96,7 +121,7 @@
     const stage = (status && status.current_stage) || '';
     if (!stage || stage === STATE.lastFollowedStage) return;
     STATE.lastFollowedStage = stage;
-    const targetStep = STAGE_TO_STEP[stage];
+    const targetStep = stageStep(stage, status);
     if (targetStep && typeof window.navigateToStep === 'function') {
       Promise.resolve(window.navigateToStep(targetStep)).catch(() => {
         // 导航失败不阻断状态轮询；下一次阶段切换或手动点击仍可恢复。
@@ -125,7 +150,7 @@
     let banner = document.getElementById(bannerId);
     const runState = (status && status.status) || 'idle';
     const stage = (status && status.current_stage) || '';
-    const targetStep = STAGE_TO_STEP[stage] || 0;
+    const targetStep = stageStep(stage, status);
     const panel = targetStep ? document.getElementById(`step-panel-${targetStep}`) : null;
     if (runState !== 'running' || !panel) {
       if (banner) banner.remove();
@@ -254,7 +279,9 @@
     window.syncStoryboardGenerationState?.(status);
     const contentStage = status?.status === 'running' ? status?.current_stage : '';
     if (contentStage === 'ai_mask' || oneClickContentStage === 'ai_mask') {
-      renderPageTaskState(document.getElementById('step-panel-5'), 'mask', contentStage === 'ai_mask' ? 'running' : status?.status === 'failed' ? 'error' : 'done', contentStage === 'ai_mask' ? '正在关联画面元素与演讲稿，生成 AI Mask 标注' : status?.status === 'failed' ? 'AI Mask 标注失败' : 'AI Mask 标注已完成', 'image');
+      if (!isHtmlCourse(status)) {
+        renderPageTaskState(document.getElementById('step-panel-5'), 'mask', contentStage === 'ai_mask' ? 'running' : status?.status === 'failed' ? 'error' : 'done', contentStage === 'ai_mask' ? '正在关联画面元素与演讲稿，生成 AI Mask 标注' : status?.status === 'failed' ? 'AI Mask 标注失败' : 'AI Mask 标注已完成', 'image');
+      }
     }
     if (contentStage === 'render' || oneClickContentStage === 'render') {
       renderPageTaskState(document.getElementById('step-panel-8'), 'one-click-output', contentStage === 'render' ? 'running' : status?.status === 'completed' ? 'done' : 'error', contentStage === 'render' ? '正在生成作品视频' : status?.status === 'completed' ? '作品视频生成完成' : '作品生成已停止', 'video');
@@ -304,7 +331,7 @@
     const activity = document.getElementById('project-activity-status');
     if (activity) {
       const currentStage = (status?.stages || []).find(stage => stage.id === current);
-      const message = currentStage?.title || stageLabel(current) || currentStage?.message || '';
+      const message = currentStage?.title || stageLabel(current, status) || currentStage?.message || '';
       // [完成基准 20260904] 一键生成的完成以视频产出为基准：
       // 后端保证 completed 时 status.video.url 存在；前端双保险，
       // 拿不到视频链接时不显示"已完成"，避免渲染仍在后台跑时误报。
@@ -319,7 +346,9 @@
     }
     summary.innerHTML = `
       <strong>状态：</strong><span class="one-click-pill ${esc(state)}">${esc(statusLabel(state))}</span>
-      ${current ? `<span style="margin-left:.5rem;">当前阶段：${esc(stageLabel(current))}</span>` : ''}
+      ${current ? `<span style="margin-left:.5rem;">当前阶段：${esc(stageLabel(current, status))}</span>` : ''}
+      ${status?.message ? `<br><small role="status">${esc(status.message)}</small>` : ''}
+      ${isHtmlCourse(status) ? '<br><small>HTML 课程流程：真实设计参考 → 逐页确认 → HTML 复刻 → 原 TTS 听审 → 独立语义 QA → 人工批准 → 导出。</small>' : ''}
       ${state === 'running' ? '<br><small>系统会复用已完成且仍有效的产物；你可以继续查看已解锁步骤。</small>' : ''}
       ${status?.run_started_at || status?.started_at ? `<br><small>本次开始：${esc(status.run_started_at || status.started_at)}　${state === 'running' ? '已用' : '总耗时'}：${esc(formatElapsedSeconds(status.run_elapsed_seconds))}</small>` : ''}
       ${status?.run_finished_at ? `<br><small>本次结束：${esc(status.run_finished_at)}</small>` : ''}
@@ -328,7 +357,14 @@
     `;
     const list = Array.isArray(status?.stages) ? status.stages : [];
     const features = window.PPTFlow?.distributionFeatures() || {};
-    const visibleStages = [
+    const visibleStages = isHtmlCourse(status) ? [
+      ['1 讲稿与权威分镜', ['preflight', 'storyboard', 'narration']],
+      ['2 生图设计参考与确认', ['images']],
+      ['3 HTML 复刻与工程 QA', ['confirm_images']],
+      ['4 原 TTS 配音与真实时间绑定', ['tts']],
+      ['5 独立语义 QA', ['ai_mask']],
+      ['6 人工批准与正式导出', ['render']],
+    ] : [
       ['1 导入文章', ['preflight']], ['2 分镜规划', ['storyboard']],
       ['3 图片生成', ['images', 'confirm_images']], ['4 AI 标注', ['ai_mask']],
       ['5 旁白与音频', ['narration', 'tts']], ['6 勾画标注', ['annotation']],
@@ -345,13 +381,14 @@
       const finished = item => ['done', 'completed', 'success', 'skipped'].includes(item.status);
       let cardStatus = 'pending';
       if (members.some(item => item.status === 'failed')) cardStatus = 'failed';
-      else if (members.some(item => item.status === 'running')) cardStatus = state === 'paused' ? 'paused' : 'running';
+      else if (members.some(item => item.status === 'running')) cardStatus = ['paused', 'waiting_for_user', 'waiting_for_review'].includes(state) ? 'paused' : 'running';
       else if (members.some(item => item.status === 'paused')) cardStatus = 'paused';
       else if (members.length && ids.every(id => members.some(item => item.id === id && finished(item)))) cardStatus = 'done';
       else if (!members.length && (ids.includes('annotation') || ids.includes('digital_human')) && renderReached) cardStatus = 'done';
       const errors = members.flatMap(item => item.blocking_errors?.length ? item.blocking_errors : item.status === 'failed' && item.message ? [item.message] : []);
       const active = members.find(item => item.status === 'running' || item.status === 'failed') || members[members.length - 1];
-      const message = errors.length ? `错误：${errors.join(' / ')}` : cardStatus === 'done' ? '' : cardStatus === 'paused' ? '' : active?.message || '';
+      const awaiting = state === 'waiting_for_user' || state === 'waiting_for_review';
+      const message = errors.length ? `错误：${errors.join(' / ')}` : cardStatus === 'done' ? '' : cardStatus === 'paused' && !awaiting ? '' : active?.message || status?.message || '';
       copiedErrors[index] = message;
       return `<article class="one-click-stage"><strong>${esc(title)}<span class="one-click-pill ${esc(cardStatus)}">${esc(statusLabel(cardStatus))}</span></strong>
         ${errors.length ? `<button type="button" class="one-click-stage-message" data-copy-error="${index}" aria-label="复制完整错误">${esc(message)}</button>` : `<small class="one-click-stage-message">${esc(message)}</small>`}</article>`;

@@ -14,10 +14,11 @@ from html_reference_package import verify_package
 def definition_identity(repo_root):
     repo = Path(repo_root)
     visual = repo / "html_engine/visual"
-    paths = [visual / "preview/player.js", visual / "generated/catalog.json", visual / "effects/registry.json",
+    paths = [visual / "preview/player.js", visual / "generated/catalog.json",
+             visual / "generated/validators.cjs", visual / "schema.json", visual / "effects/registry.json",
              repo / "html_engine/tools/catalog-lib.cjs", repo / "html_engine/tools/catalog-assemble.cjs"]
     paths += [repo / name for name in ("html_production_service.py", "html_reference_package.py",
-                                      "html_design_candidates.py", "html_image_provider.py", "html_design_brief.py",
+                                      "html_design_candidates.py", "html_image_provider.py", "html_design_brief.py", "html_layout_reference.py",
                                       "html_candidate_agent.py", "html_scene_repair.py", "html_scene_editing.py",
                                       "html_visual_review_service.py", "html_engine/tools/review-scene.cjs")]
     for folder in ("themes", "layouts", "templates"):

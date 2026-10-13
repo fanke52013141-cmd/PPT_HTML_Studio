@@ -2,9 +2,11 @@
 import copy
 import json
 import uuid
+from io import BytesIO
 from pathlib import Path
 
 import pytest
+from PIL import Image
 from database import SessionLocal, Project
 from html_workflow_jobs import HtmlWorkflowJobs
 from html_visual_review_service import HtmlReviewDependencies
@@ -12,7 +14,9 @@ from html_production_recovery import reconcile_responses, receipt_path, read_rec
 import html_task_store as store
 from checks.test_html_production_stages import restart, ROOT
 from checks.test_html_production_stages import stage as stage
-from checks.test_html_workflow_acceptance import plan_for, write
+from checks.test_html_workflow_acceptance import write
+from checks.test_html_object_decomposition import decomposition_plan, normalize
+from checks.test_html_narration_semantics import CONTRACT_SLIDE as SEMANTIC_CONTRACT
 
 
 def test_response_disk_receipt_recovers_failed_database_registration(stage, monkeypatch):
@@ -140,8 +144,8 @@ def test_native_toapis_id_persisted_before_poll_and_recovered_without_post(stage
 
 @pytest.fixture
 def author(tmp_path, monkeypatch, request):
-    scene = json.loads((ROOT / "html_engine/visual/scenes/water-facts.json").read_text(encoding="utf-8"))
-    plan, contract = plan_for(scene, "s1")
+    contract = copy.deepcopy(SEMANTIC_CONTRACT)
+    plan = normalize(decomposition_plan(), contract)
     db = SessionLocal()
     project = Project(id="author-recovery-" + uuid.uuid4().hex, name="author recovery",
                       account_id="default", visual_backend="html", run_dir=str(tmp_path))
@@ -155,24 +159,51 @@ def author(tmp_path, monkeypatch, request):
             return self.args[0](*self.args[1:])
     executor = Capture()
     calls = []
-    jobs = HtmlWorkflowJobs(SessionLocal, HtmlReviewDependencies(ROOT, lambda **kw: calls.append(1) or copy.deepcopy(plan)), executor=executor)
+    image = BytesIO()
+    Image.new("RGB", (1280, 720), "white").save(image, format="PNG")
+    jobs = HtmlWorkflowJobs(
+        SessionLocal,
+        HtmlReviewDependencies(ROOT, lambda **kw: calls.append(1) or copy.deepcopy(plan)),
+        provider=lambda *_args, **_kwargs: image.getvalue(), executor=executor,
+    )
+    import html_production_service
+    # This suite isolates write-ahead author receipt recovery. Scene quality
+    # has its own real-render and engineering gates in the production tests.
+    monkeypatch.setattr(html_production_service, "review_scene",
+                        lambda *_args, **_kwargs: {"passed": True})
     task = jobs.submit(db, project, contract)
+    executor.run()  # First job creates the design reference and stops for review.
+    db.expire_all()
+    design_task = store._job(db, task["id"])
+    design_result = design_task.get_payload().get("result", {})
+    assert design_result.get("stage") == "design_review"
+    from html_design_candidates import current_design
+    candidate = current_design(run_dir=tmp_path, contract=contract, repo_root=ROOT)["design"]
+    task = jobs.submit(
+        db, project, contract, options={"design_candidate_key": candidate["key"]},
+        expected_model_summary=design_task.get_payload()["input"]["model_summary"],
+    )
     def fail_terminal(*args, **kw):
         raise RuntimeError("author committed, task terminal commit failed")
     monkeypatch.setattr(store, "mark_succeeded", fail_terminal)
     if getattr(request, "param", "sealed") == "prepared":
         import html_production_recovery
         real_seal = html_production_recovery.seal_author_commit
+        seal_calls = []
         def prepared_only(*args, **kw):
+            seal_calls.append((args[2], kw.get("expected") is not None))
             if kw.get("expected") is not None:
                 return real_seal(*args, **kw)
         monkeypatch.setattr(html_production_recovery, "seal_author_commit", prepared_only)
-    executor.run()
+    else:
+        seal_calls = []
+    executor.run()  # The accepted design proceeds through author commit.
     db.expire_all()
     job = store._job(db, task["id"])
     assert job.status == "failed"
     seal = receipt_path(tmp_path, job.id, "author-1")
-    assert seal.is_file()
+    assert seal.is_file(), (job.error, seal_calls,
+                            [str(path.relative_to(tmp_path)) for path in tmp_path.rglob("*.receipt.json")])
     yield db, project, jobs, contract, calls, task, seal
     db.close()
 
@@ -189,10 +220,16 @@ def test_write_ahead_receipt_recovers_without_final_seal(author):
 @pytest.mark.parametrize("mode", ["startup", "submit"])
 def test_author_saved_task_recovers_without_regeneration(author, mode):
     db, project, jobs, contract, calls, task, seal = author
+    from html_design_candidates import current_design
+
+    candidate = current_design(run_dir=project.run_dir, contract=contract, repo_root=ROOT)["design"]
+    task_input = store._job(db, task["id"]).get_payload()["input"]
+    options = {"design_candidate_key": candidate["key"]}
     if mode == "startup":
         jobs.recover()
     else:
-        recovered = jobs.submit(db, project, contract)
+        recovered = jobs.submit(db, project, contract, options=options,
+                                expected_model_summary=task_input["model_summary"])
         assert recovered["id"] == task["id"] and recovered["reconciled"]
     db.expire_all()
     job = store._job(db, task["id"])
@@ -201,24 +238,31 @@ def test_author_saved_task_recovers_without_regeneration(author, mode):
     receipt = read_receipt(seal)
     assert job.get_payload()["result"] == receipt["result"]
     assert len(calls) == 1
-    assert jobs.submit(db, project, contract)["id"] == task["id"]
+    assert jobs.submit(db, project, contract, options=options,
+                       expected_model_summary=task_input["model_summary"])["id"] == task["id"]
 
 
 @pytest.mark.parametrize("damage", ["binding", "revision", "receipt", "scene"])
 def test_incomplete_or_newer_author_commit_never_claims_success(author, damage):
     db, project, jobs, contract, calls, task, seal = author
     root = Path(project.run_dir) / "planning/html_visual"
+    from html_design_candidates import current_design
+
+    candidate = current_design(run_dir=project.run_dir, contract=contract, repo_root=ROOT)["design"]
+    task_input = store._job(db, task["id"]).get_payload()["input"]
+    options = {"design_candidate_key": candidate["key"]}
     if damage == "binding":
-        (root / "binding-s1.json").unlink()
+        (root / f"binding-{contract['slide_id']}.json").unlink()
     elif damage == "revision":
         write(root / "revision.json", {"revision": 99})
     elif damage == "scene":
-        (root / "scene-s1.json").write_text("{}", encoding="utf-8")
+        (root / f"scene-{contract['slide_id']}.json").write_text("{}", encoding="utf-8")
     else:
         seal.write_text("{}", encoding="utf-8")
     jobs.recover()
     db.expire_all()
     assert store._job(db, task["id"]).status == "failed"
     with pytest.raises(store.HtmlTaskError, match="RECONCILIATION_BLOCKED"):
-        jobs.submit(db, project, contract)
+        jobs.submit(db, project, contract, options=options,
+                    expected_model_summary=task_input["model_summary"])
     assert len(calls) == 1

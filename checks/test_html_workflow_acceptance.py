@@ -41,13 +41,13 @@ def plan_for(scene, slide_id):
         }
         for n in scene["nodes"]
     }
-    beats = [
-        {
-            "id": f"{slide_id}-beat-{i}",
-            "target": {"objectId": obj["id"], "action": "enter"},
-        }
-        for i, obj in enumerate(objects)
-    ]
+    image_objects = [obj for obj in objects if obj["kind"] == "image"]
+    for image_obj in image_objects:
+        anchor_id = f"fixture-landmark-{image_obj['id']}"
+        slots[image_obj["slot"]]["anchorId"] = anchor_id
+        for content in slots.values():
+            if content.get("kind") == "annotation" and content.get("targetId") == image_obj["id"]:
+                content["anchorId"] = anchor_id
     assets = [
         {
             "id": n["assetRef"]["id"],
@@ -59,19 +59,58 @@ def plan_for(scene, slide_id):
         for n in scene["nodes"]
         if n["type"] == "image"
     ]
+    contract = {
+        "slide_id": slide_id,
+        "narration_beats": [
+            {"id": f"{slide_id}-beat-{i}", "spoken_text": "观察这一变化。"}
+            for i in range(max(1, len(objects)))
+        ],
+    }
+    targets = [obj for obj in objects if obj["kind"] != "image"] or objects
+    beats = []
+    revealed = set()
+    for i, narration in enumerate(contract["narration_beats"]):
+        obj = targets[i % len(targets)]
+        meaning = f"讲解并呈现 {obj['slot']} 的内容"
+        action_type = "emphasize" if obj["id"] in revealed else "enter"
+        revealed.add(obj["id"])
+        beats.append({
+            "id": narration["id"],
+            "visualIntent": meaning,
+            "targets": [{"objectId": obj["id"], "role": "instructional", "meaning": meaning}],
+            "actions": [{"actionKey": f"show-{i}", "objectId": obj["id"], "type": action_type,
+                         "expectedState": {"visible": True, "meaning": meaning}}],
+        })
+    targeted = {beat["targets"][0]["objectId"] for beat in beats}
+    semantics = []
+    for obj in objects:
+        is_image = obj["kind"] == "image"
+        instructional = obj["id"] in targeted
+        semantic_type = "subject" if is_image else "relation" if obj["kind"] == "summary" else "text"
+        item = {
+            "objectId": obj["id"],
+            "role": "instructional" if instructional else "context",
+            "meaning": f"{obj['slot']} 的课程内容",
+            "semanticType": semantic_type,
+            "representation": "independent_asset" if is_image else "code",
+            "initialState": {"visible": not instructional},
+            "endState": {"visible": True},
+        }
+        if not instructional:
+            item["initiallyVisibleReason"] = "作为页面背景信息持续显示"
+        if is_image:
+            item.update(sourceMode="generate", requiredAnchors=[slots[obj["slot"]]["anchorId"]])
+        semantics.append(item)
     return {
+        "version": "0.3.0",
         "slide_id": slide_id,
         "templateRef": scene["templateRef"],
         "slots": slots,
         "objects": objects,
         "beats": beats,
         "assets": assets,
-    }, {
-        "slide_id": slide_id,
-        "narration_beats": [
-            {"id": b["id"], "spoken_text": "观察这一变化。"} for b in beats
-        ],
-    }
+        "objectSemantics": semantics,
+    }, contract
 
 
 def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
@@ -122,7 +161,11 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
                 "template": result["scene"]["templateRef"]["id"],
             }
         )
-        assert result["review"]["passed"]
+        if result["review"].get("diagnosticOnly"):
+            assert not result["review"].get("pageErrors")
+            assert not result["review"].get("capacityIssues")
+        else:
+            assert result["review"]["passed"]
         if name == "evaporation-process":
             frozen = json.loads(
                 (
@@ -138,6 +181,27 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
             load_scene_with_revision(tmp_path, contract["slide_id"])["scene"]
             == result["scene"]
         )
+        generated_nodes = [
+            item for item in result["scene"]["nodes"]
+            if item["type"] == "image" and item.get("assetRef", {}).get("id", "").startswith("project-")
+        ]
+        if generated_nodes:
+            resources = json.loads(
+                (tmp_path / "planning/html_visual/resources.json").read_text(encoding="utf-8")
+            )
+        else:
+            resources = {"assets": []}
+        for node in generated_nodes:
+            asset = next(
+                item for item in resources["assets"]
+                if item["id"] == node["assetRef"]["id"]
+                and item["version"] == node["assetRef"]["version"]
+            )
+            assert (tmp_path / asset["file"]).is_file()
+            annotations = [item for item in result["scene"]["nodes"]
+                           if item["type"] == "annotation" and item["targetId"] == node["id"]]
+            assert all(annotation["anchorId"] in {anchor["id"] for anchor in asset["anchors"]}
+                       for annotation in annotations)
         binding = json.loads(
             (
                 tmp_path / f"planning/html_visual/binding-{contract['slide_id']}.json"
@@ -145,7 +209,7 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
         )
         assert len(binding["actions"]) == len(contract["narration_beats"])
     assert len({m["template"] for m in measurements}) == 3
-    assert sum(c["size"] == "1280x720" for c in calls) == 3
+    assert sum(c["size"] == "1280x720" for c in calls) == 5
     assert (
         sum(c["size"] == "1024x1024" for c in calls) == 3
     )  # Changed relevant classification bytes must change asset cache identity.
@@ -386,15 +450,39 @@ def test_production_job_runs_and_persists_result(monkeypatch):
     def generator(**kw):
         calls.append(kw)
         return copy.deepcopy(plan)
+    def provider(_prompt, *, size, transparent_background=False, **_kwargs):
+        width, height = (int(value) for value in size.split("x"))
+        mode = "RGBA" if transparent_background else "RGB"
+        image = Image.new(mode, (width, height), (0, 0, 0, 0) if transparent_background else "white")
+        draw = ImageDraw.Draw(image)
+        fill = (80, 120, 180, 255) if transparent_background else "#607890"
+        draw.ellipse((width // 4, height // 4, width * 3 // 4, height * 3 // 4), fill=fill)
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        return buffer.getvalue()
     jobs = HtmlWorkflowJobs(
         SessionLocal,
         HtmlReviewDependencies(
             repo_root=ROOT, json_generator=generator
         ),
+        provider=provider,
         executor=capture,
     )
-    task = jobs.submit(db, project, contract)
+    design_task = jobs.submit(db, project, contract)
     assert jobs.submit(db, project, contract)["reused"]
+    capture.args[0](*capture.args[1:])
+    db.expire_all()
+    design_job = db.query(LocalJob).filter(LocalJob.id == design_task["id"]).one()
+    assert design_job.status == "succeeded", design_job.error
+    assert design_job.get_payload()["result"]["stage"] == "design_review"
+    from html_design_candidates import current_design
+    candidate = current_design(run_dir=run, contract=contract, repo_root=ROOT)["design"]
+    options = {"design_candidate_key": candidate["key"]}
+    model_summary = design_job.get_payload()["input"]["model_summary"]
+    task = jobs.submit(db, project, contract, options=options,
+                       expected_model_summary=model_summary)
+    assert jobs.submit(db, project, contract, options=options,
+                       expected_model_summary=model_summary)["reused"]
     import html_production_service
     real_review = html_production_service.review_scene
     def fail_review(*args, **kw):
@@ -406,7 +494,8 @@ def test_production_job_runs_and_persists_result(monkeypatch):
     assert failed.status == "failed"
     assert "phase:compile" in failed.get_payload()["production_stages"]
     monkeypatch.setattr(html_production_service, "review_scene", real_review)
-    retry = jobs.submit(db, project, contract)
+    retry = jobs.submit(db, project, contract, options=options,
+                        expected_model_summary=model_summary)
     assert retry["id"] == task["id"] and retry["attempt"] == 2
     # Deliberately mutate executor's original argument after submission.
     # The saved page must still come from the verified snapshot.
@@ -416,7 +505,9 @@ def test_production_job_runs_and_persists_result(monkeypatch):
     db.expire_all()
     job = db.query(LocalJob).filter(LocalJob.id == task["id"]).one()
     assert job.status == "succeeded", job.error
-    assert job.get_payload()["result"]["review"]["passed"]
+    report = job.get_payload()["result"]["review"]
+    assert report.get("diagnosticOnly") is True
+    assert not report.get("pageErrors") and not report.get("capacityIssues")
     assert job.get_payload()["result"]["scene"]["id"] == original_id
     assert len(calls) == 1
     db.close()
