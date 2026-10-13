@@ -119,7 +119,13 @@ def _registered_capabilities(repo_root: Path) -> Dict[str, Any]:
 
 
 def _plan_schema_hint(plan_version: str = "0.1.0") -> str:
-    if plan_version == "0.2.0":
+    if plan_version == "0.3.0":
+        from html_scene_plan_models import ObjectSemantics
+
+        return (_plan_schema_hint("0.2.0").replace('version:"0.2.0"', 'version:"0.3.0"')
+                + "顶层新增 objectSemantics 数组，完整覆盖 objects；单项字段合同："
+                + json.dumps(ObjectSemantics.model_json_schema(), ensure_ascii=False))
+    if plan_version in ("0.2.0", "0.3.0"):
         return (
             '输出 JSON：{version:"0.2.0",slide_id,templateRef:{id,version},'
             'slots:{槽位名:{kind,...内容}},objects:[{id,slot,kind,icon?,exit?,transitional?}],'
@@ -181,7 +187,7 @@ def build_plan_generation_prompts(
         + "\n槽位内容字段契约（kind 对应 type，不输出 id/slot/type）："
         + json.dumps(capabilities.get("node_contracts", {}), ensure_ascii=False)
     )
-    if plan_version == "0.2.0":
+    if plan_version in ("0.2.0", "0.3.0"):
         system = (
             "PromptVersion:html-plan-0.5.0。你是讲稿驱动的课程视觉规划器，只输出一个 JSON 对象。"
             "spoken_text 是不可改写的语义真值；视觉说明、设计参考不得覆盖原句。"
@@ -210,6 +216,21 @@ def build_plan_generation_prompts(
             + "\n槽位内容字段契约（kind 对应 type，不输出 id/slot/type）："
             + json.dumps(capabilities.get("node_contracts", {}), ensure_ascii=False)
         )
+        if plan_version == "0.3.0":
+            system = system.replace("html-plan-0.5.0", "html-plan-0.6.0")
+            system += (
+                "\n先拆对象再设计：每个实际对象声明 objectSemantics，role 与语块目标一致；"
+                "semanticType 区分 text/relation/data/subject/symbol。准确文字、流程、容量/数值与"
+                "连接必须是 code；图片只能是 independent_asset 的 subject，且只能控制整张独立主体。"
+                "需要分步显现的输入/处理/输出拆为独立代码对象，不能用单张插图内部的 focus 冒充。"
+                "initialState/endState 只声明 visible；每个 instructional 初始隐藏，先 enter 再 emphasize，"
+                "不要重复 enter。背景/装饰初始可见须 initiallyVisibleReason；结束可见性须与动作一致。"
+                "当前不支持变形、改图中文字、精确容量填充或隐式退出；能力不足应拆页/改表达，不能声称已实现。"
+                "图片 sourceMode 为 generate 或 existing，必须有对应素材表和 assetRef；existing 必须是输入提供的素材。"
+                "requiredAnchors 仅用于真实图内定位；不得写 focus/center 或猜测坐标，生成素材锚点待实际验证。"
+                "每个独立主体计入 asset_budget；素材板不能绕过主体计数，未接受分割候选不可当已存在素材。"
+                "不要输出 visualSequence/assetPolicy/anchorChecks/design_brief，宿主校验并推导。"
+            )
     user = json.dumps(
         {
             "slide": {
@@ -218,7 +239,7 @@ def build_plan_generation_prompts(
                 "narration_beats": (
                     [{"id": b.get("id"), "spoken_text": b.get("spoken_text")}
                      for b in contract_slide.get("narration_beats") or [] if isinstance(b, dict)]
-                    if plan_version == "0.2.0" else contract_slide.get("narration_beats") or []
+                    if plan_version in ("0.2.0", "0.3.0") else contract_slide.get("narration_beats") or []
                 ),
             },
             "design_brief": brief,
@@ -241,6 +262,7 @@ def generate_scene_plan(
     brief: Optional[Dict[str, Any]] = None,
     artifact_prefix: Optional[str] = None,
     plan_version: str = "0.1.0",
+    asset_budget: int = 1,
 ) -> Dict[str, Any]:
     """Model → validated scene plan, with one bounded repair round.
 
@@ -250,9 +272,9 @@ def generate_scene_plan(
     final diagnostics. A model output that fails normalization twice is
     an error — validators never bend toward the model.
     """
-    if plan_version not in ("0.1.0", "0.2.0"):
+    if plan_version not in ("0.1.0", "0.2.0", "0.3.0"):
         raise HtmlReviewError("未知规划版本", code="PLAN_VERSION_MISMATCH", status_code=422)
-    if plan_version == "0.2.0":
+    if plan_version in ("0.2.0", "0.3.0"):
         # Fail before a paid request when authority is absent or malformed.
         from html_narration_semantics import NarrationSemanticError, validate_narration_source
 
@@ -262,7 +284,13 @@ def generate_scene_plan(
             raise HtmlReviewError(str(exc), code=exc.code, status_code=422) from exc
     capabilities = _registered_capabilities(Path(repo_root))
     prompts = build_plan_generation_prompts(contract_slide, capabilities, brief, plan_version=plan_version)
-    version_suffix = "_v0_2_0" if plan_version == "0.2.0" else ""
+    if plan_version == "0.3.0":
+        if type(asset_budget) is not int or not 0 <= asset_budget <= 2:
+            raise HtmlReviewError("独立主体预算必须是 0—2", code="BRIEF_BUDGET_INVALID", status_code=422)
+        user_input = json.loads(prompts["user_prompt"])
+        user_input["asset_budget"] = asset_budget
+        prompts["user_prompt"] = json.dumps(user_input, ensure_ascii=False)
+    version_suffix = "_v" + plan_version.replace(".", "_") if plan_version != "0.1.0" else ""
     prefix = artifact_prefix or f"html_scene_plan_{contract_slide.get('slide_id')}{version_suffix}"
     attempts: list[Dict[str, Any]] = []
     plan = None
@@ -275,7 +303,7 @@ def generate_scene_plan(
                 f"上一次输出未通过校验：{last_failure.code} {last_failure}。"
                 "请严格按已注册模板/槽位/图标重新输出完整 JSON。"
             )
-            if plan_version == "0.2.0":
+            if plan_version in ("0.2.0", "0.3.0"):
                 # The dynamic diagnostic and rejected plan are already in user input.
                 repair_note = ""
         response = json_generator(
@@ -291,12 +319,26 @@ def generate_scene_plan(
             json.dumps(response, ensure_ascii=False, sort_keys=True).encode("utf-8")
         )
         try:
+            resolved_resources = None
+            if plan_version == "0.3.0" and isinstance(response, dict):
+                from html_object_decomposition import resolve_existing_resources
+
+                resolved_resources = resolve_existing_resources(response, Path(run_dir), contract=contract_slide)
             plan = normalize_html_scene_plan(
                 response,
                 capabilities["catalog"],
                 contract_slide=contract_slide,
                 expected_version=plan_version,
+                asset_budget=asset_budget,
+                resolved_resources=resolved_resources,
             )
+            if plan_version == "0.3.0":
+                from html_design_brief import build_design_brief
+
+                plan["design_brief"] = build_design_brief(
+                    plan, theme="neutral-baseline", asset_budget=asset_budget,
+                    effect_registry=capabilities["effects"],
+                )
             attempts.append(
                 {
                     "round": round_index,
@@ -334,7 +376,9 @@ def generate_scene_plan(
         "plan_evidence": plan_evidence(plan) if plan else None,
     }
     records_dir = Path(run_dir) / RECORDS_DIR
-    record_suffix = "-v0.2.0" if plan_version == "0.2.0" else ""
+    if plan_version == "0.3.0":
+        record["request_context"]["asset_budget"] = asset_budget
+    record_suffix = "-v" + plan_version if plan_version != "0.1.0" else ""
     _write_json(records_dir / f"plan-{contract_slide.get('slide_id')}{record_suffix}.json", record)
     if plan is None:
         raise HtmlReviewError(

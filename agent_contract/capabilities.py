@@ -344,9 +344,9 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="html_review.plan_generate",
-        version="1.1",
+        version="1.2",
         status=CapabilityStatus.stable,
-        description="Generate a versioned scene plan; select 0.2.0 for authoritative narration, visual intent, multiple targets and stable actions. Omitted version preserves legacy 0.1.0. Structural validation is not semantic approval; 0.2.0 production compilation awaits A02/A03.",
+        description="Generate a versioned scene plan: 0.3.0 adds object decomposition, subject budget, resource anchors and narration design states; 0.2.0 preserves A01. Legacy 0.1.0 default remains. Structural validation is not semantic approval; production integration awaits A03.",
         request_model=HtmlPlanGenerationRequest,
         response_model=HtmlPlanGenerationResult,
         agent_api_method="POST",

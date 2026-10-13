@@ -204,7 +204,7 @@ def test_shared_web_agent_request_and_response_schema():
         agent_request(plan_version="unknown")
     cap = next(c for c in CAPABILITIES if c.id == "html_review.plan_generate")
     assert cap.request_model is agent_request
-    assert cap.version == "1.1"
+    assert cap.version == "1.2"
     frozen = normalize(semantic_plan())
     response = HtmlPlanGenerationResult(project_id="project", slide_id="slide_001", plan=frozen,
                                        evidence=plan_evidence(frozen))

@@ -2,14 +2,17 @@
 // Project resources are bytes, never executable code. Resolve only inside the run.
 const fs = require("fs"), path = require("path"), crypto = require("crypto");
 const { PNG } = require("pngjs");
-function loadProjectResources() {
+function loadProjectResources(assetRefs = null) {
   const filename = process.env.HPS_HTML_RESOURCES;
   if (!filename) return null;
   const manifestPath = fs.realpathSync(filename);
   const run = fs.realpathSync(path.resolve(path.dirname(manifestPath), "../.."));
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   const assets = [], pack = {};
-  for (const entry of manifest.assets || []) {
+  if (assetRefs !== null && !Array.isArray(assetRefs)) throw new Error("ASSET_SELECTION_INVALID");
+  const entries = (manifest.assets || []).filter(entry => assetRefs === null ||
+    assetRefs.some(ref => ref.id === entry.id && ref.version === entry.version));
+  for (const entry of entries) {
     const actual = fs.realpathSync(path.resolve(run, entry.file));
     if (!actual.startsWith(run + path.sep)) throw new Error("ASSET_PATH_ESCAPE");
     const bytes = fs.readFileSync(actual);

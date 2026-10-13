@@ -1,0 +1,47 @@
+{
+  "format": "hps.development.validation",
+  "version": "0.1.0",
+  "date": "2026-10-13 Asia/Shanghai",
+  "task": "A02 object decomposition and design states",
+  "parent_commit": "b1e3db8b3c0aa7fa01c00ec71db48d7833fed488",
+  "status": "engineering_passed",
+  "semantic": "not_run",
+  "paid_provider": "not_run",
+  "audio": "not_run",
+  "human": "pending_review",
+  "production_compilation": "pending_A03",
+  "database_isolation": "checks/conftest.py temporary DB and runs",
+  "source_sha256": {
+    "html_object_decomposition.py": "9cdc2cdca709fb4c3403a6ff1f69343863536cc9757b0932815c10b2ca7d6bb8",
+    "html_asset_design_prompt.py": "b818702664c162b2fec91be567588577687401e4bd2d386d2bb49bc4b2b430b5",
+    "html_scene_plan_models.py": "d3fe312622bbc8311a86b24872254b290e3cb346c3510eb2573e9386b9b04a01",
+    "html_design_brief.py": "8c1270ee53345afdb635bccb59e11a04ba672887cda65f2048e76976a8a7ae28",
+    "html_reference_package.py": "03504f1d2ec209afee992e9ef888589bf2ee723b452f05cd06e7956a52c96890",
+    "html_storyboard_planning.py": "1f6da408bc84c31a7121d9f2b6521be1830b362ed714c6372fe781b0a9b6ee64",
+    "html_visual_review_service.py": "ed557b5ee8d889d16912555ab8cf2ea398f987e16e8e9255df42fe744cf764cf",
+    "html_scene_editing.py": "89573d7b8d798442a27dbb1a2544042c9db9fe5d8e972acf80ab071d1d22f2d4",
+    "html_engine/tools/project-resources.cjs": "1517362ac8ec13d63c606461095b10c826d1ad5dc14b206627ca9dd358ef2204",
+    "checks/test_html_object_decomposition.py": "208cc3da86ba431550e94b58034a6a32400acb47dcd16e25ea217d581747d2d1",
+    "checks/test_html_semantic_plan_transports.py": "025b222f159940afc1df54e37c787e5e03776681abd4bb26ac6580a524e1ed58"
+  },
+  "commands": [
+    {
+      "command": ".venv/Scripts/python.exe -m pytest checks/test_html_object_decomposition.py checks/test_html_semantic_plan_transports.py checks/test_html_narration_semantics.py checks/test_html_storyboard_planning.py checks/test_html_visual_review.py checks/test_html_design_brief.py checks/test_html_production_integration.py checks/test_html_creation_workflow.py checks/test_html_production_recovery.py checks/test_html_model_binding_integration.py checks/test_html_e_production.py checks/test_html_annotation_targets.py checks/test_html_scene_editing.py checks/agent/ -q",
+      "exit_code": 0,
+      "result": "594 passed, 1 existing deprecation warning"
+    },
+    {
+      "command": "ruff check changed Python files; compileall changed source; node --check html_engine/tools/project-resources.cjs; generate_agent_contracts.py --check; check_source_registration_contract.py; check_python_startup_hooks.py; focused git diff --check with cr-at-eol",
+      "exit_code": 0
+    }
+  ],
+  "known_failure": "V01 inherited server.py 1162 > 1100; unchanged, full checks not claimed",
+  "review": "code-review-and-quality five axes; source/transport/resource/state boundaries inspected",
+  "limitations": [
+    "Prepared provider requests have not been called",
+    "Token fixtures verify contract only, not a generated course",
+    "Generated anchors remain pending",
+    "Current templates and actions do not support image-region animation or precise capacity changes",
+    "No approval or production author writes"
+  ]
+}

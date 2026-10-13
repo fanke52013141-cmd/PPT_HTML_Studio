@@ -149,6 +149,34 @@ def build_design_brief(
         "registry_sha256": effect_registry["sha256"],
         "catalog_sha256": (plan.get("registered") or {}).get("catalog_sha256"),
     }
+    if plan.get("version") == "0.3.0":
+        if asset_budget != plan["assetPolicy"]["budget"]:
+            raise DesignBriefError("BRIEF_BUDGET_INVALID", "设计预算与已校验对象分工不一致")
+        brief["version"] = "0.2.0"
+        from html_object_decomposition import narration_design
+
+        brief["narration_design"] = narration_design(plan)
+        for need in brief["asset_needs"]:
+            oid = next(obj["id"] for obj in plan["objects"] if obj["slot"] == need["slot"])
+            definition = next(obj for obj in plan["objectSemantics"] if obj["objectId"] == oid)
+            need["objectId"] = oid
+            need["sourceMode"] = definition["sourceMode"]
+            need["assetRef"] = plan["slots"][need["slot"]]["assetRef"]
+            need["requiredAnchors"] = definition["requiredAnchors"]
+            need["meaning"] = definition["meaning"]
+            need["initialState"] = definition["initialState"]
+            need["endState"] = definition["endState"]
+            need["state_sequence"] = [
+                {"beatId": frame["beatId"], "spoken_text": frame["spoken_text"],
+                 "visualIntent": frame["visualIntent"], "beforeVisible": frame["before"][oid],
+                 "afterVisible": frame["after"][oid],
+                 "expectedStates": [action["expectedState"] for action in frame["actions"] if action["objectId"] == oid]}
+                for frame in plan["visualSequence"] if frame.get("beatId")
+                and any(action["objectId"] == oid for action in frame["actions"])
+            ]
+            from html_asset_design_prompt import asset_design_request
+
+            need["generation_request"] = asset_design_request(need)
     brief["sha256"] = _sha256_bytes(_canonical(brief))
     return brief
 
@@ -223,6 +251,8 @@ def required_keyframes(plan: Dict[str, Any]) -> List[Dict[str, Any]]:
     """OSS-04: static scenes need one reference; process scenes must cover
     start, relation change, and end. Transitional objects force process
     keyframes even when the plan structure would suggest a static page."""
+    if plan.get("version") == "0.3.0":
+        return plan["visualSequence"]
     has_transitional = any(
         obj.get("exit") or obj.get("transitional")
         for obj in plan.get("objects", [])

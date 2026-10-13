@@ -819,6 +819,8 @@ generated caches may be rebuilt, while explicit deletion needs a separate action
 
 ## Integrated HTML Backend Ownership and Acceptance
 
+- A02 plan0.3.0: `html_object_decomposition.py` owns pure object/control/budget/state validation; `html_asset_design_prompt.py` prepares independent-subject requests. Read `docs/contracts/html-presentation/runtime/visual-v1/object-decomposition-0.3.0.md`. Reference/design requests consume the same narration states, while actual generation and A03 compilation remain separate. Existing anchors use selected byte-verified project resources; generated anchors remain pending. Never treat whole-image anchors as independently animatable layers or auto-accept sheet candidates. Preserve old plan0.2.0/0.1.0 and approvals.
+
 - A01 narration semantics: `html_scene_plan_models.py` owns shared Web/Agent request and typed beat contracts; `html_narration_semantics.py` implements pure validation under `html_storyboard_planning.py`. Read `docs/contracts/html-presentation/runtime/visual-v1/narration-semantics-0.2.0.md`. Plan 0.2.0 is explicitly selected; absent version preserves 0.1.0. Source text/hash and actionId are host-derived; structure acceptance is not semantic/audio/human approval. Until A02/A03 integrate it, the production compiler must reject 0.2.0 rather than discard semantics. No automatic author/approval migration.
 
 - html_production_service.py orchestrates registered plans, cached labeled effect references, configured image transport, independent resources, candidate keyframes and scene compilation. It does not generate executable HTML/JavaScript and never automatically approves.

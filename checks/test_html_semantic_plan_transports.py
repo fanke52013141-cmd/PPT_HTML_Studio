@@ -28,6 +28,10 @@ def clients(tmp_path, monkeypatch):
 
     def generator(**kwargs):
         calls.append(kwargs)
+        if "html-plan-0.6.0" in kwargs["system_prompt"]:
+            from test_html_object_decomposition import decomposition_plan
+
+            return decomposition_plan()
         return semantic_plan() if "html-plan-0.5.0" in kwargs["system_prompt"] else model_plan()
 
     deps = HtmlReviewDependencies(repo_root=ROOT, json_generator=generator)
@@ -78,10 +82,20 @@ def test_http_version_selection_exact_source_and_no_author_writes(clients, prefi
     assert result["evidence"]["validation"]["semantic"] == "not_run"
     assert (run / "planning/html_visual/records/plan-slide_001.json").read_bytes() == legacy_record
     assert (run / "planning/html_visual/records/plan-slide_001-v0.2.0.json").is_file()
+    decomposed = client.post(path, json={"plan_version": "0.3.0", "asset_budget": 0})
+    assert decomposed.status_code == 200, decomposed.text
+    assert decomposed.json()["plan"]["design_brief"]["version"] == "0.2.0"
+    assert decomposed.json()["plan"]["assetPolicy"]["budget"] == 0
+    assert decomposed.json()["plan"]["objectSemantics"]
+    from html_reference_package import design_content
+    returned = decomposed.json()["plan"]
+    assert design_content(returned, returned["design_brief"])["narrationDesign"]["sequence"] == returned["visualSequence"]
+    assert (run / "planning/html_visual/records/plan-slide_001.json").read_bytes() == legacy_record
     assert not list((run / "planning/html_visual").glob("scene*.json"))
     assert not list((run / "planning/html_visual").glob("approval*.json"))
     before = len(calls)
     assert client.post(path, json={"plan_version": "garbage"}).status_code == 422
+    assert client.post(path, json={"plan_version": "0.3.0", "asset_budget": True}).status_code == 422
     assert client.post(path, json={"plan_version": "0.2.0", "bypass": True}).status_code == 422
     for kind, status in (("image", 400), ("foreign", 404)):
         blocked = f"{prefix}/projects/{projects[kind][0]}/html-review/slide_001/plan/generate"
@@ -105,7 +119,7 @@ def test_mcp_cli_and_actual_client_forward_version_body(tmp_path, monkeypatch, c
 
     monkeypatch.setattr(http, "urlopen", urlopen)
     client = AgentClient(base_url="http://isolated.test/api/agent/v1")
-    payload = {"plan_version": "0.2.0", "brief": {"instruction": "preserve source"}}
+    payload = {"plan_version": "0.3.0", "asset_budget": 0, "brief": {"instruction": "preserve source"}}
     _dispatch("html_review.plan_generate", {"project_id": "p1", "slide_id": "slide_001", **payload}, client)
     assert json.loads(requests[-1].data) == payload
     assert requests[-1].full_url.endswith("/projects/p1/html-review/slide_001/plan/generate")
@@ -116,6 +130,6 @@ def test_mcp_cli_and_actual_client_forward_version_body(tmp_path, monkeypatch, c
     assert json.loads(requests[-1].data) == payload
     assert '"ok": true' in capsys.readouterr().out
     schema = next(tool for tool in get_all_tool_definitions() if tool["name"] == "ppt_html_plan_generate")["inputSchema"]
-    assert schema["properties"]["plan_version"]["enum"] == ["0.1.0", "0.2.0"]
+    assert schema["properties"]["plan_version"]["enum"] == ["0.1.0", "0.2.0", "0.3.0"]
     client.post_html_plan_generate("p1", "slide_001")
     assert json.loads(requests[-1].data) == {}

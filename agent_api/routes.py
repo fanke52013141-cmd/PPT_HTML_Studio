@@ -517,6 +517,7 @@ def agent_html_plan_generate(
             json_generator=deps.json_generator,
             plan_version=selection.plan_version,
             brief=selection.brief,
+            asset_budget=selection.asset_budget,
         )
     except html_review.HtmlReviewError as error:
         raise HTTPException(status_code=error.status_code, detail={"code": error.code, "message": str(error)})

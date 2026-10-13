@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import base64
 import json
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from pipeline_lifecycle import write_json_atomic
 from html_visual_review_service import HtmlReviewError
 
 PROMPT_VERSION = "html-design-reference/0.3.0"
+SEMANTIC_PROMPT_VERSION = "html-design-reference/0.4.0"
 
 
 def _fail(message):
@@ -90,12 +92,25 @@ def design_content(plan: dict, brief: dict) -> dict:
                 collect(child)
     collect(slots)
     title = str((slots.get("header") or {}).get("title") or (slots.get("headline") or {}).get("text") or plan["slide_id"])
-    return {"title": title, "exactText": list(dict.fromkeys(texts)) or [title],
-            "templateRef": plan["templateRef"], "layoutRef": plan["layoutRef"],
-            "slots": slots, "asset_needs": brief["asset_needs"]}
+    content = {"title": title, "exactText": list(dict.fromkeys(texts)) or [title],
+               "templateRef": plan["templateRef"], "layoutRef": plan["layoutRef"],
+               "slots": slots, "asset_needs": brief["asset_needs"]}
+    if plan.get("version") == "0.3.0":
+        from html_object_decomposition import narration_design
+
+        expected = narration_design(plan)
+        if brief.get("narration_design") != expected:
+            _fail("设计 brief 与当前对象/语块状态不一致")
+        content["narrationDesign"] = expected
+        # Subject generation payload belongs to the asset provider, not the full-page design model.
+        content["asset_needs"] = [{key: value for key, value in need.items()
+                                  if key not in ("generation_request", "state_sequence")}
+                                 for need in brief["asset_needs"]]
+    return content
 
 
-def assemble_reference(plan, brief, *, repo_root, directory, runner):
+def assemble_reference(plan, brief, *, repo_root, directory, runner, run_dir=None):
+    subjects = _existing_subjects(plan, run_dir)
     ids = ["page:component-01"]
     kinds = {v["kind"] for v in plan["slots"].values()}
     for types, page in (({"arrow"}, "component-02"), ({"card", "figure", "summary"}, "component-03"),
@@ -122,12 +137,69 @@ def assemble_reference(plan, brief, *, repo_root, directory, runner):
                     errors="replace", timeout_sec=120)
     if result.returncode:
         raise HtmlReviewError("分类参考包装配失败，请检查源定义或保留的包", code="REFERENCE_ASSEMBLY_FAILED")
+    if subjects:
+        _attach_subjects(directory, subjects)
     return verify_package(directory)
+
+
+def _existing_subjects(plan, run_dir):
+    """Only accepted project resources; verify current bytes against the frozen plan."""
+    if plan.get("version") != "0.3.0":
+        return []
+    selected = [check for check in plan["anchorChecks"].values() if check["status"] != "pending_asset"]
+    if not selected:
+        return []
+    if run_dir is None:
+        _fail("已有主体参考必须提供实际项目资源目录")
+    from html_scene_editing import SceneEditError, resources
+
+    try:
+        verified = resources(run_dir, [check["assetRef"] for check in selected])
+    except SceneEditError as exc:
+        raise HtmlReviewError("已有主体字节未通过核验", code="REFERENCE_PACKAGE_INVALID") from exc
+    from html_object_decomposition import normalize_decomposition
+    from html_narration_semantics import NarrationSemanticError
+
+    try:
+        refreshed = normalize_decomposition(plan, asset_budget=plan["assetPolicy"]["budget"], resources=verified)
+    except NarrationSemanticError as exc:
+        raise HtmlReviewError("已有主体分工或锚点已失效", code="REFERENCE_PACKAGE_INVALID") from exc
+    if refreshed["decomposition_sha256"] != plan["decomposition_sha256"]:
+        _fail("已有主体字节、锚点或分工已变化，须重新规划")
+    subjects = {}
+    for check in selected:
+        asset = next((entry for entry in verified["assets"] if {"id": entry["id"], "version": entry["version"]} == check["assetRef"]), None)
+        if not asset or asset["file"]["sha256"] != check["file_sha256"]:
+            _fail("已有主体已变化，不能沿用旧状态规划")
+        name = "subject-" + sha256_json({"assetRef": check["assetRef"], "sha256": check["file_sha256"]})[:24] + ".png"
+        subjects[name] = {"assetRef": check["assetRef"], "sha256": check["file_sha256"],
+                          "width": asset["intrinsic"]["width"], "height": asset["intrinsic"]["height"],
+                          "bytes": base64.b64decode(verified["pack"][asset["file"]["path"]], validate=True)}
+    return [(name, subject) for name, subject in subjects.items()]
+
+
+def _attach_subjects(directory, subjects):
+    manifest_path = directory / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    for name, subject in subjects:
+        path = directory / name
+        if path.exists():
+            _fail("主体参考文件名冲突")
+        path.write_bytes(subject["bytes"])
+        manifest["files"].append({"path": name, "size": len(subject["bytes"]), "sha256": subject["sha256"]})
+        manifest["attachments"].append({"path": name, "sha256": subject["sha256"], "width": subject["width"],
+                                        "height": subject["height"], "type": "subject-reference", "assetRef": subject["assetRef"]})
+    manifest["cacheKey"] = sha256_json({"original": manifest["cacheKey"],
+                                       "subjects": [{"assetRef": subject["assetRef"], "sha256": subject["sha256"]} for _, subject in subjects]})
+    manifest["manifestSha256"] = sha256_json({key: value for key, value in manifest.items() if key != "manifestSha256"})
+    write_json_atomic(manifest_path, manifest)
 
 
 def design_prompt(package, *, instruction=""):
     # Accurate slot content appears once; hashes, sample IDs and audit metadata
     # stay outside the model input. Reference examples never become new content.
+    if "narrationDesign" in package["content"]:
+        return _semantic_design_prompt(package, instruction=instruction)
     return (
         f"PromptVersion: {PROMPT_VERSION}。生成一张完整页面的设计参考。"
         "只使用黑、灰、白；白色背景。精细字阶、充足留白、清晰线条、柔和灰阶阴影和渐变。"
@@ -140,5 +212,31 @@ def design_prompt(package, *, instruction=""):
         "主体图片与代码采用统一的灰阶材质与光照。风格指导："
         + json.dumps(package["guidance"]["style"], ensure_ascii=False)
         + "。准确内容：" + json.dumps({k: v for k, v in package["content"].items() if k != "exactText"}, ensure_ascii=False)
+        + ("。本轮修改方向：" + instruction if instruction else "")
+    )
+
+
+def _semantic_design_prompt(package, *, instruction):
+    content = {key: value for key, value in package["content"].items() if key != "exactText"}
+    content["narrationDesign"] = {key: value for key, value in content["narrationDesign"].items()
+                                  if key not in ("source_sha256", "anchor_checks")}
+    content["subjectAttachments"] = [
+        {"attachmentIndex": index + 1, "assetRef": entry["assetRef"]}
+        for index, entry in enumerate(package["manifest"]["attachments"])
+        if entry.get("type") == "subject-reference"
+    ]
+    return (
+        f"PromptVersion:{SEMANTIC_PROMPT_VERSION}。生成一张完整页面的设计参考，保留已认可的视觉方向。"
+        "分类附件仅供组件外观与材质参考，样例文字不属于本课；subjectAttachments标明实际主体附件与素材身份，"
+        "这些已有主体保持形象与归属，不改成另一对象。讲稿和准确槽位内容决定表达，"
+        "objectSemantics 对应的对象职责和 sequence 的初始/逐句/结束状态必须能由独立组件承载。"
+        "本图可展示最终构图，但不能把终态所有对象在初始阶段可见当成制作计划。"
+        "input、处理和output、容量/预留关系分别由代码文字、容器与关系组件承担；"
+        "图片只承担单独主体，不烘焙文字、数字、价格、箭头或多阶段，不发明数值、容量或换算比例。"
+        "layoutGeometry保持注册槽位、阅读顺序和字幕安全区；不超出资产预算，不增加未声明主体。"
+        "配色与材质沿用风格指导，不另改审美；16:9，底部1/9留空，不加品牌或来源页脚。"
+        "锚点须后续实际定位，不把通用focus冒充具体部位；设计图不证明组件重建或语义QA通过。"
+        "风格指导：" + json.dumps(package["guidance"]["style"], ensure_ascii=False)
+        + "。本课唯一内容与状态输入：" + json.dumps(content, ensure_ascii=False)
         + ("。本轮修改方向：" + instruction if instruction else "")
     )

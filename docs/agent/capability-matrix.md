@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.22.0
-- **Contract Hash**: `3c6acf3a6770c54e`
+- **Agent API Version**: 1.23.0
+- **Contract Hash**: `fec1bb078a2f6257`
 - **Total Capabilities**: 60
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -40,7 +40,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_visual.status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/status` | `ppt_html_visual_status` | Yes | `html status` | `html_creation_workflow.project_status` | No | No |
 | `html_visual.scene_read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_read` | Yes | `html scene-read` | `html_visual_store.load_scene_with_revision` | No | No |
 | `html_visual.scene_write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_write` | Yes | `html scene-write` | `html_visual_store.save_scene` | No | No |
-| `html_review.plan_generate` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/plan/generate` | `ppt_html_plan_generate` | Yes | `html plan-generate` | `html_visual_review_service.generate_scene_plan` | No | No |
+| `html_review.plan_generate` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/plan/generate` | `ppt_html_plan_generate` | Yes | `html plan-generate` | `html_visual_review_service.generate_scene_plan` | No | No |
 | `html_review.review` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/review` | `ppt_html_review` | Yes | `html review` | `html_visual_review_service.review_scene` | No | No |
 | `html_review.approve` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/approve` | `ppt_html_approve` | Yes | `html approve` | `html_visual_review_service.approve_scene` | No | No |
 | `html_review.approval_status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/approval` | `ppt_html_approval_status` | Yes | `html approval-status` | `html_visual_review_service.approval_status` | No | No |
@@ -116,7 +116,7 @@ The MCP server exposes **55** stable tools:
 - `ppt_html_visual_status` — Read shared Web/Agent HTML workflow stages, current visual approval readiness, and PPTX/video-specific gates.
 - `ppt_html_scene_read` — Read one slide's stored html scene document with its revision and content hash.
 - `ppt_html_scene_write` — Write one slide's html scene document with expected-revision optimistic concurrency (409 on conflict); html-backend projects only.
-- `ppt_html_plan_generate` — Generate a versioned scene plan; select 0.2.0 for authoritative narration, visual intent, multiple targets and stable actions. Omitted version preserves legacy 0.1.0. Structural validation is not semantic approval; 0.2.0 production compilation awaits A02/A03.
+- `ppt_html_plan_generate` — Generate a versioned scene plan: 0.3.0 adds object decomposition, subject budget, resource anchors and narration design states; 0.2.0 preserves A01. Legacy 0.1.0 default remains. Structural validation is not semantic approval; production integration awaits A03.
 - `ppt_html_review` — Compile, measure, and screenshot one html scene through the shared bundle; returns object-level diagnostics.
 - `ppt_html_approve` — Approve one html scene; the record binds scene/theme/template/layout/asset/runtime hashes and fails on any static-review error.
 - `ppt_html_approval_status` — Read the current approval validity and invalidation reason for one slide.

@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.32",
+  "contract_version": "0.9.33",
   "effective_date": "2026-10-13",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,7 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-13 A02: scene_plan0.3.0 object roles/ownership, initial/beat/end states, independent-subject budget and selected real project anchors; design_brief0.2.0 and subject/design prompts preserve narration states. Existing PNG attachments reverified; anchors/bytes changes block stale plans. Agent1.23.0; A03 compilation, paid generation, semantic QA and course acceptance pending. See runtime/visual-v1/object-decomposition-0.3.0.md.",
     "2026-10-13 A01: scene_plan 0.2.0 exact narration text/hash, visual intent, multi-target roles and expected states, independent stable actions; structural validation only. Explicit version selection, legacy default preserved. Web/Agent shared models, API1.22.0. A02/A03 compiler integration, semantic QA and autonomous course orchestration remain pending. See runtime/visual-v1/narration-semantics-0.2.0.md.",
     "2026-10-13: explicit asset/slot annotation aliases only; never guess unknown targets from a unique image or generic focus. User accepts overall aesthetics but narration/visual/animation correspondence and autonomous product orchestration remain unverified. Planned fixes are not implemented capabilities; see latest handoff-2026-10-13.md.",
     "2026-10-12 user-directed image defaults:low/1K, actual design1280x720, asset1024x1024; native2.5VIP uses pixels without resolution. Record actual measured dimensions; preserve old unknown/rejected calls. S08 old text-only experiment rejected by user; real visual revalidation pending. See runtime/visual-v1/image-policy-0.1.0.md.",
@@ -255,7 +256,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md and minimal-rebuild-0.1.0.md; snapshots, commit reconciliation and selective rebuild plans/editor wiring; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md and minimal-rebuild-0.1.0.md; snapshots, commit reconciliation and selective rebuild plans/editor wiring; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending."
     },
     {
       "id": "HPS-012",
@@ -275,7 +276,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending."
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending."
     },
     {
       "id": "HPS-014",
@@ -394,7 +395,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_e1_standalone",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending."
     },
     {
       "id": "HPS-027",
@@ -414,7 +415,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "not_implemented",
-      "runtime_scope": "; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending."
+      "runtime_scope": "; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending."
     },
     {
       "id": "HPS-029",
@@ -433,7 +434,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_workflow",
-      "runtime_scope": "runtime/visual-v1/application-workflow-0.2.0.md; read-only stage projection and target-specific readiness only; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending."
+      "runtime_scope": "runtime/visual-v1/application-workflow-0.2.0.md; read-only stage projection and target-specific readiness only; A01 runtime/visual-v1/narration-semantics-0.2.0.md: source/structure validation only; semantic QA, production compilation and course automation pending.; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending."
     },
     {
       "id": "HPS-031",
@@ -489,7 +490,8 @@
       "section": "## HPS-036：代码主导与资产预算",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "runtime_scope": "; A02 runtime/visual-v1/object-decomposition-0.3.0.md: declared object/control/budget/state checks, verified project anchors and narration design requests; actual motion compilation/semantic acceptance pending."
     },
     {
       "id": "HPS-037",

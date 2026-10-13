@@ -73,7 +73,7 @@ def capabilities():
     }
 
 
-def resources(run):
+def resources(run, asset_refs=None):
     """Validate real resource bytes with the existing production resource loader."""
     path = Path(run) / store.SCENE_DIR / "resources.json"
     return _node(
@@ -81,9 +81,9 @@ def resources(run):
 const fs=require('fs'); const p=JSON.parse(fs.readFileSync(0,'utf8'));
 delete process.env.HPS_HTML_RESOURCES;
 if(p.path) process.env.HPS_HTML_RESOURCES=p.path;
-console.log(JSON.stringify(require('./html_engine/tools/project-resources.cjs').loadProjectResources()||{assets:[],pack:{}}));
+console.log(JSON.stringify(require('./html_engine/tools/project-resources.cjs').loadProjectResources(p.assetRefs)||{assets:[],pack:{}}));
 """,
-        {"path": str(path.resolve()) if path.is_file() else None},
+        {"path": str(path.resolve()) if path.is_file() else None, "assetRefs": asset_refs},
     )
 
 

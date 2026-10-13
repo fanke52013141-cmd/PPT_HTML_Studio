@@ -121,6 +121,7 @@ def generate_plan(
             json_generator=_dependencies.json_generator,
             brief=payload.brief,
             plan_version=payload.plan_version,
+            asset_budget=payload.asset_budget,
         )
     except review.HtmlReviewError as exc:
         raise HTTPException(status_code=exc.status_code, detail={"code": exc.code, "message": str(exc)})

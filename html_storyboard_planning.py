@@ -127,6 +127,8 @@ def normalize_html_scene_plan(
     *,
     contract_slide: Optional[Dict[str, Any]] = None,
     expected_version: str | None = None,
+    asset_budget: int = 1,
+    resolved_resources: dict | None = None,
 ) -> Dict[str, Any]:
     """Validate and freeze one slide's HTML scene plan.
 
@@ -145,7 +147,7 @@ def normalize_html_scene_plan(
     if not isinstance(plan_input, dict):
         raise HtmlScenePlanError("PLAN_INVALID", "场景计划必须是 JSON 对象")
     version = plan_input.get("version", "0.1.0")
-    if version not in ("0.1.0", "0.2.0") or (expected_version and version != expected_version):
+    if version not in ("0.1.0", "0.2.0", "0.3.0") or (expected_version and version != expected_version):
         raise HtmlScenePlanError("PLAN_VERSION_MISMATCH", "规划版本未知或与请求不一致；不得降级")
     if plan_input.get("format", "hps.html.scene_plan") != "hps.html.scene_plan":
         raise HtmlScenePlanError("PLAN_FORMAT_INVALID", "场景规划格式不合法")
@@ -208,7 +210,7 @@ def normalize_html_scene_plan(
 
     objects = _normalize_objects(plan_input, slot_rules, catalog["icons"])
 
-    if version == "0.2.0":
+    if version in ("0.2.0", "0.3.0"):
         object_slots = {obj["slot"]: obj for obj in objects}
         if (
             len(object_slots) != len(objects) or set(object_slots) != set(normalized_slots)
@@ -257,6 +259,17 @@ def normalize_html_scene_plan(
                 contract_slide.get("narration_beats") or []
             ),
         }
+    if version == "0.3.0":
+        from html_object_decomposition import normalize_decomposition
+        from html_narration_semantics import NarrationSemanticError
+
+        try:
+            plan.update(normalize_decomposition(
+                {**plan, "objectSemantics": plan_input.get("objectSemantics")},
+                asset_budget=asset_budget, resources=resolved_resources,
+            ))
+        except NarrationSemanticError as exc:
+            raise HtmlScenePlanError(exc.code, str(exc)) from exc
     return plan
 
 
@@ -434,7 +447,7 @@ def beat_action_map(plan: Dict[str, Any]) -> Dict[str, Any]:
     """AC07 evidence: every narration beat → its on-screen target."""
     mapping: Dict[str, Any] = {}
     for beat in plan.get("beats", []):
-        if plan.get("version") == "0.2.0":
+        if plan.get("version") in ("0.2.0", "0.3.0"):
             mapping[beat["id"]] = {
                 key: beat[key] for key in (
                     "spoken_text", "spoken_text_sha256", "visualIntent", "targets",
@@ -482,12 +495,15 @@ def plan_evidence(plan: Dict[str, Any]) -> Dict[str, Any]:
         ],
         "catalog_sha256": (plan.get("registered") or {}).get("catalog_sha256"),
     }
-    if plan.get("version") == "0.2.0":
-        evidence["plan_version"] = "0.2.0"
+    if plan.get("version") in ("0.2.0", "0.3.0"):
+        evidence["plan_version"] = plan["version"]
         evidence["validation"] = {
             "structure": "passed", "semantic": "not_run",
             "audio": "not_run", "human": "pending_review",
         }
+    if plan.get("version") == "0.3.0":
+        evidence.update(objectSemantics=plan["objectSemantics"], visualSequence=plan["visualSequence"],
+                        assetPolicy=plan["assetPolicy"], anchorChecks=plan["anchorChecks"])
     return evidence
 
 
