@@ -19,6 +19,7 @@ from html_visual_review_service import HtmlReviewError, review_scene
 from pipeline_lifecycle import write_json_atomic
 from html_build_snapshot import digest, fresh_hash, json_bytes
 from html_runtime_skills import load_runtime_skill
+from html_repair_progress import RepairProgress
 
 PROMPT_VERSION = "candidate-layout-agent/0.1.0"
 SYSTEM_PROMPT = """你是受限 HTML 排版修复 Agent。根据实际诊断截图、对象几何和文字测量，
@@ -56,6 +57,7 @@ def repair_candidate(
     checkpoint=lambda: None,
     max_rounds=3,
     prompt_mode=None,
+    progress=lambda value: None,
 ):
     if type(max_rounds) is not int or not 1 <= max_rounds <= 3:
         raise ValueError("candidate repair budget must be 1..3")
@@ -85,10 +87,14 @@ def repair_candidate(
     layout = next(l for l in catalog["layouts"] if l["id"] == scene["layoutRef"]["id"])
     theme = next(t for t in catalog["themes"] if t["id"] == scene["themeRef"]["id"])
     history = []
+    tracker = RepairProgress()
+    stop_reason = None
 
     def evaluate(state):
+        nonlocal stop_reason
         checkpoint()
         selection.verify()
+        progress({"repair_round": state["round"], "max_rounds": max_rounds, "runtime_skill": selection.identity})
         report = review_scene(state["scene"], run_dir=run, deps=deps)
         folder = audit / str(state["round"])
         folder.mkdir(exist_ok=True)
@@ -109,7 +115,9 @@ def repair_candidate(
                     "diagnostic": diagnostic,
                     "image": str((folder / "diagnostic.png").relative_to(run)),
                 }
-        return {"report": report}
+        if not report.get("passed") and not state["error"] and not state["stopped"]:
+            stop_reason = tracker.observe(state["scene"], state["binding"], report)
+        return {"report": report, "stopped": state["stopped"] or bool(stop_reason)}
 
     def route(state):
         if (
@@ -192,6 +200,7 @@ def repair_candidate(
         return {"response": response, "round": state["round"] + 1, "stopped": stopped}
 
     def apply(state):
+        nonlocal stop_reason
         checkpoint()
         selection.verify()
         if state["stopped"]:
@@ -213,6 +222,9 @@ def repair_candidate(
                 for o in response["operations"]
             ):
                 raise ValueError("only static registered operations are allowed")
+            stop_reason = tracker.check_operations(response["operations"])
+            if stop_reason:
+                return {"stopped": True}
             doc = {
                 "scene": state["scene"],
                 "binding": state["binding"],
@@ -286,12 +298,17 @@ def repair_candidate(
         "rounds": history,
         "passed": bool(result["report"].get("passed")),
         "stopped": result["stopped"],
+        "status": "passed" if result["report"].get("passed") else "needs_revision",
+        "stop_reason": stop_reason or ("model_stop" if result["stopped"] else "budget_or_unsupported_issue"),
         "audit": str(audit.relative_to(run)),
     }
     write_json_atomic(audit / "result.json", summary)
     if not summary["passed"]:
+        if stop_reason:
+            progress({"repair_status": "needs_revision", "stop_reason": stop_reason})
         raise HtmlReviewError(
             "候选排版 Agent 未通过；原作品未修改。"
+            + ("实际测量没有改善或补丁重复，需重新规划。" if stop_reason else "")
             + str(result["report"].get("message", "")),
             code="CANDIDATE_AGENT_REJECTED",
             status_code=422,

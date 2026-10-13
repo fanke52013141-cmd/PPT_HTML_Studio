@@ -1,0 +1,130 @@
+{
+  "format": "hps.html.overlap_policy",
+  "version": "0.1.0",
+  "templates": {
+    "explanation-cards-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": [
+        {
+          "slots": [
+            "figure",
+            "subject"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "figure",
+            "anchor-label"
+          ],
+          "reason": "registered_container_or_decoration"
+        }
+      ]
+    },
+    "process-stage-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": [
+        {
+          "slots": [
+            "figure",
+            "subject"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "figure",
+            "anchor-label"
+          ],
+          "reason": "registered_container_or_decoration"
+        }
+      ]
+    },
+    "data-relation-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": []
+    },
+    "editorial-three-columns-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": [
+        {
+          "slots": [
+            "definition-surface",
+            "headline"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "hero-shadow",
+            "figure"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "hero-shadow",
+            "subject"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "figure",
+            "document-line-1"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "figure",
+            "document-line-2"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "figure",
+            "document-line-3"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "figure",
+            "document-line-4"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "figure",
+            "document-label"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "number-surface-1",
+            "number-1"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "number-surface-2",
+            "number-2"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "number-surface-3",
+            "number-3"
+          ],
+          "reason": "registered_container_or_decoration"
+        }
+      ]
+    }
+  }
+}

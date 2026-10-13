@@ -111,7 +111,7 @@ function ffprobeJson(target) {
     });
     if (snapshotRoot) {
       const frozen = await page.evaluate(() => window.visualPlayer.scene);
-      if (JSON.stringify(frozen) !== JSON.stringify(scene))
+      if (!require('node:util').isDeepStrictEqual(frozen, scene))
         throw new Error("SNAPSHOT_SCENE_MISMATCH");
       await page.evaluate(() => window.visualPlayer.pause());
     } else {

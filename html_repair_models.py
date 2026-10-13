@@ -19,6 +19,9 @@ class TemporalRequest(BaseModel):
     time_range_ms: tuple[float, float] | None = None
     step_ms: StrictInt = Field(default=250, ge=16, le=1000)
     overlap_pairs: list[tuple[str, str]] = Field(default_factory=list, max_length=40)
+    sampling_mode: Literal["sampled", "output_frames"] = "sampled"
+    fps: StrictInt = Field(default=30, ge=1, le=60)
+    overlap_policy: Literal["explicit", "registered"] = "explicit"
 
 
 class RepairRequest(TemporalRequest):

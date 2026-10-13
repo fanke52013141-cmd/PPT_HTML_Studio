@@ -23,6 +23,10 @@ def main():
     for mode in ("verify", "review"):
         p = sub.add_parser(mode)
         p.add_argument("--snapshot", required=True)
+    dynamic = sub.add_parser("review-temporal")
+    dynamic.add_argument("--snapshot", required=True)
+    dynamic.add_argument("--fps", type=int, default=30)
+    dynamic.add_argument("--overlap-policy", choices=["explicit", "registered"], default="registered")
     args = parser.parse_args()
     from html_build_snapshot import create_generation_snapshot, create_render_snapshot, verify_snapshot
     try:
@@ -34,9 +38,9 @@ def main():
             result = {"valid": True, "manifest": verify_snapshot(args.snapshot)}
         else:
             from html_snapshot_review import review_snapshot
-            result = review_snapshot(args.snapshot)
+            result = review_snapshot(args.snapshot, temporal={"sampling_mode": "output_frames", "fps": args.fps, "overlap_policy": args.overlap_policy} if args.command == "review-temporal" else None)
         print(json.dumps(result, ensure_ascii=False, indent=2))
-        if args.command == "review" and result["report"]["checks"]["engineering"] != "passed":
+        if args.command in {"review", "review-temporal"} and result["report"]["checks"]["engineering"] != "passed":
             return 1
         return 0
     except Exception as exc:

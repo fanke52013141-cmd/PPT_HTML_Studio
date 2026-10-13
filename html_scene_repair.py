@@ -160,6 +160,8 @@ def candidate_from_document(run, slide, request, doc):
             ROOT / "html_engine/visual/preview/player.js",
             ROOT / "html_engine/visual/schema.json",
             ROOT / "html_engine/tools/review-temporal.cjs",
+            ROOT / "html_engine/tools/temporal-review.cjs",
+            ROOT / "html_engine/visual/qa/overlap-policy.json",
         ]
     }
     key = _hash(
@@ -354,12 +356,15 @@ def build_repair_prompts(doc, instruction, scope, report):
 
 
 def generate_repair(run, slide, request, json_generator):
+    from html_repair_progress import RepairProgress
     doc = _revision(run, slide, request["expected_revision"])
     if any(
         id not in {n["id"] for n in doc["scene"]["nodes"]} for id in request["scope"]
     ):
         raise editor.SceneEditError("TARGET_NODE_GONE", "修复目标不存在")
     report = evidence(run, slide, request)
+    tracker = RepairProgress()
+    tracker.observe(doc["scene"], doc["binding"], report)
     prompts = build_repair_prompts(
         doc, request["instruction"], request["scope"], report
     )
@@ -367,6 +372,14 @@ def generate_repair(run, slide, request, json_generator):
     base_user = json.loads(prompts["user_prompt"])
     directory = Path(run) / store.SCENE_DIR / "records"
     directory.mkdir(parents=True, exist_ok=True)
+    def stopped(reason, message):
+        result = {"status": "needs_revision", "message": message, "stop_reason": reason}
+        (directory / f"repair-{slide}-stop.json").write_text(
+            json.dumps({"source_revision": request["expected_revision"], "result": result,
+                        "attempts": len(attempts), "author_modified": False}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return result
     for index in range(2):
         response = json_generator(
             **prompts,
@@ -406,9 +419,15 @@ def generate_repair(run, slide, request, json_generator):
             body.update(
                 operations=response["operations"], source="ai", scope=request["scope"]
             )
+            stop_reason = tracker.check_operations(response["operations"])
+            if stop_reason:
+                return stopped(stop_reason, "重复补丁无法继续改善；原作品未修改")
             result = preview_repair(run, slide, body)
             if result["review"]["passed"]:
                 return result
+            stop_reason = tracker.observe(result["scene"], result["binding"], result["review"])
+            if stop_reason:
+                return stopped(stop_reason, "实际检查没有改善；需重新规划，原作品未修改")
             diagnostic = result["review"]["issues"]
         except (editor.SceneEditError, ValueError) as exc:
             diagnostic = {
