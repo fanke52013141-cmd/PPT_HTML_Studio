@@ -1,0 +1,82 @@
+{
+  "format": "hps.publish.validation",
+  "version": "0.1.0",
+  "date": "2026-10-13 Asia/Shanghai",
+  "scope": "S07 status/recovery, S04 frozen-frame QA, low/1K policy, S08 review and handoff; not narration-semantic or fully autonomous product completion",
+  "target_repository": "fanke52013141-cmd/PPT_HTML_Studio",
+  "target_remote": "origin",
+  "target_branch": "main",
+  "parent_commit": "24327d682ec5d67abba9c6ea53c25c8f71845ebe",
+  "targeted_python": {
+    "command": "pytest checks/test_html_workflow_status.py checks/test_html_temporal_qa.py checks/test_html_production_integration.py checks/test_html_e_production.py checks/test_html_formal_export.py checks/test_html_render_runner.py checks/test_html_audio_binder.py checks/test_html_production_recovery.py checks/test_html_production_stages.py -q",
+    "passed": 90,
+    "seconds": 122.74,
+    "note": "Before final publication hardening; later full suite covers additional report-scope regressions."
+  },
+  "full_pytest": {
+    "command": "python -m pytest -q",
+    "passed": 1972,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 8,
+    "warnings": 2,
+    "seconds": 311.7,
+    "failures": [
+      "checks/agent/test_dispatch_and_resources.py::TestDispatchRouting::test_every_advertised_mcp_capability_has_a_dispatch_path",
+      "checks/test_architecture_size_boundaries.py::test_extracted_modules_do_not_regress_into_monoliths"
+    ],
+    "log_sha256": "10e0a49299a147aac46eec641476f94ce48991c0d31c1da28adb3c826ff880e8"
+  },
+  "followup": {
+    "command": "pytest checks/agent/test_dispatch_and_resources.py -q",
+    "passed": 67,
+    "failed": 0,
+    "seconds": 0.26,
+    "correction": "Use actual html_repair.save capability in strict route fixture; no production route or validation weakened."
+  },
+  "remaining_known_failure": {
+    "id": "V01",
+    "test": "checks/test_architecture_size_boundaries.py::test_extracted_modules_do_not_regress_into_monoliths",
+    "detail": "server.py measured 1162 nonblank lines vs limit 1100; unchanged from parent commit",
+    "proposed_fix": "Extract composition/initialization wiring into owning modules and preserve original boundary assertions; see handoff."
+  },
+  "canonical_full_runner": {
+    "command": "python scripts/run_checks.py --level full",
+    "status": "failed_at_existing_architecture_boundary",
+    "all_steps_completed": false,
+    "note": "Ruff, generated Agent docs, compile checks, frontend/flow/narration scope and source-hardening steps before this boundary passed; remaining standalone checks were not all reached."
+  },
+  "static_checks": {
+    "ruff": "passed repository-wide",
+    "agent_contract_docs": "passed",
+    "diff_whitespace": "passed final staged check"
+  },
+  "node_checks": {
+    "checks/test_html_temporal_policy.cjs": "passed",
+    "checks/test_html_workflow_status.cjs": "passed real browser",
+    "checks/test_html_instance_editor.cjs": "passed real browser save/reopen",
+    "checks/test_visible_flow.js": "passed HTML and image compatibility",
+    "checks/test_narration_project_scope.js": "passed after adding missing DOM/shared-UI test stubs"
+  },
+  "review": {
+    "method": "code-review-and-quality skill; manual correctness/readability/architecture/security/performance review plus actual tests",
+    "fixed_findings": [
+      "Unknown annotation aliases no longer guessed by unique image/label.",
+      "Dynamic QA cannot downgrade scope to bypass time evidence.",
+      "Reported pass cannot ignore raw failure/capacity issues.",
+      "Experimental transport fallback name and report counts corrected.",
+      "Pytest fixture registration retained explicitly; test module import isolation and valid PNG transport fixtures corrected."
+    ],
+    "scope_approved": "engineering checkpoint with documented baseline failure",
+    "full_repository_green": false,
+    "semantic_course_approved": false,
+    "autonomous_product_entry_verified": false
+  },
+  "published_material": "Source, contracts, tests, handoff and redacted 5-page/20-beat audit only. Runtime configuration/database/credentials/paid media remain ignored.",
+  "secret_scan": {
+    "status": "passed",
+    "staged_files": 89,
+    "patterns": "sk-style keys/private-key markers; no runtime data/runs/outputs/logs staged",
+    "matches": 0
+  }
+}

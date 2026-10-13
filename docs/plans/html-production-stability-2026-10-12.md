@@ -10,6 +10,8 @@ S03 实施增量：纯依赖计划、实际输入采集、局部编辑 dry-run/�
 
 研究编号 RES-20261012-01；[参考原文](../research/2026-10-12-production-stability/source-report.txt)、[来源与代码基线](../research/2026-10-12-production-stability/source-and-baseline.json)。外部文档的“现有/建议/示例”分别对待，未独立审计对方项目源码。正式行为以 [HTML 契约](../contracts/html-presentation/README.md)为准；以下新增字段、文件名和接口为实现提案，须先完成定义卡与兼容设计。
 
+2026-10-12 本地增量：[S04动态QA](workflow-first-parallel-2026-10-09/deliveries/S04.md)工程实现完成；[S08 Token真实课程](workflow-first-parallel-2026-10-09/deliveries/S08.md)2/5页生成、五页配音、两页预览视频/PPTX验证，整课与用户视觉/音频签收尚未通过。未提交或发布。
+
 ## 1. 目标与范围
 
 在现有组件库、模板库、共享渲染器、灰阶默认风格、素材与音频服务上补齐生产稳定性。第一版必须做到：
@@ -161,7 +163,7 @@ S03 实施增量：纯依赖计划、实际输入采集、局部编辑 dry-run/�
 
 ### S04：统一 QA 与有界修复决策（P0，依赖 S01；可与 S02/S03 的专属模块并行）
 
-2026-10-12 首版静态 QA 格式、版本和证据校验已实现。连续时间、无进展检测和进一步修复决策仍待实施，见上述交付范围。
+2026-10-12 首版静态 QA 后，本地增量已完成固定输出帧/动作边界动态检查、注册遮挡依据及重复/无进展停止，见S04交付；任意连续时间仍未数学证明，真实课程验收单独记录。
 
 **修改归属：** 拟新增 `html_quality_report.py`；`html_visual_review_service.py`、`html_scene_repair.py`、`html_candidate_agent.py` 与现有静态/时间检查适配器。
 
@@ -207,6 +209,8 @@ S06实施记录见 [受控 Skill 交接](workflow-first-parallel-2026-10-09/deli
 6. 原 Prompt 模式作为显式版本化对照；同一输入、模型配置、参考和预算交叉运行，不暗中选最佳一次。不合格就维持旧默认版本。
 
 **验收：** 实际出站 Prompt 能追溯到受控 Skill 版本；修改 Skill 后缓存/实验身份改变；越权建议仍被代码拒绝；真实样本比较修复成功率、人工介入与调用成本。不能预先承诺成功率提升。
+
+S07 本地实施与验证见 [S07交付](workflow-first-parallel-2026-10-09/deliveries/S07.md)：按页恢复、原请求继续、实际进度/复用/Skill、编辑影响与当前/历史交付已接线；尚未发布或完成真实课程签收。
 
 ### S07：用户可见状态与同源接口（P1，依赖 S02/S04/S05）
 

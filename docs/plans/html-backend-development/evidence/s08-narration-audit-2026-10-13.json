@@ -1,0 +1,636 @@
+{
+  "format": "hps.audit.narration_visual_evidence",
+  "version": "0.1.0",
+  "date": "2026-10-13 Asia/Shanghai",
+  "status": "findings_only_not_semantic_approval",
+  "source_local_output": "outputs/s08-token-flare-low-1k-1280-20261012-resume-03 (runtime media not published)",
+  "generation_attribution": {
+    "project": "Configured text/image services, HtmlWorkflowJobs, scene compiler, player, existing TTS/audio binder and video export",
+    "codex": "Prepared five-page fixture and per-page visual instructions; experimental harness, readonly model selection, exact-response replay, stage orchestration, verification and CSS repairs",
+    "fully_automatic_product_entry_verified": false
+  },
+  "user_feedback": {
+    "overall_aesthetics": "accepted in conversation on 2026-10-13",
+    "narration_visual_animation_correspondence": "changes_requested"
+  },
+  "pages": [
+    {
+      "slide_id": "token-01",
+      "template": {
+        "id": "explanation-cards-v1",
+        "version": "0.1.0"
+      },
+      "layout": {
+        "id": "science-explanation-v1",
+        "version": "0.2.0"
+      },
+      "source_sha256": {
+        "scene": "d14138538d682f98a7ddf4937c02b4a0c3e97d980eebeaa389e2112353e19795",
+        "binding": "35a854eeb0d6af5dad4c0052bb9248fbda94651b22fcea0ce06be13c2221df65",
+        "plan": "921762e09703786654c963a997f6fd03e127969d493833fe0d6ec9d3f1a9e53d",
+        "production-provenance": "b6d606dace404da46372af4fe75ec2b3cfa64d7a5edb7cf8d54ebfa899818c7a"
+      },
+      "beats": [
+        {
+          "beat_id": "token-01-b1",
+          "spoken_text": "Token 是模型处理文本时使用的基本单位。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-1-obj",
+              "slot": "card-1",
+              "type": "card",
+              "content": {
+                "body": "Token 是模型处理文本时使用的基本单位。",
+                "title": "基本单位"
+              },
+              "action": "enter",
+              "bound_start_ms": 0,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-01-b2",
+          "spoken_text": "它可以是一个词、词的一部分，也可以是标点或字符。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-2-obj",
+              "slot": "card-2",
+              "type": "card",
+              "content": {
+                "body": "可以是一个词、词的一部分，也可以是标点或字符。",
+                "title": "多种形态"
+              },
+              "action": "enter",
+              "bound_start_ms": 3204,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-01-b3",
+          "spoken_text": "Token 数量不等于字数，具体切分取决于所用分词器。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-3-obj",
+              "slot": "card-3",
+              "type": "card",
+              "content": {
+                "body": "Token 数量不等于字数，切分取决于所用分词器。",
+                "title": "不等于字数"
+              },
+              "action": "enter",
+              "bound_start_ms": 6888,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-01-b4",
+          "spoken_text": "先理解文本怎样切分，再讨论用量与上下文。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "summary-obj",
+              "slot": "summary",
+              "type": "summary",
+              "content": {
+                "from": {
+                  "text": "文本",
+                  "tone": "blue"
+                },
+                "takeaway": "先理解切分方式，再讨论用量与上下文。",
+                "term": "分词切分",
+                "to": {
+                  "text": "Token",
+                  "tone": "purple"
+                }
+              },
+              "action": "enter",
+              "bound_start_ms": 10893,
+              "bound_duration_ms": 500
+            }
+          ]
+        }
+      ],
+      "introduced_at_author_zero_ms": [
+        "anchor-label-obj",
+        "annotation-obj",
+        "figure-obj",
+        "header-obj",
+        "headline-obj",
+        "intro-obj",
+        "subject-obj"
+      ],
+      "historical_heuristic_relation_resolutions": [
+        {
+          "annotation_id": "annotation-obj",
+          "target": {
+            "requested": "token-unit-figure",
+            "resolved": "subject-obj"
+          },
+          "label": {
+            "requested": "token-anno-label",
+            "resolved": "anchor-label-obj"
+          },
+          "basis": "unique registered image anchor and anchor-label text slot"
+        }
+      ]
+    },
+    {
+      "slide_id": "token-02",
+      "template": {
+        "id": "process-stage-v1",
+        "version": "0.1.0"
+      },
+      "layout": {
+        "id": "process-stage-v1",
+        "version": "0.2.0"
+      },
+      "source_sha256": {
+        "scene": "a864705ad866a7cd6ba7a4d51a9527436a62ff8f0be8130f3cc2479662ce0144",
+        "binding": "438218317b4aae1003a7e9e4ee7a1fdbcd58778452e97297644c8ccbadeff685",
+        "plan": "71a30b60672bbb9350e52951b867d10884b1f11e2836b6fa2244347ddb260bd0",
+        "production-provenance": "bcd32162ec37c37e954a866931318cd595ce07e4281cd45f2a62af3c7b5e5050"
+      },
+      "beats": [
+        {
+          "beat_id": "token-02-b1",
+          "spoken_text": "文本先经过分词器，转换为模型可处理的 Token 编号。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "result-obj",
+              "slot": "result",
+              "type": "text",
+              "content": {
+                "runs": [
+                  {
+                    "emphasis": true,
+                    "text": "文本 → 分词器 → Token 编号"
+                  }
+                ]
+              },
+              "action": "enter",
+              "bound_start_ms": 0,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-02-b2",
+          "spoken_text": "这里的块状图只是流程示意，不代表某个分词器的真实切分。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "figure-obj",
+              "slot": "figure",
+              "type": "figure",
+              "content": {
+                "note": {
+                  "icon": "eye",
+                  "text": "流程示意"
+                },
+                "tag": {
+                  "icon": "molecule",
+                  "text": "Token 单元"
+                }
+              },
+              "action": "emphasize",
+              "bound_start_ms": 3963,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-02-b3",
+          "spoken_text": "语言、空格、标点和分词器都会影响 Token 数量。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "annotation-obj",
+              "slot": "annotation",
+              "type": "annotation",
+              "content": {},
+              "action": "enter",
+              "bound_start_ms": 8085,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-02-b4",
+          "spoken_text": "要准确计数，应使用对应模型的分词器或接口返回的用量。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "summary-obj",
+              "slot": "summary",
+              "type": "summary",
+              "content": {
+                "from": {
+                  "text": "原始文本",
+                  "tone": "blue"
+                },
+                "takeaway": "以对应模型分词器的实际结果为准",
+                "term": "Token 计数",
+                "to": {
+                  "text": "Token 编号",
+                  "tone": "green"
+                }
+              },
+              "action": "enter",
+              "bound_start_ms": 11931,
+              "bound_duration_ms": 500
+            }
+          ]
+        }
+      ],
+      "introduced_at_author_zero_ms": [
+        "header-obj",
+        "anchor-label-obj",
+        "subject-obj",
+        "figure-obj",
+        "badge-1-obj",
+        "badge-2-obj",
+        "arrow-obj"
+      ],
+      "historical_heuristic_relation_resolutions": [
+        {
+          "annotation_id": "annotation-obj",
+          "target": {
+            "requested": "focus",
+            "resolved": "subject-obj"
+          },
+          "label": {
+            "requested": "token-flow-diagram-label",
+            "resolved": "anchor-label-obj"
+          },
+          "basis": "unique registered image anchor and anchor-label text slot"
+        }
+      ]
+    },
+    {
+      "slide_id": "token-03",
+      "template": {
+        "id": "explanation-cards-v1",
+        "version": "0.1.0"
+      },
+      "layout": {
+        "id": "science-explanation-v1",
+        "version": "0.2.0"
+      },
+      "source_sha256": {
+        "scene": "5375c95d477be4148ad1d64beb03b15f1a26926d32e90864337d53a4379853f6",
+        "binding": "cf3df78b3fceceefac71695dc5380874c9a22fc8eca0d8a21c7a9a43352b7a21",
+        "plan": "4c7581466d10317f7ff333b8553e2a2c621b3811394f7ff647aad9cb9839902a",
+        "production-provenance": "8f5d40470e7e40824061edc7e5bec0cca5a60a85de2fcf7f13e413a74ed3f5da"
+      },
+      "beats": [
+        {
+          "beat_id": "token-03-b1",
+          "spoken_text": "输入 Token 包括你发送给模型的提示和上下文。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-1-obj",
+              "slot": "card-1",
+              "type": "card",
+              "content": {
+                "body": "你发给模型的提示与上下文，按实际用量统计。",
+                "title": "输入 Token"
+              },
+              "action": "enter",
+              "bound_start_ms": 0,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-03-b2",
+          "spoken_text": "输出 Token 是模型生成回复所使用的单位。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-2-obj",
+              "slot": "card-2",
+              "type": "card",
+              "content": {
+                "body": "模型生成回复所使用的单位，独立计量。",
+                "title": "输出 Token"
+              },
+              "action": "enter",
+              "bound_start_ms": 3465,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-03-b3",
+          "spoken_text": "输入与输出常有不同单价，具体还可能涉及缓存或推理类别。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-3-obj",
+              "slot": "card-3",
+              "type": "card",
+              "content": {
+                "body": "输入输出单价不同，还可能涉及缓存或推理类别。",
+                "title": "计费规则"
+              },
+              "action": "enter",
+              "bound_start_ms": 6614,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-03-b4",
+          "spoken_text": "计费应结合实际用量与该模型的价目表，不能只看字数。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "summary-obj",
+              "slot": "summary",
+              "type": "summary",
+              "content": {
+                "from": {
+                  "text": "输入",
+                  "tone": "blue"
+                },
+                "takeaway": "结合实际用量与价目表计费，不能只看字数。",
+                "term": "双向计量",
+                "to": {
+                  "text": "输出",
+                  "tone": "green"
+                }
+              },
+              "action": "emphasize",
+              "bound_start_ms": 10909,
+              "bound_duration_ms": 500
+            }
+          ]
+        }
+      ],
+      "introduced_at_author_zero_ms": [
+        "anchor-label-obj",
+        "annotation-obj",
+        "figure-obj",
+        "header-obj",
+        "headline-obj",
+        "intro-obj",
+        "subject-obj",
+        "summary-obj"
+      ],
+      "historical_heuristic_relation_resolutions": [
+        {
+          "annotation_id": "annotation-obj",
+          "target": {
+            "requested": "token-flow-core",
+            "resolved": "subject-obj"
+          },
+          "label": {
+            "requested": "core-label",
+            "resolved": "anchor-label-obj"
+          },
+          "basis": "unique registered image anchor and anchor-label text slot"
+        }
+      ]
+    },
+    {
+      "slide_id": "token-04",
+      "template": {
+        "id": "explanation-cards-v1",
+        "version": "0.1.0"
+      },
+      "layout": {
+        "id": "science-explanation-v1",
+        "version": "0.2.0"
+      },
+      "source_sha256": {
+        "scene": "e9f728bd2ceb1f235313daf75693e35a628e03fe65155343e4db841810375fa9",
+        "binding": "feb5e97c8fff6288923b0d4907c5ec728151f8fa60f01e29269fce1696e89ac1",
+        "plan": "945f9e75ce7bb8e46e25dc97284eaf409d7de78d8b406fd0e70dc15bbe9b241a",
+        "production-provenance": "85e03a27324777eaed533cb0f612cc80d5e9b2dbd20e58b0de567617255ca891"
+      },
+      "beats": [
+        {
+          "beat_id": "token-04-b1",
+          "spoken_text": "上下文窗口限制一次请求可以处理的 Token 总量。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "headline-obj",
+              "slot": "headline",
+              "type": "text",
+              "content": {
+                "runs": [
+                  {
+                    "emphasis": true,
+                    "text": "上下文窗口不是无限记忆"
+                  }
+                ]
+              },
+              "action": "enter",
+              "bound_start_ms": 0,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-04-b2",
+          "spoken_text": "提示、对话历史和参考资料会占用输入空间。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-1-obj",
+              "slot": "card-1",
+              "type": "card",
+              "content": {
+                "body": "提示、对话历史与参考资料共同占用窗口的输入空间。",
+                "title": "输入占用"
+              },
+              "action": "enter",
+              "bound_start_ms": 3651,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-04-b3",
+          "spoken_text": "还需要为模型的输出保留空间，部分模型也涉及推理 Token。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-2-obj",
+              "slot": "card-2",
+              "type": "card",
+              "content": {
+                "body": "需要为模型输出保留空间，部分模型还涉及推理 Token。",
+                "title": "输出预留"
+              },
+              "action": "enter",
+              "bound_start_ms": 6667,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-04-b4",
+          "spoken_text": "窗口和输出上限取决于模型，放得下也不保证模型记住每个细节。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-3-obj",
+              "slot": "card-3",
+              "type": "card",
+              "content": {
+                "body": "窗口与输出上限取决于模型，容量足够也不保证记住所有细节。",
+                "title": "模型差异"
+              },
+              "action": "enter",
+              "bound_start_ms": 11153,
+              "bound_duration_ms": 500
+            }
+          ]
+        }
+      ],
+      "introduced_at_author_zero_ms": [
+        "anchor-label-obj",
+        "annotation-obj",
+        "figure-obj",
+        "header-obj",
+        "intro-obj",
+        "subject-obj",
+        "summary-obj"
+      ],
+      "historical_heuristic_relation_resolutions": [
+        {
+          "annotation_id": "annotation-obj",
+          "target": {
+            "requested": "context-window-figure",
+            "resolved": "subject-obj"
+          },
+          "label": {
+            "requested": "context-window-anno-label",
+            "resolved": "anchor-label-obj"
+          },
+          "basis": "unique registered image anchor and anchor-label text slot"
+        }
+      ]
+    },
+    {
+      "slide_id": "token-05",
+      "template": {
+        "id": "explanation-cards-v1",
+        "version": "0.1.0"
+      },
+      "layout": {
+        "id": "science-explanation-v1",
+        "version": "0.2.0"
+      },
+      "source_sha256": {
+        "scene": "61de337ba6cd33c78ffac52db5600dc5557d76676730e5bf311ac93e83e69ffe",
+        "binding": "17c60e693dcb5a1396ac88d3688eba3f610e0196a872a387aacf061fc7bb7523",
+        "plan": "81d1ac6ee342b62c54e049280070735804d222d458bcef3dce6afac8c71143f1",
+        "production-provenance": "7f08071846d5ed888e3ddcc330fdacf434278c1524de9e969dd4fb6330c0e90f"
+      },
+      "beats": [
+        {
+          "beat_id": "token-05-b1",
+          "spoken_text": "把目标、必要背景和期望输出写清楚。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-1-token-05",
+              "slot": "card-1",
+              "type": "card",
+              "content": {
+                "body": "写清目标、必要背景与期望输出",
+                "title": "明确任务边界"
+              },
+              "action": "enter",
+              "bound_start_ms": 0,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-05-b2",
+          "spoken_text": "删除重复内容，同时保留会影响判断的重要事实。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-2-token-05",
+              "slot": "card-2",
+              "type": "card",
+              "content": {
+                "body": "删除重复内容，保留关键判断事实",
+                "title": "精简冗余信息"
+              },
+              "action": "enter",
+              "bound_start_ms": 2687,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-05-b3",
+          "spoken_text": "为回复预留合理空间，并检查接口的实际用量。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "figure-token-05",
+              "slot": "figure",
+              "type": "figure",
+              "content": {
+                "note": {
+                  "icon": "check",
+                  "text": "关键信息优先"
+                },
+                "tag": {
+                  "icon": "lightbulb",
+                  "text": "高效 Token 分配"
+                }
+              },
+              "action": "emphasize",
+              "bound_start_ms": 6213,
+              "bound_duration_ms": 500
+            }
+          ]
+        },
+        {
+          "beat_id": "token-05-b4",
+          "spoken_text": "比较不同模型时，要一起看切分、效果、费用和完成时间。",
+          "mapped_visual_actions": [
+            {
+              "object_id": "card-3-token-05",
+              "slot": "card-3",
+              "type": "card",
+              "content": {
+                "body": "对比切分、效果、费用与完成时间",
+                "title": "综合评估选型"
+              },
+              "action": "enter",
+              "bound_start_ms": 9771,
+              "bound_duration_ms": 500
+            }
+          ]
+        }
+      ],
+      "introduced_at_author_zero_ms": [
+        "header-token-05",
+        "headline-token-05",
+        "intro-token-05",
+        "anchor-label-token-05",
+        "subject-token-05",
+        "figure-token-05",
+        "annotation-token-05",
+        "summary-token-05"
+      ],
+      "historical_heuristic_relation_resolutions": [
+        {
+          "annotation_id": "annotation-token-05",
+          "target": {
+            "requested": "token-usage-illustration",
+            "resolved": "subject-token-05"
+          },
+          "label": {
+            "requested": "card-1",
+            "resolved": "anchor-label-token-05"
+          },
+          "basis": "unique registered image anchor and anchor-label text slot"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Beat IDs and timing bindings alone do not establish semantic relevance.",
+    "Whole illustrations have one image object and a generic focus anchor, so internal concepts cannot be independently animated.",
+    "Historical outputs contain heuristic annotation alias resolutions; the published compiler now rejects unknown aliases."
+  ]
+}

@@ -65,6 +65,7 @@ function themeStylesheet(theme) {
   const c = theme.colors,
     g = theme.gradients,
     s = theme.shapes,
+    editorialFlat = theme.id === "neutral-baseline",
     shadow = `0 ${s.shadowY}px ${s.shadowBlur}px rgb(${s.shadowRGB} / ${s.shadowOpacity})`;
   const bubbleBackground = (tone) =>
     g[tone] ? `linear-gradient(135deg, ${g[tone][0]}, ${g[tone][1]})` : c[tone];
@@ -90,7 +91,7 @@ function themeStylesheet(theme) {
     rule(".v-header", {
       display: "flex",
       "align-items": "flex-start",
-      "border-bottom": `1px solid ${c.line}`,
+      "border-bottom": editorialFlat ? "none" : `1px solid ${c.line}`,
       gap: "16px",
     }),
     rule(".v-page-number", {
@@ -112,27 +113,31 @@ function themeStylesheet(theme) {
       "align-items": "center",
       gap: "22px",
       padding: "10px 24px",
-      border: `1px solid ${c.line}`,
+      border: editorialFlat ? "none" : `1px solid ${c.line}`,
       "border-radius": px(s.cardRadius),
-      background: g.pink
+      background: editorialFlat
+        ? `linear-gradient(115deg, ${c.pinkWash}, ${c.background})`
+        : g.pink
         ? `linear-gradient(105deg, ${c.paper}, ${c.background})`
         : c.panel,
-      "box-shadow": shadow,
+      "box-shadow": editorialFlat ? "none" : shadow,
       overflow: "hidden",
     }),
     rule(".v-icon-bubble", {
       flex: "0 0 64px",
       width: "64px",
       height: "64px",
-      "border-radius": px(s.iconRadius),
+      "border-radius": editorialFlat ? "50%" : px(s.iconRadius),
       display: "grid",
       "place-items": "center",
-      "box-shadow": `inset 0 1px 1px rgb(255 255 255 / 0.7), 0 5px 14px rgb(${s.shadowRGB} / 0.06)`,
+      "box-shadow": editorialFlat
+        ? "none"
+        : `inset 0 1px 1px rgb(255 255 255 / 0.7), 0 5px 14px rgb(${s.shadowRGB} / 0.06)`,
     }),
     rule(".v-icon-bubble svg", {
       width: "34px",
       height: "34px",
-      color: "#ffffff",
+      color: editorialFlat ? c.body : "#ffffff",
     }),
     rule(".v-card-copy", { flex: "1", "min-width": "0", "max-height": "80px" }),
     rule(".v-card-title", {
@@ -149,20 +154,22 @@ function themeStylesheet(theme) {
       color: c.body,
     }),
     rule(".v-figure", {
-      "border-radius": px(s.figureRadius),
-      background: g.blue
+      "border-radius": editorialFlat ? "0" : px(s.figureRadius),
+      background: editorialFlat
+        ? "transparent"
+        : g.blue
         ? `linear-gradient(150deg, ${g.blue[0]}, ${c.paper} 46%, ${g.purple[0]})`
         : c.panel,
-      border: `1px solid ${c.line}`,
-      "box-shadow": shadow,
-      overflow: "hidden",
+      border: editorialFlat ? "none" : `1px solid ${c.line}`,
+      "box-shadow": editorialFlat ? "none" : shadow,
+      overflow: editorialFlat ? "visible" : "hidden",
     }),
     rule(".v-figure-halo", {
       position: "absolute",
       width: "400px",
       height: "400px",
       "border-radius": "50%",
-      background: `radial-gradient(circle, ${c.paper}, transparent 70%)`,
+      background: `radial-gradient(circle, ${editorialFlat ? c.pinkWash : c.paper}, transparent 70%)`,
       left: "98px",
       top: "-5px",
     }),
@@ -191,9 +198,9 @@ function themeStylesheet(theme) {
       right: "24px",
       bottom: "16px",
       padding: "11px 14px",
-      border: `1px solid ${c.line}`,
-      background: "rgb(255 255 255 / 0.92)",
-      "border-radius": "12px",
+      border: editorialFlat ? "none" : `1px solid ${c.line}`,
+      background: editorialFlat ? "rgb(255 255 255 / 0.78)" : "rgb(255 255 255 / 0.92)",
+      "border-radius": editorialFlat ? "999px" : "12px",
       display: "flex",
       gap: "9px",
       "align-items": "center",
@@ -209,9 +216,9 @@ function themeStylesheet(theme) {
       display: "flex",
       "align-items": "center",
       padding: "10px 12px",
-      "border-radius": "12px",
-      border: `1px solid ${c.line}`,
-      background: "rgb(255 255 255 / 0.97)",
+      "border-radius": editorialFlat ? "999px" : "12px",
+      border: editorialFlat ? "none" : `1px solid ${c.line}`,
+      background: editorialFlat ? "rgb(255 255 255 / 0.85)" : "rgb(255 255 255 / 0.97)",
       "font-size": px(theme.text.caption.size),
       "line-height": String(theme.text.caption.lineHeight),
       color: c.body,
@@ -222,10 +229,12 @@ function themeStylesheet(theme) {
       "align-items": "center",
       gap: "30px",
       padding: "18px 26px",
-      background: g.purple
+      background: editorialFlat
+        ? `linear-gradient(105deg, ${c.pinkWash}, ${c.background})`
+        : g.purple
         ? `linear-gradient(105deg, ${c.paper}, ${g.purple[0]})`
         : c.panel,
-      border: `1px solid ${c.line}`,
+      border: editorialFlat ? "none" : `1px solid ${c.line}`,
       "border-radius": "16px",
     }),
     rule(".v-summary-heading", {
@@ -435,7 +444,9 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         el.classList.add("v-card");
         const bubble = document.createElement("span");
         bubble.className = "v-icon-bubble";
-        bubble.style.background = theme.gradients[node.tone]
+        bubble.style.background = theme.id === "neutral-baseline"
+          ? `linear-gradient(135deg, ${theme.colors.blueWash}, ${theme.colors.pinkWash})`
+          : theme.gradients[node.tone]
           ? `linear-gradient(135deg, ${theme.gradients[node.tone][0]}, ${theme.gradients[node.tone][1]})`
           : theme.colors[node.tone];
         bubble.append(icon(node.icon, { width: theme.shapes.iconStroke }));

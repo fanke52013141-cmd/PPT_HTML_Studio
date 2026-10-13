@@ -67,7 +67,15 @@ GET `.../design/current` 只读当前候选状态/key/stale/image_url；Web、Ag
 
 相同输入与资源的重复恢复是 no-op；cache hit/miss 遥测不写入作者资源。即使 scene 字节相同，只要正式 binding、plan、资源或 provenance 改变，项目修订与下游失效仍更新；不能因为图片字节相同而遗漏素材请求或来源变化。
 
-## 生成默认值与验证边界
+## 2026-10-12 用户指定默认值增量
+
+当前默认low/1K，设计1280×720，主体1024×1024。ToAPIs2.5VIP使用实际像素、low，不传resolution；旧协议1k。以下2K/1536×1024记录为原实验历史，已被用户指定的[默认值卡](image-policy-0.1.0.md)替代。实际返回尺寸须核对。
+
+## 2026-10-13 标注引用修正
+
+annotation.targetId/labelId 的几何关系必须来自已知对象 ID，或明确注册的素材/槽位身份。编译器可将素材 ID 指向该素材声明槽位的图片对象，可将槽位 ID 转成对应对象 ID；必须验证类型和图片锚点一致。未知 ID 不得根据“只有一个图片/anchor-label”猜测，返回 ANNOTATION_TARGET_UNRESOLVED 或 ANNOTATION_LABEL_UNRESOLVED。既有 S08 启发式回填的作者文件保留为历史，不等于其关系语义已验证。此校验验证引用身份，不能据此推导标注与讲稿含义相符；后者仍待独立语义验收。
+
+## 生成默认值与验证边界（历史记录）
 
 配置中的 GPT image 请求采用 low；`gpt-image-2.5` 兼容端请求 metadata.resolution=2K。ToAPIs 采用 toapis_resolution=2k / toapis_quality=low。普通其他模型不注入未知 metadata。设计不要求透明，主体要求透明。设计调用仍使用1536x1024、主体1024x1024参数；这些请求尺寸与2K提示的供应商优先级未实测，必须记录实际返回尺寸，不能把提示登记为已获2K。
 

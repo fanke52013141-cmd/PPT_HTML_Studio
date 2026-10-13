@@ -1,0 +1,183 @@
+{
+  "title": "Token 科普：单位、切分、用量与上下文",
+  "sources": [
+    "https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them",
+    "https://developers.openai.com/api/docs/guides/conversation-state"
+  ],
+  "slides": [
+    {
+      "slide_id": "token-01",
+      "title": "Token 是模型处理文本的单位",
+      "visual_groups": [
+        {
+          "id": "token-01-content",
+          "content": "Token 是模型处理文本的单位。Token 是模型处理文本时使用的基本单位。它可以是一个词、词的一部分，也可以是标点或字符。Token 数量不等于字数，具体切分取决于所用分词器。先理解文本怎样切分，再讨论用量与上下文。",
+          "description": "使用注册模板 explanation-cards-v1。屏幕文字概括本页准确事实，黑灰白主题；示意图不冒充真实分词结果。主体仅复用已有 token-brain@0.1.0，assets 的 id 和 slot.assetRef 必须对应此身份；其它概念用代码表达。",
+          "available_assets": [
+            {
+              "assetRef": {
+                "id": "token-brain",
+                "version": "0.1.0"
+              },
+              "description": "已有透明背景的模型文本处理概念示意，素材身份固定；仅复用，不生成新图。"
+            }
+          ]
+        }
+      ],
+      "narration_beats": [
+        {
+          "id": "token-01-b1",
+          "spoken_text": "Token 是模型处理文本时使用的基本单位。"
+        },
+        {
+          "id": "token-01-b2",
+          "spoken_text": "它可以是一个词、词的一部分，也可以是标点或字符。"
+        },
+        {
+          "id": "token-01-b3",
+          "spoken_text": "Token 数量不等于字数，具体切分取决于所用分词器。"
+        },
+        {
+          "id": "token-01-b4",
+          "spoken_text": "先理解文本怎样切分，再讨论用量与上下文。"
+        }
+      ]
+    },
+    {
+      "slide_id": "token-02",
+      "title": "同一句话，怎样变成 Token",
+      "visual_groups": [
+        {
+          "id": "token-02-content",
+          "content": "同一句话，怎样变成 Token。文本先经过分词器，转换为模型可处理的 Token 编号。这里的块状图只是流程示意，不代表某个分词器的真实切分。语言、空格、标点和分词器都会影响 Token 数量。要准确计数，应使用对应模型的分词器或接口返回的用量。",
+          "description": "使用注册模板 process-stage-v1。屏幕文字概括本页准确事实，黑灰白主题；示意图不冒充真实分词结果。主体仅复用已有 token-core@0.1.0，assets 的 id 和 slot.assetRef 必须对应此身份；其它概念用代码表达。",
+          "available_assets": [
+            {
+              "assetRef": {
+                "id": "token-core",
+                "version": "0.1.0"
+              },
+              "description": "已有透明背景的模型文本处理概念示意，素材身份固定；仅复用，不生成新图。"
+            }
+          ]
+        }
+      ],
+      "narration_beats": [
+        {
+          "id": "token-02-b1",
+          "spoken_text": "文本先经过分词器，转换为模型可处理的 Token 编号。"
+        },
+        {
+          "id": "token-02-b2",
+          "spoken_text": "这里的块状图只是流程示意，不代表某个分词器的真实切分。"
+        },
+        {
+          "id": "token-02-b3",
+          "spoken_text": "语言、空格、标点和分词器都会影响 Token 数量。"
+        },
+        {
+          "id": "token-02-b4",
+          "spoken_text": "要准确计数，应使用对应模型的分词器或接口返回的用量。"
+        }
+      ]
+    },
+    {
+      "slide_id": "token-03",
+      "title": "输入和输出，要分开看用量",
+      "visual_groups": [
+        {
+          "id": "token-03-content",
+          "content": "输入和输出，要分开看用量。输入 Token 包括你发送给模型的提示和上下文。输出 Token 是模型生成回复所使用的单位。输入与输出常有不同单价，具体还可能涉及缓存或推理类别。计费应结合实际用量与该模型的价目表，不能只看字数。",
+          "description": "使用注册模板 data-relation-v1。屏幕文字概括本页准确事实，黑灰白主题；示意图不冒充真实分词结果。本页是纯文字与数据关系，不生成图片。",
+          "available_assets": []
+        }
+      ],
+      "narration_beats": [
+        {
+          "id": "token-03-b1",
+          "spoken_text": "输入 Token 包括你发送给模型的提示和上下文。"
+        },
+        {
+          "id": "token-03-b2",
+          "spoken_text": "输出 Token 是模型生成回复所使用的单位。"
+        },
+        {
+          "id": "token-03-b3",
+          "spoken_text": "输入与输出常有不同单价，具体还可能涉及缓存或推理类别。"
+        },
+        {
+          "id": "token-03-b4",
+          "spoken_text": "计费应结合实际用量与该模型的价目表，不能只看字数。"
+        }
+      ]
+    },
+    {
+      "slide_id": "token-04",
+      "title": "上下文窗口不是无限记忆",
+      "visual_groups": [
+        {
+          "id": "token-04-content",
+          "content": "上下文窗口不是无限记忆。上下文窗口限制一次请求可以处理的 Token 总量。提示、对话历史和参考资料会占用输入空间。还需要为模型的输出保留空间，部分模型也涉及推理 Token。窗口和输出上限取决于模型，放得下也不保证模型记住每个细节。",
+          "description": "使用注册模板 data-relation-v1。屏幕文字概括本页准确事实，黑灰白主题；示意图不冒充真实分词结果。本页是纯文字与数据关系，不生成图片。",
+          "available_assets": []
+        }
+      ],
+      "narration_beats": [
+        {
+          "id": "token-04-b1",
+          "spoken_text": "上下文窗口限制一次请求可以处理的 Token 总量。"
+        },
+        {
+          "id": "token-04-b2",
+          "spoken_text": "提示、对话历史和参考资料会占用输入空间。"
+        },
+        {
+          "id": "token-04-b3",
+          "spoken_text": "还需要为模型的输出保留空间，部分模型也涉及推理 Token。"
+        },
+        {
+          "id": "token-04-b4",
+          "spoken_text": "窗口和输出上限取决于模型，放得下也不保证模型记住每个细节。"
+        }
+      ]
+    },
+    {
+      "slide_id": "token-05",
+      "title": "让每个 Token 承担清楚的任务",
+      "visual_groups": [
+        {
+          "id": "token-05-content",
+          "content": "让每个 Token 承担清楚的任务。把目标、必要背景和期望输出写清楚。删除重复内容，同时保留会影响判断的重要事实。为回复预留合理空间，并检查接口的实际用量。比较不同模型时，要一起看切分、效果、费用和完成时间。",
+          "description": "使用注册模板 explanation-cards-v1。屏幕文字概括本页准确事实，黑灰白主题；示意图不冒充真实分词结果。主体仅复用已有 token-brain@0.1.0，assets 的 id 和 slot.assetRef 必须对应此身份；其它概念用代码表达。",
+          "available_assets": [
+            {
+              "assetRef": {
+                "id": "token-brain",
+                "version": "0.1.0"
+              },
+              "description": "已有透明背景的模型文本处理概念示意，素材身份固定；仅复用，不生成新图。"
+            }
+          ]
+        }
+      ],
+      "narration_beats": [
+        {
+          "id": "token-05-b1",
+          "spoken_text": "把目标、必要背景和期望输出写清楚。"
+        },
+        {
+          "id": "token-05-b2",
+          "spoken_text": "删除重复内容，同时保留会影响判断的重要事实。"
+        },
+        {
+          "id": "token-05-b3",
+          "spoken_text": "为回复预留合理空间，并检查接口的实际用量。"
+        },
+        {
+          "id": "token-05-b4",
+          "spoken_text": "比较不同模型时，要一起看切分、效果、费用和完成时间。"
+        }
+      ]
+    }
+  ]
+}

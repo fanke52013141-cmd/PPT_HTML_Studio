@@ -5,7 +5,7 @@ description: Produce and verify editable HTML slides from this repository's slid
 
 # 可编辑 HTML 生产与局部修复
 
-Skill 版本：1.5.0（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
+Skill 版本：1.7.0（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
 
 本文代码与文档路径均相对仓库根目录；`references/`、`evaluation/` 相对本 Skill 目录。
 先读 `docs/contracts/html-presentation/README.md`，再读其下 `runtime/visual-v1/application-production-0.3.0.md`、`scene-repair-0.1.0.md` 和 `candidate-layout-agent-0.1.0.md`。从 `agent_contract.capabilities` 获取实际可调用能力和请求 Schema。参考图谱不等于运行组件目录。保持内容、场景、资源、绑定为唯一源；DOM/截图/视频为派生物。
@@ -24,6 +24,12 @@ Skill 版本：1.5.0（2026-10-12）。目标是交付实际可打开、可编�
 
 原 legacy_prompt 保留为内部明确对照；当前默认 runtime_skill 依据三模板豆包固定输入对照启用。评估使用 `scripts/evaluate_html_runtime_skills.py --out <new-directory>` 预览计划，带 `--live` 才使用已有文字模型；只读原配置，运行数据库/文件隔离，不导入 server。首轮实际模型输入与截图必须一致，保留失败并按 AB/BA 顺序运行，不手改输出或择优重跑。适配器调用、HTTP 请求、usage、耗时和人工介入分别记录，未知费用为 null。结构化事实路由测试不证明自然语言自动选 Skill 的准确率；三例通过不能推广为所有页面或视觉批准。
 
+## 用户状态与任务恢复
+
+先读 `docs/contracts/html-presentation/runtime/visual-v1/workflow-status-0.1.0.md`。使用 html_review.task_current（MCP ppt_html_task_current / CLI html task-current --project --slide）按页恢复原任务；项目最近记录只是概览，不以其条数推断某页没有任务。task_status 核对冻结输入、实际依赖、内容与 revision，旧任务缺信息为 unknown；succeeded/design_review 不表示 HTML 已完成或批准。查看 progress 的实际修复轮次、Skill版本与原结果复用，失败/未知结果不得汇总为成功。
+
+显式继续使用 html_review.task_resume（MCP ppt_html_task_resume / CLI html task-resume --project --job），由原快照恢复 contract/options；不要改参数规避原任务预算或供应商未知结果。取消、坏回执、耗尽、源码/模型/内容变化仍阻断。Web刷新自动恢复轮询，项目切换清空旧状态。编辑器先展示真实 preview 的重建影响再保存；当前交付同时检查 artifact_state 和 historical，旧成功不升级为新版完成。
+
 ## 正式导出
 
 正式 PPTX/视频先读 `docs/contracts/html-presentation/runtime/visual-v1/formal-export-0.1.0.md`，沿用原导出任务入口。任务固定整课有序快照，视频以页内缓存和整数帧重组；不得手动搬移缓存或强开 allow_legacy_unbound 绕过批准/音频/binding 门禁。检查作品 metadata.export_evidence 和实际可下载文件：分段命中也必须 hash/格式/全解码通过，数字人合成后再次校验最终文件。PPTX 仍为图片式页面，不能宣称可逐对象编辑。historical=true 是旧输入的有效历史结果，不能说成当前项目已完成；检查当前 artifact_state，不以成功任务代替当前输入签收。源码/工具/字体变化须重验，工程通过不代表视觉或真实供应商验收。
@@ -40,7 +46,7 @@ Skill 版本：1.5.0（2026-10-12）。目标是交付实际可打开、可编�
 
 先读 `docs/contracts/html-presentation/runtime/visual-v1/minimal-rebuild-0.1.0.md`。editor/repair preview 的 rebuild_plan 是当前修改的 dry-run：检查目标页、rebuild/reuse 和原因，再沿用已授权范围保存。只改屏幕字/字号/位置时保留现有朗读和素材；仅动作/绑定不重新 TTS。保存重算计划并绑定当前作者内容，editor.read 的旧计划不匹配时返回 null。计划中的 reuse 是候选，仍须资源散列、音频确认和视觉门禁有效；不凭计划跳过检查或批准。字体/共享运行输入变化必须重测。无需新 Agent 能力；MCP/CLI 沿用 editor/repair 的预览与保存。多页输入可用 scripts/html_rebuild_check.py capture/plan 做只读分析，不能将分析报告宣称为已执行所有重建阶段。
 
-在需要复现一页输入或核对检查版本时，先读 `docs/contracts/html-presentation/runtime/visual-v1/input-snapshot-0.1.0.md`。使用 `scripts/html_snapshot_check.py freeze-render --run-dir <run> --slide <id> --expected-revision <revision>`，随后 `review --snapshot <path>` 检查固定输入，展示返回的实际 HTML。generation 快照已由生产任务消费；恢复规则见 `docs/contracts/html-presentation/runtime/visual-v1/production-recovery-0.1.0.md`。同输入失败/中断可显式重提交，已返回响应复用但归一化与实际检查重做。intent/unknown、坏产物或过期 revision 必须先诊断；不要修改阶段账本或换一个无意义参数绕过阻断重复生图。取消不恢复；作者已保存而任务中断时先读取现有作品核实。QA 校验必须匹配期望快照和证据目录，不能只看报告的 passed。此入口目前只检查静态终态，不批准视觉、不证明动态/音频/导出通过；不能替代下述作者编辑 API。
+在需要复现一页输入或核对检查版本时，先读 `docs/contracts/html-presentation/runtime/visual-v1/input-snapshot-0.1.0.md`。使用 `scripts/html_snapshot_check.py freeze-render --run-dir <run> --slide <id> --expected-revision <revision>`，随后 `review --snapshot <path>` 检查固定输入，展示返回的实际 HTML。generation 快照已由生产任务消费；恢复规则见 `docs/contracts/html-presentation/runtime/visual-v1/production-recovery-0.1.0.md`。同输入失败/中断可显式重提交，已返回响应复用但归一化与实际检查重做。intent/unknown、坏产物或过期 revision 必须先诊断；不要修改阶段账本或换一个无意义参数绕过阻断重复生图。取消不恢复；作者已保存而任务中断时先读取现有作品核实。QA 校验必须匹配期望快照和证据目录，不能只看报告的 passed。静态 review 检查终态；review-temporal --snapshot <path> --fps 30 --overlap-policy registered 检查全部输出帧和动作边界。先读 temporal-qa-0.1.0.md，核对原请求、coverage、clock、排除依据和证据哈希；帧间连续时间未数学证明，不能代替视觉/音频批准或正式导出门禁。重复补丁/候选或实际无改善提前停止，保留原作品和 stop_reason。不能替代下述作者编辑 API。
 
 恢复对账另读 `docs/contracts/html-presentation/runtime/visual-v1/production-recovery-0.2.0.md`。启动/同输入提交会先检查响应与作者 prepared/sealed 回执；完整作者提交直接补回原任务成功，无须重新规划。ToAPIs 有原 task_id 时只查旧任务；无 ID 的同步超时不补发。回执损坏、文件缺失、新版本或连接变化时停止，不编辑阶段账本或换参数绕过阻断。恢复成功仍不是视觉批准；检查返回的 reconciliation 和实际 editor 内容。
 
