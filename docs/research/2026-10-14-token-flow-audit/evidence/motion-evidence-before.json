@@ -1,0 +1,401 @@
+[
+  {
+    "slide": "token-01",
+    "samples": [
+      {
+        "timeMs": 0,
+        "sha256": "5020f4766ce83e4785a1b4b7678bffa6821f9f972ccac9c427f7a70555ebbd2a",
+        "domSha256": "1c17c9fa726e637ef5ee177c73092fa60b247b048550744bba59972e33489d77"
+      },
+      {
+        "timeMs": 250,
+        "sha256": "2dad00231ca3817d50f8b35f43ed42703203fd2c454274af86788f5646395787",
+        "domSha256": "7189ab4e435e1c45597b86487bff0a56a9768d397a2de3e31eaba3d3eb5b576e"
+      },
+      {
+        "timeMs": 500,
+        "sha256": "427b7de31e4d614d6bad4d24a648a890a7891954454a9fb85007b9f40d2efab9",
+        "domSha256": "548a20fabcd7e195d44650fdcd8dfadc7982f04371e4b563e783c547c90c370b"
+      },
+      {
+        "timeMs": 3500,
+        "sha256": "427b7de31e4d614d6bad4d24a648a890a7891954454a9fb85007b9f40d2efab9",
+        "domSha256": "548a20fabcd7e195d44650fdcd8dfadc7982f04371e4b563e783c547c90c370b"
+      },
+      {
+        "timeMs": 4000,
+        "sha256": "63320b499fbda9aba02a4ca7f3d2521ed974dabeccdabf86f1715c714a89d37a",
+        "domSha256": "813ccea1a664a6adffe2b64ad6b5e3427e24fdacc0b210ac9067b915627a9876"
+      },
+      {
+        "timeMs": 7000,
+        "sha256": "63320b499fbda9aba02a4ca7f3d2521ed974dabeccdabf86f1715c714a89d37a",
+        "domSha256": "813ccea1a664a6adffe2b64ad6b5e3427e24fdacc0b210ac9067b915627a9876"
+      },
+      {
+        "timeMs": 7500,
+        "sha256": "2a114e81dd67dec2692b9c3740b8dfa7fb6dddc733b5b378690fb3927c490d25",
+        "domSha256": "9cbe215ceb192c6076482e505381f98b98b3a9944af74413b4effe82faa109b5"
+      },
+      {
+        "timeMs": 10500,
+        "sha256": "2a114e81dd67dec2692b9c3740b8dfa7fb6dddc733b5b378690fb3927c490d25",
+        "domSha256": "9cbe215ceb192c6076482e505381f98b98b3a9944af74413b4effe82faa109b5"
+      },
+      {
+        "timeMs": 11000,
+        "sha256": "fd0f290294153ecfa64fb0d7ef4a449ffb3f84472416ae2d42a5947b1b3b4b67",
+        "domSha256": "22ad5c650223c47e230f6f32eba9b02a84502719a88eea98ccdda06f3c745a2a"
+      },
+      {
+        "timeMs": 14000,
+        "sha256": "fd0f290294153ecfa64fb0d7ef4a449ffb3f84472416ae2d42a5947b1b3b4b67",
+        "domSha256": "22ad5c650223c47e230f6f32eba9b02a84502719a88eea98ccdda06f3c745a2a"
+      }
+    ],
+    "reverseSeekDeterministic": false,
+    "geometryFailures": [
+      "anchor-label-obj",
+      "card-1-obj",
+      "card-2-obj",
+      "card-3-obj",
+      "figure-obj",
+      "header-obj",
+      "headline-obj",
+      "intro-obj"
+    ],
+    "snapshotImmutable": false,
+    "domDeterministic": true,
+    "mismatches": [
+      250
+    ],
+    "distinctFrames": 6,
+    "pageErrors": [],
+    "semanticApproval": false,
+    "audioBindingVerified": false
+  },
+  {
+    "slide": "token-02",
+    "samples": [
+      {
+        "timeMs": 0,
+        "sha256": "5020f4766ce83e4785a1b4b7678bffa6821f9f972ccac9c427f7a70555ebbd2a",
+        "domSha256": "d1719050b92cb1a5364c6b553240ad588c8239349edc58ea4b796006b3aad5c1"
+      },
+      {
+        "timeMs": 250,
+        "sha256": "30c10a68668369f82414584209a6fe5d4f05f23bafb9f36430f0a9aace111d5f",
+        "domSha256": "a3483ae282cf12fadee68884ab00c9cf263cd08687586177fb93353f1434ddd9"
+      },
+      {
+        "timeMs": 500,
+        "sha256": "b95726a05e4815266b07dc1a833fd12e0f9d5824f4c0ce1cfe4588233cdfe5fd",
+        "domSha256": "2fef395f9d4c4775c8460c085d796d01851ca4c878459858c30ca2cd7f95609e"
+      },
+      {
+        "timeMs": 3500,
+        "sha256": "b95726a05e4815266b07dc1a833fd12e0f9d5824f4c0ce1cfe4588233cdfe5fd",
+        "domSha256": "2fef395f9d4c4775c8460c085d796d01851ca4c878459858c30ca2cd7f95609e"
+      },
+      {
+        "timeMs": 4000,
+        "sha256": "b95726a05e4815266b07dc1a833fd12e0f9d5824f4c0ce1cfe4588233cdfe5fd",
+        "domSha256": "2fef395f9d4c4775c8460c085d796d01851ca4c878459858c30ca2cd7f95609e"
+      },
+      {
+        "timeMs": 7000,
+        "sha256": "b95726a05e4815266b07dc1a833fd12e0f9d5824f4c0ce1cfe4588233cdfe5fd",
+        "domSha256": "2fef395f9d4c4775c8460c085d796d01851ca4c878459858c30ca2cd7f95609e"
+      },
+      {
+        "timeMs": 7500,
+        "sha256": "6c91999e4ae21b4356592071f739515d9d3e024789afa286a71b3291302f1ece",
+        "domSha256": "48fc49fdaa510e3b857cc3f30c6b96888d8924ce85eb0abcdf1b737b413d7fc2"
+      },
+      {
+        "timeMs": 10500,
+        "sha256": "6c91999e4ae21b4356592071f739515d9d3e024789afa286a71b3291302f1ece",
+        "domSha256": "48fc49fdaa510e3b857cc3f30c6b96888d8924ce85eb0abcdf1b737b413d7fc2"
+      },
+      {
+        "timeMs": 11000,
+        "sha256": "11b027077b2d547a7d9cc7350bd53b40dc1813d42a4a76890dd2ed5d34eb50c9",
+        "domSha256": "8e582b77fdfc621499bdf2d99e6db8bfebbedbfa8de72b99ae6cf61b9b5a90a9"
+      },
+      {
+        "timeMs": 14000,
+        "sha256": "11b027077b2d547a7d9cc7350bd53b40dc1813d42a4a76890dd2ed5d34eb50c9",
+        "domSha256": "8e582b77fdfc621499bdf2d99e6db8bfebbedbfa8de72b99ae6cf61b9b5a90a9"
+      }
+    ],
+    "reverseSeekDeterministic": true,
+    "geometryFailures": [
+      "header-obj",
+      "anchor-label-obj",
+      "figure-obj",
+      "badge-1-obj",
+      "badge-2-obj",
+      "arrow-obj",
+      "result-obj",
+      "summary-obj"
+    ],
+    "snapshotImmutable": false,
+    "domDeterministic": true,
+    "mismatches": [],
+    "distinctFrames": 5,
+    "pageErrors": [],
+    "semanticApproval": false,
+    "audioBindingVerified": false
+  },
+  {
+    "slide": "token-03",
+    "samples": [
+      {
+        "timeMs": 0,
+        "sha256": "5020f4766ce83e4785a1b4b7678bffa6821f9f972ccac9c427f7a70555ebbd2a",
+        "domSha256": "00b85e150f4b5563f465024a0ce2be8a05249ae0bb7e6c9cd40d3d40bc1e16bd"
+      },
+      {
+        "timeMs": 250,
+        "sha256": "7e303975e1b9582e04dde0c8f51ac9d2804af3a28a210470bb64ff8b6bb83756",
+        "domSha256": "5b3ecf40dbc8a55396144e3e1df63b097f121bcd26108d16080a7c6d4aa04232"
+      },
+      {
+        "timeMs": 500,
+        "sha256": "4a5f8aa977719c58f3283ede323de3789355ba931743ff884198975d9ce5ef38",
+        "domSha256": "b1070b59474825d9dd24a3969e8939bc1984109151c23d3fddfd6039d1923f4c"
+      },
+      {
+        "timeMs": 3500,
+        "sha256": "fd73a58602a794bbc5c513ff3808dcff01da9f14c53ad9893864312a389d6fec",
+        "domSha256": "b1070b59474825d9dd24a3969e8939bc1984109151c23d3fddfd6039d1923f4c"
+      },
+      {
+        "timeMs": 4000,
+        "sha256": "49573b788e11d82d8c26770017d911724b0d4a617fa1f1416c41093c0b51c475",
+        "domSha256": "f5d4d3fe080cfd3260ebf5d97b47ecc157247316a801013e9056bb574adab623"
+      },
+      {
+        "timeMs": 7000,
+        "sha256": "d221f6a626e822eda968cc3cb78fc248814bb8c28c05b2b5ff05ac2de3cb62bf",
+        "domSha256": "f5d4d3fe080cfd3260ebf5d97b47ecc157247316a801013e9056bb574adab623"
+      },
+      {
+        "timeMs": 7500,
+        "sha256": "9d607931ee22e22e9f2d2a4f34e361a1e8bf21a524e7c0494923f33e1f14cb06",
+        "domSha256": "c9d41e8c14720749f7157ac7b71ce80cc4b945fa7f61e68f3f8eaa7a38488fdf"
+      },
+      {
+        "timeMs": 10500,
+        "sha256": "58b40a0e22fd97d4ab143b6da9cb1ab52713a7208954bcae28d3f3d1322c7a8b",
+        "domSha256": "c9d41e8c14720749f7157ac7b71ce80cc4b945fa7f61e68f3f8eaa7a38488fdf"
+      },
+      {
+        "timeMs": 11000,
+        "sha256": "9d607931ee22e22e9f2d2a4f34e361a1e8bf21a524e7c0494923f33e1f14cb06",
+        "domSha256": "c9d41e8c14720749f7157ac7b71ce80cc4b945fa7f61e68f3f8eaa7a38488fdf"
+      },
+      {
+        "timeMs": 14000,
+        "sha256": "58b40a0e22fd97d4ab143b6da9cb1ab52713a7208954bcae28d3f3d1322c7a8b",
+        "domSha256": "c9d41e8c14720749f7157ac7b71ce80cc4b945fa7f61e68f3f8eaa7a38488fdf"
+      }
+    ],
+    "reverseSeekDeterministic": false,
+    "geometryFailures": [
+      "anchor-label-obj",
+      "card-1-obj",
+      "card-2-obj",
+      "card-3-obj",
+      "figure-obj",
+      "header-obj",
+      "headline-obj",
+      "intro-obj",
+      "summary-obj"
+    ],
+    "snapshotImmutable": false,
+    "domDeterministic": true,
+    "mismatches": [
+      14000,
+      11000,
+      10500,
+      7500,
+      7000,
+      4000,
+      3500,
+      500
+    ],
+    "distinctFrames": 8,
+    "pageErrors": [],
+    "semanticApproval": false,
+    "audioBindingVerified": false
+  },
+  {
+    "slide": "token-04",
+    "samples": [
+      {
+        "timeMs": 0,
+        "sha256": "5020f4766ce83e4785a1b4b7678bffa6821f9f972ccac9c427f7a70555ebbd2a",
+        "domSha256": "2961ff565454d98f48ebdb23a3e209990a7073d2cf17ff6720a260c18e36a240"
+      },
+      {
+        "timeMs": 250,
+        "sha256": "23a37c5203705192209816b2d265921f0a879acc6de37846200b7bb07a9a5ddb",
+        "domSha256": "6cf78162b76fef66f9311d1cf909060adc95df5859e0bd97fa1ef28f4bacbb1d"
+      },
+      {
+        "timeMs": 500,
+        "sha256": "d4e13aef45a60992935702522b7b8125376aa6fb05d2380f5fa8bb728a2252e3",
+        "domSha256": "4004643168afc4df698027fa1b5c26f9348f3947d4ea66177c8388669b00c424"
+      },
+      {
+        "timeMs": 3500,
+        "sha256": "c7fc210e74d220586648303cce7ad52c5dad475377a54dcf8b7a45140f513fc9",
+        "domSha256": "4004643168afc4df698027fa1b5c26f9348f3947d4ea66177c8388669b00c424"
+      },
+      {
+        "timeMs": 4000,
+        "sha256": "094775d4a2136fb73117b4ab0c6e43469e0ac294bdb21359526b7c7df0e7a476",
+        "domSha256": "c00e21e5ea58009f8870c47f2b35cb78f7519a83d5a29312178a8af441a786f7"
+      },
+      {
+        "timeMs": 7000,
+        "sha256": "f2685b22f3bde66ed9cf21329da60f8391aed6593b219ccb7862178cb44a60e7",
+        "domSha256": "c00e21e5ea58009f8870c47f2b35cb78f7519a83d5a29312178a8af441a786f7"
+      },
+      {
+        "timeMs": 7500,
+        "sha256": "0da9859cc065efc36e86fb396d1fe6ebf03dce0be82dfdf64aaf337ee527ecc6",
+        "domSha256": "1adea033a5a699885eacdb86b799dfd391fb876cba1af07147559195dda74a77"
+      },
+      {
+        "timeMs": 10500,
+        "sha256": "686e1144e5286bc449de466a05094ad4849220db86867e5adb33c98cf09eacdb",
+        "domSha256": "1adea033a5a699885eacdb86b799dfd391fb876cba1af07147559195dda74a77"
+      },
+      {
+        "timeMs": 11000,
+        "sha256": "0f29916a2e9b1ceff9025dc01957255e6b3923e686689b252c9dad912623e36e",
+        "domSha256": "9ba42540b2861e1c7a8c9a41ba2d48b48f58d91bb30cf090851e19c62e4f0633"
+      },
+      {
+        "timeMs": 14000,
+        "sha256": "e8366a51d28278e6457671e724aa2de1cd5e6bb17dbe5e36553e037283da064e",
+        "domSha256": "9ba42540b2861e1c7a8c9a41ba2d48b48f58d91bb30cf090851e19c62e4f0633"
+      }
+    ],
+    "reverseSeekDeterministic": false,
+    "geometryFailures": [
+      "anchor-label-obj",
+      "card-1-obj",
+      "card-2-obj",
+      "card-3-obj",
+      "figure-obj",
+      "header-obj",
+      "headline-obj",
+      "intro-obj",
+      "summary-obj"
+    ],
+    "snapshotImmutable": false,
+    "domDeterministic": true,
+    "mismatches": [
+      14000,
+      11000,
+      10500,
+      7500,
+      7000,
+      4000,
+      3500,
+      500,
+      250
+    ],
+    "distinctFrames": 10,
+    "pageErrors": [],
+    "semanticApproval": false,
+    "audioBindingVerified": false
+  },
+  {
+    "slide": "token-05",
+    "samples": [
+      {
+        "timeMs": 0,
+        "sha256": "5020f4766ce83e4785a1b4b7678bffa6821f9f972ccac9c427f7a70555ebbd2a",
+        "domSha256": "fd2ea267a9956debfc71bf35b972398805846e9652376cb6351f3164aa12d998"
+      },
+      {
+        "timeMs": 250,
+        "sha256": "47f48776ca35afd542c33d8160fd8b377b1552952471934ec0af013a826e4463",
+        "domSha256": "40a1242e7863aa824d981458772d03278d20293244ceb027107e74d9bbbc5e6d"
+      },
+      {
+        "timeMs": 500,
+        "sha256": "adaeb51908baf96e4ea76cc97d91cca6bd50fd3256068df812e64e85fb446985",
+        "domSha256": "e4af622ce62e306138074a7b5476d8a774b28f9470e9473d2b05e2e27faf01d8"
+      },
+      {
+        "timeMs": 3500,
+        "sha256": "397bfcac63b11760ad8c32929d8339e31e5ed606672a01128064eb22743188c9",
+        "domSha256": "e4af622ce62e306138074a7b5476d8a774b28f9470e9473d2b05e2e27faf01d8"
+      },
+      {
+        "timeMs": 4000,
+        "sha256": "5b19958331f9bca396b2e32208bc9323986ad8c1b595d5b049c7451173340dc1",
+        "domSha256": "3a064df590b0ea3bf7d945e34158b940fad4d62c9522f24d02481a8e77d91c8d"
+      },
+      {
+        "timeMs": 7000,
+        "sha256": "e23fc089202d4242dc3e7398e511c521c31582f5d3cc0b6d8ee1db65bf265dab",
+        "domSha256": "3a064df590b0ea3bf7d945e34158b940fad4d62c9522f24d02481a8e77d91c8d"
+      },
+      {
+        "timeMs": 7500,
+        "sha256": "5b19958331f9bca396b2e32208bc9323986ad8c1b595d5b049c7451173340dc1",
+        "domSha256": "3a064df590b0ea3bf7d945e34158b940fad4d62c9522f24d02481a8e77d91c8d"
+      },
+      {
+        "timeMs": 10500,
+        "sha256": "e23fc089202d4242dc3e7398e511c521c31582f5d3cc0b6d8ee1db65bf265dab",
+        "domSha256": "3a064df590b0ea3bf7d945e34158b940fad4d62c9522f24d02481a8e77d91c8d"
+      },
+      {
+        "timeMs": 11000,
+        "sha256": "34c0929834ffcd6ceb8fec4f7907c8553ee576705c455362a53d3e994762f959",
+        "domSha256": "db522589126e70f0044beb86b206df555f9c4e48605a89abf6f89fc58c9da80a"
+      },
+      {
+        "timeMs": 14000,
+        "sha256": "8b2ebb055b16865d03b781c28e10435b43362950f42b970b362bfab3eb5bf3fa",
+        "domSha256": "db522589126e70f0044beb86b206df555f9c4e48605a89abf6f89fc58c9da80a"
+      }
+    ],
+    "reverseSeekDeterministic": false,
+    "geometryFailures": [
+      "header-token-05",
+      "headline-token-05",
+      "intro-token-05",
+      "anchor-label-token-05",
+      "figure-token-05",
+      "card-1-token-05",
+      "card-2-token-05",
+      "card-3-token-05",
+      "summary-token-05"
+    ],
+    "snapshotImmutable": false,
+    "domDeterministic": true,
+    "mismatches": [
+      14000,
+      11000,
+      10500,
+      7500,
+      7000,
+      4000,
+      3500,
+      500,
+      250
+    ],
+    "distinctFrames": 8,
+    "pageErrors": [],
+    "semanticApproval": false,
+    "audioBindingVerified": false
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "slide": "token-01",
+    "review_passed": true,
+    "metrics": {
+      "before": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 46.5668173785961,
+        "foreground_iou": 0.16625212103327255,
+        "reference_sha256": "3613406c12cb96157a31544a6547e29b29defecb513888d72b3aab1ef0a7ec71",
+        "actual_sha256": "1df3dc3c3f0ebb648ff99c673bf320cb7232d6fef5a21d0bdfa86c6ed3df23b6",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      },
+      "after": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 38.88521721501699,
+        "foreground_iou": 0.3149577733793567,
+        "reference_sha256": "3613406c12cb96157a31544a6547e29b29defecb513888d72b3aab1ef0a7ec71",
+        "actual_sha256": "1bcdd35eb4c415de18b51ef2b98fe6b79251374c9cac6249c4b0dc8a14677092",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      }
+    }
+  },
+  {
+    "slide": "token-02",
+    "review_passed": true,
+    "metrics": {
+      "before": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 51.52641297185706,
+        "foreground_iou": 0.11503453666749344,
+        "reference_sha256": "7f4f962ca18c8e138abc30d22e9f17f0ef044c6485cc8c26e4271f69e1a2f692",
+        "actual_sha256": "712a082972e8f0a2012bc373d4bfcd5ac3853eb3a5ed176bfa9f4ddd2257d9cb",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      },
+      "after": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 54.53761440662247,
+        "foreground_iou": 0.12115045232682004,
+        "reference_sha256": "7f4f962ca18c8e138abc30d22e9f17f0ef044c6485cc8c26e4271f69e1a2f692",
+        "actual_sha256": "89a119b0adccca92fe65889e967ef8020e91ec3f178b888cb8b07a03676ac910",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      }
+    }
+  },
+  {
+    "slide": "token-03",
+    "review_passed": true,
+    "metrics": {
+      "before": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 52.50482595290227,
+        "foreground_iou": 0.1875307207650029,
+        "reference_sha256": "2c998ceb4dca2e3dec796c550a5101885ca6bd02c55d2667231d3db745795492",
+        "actual_sha256": "0978e576228b9620747136eb2dcbeb535dee29e40067f0548f588f638aa8e078",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      },
+      "after": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 54.131010751677934,
+        "foreground_iou": 0.192860791901303,
+        "reference_sha256": "2c998ceb4dca2e3dec796c550a5101885ca6bd02c55d2667231d3db745795492",
+        "actual_sha256": "02dc4ae8d36e1c6faf98d130c95f2f9d22ac9a0bdf68e582a0937dcd100e67f8",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      }
+    }
+  },
+  {
+    "slide": "token-04",
+    "review_passed": true,
+    "metrics": {
+      "before": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 51.20501413876755,
+        "foreground_iou": 0.2205205691942309,
+        "reference_sha256": "7a403cb374cc0b9cddedfe3840740e88486e517806b6137c27924303173c1ef0",
+        "actual_sha256": "f090bfd6e422ab0438781c70017faa9eb7cc04307db46d369fa3876e096e5d0a",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      },
+      "after": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 53.030059986854475,
+        "foreground_iou": 0.22484254490694133,
+        "reference_sha256": "7a403cb374cc0b9cddedfe3840740e88486e517806b6137c27924303173c1ef0",
+        "actual_sha256": "1b4330ce3bfafe74bece501f1a1ffd9713e41ef2f22c173e41279a5aec913f04",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      }
+    }
+  },
+  {
+    "slide": "token-05",
+    "review_passed": true,
+    "metrics": {
+      "before": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 58.38775492470651,
+        "foreground_iou": 0.13980344620838872,
+        "reference_sha256": "65ff38c10bd1424ea0778bc9570284c6183c6054a72afce4cefedbe61b9dfe26",
+        "actual_sha256": "44611aef706c553c700a6a74ef44b31931845e50f1b8880dad5a0ab36f671bb0",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      },
+      "after": {
+        "canvas": [
+          1280,
+          720
+        ],
+        "actual_original_size": [
+          1592,
+          896
+        ],
+        "foreground_mae": 60.374793242766884,
+        "foreground_iou": 0.13518262425770763,
+        "reference_sha256": "65ff38c10bd1424ea0778bc9570284c6183c6054a72afce4cefedbe61b9dfe26",
+        "actual_sha256": "acaf4948723bf87db4f234b9ae5dd6e73f48423b14a83f364f283f3c87320974",
+        "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+      }
+    }
+  }
+]

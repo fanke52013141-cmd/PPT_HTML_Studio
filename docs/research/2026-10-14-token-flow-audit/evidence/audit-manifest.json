@@ -1,0 +1,19 @@
+{
+  "source_sha256": {
+    "html_layout_reference.py": "7d615b5bc387769ebaa3de78885191895ab0bfaffffcdace8d489fa54b262e42",
+    "html_reference_package.py": "ec4f2bb3417d057acb2b648b4d4e859caa53fe6e06ed14ad12924cfcf628b5f2",
+    "html_design_candidates.py": "f760fc5543d723c83edeff882e325b4ac7f6dc1654b65a66bd7bb094f6b827dd",
+    "html_production_service.py": "6eec81e889d26fe25896034b95ca00e191a7082cf33cd4f94585199e1a1b338e",
+    "html_engine/visual/renderer.cjs": "caf2457fed3162290c43a51bad8a749d6e4b723c6bcab03d6edadd04944f58f6",
+    "html_engine/visual/preview/player.js": "1efe150ff02c173d31b1ccf8a6063c12522d268ba210f563697c9560fbecb161"
+  },
+  "actual_new_image_size": [
+    1536,
+    864
+  ],
+  "new_image_sha256": "1e5194b7ef1c0648320b73b85ff78f1d44868bc6374035d17116b67b3dcd7867",
+  "formal_approval": false,
+  "formal_export": false,
+  "paid_image_calls_this_audit": 1,
+  "cost": null
+}

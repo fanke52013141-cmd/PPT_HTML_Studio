@@ -1,0 +1,344 @@
+{
+  "beats": [],
+  "durationMs": 14000,
+  "format": "hps.visual.scene",
+  "id": "token-01",
+  "layoutRef": {
+    "id": "science-explanation-v1",
+    "version": "0.2.0"
+  },
+  "motion": [
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "anchor-label-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 0,
+      "startMs": 0,
+      "targetId": "annotation-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "card-1-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 3500,
+      "targetId": "card-2-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 7000,
+      "targetId": "card-3-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "figure-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "header-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "headline-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "intro-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "subject-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 0,
+      "startMs": 10500,
+      "targetId": "summary-obj",
+      "type": "enter"
+    }
+  ],
+  "name": "认识 Token",
+  "nodes": [
+    {
+      "id": "anchor-label-obj",
+      "role": "eyebrow",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "基础概念"
+        }
+      ],
+      "slot": "anchor-label",
+      "type": "text"
+    },
+    {
+      "anchorId": "focus",
+      "id": "annotation-obj",
+      "labelId": "anchor-label-obj",
+      "radius": 24,
+      "slot": "annotation",
+      "targetId": "subject-obj",
+      "type": "annotation"
+    },
+    {
+      "body": "Token 是模型处理文本时使用的基本单位。",
+      "icon": "molecule",
+      "id": "card-1-obj",
+      "slot": "card-1",
+      "title": "基本单位",
+      "tone": "blue",
+      "type": "card",
+      "presentation": {
+        "offsetX": 4,
+        "offsetY": -49,
+        "width": 676,
+        "height": 113,
+        "typography": {
+          "title": {
+            "fontSizePx": 23
+          },
+          "body": {
+            "fontSizePx": 19
+          }
+        }
+      }
+    },
+    {
+      "body": "可以是一个词、词的一部分，也可以是标点或字符。",
+      "icon": "lightbulb",
+      "id": "card-2-obj",
+      "slot": "card-2",
+      "title": "多种形态",
+      "tone": "green",
+      "type": "card",
+      "presentation": {
+        "offsetX": 4,
+        "offsetY": -27,
+        "width": 676,
+        "height": 113,
+        "typography": {
+          "title": {
+            "fontSizePx": 23
+          },
+          "body": {
+            "fontSizePx": 19
+          }
+        }
+      }
+    },
+    {
+      "body": "Token 数量不等于字数，切分取决于所用分词器。",
+      "icon": "eye",
+      "id": "card-3-obj",
+      "slot": "card-3",
+      "title": "不等于字数",
+      "tone": "purple",
+      "type": "card",
+      "presentation": {
+        "offsetX": 4,
+        "offsetY": -6,
+        "width": 676,
+        "height": 113,
+        "typography": {
+          "title": {
+            "fontSizePx": 23
+          },
+          "body": {
+            "fontSizePx": 19
+          }
+        }
+      }
+    },
+    {
+      "id": "figure-obj",
+      "note": {
+        "icon": "check",
+        "text": "概念化示意"
+      },
+      "slot": "figure",
+      "tag": {
+        "icon": "molecule",
+        "text": "Token 单元示意"
+      },
+      "type": "figure",
+      "presentation": {
+        "offsetX": -5,
+        "offsetY": -48,
+        "width": 581,
+        "height": 490,
+        "typography": {
+          "tag": {
+            "fontSizePx": 16
+          },
+          "note": {
+            "fontSizePx": 16
+          }
+        }
+      }
+    },
+    {
+      "id": "header-obj",
+      "number": "01",
+      "slot": "header",
+      "title": "认识 Token",
+      "type": "header",
+      "presentation": {
+        "offsetX": 4,
+        "offsetY": 10,
+        "typography": {
+          "title": {
+            "fontSizePx": 46
+          }
+        }
+      }
+    },
+    {
+      "id": "headline-obj",
+      "role": "headline",
+      "runs": [
+        {
+          "emphasis": true,
+          "text": "Token 是模型处理文本的单位"
+        }
+      ],
+      "slot": "headline",
+      "type": "text",
+      "presentation": {
+        "offsetY": 12,
+        "typography": {
+          "text": {
+            "fontSizePx": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "intro-obj",
+      "role": "intro",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "文本进入模型后，会被切分为一个个可处理的单元。"
+        }
+      ],
+      "slot": "intro",
+      "type": "text",
+      "presentation": {
+        "offsetY": -91,
+        "typography": {
+          "text": {
+            "fontSizePx": 20
+          }
+        }
+      }
+    },
+    {
+      "anchorId": "focus",
+      "assetRef": {
+        "id": "project-b4bbc64cafe9cd3dfc59ea4c07b590a1",
+        "version": "0.1.0"
+      },
+      "id": "subject-obj",
+      "slot": "subject",
+      "type": "image",
+      "presentation": {
+        "offsetX": -355,
+        "offsetY": -140,
+        "width": 765,
+        "height": 765
+      }
+    },
+    {
+      "from": {
+        "text": "文本",
+        "tone": "blue"
+      },
+      "heading": {
+        "icon": "lightbulb",
+        "text": "本节要点"
+      },
+      "id": "summary-obj",
+      "slot": "summary",
+      "takeaway": "先理解切分方式，再讨论用量与上下文。",
+      "term": "分词切分",
+      "to": {
+        "text": "Token",
+        "tone": "purple"
+      },
+      "type": "summary",
+      "presentation": {
+        "offsetX": 4,
+        "offsetY": 11,
+        "width": 1475,
+        "height": 110,
+        "typography": {
+          "heading": {
+            "fontSizePx": 23
+          },
+          "from": {
+            "fontSizePx": 20
+          },
+          "to": {
+            "fontSizePx": 20
+          },
+          "term": {
+            "fontSizePx": 18
+          },
+          "takeaway": {
+            "fontSizePx": 18
+          }
+        }
+      }
+    }
+  ],
+  "source": "课程内容；语义来源保存在分镜契约中。",
+  "templateRef": {
+    "id": "explanation-cards-v1",
+    "version": "0.1.0"
+  },
+  "themeRef": {
+    "id": "neutral-baseline",
+    "version": "0.2.0"
+  },
+  "version": "0.5.0"
+}

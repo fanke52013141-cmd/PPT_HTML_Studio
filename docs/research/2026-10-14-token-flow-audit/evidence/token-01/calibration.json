@@ -1,0 +1,119 @@
+{
+  "method": "human transcription of reference geometry; not automatic extraction",
+  "canvas": [
+    1600,
+    900
+  ],
+  "edits": {
+    "header-obj": {
+      "offsetX": 4,
+      "offsetY": 10,
+      "typography": {
+        "title": {
+          "fontSizePx": 46
+        }
+      }
+    },
+    "intro-obj": {
+      "offsetY": -91,
+      "typography": {
+        "text": {
+          "fontSizePx": 20
+        }
+      }
+    },
+    "headline-obj": {
+      "offsetY": 12,
+      "typography": {
+        "text": {
+          "fontSizePx": 32
+        }
+      }
+    },
+    "card-1-obj": {
+      "offsetX": 4,
+      "offsetY": -49,
+      "width": 676,
+      "height": 113,
+      "typography": {
+        "title": {
+          "fontSizePx": 23
+        },
+        "body": {
+          "fontSizePx": 19
+        }
+      }
+    },
+    "card-2-obj": {
+      "offsetX": 4,
+      "offsetY": -27,
+      "width": 676,
+      "height": 113,
+      "typography": {
+        "title": {
+          "fontSizePx": 23
+        },
+        "body": {
+          "fontSizePx": 19
+        }
+      }
+    },
+    "card-3-obj": {
+      "offsetX": 4,
+      "offsetY": -6,
+      "width": 676,
+      "height": 113,
+      "typography": {
+        "title": {
+          "fontSizePx": 23
+        },
+        "body": {
+          "fontSizePx": 19
+        }
+      }
+    },
+    "subject-obj": {
+      "offsetX": -355,
+      "offsetY": -140,
+      "width": 765,
+      "height": 765
+    },
+    "figure-obj": {
+      "offsetX": -5,
+      "offsetY": -48,
+      "width": 581,
+      "height": 490,
+      "typography": {
+        "tag": {
+          "fontSizePx": 16
+        },
+        "note": {
+          "fontSizePx": 16
+        }
+      }
+    },
+    "summary-obj": {
+      "offsetX": 4,
+      "offsetY": 11,
+      "width": 1475,
+      "height": 110,
+      "typography": {
+        "heading": {
+          "fontSizePx": 23
+        },
+        "from": {
+          "fontSizePx": 20
+        },
+        "to": {
+          "fontSizePx": 20
+        },
+        "term": {
+          "fontSizePx": 18
+        },
+        "takeaway": {
+          "fontSizePx": 18
+        }
+      }
+    }
+  }
+}

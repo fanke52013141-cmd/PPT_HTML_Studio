@@ -1,0 +1,32 @@
+{
+  "before": {
+    "canvas": [
+      1280,
+      720
+    ],
+    "actual_original_size": [
+      1592,
+      896
+    ],
+    "foreground_mae": 52.50482595290227,
+    "foreground_iou": 0.1875307207650029,
+    "reference_sha256": "2c998ceb4dca2e3dec796c550a5101885ca6bd02c55d2667231d3db745795492",
+    "actual_sha256": "0978e576228b9620747136eb2dcbeb535dee29e40067f0548f588f638aa8e078",
+    "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+  },
+  "after": {
+    "canvas": [
+      1280,
+      720
+    ],
+    "actual_original_size": [
+      1592,
+      896
+    ],
+    "foreground_mae": 54.131010751677934,
+    "foreground_iou": 0.192860791901303,
+    "reference_sha256": "2c998ceb4dca2e3dec796c550a5101885ca6bd02c55d2667231d3db745795492",
+    "actual_sha256": "02dc4ae8d36e1c6faf98d130c95f2f9d22ac9a0bdf68e582a0937dcd100e67f8",
+    "meaning": "Spatial/tonal diagnostics only; inspect text, identity, relationships and motion separately."
+  }
+}

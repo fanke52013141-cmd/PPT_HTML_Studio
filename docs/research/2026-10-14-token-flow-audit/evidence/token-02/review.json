@@ -1,0 +1,173 @@
+{
+  "passed": true,
+  "diagnosticOnly": false,
+  "capacityIssues": [],
+  "sceneId": "token-02",
+  "durationMs": 14000,
+  "measuredObjects": 9,
+  "geometryObjects": 10,
+  "geometry": {
+    "subject-obj": {
+      "box": {
+        "x": 330,
+        "y": 160,
+        "width": 600,
+        "height": 480
+      },
+      "placement": {
+        "scale": 0.46875,
+        "x": 60,
+        "y": 0,
+        "width": 480,
+        "height": 480,
+        "anchor": {
+          "x": 300,
+          "y": 235.78125
+        }
+      },
+      "anchors": {
+        "focus": {
+          "x": 630,
+          "y": 395.78125
+        }
+      }
+    },
+    "annotation-obj": {
+      "anchor": {
+        "x": 630,
+        "y": 395.78125
+      },
+      "endpoint": {
+        "x": 270,
+        "y": 585
+      },
+      "radius": 24,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      }
+    },
+    "header-obj": {
+      "kind": "header",
+      "box": {
+        "x": 58,
+        "y": 48,
+        "width": 1477,
+        "height": 77
+      }
+    },
+    "anchor-label-obj": {
+      "kind": "text",
+      "box": {
+        "x": 120,
+        "y": 540,
+        "width": 150,
+        "height": 90
+      }
+    },
+    "figure-obj": {
+      "kind": "figure",
+      "box": {
+        "x": 280,
+        "y": 140,
+        "width": 700,
+        "height": 520
+      }
+    },
+    "badge-1-obj": {
+      "kind": "badge",
+      "box": {
+        "x": 1220,
+        "y": 350,
+        "width": 160,
+        "height": 64
+      }
+    },
+    "badge-2-obj": {
+      "kind": "badge",
+      "box": {
+        "x": 1220,
+        "y": 450,
+        "width": 160,
+        "height": 64
+      }
+    },
+    "arrow-obj": {
+      "kind": "arrow",
+      "box": {
+        "x": 1030,
+        "y": 430,
+        "width": 150,
+        "height": 60
+      }
+    },
+    "result-obj": {
+      "kind": "text",
+      "box": {
+        "x": 1210,
+        "y": 560,
+        "width": 330,
+        "height": 70
+      }
+    },
+    "summary-obj": {
+      "kind": "summary",
+      "box": {
+        "x": 58,
+        "y": 680,
+        "width": 1477,
+        "height": 100
+      }
+    }
+  },
+  "measurements": {
+    "header-obj": {
+      "lines": 1,
+      "width": 1477,
+      "height": 77
+    },
+    "anchor-label-obj": {
+      "lines": 1,
+      "width": 150,
+      "height": 90
+    },
+    "figure-obj:tag": {
+      "lines": 1,
+      "width": 700,
+      "height": 40
+    },
+    "figure-obj:note": {
+      "lines": 1,
+      "width": 700,
+      "height": 40
+    },
+    "badge-1-obj": {
+      "lines": 1,
+      "width": 128,
+      "height": 64
+    },
+    "badge-2-obj": {
+      "lines": 1,
+      "width": 128,
+      "height": 64
+    },
+    "result-obj": {
+      "lines": 2,
+      "width": 330,
+      "height": 70
+    },
+    "summary-obj:takeaway": {
+      "lines": 1,
+      "width": 540,
+      "height": 100
+    },
+    "summary-obj": {
+      "lines": 1,
+      "width": 857,
+      "height": 53.00004661981784
+    }
+  },
+  "pageErrors": []
+}

@@ -1,0 +1,192 @@
+{
+  "passed": true,
+  "diagnosticOnly": false,
+  "capacityIssues": [],
+  "sceneId": "token-05",
+  "durationMs": 14000,
+  "measuredObjects": 11,
+  "geometryObjects": 11,
+  "geometry": {
+    "subject-token-05": {
+      "box": {
+        "x": 1015,
+        "y": 156,
+        "width": 490,
+        "height": 490
+      },
+      "placement": {
+        "scale": 0.478515625,
+        "x": 0,
+        "y": 0,
+        "width": 490,
+        "height": 490,
+        "anchor": {
+          "x": 245,
+          "y": 249.78515625
+        }
+      },
+      "anchors": {
+        "focus": {
+          "x": 1260,
+          "y": 405.78515625
+        }
+      }
+    },
+    "annotation-token-05": {
+      "anchor": {
+        "x": 1260,
+        "y": 405.78515625
+      },
+      "endpoint": {
+        "x": 1438,
+        "y": 391
+      },
+      "radius": 24,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      }
+    },
+    "header-token-05": {
+      "kind": "header",
+      "box": {
+        "x": 58,
+        "y": 48,
+        "width": 1477,
+        "height": 77
+      }
+    },
+    "headline-token-05": {
+      "kind": "text",
+      "box": {
+        "x": 58,
+        "y": 161,
+        "width": 860,
+        "height": 48
+      }
+    },
+    "intro-token-05": {
+      "kind": "text",
+      "box": {
+        "x": 58,
+        "y": 220,
+        "width": 850,
+        "height": 52
+      }
+    },
+    "anchor-label-token-05": {
+      "kind": "text",
+      "box": {
+        "x": 1438,
+        "y": 349,
+        "width": 126,
+        "height": 84
+      }
+    },
+    "figure-token-05": {
+      "kind": "figure",
+      "box": {
+        "x": 954,
+        "y": 206,
+        "width": 581,
+        "height": 438
+      }
+    },
+    "card-1-token-05": {
+      "kind": "card",
+      "box": {
+        "x": 58,
+        "y": 294,
+        "width": 850,
+        "height": 102
+      }
+    },
+    "card-2-token-05": {
+      "kind": "card",
+      "box": {
+        "x": 58,
+        "y": 411,
+        "width": 850,
+        "height": 102
+      }
+    },
+    "card-3-token-05": {
+      "kind": "card",
+      "box": {
+        "x": 58,
+        "y": 528,
+        "width": 850,
+        "height": 102
+      }
+    },
+    "summary-token-05": {
+      "kind": "summary",
+      "box": {
+        "x": 58,
+        "y": 677,
+        "width": 1477,
+        "height": 91
+      }
+    }
+  },
+  "measurements": {
+    "header-token-05": {
+      "lines": 1,
+      "width": 1477,
+      "height": 77
+    },
+    "headline-token-05": {
+      "lines": 1,
+      "width": 860,
+      "height": 48
+    },
+    "intro-token-05": {
+      "lines": 1,
+      "width": 850,
+      "height": 52
+    },
+    "anchor-label-token-05": {
+      "lines": 1,
+      "width": 126,
+      "height": 84
+    },
+    "figure-token-05:tag": {
+      "lines": 1,
+      "width": 581,
+      "height": 40
+    },
+    "figure-token-05:note": {
+      "lines": 1,
+      "width": 581,
+      "height": 40
+    },
+    "card-1-token-05": {
+      "lines": 1,
+      "width": 850,
+      "height": 46
+    },
+    "card-2-token-05": {
+      "lines": 1,
+      "width": 850,
+      "height": 46
+    },
+    "card-3-token-05": {
+      "lines": 1,
+      "width": 850,
+      "height": 46
+    },
+    "summary-token-05:takeaway": {
+      "lines": 1,
+      "width": 540,
+      "height": 91
+    },
+    "summary-token-05": {
+      "lines": 1,
+      "width": 857,
+      "height": 52.99998527795226
+    }
+  },
+  "pageErrors": []
+}

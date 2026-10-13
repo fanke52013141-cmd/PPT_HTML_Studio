@@ -1,0 +1,192 @@
+{
+  "passed": true,
+  "diagnosticOnly": false,
+  "capacityIssues": [],
+  "sceneId": "token-01",
+  "durationMs": 14000,
+  "measuredObjects": 11,
+  "geometryObjects": 11,
+  "geometry": {
+    "subject-obj": {
+      "box": {
+        "x": 660,
+        "y": 16,
+        "width": 765,
+        "height": 765
+      },
+      "placement": {
+        "scale": 0.7470703125,
+        "x": 0,
+        "y": 0,
+        "width": 765,
+        "height": 765,
+        "anchor": {
+          "x": 382.5,
+          "y": 382.5
+        }
+      },
+      "anchors": {
+        "focus": {
+          "x": 1042.5,
+          "y": 398.5
+        }
+      }
+    },
+    "annotation-obj": {
+      "anchor": {
+        "x": 1042.5,
+        "y": 398.5
+      },
+      "endpoint": {
+        "x": 1438,
+        "y": 391
+      },
+      "radius": 24,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      }
+    },
+    "anchor-label-obj": {
+      "kind": "text",
+      "box": {
+        "x": 1438,
+        "y": 349,
+        "width": 126,
+        "height": 84
+      }
+    },
+    "card-1-obj": {
+      "kind": "card",
+      "box": {
+        "x": 62,
+        "y": 245,
+        "width": 676,
+        "height": 113
+      }
+    },
+    "card-2-obj": {
+      "kind": "card",
+      "box": {
+        "x": 62,
+        "y": 384,
+        "width": 676,
+        "height": 113
+      }
+    },
+    "card-3-obj": {
+      "kind": "card",
+      "box": {
+        "x": 62,
+        "y": 522,
+        "width": 676,
+        "height": 113
+      }
+    },
+    "figure-obj": {
+      "kind": "figure",
+      "box": {
+        "x": 949,
+        "y": 158,
+        "width": 581,
+        "height": 490
+      }
+    },
+    "header-obj": {
+      "kind": "header",
+      "box": {
+        "x": 62,
+        "y": 58,
+        "width": 1477,
+        "height": 77
+      }
+    },
+    "headline-obj": {
+      "kind": "text",
+      "box": {
+        "x": 58,
+        "y": 173,
+        "width": 860,
+        "height": 48
+      }
+    },
+    "intro-obj": {
+      "kind": "text",
+      "box": {
+        "x": 58,
+        "y": 129,
+        "width": 850,
+        "height": 52
+      }
+    },
+    "summary-obj": {
+      "kind": "summary",
+      "box": {
+        "x": 62,
+        "y": 688,
+        "width": 1475,
+        "height": 110
+      }
+    }
+  },
+  "measurements": {
+    "anchor-label-obj": {
+      "lines": 1,
+      "width": 126,
+      "height": 84
+    },
+    "card-1-obj": {
+      "lines": 1,
+      "width": 676,
+      "height": 57
+    },
+    "card-2-obj": {
+      "lines": 1,
+      "width": 676,
+      "height": 57
+    },
+    "card-3-obj": {
+      "lines": 1,
+      "width": 676,
+      "height": 57
+    },
+    "figure-obj:tag": {
+      "lines": 1,
+      "width": 581,
+      "height": 40
+    },
+    "figure-obj:note": {
+      "lines": 1,
+      "width": 581,
+      "height": 40
+    },
+    "header-obj": {
+      "lines": 1,
+      "width": 1477,
+      "height": 77
+    },
+    "headline-obj": {
+      "lines": 1,
+      "width": 860,
+      "height": 48
+    },
+    "intro-obj": {
+      "lines": 1,
+      "width": 850,
+      "height": 52
+    },
+    "summary-obj:takeaway": {
+      "lines": 1,
+      "width": 540,
+      "height": 110
+    },
+    "summary-obj": {
+      "lines": 1,
+      "width": 855,
+      "height": 43.9999681022299
+    }
+  },
+  "pageErrors": []
+}

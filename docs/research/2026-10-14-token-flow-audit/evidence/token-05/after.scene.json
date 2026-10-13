@@ -1,0 +1,240 @@
+{
+  "beats": [],
+  "durationMs": 14000,
+  "format": "hps.visual.scene",
+  "id": "token-05",
+  "layoutRef": {
+    "id": "science-explanation-v1",
+    "version": "0.2.0"
+  },
+  "motion": [
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "header-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "headline-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "intro-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "anchor-label-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "subject-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "figure-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "startMs": 7000,
+      "targetId": "figure-token-05",
+      "type": "emphasize"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 0,
+      "startMs": 0,
+      "targetId": "annotation-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "card-1-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 3500,
+      "targetId": "card-2-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 10500,
+      "targetId": "card-3-token-05",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "summary-token-05",
+      "type": "enter"
+    }
+  ],
+  "name": "Token 高效使用原则",
+  "nodes": [
+    {
+      "id": "header-token-05",
+      "number": "05",
+      "slot": "header",
+      "title": "Token 高效使用原则",
+      "type": "header"
+    },
+    {
+      "id": "headline-token-05",
+      "role": "headline",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "让每个 Token 承担清楚的任务"
+        }
+      ],
+      "slot": "headline",
+      "type": "text"
+    },
+    {
+      "id": "intro-token-05",
+      "role": "intro",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "聚焦必要信息，删除冗余，保障关键判断依据"
+        }
+      ],
+      "slot": "intro",
+      "type": "text"
+    },
+    {
+      "id": "anchor-label-token-05",
+      "role": "eyebrow",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "核心要点"
+        }
+      ],
+      "slot": "anchor-label",
+      "type": "text"
+    },
+    {
+      "anchorId": "focus",
+      "assetRef": {
+        "id": "project-a28a43e14c984f650ac6b19cb9599eb7",
+        "version": "0.1.0"
+      },
+      "id": "subject-token-05",
+      "slot": "subject",
+      "type": "image"
+    },
+    {
+      "id": "figure-token-05",
+      "note": {
+        "icon": "check",
+        "text": "关键信息优先"
+      },
+      "slot": "figure",
+      "tag": {
+        "icon": "lightbulb",
+        "text": "高效 Token 分配"
+      },
+      "type": "figure"
+    },
+    {
+      "anchorId": "focus",
+      "id": "annotation-token-05",
+      "labelId": "anchor-label-token-05",
+      "radius": 24,
+      "slot": "annotation",
+      "targetId": "subject-token-05",
+      "type": "annotation"
+    },
+    {
+      "body": "写清目标、必要背景与期望输出",
+      "icon": "lightbulb",
+      "id": "card-1-token-05",
+      "slot": "card-1",
+      "title": "明确任务边界",
+      "tone": "blue",
+      "type": "card"
+    },
+    {
+      "body": "删除重复内容，保留关键判断事实",
+      "icon": "eye",
+      "id": "card-2-token-05",
+      "slot": "card-2",
+      "title": "精简冗余信息",
+      "tone": "green",
+      "type": "card"
+    },
+    {
+      "body": "对比切分、效果、费用与完成时间",
+      "icon": "thermometer",
+      "id": "card-3-token-05",
+      "slot": "card-3",
+      "title": "综合评估选型",
+      "tone": "purple",
+      "type": "card"
+    },
+    {
+      "from": {
+        "text": "冗余",
+        "tone": "pink"
+      },
+      "heading": {
+        "icon": "check",
+        "text": "本页小结"
+      },
+      "id": "summary-token-05",
+      "slot": "summary",
+      "takeaway": "每一个 Token 都服务于核心任务与判断",
+      "term": "Token 价值",
+      "to": {
+        "text": "精准",
+        "tone": "green"
+      },
+      "type": "summary"
+    }
+  ],
+  "source": "课程内容；语义来源保存在分镜契约中。",
+  "templateRef": {
+    "id": "explanation-cards-v1",
+    "version": "0.1.0"
+  },
+  "themeRef": {
+    "id": "neutral-baseline",
+    "version": "0.2.0"
+  },
+  "version": "0.3.0"
+}

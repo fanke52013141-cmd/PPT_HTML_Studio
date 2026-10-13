@@ -1,0 +1,244 @@
+{
+  "beats": [],
+  "durationMs": 14000,
+  "format": "hps.visual.scene",
+  "id": "token-04",
+  "layoutRef": {
+    "id": "science-explanation-v1",
+    "version": "0.2.0"
+  },
+  "motion": [
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "anchor-label-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 0,
+      "startMs": 0,
+      "targetId": "annotation-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 3500,
+      "targetId": "card-1-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 7000,
+      "targetId": "card-2-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 10500,
+      "targetId": "card-3-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "figure-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "header-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "headline-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "intro-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "subject-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "summary-obj",
+      "type": "enter"
+    }
+  ],
+  "name": "上下文窗口的容量边界",
+  "nodes": [
+    {
+      "id": "anchor-label-obj",
+      "role": "eyebrow",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "Token 基础"
+        }
+      ],
+      "slot": "anchor-label",
+      "type": "text"
+    },
+    {
+      "anchorId": "focus",
+      "id": "annotation-obj",
+      "labelId": "anchor-label-obj",
+      "radius": 24,
+      "slot": "annotation",
+      "targetId": "subject-obj",
+      "type": "annotation"
+    },
+    {
+      "body": "提示、对话历史与参考资料共同占用窗口的输入空间。",
+      "icon": "eye",
+      "id": "card-1-obj",
+      "slot": "card-1",
+      "title": "输入占用",
+      "tone": "blue",
+      "type": "card"
+    },
+    {
+      "body": "需要为模型输出保留空间，部分模型还涉及推理 Token。",
+      "icon": "lightbulb",
+      "id": "card-2-obj",
+      "slot": "card-2",
+      "title": "输出预留",
+      "tone": "green",
+      "type": "card"
+    },
+    {
+      "body": "窗口与输出上限取决于模型，容量足够也不保证记住所有细节。",
+      "icon": "molecule",
+      "id": "card-3-obj",
+      "slot": "card-3",
+      "title": "模型差异",
+      "tone": "purple",
+      "type": "card"
+    },
+    {
+      "id": "figure-obj",
+      "note": {
+        "icon": "lightbulb",
+        "text": "容量有限"
+      },
+      "slot": "figure",
+      "tag": {
+        "icon": "eye",
+        "text": "上下文窗口"
+      },
+      "type": "figure"
+    },
+    {
+      "id": "header-obj",
+      "number": "04",
+      "slot": "header",
+      "title": "上下文窗口的容量边界",
+      "type": "header"
+    },
+    {
+      "id": "headline-obj",
+      "role": "headline",
+      "runs": [
+        {
+          "emphasis": true,
+          "text": "上下文窗口不是无限记忆"
+        }
+      ],
+      "slot": "headline",
+      "type": "text"
+    },
+    {
+      "id": "intro-obj",
+      "role": "intro",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "它限制一次请求可处理的 Token 总量，输入与输出共享有限空间。"
+        }
+      ],
+      "slot": "intro",
+      "type": "text"
+    },
+    {
+      "anchorId": "focus",
+      "assetRef": {
+        "id": "project-fbb67688bddb6d648037bb69819b596e",
+        "version": "0.1.0"
+      },
+      "id": "subject-obj",
+      "slot": "subject",
+      "type": "image"
+    },
+    {
+      "from": {
+        "text": "输入",
+        "tone": "blue"
+      },
+      "heading": {
+        "icon": "check",
+        "text": "核心结论"
+      },
+      "id": "summary-obj",
+      "presentation": {
+        "typography": {
+          "takeaway": {
+            "align": "left",
+            "fontSizePx": 24,
+            "lineHeight": 1.5,
+            "weight": 700
+          }
+        }
+      },
+      "slot": "summary",
+      "takeaway": "容量有限且因模型而异，不保证记住所有细节。",
+      "term": "上下文窗口",
+      "to": {
+        "text": "输出",
+        "tone": "green"
+      },
+      "type": "summary"
+    }
+  ],
+  "source": "课程内容；语义来源保存在分镜契约中。",
+  "templateRef": {
+    "id": "explanation-cards-v1",
+    "version": "0.1.0"
+  },
+  "themeRef": {
+    "id": "neutral-baseline",
+    "version": "0.2.0"
+  },
+  "version": "0.5.0"
+}

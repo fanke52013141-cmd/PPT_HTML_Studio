@@ -1,0 +1,240 @@
+{
+  "beats": [],
+  "durationMs": 14000,
+  "format": "hps.visual.scene",
+  "id": "token-03",
+  "layoutRef": {
+    "id": "science-explanation-v1",
+    "version": "0.2.0"
+  },
+  "motion": [
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "anchor-label-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 0,
+      "startMs": 0,
+      "targetId": "annotation-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "card-1-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 3500,
+      "targetId": "card-2-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 7000,
+      "targetId": "card-3-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "figure-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "header-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "headline-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "intro-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "subject-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12,
+      "startMs": 0,
+      "targetId": "summary-obj",
+      "type": "enter"
+    },
+    {
+      "durationMs": 500,
+      "startMs": 10500,
+      "targetId": "summary-obj",
+      "type": "emphasize"
+    }
+  ],
+  "name": "输入与输出 Token",
+  "nodes": [
+    {
+      "id": "anchor-label-obj",
+      "role": "eyebrow",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "Token 计费基础"
+        }
+      ],
+      "slot": "anchor-label",
+      "type": "text"
+    },
+    {
+      "anchorId": "focus",
+      "id": "annotation-obj",
+      "labelId": "anchor-label-obj",
+      "radius": 24,
+      "slot": "annotation",
+      "targetId": "subject-obj",
+      "type": "annotation"
+    },
+    {
+      "body": "你发给模型的提示与上下文，按实际用量统计。",
+      "icon": "arrow",
+      "id": "card-1-obj",
+      "slot": "card-1",
+      "title": "输入 Token",
+      "tone": "blue",
+      "type": "card"
+    },
+    {
+      "body": "模型生成回复所使用的单位，独立计量。",
+      "icon": "lightbulb",
+      "id": "card-2-obj",
+      "slot": "card-2",
+      "title": "输出 Token",
+      "tone": "green",
+      "type": "card"
+    },
+    {
+      "body": "输入输出单价不同，还可能涉及缓存或推理类别。",
+      "icon": "molecule",
+      "id": "card-3-obj",
+      "slot": "card-3",
+      "title": "计费规则",
+      "tone": "purple",
+      "type": "card"
+    },
+    {
+      "id": "figure-obj",
+      "note": {
+        "icon": "check",
+        "text": "分开统计用量"
+      },
+      "slot": "figure",
+      "tag": {
+        "icon": "eye",
+        "text": "双向文本流"
+      },
+      "type": "figure"
+    },
+    {
+      "id": "header-obj",
+      "number": "03",
+      "slot": "header",
+      "title": "输入与输出 Token",
+      "type": "header"
+    },
+    {
+      "id": "headline-obj",
+      "role": "headline",
+      "runs": [
+        {
+          "emphasis": true,
+          "text": "输入和输出，要分开看用量"
+        }
+      ],
+      "slot": "headline",
+      "type": "text"
+    },
+    {
+      "id": "intro-obj",
+      "role": "intro",
+      "runs": [
+        {
+          "emphasis": false,
+          "text": "Token 分为输入与输出两类，穿过模型处理核心时各自计量。"
+        }
+      ],
+      "slot": "intro",
+      "type": "text"
+    },
+    {
+      "anchorId": "focus",
+      "assetRef": {
+        "id": "project-53a627de2c195443848bf5c02640e775",
+        "version": "0.1.0"
+      },
+      "id": "subject-obj",
+      "slot": "subject",
+      "type": "image"
+    },
+    {
+      "from": {
+        "text": "输入",
+        "tone": "blue"
+      },
+      "heading": {
+        "icon": "thermometer",
+        "text": "计费要点"
+      },
+      "id": "summary-obj",
+      "slot": "summary",
+      "takeaway": "结合实际用量与价目表计费，不能只看字数。",
+      "term": "双向计量",
+      "to": {
+        "text": "输出",
+        "tone": "green"
+      },
+      "type": "summary"
+    }
+  ],
+  "source": "课程内容；语义来源保存在分镜契约中。",
+  "templateRef": {
+    "id": "explanation-cards-v1",
+    "version": "0.1.0"
+  },
+  "themeRef": {
+    "id": "neutral-baseline",
+    "version": "0.2.0"
+  },
+  "version": "0.3.0"
+}
