@@ -10,6 +10,7 @@ class RepairOperation(BaseModel):
     kind: Literal["set_presentation", "set_text_style", "set_motion", "set_binding"]
     part: str | None = None
     action: Literal["enter", "exit", "emphasize"] | None = None
+    actionId: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9.-]{0,63}$")
     values: dict[str, Any]
 
 

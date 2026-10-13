@@ -4,7 +4,7 @@ const { EngineError, diagnostic } = require("../src/registry.cjs");
 const { imagePlacement } = require("../src/timeline.cjs");
 const icons = require("./icons.cjs");
 
-const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"];
+const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0"];
 const SCENE_VERSION = "0.3.0";
 const DEFINITION_VERSION = "0.2.0";
 const EXTENDED_TEXT_ROLES = [
@@ -87,7 +87,7 @@ function normalizeTheme(theme) {
 function adaptScene(scene) {
   if (
     scene.version === SCENE_VERSION ||
-    ["0.4.0", "0.5.0"].includes(scene.version)
+    ["0.4.0", "0.5.0", "0.6.0"].includes(scene.version)
   )
     return { scene, adaptedFrom: null };
   if (scene.version !== "0.1.0" && scene.version !== "0.2.0")
@@ -138,7 +138,7 @@ function checkIcon(name, path) {
 function compile(input, catalog) {
   const { scene, adaptedFrom } = adaptScene(JSON.parse(JSON.stringify(input)));
   if (
-    !["0.4.0", "0.5.0"].includes(scene.version) &&
+    !["0.4.0", "0.5.0", "0.6.0"].includes(scene.version) &&
     Array.isArray(scene.nodes) &&
     scene.nodes.some((node) => node?.type === "shape")
   )
@@ -232,11 +232,44 @@ function compile(input, catalog) {
       fail("UNRESOLVED_ANCHOR", "/nodes", n.anchorId);
   }
   const byTarget = new Map();
+  const semantic = scene.version === "0.6.0";
+  const actionIds = new Set();
+  if (semantic) {
+    if (
+      Object.keys(scene.nodeStates).length !== ids.size ||
+      [...ids].some((id) => !scene.nodeStates[id])
+    )
+      fail(
+        "INVALID_NODE_STATE",
+        "/nodeStates",
+        "States must exactly cover nodes",
+      );
+    for (const [id, state] of Object.entries(scene.nodeStates))
+      if (state.role === "instructional" && state.initialVisible)
+        fail(
+          "INVALID_NODE_STATE",
+          "/nodeStates",
+          id + " instructional must start hidden",
+        );
+  }
   for (const action of scene.motion) {
+    if (semantic) {
+      if (actionIds.has(action.actionId))
+        fail("DUPLICATE_ACTION_ID", "/motion", action.actionId);
+      actionIds.add(action.actionId);
+      if (
+        action.type === "exit" ||
+        scene.nodeStates[action.targetId]?.role === "decorative"
+      )
+        fail("INVALID_SEMANTIC_ACTION", "/motion", action.actionId);
+    }
     if (!ids.has(action.targetId))
       fail("INVALID_MOTION_TARGET", "/motion", action.targetId);
     const list = byTarget.get(action.targetId) || [];
-    if (list.some((a) => a.type === action.type))
+    if (
+      list.some((a) => a.type === action.type) &&
+      (!semantic || action.type === "enter")
+    )
       fail(
         "ACTION_CHANNEL_CONFLICT",
         "/motion",
@@ -249,16 +282,20 @@ function compile(input, catalog) {
   }
   for (const [targetId, list] of byTarget) {
     const enter = list.find((a) => a.type === "enter");
-    if (!enter)
+    const initialVisible =
+      semantic && scene.nodeStates[targetId].initialVisible;
+    if (!enter && !initialVisible)
       fail("MISSING_MOTION", "/motion", `${targetId} requires an enter action`);
     const node = scene.nodes.find((n) => n.id === targetId);
-    if (node.type === "annotation" && (enter.offsetX || enter.offsetY))
+    if (initialVisible && enter)
+      fail("INVALID_NODE_STATE", "/motion", targetId + " already visible");
+    if (node.type === "annotation" && enter && (enter.offsetX || enter.offsetY))
       fail(
         "INVALID_RELATION",
         "/motion",
         "Annotation follows its target; no independent offset",
       );
-    const enterEnd = enter.startMs + enter.durationMs;
+    const enterEnd = enter ? enter.startMs + enter.durationMs : 0;
     const extras = list.filter((a) => a.type !== "enter");
     for (const extra of extras) {
       if (extra.startMs < enterEnd)
@@ -287,7 +324,7 @@ function compile(input, catalog) {
       [enter, sortedExtras[0]],
       ...sortedExtras.slice(0, -1).map((w, i) => [w, sortedExtras[i + 1]]),
     ]) {
-      if (b && b.startMs < a.startMs + a.durationMs)
+      if (a && b && b.startMs < a.startMs + a.durationMs)
         fail(
           "ACTION_WINDOW_OVERLAP",
           "/motion",
@@ -325,7 +362,7 @@ function compile(input, catalog) {
     const action = scene.motion.find((a) => a.targetId === target.id);
     for (const state of [
       { x: 0, y: 0 },
-      { x: action.offsetX, y: action.offsetY },
+      { x: action?.offsetX || 0, y: action?.offsetY || 0 },
     ]) {
       const x = b.x + placement.anchor.x + state.x,
         y = b.y + placement.anchor.y + state.y;
@@ -342,8 +379,45 @@ function compile(input, catalog) {
         );
     }
   }
-  if (byTarget.size !== ids.size)
+  if (!semantic && byTarget.size !== ids.size)
     fail("MISSING_MOTION", "/motion", "Every node requires an enter action");
+  if (semantic) {
+    const visibleAt = (id) => {
+      const enter = (byTarget.get(id) || []).find((a) => a.type === "enter");
+      return scene.nodeStates[id].initialVisible
+        ? 0
+        : enter
+          ? enter.startMs + enter.durationMs
+          : Infinity;
+    };
+    for (const id of ids)
+      if (
+        scene.nodeStates[id].role === "instructional" &&
+        !(byTarget.get(id) || []).some((a) => a.type === "enter")
+      )
+        fail(
+          "MISSING_MOTION",
+          "/motion",
+          id + " requires explicit narration enter",
+        );
+    for (const n of scene.nodes.filter((n) => n.type === "annotation")) {
+      const enter = (byTarget.get(n.id) || []).find((a) => a.type === "enter");
+      const ownStart = scene.nodeStates[n.id].initialVisible
+        ? 0
+        : enter
+          ? enter.startMs
+          : Infinity;
+      if (
+        Number.isFinite(ownStart) &&
+        (ownStart < visibleAt(n.targetId) || ownStart < visibleAt(n.labelId))
+      )
+        fail(
+          "ANNOTATION_LIFETIME",
+          "/motion",
+          n.id + " precedes target or label",
+        );
+    }
+  }
   let end = 0;
   for (const beat of scene.beats) {
     if (

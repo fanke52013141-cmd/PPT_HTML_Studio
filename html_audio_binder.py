@@ -173,6 +173,10 @@ def bind_scene_to_audio(
     - motion keeps its relative position: ``startMs`` scales to the audio
       duration; durations clamp so nothing outlives the narration
     """
+    if scene.get("version") == "0.6.0":
+        from html_semantic_motion import bind_semantic_audio
+
+        return bind_semantic_audio(scene, audio_timeline, binding)
     segments = _segments(audio_timeline)
     duration_ms = int(round(_audio_duration_sec(audio_timeline) * 1000))
     scene_duration_ms = scene.get("durationMs")
@@ -244,7 +248,7 @@ def bind_scene_to_audio(
 
 
 def binding_metadata(
-    scene: dict[str, Any], audio_timeline: dict[str, Any]
+    scene: dict[str, Any], audio_timeline: dict[str, Any], binding: dict | None = None
 ) -> dict[str, Any]:
     """Provenance record for the render/export manifest (not scene input)."""
     segments = audio_timeline.get("segments") or []
@@ -261,7 +265,8 @@ def binding_metadata(
         "source": "existing_audio",
         "audioDurationMs": int(round(float(duration) * 1000)) if duration else None,
         "beatCount": len(segments) if isinstance(segments, list) else 0,
-        "timeScale": round(scale, 6) if scale else None,
+        "timeScale": None if scene.get("version") == "0.6.0" else round(scale, 6) if scale else None,
+        **({"mode": "beat_action_ids", "bindingVersion": "0.2.0"} if scene.get("version") == "0.6.0" else {}),
     }
 
 

@@ -30,7 +30,7 @@
     if (s.undo.length > 50) s.undo.shift();
     s.redo = [];
     fn();
-    if (s.doc.scene.nodes.some((n) => n.presentation))
+    if (s.doc.scene.version !== "0.6.0" && s.doc.scene.nodes.some((n) => n.presentation))
       s.doc.scene.version = "0.5.0";
     s.dirty = true;
     s.impact.hidden = true;
@@ -356,7 +356,7 @@
     const list = s.doc.scene.motion.filter((a) => a.targetId === node.id);
     list.forEach((a) => {
       const section = el("fieldset", "");
-      section.append(el("legend", a.type));
+      section.append(el("legend", a.actionId ? `${a.type} · ${a.actionId}` : a.type));
       box.append(section);
       const spec = s.doc.capabilities.schema.$defs.motion.oneOf.find(
         (x) => x.properties.type.const === a.type,
@@ -366,12 +366,12 @@
       control(s, section, props, a, [a.type], (path, v) =>
         setPath(a, path.slice(1), v),
       );
-      const key = `${node.id}:${a.type}`,
+      const key = a.actionId || `${node.id}:${a.type}`,
         link = s.doc.binding?.actions[key];
       const label = el("label", "绑定句子"),
         select = el("select", "");
       select.dataset.beat = a.type;
-      select.append(el("option", "作者时间（未绑定）", { value: "" }));
+      if (s.doc.scene.version !== "0.6.0") select.append(el("option", "作者时间（未绑定）", { value: "" }));
       const beats = s.doc.beats || [];
       for (const b of beats) {
         const id = b.beat_id || b.id;
@@ -411,8 +411,8 @@
           {
             type: "object",
             properties: {
-              edge: { enum: ["start", "end"] },
-              offsetMs: { type: "integer", minimum: -120000, maximum: 120000 },
+              edge: { enum: s.doc.scene.version === "0.6.0" ? ["start"] : ["start", "end"] },
+              offsetMs: { type: "integer", minimum: s.doc.scene.version === "0.6.0" ? 0 : -120000, maximum: 120000 },
             },
           },
           link,

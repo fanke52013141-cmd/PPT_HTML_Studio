@@ -118,8 +118,8 @@ function themeStylesheet(theme) {
       background: editorialFlat
         ? `linear-gradient(115deg, ${c.pinkWash}, ${c.background})`
         : g.pink
-        ? `linear-gradient(105deg, ${c.paper}, ${c.background})`
-        : c.panel,
+          ? `linear-gradient(105deg, ${c.paper}, ${c.background})`
+          : c.panel,
       "box-shadow": editorialFlat ? "none" : shadow,
       overflow: "hidden",
     }),
@@ -158,8 +158,8 @@ function themeStylesheet(theme) {
       background: editorialFlat
         ? "transparent"
         : g.blue
-        ? `linear-gradient(150deg, ${g.blue[0]}, ${c.paper} 46%, ${g.purple[0]})`
-        : c.panel,
+          ? `linear-gradient(150deg, ${g.blue[0]}, ${c.paper} 46%, ${g.purple[0]})`
+          : c.panel,
       border: editorialFlat ? "none" : `1px solid ${c.line}`,
       "box-shadow": editorialFlat ? "none" : shadow,
       overflow: editorialFlat ? "visible" : "hidden",
@@ -199,7 +199,9 @@ function themeStylesheet(theme) {
       bottom: "16px",
       padding: "11px 14px",
       border: editorialFlat ? "none" : `1px solid ${c.line}`,
-      background: editorialFlat ? "rgb(255 255 255 / 0.78)" : "rgb(255 255 255 / 0.92)",
+      background: editorialFlat
+        ? "rgb(255 255 255 / 0.78)"
+        : "rgb(255 255 255 / 0.92)",
       "border-radius": editorialFlat ? "999px" : "12px",
       display: "flex",
       gap: "9px",
@@ -218,7 +220,9 @@ function themeStylesheet(theme) {
       padding: "10px 12px",
       "border-radius": editorialFlat ? "999px" : "12px",
       border: editorialFlat ? "none" : `1px solid ${c.line}`,
-      background: editorialFlat ? "rgb(255 255 255 / 0.85)" : "rgb(255 255 255 / 0.97)",
+      background: editorialFlat
+        ? "rgb(255 255 255 / 0.85)"
+        : "rgb(255 255 255 / 0.97)",
       "font-size": px(theme.text.caption.size),
       "line-height": String(theme.text.caption.lineHeight),
       color: c.body,
@@ -232,8 +236,8 @@ function themeStylesheet(theme) {
       background: editorialFlat
         ? `linear-gradient(105deg, ${c.pinkWash}, ${c.background})`
         : g.purple
-        ? `linear-gradient(105deg, ${c.paper}, ${g.purple[0]})`
-        : c.panel,
+          ? `linear-gradient(105deg, ${c.paper}, ${g.purple[0]})`
+          : c.panel,
       border: editorialFlat ? "none" : `1px solid ${c.line}`,
       "border-radius": "16px",
     }),
@@ -319,18 +323,29 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
     try {
       return fn(el, limit, id, stage);
     } catch (error) {
-      if (!diagnostic || error.code !== "CONTENT_CAPACITY_EXCEEDED") throw error;
+      if (!diagnostic || error.code !== "CONTENT_CAPACITY_EXCEEDED")
+        throw error;
       const style = getComputedStyle(el);
       const box = el.getBoundingClientRect();
       const scale = stage.getBoundingClientRect().width / 1600;
       const issue = {
-        code: error.code, target: id, message: error.message,
+        code: error.code,
+        target: id,
+        message: error.message,
         available: typeof limit === "number" ? { width: limit } : limit,
-        measured: { width: box.width / scale, height: box.height / scale,
-          scrollWidth: el.scrollWidth, scrollHeight: el.scrollHeight,
-          clientWidth: el.clientWidth, clientHeight: el.clientHeight },
-        typography: { fontSizePx: parseFloat(style.fontSize),
-          lineHeight: style.lineHeight, weight: style.fontWeight },
+        measured: {
+          width: box.width / scale,
+          height: box.height / scale,
+          scrollWidth: el.scrollWidth,
+          scrollHeight: el.scrollHeight,
+          clientWidth: el.clientWidth,
+          clientHeight: el.clientHeight,
+        },
+        typography: {
+          fontSizePx: parseFloat(style.fontSize),
+          lineHeight: style.lineHeight,
+          weight: style.fontWeight,
+        },
       };
       capacityIssues.push(issue);
       return { ...issue.measured, failed: true };
@@ -444,11 +459,12 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         el.classList.add("v-card");
         const bubble = document.createElement("span");
         bubble.className = "v-icon-bubble";
-        bubble.style.background = theme.id === "neutral-baseline"
-          ? `linear-gradient(135deg, ${theme.colors.blueWash}, ${theme.colors.pinkWash})`
-          : theme.gradients[node.tone]
-          ? `linear-gradient(135deg, ${theme.gradients[node.tone][0]}, ${theme.gradients[node.tone][1]})`
-          : theme.colors[node.tone];
+        bubble.style.background =
+          theme.id === "neutral-baseline"
+            ? `linear-gradient(135deg, ${theme.colors.blueWash}, ${theme.colors.pinkWash})`
+            : theme.gradients[node.tone]
+              ? `linear-gradient(135deg, ${theme.gradients[node.tone][0]}, ${theme.gradients[node.tone][1]})`
+              : theme.colors[node.tone];
         bubble.append(icon(node.icon, { width: theme.shapes.iconStroke }));
         const copy = document.createElement("div");
         copy.className = "v-card-copy";
@@ -654,7 +670,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
     };
     resize();
     textNodes.forEach(
-      ([el, slot, id]) => (measurements[id] = checkedMeasure(measure, el, slot, id)),
+      ([el, slot, id]) =>
+        (measurements[id] = checkedMeasure(measure, el, slot, id)),
     );
     overflowChecks.forEach(
       ([el, width, id]) =>
@@ -688,7 +705,11 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
       for (const node of scene.nodes) {
         const actions = motionsByTarget.get(node.id) || [];
         const enter = actions.find((a) => a.type === "enter");
-        const p = ease("smoothstep", (ms - enter.startMs) / enter.durationMs);
+        const p = enter
+          ? ease("smoothstep", (ms - enter.startMs) / enter.durationMs)
+          : scene.nodeStates?.[node.id]?.initialVisible
+            ? 1
+            : 0;
         let opacity = p,
           lift = 0;
         for (const extra of actions) {
@@ -705,13 +726,13 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
               "smoothstep",
               (ms - (extra.startMs + half)) / half,
             );
-            lift = -8 * rise * (1 - fall);
+            lift += -8 * rise * (1 - fall);
           }
         }
         const state = {
           opacity,
-          x: reduced ? 0 : enter.offsetX * (1 - p),
-          y: reduced ? 0 : enter.offsetY * (1 - p) + lift,
+          x: reduced ? 0 : (enter?.offsetX || 0) * (1 - p),
+          y: reduced ? 0 : (enter?.offsetY || 0) * (1 - p) + lift,
           lift,
         };
         states.set(node.id, state);
@@ -759,10 +780,14 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         const annotationEnter = (motionsByTarget.get(node.id) || []).find(
           (a) => a.type === "enter",
         );
-        const progress = ease(
-          "smoothstep",
-          (ms - annotationEnter.startMs) / annotationEnter.durationMs,
-        );
+        const progress = annotationEnter
+          ? ease(
+              "smoothstep",
+              (ms - annotationEnter.startMs) / annotationEnter.durationMs,
+            )
+          : scene.nodeStates?.[node.id]?.initialVisible
+            ? 1
+            : 0;
         attributes(leader, {
           d: `M ${anchor.x - origin.x + towards * node.radius} ${anchor.y - origin.y} L ${endpoint.x - origin.x - towards * 14} ${endpoint.y - origin.y}`,
           "stroke-dashoffset": String(1 - progress),
@@ -771,6 +796,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           Math.min(
             states.get(node.id).opacity,
             states.get(node.targetId).opacity,
+            ...(scene.version === "0.6.0" ? [states.get(node.labelId).opacity] : []),
           ),
         );
         geometry[node.id] = { anchor, endpoint, radius: node.radius };
@@ -806,7 +832,13 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           (ms < b.endMs || (ms === scene.durationMs && b.endMs === ms)),
       );
       subtitleText.textContent = beat?.text || "";
-      return { timeMs: ms, geometry, measurements, capacityIssues, subtitleFont: subtitleSize };
+      return {
+        timeMs: ms,
+        geometry,
+        measurements,
+        capacityIssues,
+        subtitleFont: subtitleSize,
+      };
     }
     const observer = new ResizeObserver(resize);
     observer.observe(host);

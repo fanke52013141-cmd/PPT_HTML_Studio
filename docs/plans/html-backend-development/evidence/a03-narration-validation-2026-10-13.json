@@ -1,0 +1,468 @@
+{
+  "format": "hps.a03.validation",
+  "date": "2026-10-13",
+  "parent_commit": "911326c8ae0a7159ada612271e5c88ae62b52358",
+  "statuses": {
+    "engineering": "passed",
+    "semantic": "not_run",
+    "audio_human_review": "pending_review",
+    "human_course_acceptance": "pending_review",
+    "image_to_html_reconstruction": "not_run_in_a03",
+    "autonomous_course_orchestration": "A05_pending",
+    "formal_export": "not_run",
+    "digital_human": "not_run"
+  },
+  "scope": "Engineering fixture screenshots directly rendered from HTML; not AI-generated images or reconstructed course pages. Real audio reused read-only. No provider calls, approval writes, push or deployment.",
+  "checks": [
+    {
+      "command": ".venv/Scripts/python.exe -m pytest checks/test_html_semantic_motion.py checks/test_html_audio_binder.py checks/test_html_scene_editing.py checks/test_html_scene_repair.py checks/test_html_narration_semantics.py checks/test_html_object_decomposition.py checks/test_html_semantic_plan_transports.py checks/test_html_production_integration.py checks/test_html_formal_export.py checks/test_html_render_runner.py checks/agent/ -q",
+      "passed": 554,
+      "exit_code": 0,
+      "warnings": 1
+    },
+    {
+      "command": ".venv/Scripts/python.exe -m pytest checks/test_html_semantic_motion.py -q",
+      "passed": 16,
+      "exit_code": 0,
+      "note": "Includes two subsequent runner/repair identity regressions; one initial test-only locale decoding error fixed with explicit UTF-8."
+    },
+    {
+      "command": "node visual/build.cjs",
+      "exit_code": 0
+    },
+    {
+      "command": "node --max-old-space-size=4096 visual/tests/verify.cjs",
+      "passed": 14,
+      "scenes": 5,
+      "page_errors": 0,
+      "exit_code": 0,
+      "note": "Default final invocation hit Array buffer allocation failed; explicit heap limit solo rerun passed without changed assertions."
+    },
+    {
+      "command": "ruff check changed Python and agent_contract",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/generate_agent_contracts.py --check",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/check_source_registration_contract.py",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/check_python_startup_hooks.py",
+      "exit_code": 0
+    },
+    {
+      "command": "node --check static/html_scene_editor.js",
+      "exit_code": 0
+    }
+  ],
+  "known_limitations": [
+    "V01 server.py1162>1100 remains; no full-repository green claim",
+    "Real 20-beat binding coverage uses engineering fixtures; does not prove course meaning or image reconstruction",
+    "Prior temporal review timeout passed solo and comprehensive regression"
+  ],
+  "real_audio": [
+    {
+      "slide_id": "token-01",
+      "file_sha256": "b6f1b7bdd4e22de48ea2f6fcd9370bf2170f45dbca5f99ffc92698e395c5bf84",
+      "duration_sec": 14.0365,
+      "timeline_sec": 14.037,
+      "full_decode_exit_code": 0,
+      "tts_calls": 0
+    },
+    {
+      "slide_id": "token-02",
+      "file_sha256": "05c6901759540cebb0c83f9364eca47380e50ac8bd34d8afdc43701496b47862",
+      "duration_sec": 16.295958,
+      "timeline_sec": 16.296,
+      "full_decode_exit_code": 0,
+      "tts_calls": 0
+    },
+    {
+      "slide_id": "token-03",
+      "file_sha256": "066c3a6364a4ce3a679c28d3030e7c36c7f27fbf315e83111e8522323290732f",
+      "duration_sec": 14.960792,
+      "timeline_sec": 14.961,
+      "full_decode_exit_code": 0,
+      "tts_calls": 0
+    },
+    {
+      "slide_id": "token-04",
+      "file_sha256": "38616ea4418eca28d0e11881379547878a02c1bc1e5178a9f13aa29b5116a177",
+      "duration_sec": 15.843167,
+      "timeline_sec": 15.843,
+      "full_decode_exit_code": 0,
+      "tts_calls": 0
+    },
+    {
+      "slide_id": "token-05",
+      "file_sha256": "533395a7123d5cb7c67a1e57066d15e74c782eff7dd5dc80a458fcd2298a8049",
+      "duration_sec": 14.461542,
+      "timeline_sec": 14.462,
+      "full_decode_exit_code": 0,
+      "tts_calls": 0
+    }
+  ],
+  "browser_frames": {
+    "initialContextVisible": true,
+    "instructionHiddenBeforeSpeech": true,
+    "seekRepeatEqual": true,
+    "frames": [
+      {
+        "timeMs": 0,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-0.png",
+        "sha256": "710313a40b356ec17c047555671f0ca7868d5252e01a8e3b95cdc266b089ea78",
+        "file_sha256": "710313a40b356ec17c047555671f0ca7868d5252e01a8e3b95cdc266b089ea78"
+      },
+      {
+        "timeMs": 1344,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-1.png",
+        "sha256": "f32d15a33fc18072f902255b10d2af54fea7386baa8a7a87b6f8693034d4d37c",
+        "file_sha256": "f32d15a33fc18072f902255b10d2af54fea7386baa8a7a87b6f8693034d4d37c"
+      },
+      {
+        "timeMs": 2687,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-2.png",
+        "sha256": "aebc1b2d50758f2df35f2b5487867d21e1dfe352f1d7a28cfd9dd92b7168fa61",
+        "file_sha256": "aebc1b2d50758f2df35f2b5487867d21e1dfe352f1d7a28cfd9dd92b7168fa61"
+      },
+      {
+        "timeMs": 2687,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-3.png",
+        "sha256": "aebc1b2d50758f2df35f2b5487867d21e1dfe352f1d7a28cfd9dd92b7168fa61",
+        "file_sha256": "aebc1b2d50758f2df35f2b5487867d21e1dfe352f1d7a28cfd9dd92b7168fa61"
+      },
+      {
+        "timeMs": 4450,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-4.png",
+        "sha256": "17f7acfdb97e348acb1d68ef75ad9bf7cf8b04ba1bd5fa6eb372d47b3b3c1501",
+        "file_sha256": "17f7acfdb97e348acb1d68ef75ad9bf7cf8b04ba1bd5fa6eb372d47b3b3c1501"
+      },
+      {
+        "timeMs": 6213,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-5.png",
+        "sha256": "9380cbafb6f9fb017a3a10f2fbdee414d73b758cdf6558236b04c7d2abc41e93",
+        "file_sha256": "9380cbafb6f9fb017a3a10f2fbdee414d73b758cdf6558236b04c7d2abc41e93"
+      },
+      {
+        "timeMs": 6213,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 0,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-6.png",
+        "sha256": "9380cbafb6f9fb017a3a10f2fbdee414d73b758cdf6558236b04c7d2abc41e93",
+        "file_sha256": "9380cbafb6f9fb017a3a10f2fbdee414d73b758cdf6558236b04c7d2abc41e93"
+      },
+      {
+        "timeMs": 7992,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-7.png",
+        "sha256": "e40f2908110e4406873837651b990cec3efd0ec416777b60957fff5f149b44c3",
+        "file_sha256": "e40f2908110e4406873837651b990cec3efd0ec416777b60957fff5f149b44c3"
+      },
+      {
+        "timeMs": 9771,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-8.png",
+        "sha256": "8a590087161310a6240d1cc3d4ba8e3d1844bf2709491af545ea38b9c90daa70",
+        "file_sha256": "8a590087161310a6240d1cc3d4ba8e3d1844bf2709491af545ea38b9c90daa70"
+      },
+      {
+        "timeMs": 9771,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-9.png",
+        "sha256": "8a590087161310a6240d1cc3d4ba8e3d1844bf2709491af545ea38b9c90daa70",
+        "file_sha256": "8a590087161310a6240d1cc3d4ba8e3d1844bf2709491af545ea38b9c90daa70"
+      },
+      {
+        "timeMs": 12067,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-10.png",
+        "sha256": "8a590087161310a6240d1cc3d4ba8e3d1844bf2709491af545ea38b9c90daa70",
+        "file_sha256": "8a590087161310a6240d1cc3d4ba8e3d1844bf2709491af545ea38b9c90daa70"
+      },
+      {
+        "timeMs": 14362,
+        "state": {
+          "header": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-1": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-2": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "stat-3": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          },
+          "summary": {
+            "opacity": 1,
+            "transform": "translate3d(0px, 0px, 0px)"
+          }
+        },
+        "file": "beat-frame-11.png",
+        "sha256": "a38f4d026a73cd23f92306cf0ce70e0a0cce31f135dbfbee029462cb46d13c06",
+        "file_sha256": "a38f4d026a73cd23f92306cf0ce70e0a0cce31f135dbfbee029462cb46d13c06"
+      }
+    ]
+  },
+  "source_sha256": {
+    "html_semantic_motion.py": "f73bcdc09a3e819332b726110860eb2e186d9cd1a9a2ffa0baef35d4c85d8fcd",
+    "html_audio_binder.py": "41f6abc1388fdd8b5da7ffd923e20e956efde68a5d067a0cb694eb3e20a56b79",
+    "html_production_service.py": "f23a61fe50734050d75021f0dc474c3d06616871e4d643e327e5bb1d15d25cd3",
+    "html_scene_editing.py": "9e029a15d31d287bc29e9ba7b64eca874515f54e4a5a15e1768ba302a127ecc4",
+    "html_scene_repair.py": "4b1aa48c9dfe75541e33d7c533722a7ea98726b26e4ad0a51be1d307284cc5e3",
+    "html_render_runner.py": "a1fb1511d10e9d6a42e30fced32b1ad6a2d206fba7c85fb2f53e41ae9ae5ecb1",
+    "html_repair_models.py": "cc256ab231b9a921cd32b263bf60e323315951f53bdb3c17597e4202ec2099b8",
+    "html_input_manifest.py": "e3b31459b8f5234a5390fcef274f0e87d4207432466ebb5d9e61358e42558536",
+    "html_engine/visual/schema.json": "76555de0e40087b324e05c0844f31fc7cc4fc19d8373c5e42f4866c98879b825",
+    "html_engine/visual/compiler.cjs": "2c03bd4a0d566c3536d9ebf8ec64ef7f5bd7040174ea139372214c0611e77444",
+    "html_engine/visual/renderer.cjs": "2ab97ccc4118083d67b03b3b3fa0f07d7e2be86e5c30f735ed71ebda380e479c",
+    "html_engine/visual/preview/player.js": "adac85a2feed40ee50db31886e81ecc0d0764c022e42fd38bc78206402f41172",
+    "checks/test_html_semantic_motion.py": "dfe0d1bccfd38c77e087964c0f4835f98058833c212f28285912c763c51041e3",
+    "checks/fixtures/a03-real-s08-timings.json": "6373ebca4a2631bcd11790628e47e93e001b327a37a2a38ced1354ef6d92ba1b"
+  }
+}

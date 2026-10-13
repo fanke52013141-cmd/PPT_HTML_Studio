@@ -153,7 +153,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_model_binding_service.save_project_model_binding",
     ),
     AgentCapability(
-        id="html_repair.preview", version="1.1", status=CapabilityStatus.stable,
+        id="html_repair.preview", version="1.2", status=CapabilityStatus.stable,
         description="Bounded HTML local repair preview; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.",
         request_model=RepairRequest, response_model=RepairResult,
         agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview",
@@ -161,7 +161,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_scene_repair.preview_repair",
     ),
     AgentCapability(
-        id="html_repair.save", version="1.1", status=CapabilityStatus.stable,
+        id="html_repair.save", version="1.2", status=CapabilityStatus.stable,
         description="Bounded HTML local repair save; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.",
         request_model=RepairSaveRequest, response_model=RepairResult,
         agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save",
@@ -346,7 +346,7 @@ CAPABILITIES: list[AgentCapability] = [
         id="html_review.plan_generate",
         version="1.2",
         status=CapabilityStatus.stable,
-        description="Generate a versioned scene plan: 0.3.0 adds object decomposition, subject budget, resource anchors and narration design states; 0.2.0 preserves A01. Legacy 0.1.0 default remains. Structural validation is not semantic approval; production integration awaits A03.",
+        description="Generate a versioned scene plan: 0.3.0 adds object decomposition, subject budget, resource anchors and narration design states and supports semantic action compilation with real-audio binding; 0.2.0 preserves A01. Legacy 0.1.0 default remains. Structural validation is not semantic approval; autonomous course orchestration awaits A05.",
         request_model=HtmlPlanGenerationRequest,
         response_model=HtmlPlanGenerationResult,
         agent_api_method="POST",

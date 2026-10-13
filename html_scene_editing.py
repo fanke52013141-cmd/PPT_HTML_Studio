@@ -120,6 +120,18 @@ def load_editor(run, slide):
 
 
 def _validate_binding(binding, scene, beats):
+    if scene.get("version") == "0.6.0":
+        from html_semantic_motion import validate_semantic_binding
+        from html_audio_binder import AudioBindingError
+
+        try:
+            validate_semantic_binding(scene, binding, {b.get("beat_id") or b.get("id") for b in beats})
+            authoritative = {b.get("beat_id") or b.get("id"): b.get("spoken_text") for b in beats}
+            if any(authoritative[b["id"]] != b["spoken_text"] for b in binding["narration"]):
+                raise AudioBindingError("AUDIO_NARRATION_CHANGED", "绑定原句与当前讲稿不同")
+        except AudioBindingError as exc:
+            raise SceneEditError(exc.code, str(exc)) from exc
+        return
     if binding is None:
         return
     if set(binding) != {"format", "version", "mode", "actions"} or (
@@ -317,7 +329,7 @@ def merge_manual_edits(candidate, binding, manual):
     base, edited = manual["base_scene"], manual["scene"]
     for collection, identity in (
         ("nodes", lambda n: n["id"]),
-        ("motion", lambda a: f"{a['targetId']}:{a['type']}"),
+        ("motion", lambda a: a.get("actionId") or f"{a['targetId']}:{a['type']}"),
     ):
         before = {identity(n): n for n in base[collection]}
         after = {identity(n): n for n in edited[collection]}
@@ -368,7 +380,7 @@ def protected_edit_paths(before, after, prefix):
     """Stable object/action IDs, so protection never depends on array order."""
     def named(value):
         if isinstance(value, list) and value and all(isinstance(n, dict) and ("id" in n or "targetId" in n) for n in value):
-            return {n.get("id") or f"{n['targetId']}:{n['type']}": named(n) for n in value}
+            return {n.get("id") or n.get("actionId") or f"{n['targetId']}:{n['type']}": named(n) for n in value}
         if isinstance(value, dict):
             return {k: named(v) for k, v in value.items()}
         return value

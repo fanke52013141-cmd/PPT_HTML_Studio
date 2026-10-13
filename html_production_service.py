@@ -70,7 +70,7 @@ def compile_plan(
     relation_resolutions: list[dict] | None = None,
 ) -> tuple[dict, dict]:
     """Content fills registered slots; IDs and time are resolved by code."""
-    if plan.get("version", "0.1.0") != "0.1.0":
+    if plan.get("version", "0.1.0") not in ("0.1.0", "0.3.0"):
         raise HtmlReviewError(
             "语义规划尚需对应版本的动作编译接入，不得按旧单目标模式执行",
             code="SEMANTIC_COMPILER_PENDING",
@@ -109,7 +109,7 @@ def compile_plan(
                 ),
                 None,
             )
-            if need:
+            if need and plan.get("version") != "0.3.0":
                 node["assetRef"] = {"id": need["id"], "version": "0.1.0"}
             node.setdefault("anchorId", "focus")
         nodes.append(node)
@@ -164,6 +164,10 @@ def compile_plan(
             annotation["targetId"] = target["id"]
             annotation["labelId"] = label["id"]
 
+    if plan.get("version") == "0.3.0":
+        from html_semantic_motion import compile_semantic_motion
+
+        return compile_semantic_motion(plan, contract, nodes)
     duration = max(12000, len(plan["beats"]) * 3500)
     if duration > 120000:
         raise HtmlReviewError("语块过多，请拆页")

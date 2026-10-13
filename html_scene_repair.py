@@ -91,6 +91,8 @@ def candidate_from_document(run, slide, request, doc):
         if not values or set(values) - set(KINDS[op.kind]):
             raise editor.SceneEditError("REPAIR_FIELDS", "操作字段为空或未注册")
         if op.kind in ("set_presentation", "set_text_style"):
+            if op.actionId is not None:
+                raise editor.SceneEditError("REPAIR_FIELDS", "基础覆盖不接受actionId")
             if node["type"] == "annotation":
                 raise editor.SceneEditError("REPAIR_FIELDS", "圈注空间不能单独覆盖")
             if op.action is not None:
@@ -108,28 +110,27 @@ def candidate_from_document(run, slide, request, doc):
                 if op.part is not None:
                     raise editor.SceneEditError("REPAIR_FIELDS", "布局操作不接受part")
                 p.update(values)
-            scene["version"] = "0.5.0"
+            if scene["version"] != "0.6.0":
+                scene["version"] = "0.5.0"
         else:
             if op.part is not None or op.action is None:
                 raise editor.SceneEditError(
                     "REPAIR_FIELDS", "动态操作需action且不能有part"
                 )
-            action = next(
-                (
-                    a
-                    for a in scene["motion"]
-                    if a["targetId"] == op.targetId and a["type"] == op.action
-                ),
-                None,
-            )
+            candidates = [a for a in scene["motion"] if a["targetId"] == op.targetId and a["type"] == op.action
+                          and (op.actionId is None or a.get("actionId") == op.actionId)]
+            if len(candidates) > 1:
+                raise editor.SceneEditError("REPAIR_ACTION_AMBIGUOUS", "重复动作必须指定actionId")
+            action = candidates[0] if candidates else None
             if not action:
                 raise editor.SceneEditError("REPAIR_ACTION_GONE", "不存在该动作通道")
+            action_key = action.get("actionId") or f"{op.targetId}:{op.action}"
             if op.kind == "set_motion":
                 if op.action != "enter" and set(values) & {"offsetX", "offsetY"}:
                     raise editor.SceneEditError("REPAIR_FIELDS", "位移只支持enter")
                 if (
                     doc["binding"]
-                    and f"{op.targetId}:{op.action}" in doc["binding"]["actions"]
+                    and action_key in doc["binding"]["actions"]
                     and "startMs" in values
                 ):
                     raise editor.SceneEditError(
@@ -143,7 +144,7 @@ def candidate_from_document(run, slide, request, doc):
                     "mode": "beat_ids",
                     "actions": {},
                 }
-                key = f"{op.targetId}:{op.action}"
+                key = action_key
                 if key not in binding["actions"] and set(values) != {
                     "beatId",
                     "edge",
@@ -313,6 +314,13 @@ def build_repair_prompts(doc, instruction, scope, report):
         "时间毫秒，不能超过scene.durationMs。最多20操作。"
         "测量是有限采样；实际截图按输入image_context时间顺序附入。截图帮助识别问题，对象ID与原文以结构化数据为准；不自行宣布审美批准。"
     )
+    if doc["scene"].get("version") == "0.6.0":
+        system = system.replace("html-repair-0.3.0", "html-repair-0.4.0")
+        system += (
+            "新语义场景动态修改必须提供已有actionId，同时保持targetId和action匹配。"
+            "重复强调不能靠object:type选择第一项。绑定edge只允许start，offsetMs为非负且不能越过所属语块。"
+            "不得删除actionId、旁白原句/散列或节点初始状态，不退回旧版本。"
+        )
     user = {
         "instruction": instruction,
         "scope": scope,
@@ -351,7 +359,7 @@ def build_repair_prompts(doc, instruction, scope, report):
     return {
         "system_prompt": system,
         "user_prompt": json.dumps(user, ensure_ascii=False),
-        "schema_hint": "{status,operations:[{targetId,kind,part?,action?,values}]} or {status,message}",
+        "schema_hint": "{status,operations:[{targetId,kind,part?,action?,actionId?,values}]} or {status,message}",
     }
 
 

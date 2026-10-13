@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.23.0
-- **Contract Hash**: `fec1bb078a2f6257`
+- **Agent API Version**: 1.24.0
+- **Contract Hash**: `4d3134b7204ed252`
 - **Total Capabilities**: 60
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -20,8 +20,8 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_sheet.retry` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/retry` | `ppt_html_sheet_retry` | Yes | `html sheet-retry` | `html_asset_sheet_routes.sheet_retry` | Yes | No |
 | `project_model_binding.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
 | `project_model_binding.write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
-| `html_repair.preview` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
-| `html_repair.save` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
+| `html_repair.preview` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
+| `html_repair.save` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
 | `html_repair.evidence` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
 | `html_repair.generate` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_scene_repair.generate_repair` | No | No |
 | `html_editor.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
@@ -116,7 +116,7 @@ The MCP server exposes **55** stable tools:
 - `ppt_html_visual_status` — Read shared Web/Agent HTML workflow stages, current visual approval readiness, and PPTX/video-specific gates.
 - `ppt_html_scene_read` — Read one slide's stored html scene document with its revision and content hash.
 - `ppt_html_scene_write` — Write one slide's html scene document with expected-revision optimistic concurrency (409 on conflict); html-backend projects only.
-- `ppt_html_plan_generate` — Generate a versioned scene plan: 0.3.0 adds object decomposition, subject budget, resource anchors and narration design states; 0.2.0 preserves A01. Legacy 0.1.0 default remains. Structural validation is not semantic approval; production integration awaits A03.
+- `ppt_html_plan_generate` — Generate a versioned scene plan: 0.3.0 adds object decomposition, subject budget, resource anchors and narration design states and supports semantic action compilation with real-audio binding; 0.2.0 preserves A01. Legacy 0.1.0 default remains. Structural validation is not semantic approval; autonomous course orchestration awaits A05.
 - `ppt_html_review` — Compile, measure, and screenshot one html scene through the shared bundle; returns object-level diagnostics.
 - `ppt_html_approve` — Approve one html scene; the record binds scene/theme/template/layout/asset/runtime hashes and fails on any static-review error.
 - `ppt_html_approval_status` — Read the current approval validity and invalidation reason for one slide.

@@ -105,7 +105,7 @@ class HtmlRenderRunner:
         )
         # Binding provenance is a derived-artifact record, never scene input.
         (work_dir / f"binding-{slide_id}.json").write_text(
-            json.dumps(binding_metadata(scene, timeline), ensure_ascii=False, indent=2),
+            json.dumps(binding_metadata(scene, timeline, binding), ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         return path

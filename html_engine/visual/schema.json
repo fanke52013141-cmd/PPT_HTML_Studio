@@ -179,6 +179,57 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "version": {
+                "const": "0.6.0"
+              }
+            },
+            "required": ["version"]
+          },
+          "then": {
+            "required": ["nodeStates"],
+            "properties": {
+              "motion": {
+                "type": "array",
+                "minItems": 0,
+                "maxItems": 256,
+                "items": {
+                  "$ref": "#/$defs/semanticMotion"
+                }
+              },
+              "nodeStates": {}
+            }
+          },
+          "else": {
+            "properties": {
+              "nodeStates": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "version": {
+                "enum": ["0.3.0", "0.4.0", "0.5.0"]
+              }
+            },
+            "required": ["version"]
+          },
+          "then": {
+            "properties": {
+              "motion": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 40,
+                "items": {
+                  "$ref": "#/$defs/motion"
+                }
+              }
+            }
+          }
         }
       ],
       "required": [
@@ -199,7 +250,7 @@
           "const": "hps.visual.scene"
         },
         "version": {
-          "enum": ["0.3.0", "0.4.0", "0.5.0"]
+          "enum": ["0.3.0", "0.4.0", "0.5.0", "0.6.0"]
         },
         "id": {
           "$ref": "#/$defs/id"
@@ -233,10 +284,17 @@
         },
         "motion": {
           "type": "array",
-          "minItems": 1,
-          "maxItems": 40,
+          "minItems": 0,
+          "maxItems": 256,
           "items": {
-            "$ref": "#/$defs/motion"
+            "anyOf": [
+              {
+                "$ref": "#/$defs/motion"
+              },
+              {
+                "$ref": "#/$defs/semanticMotion"
+              }
+            ]
           }
         },
         "beats": {
@@ -251,6 +309,27 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 500
+        },
+        "nodeStates": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 40,
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "initialVisible"],
+            "properties": {
+              "role": {
+                "enum": ["instructional", "context", "decorative"]
+              },
+              "initialVisible": {
+                "type": "boolean"
+              }
+            }
+          }
         }
       }
     },
@@ -1398,6 +1477,106 @@
         "offsetX": 0,
         "offsetY": 0
       }
+    },
+    "semanticMotion": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetId",
+            "type",
+            "startMs",
+            "durationMs",
+            "offsetX",
+            "offsetY",
+            "actionId"
+          ],
+          "properties": {
+            "targetId": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "enter"
+            },
+            "startMs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 120000
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "offsetX": {
+              "type": "number",
+              "minimum": -100,
+              "maximum": 100
+            },
+            "offsetY": {
+              "type": "number",
+              "minimum": -100,
+              "maximum": 100
+            },
+            "actionId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["targetId", "type", "startMs", "durationMs", "actionId"],
+          "properties": {
+            "targetId": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "exit"
+            },
+            "startMs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 120000
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "actionId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["targetId", "type", "startMs", "durationMs", "actionId"],
+          "properties": {
+            "targetId": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "emphasize"
+            },
+            "startMs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 120000
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "actionId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
     }
   }
 }
