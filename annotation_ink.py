@@ -66,7 +66,6 @@ def _polyline_arc_lengths(points: Sequence[Tuple[float, float]]) -> List[float]:
 def _time_to_arc(stroke: Dict[str, Any], t: float) -> float:
     """时间进度(0–1)→ 弧长进度;speed_profile 与前端同一语义。"""
     profile = stroke.get("speed_profile")
-    points = stroke.get("points") or []
     if not isinstance(profile, (list, tuple)) or len(profile) < 2:
         return max(0.0, min(1.0, t))
     clamped = max(0.0, min(1.0, t))

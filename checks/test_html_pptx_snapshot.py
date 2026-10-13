@@ -115,7 +115,7 @@ def test_e02_html_runner_dispatch_feeds_the_existing_composite(tmp_path) -> None
 def test_pptx_service_dispatches_html_projects_to_snapshots(tmp_path, scene) -> None:
     """E03 route dispatch: an html-backend project is served by the snapshot
     pipeline; an image project is left to the existing readiness flow."""
-    from database import LocalJob, Project
+    from database import Project
     import pptx_service as ps
 
     from repository_paths import RUNS_DIR

@@ -13,7 +13,7 @@ explicitly — never silently overwritten (AC11).
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 REGISTERED_ACTIONS: Dict[str, Dict[str, Any]] = {
     "enter": {

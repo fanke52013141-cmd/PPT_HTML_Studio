@@ -31,6 +31,8 @@ def test_submit_change_settings_worker_keeps_old_configuration(tmp_path, monkeyp
     import ai_provider_service as image_service
     settings = {"llm_model": "old-text", "image_model": "old-image",
                 "llm_api_key": "text-secret", "image_api_key": "image-secret", "llm_max_tokens": "4096"}
+    from checks.test_html_asset_service import png_bytes
+    image_payload = png_bytes()
     captured = []
     def json_create(**kwargs):
         captured.append(("text", kwargs))
@@ -43,7 +45,7 @@ def test_submit_change_settings_worker_keeps_old_configuration(tmp_path, monkeyp
     monkeypatch.setattr(image_service, "get_openai_client", lambda **kw: image_client)
     monkeypatch.setattr(image_service, "is_toapis_image_provider", lambda *args: False)
     monkeypatch.setattr(image_service, "_governed_image_request", lambda base, call: call())
-    monkeypatch.setattr(image_service, "extract_image_bytes_from_response", lambda value: b"png")
+    monkeypatch.setattr(image_service, "extract_image_bytes_from_response", lambda value: image_payload)
     deps = HtmlReviewDependencies(repo_root=ROOT, json_generator=llm.generate_json_with_configured_llm)
     executor = Capture()
     jobs = jobs_module.HtmlWorkflowJobs(SessionLocal, deps, configured_image, executor,
@@ -67,7 +69,7 @@ def test_submit_change_settings_worker_keeps_old_configuration(tmp_path, monkeyp
             assert model_summary["text"]["parameters"] == {"max_tokens": 4096}
             assert deps.json_generator(system_prompt="test", user_prompt="input", run_dir=str(tmp_path),
                                        artifact_prefix="test", schema_hint="{}") == {"ok": True}
-            assert provider("picture") == b"png"
+            assert provider("picture") == image_payload
             return {"saved": {"changed": False}}
         monkeypatch.setattr(jobs_module, "produce_scene", produce)
         args = executor.calls[0]

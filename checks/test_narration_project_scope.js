@@ -36,6 +36,7 @@ function makeElement(id) {
     remove() {},
     querySelector() { return makeElement(`${id}-child`); },
     querySelectorAll() { return []; },
+    closest() { return null; },
     addEventListener() {},
     setAttribute() {},
     getAttribute() { return null; },
@@ -149,6 +150,7 @@ function createSandbox() {
   sandbox.resetStep5ProjectState = () => {};
   sandbox.normalizeVisibleStep = step => Number(step);
   sandbox.projectFlowContext = () => ({});
+  sandbox.renderPageTaskState = () => {};
   sandbox.getVisibleStepState = () => 'pending';
   sandbox.getProjectCanvasGeometry = () => ({ width: 1920, height: 1080, aspectRatio: '1920 / 1080' });
   sandbox.resolveProjectVisibleStep = project => Number(project.current_step || 1);

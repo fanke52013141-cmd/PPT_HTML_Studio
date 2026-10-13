@@ -21,7 +21,7 @@ pixel by construction).
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 CANVAS_WIDTH = 1600
 CANVAS_HEIGHT = 900

@@ -134,6 +134,10 @@ class TestDispatchRouting:
             "html_editor.read": {"project_id": "p1", "slide_id": "s1"},
             "html_editor.write": {"project_id": "p1", "slide_id": "s1", "scene": {}, "binding": None, "expected_revision": 0},
             "html_editor.preview": {"project_id": "p1", "slide_id": "s1", "scene": {}, "binding": None, "expected_revision": 0},
+            "html_repair.evidence": {"project_id": "p1", "slide_id": "s1", "expected_revision": 0},
+            "html_repair.generate": {"project_id": "p1", "slide_id": "s1", "expected_revision": 0, "instruction": "修复", "scope": ["title"]},
+            "html_repair.preview": {"project_id": "p1", "slide_id": "s1", "expected_revision": 0, "operations": [{"targetId": "title", "kind": "set_presentation", "values": {"x": 20}}]},
+            "html_repair.save": {"project_id": "p1", "slide_id": "s1", "expected_revision": 0, "candidate_key": "a" * 64, "operations": [{"targetId": "title", "kind": "set_presentation", "values": {"x": 20}}]},
         }
         for cap in CAPABILITIES:
             if cap.status == CapabilityStatus.removed or not cap.mcp_enabled:

@@ -65,7 +65,7 @@ def test_failed_job_retries_within_budget_then_refuses(db) -> None:
 
 def test_restart_marks_active_tasks_interrupted(db) -> None:
     project = "p-recover"
-    queued = _submit(db, key="review:s1", project_id=project, task_type="html_review")
+    _submit(db, key="review:s1", project_id=project, task_type="html_review")
     running = _submit(db, key="review:s2", project_id=project, task_type="html_review")
     store.mark_running(db, running["id"])
     recovered = store.recover_interrupted(db)

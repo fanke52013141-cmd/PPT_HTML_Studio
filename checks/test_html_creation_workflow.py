@@ -11,7 +11,7 @@ import uuid
 import pytest
 
 from database import Project, SessionLocal
-from html_creation_workflow import project_status, target_readiness
+from html_creation_workflow import project_status
 from html_visual_review_service import HtmlReviewDependencies, approve_scene
 from html_visual_store import load_scene_with_revision, save_scene
 from repository_paths import RUNS_DIR

@@ -208,7 +208,7 @@ def generate_scene_plan(
     capabilities = _registered_capabilities(Path(repo_root))
     prompts = build_plan_generation_prompts(contract_slide, capabilities, brief)
     prefix = artifact_prefix or f"html_scene_plan_{contract_slide.get('slide_id')}"
-    attempts: List[Dict[str, Any]] = []
+    attempts: list[Dict[str, Any]] = []
     plan = None
     previous_response = None
     last_failure: Optional[HtmlScenePlanError] = None

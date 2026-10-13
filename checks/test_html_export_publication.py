@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from html_render_runner import HtmlRenderResult
+import html_frozen_video
 from test_video_task_status_consistency import (
     _build_service,
     _RecordingJobStore,
@@ -74,7 +75,7 @@ def test_frozen_video_registers_history_without_current_override(
         assert composite_inputs  # must follow the last composite
         return {}, {"full_decode": "passed"}
 
-    monkeypatch.setattr("html_frozen_video.validate_video", final_check)
+    monkeypatch.setattr(html_frozen_video, "validate_video", final_check)
     monkeypatch.setattr(
         "video_render_service.invalidation_service.complete_stage",
         lambda *args: completions.append(args),

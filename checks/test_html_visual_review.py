@@ -8,8 +8,6 @@ from pathlib import Path
 import pytest
 
 import html_visual_review_service as review
-from html_design_brief import build_design_brief, load_effect_registry
-from html_storyboard_planning import load_template_catalog
 from route_inventory import iter_effective_routes
 import server
 

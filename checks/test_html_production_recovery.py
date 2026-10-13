@@ -10,7 +10,8 @@ from html_workflow_jobs import HtmlWorkflowJobs
 from html_visual_review_service import HtmlReviewDependencies
 from html_production_recovery import reconcile_responses, receipt_path, read_receipt
 import html_task_store as store
-from checks.test_html_production_stages import stage, restart, ROOT
+from checks.test_html_production_stages import restart, ROOT
+from checks.test_html_production_stages import stage as stage
 from checks.test_html_workflow_acceptance import plan_for, write
 
 
