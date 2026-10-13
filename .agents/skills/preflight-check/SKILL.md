@@ -9,7 +9,7 @@ HTML 后端先使用独立分支：`python scripts/ppt_studio_doctor.py --html-t
 目标支持 static_html / generate_existing / generate_new_images / snapshot_pptx / video。
 已有场景加 `--html-scene <scene.json>`；视频再加 `--run-dir <project_run>`。
 生成模式以 `--model-readiness <json>` 提供宿主解析后的 text/image 布尔就绪标记，不能输入密钥；它只证明配置声明，不证明连接成功。
-需要新图片才要求 image 就绪；静态检查不要求音频；视频核验实际确认和绑定。
+新生成模式都要求 image 就绪：复用主体或纯代码页仍需完整设计参考；静态检查不要求音频；视频核验实际确认和绑定。已接受设计的任务恢复遵守原候选身份与快照门禁。
 检查实际浏览器与主题字体、资源渲染、输出权限及磁盘预算；不调用生图/TTS，不授予视觉或音频批准。
 报告的 ready 仅为本地前提条件，不是正式导出授权；原输出门禁继续执行。
 HTML 规则见 `docs/contracts/html-presentation/runtime/visual-v1/preflight-0.1.0.md`。

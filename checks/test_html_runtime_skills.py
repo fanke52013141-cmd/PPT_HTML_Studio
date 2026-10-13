@@ -51,7 +51,7 @@ def edit_registry(root, transform):
 @pytest.mark.parametrize(
     "case", CASES["trigger_cases"] + CASES["behavior_cases"], ids=lambda c: c["id"]
 )
-def test_all_24_annotated_case_routes(case):
+def test_all_annotated_case_routes(case):
     routed = route_task(case["facts"])
     assert routed["route"] == case["expected_route"]
     assert bool(routed["runtime_stage"]) == (

@@ -1,5 +1,7 @@
 # PPT HTML Studio
 
+本地最新交接：[设计Agent的理解、素材分工与还原审核](docs/plans/html-backend-development/handoff-design-agent-2026-10-13.md)。工程、真实模型实测与应用正式验收分别记录。
+
 面向课程演示与短视频的 HTML 画面系统。通过公共组件、布局、风格包、独立素材和
 讲稿驱动的动作，构建兼具视觉质量与元素控制能力的演示，目标输出包括 HTML、视频
 与分层次支持的 PPTX。
@@ -33,6 +35,8 @@
 - 规则更新记录数据、行为、视觉和输出兼容，保留旧作品及人工修改。
 
 ## 当前阶段
+
+最新进展：[设计 Agent 理解、素材分工与还原审核交接](docs/plans/html-backend-development/handoff-design-agent-2026-10-13.md)。实际多动作与音频已连接，整页设计先行和独立视觉审核已接入；当前实测候选被审核拒绝，组件能力修正和 A04 独立语义 QA 待完成。
 
 [流程先行与并行开发计划](docs/plans/workflow-first-parallel-2026-10-09/README.md)细化七步制作职责、人工确认、失败恢复和多对话文件分工，配合下方视觉参考库路线执行。
 

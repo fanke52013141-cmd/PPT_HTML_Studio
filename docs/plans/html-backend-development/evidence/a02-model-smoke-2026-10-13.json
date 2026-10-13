@@ -1,0 +1,317 @@
+{
+  "model": "doubao-seed-2-1-pro-260915",
+  "source_sha256": {
+    "html_semantic_plan.py": "a7b2a2c3e8ba56def65efb095859c0384352275eb82706a7b8c22f76c7622dfc",
+    "html_semantic_design.py": "a359be46d5582f7a938f89711eed7adb54bf74fe5001f45f3d80ad766e7f8868",
+    "html_planning_context.py": "9433c66e475a4b36f804744d5f4f0aec4e52440c32b07d0be1ec8c360d00e7f5",
+    "html_storyboard_planning.py": "8b64a8da40ab2c487cc4f656a49be4c7b7cf4dff8076fe20496b98a8c3577d7e",
+    "html_visual_review_service.py": "70b7f2291dc22d6836b9b03e9475587e31f645d6ce82508daa671acce1798395",
+    "html_design_brief.py": "d638c983691fb5faa939a06a701dc34748af348ae2d9c72d50a64dbeff699c63",
+    "html_reference_package.py": "3e74abbf68f6ab6a699ba5ee68a75099ab0e1f41467b489fc540547b2172bc16"
+  },
+  "request_config": {
+    "temperature": 0,
+    "max_tokens": 8192,
+    "timeout": 180
+  },
+  "meaning": "pending_review",
+  "runtime": "not_implemented",
+  "cost": null,
+  "manual_plan_edits": 0,
+  "structure": "passed",
+  "http_attempts": 1,
+  "source_unchanged": true,
+  "stage": "A02",
+  "case": "token-03",
+  "http_records": [
+    {
+      "attempt": 1,
+      "success": true,
+      "usage": {
+        "prompt_tokens": 3783,
+        "completion_tokens": 3312,
+        "total_tokens": 7095
+      },
+      "provider_outcome": "returned",
+      "elapsed_seconds": 76.426
+    }
+  ],
+  "input_sha256": "6880f0fdd04e3382010691b483c5a5233de7afa18b386435a00d92726c0b37a6",
+  "plan_sha256": "790fec8aaffc301c60bfd5c0ba9c7cfa902407d09735e32144a5d482d94846ab",
+  "plan": {
+    "format": "hps.html.scene_plan",
+    "version": "0.2.0",
+    "slide_id": "token-03",
+    "templateRef": {
+      "id": "data-relation-v1",
+      "version": "0.1.0"
+    },
+    "structure": "data-relation",
+    "layoutRef": {
+      "id": "data-relation-v1",
+      "version": "0.2.0"
+    },
+    "slots": {
+      "header": {
+        "kind": "header",
+        "number": "03",
+        "title": "输入和输出，要分开看用量"
+      },
+      "stat-1": {
+        "kind": "text",
+        "role": "body",
+        "runs": [
+          {
+            "text": "输入 Token：你发送的提示与上下文",
+            "emphasis": true
+          }
+        ]
+      },
+      "stat-2": {
+        "kind": "text",
+        "role": "body",
+        "runs": [
+          {
+            "text": "输出 Token：模型生成回复使用的单位",
+            "emphasis": true
+          }
+        ]
+      },
+      "stat-3": {
+        "kind": "text",
+        "role": "body",
+        "runs": [
+          {
+            "text": "单价可能不同：缓存或推理类别会影响计费",
+            "emphasis": true
+          }
+        ]
+      },
+      "caption": {
+        "kind": "text",
+        "role": "caption",
+        "runs": [
+          {
+            "text": "按实际输入与输出用量，并结合具体模型价目表计费，不能只看字数。",
+            "emphasis": false
+          }
+        ]
+      },
+      "summary": {
+        "kind": "summary",
+        "heading": {
+          "icon": "check",
+          "text": "计费要点"
+        },
+        "from": {
+          "text": "输入",
+          "tone": "blue"
+        },
+        "to": {
+          "text": "输出",
+          "tone": "green"
+        },
+        "term": "Token 用量",
+        "takeaway": "分开统计用量，按模型价目表计价"
+      }
+    },
+    "objects": [
+      {
+        "id": "header",
+        "slot": "header",
+        "kind": "header",
+        "exit": false,
+        "role": "context",
+        "initialVisible": true,
+        "initialVisibleReason": "页面编号和标题是本页主题上下文，需要在讲稿开始前可见。"
+      },
+      {
+        "id": "stat-input",
+        "slot": "stat-1",
+        "kind": "text",
+        "exit": false,
+        "role": "context",
+        "initialVisible": false
+      },
+      {
+        "id": "stat-output",
+        "slot": "stat-2",
+        "kind": "text",
+        "exit": false,
+        "role": "context",
+        "initialVisible": false
+      },
+      {
+        "id": "stat-pricing",
+        "slot": "stat-3",
+        "kind": "text",
+        "exit": false,
+        "role": "context",
+        "initialVisible": false
+      },
+      {
+        "id": "billing-caption",
+        "slot": "caption",
+        "kind": "text",
+        "exit": false,
+        "role": "context",
+        "initialVisible": false
+      },
+      {
+        "id": "billing-summary",
+        "slot": "summary",
+        "kind": "summary",
+        "exit": false,
+        "role": "context",
+        "initialVisible": false
+      }
+    ],
+    "beats": [
+      {
+        "id": "token-03-b1",
+        "visualIntent": "解释输入 Token 的范围，即用户发送给模型的提示和上下文。",
+        "targets": [
+          {
+            "objectId": "stat-input",
+            "purpose": "用第一项统计关系明确输入 Token 来自提示与上下文。"
+          }
+        ],
+        "actions": [
+          {
+            "actionId": "token-03-a1",
+            "objectId": "stat-input",
+            "type": "enter"
+          }
+        ],
+        "expectedState": [
+          {
+            "objectId": "stat-input",
+            "visible": true,
+            "expression": "统计卡显示“输入 Token：你发送的提示与上下文”。"
+          }
+        ],
+        "narration_only": false,
+        "spoken_text": "输入 Token 包括你发送给模型的提示和上下文。",
+        "spoken_text_sha256": "8d64b0de0498937a65397c9c5e6250917825fc5c80e8558090b9446a6cf0e94f"
+      },
+      {
+        "id": "token-03-b2",
+        "visualIntent": "解释输出 Token 是模型生成回复时使用的计量单位。",
+        "targets": [
+          {
+            "objectId": "stat-output",
+            "purpose": "用第二项统计关系明确输出 Token 对应模型生成的回复。"
+          }
+        ],
+        "actions": [
+          {
+            "actionId": "token-03-a2",
+            "objectId": "stat-output",
+            "type": "enter"
+          }
+        ],
+        "expectedState": [
+          {
+            "objectId": "stat-output",
+            "visible": true,
+            "expression": "统计卡显示“输出 Token：模型生成回复使用的单位”。"
+          }
+        ],
+        "narration_only": false,
+        "spoken_text": "输出 Token 是模型生成回复所使用的单位。",
+        "spoken_text_sha256": "819465c0faeae2dc91b7147bd6b03cf43f81917ea4abda65bcfd6d1f79880f34"
+      },
+      {
+        "id": "token-03-b3",
+        "visualIntent": "说明输入与输出可能适用不同单价，并可能受缓存或推理类别影响。",
+        "targets": [
+          {
+            "objectId": "stat-pricing",
+            "purpose": "用第三项统计关系呈现单价差异及缓存、推理类别的影响。"
+          }
+        ],
+        "actions": [
+          {
+            "actionId": "token-03-a3",
+            "objectId": "stat-pricing",
+            "type": "enter"
+          }
+        ],
+        "expectedState": [
+          {
+            "objectId": "stat-pricing",
+            "visible": true,
+            "expression": "统计卡显示“单价可能不同：缓存或推理类别会影响计费”。"
+          }
+        ],
+        "narration_only": false,
+        "spoken_text": "输入与输出常有不同单价，具体还可能涉及缓存或推理类别。",
+        "spoken_text_sha256": "4c8e4bd14147950159dbb5eb38d87ba52806a3a061606e0b46b0c291990dc319"
+      },
+      {
+        "id": "token-03-b4",
+        "visualIntent": "总结计费必须结合实际 Token 用量和具体模型价目表，而不是只看字数。",
+        "targets": [
+          {
+            "objectId": "billing-caption",
+            "purpose": "用说明文字明确实际用量与模型价目表共同决定计费。"
+          },
+          {
+            "objectId": "billing-summary",
+            "purpose": "用从输入到输出的关系总结两类用量需分开统计并按价目表计价。"
+          }
+        ],
+        "actions": [
+          {
+            "actionId": "token-03-a4",
+            "objectId": "billing-caption",
+            "type": "enter"
+          },
+          {
+            "actionId": "token-03-a5",
+            "objectId": "billing-summary",
+            "type": "enter"
+          }
+        ],
+        "expectedState": [
+          {
+            "objectId": "billing-caption",
+            "visible": true,
+            "expression": "说明文字显示“按实际输入与输出用量，并结合具体模型价目表计费，不能只看字数。”"
+          },
+          {
+            "objectId": "billing-summary",
+            "visible": true,
+            "expression": "总结区显示从“输入”到“输出”的 Token 用量关系，结论为“分开统计用量，按模型价目表计价”。"
+          }
+        ],
+        "narration_only": false,
+        "spoken_text": "计费应结合实际用量与该模型的价目表，不能只看字数。",
+        "spoken_text_sha256": "3db58cf2c870b297a495c39ca19b1f5bc3270d4097ce13bfe95d2364fba7ab49"
+      }
+    ],
+    "assets": [],
+    "registered": {
+      "catalog_sha256": "b4fcbde54055c627688e664ded88b735eccb8c79915a9bab7bb5215d24c4f11e",
+      "icons": [
+        "air",
+        "arrow",
+        "check",
+        "droplet",
+        "eye",
+        "lightbulb",
+        "molecule",
+        "thermometer"
+      ]
+    },
+    "contract": {
+      "slide_id": "token-03",
+      "narration_beats": 4
+    }
+  },
+  "observations": [
+    "Noninitial narrated objects are labeled context; semantic correctness is not approved.",
+    "No actual HTML, image generation, audio binding or export was tested in this model trial.",
+    "Previous A01 token-05 timeout remains separate evidence."
+  ]
+}

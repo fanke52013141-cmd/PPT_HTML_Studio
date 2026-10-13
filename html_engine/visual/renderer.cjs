@@ -3,6 +3,7 @@ const { loadResources, fontPresent } = require("../src/resources.cjs");
 const { imagePlacement, ease } = require("../src/timeline.cjs");
 const { fail } = require("./compiler.cjs");
 const { icon } = require("./icons.browser.cjs");
+const variants = require("./presentation-variants.json").variants;
 const SVG = "http://www.w3.org/2000/svg";
 const vector = (tag) => document.createElementNS(SVG, tag);
 const attributes = (el, values) =>
@@ -372,15 +373,33 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           node.kind === "ellipse" ? "50%" : px(node.radius ?? 0);
         el.setAttribute("aria-hidden", "true");
       } else if (node.type === "text") {
-        textStyle(el, node.role, theme);
-        el.style.whiteSpace = "pre-wrap";
+        const variant = variants.find(v => v.id === node.presentation?.variant);
+        const panel = variant && variant.id.startsWith("text-card-");
+        const copy = panel ? document.createElement("div") : el;
+        if (panel) {
+          Object.assign(el.style, {display:"flex",alignItems:"center",gap:px(variant.gap),padding:`${variant.paddingY}px ${variant.paddingX}px`,
+            border:`1px solid ${theme.colors.line}`,borderRadius:px(theme.shapes.cardRadius),background:theme.colors.background,
+            boxShadow:variant.id==='text-card-soft' ? `0 8px 24px rgb(${theme.shapes.shadowRGB} / 0.06)` : 'none'});
+          copy.className="v-panel-copy";
+          Object.assign(copy.style,{flex:"1",minWidth:"0"});
+          if (node.presentation.icon) {
+            const bubble=document.createElement("span");
+            Object.assign(bubble.style,{width:px(variant.iconSize),height:px(variant.iconSize),flexShrink:"0",borderRadius:"50%",background:theme.colors.panel,display:"grid",placeItems:"center"});
+            const pictogram=icon(node.presentation.icon);Object.assign(pictogram.style,{width:"38px",height:"38px",color:theme.colors.body});
+            bubble.append(pictogram);el.append(bubble);
+          }
+          el.append(copy);
+        }
+        textStyle(copy, node.role, theme);
+        copy.style.whiteSpace = "pre-wrap";
         for (const run of node.runs) {
           const span = document.createElement("span");
           span.textContent = run.text;
           if (run.emphasis) span.style.color = theme.colors.accent;
-          el.append(span);
+          copy.append(span);
         }
-        textNodes.push([el, layout.slots[node.slot], node.id]);
+        const slot=layout.slots[node.slot];
+        textNodes.push([copy,panel ? {...slot,box:{...slot.box,width:slot.box.width-variant.paddingX*2-(node.presentation.icon ? variant.iconSize+variant.gap : 0),height:slot.box.height-variant.paddingY*2}} : slot,node.id]);
       } else if (node.type === "label" || node.type === "badge") {
         const badge = node.type === "badge";
         textStyle(el, badge ? "number" : node.role, theme);
@@ -439,6 +458,12 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         title.className = "v-page-title";
         title.textContent = node.title;
         el.append(number, title);
+        if (node.presentation?.variant === "header-badge") {
+          const variant=variants.find(v=>v.id==='header-badge');
+          Object.assign(number.style,{width:px(variant.badgeWidth),height:"100%",maxHeight:px(variant.badgeWidth),flexShrink:"0",display:"grid",placeItems:"center",borderRadius:px(variant.badgeRadius),background:theme.colors.ink,color:theme.colors.background,fontSize:"34px",lineHeight:"1"});
+          Object.assign(el.style,{alignItems:"center",gap:"24px",borderBottom:"none"});
+          title.style.maxWidth=px(layout.slots[node.slot].box.width-variant.badgeWidth-24);
+        }
         textNodes.push([title, layout.slots[node.slot], node.id]);
       } else if (node.type === "card") {
         el.classList.add("v-card");
@@ -541,13 +566,24 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         to.textContent = node.to.text;
         const term = document.createElement("span");
         term.className = "v-term";
-        term.textContent = `这个过程叫${node.term}`;
+        term.textContent = node.presentation?.variant === "summary-panel" ? node.term : `这个过程叫${node.term}`;
         flow.append(from, arrow, to, term);
         el.append(flow);
         const takeaway = document.createElement("strong");
         takeaway.className = "v-takeaway";
         takeaway.textContent = node.takeaway;
         el.append(takeaway);
+        if (node.presentation?.variant === "summary-panel") {
+          Object.assign(el.style,{border:`1px solid ${theme.colors.line}`,background:theme.colors.panel,padding:"20px 24px",gap:"24px",borderRadius:px(theme.shapes.cardRadius)});
+          const heading=el.querySelector('.v-summary-heading');
+          if(heading) {heading.style.flexShrink="0"; const mark=heading.querySelector('svg');Object.assign(mark.style,{width:"64px",height:"64px",padding:"14px",borderRadius:"50%",background:theme.colors.ink,color:theme.colors.background});}
+          Object.assign(flow.style,{display:"grid",gridTemplateColumns:"120px 132px 120px",gap:"8px 14px",alignItems:"center",justifyItems:"center",flexShrink:"0"});
+          Object.assign(from.style,{gridColumn:"1",gridRow:"1",background:theme.colors.background,border:`1px solid ${theme.colors.line}`,padding:"16px 28px"});
+          Object.assign(to.style,{gridColumn:"3",gridRow:"1",background:theme.colors.background,border:`1px solid ${theme.colors.line}`,padding:"16px 28px"});
+          Object.assign(arrow.style,{gridColumn:"2",gridRow:"1",width:"100px",height:"28px"});
+          Object.assign(term.style,{gridColumn:"2",gridRow:"2",fontSize:"22px"});
+          takeaway.style.whiteSpace="normal";
+        }
         const slot = layout.slots[node.slot];
         overflowChecks.push([flow, slot.box.width - 620, node.id]);
         textNodes.push([
@@ -594,7 +630,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         if (node.type === "arrow") el.style.display = "flex";
       }
       const selectors = {
-        text: { text: null },
+        text: { text: el.querySelector(".v-panel-copy") ? ".v-panel-copy" : null },
         label: { text: null },
         badge: { text: null },
         header: { title: ".v-page-title" },
@@ -688,7 +724,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
       for (const node of scene.nodes) {
         const actions = motionsByTarget.get(node.id) || [];
         const enter = actions.find((a) => a.type === "enter");
-        const p = ease("smoothstep", (ms - enter.startMs) / enter.durationMs);
+        const p = enter ? ease("smoothstep", (ms - enter.startMs) / enter.durationMs) : 1;
         let opacity = p,
           lift = 0;
         for (const extra of actions) {
@@ -705,13 +741,13 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
               "smoothstep",
               (ms - (extra.startMs + half)) / half,
             );
-            lift = -8 * rise * (1 - fall);
+            lift += -8 * rise * (1 - fall);
           }
         }
         const state = {
           opacity,
-          x: reduced ? 0 : enter.offsetX * (1 - p),
-          y: reduced ? 0 : enter.offsetY * (1 - p) + lift,
+          x: reduced ? 0 : (enter?.offsetX || 0) * (1 - p),
+          y: reduced ? 0 : (enter?.offsetY || 0) * (1 - p) + lift,
           lift,
         };
         states.set(node.id, state);
@@ -759,10 +795,10 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         const annotationEnter = (motionsByTarget.get(node.id) || []).find(
           (a) => a.type === "enter",
         );
-        const progress = ease(
+        const progress = annotationEnter ? ease(
           "smoothstep",
           (ms - annotationEnter.startMs) / annotationEnter.durationMs,
-        );
+        ) : 1;
         attributes(leader, {
           d: `M ${anchor.x - origin.x + towards * node.radius} ${anchor.y - origin.y} L ${endpoint.x - origin.x - towards * 14} ${endpoint.y - origin.y}`,
           "stroke-dashoffset": String(1 - progress),

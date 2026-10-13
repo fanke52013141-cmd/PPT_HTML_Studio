@@ -3,6 +3,9 @@
 // browser builder lives in icons.browser.cjs so the compiler can validate
 // icon references without a DOM.
 const paths = {
+  speech: ["M4 3h16v14H9l-5 4V3Z", "M8 7h8M8 11h5"],
+  document: ["M5 2h9l5 5v15H5V2Z", "M14 2v6h5M8 12h8M8 16h8"],
+  coins: ["M5 6c0-5 14-5 14 0s-14 5-14 0Z", "M5 6v12c0 5 14 5 14 0V6M5 10c0 5 14 5 14 0M5 14c0 5 14 5 14 0"],
   air: [
     "M3 8h13a3 3 0 1 0-3-3",
     "M2 12h18a3 3 0 1 1-3 3",

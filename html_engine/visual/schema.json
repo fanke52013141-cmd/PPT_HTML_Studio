@@ -12,7 +12,10 @@
     "ref": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "version"],
+      "required": [
+        "id",
+        "version"
+      ],
       "properties": {
         "id": {
           "$ref": "#/$defs/id"
@@ -25,7 +28,10 @@
     "assetRef": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "version"],
+      "required": [
+        "id",
+        "version"
+      ],
       "properties": {
         "id": {
           "$ref": "#/$defs/id"
@@ -38,7 +44,10 @@
     "templateRef": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "version"],
+      "required": [
+        "id",
+        "version"
+      ],
       "properties": {
         "id": {
           "$ref": "#/$defs/id"
@@ -55,7 +64,13 @@
     "textStyle": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["size", "weight", "lineHeight", "letterSpacing", "color"],
+      "required": [
+        "size",
+        "weight",
+        "lineHeight",
+        "letterSpacing",
+        "color"
+      ],
       "properties": {
         "size": {
           "type": "number",
@@ -63,7 +78,10 @@
           "maximum": 80
         },
         "weight": {
-          "enum": [400, 700]
+          "enum": [
+            400,
+            700
+          ]
         },
         "lineHeight": {
           "type": "number",
@@ -120,7 +138,13 @@
       ]
     },
     "tone": {
-      "enum": ["blue", "green", "pink", "purple", "yellow"]
+      "enum": [
+        "blue",
+        "green",
+        "pink",
+        "purple",
+        "yellow"
+      ]
     },
     "scene": {
       "type": "object",
@@ -133,7 +157,9 @@
                 "const": "0.3.0"
               }
             },
-            "required": ["version"]
+            "required": [
+              "version"
+            ]
           },
           "then": {
             "properties": {
@@ -157,17 +183,24 @@
           "if": {
             "properties": {
               "version": {
-                "enum": ["0.3.0", "0.4.0"]
+                "enum": [
+                  "0.3.0",
+                  "0.4.0"
+                ]
               }
             },
-            "required": ["version"]
+            "required": [
+              "version"
+            ]
           },
           "then": {
             "properties": {
               "nodes": {
                 "items": {
                   "not": {
-                    "required": ["presentation"],
+                    "required": [
+                      "presentation"
+                    ],
                     "type": "object",
                     "properties": {
                       "presentation": {}
@@ -176,6 +209,113 @@
                   "type": "object"
                 },
                 "type": "array"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "version": {
+                "enum": [
+                  "0.6.0",
+                  "0.7.0"
+                ]
+              }
+            },
+            "required": [
+              "version"
+            ]
+          },
+          "then": {
+            "required": [
+              "initialVisibleIds"
+            ],
+            "properties": {
+              "motion": {
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "actionId"
+                  ],
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "enter",
+                        "emphasize"
+                      ]
+                    },
+                    "actionId": {}
+                  }
+                },
+                "type": "array"
+              },
+              "initialVisibleIds": {},
+              "id": {
+                "pattern": "^[a-z0-9][a-z0-9._-]{0,79}$",
+                "type": "string"
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "initialVisibleIds"
+              ],
+              "properties": {
+                "initialVisibleIds": {}
+              }
+            },
+            "properties": {
+              "motion": {
+                "minItems": 1,
+                "maxItems": 40,
+                "items": {
+                  "not": {
+                    "type": "object",
+                    "required": [
+                      "actionId"
+                    ],
+                    "properties": {
+                      "actionId": {}
+                    }
+                  }
+                },
+                "type": "array"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "version": {
+                "const": "0.7.0"
+              }
+            },
+            "required": [
+              "version"
+            ]
+          },
+          "else": {
+            "properties": {
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "presentation": {
+                      "type": "object",
+                      "properties": {
+                        "variant": false,
+                        "icon": false
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -199,10 +339,18 @@
           "const": "hps.visual.scene"
         },
         "version": {
-          "enum": ["0.3.0", "0.4.0", "0.5.0"]
+          "enum": [
+            "0.3.0",
+            "0.4.0",
+            "0.5.0",
+            "0.6.0",
+            "0.7.0"
+          ]
         },
         "id": {
-          "$ref": "#/$defs/id"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         },
         "name": {
           "type": "string",
@@ -233,8 +381,8 @@
         },
         "motion": {
           "type": "array",
-          "minItems": 1,
-          "maxItems": 40,
+          "minItems": 0,
+          "maxItems": 256,
           "items": {
             "$ref": "#/$defs/motion"
           }
@@ -251,6 +399,14 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 500
+        },
+        "initialVisibleIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 40,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
         }
       }
     },
@@ -259,7 +415,13 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type", "kind", "fill"],
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "kind",
+            "fill"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -271,7 +433,10 @@
               "const": "shape"
             },
             "kind": {
-              "enum": ["rect", "ellipse"]
+              "enum": [
+                "rect",
+                "ellipse"
+              ]
             },
             "fill": {
               "enum": [
@@ -310,7 +475,9 @@
                     "const": "ellipse"
                   }
                 },
-                "required": ["kind"]
+                "required": [
+                  "kind"
+                ]
               },
               "then": {
                 "properties": {
@@ -323,7 +490,13 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type", "role", "runs"],
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "role",
+            "runs"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -344,7 +517,10 @@
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["text", "emphasis"],
+                "required": [
+                  "text",
+                  "emphasis"
+                ],
                 "properties": {
                   "text": {
                     "type": "string",
@@ -365,7 +541,13 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type", "text", "tone"],
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "text",
+            "tone"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -382,7 +564,11 @@
               "maxLength": 3
             },
             "tone": {
-              "enum": ["blue", "green", "accent"]
+              "enum": [
+                "blue",
+                "green",
+                "accent"
+              ]
             },
             "presentation": {
               "$ref": "#/$defs/presentation"
@@ -392,7 +578,14 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type", "text", "role", "tone"],
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "text",
+            "role",
+            "tone"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -409,10 +602,18 @@
               "maxLength": 40
             },
             "role": {
-              "enum": ["eyebrow", "phase", "conclusion"]
+              "enum": [
+                "eyebrow",
+                "phase",
+                "conclusion"
+              ]
             },
             "tone": {
-              "enum": ["blue", "green", "accent"]
+              "enum": [
+                "blue",
+                "green",
+                "accent"
+              ]
             },
             "presentation": {
               "$ref": "#/$defs/presentation"
@@ -422,7 +623,13 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type", "assetRef", "anchorId"],
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "assetRef",
+            "anchorId"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -447,7 +654,11 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type"],
+          "required": [
+            "id",
+            "slot",
+            "type"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -504,7 +715,13 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type", "number", "title"],
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "number",
+            "title"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -533,7 +750,15 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type", "tone", "icon", "title", "body"],
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "tone",
+            "icon",
+            "title",
+            "body"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -568,7 +793,11 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type"],
+          "required": [
+            "id",
+            "slot",
+            "type"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -593,7 +822,15 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "slot", "type", "from", "to", "term", "takeaway"],
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "from",
+            "to",
+            "term",
+            "takeaway"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/id"
@@ -610,7 +847,10 @@
             "from": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["text", "tone"],
+              "required": [
+                "text",
+                "tone"
+              ],
               "properties": {
                 "text": {
                   "type": "string",
@@ -625,7 +865,10 @@
             "to": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["text", "tone"],
+              "required": [
+                "text",
+                "tone"
+              ],
               "properties": {
                 "text": {
                   "type": "string",
@@ -657,7 +900,10 @@
     "caption": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["icon", "text"],
+      "required": [
+        "icon",
+        "text"
+      ],
       "properties": {
         "icon": {
           "$ref": "#/$defs/iconName"
@@ -712,13 +958,23 @@
               "type": "number",
               "minimum": -100,
               "maximum": 100
+            },
+            "actionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
             }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["targetId", "type", "startMs", "durationMs"],
+          "required": [
+            "targetId",
+            "type",
+            "startMs",
+            "durationMs"
+          ],
           "properties": {
             "targetId": {
               "$ref": "#/$defs/id"
@@ -735,13 +991,23 @@
               "type": "number",
               "minimum": 1,
               "maximum": 10000
+            },
+            "actionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
             }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["targetId", "type", "startMs", "durationMs"],
+          "required": [
+            "targetId",
+            "type",
+            "startMs",
+            "durationMs"
+          ],
           "properties": {
             "targetId": {
               "$ref": "#/$defs/id"
@@ -758,6 +1024,11 @@
               "type": "number",
               "minimum": 1,
               "maximum": 10000
+            },
+            "actionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
             }
           }
         }
@@ -766,7 +1037,11 @@
     "beat": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["startMs", "endMs", "text"],
+      "required": [
+        "startMs",
+        "endMs",
+        "text"
+      ],
       "properties": {
         "startMs": {
           "type": "number",
@@ -818,10 +1093,15 @@
         "font": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["family", "platform"],
+          "required": [
+            "family",
+            "platform"
+          ],
           "properties": {
             "family": {
-              "enum": ["Microsoft YaHei"]
+              "enum": [
+                "Microsoft YaHei"
+              ]
             },
             "platform": {
               "const": "Windows"
@@ -990,7 +1270,12 @@
         "shapes": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["badgeRadius", "labelRadius", "strokeWidth", "shadow"],
+          "required": [
+            "badgeRadius",
+            "labelRadius",
+            "strokeWidth",
+            "shadow"
+          ],
           "properties": {
             "badgeRadius": {
               "type": "number",
@@ -1034,7 +1319,11 @@
             "shadow": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["y", "blur", "opacity"],
+              "required": [
+                "y",
+                "blur",
+                "opacity"
+              ],
               "properties": {
                 "y": {
                   "type": "number",
@@ -1082,7 +1371,14 @@
     "layout": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["format", "version", "id", "name", "canvas", "slots"],
+      "required": [
+        "format",
+        "version",
+        "id",
+        "name",
+        "canvas",
+        "slots"
+      ],
       "properties": {
         "format": {
           "const": "hps.visual.layout"
@@ -1101,7 +1397,12 @@
         "canvas": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["width", "height", "contentBottom", "subtitleHeight"],
+          "required": [
+            "width",
+            "height",
+            "contentBottom",
+            "subtitleHeight"
+          ],
           "properties": {
             "width": {
               "const": 1600
@@ -1127,12 +1428,22 @@
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["box", "maxLines", "align", "z"],
+            "required": [
+              "box",
+              "maxLines",
+              "align",
+              "z"
+            ],
             "properties": {
               "box": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["x", "y", "width", "height"],
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
                 "properties": {
                   "x": {
                     "type": "number",
@@ -1162,7 +1473,11 @@
                 "maximum": 6
               },
               "align": {
-                "enum": ["left", "center", "right"]
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ]
               },
               "z": {
                 "type": "integer",
@@ -1202,7 +1517,11 @@
           "maxLength": 60
         },
         "structure": {
-          "enum": ["explanation-cards", "data-relation", "process-stage"]
+          "enum": [
+            "explanation-cards",
+            "data-relation",
+            "process-stage"
+          ]
         },
         "layoutRef": {
           "$ref": "#/$defs/ref"
@@ -1217,7 +1536,10 @@
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["kinds", "required"],
+            "required": [
+              "kinds",
+              "required"
+            ],
             "properties": {
               "kinds": {
                 "type": "array",
@@ -1255,7 +1577,14 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "version", "path", "sha256", "anchors", "source"],
+        "required": [
+          "id",
+          "version",
+          "path",
+          "sha256",
+          "anchors",
+          "source"
+        ],
         "properties": {
           "id": {
             "$ref": "#/$defs/id"
@@ -1278,7 +1607,11 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["id", "x", "y"],
+              "required": [
+                "id",
+                "x",
+                "y"
+              ],
               "properties": {
                 "id": {
                   "$ref": "#/$defs/id"
@@ -1314,7 +1647,10 @@
           "default": 28
         },
         "weight": {
-          "enum": [400, 700]
+          "enum": [
+            400,
+            700
+          ]
         },
         "lineHeight": {
           "type": "number",
@@ -1322,7 +1658,11 @@
           "maximum": 1.8
         },
         "align": {
-          "enum": ["left", "center", "right"]
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
         }
       },
       "default": {
@@ -1392,6 +1732,18 @@
               "$ref": "#/$defs/instanceTextStyle"
             }
           }
+        },
+        "variant": {
+          "enum": [
+            "plain",
+            "text-card-outline",
+            "text-card-soft",
+            "header-badge",
+            "summary-panel"
+          ]
+        },
+        "icon": {
+          "$ref": "#/$defs/id"
         }
       },
       "default": {

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import copy
 import math
+import re
 from typing import Any, Iterable
 
 
@@ -96,6 +97,12 @@ def _binding_actions(
     directly by readiness and render paths. A malformed explicit binding must
     never silently fall back to the scene's authored absolute time.
     """
+    if scene.get("version") in ("0.6.0", "0.7.0"):
+        from html_motion_binding import validate_binding
+        try:
+            return validate_binding(scene, binding, beat_ids)
+        except ValueError as exc:
+            raise AudioBindingError("AUDIO_BINDING_INVALID", str(exc)) from exc
     motions = scene.get("motion")
     if not isinstance(motions, list):
         raise AudioBindingError("SCENE_MOTION_INVALID", "场景动作列表格式不合法")
@@ -202,12 +209,15 @@ def bind_scene_to_audio(
         }
         for segment in segments
     ]
+    semantic = scene.get("version") in ("0.6.0", "0.7.0")
     motions = bound.get("motion")
-    if not isinstance(motions, list) or not motions:
+    if not isinstance(motions, list) or (not motions and not semantic):
         raise AudioBindingError(
             "SCENE_MOTION_MISSING", "场景缺少动作定义，不能绑定讲解时间"
         )
     binding_actions = _binding_actions(scene, binding, set(windows))
+    if semantic:
+        _validate_semantic_audio(binding, segments)
     for action in motions:
         start_ms = action.get("startMs")
         duration = action.get("durationMs")
@@ -217,13 +227,19 @@ def bind_scene_to_audio(
             raise AudioBindingError(
                 "SCENE_MOTION_INVALID", f"动作时间不合法：{action.get('targetId')}"
             )
-        link = binding_actions.get(f"{action['targetId']}:{action['type']}")
+        from html_motion_binding import motion_identity
+        link = binding_actions.get(motion_identity(action))
         if link is not None:
             edge = 1 if link.get("edge") == "end" else 0
             new_start = windows[link["beatId"]][edge] + link["offsetMs"]
             new_duration = int(duration)
             if new_start < 0 or new_start >= duration_ms:
                 raise AudioBindingError("AUDIO_OFFSET_OVERFLOW", "手工偏移越过作品边界")
+            if semantic:
+                start, end = windows[link["beatId"]]
+                if not start <= new_start < end:
+                    raise AudioBindingError("AUDIO_ACTION_WINDOW", "动作偏移越过绑定语块")
+                new_duration = min(new_duration, end - new_start)
         elif binding is not None:
             # Unbound decorative actions keep their declared absolute timing.
             new_start, new_duration = int(start_ms), int(duration)
@@ -237,10 +253,46 @@ def bind_scene_to_audio(
             new_duration = max(duration_ms - new_start, 1)
         action["startMs"] = new_start
         action["durationMs"] = max(new_duration, 1)
+    if semantic:
+        _check_semantic_action_windows(bound)
     # Provenance stays OUT of the scene document: the author schema is
     # strict, and binding metadata belongs to the derived-artifact manifest
     # (see binding_report / html_render_runner).
     return bound
+
+
+def _validate_semantic_audio(binding, segments):
+    """Subtitle parts may remove punctuation; all spoken characters must match."""
+    order, text_by_beat = [], {}
+    for segment in segments:
+        identity = segment.get("beat_id") or segment.get("id")
+        if not order or order[-1] != identity:
+            if identity in order:
+                raise AudioBindingError("AUDIO_BEAT_ORDER", "语块分段不是连续顺序")
+            order.append(identity)
+        text_by_beat[identity] = text_by_beat.get(identity, "") + segment["text"]
+    source = binding["sourceBeats"]
+    if order != [b["id"] for b in source]:
+        raise AudioBindingError("AUDIO_BEAT_ORDER", "音频语块与权威原句顺序不一致")
+    for b in source:
+        signature = lambda text: re.sub(r"[^\w]", "", text, flags=re.UNICODE)
+        if signature(text_by_beat[b["id"]]) != signature(b["spoken_text"]):
+            raise AudioBindingError("AUDIO_TEXT_MISMATCH", f"音频原句不一致：{b['id']}")
+
+
+def _check_semantic_action_windows(scene):
+    by_target = {}
+    for action in scene["motion"]:
+        by_target.setdefault(action["targetId"], []).append(action)
+    for actions in by_target.values():
+        ordered = sorted(actions, key=lambda a: a["startMs"])
+        for a, b in zip(ordered, ordered[1:]):
+            if a["startMs"] == b["startMs"]:
+                raise AudioBindingError("AUDIO_ACTION_OVERLAP", "同一对象动作不能同时开始")
+            a["durationMs"] = min(a["durationMs"], b["startMs"] - a["startMs"])
+        initial = ordered[0]["targetId"] in scene["initialVisibleIds"]
+        if not initial and ordered[0]["type"] != "enter":
+            raise AudioBindingError("AUDIO_ACTION_ORDER", "对象必须先入场再强调")
 
 
 def binding_metadata(

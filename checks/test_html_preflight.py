@@ -9,12 +9,13 @@ def probe(spec):
     return {"browser": True, "font": True, "scene_passed": True, "executable": "test-browser"}
 
 
-def test_existing_generation_without_image_or_audio(tmp_path):
+def test_existing_assets_still_require_full_design_image(tmp_path):
     report = preflight.inspect_html_preflight("generate_existing", output_dir=tmp_path,
         model_readiness={"text": True, "image": False}, probe=probe)
-    assert report["ready"]
+    assert not report["ready"]
     assert not report["provider_connection_tested"]
-    assert not {"IMAGE_MODEL_CONFIGURED", "AUDIO_CONFIRMED", "FFMPEG"} & {c["code"] for c in report["checks"]}
+    assert any(c["code"] == "IMAGE_MODEL_CONFIGURED" and not c["passed"] for c in report["checks"])
+    assert not {"AUDIO_CONFIRMED", "FFMPEG"} & {c["code"] for c in report["checks"]}
 
 
 def test_new_images_require_config_and_static_does_not(tmp_path):

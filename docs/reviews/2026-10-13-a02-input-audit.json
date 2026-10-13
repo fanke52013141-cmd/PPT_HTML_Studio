@@ -1,0 +1,38 @@
+{
+  "metric": "UTF-8 bytes, not tokens or latency",
+  "baseline": "A01 raw slide visual_groups/narration_beats without filtering",
+  "cases": [
+    {
+      "slide_id": "token-01",
+      "before_user_bytes": 1345,
+      "after_user_bytes": 1085,
+      "spoken_unchanged": true
+    },
+    {
+      "slide_id": "token-02",
+      "before_user_bytes": 1412,
+      "after_user_bytes": 1114,
+      "spoken_unchanged": true
+    },
+    {
+      "slide_id": "token-03",
+      "before_user_bytes": 1122,
+      "after_user_bytes": 821,
+      "spoken_unchanged": true
+    },
+    {
+      "slide_id": "token-04",
+      "before_user_bytes": 1153,
+      "after_user_bytes": 835,
+      "spoken_unchanged": true
+    },
+    {
+      "slide_id": "token-05",
+      "before_user_bytes": 1352,
+      "after_user_bytes": 1089,
+      "spoken_unchanged": true
+    }
+  ],
+  "semantic_system_bytes": 9368,
+  "system_note": "Includes necessary real registered box/maxLines budgets; not an instruction to minimize total bytes at the cost of context."
+}

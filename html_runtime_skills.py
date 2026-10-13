@@ -17,6 +17,12 @@ PACKAGE = "config/html_runtime_skills/"
 STAGE = "candidate_capacity_repair"
 INPUT_CONTRACT = "candidate-layout-input/0.1.0"
 OUTPUT_CONTRACT = "candidate-layout-decision/0.1.0"
+STAGE_CONTRACTS = {
+    STAGE: (INPUT_CONTRACT, OUTPUT_CONTRACT),
+    "design_understanding": ("design-understanding-input/0.1.0", "design-understanding-output/0.1.0"),
+    "design_reconstruction": ("design-reconstruction-input/0.1.0", "design-reconstruction-output/0.1.0"),
+    "design_fidelity_review": ("design-review-input/0.1.0", "design-review-output/0.1.0"),
+}
 MODES = {"legacy_prompt", "runtime_skill"}
 MAX_FILE_BYTES = 16 * 1024
 
@@ -97,12 +103,18 @@ def load_runtime_skill(repo_root, *, stage=STAGE, mode=None):
             raise RuntimeSkillError("RUNTIME_SKILL_MODE_UNSUPPORTED")
         mode = mode or registry["default_mode"]
         if (
-            stage != STAGE
+            stage not in STAGE_CONTRACTS
             or not isinstance(registry["skills"], list)
-            or len(registry["skills"]) != 1
+            or not 1 <= len(registry["skills"]) <= len(STAGE_CONTRACTS)
         ):
             raise RuntimeSkillError("RUNTIME_SKILL_STAGE_UNSUPPORTED")
-        entry = registry["skills"][0]
+        stages = [e.get("stage") for e in registry["skills"] if isinstance(e, dict)]
+        if len(stages) != len(registry["skills"]) or len(set(stages)) != len(stages) or any(s not in STAGE_CONTRACTS for s in stages):
+            raise RuntimeSkillError("RUNTIME_SKILL_STAGE_UNSUPPORTED")
+        entries = [e for e in registry["skills"] if e["stage"] == stage]
+        if len(entries) != 1:
+            raise RuntimeSkillError("RUNTIME_SKILL_STAGE_UNSUPPORTED")
+        entry = entries[0]
         if (
             set(entry)
             != {
@@ -119,9 +131,8 @@ def load_runtime_skill(repo_root, *, stage=STAGE, mode=None):
         ):
             raise RuntimeSkillError("RUNTIME_SKILL_ENTRY_INVALID")
         if (entry["stage"], entry["input_contract"], entry["output_contract"]) != (
-            STAGE,
-            INPUT_CONTRACT,
-            OUTPUT_CONTRACT,
+            stage,
+            *STAGE_CONTRACTS[stage],
         ):
             raise RuntimeSkillError("RUNTIME_SKILL_CONTRACT_INCOMPATIBLE")
         if (
@@ -188,7 +199,12 @@ def load_runtime_skill(repo_root, *, stage=STAGE, mode=None):
 
 
 def runtime_source_files(repo_root):
-    return load_runtime_skill(repo_root).files
+    records = {}
+    registry = json.loads(safe_file(repo_root, REGISTRY).read_text(encoding="utf-8"))
+    for entry in registry["skills"]:
+        for record in load_runtime_skill(repo_root, stage=entry["stage"]).files:
+            records[record["path"]] = record
+    return list(records.values())
 
 
 def route_task(facts):

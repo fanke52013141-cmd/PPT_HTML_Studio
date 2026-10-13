@@ -155,8 +155,24 @@ def author(tmp_path, monkeypatch, request):
             return self.args[0](*self.args[1:])
     executor = Capture()
     calls = []
-    jobs = HtmlWorkflowJobs(SessionLocal, HtmlReviewDependencies(ROOT, lambda **kw: calls.append(1) or copy.deepcopy(plan)), executor=executor)
-    task = jobs.submit(db, project, contract)
+    def generator(**kw):
+        from checks.html_design_agent_fixture import response_for
+        result = response_for(kw)
+        if result is not None:
+            return result
+        if kw.get("artifact_prefix", "").startswith("design-reconstruct-"):
+            return {"status":"unchanged","message":"fixture only; approval remains pending"}
+        calls.append(1)
+        return copy.deepcopy(plan)
+    deps = HtmlReviewDependencies(ROOT, generator)
+    from html_production_service import produce_scene
+    from checks.test_html_e_production import png
+    design = produce_scene(contract,run_dir=tmp_path,deps=deps,provider=lambda *a,**kw:png())
+    assert design["stage"] == "design_review"
+    options = {"design_candidate_key":design["design"]["key"]}
+    jobs = HtmlWorkflowJobs(SessionLocal, deps, executor=executor)
+    jobs._test_options = options
+    task = jobs.submit(db, project, contract, options=options)
     def fail_terminal(*args, **kw):
         raise RuntimeError("author committed, task terminal commit failed")
     monkeypatch.setattr(store, "mark_succeeded", fail_terminal)
@@ -192,7 +208,7 @@ def test_author_saved_task_recovers_without_regeneration(author, mode):
     if mode == "startup":
         jobs.recover()
     else:
-        recovered = jobs.submit(db, project, contract)
+        recovered = jobs.submit(db, project, contract, options=jobs._test_options)
         assert recovered["id"] == task["id"] and recovered["reconciled"]
     db.expire_all()
     job = store._job(db, task["id"])
@@ -201,7 +217,7 @@ def test_author_saved_task_recovers_without_regeneration(author, mode):
     receipt = read_receipt(seal)
     assert job.get_payload()["result"] == receipt["result"]
     assert len(calls) == 1
-    assert jobs.submit(db, project, contract)["id"] == task["id"]
+    assert jobs.submit(db, project, contract, options=jobs._test_options)["id"] == task["id"]
 
 
 @pytest.mark.parametrize("damage", ["binding", "revision", "receipt", "scene"])
@@ -220,5 +236,5 @@ def test_incomplete_or_newer_author_commit_never_claims_success(author, damage):
     db.expire_all()
     assert store._job(db, task["id"]).status == "failed"
     with pytest.raises(store.HtmlTaskError, match="RECONCILIATION_BLOCKED"):
-        jobs.submit(db, project, contract)
+        jobs.submit(db, project, contract, options=jobs._test_options)
     assert len(calls) == 1

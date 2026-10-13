@@ -1,6 +1,10 @@
 # PPT HTML Studio
 
-最新开发交接（2026-10-13）：[当前已交付、待验证及讲稿同步/系统自动制作后续方案](docs/plans/html-backend-development/handoff-2026-10-13.md)。用户已认可整体审美；语义同步和完整产品自动制作尚未通过，历史工程通过记录不表示这两项已实现。
+本地最新增量：[设计Agent理解、素材分工与还原审核](docs/plans/html-backend-development/handoff-design-agent-2026-10-13.md)。下方设计先行/A03为前序交接；真实模型、视觉批准与应用整课验收分别记录。
+
+前序增量：[整页设计先行、真实豆包还原与逐句试听](docs/plans/html-backend-development/handoff-design-first-2026-10-13.md)。该轮单页通过工程检查；后续独立视觉审核发现差异并阻止正式保存，以当前设计 Agent 交接为准。A03 仍为历史增量记录。
+
+上一批开发交接（2026-10-13）：[当前已交付、待验证及讲稿同步/系统自动制作后续方案](docs/plans/html-backend-development/handoff-2026-10-13.md)。用户已认可整体审美；语义同步和完整产品自动制作尚未通过，历史工程通过记录不表示这两项已实现。
 
 这是 HTML 课程演示与视频系统的独立开发副本。应用目前运行原图片工作流基线；E1 独立数据驱动渲染已实现，应用内 HTML 生成/标注和原生可编辑 PPTX 尚未实现。
 

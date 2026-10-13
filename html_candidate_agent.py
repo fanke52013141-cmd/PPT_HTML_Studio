@@ -47,6 +47,13 @@ class CandidateState(TypedDict):
     stopped: bool
 
 
+def _registered_reference(entries, reference):
+    matches = [item for item in entries if item.get("id") == reference.get("id") and item.get("version") == reference.get("version")]
+    if len(matches) != 1:
+        raise HtmlReviewError("排版修复缺少唯一匹配版本的主题/布局", code="REPAIR_REFERENCE_VERSION")
+    return matches[0]
+
+
 def repair_candidate(
     scene,
     binding,
@@ -84,8 +91,8 @@ def repair_candidate(
             encoding="utf-8"
         )
     )
-    layout = next(l for l in catalog["layouts"] if l["id"] == scene["layoutRef"]["id"])
-    theme = next(t for t in catalog["themes"] if t["id"] == scene["themeRef"]["id"])
+    layout = _registered_reference(catalog["layouts"], scene["layoutRef"])
+    theme = _registered_reference(catalog["themes"], scene["themeRef"])
     history = []
     tracker = RepairProgress()
     stop_reason = None

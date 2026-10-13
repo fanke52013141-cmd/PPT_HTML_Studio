@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>逐句画面与配音验收</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f5f5;color:#202020;font:14px/1.6 "Microsoft YaHei",sans-serif}main{max-width:1680px;margin:auto;padding:28px}h1{font-size:26px;margin:0}p{color:#666;margin:8px 0 20px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px}.work{min-width:0}#viewport{background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px #0000000b}button{border:1px solid #ddd;background:white;color:#222;border-radius:10px;padding:10px 16px;font:inherit;cursor:pointer}button:hover{border-color:#777}button:focus-visible{outline:2px solid #222;outline-offset:2px}.controls{display:flex;align-items:center;gap:10px;margin:18px 0;flex-wrap:wrap}#seek{flex:1;min-width:180px;accent-color:#333}audio{width:100%}aside{background:white;border:1px solid #e7e7e7;border-radius:16px;padding:20px}aside h2{font-size:18px;margin:0 0 14px}#beats{display:grid;gap:12px}#beats button{padding:14px;text-align:left;line-height:1.7}#beats button.active{background:#eeeeee;border-color:#555}#beats span{display:block;font-size:12px;color:#777;margin-bottom:5px}#status{font-size:13px;color:#666}.fine{font-size:12px;color:#777}details{background:white;border:1px solid #e7e7e7;padding:16px;border-radius:12px;margin-top:20px}textarea{display:block;width:100%;height:240px;margin:12px 0;font:12px monospace}#font,#reduced{accent-color:#333}@media(max-width:1000px){main{padding:18px}.layout{grid-template-columns:1fr}aside{order:2}}
+</style>
+<main>
+<h1>逐句画面与配音验收</h1>
+<p>点击右侧句子定位播放。请核对：这句话播放时，对应内容是否出现，出现顺序是否合适。</p>
+<div class="layout"><section class="work">
+<div id="viewport"></div><div id="status" role="status">正在加载画面…</div>
+<div class="controls"><button id="play">播放</button><button id="end">查看终态</button><input id="seek" type="range" min="0" max="120000" value="0" aria-label="播放进度"><span id="time">0.0 s</span></div>
+<audio id="audio" controls preload="auto" src="voice.mp3"></audio>
+<div class="controls"><label>字幕字号 <input id="font" type="range" min="20" max="44" value="32"><span id="font-value">32</span></label><label><input id="reduced" type="checkbox">减弱运动</label></div>
+<details><summary>编辑页面文字、大小和位置</summary><p class="fine">实例定义可修改并在本页预览；保存到项目仍使用正式编辑接口。</p><textarea id="definition" aria-label="场景定义"></textarea><button id="apply">校验并应用</button></details>
+</section><aside><h2>逐句检查</h2><div id="beats"></div><p class="fine" id="review-note"></p></aside></div>
+<select id="scene" hidden></select><select id="theme" hidden></select>
+</main>
+<script>/*REVIEW_DATA*/</script><script src="player.js"></script><script src="audio-review.js"></script>
+</html>

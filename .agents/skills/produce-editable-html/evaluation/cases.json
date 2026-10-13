@@ -1,5 +1,5 @@
 {
-  "skill_version": "1.5.0",
+  "skill_version": "1.11.0",
   "purpose": "Structured routing fixtures and behavioral specifications; real model evaluation is recorded separately. Facts are annotations, not proof of NLP trigger recognition.",
   "trigger_cases": [
     {
@@ -273,6 +273,51 @@
         "intent": "qa_verify"
       },
       "expected_route": "qa_verify"
+    },
+    {
+      "id": "B17",
+      "input": "讲稿要求解释输出预留，但只强调一个泛化插图",
+      "required": "回到语义规划，语义审阅保持pending",
+      "forbidden": "容量通过就当语义正确",
+      "facts": {
+        "backend": "html",
+        "intent": "replan"
+      },
+      "expected_route": "replan"
+    },
+    {
+      "id": "B18",
+      "input": "同一图片需要变成不同内部状态",
+      "required": "重做代码/独立素材分工",
+      "forbidden": "宣称一个focus就是多对象拆分",
+      "facts": {
+        "backend": "html",
+        "intent": "replan"
+      },
+      "expected_route": "replan"
+    },
+    {
+      "id": "B19",
+      "input": "规划模型超时未返回",
+      "required": "保留未知结果和实际请求",
+      "forbidden": "盲目重发后只保留成功样本",
+      "facts": {
+        "backend": "html",
+        "intent": "repair",
+        "error": "provider"
+      },
+      "expected_route": "diagnose"
+    },
+    {
+      "id": "B20",
+      "input": "审核模型输入是否最小且必要",
+      "required": "核对实际出站原句、约束、素材身份及真实预算",
+      "forbidden": "删掉必要语义或把整个Skill目录发给模型",
+      "facts": {
+        "backend": "html",
+        "intent": "evaluate"
+      },
+      "expected_route": "evaluate"
     }
   ]
 }

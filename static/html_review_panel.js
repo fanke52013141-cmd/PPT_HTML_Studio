@@ -31,7 +31,7 @@
     const target = section.querySelector('[data-html-status]');
     if (target.textContent !== message) target.textContent = message;
   }
-  const stageLabels = {queued:'等待处理',running:'正在处理',plan:'内容规划',brief:'设计规划',design:'设计参考',compile:'编译场景',review:'页面检查',rebuild:'重建影响',json_request:'模型请求',json_returned:'模型已返回',image_request:'图片请求',image_returned:'图片已返回',image_unknown:'图片结果待核实',json_unknown:'模型结果待核实',design_review:'等待设计确认'};
+  const stageLabels = {queued:'等待处理',running:'正在处理',plan:'内容规划',brief:'设计规划',design:'设计参考',design_understanding:'设计理解与素材分工',design_reconstruction:'依据设计图还原',design_fidelity_review:'设计还原审核',compile:'构建画面',review:'页面检查',rebuild:'重建影响',json_request:'模型请求',json_returned:'模型已返回',image_request:'图片请求',image_returned:'图片已返回',image_unknown:'图片结果待核实',json_unknown:'模型结果待核实',design_review:'等待设计确认'};
   const taskStatusLabels={queued:'等待处理',running:'生产中',succeeded:'任务结束',failed:'生产失败',interrupted:'任务中断',cancelled:'已停止'};
   function taskFacts(section, task) {
     lastTask = task;
@@ -201,14 +201,14 @@
         status(section, '处理中…');
         try {
           let action = button.dataset.action;
-          let payload = {};
+          let payload = action === 'produce' ? {plan_version: '0.2.0'} : {};
           if (action === 'accept-design') {
             if (!designCandidate || designCandidate.stale) throw new Error('请先生成并审阅当前设计。');
             payload = {design_candidate_key: designCandidate.key}; action = 'produce';
           } else if (action === 'revise-design') {
             const instruction = section.querySelector('[data-design-instruction]').value.trim();
             if (!instruction) throw new Error('请填写本轮设计修改方向。');
-            payload = {design_instruction: instruction}; action = 'produce';
+            payload = {design_instruction: instruction, plan_version:'0.2.0'}; action = 'produce';
           } else if (action === 'retry-asset') {
             const instruction = section.querySelector('[data-asset-instruction]').value.trim();
             if (!acceptedDesignKey || !instruction) throw new Error('请填写主体素材修改方向，并确认当前设计仍有效。');

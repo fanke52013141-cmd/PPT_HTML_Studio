@@ -14,12 +14,15 @@ from html_reference_package import verify_package
 def definition_identity(repo_root):
     repo = Path(repo_root)
     visual = repo / "html_engine/visual"
-    paths = [visual / "preview/player.js", visual / "generated/catalog.json", visual / "effects/registry.json",
+    paths = [visual / "preview/player.js", visual / "generated/catalog.json", visual / "effects/registry.json", visual / "presentation-variants.json",
              repo / "html_engine/tools/catalog-lib.cjs", repo / "html_engine/tools/catalog-assemble.cjs"]
     paths += [repo / name for name in ("html_production_service.py", "html_reference_package.py",
                                       "html_design_candidates.py", "html_image_provider.py", "html_design_brief.py",
                                       "html_candidate_agent.py", "html_scene_repair.py", "html_scene_editing.py",
-                                      "html_visual_review_service.py", "html_engine/tools/review-scene.cjs")]
+                                      "html_visual_review_service.py", "html_semantic_plan.py", "html_semantic_design.py",
+                                      "html_planning_context.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_runtime_skills.py", "html_engine/tools/review-scene.cjs")]
+    from html_runtime_skills import runtime_source_files
+    paths += [repo / record["path"] for record in runtime_source_files(repo)]
     for folder in ("themes", "layouts", "templates"):
         paths += sorted((visual / folder).glob("*.json"))
     catalog_path = visual / "catalog/catalog.json"

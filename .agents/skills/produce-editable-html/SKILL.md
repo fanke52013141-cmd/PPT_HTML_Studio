@@ -1,11 +1,11 @@
 ---
 name: produce-editable-html
-description: Produce and verify editable HTML slides from this repository's slide contracts, repair unsaved layout candidates or saved scene typography/layout/motion, and diagnose failed HTML production. Use for 生成可编辑HTML、初稿溢出、调整文字位置字号、验证自动生产与二次修改. Use registered components and shared APIs; exclude image-only production, standalone websites, and generic framework advice.
+description: Produce and verify editable HTML slides from this repository's slide contracts, diagnose narration-to-visual mismatches, repair unsaved layout candidates or saved scene typography/layout/motion, and diagnose failed HTML production. Use for 生成可编辑HTML、讲稿画面不对应、初稿溢出、调整文字位置字号、验证自动生产与二次修改. Use registered components and shared APIs; exclude image-only production, standalone websites, and generic framework advice.
 ---
 
 # 可编辑 HTML 生产与局部修复
 
-Skill 版本：1.7.0（2026-10-12）。目标是交付实际可打开、可编辑、来源可追溯的作品。
+Skill 版本：1.11.0（2026-10-13）。目标是交付实际可打开、可编辑、来源可追溯的作品。
 
 本文代码与文档路径均相对仓库根目录；`references/`、`evaluation/` 相对本 Skill 目录。
 先读 `docs/contracts/html-presentation/README.md`，再读其下 `runtime/visual-v1/application-production-0.3.0.md`、`scene-repair-0.1.0.md` 和 `candidate-layout-agent-0.1.0.md`。从 `agent_contract.capabilities` 获取实际可调用能力和请求 Schema。参考图谱不等于运行组件目录。保持内容、场景、资源、绑定为唯一源；DOM/截图/视频为派生物。
@@ -19,6 +19,10 @@ Skill 版本：1.7.0（2026-10-12）。目标是交付实际可打开、可编�
 - 默认黑灰白基线；保留用户已选风格和人工修改。通过字号层次、间距、对齐、线条与灰阶改善美感，不以不断缩小文字作为通用解法。
 
 ## 运行时策略与对照
+
+设计先行流程读 `docs/contracts/html-presentation/runtime/visual-v1/design-agent-0.1.0.md`：设计确认后，Agent先理解逐对象外观及代码/图片、复用/生成分工，再调用素材服务和受控还原，最后用原图＋实际候选截图独立审核。模型审核pass仍需用户签收；layout问题可进入剩余还原预算，content/assets/capabilities回对应阶段。理解一次、还原/审核各最多两次，不重复无改善候选；保留正常思考，每次等待600秒，unknown不补发。三个新片段由config注册且实际消费，连同原容量修复共四个运行Skill；不将本Codex操作说明整篇传入模型。终态审核不替代A04逐句语义QA，多元素图片拆分不由此自动开放。下方S06单片段说明为原批次记录，以本增量为准。
+
+讲稿/画面含义不对应、多对象分步解释或规划上下文审核，先读 [语义规划与设计分工](references/semantic-planning.md)。显式0.2.0规划与生产已支持初态、多动作和原句校验的音频绑定；语义QA和整课调度仍待后续。重复动作编辑必须选 actionId，不走排版循环掩盖表达问题。本操作Skill版本与config中的运行片段版本独立。
 
 先读 `docs/contracts/html-presentation/runtime/visual-v1/runtime-skills-0.1.0.md`。当前只给未保存容量候选加载一个运行片段，其他职责及已保存修复保持原工具入口。检查 layout_agent.runtime_skill、每轮 request.json 和实际 system_prompt hash；registry/body/reference 不匹配、合同不兼容或运行中变化时停止，不把外部文档注册成高优先级指令。正文与引用在 `config/html_runtime_skills/`，注册在 `config/html_runtime_skills.json`，无需 `.agents` 目录才能运行。
 
@@ -38,9 +42,9 @@ Skill 版本：1.7.0（2026-10-12）。目标是交付实际可打开、可编�
 
 1. 读取当前页权威visual_contract和注册模板。检查项目文字/图片模型绑定，默认neutral-baseline黑灰白。已有素材先验证 assetRef、身份、版本及文件内容并显式复用；不能因已有图片而误入新生图分支。
 2. 用html_review.produce进入生产，由服务调用模型返回plan；结构错误由服务一次重试；容量失败的未保存候选由服务内部 LangGraph 排版 Agent 最多三轮，实际截图/测量驱动，严格重验才保存。资源/Schema 错误不进入循环。失败停止，不手写计划后声称自动成功。html_review.plan_generate仅用于独立规划诊断，其输出不会自动被produce复用。
-3. 有新图片时停在design_review。展示设计候选并沿用已授权的批准范围；审批使用实际design candidate key。
-4. 接受后复用同一任务继续独立主体与场景生成。禁止整页图片替代HTML正文；准确文字、关系由代码控制。
-5. 读html_editor.read，再用html_repair.evidence检查实际渲染。展示本次任务实际保存的HTML和带时间截图，不以旧样板替代。诊断预览 passed=false 不能当作已保存成功。纯代码页沿用现有无生图分支。
+3. 所有新生产任务都先生成整页设计并停在design_review，纯代码和复用主体页也执行。缺图片连接停止；不跳过设计。展示候选并沿用已授权的批准范围；审批使用实际design candidate key。
+4. 接受后复用同一任务继续独立主体与场景生成，按 `design-first-reconstruction-0.1.0.md` 进行受控还原。首轮设计图加必要对象/实测输入；仅结构修复轮附失败截图，最多两次。模型返回注册操作，由共享组件渲染；禁止整页图片替代HTML正文或修改原文/动作。scene0.6可经注册set_variant显式升级0.7；没有的能力返回unsupported，不生成自由CSS。
+5. 读html_editor.read，再用html_repair.evidence检查实际渲染。展示本次实际保存的HTML与设计图对比，不以旧样板替代。诊断预览 passed=false 不能当作成功。审计请求、图片数、思考参数、耗时及人工介入；工程通过仍需美感/语义/音频批准。网络unknown不盲目重试。用户界面请求plan0.2，旧公共默认0.1保留；不要把兼容默认误当多动作生产。
 
 ## 局部修复
 

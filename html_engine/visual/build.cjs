@@ -93,6 +93,7 @@ async function main() {
     pack[relative] = bytes.toString("base64");
   }
   const catalog = {
+    presentationVariants: read("presentation-variants.json"),
     themes: folder("themes"),
     layouts: folder("layouts"),
     templates: folder("templates"),

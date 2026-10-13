@@ -19,6 +19,7 @@ from pathlib import Path
 from PIL import Image
 
 import html_visual_store as store
+from html_motion_binding import motion_identity, validate_binding
 
 ROOT = Path(__file__).resolve().parent
 ID = re.compile(r"^[a-z][a-z0-9.-]{0,63}$")
@@ -120,6 +121,15 @@ def load_editor(run, slide):
 
 
 def _validate_binding(binding, scene, beats):
+    if scene.get("version") in ("0.6.0", "0.7.0"):
+        try:
+            validate_binding(scene, binding, {b.get("beat_id") or b.get("id") for b in beats})
+            expected = {b.get("id"): b.get("spoken_text", b.get("text")) for b in beats}
+            if any(expected.get(b["id"]) != b["spoken_text"] for b in binding["sourceBeats"]):
+                raise ValueError("Binding source differs from current narration")
+        except ValueError as exc:
+            raise SceneEditError("BINDING_INVALID", str(exc)) from exc
+        return
     if binding is None:
         return
     if set(binding) != {"format", "version", "mode", "actions"} or (
@@ -263,7 +273,7 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
     )
 
 
-def preview_editor(run, slide, scene, binding, anchor_overrides=None):
+def preview_editor(run, slide, scene, binding, anchor_overrides=None, *, beats=None):
     """Resolve timing through the existing binder; no writes or TTS."""
     scene = copy.deepcopy(scene)
     project = resources(run)
@@ -281,7 +291,7 @@ def preview_editor(run, slide, scene, binding, anchor_overrides=None):
             ]
         }
     ]
-    _validate_binding(binding, scene, beats_for(run, slide))
+    _validate_binding(binding, scene, beats_for(run, slide) if beats is None else beats)
     timeline = read_json(
         Path(run) / "slides" / store.validate_slide_id(slide) / "audio_timeline.json"
     )
@@ -317,7 +327,7 @@ def merge_manual_edits(candidate, binding, manual):
     base, edited = manual["base_scene"], manual["scene"]
     for collection, identity in (
         ("nodes", lambda n: n["id"]),
-        ("motion", lambda a: f"{a['targetId']}:{a['type']}"),
+        ("motion", motion_identity),
     ):
         before = {identity(n): n for n in base[collection]}
         after = {identity(n): n for n in edited[collection]}
@@ -346,6 +356,10 @@ def merge_manual_edits(candidate, binding, manual):
                         else:
                             target.pop(field, None)
         result[collection] = list(current.values())
+    if any(n.get("presentation",{}).get("variant") for n in result["nodes"]) and result.get("version") == "0.6.0":
+        result["version"] = "0.7.0"
+    elif any(n.get("presentation") for n in result["nodes"]) and result.get("version") in ("0.3.0","0.4.0"):
+        result["version"] = "0.5.0"
     if manual.get("base_binding") != manual.get("binding"):
         original = (manual.get("base_binding") or {}).get("actions", {})
         changed = (manual.get("binding") or {}).get("actions", {})
@@ -368,7 +382,7 @@ def protected_edit_paths(before, after, prefix):
     """Stable object/action IDs, so protection never depends on array order."""
     def named(value):
         if isinstance(value, list) and value and all(isinstance(n, dict) and ("id" in n or "targetId" in n) for n in value):
-            return {n.get("id") or f"{n['targetId']}:{n['type']}": named(n) for n in value}
+            return {n.get("id") or motion_identity(n): named(n) for n in value}
         if isinstance(value, dict):
             return {k: named(v) for k, v in value.items()}
         return value
@@ -413,6 +427,8 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
     for key in set(scene) | set(document["scene"]):
         if key == "version" and scene.get("version") == "0.5.0" and document["scene"].get("version") in ("0.3.0", "0.4.0"):
             continue  # Explicit instance-edit upgrade; no other structure changes.
+        if key == "version" and scene.get("version") == "0.7.0" and document["scene"].get("version") == "0.6.0":
+            continue  # Registered presentation variants preserve semantic identity.
         if key not in ("nodes", "motion") and scene.get(key) != document["scene"].get(
             key
         ):
@@ -421,6 +437,10 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
         (n["id"], n["type"], n["slot"]) for n in document["scene"]["nodes"]
     ]:
         raise SceneEditError("STRUCTURE_LOCKED", "对象身份/类型/槽位不可更改")
+    if scene.get("version") in ("0.6.0", "0.7.0") and [
+        (a["actionId"], a["targetId"], a["type"]) for a in scene["motion"]
+    ] != [(a["actionId"], a["targetId"], a["type"]) for a in document["scene"]["motion"]]:
+        raise SceneEditError("STRUCTURE_LOCKED", "语义动作身份与顺序需回到规划修改")
     existing_binding = read_json(binding_path(run, slide))
     _validate_binding(binding, scene, beats_for(run, slide))
     project_resources = resources(run)

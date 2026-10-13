@@ -14,6 +14,7 @@ from html_storyboard_planning import plan_evidence
 from html_visual_store import load_scene_with_revision
 from project_path_service import project_run_dir_or_500
 from html_production_models import HtmlProduceRequest
+from html_semantic_plan import HtmlPlanGenerateRequest as PlanGenerateRequest
 
 router = APIRouter()
 
@@ -81,10 +82,6 @@ def _html_project(project_id: str, db: Any):
     return project
 
 
-class PlanGenerateRequest(BaseModel):
-    brief: Optional[dict] = None
-
-
 class SceneBodyRequest(BaseModel):
     scene: dict
 
@@ -123,6 +120,7 @@ def generate_plan(
             repo_root=_dependencies.repo_root,
             json_generator=_dependencies.json_generator,
             brief=payload.brief,
+            plan_version=payload.plan_version,
         )
     except review.HtmlReviewError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc))

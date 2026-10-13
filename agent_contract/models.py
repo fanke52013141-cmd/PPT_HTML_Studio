@@ -426,6 +426,9 @@ class HtmlPlanGenerationResult(BaseModel):
     evidence: dict[str, Any]
 
 
+from html_semantic_plan import HtmlPlanGenerateRequest as HtmlPlanGenerateRequest
+
+
 class HtmlTaskResult(BaseModel):
     project_id: str
     task: dict[str, Any]

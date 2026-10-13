@@ -262,7 +262,8 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
         )
     if cap_id == "html_review.plan_generate":
         return client.post_html_plan_generate(
-            args.get("project_id", ""), args.get("slide_id", "")
+            args.get("project_id", ""), args.get("slide_id", ""),
+            {k: v for k, v in args.items() if k not in ("project_id", "slide_id")}
         )
     if cap_id == "html_review.review":
         return client.post_html_review(

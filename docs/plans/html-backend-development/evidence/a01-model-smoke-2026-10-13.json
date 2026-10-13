@@ -1,0 +1,26 @@
+{
+  "model": "doubao-seed-2-1-pro-260915",
+  "source_sha256": {
+    "html_semantic_plan.py": "8143838dfe78ccc5fa411240ec15471bccb8ad6e22ceba15a58601844f961829",
+    "html_storyboard_planning.py": "0eaf1501c16182a1ad0a86b5b9d8f5c88d0399f8707cfdf2417778706340a27d",
+    "html_visual_review_service.py": "9458906a6aa6fd0d31fcd51a213454462cb79cf7f244d883f30cf2e0fefc2cc2"
+  },
+  "meaning": "pending_review",
+  "runtime": "not_implemented",
+  "cost": null,
+  "manual_plan_edits": 0,
+  "structure": "failed",
+  "code": "HTTPException",
+  "http_attempts": 1,
+  "source_unchanged": true,
+  "http_records": [
+    {
+      "attempt": 1,
+      "success": false,
+      "usage": null,
+      "elapsed_seconds": 90.182
+    }
+  ],
+  "provider_outcome": "unknown",
+  "note": "No returned model plan; no automatic resend or manual replacement. Source archive belongs to this failed attempt, not the later pre-request logging improvement. Structural fixture tests are separate from real model evidence."
+}

@@ -54,6 +54,10 @@ class HtmlWorkflowJobs:
         recovered = self.reconcile_project(db, project, contract, options, model_summary)
         if recovered is not None:
             return {**recovered, "reused": True, "reconciled": True}
+        if frozen is not None:
+            frozen.text.require_ready()
+            if not options.get("design_candidate_key"):
+                frozen.image.require_ready()  # Every new page requires a full design reference.
         from html_build_snapshot import create_generation_snapshot
         snapshot = create_generation_snapshot(
             project.run_dir, contract, repo_root=self.deps.repo_root,

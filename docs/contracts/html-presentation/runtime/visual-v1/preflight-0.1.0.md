@@ -7,7 +7,7 @@
 | 身份与作用域 | hps.html.preflight 0.1.0，本地 HTML 前提条件检查 |
 | 输入 | target、可选实际 scene、run_dir、现有输出目录、空间预算、宿主已解析的 text/image 布尔配置就绪声明 |
 | 目标 | static_html、generate_existing、generate_new_images、snapshot_pptx、video |
-| 依赖差异 | 生成才要求文字配置；新图才要求图片配置；静态/PPTX 不要求音频；video 核验确认、绑定和媒体工具 |
+| 依赖差异 | 生成要求文字和图片配置，纯代码/复用主体页仍需完整设计参考（2026-10-13设计先行增量）；静态/PPTX 不要求音频；video 核验确认、绑定和媒体工具 |
 | 本机验证 | 实际浏览器启动，主题字体通过 FontFace local 加载；提供 scene 时共享播放器检查场景与实际资源 |
 | 输出 | target、ready、逐项 code/passed/message、实际 browser_executable；provider_connection_tested=false、approval_granted=false |
 | 前提边界 | 配置声明不等于连接可用；预检 ready 不替代视觉/音频批准或导出门禁；未提供 scene 的静态检查仅确认环境 |

@@ -70,3 +70,19 @@ S06已实现第一批候选容量修复 loader，注册/合同/路径/hash校验
 ```
 
 evaluation/cases.json 是评估规范，不是已经执行的模型评分。结构验证、人工走查与真实模型实验必须分别报告。
+
+## 1.8.0 — 2026-10-13
+
+新增按需 semantic-planning 指南与 B17—B20，共28条结构化路由案例。表达错误进入重新规划，容量错误才进入局部排版；实际 runtime Skill 0.1.0 正文未改。A02 真实规划结构通过但 instructional 对象被标为 context，记录为待语义验收的问题，不能用结构通过或手改输出来掩盖。
+
+## 1.9.0 — 2026-10-13
+
+A03 explicit scene0.6/binding0.2: stable multi-actions, initial state, source-bound actual audio, exact repeated-action editing and shared preview clock. Existing 28 annotated routes retained; runtime layout Skill remains0.1.0. Semantic QA and autonomous course orchestration remain pending.
+
+## 1.10.0 — 2026-10-13
+
+All new production starts with a complete design image, including pure-code/reused-subject pages. Accepted designs enter bounded multimodal static reconstruction; registered variants explicitly upgrade scene0.6 to 0.7. Prompt0.4 added safety, format and CJK line-height evidence. Original timeout and thinking-disabled experiments remain historical evidence, without visual approval.
+
+## 1.11.0 — 2026-10-13
+
+设计理解/分工在素材生成前执行，其合法组件选择经原编辑接口实际消费。独立终态审核使用真实截图，代码SVG不可转到位图返工，其他问题按归属返回。四个受控运行Skill进入快照，保留正常思考与600秒等待。真实Pro理解、还原、审核均返回；审核发现7项问题并阻止保存。多素材拆分及A04语义QA仍是后续独立任务。

@@ -149,6 +149,17 @@ def build_design_brief(
         "registry_sha256": effect_registry["sha256"],
         "catalog_sha256": (plan.get("registered") or {}).get("catalog_sha256"),
     }
+    if plan.get("version") == "0.2.0":
+        from html_semantic_design import build_semantic_design
+        from html_semantic_plan import SemanticPlanError
+        try:
+            brief["semantic_design"] = build_semantic_design(plan, asset_budget=asset_budget)
+        except SemanticPlanError as exc:
+            raise DesignBriefError(exc.code, str(exc)) from exc
+        brief["version"] = "0.2.0"
+        # No effects are selected by scene_plan. Do not present the entire
+        # registry as if this page used them.
+        brief["effects"] = []
     brief["sha256"] = _sha256_bytes(_canonical(brief))
     return brief
 
@@ -223,6 +234,14 @@ def required_keyframes(plan: Dict[str, Any]) -> List[Dict[str, Any]]:
     """OSS-04: static scenes need one reference; process scenes must cover
     start, relation change, and end. Transitional objects force process
     keyframes even when the plan structure would suggest a static page."""
+    if plan.get("version") == "0.2.0":
+        from html_semantic_design import build_semantic_design
+        design = build_semantic_design(plan)
+        return [
+            {"stage": "start", "shows": "初始可见对象：" + ", ".join(design["initialVisibleObjectIds"])},
+            *[{"stage": "relation_change", "shows": step["id"] + "：" + step["visualIntent"]} for step in design["steps"] if not step["narration_only"]],
+            {"stage": "end", "shows": "最终可见对象：" + ", ".join(design["finalVisibleObjectIds"])},
+        ]
     has_transitional = any(
         obj.get("exit") or obj.get("transitional")
         for obj in plan.get("objects", [])

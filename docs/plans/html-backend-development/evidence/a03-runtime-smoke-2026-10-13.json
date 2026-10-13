@@ -1,0 +1,184 @@
+{
+  "html": "D:\\software\\PPT_HTML_Studio\\outputs\\a03-semantic-runtime-2026-10-13-final\\preview\\index.html",
+  "plan_sha256": "790fec8aaffc301c60bfd5c0ba9c7cfa902407d09735e32144a5d482d94846ab",
+  "audio_sha256": "df828bfb71184cc9cb6b393a8da740fb4c66bb67980370e5bfb01a0c2c8c6ea3",
+  "timing_source": "provider_sentence_timestamps",
+  "durationMs": 16776,
+  "beatCount": 4,
+  "actionCount": 5,
+  "manual_plan_edits": 0,
+  "model_calls_this_stage": 0,
+  "audio_confirmation": "pending_user_listening",
+  "semantic_review": "pending_review",
+  "formal_export": false,
+  "browser_review": {
+    "status": "passed",
+    "checks": [
+      "audio decoded and beat navigation loaded",
+      "actual initial, beat, parallel actions and final visibility",
+      "real audio playback drives shared frame clock"
+    ],
+    "frames": [
+      {
+        "timeMs": 0,
+        "file": "frame-0.png",
+        "visible": {
+          "header": 1,
+          "stat-input": 0,
+          "stat-output": 0,
+          "stat-pricing": 0,
+          "billing-caption": 0,
+          "billing-summary": 0
+        }
+      },
+      {
+        "timeMs": 500,
+        "file": "frame-500.png",
+        "visible": {
+          "header": 1,
+          "stat-input": 1,
+          "stat-output": 0,
+          "stat-pricing": 0,
+          "billing-caption": 0,
+          "billing-summary": 0
+        }
+      },
+      {
+        "timeMs": 4216,
+        "file": "frame-4216.png",
+        "visible": {
+          "header": 1,
+          "stat-input": 1,
+          "stat-output": 1,
+          "stat-pricing": 0,
+          "billing-caption": 0,
+          "billing-summary": 0
+        }
+      },
+      {
+        "timeMs": 7595,
+        "file": "frame-7595.png",
+        "visible": {
+          "header": 1,
+          "stat-input": 1,
+          "stat-output": 1,
+          "stat-pricing": 1,
+          "billing-caption": 0,
+          "billing-summary": 0
+        }
+      },
+      {
+        "timeMs": 12187,
+        "file": "frame-12187.png",
+        "visible": {
+          "header": 1,
+          "stat-input": 1,
+          "stat-output": 1,
+          "stat-pricing": 1,
+          "billing-caption": 1,
+          "billing-summary": 1
+        }
+      },
+      {
+        "timeMs": 16776,
+        "file": "frame-16776.png",
+        "visible": {
+          "header": 1,
+          "stat-input": 1,
+          "stat-output": 1,
+          "stat-pricing": 1,
+          "billing-caption": 1,
+          "billing-summary": 1
+        }
+      }
+    ],
+    "errors": [],
+    "clock": {
+      "audioMs": 4024.0879999999997,
+      "frameMs": 4016.3190000000004,
+      "playing": false
+    }
+  },
+  "audio_requests": [
+    {
+      "slide_id": "token-03",
+      "state": "returned",
+      "input_sha256": "56bf03246e9af3e054df71d3c9f1ca22f279b084ab4595c79d3de67d6ea4524f",
+      "provider": "minimax",
+      "model": "speech-2.8-hd",
+      "cost": null,
+      "audio_sha256": "df828bfb71184cc9cb6b393a8da740fb4c66bb67980370e5bfb01a0c2c8c6ea3"
+    }
+  ],
+  "audio_reuse": {
+    "source_directory": "outputs\\a03-semantic-runtime-2026-10-13",
+    "matching_original_narration": true,
+    "new_tts_requests": 0
+  },
+  "source_sha256": {
+    "html_semantic_runtime.py": "20c7f301be87c38c416795229371cf6dcfe109f0e566571a194eea7b78a2f08b",
+    "html_motion_binding.py": "f21e78e37eead05f211dfd10bca743b7f144335cefdb765aaeac91dda6abd071",
+    "html_audio_binder.py": "ae80467cb8f167b405fd73cf962a2392ed9115d3254b208eda92a97f3d19a2a1",
+    "html_production_service.py": "51ce33b69daca8ef83ae32411592d7e15a8295ea0bbb1da2f2556e704fddaf4b",
+    "html_engine/visual/schema.json": "84d524e188e67381012afa05e8223506b57fca957be5613b3a3f96d44ff87ae7",
+    "html_engine/visual/preview/player.js": "3e922183e35cdd76a3b4cbed77dfaeb9f34c656fd0befff5a95db0fbd3e253bf",
+    "html_engine/visual/audio-review/index.html": "11ba55c7f43f52515cfbdab91c0fb3a738381b09d809ce73d5d5bb7812f09835",
+    "html_engine/visual/audio-review/audio-review.js": "e2f8f39aa71c909fc1be7b7fb745518c7bfd1cc5d6fc70cbe2dc30673d407737",
+    "scripts/validate_html_semantic_runtime.py": "05d3e1c56b8671da4ae83b6e995ec3192b3aa5fa13f266b8718094be02b97729"
+  },
+  "prior_content_qa": {
+    "static_passed": true,
+    "temporal_passed": true,
+    "times_checked": 522,
+    "scope": "same bound content, before final page-ID compatibility build"
+  },
+  "design_reference_generated": false,
+  "design_first_reconstruction": "not_implemented_for_this_review",
+  "model_roles": "pending_review; narrated objects marked context",
+  "provider_timestamp_count": 2,
+  "regression": {
+    "combined": {
+      "passed": 193,
+      "failed": 1,
+      "failure": "New test fixture omitted resources"
+    },
+    "focused_after_fixture_and_asset_identity_fix": {
+      "passed": 12,
+      "failed": 0
+    },
+    "counts_overlap": true,
+    "full_combined_rerun": false
+  },
+  "edit_preview": {
+    "request": {
+      "expected_revision": 1,
+      "scope": [
+        "stat-input"
+      ],
+      "sampling_mode": "sampled",
+      "overlap_policy": "registered",
+      "operations": [
+        {
+          "targetId": "stat-input",
+          "kind": "set_text_style",
+          "part": "text",
+          "values": {
+            "fontSizePx": 25
+          }
+        },
+        {
+          "targetId": "stat-input",
+          "kind": "set_presentation",
+          "values": {
+            "offsetX": 8
+          }
+        }
+      ]
+    },
+    "passed": true,
+    "candidate_key": "fac7cf9c41a48f59975ad2d07d414cb8433ce86de1362147a309e527fd0495ee",
+    "saved": false
+  },
+  "frontend_quality": "passed",
+  "late_asset_identity_fix": "covered by simulated-provider design-stop and resume test; real image generation not run"
+}

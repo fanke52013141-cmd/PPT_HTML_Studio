@@ -36,6 +36,12 @@ def case(tmp_path, monkeypatch):
     requests, llm_calls = [], []
     def generator(**kw):
         llm_calls.append(kw)
+        from checks.html_design_agent_fixture import response_for
+        agent_result = response_for(kw)
+        if agent_result is not None:
+            return agent_result
+        if kw.get("artifact_prefix", "").startswith("design-reconstruct-"):
+            return {"status":"unchanged","message":"fixture only; no visual approval"}
         return copy.deepcopy(plan)
     def provider(prompt, **kw):
         requests.append({"prompt": prompt, **kw, "sent_hashes": [hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in kw["reference_paths"]]})
@@ -48,6 +54,46 @@ def case(tmp_path, monkeypatch):
 
 def run(case, **options):
     return produce_scene(case.contract, run_dir=case.run, deps=case.deps, provider=case.provider, options=options)
+
+
+def test_allocation_precedes_subject_generation_and_observation_is_consumed(case):
+    first = run(case)
+    result = run(case, design_candidate_key=first["design"]["key"])
+    assert result["saved"]["changed"]
+    allocation = next(k for k in case.llm_calls if k.get("artifact_prefix", "").startswith("design_understanding-"))
+    data = json.loads(allocation["user_prompt"])
+    assert any(v["assetMode"] == "generate" for v in data["capabilities"].values())
+    assert "fixture observation only" in case.requests[-1]["prompt"]
+    assert result["saved"]["changed"] and not (case.run/"planning/html_visual/approval-e1.json").exists()
+
+
+def test_unsupported_allocation_stops_before_paid_subject_and_author_write(case):
+    first = run(case)
+    from checks.html_design_agent_fixture import response_for
+    def generator(**kw):
+        if kw.get("artifact_prefix", "").startswith("design_understanding-"):
+            data = json.loads(kw["user_prompt"])
+            return {"status":"unsupported","objects":[],"issues":[{"targetId":data["objects"][0]["id"],"route":"capabilities","evidence":"fixture unsupported shape"}]}
+        return response_for(kw)
+    case.deps = HtmlReviewDependencies(ROOT,generator)
+    with pytest.raises(HtmlReviewError) as caught:
+        run(case,design_candidate_key=first["design"]["key"])
+    assert caught.value.code == "DESIGN_ALLOCATION_UNSUPPORTED"
+    assert len(case.requests)==1 and not (case.run/"planning/html_visual/scene-e1.json").exists()
+
+
+def test_semantic_generated_image_identity_reaches_new_compiler(case):
+    from checks.test_html_semantic_plan import semantic_plan
+    plan = semantic_plan(case.contract)
+    from checks.html_design_agent_fixture import response_for
+    case.deps = HtmlReviewDependencies(ROOT, lambda **kw: response_for(kw) or ({"status":"unchanged","message":"fixture only"} if kw.get("artifact_prefix","").startswith("design-reconstruct-") else copy.deepcopy(plan)))
+    first = run(case,plan_version="0.2.0")
+    assert first["stage"] == "design_review"
+    result = run(case,design_candidate_key=first["design"]["key"])
+    assert result["saved"]["changed"]
+    scene = json.loads((case.run/"planning/html_visual/scene-e1.json").read_text(encoding="utf-8"))
+    assert scene["version"] == "0.6.0"
+    assert next(n for n in scene["nodes"] if n["type"] == "image")["assetRef"]["id"].startswith("project-")
 
 
 @pytest.mark.parametrize('model,size', [('gpt-image-1.5', '1536x1024'), ('gpt-image-2.5-flare-vip', '1280x720')])
@@ -123,7 +169,7 @@ def test_stop_resume_real_package_and_no_duplicate_planning(case):
     assert record["plan"]["slots"]["card-1"]["tone"] == "pink"
     assert "catalog_sha256" not in case.requests[0]["prompt"]
     second = run(case, design_candidate_key=key)
-    assert len(case.llm_calls) == 1 and len(case.requests) == 2
+    assert len(case.llm_calls) == 4 and len(case.requests) == 2
     assert case.requests[-1]["transparent_background"]
     assert str(folder / "design-reference.png") in case.requests[-1]["reference_paths"]
     assert second["scene"]["themeRef"]["id"] == "neutral-baseline"
@@ -134,15 +180,19 @@ def test_stop_resume_real_package_and_no_duplicate_planning(case):
     assert not repeated["saved"]["changed"] and len(case.requests) == 2
 
 
-def test_explicit_supplied_asset_reuses_bytes_without_image_provider(case):
+def test_explicit_supplied_asset_still_requires_page_design(case):
     case.contract["visual_groups"] = [{"id": "subject", "available_assets": [
         {"assetRef": {"id": "condensation", "version": "0.1.0"}}
     ]}]
-    result = produce_scene(case.contract, run_dir=case.run, deps=case.deps, provider=None)
+    with pytest.raises(HtmlReviewError) as caught:
+        produce_scene(case.contract, run_dir=case.run, deps=case.deps, provider=None)
+    assert caught.value.code == "DESIGN_PROVIDER_MISSING"
+    first=run(case)
+    result=run(case,design_candidate_key=first["design"]["key"])
     assert result["review"]["passed"]
     assert result["saved"]["changed"]
-    assert len(case.llm_calls) == 1
-    assert not case.requests
+    assert len(case.llm_calls) == 4
+    assert len(case.requests) == 1
     assert next(n for n in result["scene"]["nodes"] if n["type"] == "image")["assetRef"]["id"] == "condensation"
 
 
@@ -206,7 +256,7 @@ def test_single_asset_retry_reuses_design_and_plan(case):
     before = load_scene_with_revision(case.run, "e1")
     assert not current_design(run_dir=case.run, contract=case.contract, repo_root=ROOT)["design"]["stale"]
     retried = run(case, design_candidate_key=key, asset_instruction="更清晰的轮廓")
-    assert len(case.llm_calls) == 1 and len(case.requests) == 3
+    assert len(case.llm_calls) == 7 and len(case.requests) == 3
     assert case.requests[-1]["transparent_background"]
     assert "更清晰的轮廓" in case.requests[-1]["prompt"]
     assert initial["scene"]["nodes"][0] == retried["scene"]["nodes"][0]
@@ -338,7 +388,9 @@ def test_web_agent_payload_parity_and_current_design(tmp_path, monkeypatch):
                 base = f"{prefix}/projects/{pid}/html-review/s1"
                 body = {"design_candidate_key": "a" * 64, "asset_instruction": "fixture retry"}
                 assert client.post(base + "/produce", json=body).status_code == 200
-                assert requests[-1] == {**body, "design_instruction": ""}
+                assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.1.0"}
+                assert client.post(base + "/produce", json={"plan_version":"0.2.0"}).status_code == 200
+                assert requests[-1]["plan_version"] == "0.2.0"
                 assert client.post(base + "/produce", json={"unknown": True}).status_code == 422
                 assert client.get(base + "/design/current").json()["design"] is None
     finally:

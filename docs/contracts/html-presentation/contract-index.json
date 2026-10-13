@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.31",
+  "contract_version": "0.9.36",
   "effective_date": "2026-10-13",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,11 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-13 design-agent-0.1.0: image-grounded object understanding and code/image allocation before subject generation; registered runtime reconstruction and independent actual-screenshot fidelity review, bounded routed repairs. Four explicit runtime skills; human approval remains separate. Normal provider thinking retained, 600-second wait. Multi-asset decomposition and narration semantic QA remain outside this increment.",
+    "2026-10-13: design-first-reconstruction-0.1.0 requires full-page designs for all new production; bounded image-grounded static reconstruction and registered scene0.7 variants. Agent API1.24.0. Engineering and actual model fidelity tracked separately; no automatic approvals.",
+    "2026-10-13 A03 semantic-runtime-0.1.0: explicit scene0.6/binding0.2, initial visibility, stable repeated actions and source-bound actual audio. Review-only real page verified. Design-first reconstruction remains a documented production gap; semantic approval and course orchestration pending.",
+    "2026-10-13 A02 semantic-design-0.1.0: minimal necessary planning context, exact registered capacity/version, object ownership and declared states in design reference input. Real one-page structure passed; meaning pending, multi-action runtime blocked until A03.",
+    "2026-10-13 A01 semantic-plan-0.2.0: explicit planning request, authoritative spoken bytes/hash, roles, multi-target stable actions and expected states. Structural checks only; meaning pending and runtime not implemented. Legacy production remains 0.1.0; no silent downgrade. Agent API1.22.0.",
     "2026-10-13: explicit asset/slot annotation aliases only; never guess unknown targets from a unique image or generic focus. User accepts overall aesthetics but narration/visual/animation correspondence and autonomous product orchestration remain unverified. Planned fixes are not implemented capabilities; see latest handoff-2026-10-13.md.",
     "2026-10-12 user-directed image defaults:low/1K, actual design1280x720, asset1024x1024; native2.5VIP uses pixels without resolution. Record actual measured dimensions; preserve old unknown/rejected calls. S08 old text-only experiment rejected by user; real visual revalidation pending. See runtime/visual-v1/image-policy-0.1.0.md.",
     "2026-10-12 S04: frozen output-frame and action-boundary temporal QA, registered overlap exclusions, transformed DOM geometry, request-bound coverage validation, repetition/stagnation stop. QA0.2.0 Agent1.21.0. S08 Token real course remains partial; no automatic visual/audio approval. See runtime/visual-v1/temporal-qa-0.1.0.md.",
@@ -214,7 +219,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_e1_standalone",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-008",
@@ -234,7 +239,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_e1_standalone",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only"
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-010",
@@ -244,7 +249,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; attempt-fenced recovery preserves author/approval boundaries; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; attempt-fenced recovery preserves author/approval boundaries; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-011",
@@ -254,7 +259,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md and minimal-rebuild-0.1.0.md; snapshots, commit reconciliation and selective rebuild plans/editor wiring; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md and minimal-rebuild-0.1.0.md; snapshots, commit reconciliation and selective rebuild plans/editor wiring; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/semantic-plan-0.2.0.md: pure declaration/source/reference checks, not semantic approval, image decomposition or runtime binding.; A02 runtime/visual-v1/semantic-design-0.1.0.md: ownership/state projection and reference context, not actual frame semantic QA.; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-012",
@@ -274,7 +279,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation."
+      "runtime_scope": "runtime/e1/definition-index.json; design-exploration single scene only; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A01 runtime/visual-v1/semantic-plan-0.2.0.md: pure declaration/source/reference checks, not semantic approval, image decomposition or runtime binding.; A02 runtime/visual-v1/semantic-design-0.1.0.md: ownership/state projection and reference context, not actual frame semantic QA.; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-014",
@@ -284,7 +289,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-015",
@@ -412,7 +417,8 @@
       "section": "## HPS-028：生成任务明确代码层与资产层",
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
-      "runtime_validation": "not_implemented"
+      "runtime_validation": "not_implemented",
+      "runtime_scope": "; A01 runtime/visual-v1/semantic-plan-0.2.0.md: pure declaration/source/reference checks, not semantic approval, image decomposition or runtime binding.; A02 runtime/visual-v1/semantic-design-0.1.0.md: ownership/state projection and reference context, not actual frame semantic QA.; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-029",
@@ -431,7 +437,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_workflow",
-      "runtime_scope": "runtime/visual-v1/application-workflow-0.2.0.md; read-only stage projection and target-specific readiness only"
+      "runtime_scope": "runtime/visual-v1/application-workflow-0.2.0.md; read-only stage projection and target-specific readiness only; A01 runtime/visual-v1/semantic-plan-0.2.0.md: pure declaration/source/reference checks, not semantic approval, image decomposition or runtime binding.; A02 runtime/visual-v1/semantic-design-0.1.0.md: ownership/state projection and reference context, not actual frame semantic QA.; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-031",

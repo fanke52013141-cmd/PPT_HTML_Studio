@@ -4,7 +4,8 @@ const { EngineError, diagnostic } = require("../src/registry.cjs");
 const { imagePlacement } = require("../src/timeline.cjs");
 const icons = require("./icons.cjs");
 
-const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"];
+const SCENE_VERSIONS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0"];
+const variants = require("./presentation-variants.json").variants;
 const SCENE_VERSION = "0.3.0";
 const DEFINITION_VERSION = "0.2.0";
 const EXTENDED_TEXT_ROLES = [
@@ -87,7 +88,7 @@ function normalizeTheme(theme) {
 function adaptScene(scene) {
   if (
     scene.version === SCENE_VERSION ||
-    ["0.4.0", "0.5.0"].includes(scene.version)
+    ["0.4.0", "0.5.0", "0.6.0", "0.7.0"].includes(scene.version)
   )
     return { scene, adaptedFrom: null };
   if (scene.version !== "0.1.0" && scene.version !== "0.2.0")
@@ -138,7 +139,7 @@ function checkIcon(name, path) {
 function compile(input, catalog) {
   const { scene, adaptedFrom } = adaptScene(JSON.parse(JSON.stringify(input)));
   if (
-    !["0.4.0", "0.5.0"].includes(scene.version) &&
+    !["0.4.0", "0.5.0", "0.6.0", "0.7.0"].includes(scene.version) &&
     Array.isArray(scene.nodes) &&
     scene.nodes.some((node) => node?.type === "shape")
   )
@@ -164,6 +165,14 @@ function compile(input, catalog) {
   for (const node of scene.nodes) {
     const p = node.presentation;
     if (!p) continue;
+    if (p.variant) {
+      const variant = variants.find(v => v.id === p.variant);
+      if (!variant || !variant.nodeTypes.includes(node.type)) fail("UNSUPPORTED_PRESENTATION_VARIANT", node.id, p.variant);
+    }
+    if (p.icon) {
+      if (!['text-card-outline','text-card-soft'].includes(p.variant)) fail("UNSUPPORTED_DECORATIVE_ICON", node.id, p.icon);
+      checkIcon(p.icon, node.id);
+    }
     const slot = layout.slots[node.slot];
     if (!slot) fail("UNRESOLVED_SLOT", "/nodes", node.slot);
     for (const part of Object.keys(p.typography || {})) {
@@ -231,12 +240,20 @@ function compile(input, catalog) {
     )
       fail("UNRESOLVED_ANCHOR", "/nodes", n.anchorId);
   }
+  const semantic = ["0.6.0", "0.7.0"].includes(scene.version);
+  const initial = new Set(scene.initialVisibleIds || []);
+  for (const id of initial) if (!ids.has(id)) fail("INVALID_INITIAL_TARGET", "/initialVisibleIds", id);
+  const actionIds = new Set();
   const byTarget = new Map();
   for (const action of scene.motion) {
+    if (semantic) {
+      if (actionIds.has(action.actionId)) fail("DUPLICATE_ACTION_ID", "/motion", action.actionId);
+      actionIds.add(action.actionId);
+    }
     if (!ids.has(action.targetId))
       fail("INVALID_MOTION_TARGET", "/motion", action.targetId);
     const list = byTarget.get(action.targetId) || [];
-    if (list.some((a) => a.type === action.type))
+    if (list.some((a) => a.type === action.type) && (!semantic || action.type !== "emphasize"))
       fail(
         "ACTION_CHANNEL_CONFLICT",
         "/motion",
@@ -249,16 +266,17 @@ function compile(input, catalog) {
   }
   for (const [targetId, list] of byTarget) {
     const enter = list.find((a) => a.type === "enter");
-    if (!enter)
+    if (!enter && !initial.has(targetId))
       fail("MISSING_MOTION", "/motion", `${targetId} requires an enter action`);
+    if (enter && initial.has(targetId)) fail("INITIAL_ENTER_CONFLICT", "/motion", targetId);
     const node = scene.nodes.find((n) => n.id === targetId);
-    if (node.type === "annotation" && (enter.offsetX || enter.offsetY))
+    if (node.type === "annotation" && enter && (enter.offsetX || enter.offsetY))
       fail(
         "INVALID_RELATION",
         "/motion",
         "Annotation follows its target; no independent offset",
       );
-    const enterEnd = enter.startMs + enter.durationMs;
+    const enterEnd = enter ? enter.startMs + enter.durationMs : 0;
     const extras = list.filter((a) => a.type !== "enter");
     for (const extra of extras) {
       if (extra.startMs < enterEnd)
@@ -287,7 +305,7 @@ function compile(input, catalog) {
       [enter, sortedExtras[0]],
       ...sortedExtras.slice(0, -1).map((w, i) => [w, sortedExtras[i + 1]]),
     ]) {
-      if (b && b.startMs < a.startMs + a.durationMs)
+      if (a && b && b.startMs < a.startMs + a.durationMs)
         fail(
           "ACTION_WINDOW_OVERLAP",
           "/motion",
@@ -322,10 +340,10 @@ function compile(input, catalog) {
       { ...target, box: b, anchorId: n.anchorId },
       asset,
     );
-    const action = scene.motion.find((a) => a.targetId === target.id);
+    const action = scene.motion.find((a) => a.targetId === target.id && a.type === "enter");
     for (const state of [
       { x: 0, y: 0 },
-      { x: action.offsetX, y: action.offsetY },
+      { x: action?.offsetX || 0, y: action?.offsetY || 0 },
     ]) {
       const x = b.x + placement.anchor.x + state.x,
         y = b.y + placement.anchor.y + state.y;
@@ -342,7 +360,7 @@ function compile(input, catalog) {
         );
     }
   }
-  if (byTarget.size !== ids.size)
+  if ([...ids].some(id => !byTarget.has(id) && !initial.has(id)))
     fail("MISSING_MOTION", "/motion", "Every node requires an enter action");
   let end = 0;
   for (const beat of scene.beats) {

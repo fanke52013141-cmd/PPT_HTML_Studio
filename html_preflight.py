@@ -69,8 +69,8 @@ def inspect_html_preflight(target, *, repo_root=None, run_dir=None, scene=None,
     configured = model_readiness or {}
     if target.startswith("generate_"):
         check("TEXT_MODEL_CONFIGURED", configured.get("text") is True, "需文字模型配置就绪；未测试供应商连接")
-    if target == "generate_new_images":
-        check("IMAGE_MODEL_CONFIGURED", configured.get("image") is True, "新图片需生图配置就绪；未发收费请求")
+    if target in ("generate_existing", "generate_new_images"):
+        check("IMAGE_MODEL_CONFIGURED", configured.get("image") is True, "完整设计参考需生图配置就绪；复用主体也不跳过设计，未发收费请求")
 
     node = shutil.which("node")
     check("NODE", bool(node), "需要 Node.js 执行共享渲染器")

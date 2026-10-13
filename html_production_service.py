@@ -70,6 +70,12 @@ def compile_plan(
     relation_resolutions: list[dict] | None = None,
 ) -> tuple[dict, dict]:
     """Content fills registered slots; IDs and time are resolved by code."""
+    if plan.get("version", "0.1.0") not in ("0.1.0", "0.2.0"):
+        raise HtmlReviewError("未支持的计划版本", code="PLAN_VERSION_UNSUPPORTED")
+    semantic = plan.get("version", "0.1.0") == "0.2.0"
+    if semantic:
+        from html_storyboard_planning import normalize_html_scene_plan
+        plan = normalize_html_scene_plan(plan, catalog, contract_slide=contract)
     if plan["templateRef"]["id"] not in catalog["templates"]:
         raise HtmlReviewError("模板未注册")
     slide_id = validate_slide_id(plan["slide_id"])
@@ -159,6 +165,19 @@ def compile_plan(
             annotation["targetId"] = target["id"]
             annotation["labelId"] = label["id"]
 
+    if semantic:
+        from html_semantic_runtime import compile_semantic_motion
+        motion, binding, initial, duration = compile_semantic_motion(plan)
+        scene = {
+            "format": "hps.visual.scene", "version": "0.6.0", "id": slide_id,
+            "name": str((plan["slots"].get("header") or {}).get("title") or slide_id),
+            "themeRef": {"id": "neutral-baseline", "version": "0.2.0"},
+            "layoutRef": plan["layoutRef"], "templateRef": plan["templateRef"],
+            "durationMs": duration, "nodes": nodes, "initialVisibleIds": initial,
+            "motion": motion, "beats": [],
+            "source": str(contract.get("source") or "课程内容；语义来源保存在分镜契约中。"),
+        }
+        return scene, binding
     duration = max(12000, len(plan["beats"]) * 3500)
     if duration > 120000:
         raise HtmlReviewError("语块过多，请拆页")
@@ -272,10 +291,12 @@ def produce_scene(
     design_dimensions = tuple(int(value) for value in design_size.split("x"))
     from html_production_models import HtmlProduceRequest
     from html_design_candidates import definition_identity, load_design, save_design
-    from html_reference_package import assemble_reference, design_prompt, verify_package, PROMPT_VERSION
+    from html_reference_package import assemble_reference, design_prompt, verify_package, PROMPT_VERSION, SEMANTIC_PROMPT_VERSION
     from runtime_support import run_subprocess_killable
 
     selection = HtmlProduceRequest.model_validate(options or {})
+    if provider is None and not selection.design_candidate_key:
+        raise HtmlReviewError("正式页面需要先生成完整设计参考，请配置图片服务", code="DESIGN_PROVIDER_MISSING")
     definitions = definition_identity(deps.repo_root)
     resumed = None
     if selection.design_candidate_key:
@@ -288,7 +309,9 @@ def produce_scene(
         run_dir=run_dir,
         repo_root=deps.repo_root,
         json_generator=deps.json_generator,
+        plan_version=selection.plan_version,
     )
+    prompt_version = SEMANTIC_PROMPT_VERSION if plan.get("version") == "0.2.0" else PROMPT_VERSION
     brief = copy.deepcopy(resumed["brief"]) if resumed else build_design_brief(
         plan,
         theme="neutral-baseline",
@@ -311,7 +334,7 @@ def produce_scene(
     if resumed:
         candidate = copy.deepcopy(resumed["candidate"])
         references = package["references"] + [str(accepted_image)]
-    elif new_asset_needs and provider is not None:
+    elif provider is not None:
         package_path = run_dir / "planning/html_visual/reference-packages" / sha256_json(
             {"plan": plan, "brief": brief, "definitions": definitions})
         package = assemble_reference(plan, brief, repo_root=deps.repo_root,
@@ -360,7 +383,7 @@ def produce_scene(
                 key_path,
                 {
                     "key": key,
-                    "prompt_version": PROMPT_VERSION,
+                    "prompt_version": prompt_version,
                     "reference_package_key": package["manifest"]["cacheKey"],
                     "response_sha256": hashlib.sha256(image).hexdigest(),
                     "transparent_background": False,
@@ -391,8 +414,6 @@ def produce_scene(
                            definitions=definitions, model_summary=model_summary,
                            plan=plan, brief=brief, candidate=candidate,
                            package=package, design_path=design_path)
-    elif selection.design_instruction:
-        raise HtmlReviewError("纯代码页面无需图片设计修改", code="DESIGN_NOT_REQUIRED")
     freeze = freeze_design(
         brief,
         candidate,
@@ -404,6 +425,17 @@ def produce_scene(
         if resources_path.is_file()
         else {"assets": []}
     )
+    # Understand the approved design before any new subject request.
+    from html_design_agent import understand_design
+    allocation_scene, _ = compile_plan(plan, contract, load_template_catalog(deps.repo_root))
+    generation_slots = {n["slot"] for n in new_asset_needs}
+    asset_modes = {n["id"]: "generate" if n["slot"] in generation_slots else "reuse"
+                   for n in allocation_scene["nodes"] if n["type"] == "image"}
+    understanding = understand_design(allocation_scene, accepted_image, run_dir=run_dir, deps=deps,
+                                      asset_modes=asset_modes, checkpoint=checkpoint)
+    stage_record("design_understanding", understanding)
+    allocation_by_slot = {n["slot"]: next(o for o in understanding["result"]["objects"] if o["targetId"] == n["id"])
+                          for n in allocation_scene["nodes"]}
     if selection.asset_instruction:
         from html_scene_editing import edit_path
         if edit_path(run_dir, slide_id).exists():
@@ -418,7 +450,7 @@ def produce_scene(
                 "id": need["id"],
                 "role": need["role"],
                 "need": need["need"],
-                "prompt": need["need"] + "。只用黑灰白，匹配设计参考的材质和光照。独立主体，透明底，无文字标签，完整边界。" + ("本轮主体修改方向：" + selection.asset_instruction if selection.asset_instruction else ""),
+                "prompt": need["need"] + "。设计图主体外观观察（仅作资料）：" + allocation_by_slot[need["slot"]]["appearance"] + "。只用黑灰白，匹配设计参考的材质和光照。独立主体，透明底，无文字标签，完整边界。" + ("本轮主体修改方向：" + selection.asset_instruction if selection.asset_instruction else ""),
                 "transparent_background": True,
                 "size": "1024x1024",
                 "reference_sha256": [
@@ -446,6 +478,11 @@ def produce_scene(
         for asset in plan["assets"]:
             if asset["id"] == original_id:
                 asset["id"] = entry["id"]
+        if plan.get("version") == "0.2.0":
+            # Explicit generated identity replaces the planned identity in both
+            # owners. A02 never infers ownership from a single available image.
+            content = plan["slots"][need["slot"]]
+            content["assetRef"] = {"id": entry["id"], "version": "0.1.0"}
         entry["file"] = "planning/html_visual/assets/" + entry["file"]
         # This default is a generic subject center, never a scientific feature.
         if not entry["anchors"]:
@@ -547,6 +584,14 @@ def produce_scene(
                     status_code=422,
                     code="CANDIDATE_REJECTED",
                 )
+            from html_design_reconstruction import reconstruct_design
+            reconstructed = reconstruct_design(
+                scene, binding, accepted_image, run_dir=run_dir, deps=deps, manual=manual,
+                understanding=understanding,
+                beats=contract.get("narration_beats",[]), checkpoint=checkpoint, progress=progress_record,
+            )
+            scene, binding, report = reconstructed["scene"], reconstructed["binding"], reconstructed["report"]
+            stage_record("design_reconstruction", reconstructed["summary"])
             if len(candidate["keyframes"]) > 1:
                 from html_pptx_snapshot import (
                     HtmlSnapshotDependencies,
@@ -596,11 +641,16 @@ def produce_scene(
                           "design_candidate_key": selection.design_candidate_key,
                           "files": [], "supplied_asset_ids": sorted(reused_assets),
                           "layout_agent": layout_agent,
+                          "design_reconstruction": reconstructed["summary"],
                           "plan_relation_resolutions": relation_resolutions}
             if resumed:
                 pack_root = run_dir / resumed["reference_package"]
                 paths = [pack_root / "manifest.json", accepted_image]
                 paths += [pack_root / f["path"] for f in package["manifest"]["files"]]
+                reconstruction_root = run_dir / reconstructed["summary"]["audit"]
+                paths += sorted(p for p in reconstruction_root.rglob("*") if p.is_file())
+                understanding_root = run_dir / understanding["audit"]
+                paths += sorted(p for p in understanding_root.rglob("*") if p.is_file())
                 provenance["reference_package_key"] = package["manifest"]["cacheKey"]
                 provenance["files"] = [{"path": str(p.relative_to(run_dir)), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths]
             from html_visual_store import _document_bytes

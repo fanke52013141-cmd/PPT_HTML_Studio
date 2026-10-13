@@ -143,6 +143,14 @@ def normalize_html_scene_plan(
     """
     if not isinstance(plan_input, dict):
         raise HtmlScenePlanError("PLAN_INVALID", "场景计划必须是 JSON 对象")
+    version = plan_input.get("version", "0.1.0")
+    if version not in ("0.1.0", "0.2.0"):
+        raise HtmlScenePlanError("PLAN_VERSION_UNSUPPORTED", "未支持的计划版本")
+    if version == "0.1.0" and any(
+        isinstance(b, dict) and any(k in b for k in ("visualIntent", "targets", "actions", "expectedState"))
+        for b in plan_input.get("beats", [])
+    ):
+        raise HtmlScenePlanError("PLAN_VERSION_REQUIRED", "语义字段必须显式使用 0.2.0，不可降级")
     slide_id = _clean_text(
         plan_input.get("slide_id"), max_length=80, label="slide_id"
     )
@@ -202,13 +210,21 @@ def normalize_html_scene_plan(
 
     objects = _normalize_objects(plan_input, slot_rules, catalog["icons"])
 
-    beats = _normalize_beats(plan_input, contract_slide)
+    if version == "0.2.0":
+        from html_semantic_plan import normalize_semantics, SemanticPlanError
+
+        try:
+            objects, beats = normalize_semantics(plan_input, objects, contract_slide)
+        except SemanticPlanError as exc:
+            raise HtmlScenePlanError(exc.code, str(exc)) from exc
+    else:
+        beats = _normalize_beats(plan_input, contract_slide)
 
     assets = _normalize_assets(plan_input)
 
     plan = {
         "format": "hps.html.scene_plan",
-        "version": "0.1.0",
+        "version": version,
         "slide_id": slide_id,
         "templateRef": {"id": template_id, "version": template_version},
         "structure": str(template.get("structure")),
@@ -406,6 +422,9 @@ def beat_action_map(plan: Dict[str, Any]) -> Dict[str, Any]:
     """AC07 evidence: every narration beat → its on-screen target."""
     mapping: Dict[str, Any] = {}
     for beat in plan.get("beats", []):
+        if plan.get("version") == "0.2.0":
+            mapping[beat["id"]] = dict(beat)
+            continue
         if beat.get("narration_only"):
             mapping[beat["id"]] = {"narration_only": True}
         else:
@@ -428,7 +447,7 @@ def transitional_objects(plan: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 def plan_evidence(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Compact AC07 evidence block for acceptance manifests."""
-    return {
+    evidence = {
         "slide_id": plan.get("slide_id"),
         "templateRef": plan.get("templateRef"),
         "structure": plan.get("structure"),
@@ -447,6 +466,17 @@ def plan_evidence(plan: Dict[str, Any]) -> Dict[str, Any]:
         ],
         "catalog_sha256": (plan.get("registered") or {}).get("catalog_sha256"),
     }
+    if plan.get("version") == "0.2.0":
+        from html_semantic_design import build_semantic_design
+        evidence["semantic"] = {
+            "contract_version": "0.2.0",
+            "structure": "passed",
+            "meaning": "pending_review",
+            "runtime": "not_implemented",
+            "objects": [{k: o[k] for k in ("id", "role", "initialVisible", "initialVisibleReason") if k in o} for o in plan["objects"]],
+        }
+        evidence["semantic_design"] = build_semantic_design(plan)
+    return evidence
 
 
 def dedupe_plan_beats(beats: Any) -> List[Dict[str, Any]]:

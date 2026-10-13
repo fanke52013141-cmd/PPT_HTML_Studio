@@ -33,6 +33,7 @@ from agent_contract.models import (
     HtmlProduceRequest,
     HtmlDesignCandidateResult,
     HtmlPlanGenerationResult,
+    HtmlPlanGenerateRequest,
     HtmlReviewReportResult,
     HtmlSceneBodyRequest,
     HtmlSceneDocumentResult,
@@ -497,7 +498,8 @@ def agent_html_approval_status(
     response_model=HtmlPlanGenerationResult,
 )
 def agent_html_plan_generate(
-    project_id: str, slide_id: str, db: Session = Depends(get_db)
+    project_id: str, slide_id: str, payload: HtmlPlanGenerateRequest | None = None,
+    db: Session = Depends(get_db)
 ):
     project = _html_project_or_404(project_id, db)
     from project_path_service import project_run_dir_or_500
@@ -511,6 +513,8 @@ def agent_html_plan_generate(
             run_dir=run_dir,
             repo_root=deps.repo_root,
             json_generator=deps.json_generator,
+            brief=payload.brief if payload else None,
+            plan_version=payload.plan_version if payload else "0.1.0",
         )
     except html_review.HtmlReviewError as error:
         raise HTTPException(status_code=error.status_code, detail=str(error))

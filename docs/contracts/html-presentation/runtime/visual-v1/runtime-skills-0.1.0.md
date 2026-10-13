@@ -1,5 +1,7 @@
 # S06 受控运行时 Skill 0.1.0
 
+2026-10-13增量：[设计Agent0.1](design-agent-0.1.0.md)新增三个明确stage：design_understanding、design_reconstruction、design_fidelity_review，与原candidate_capacity_repair共四个运行片段。loader按已允许stage和固定输入输出合同选择，原容量策略/body/reference版本不变；快照捕获所有已登记片段。下方“第一批只接容量”是S06历史范围，不是当前全集。新阶段使用runtime_skill模式；真实模型质量另验。
+
 2026-10-12；HPS-010/011/013/014/015/017/023—025。沿用候选 Agent 的 LangGraph、编辑权限、最多三次决策和严格浏览器校验，不新增自主 Agent、公共请求字段或任务账本。
 
 | 项目 | 定义 |

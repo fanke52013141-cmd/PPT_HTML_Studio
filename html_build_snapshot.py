@@ -177,9 +177,9 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
         capture.add("input/options.json", json_bytes(options))
         capture.add("input/model-identity.json", json_bytes(identities))
         # Pin the actual planner/runtime definitions; not just their IDs.
-        for name in ["html_storyboard_planning.py", "html_visual_review_service.py", "html_reference_package.py",
+        for name in ["html_storyboard_planning.py", "html_semantic_plan.py", "html_semantic_design.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_planning_context.py", "html_visual_review_service.py", "html_reference_package.py",
                      "html_production_service.py", "html_design_brief.py", "html_image_provider.py",
-                     "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py",
+                     "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_engine/visual/presentation-variants.json",
                      "json_llm_service.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
                      "html_rebuild_plan.py", "html_scene_editing.py", "html_input_manifest.py", "invalidation_service.py", "project_impact_service.py",
                      "html_task_store.py", "html_repair_progress.py", "html_engine/tools/temporal-review.cjs", "html_engine/tools/review-temporal.cjs", "html_engine/visual/qa/overlap-policy.json", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:

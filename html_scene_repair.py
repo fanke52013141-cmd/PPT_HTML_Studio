@@ -10,6 +10,7 @@ from pathlib import Path
 
 import html_scene_editing as editor
 import html_visual_store as store
+from html_motion_binding import motion_identity
 from html_repair_models import RepairRequest, TemporalRequest
 
 ROOT = Path(__file__).resolve().parent
@@ -26,6 +27,7 @@ STYLE_KEYS = {"fontSizePx", "weight", "lineHeight", "align"}
 KINDS = {
     "set_presentation": ["offsetX", "offsetY", "width", "height"],
     "set_text_style": sorted(STYLE_KEYS),
+    "set_variant": ["variant", "icon"],
     "set_motion": ["startMs", "durationMs", "offsetX", "offsetY"],
     "set_binding": ["beatId", "edge", "offsetMs"],
 }
@@ -90,13 +92,21 @@ def candidate_from_document(run, slide, request, doc):
         values = op.values
         if not values or set(values) - set(KINDS[op.kind]):
             raise editor.SceneEditError("REPAIR_FIELDS", "操作字段为空或未注册")
-        if op.kind in ("set_presentation", "set_text_style"):
+        if op.kind in ("set_presentation", "set_text_style", "set_variant"):
             if node["type"] == "annotation":
                 raise editor.SceneEditError("REPAIR_FIELDS", "圈注空间不能单独覆盖")
-            if op.action is not None:
+            if op.action is not None or op.actionId is not None:
                 raise editor.SceneEditError("REPAIR_FIELDS", "基础样式不接受action")
             p = node.setdefault("presentation", {})
-            if op.kind == "set_text_style":
+            if op.kind == "set_variant":
+                if scene["version"] not in ("0.6.0", "0.7.0") or op.part is not None or "variant" not in values:
+                    raise editor.SceneEditError("VARIANT_VERSION", "注册呈现变体需语义场景，且指定variant")
+                p["variant"] = values["variant"]
+                p.pop("icon", None)
+                if "icon" in values:
+                    p["icon"] = values["icon"]
+                scene["version"] = "0.7.0"
+            elif op.kind == "set_text_style":
                 if op.part not in PARTS.get(node["type"], []) or (
                     op.part in ("tag", "note", "heading") and not node.get(op.part)
                 ):
@@ -108,28 +118,31 @@ def candidate_from_document(run, slide, request, doc):
                 if op.part is not None:
                     raise editor.SceneEditError("REPAIR_FIELDS", "布局操作不接受part")
                 p.update(values)
-            scene["version"] = "0.5.0"
+            if scene["version"] not in ("0.6.0", "0.7.0"):
+                scene["version"] = "0.5.0"
         else:
             if op.part is not None or op.action is None:
                 raise editor.SceneEditError(
                     "REPAIR_FIELDS", "动态操作需action且不能有part"
                 )
-            action = next(
-                (
+            matches = [
                     a
                     for a in scene["motion"]
                     if a["targetId"] == op.targetId and a["type"] == op.action
-                ),
-                None,
-            )
-            if not action:
+                    and (op.actionId is None or a.get("actionId") == op.actionId)
+            ]
+            if len(matches) > 1:
+                raise editor.SceneEditError("REPAIR_ACTION_AMBIGUOUS", "重复动作需明确 actionId")
+            if not matches:
                 raise editor.SceneEditError("REPAIR_ACTION_GONE", "不存在该动作通道")
+            action = matches[0]
+            key = motion_identity(action)
             if op.kind == "set_motion":
                 if op.action != "enter" and set(values) & {"offsetX", "offsetY"}:
                     raise editor.SceneEditError("REPAIR_FIELDS", "位移只支持enter")
                 if (
                     doc["binding"]
-                    and f"{op.targetId}:{op.action}" in doc["binding"]["actions"]
+                    and key in doc["binding"]["actions"]
                     and "startMs" in values
                 ):
                     raise editor.SceneEditError(
@@ -143,7 +156,6 @@ def candidate_from_document(run, slide, request, doc):
                     "mode": "beat_ids",
                     "actions": {},
                 }
-                key = f"{op.targetId}:{op.action}"
                 if key not in binding["actions"] and set(values) != {
                     "beatId",
                     "edge",
@@ -153,7 +165,7 @@ def candidate_from_document(run, slide, request, doc):
                 binding["actions"].setdefault(key, {}).update(values)
     if request.source == "ai":
         _protected(doc, scene, binding)
-    preview = editor.preview_editor(run, slide, scene, binding)
+    preview = editor.preview_editor(run, slide, scene, binding, beats=doc.get("beats"))
     runtime = {
         str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
         for p in [
@@ -322,7 +334,7 @@ def build_repair_prompts(doc, instruction, scope, report):
         "motion": [a for a in doc["scene"]["motion"] if a["targetId"] in scope],
         "binding": doc["binding"],
         "beats": doc["beats"],
-        "operations": KINDS,
+        "operations": {k:v for k,v in KINDS.items() if k != "set_variant" or doc["scene"].get("version") in ("0.6.0","0.7.0")},
         "operation_examples": [
             {
                 "targetId": "<existing text ID>",
@@ -348,10 +360,15 @@ def build_repair_prompts(doc, instruction, scope, report):
             {"timeMs": s["timeMs"]} for s in report.get("screenshots", [])[:4]
         ],
     }
+    if doc["scene"].get("version") in ("0.6.0","0.7.0"):
+        system = system.replace("PromptVersion:html-repair-0.3.0", "PromptVersion:html-repair-0.4.0")
+        system += "动态操作必须附 actionId，严格选取 motion 中的现有稳定身份；不得更名、增删或改变原句。"
+        system += "另允许set_variant，values为明确的variant及可选icon；只选输入注册且适用的呈现，不改节点类型。"
+        user["presentation_variants"] = json.loads((ROOT/"html_engine/visual/presentation-variants.json").read_text(encoding="utf-8"))
     return {
         "system_prompt": system,
         "user_prompt": json.dumps(user, ensure_ascii=False),
-        "schema_hint": "{status,operations:[{targetId,kind,part?,action?,values}]} or {status,message}",
+        "schema_hint": "{status,operations:[{targetId,kind,part?,action?,actionId?,values}]} or {status,message}",
     }
 
 

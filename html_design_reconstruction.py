@@ -1,0 +1,174 @@
+"""Image-grounded instance reconstruction using existing constrained editor tools."""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from PIL import Image
+
+from artifact_fingerprint import sha256_file, sha256_json
+from html_scene_repair import PARTS, candidate_from_document
+from html_scene_editing import resources, manual_protected_paths, SceneEditError
+from html_visual_review_service import HtmlReviewError, review_scene
+from html_storyboard_planning import load_template_catalog
+from html_design_agent import understand_design, review_fidelity, apply_allocations
+from html_runtime_skills import load_runtime_skill
+from pipeline_lifecycle import write_json_atomic
+
+PROMPT_VERSION = "html-design-reconstruct/0.5.0"
+REQUEST_TIMEOUT_SECONDS = 600
+
+
+def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=None,
+                       beats=None, understanding=None, checkpoint=lambda: None, progress=lambda value: None):
+    run = Path(run_dir)
+    design_path = Path(design_path).resolve()
+    if not design_path.is_relative_to(run.resolve()) or not design_path.is_file():
+        raise HtmlReviewError("设计参考路径无效", code="RECONSTRUCTION_REFERENCE_INVALID")
+    source_hash = sha256_file(design_path)
+    skill = load_runtime_skill(deps.repo_root,stage="design_reconstruction",mode="runtime_skill")
+    identity = sha256_json({"scene":scene,"binding":binding,"design":source_hash,
+                            "manual":manual,"prompt":PROMPT_VERSION,"runtime_skill":skill.identity,
+                            "understanding":understanding})
+    audit = run/"planning/html_visual/candidates"/scene["id"]/"design-reconstruction"/identity
+    audit.mkdir(parents=True,exist_ok=True)
+    # PNG is the existing multimodal transport format; keep original source/hash.
+    reference = audit/"reference.png"
+    with Image.open(design_path) as image:
+        image.load()
+        if image.width*image.height > 4_000_000:
+            raise HtmlReviewError("设计参考超过视觉输入预算",code="RECONSTRUCTION_REFERENCE_INVALID")
+        image.save(reference,format="PNG")
+    understanding = understanding or understand_design(scene,reference,run_dir=run,deps=deps,checkpoint=checkpoint)
+    if understanding["design_sha256"] != source_hash:
+        # PNG transport may transcode; compare against the actual original design.
+        if understanding["design_sha256"] != sha256_file(reference):
+            raise HtmlReviewError("设计理解与当前设计不一致",code="DESIGN_STALE")
+    catalog = json.loads((deps.repo_root/"html_engine/visual/generated/catalog.json").read_text(encoding="utf-8"))
+    layout = next(v for v in catalog["layouts"] if v["id"]==scene["layoutRef"]["id"] and v["version"]==scene["layoutRef"]["version"])
+    current, allocation_operations = apply_allocations(scene,binding,understanding,run_dir=run,manual=manual,beats=beats)
+    write_json_atomic(audit/"allocation-applied.json",{"operations":allocation_operations,"scene":current,
+                                                     "source":"validated_model_understanding","human_approval":"pending"})
+    history = []
+    diagnostic = None
+    seen = set()
+    fidelity = None
+    for index in range(2):
+        checkpoint()
+        skill.verify()
+        if sha256_file(design_path) != source_hash:
+            raise HtmlReviewError("设计图在还原过程中变化",code="DESIGN_STALE")
+        report = review_scene(current,run_dir=run,deps=deps,diagnostic=True)
+        shot = run/report.get("screenshot","missing")
+        if not shot.is_file() or not report.get("geometry"):
+            raise HtmlReviewError("缺少实际代码截图，不能还原",code="RECONSTRUCTION_RENDER_FAILED")
+        folder = audit/str(index);folder.mkdir(exist_ok=True)
+        current_image = folder/"current.png"
+        current_image.write_bytes(shot.read_bytes())
+        user = {"canvas":layout["canvas"],"objects":current["nodes"],
+                "base_slots":{n["slot"]:layout["slots"][n["slot"]] for n in current["nodes"]},
+                "public_parts":{n["id"]:PARTS.get(n["type"],[]) for n in current["nodes"]},
+                "manual_protected_paths":manual_protected_paths(manual),
+                "actual_geometry":report["geometry"],"actual_measurements":report.get("measurements"),
+                "diagnostic":diagnostic,
+                "design_understanding":understanding["result"],
+                "content_safe_rect":{"x":0,"y":0,"width":1600,"height":800},
+                "motion_extents":{n["id"]:{
+                    "minX":min([0]+[a.get("offsetX",0) for a in current["motion"] if a["targetId"]==n["id"]]),
+                    "maxX":max([0]+[a.get("offsetX",0) for a in current["motion"] if a["targetId"]==n["id"]]),
+                    "minY":min([0]+[a.get("offsetY",0) for a in current["motion"] if a["targetId"]==n["id"]]),
+                    "maxY":max([0]+[a.get("offsetY",0) for a in current["motion"] if a["targetId"]==n["id"]])
+                } for n in current["nodes"]}}
+        user["variant_tools"] = catalog.get("presentationVariants",{}) if current["version"] in ("0.6.0","0.7.0") else {}
+        user["geometry_limits"] = {}
+        for node in current["nodes"]:
+            box = layout["slots"][node["slot"]]["box"]
+            p = node.get("presentation", {})
+            extent = user["motion_extents"][node["id"]]
+            x, y = box["x"] + p.get("offsetX", 0), box["y"] + p.get("offsetY", 0)
+            user["geometry_limits"][node["id"]] = {
+                "current_base_x":x,"current_base_y":y,
+                "max_width_at_current_x":1600-x-extent["maxX"],
+                "max_height_at_current_y":800-y-extent["maxY"],
+                "max_offsetY_at_current_height":800-box["y"]-p.get("height",box["height"])-extent["maxY"],
+            }
+        user["registered_icons"] = sorted(load_template_catalog(deps.repo_root)["icons"])
+        prompts = {"system_prompt":skill.fragment,"user_prompt":json.dumps(user,ensure_ascii=False),
+                   "schema_hint":"{status:candidate,operations:[{targetId,kind,part?,values}]} or {status:unsupported|unchanged,message}"}
+        images = [str(reference.resolve())]
+        if diagnostic is not None:
+            images.append(str(current_image.resolve()))
+        write_json_atomic(folder/"request.json",{**prompts,"prompt_version":PROMPT_VERSION,
+                         "request_timeout_seconds":REQUEST_TIMEOUT_SECONDS,
+                         "thinking_policy":"preserve_provider_configuration",
+                         "runtime_skill":skill.identity,
+                         "source_design_sha256":source_hash,"image_sha256":[sha256_file(Path(p)) for p in images]})
+        progress({"design_reconstruction_round":index+1,"design_reconstruction_max_rounds":2})
+        # A transport exception is not structural: let persistent stages handle unknown.
+        response = deps.json_generator(**prompts,run_dir=str(run),artifact_prefix=f"design-reconstruct-{scene['id']}-{index}",image_paths=images,
+                                      request_timeout=REQUEST_TIMEOUT_SECONDS)
+        write_json_atomic(folder/"response.json",response)
+        history.append({"round":index+1,"response":response})
+        checkpoint(); skill.verify()
+        try:
+            if not isinstance(response,dict):
+                raise ValueError("Response must be an object")
+            if response.get("status") in ("unsupported","unchanged"):
+                if set(response)!={"status","message"} or not isinstance(response["message"],str) or not response["message"].strip():
+                    raise ValueError("Stop requires a message")
+                if response["status"]=="unsupported":
+                    raise HtmlReviewError(response["message"],code="RECONSTRUCTION_UNSUPPORTED")
+                final = review_scene(current,run_dir=run,deps=deps)
+                if not final.get("passed"):
+                    raise ValueError("Unchanged candidate still fails strict review")
+                proposed = current
+            elif set(response)!={"status","operations"} or response["status"]!="candidate" or not isinstance(response["operations"],list):
+                raise ValueError("Expected registered operations")
+            elif any(not isinstance(o,dict) or o.get("kind") not in ("set_presentation","set_text_style","set_variant") for o in response["operations"]):
+                raise ValueError("Only static instance operations are permitted")
+            else:
+                doc={"scene":current,"binding":binding,"manual":manual,"resources":resources(run),"beats":beats}
+                candidate=candidate_from_document(run,scene["id"],{"expected_revision":0,"source":"ai","operations":response["operations"]},doc)
+                proposed = candidate["scene"]
+                final=review_scene(proposed,run_dir=run,deps=deps)
+            write_json_atomic(folder/"strict-review.json",final)
+            if not final.get("passed"):
+                diagnostic={"code":final.get("code"),"message":final.get("message"),"capacityIssues":final.get("capacityIssues")}
+                current=proposed
+                continue
+            identity = sha256_json(proposed)
+            if identity in seen:
+                raise HtmlReviewError("还原候选重复且未改善，停止",code="DESIGN_RECONSTRUCTION_NO_PROGRESS")
+            seen.add(identity)
+            screenshot = run/final.get("screenshot","missing")
+            if not screenshot.is_file():
+                raise HtmlReviewError("还原审核缺少实际截图",code="DESIGN_REVIEW_IMAGE_MISSING")
+            archived_shot = folder/"candidate.png"
+            archived_shot.write_bytes(screenshot.read_bytes())
+            progress({"design_review_round":index+1,"design_review_max_rounds":2})
+            fidelity = review_fidelity(proposed,reference,archived_shot,final,understanding,folder=folder/"fidelity",
+                                       run_dir=run,deps=deps,manual=manual,checkpoint=checkpoint)
+            if fidelity["result"]["status"] == "pass":
+                return _result(proposed,binding,final,audit,run,history,source_hash,proposed!=scene,understanding,fidelity,skill.identity)
+            if fidelity["result"]["status"] == "unsupported" or set(fidelity["repair_routes"]) - {"reconstruction"}:
+                raise HtmlReviewError("还原审核要求回到内容、素材或组件能力阶段，已保留证据",code="DESIGN_REVIEW_ROUTED")
+            current = proposed
+            diagnostic = {"code":"DESIGN_FIDELITY_CHANGES_REQUESTED","issues":fidelity["result"]["issues"]}
+        except HtmlReviewError:
+            raise
+        except (ValueError,SceneEditError,KeyError,TypeError) as error:
+            diagnostic={"code":getattr(error,"code","RECONSTRUCTION_RESPONSE_INVALID"),"message":str(error)[:1500]}
+            write_json_atomic(folder/"diagnostic.json",diagnostic)
+    write_json_atomic(audit/"result.json",{"status":"rejected","history":history,"diagnostic":diagnostic,
+                                         "design_sha256":source_hash,"visual_fidelity":"not_accepted","fidelity":fidelity})
+    raise HtmlReviewError("设计还原未通过受限操作与实际检查，已保留候选",code="RECONSTRUCTION_REJECTED")
+
+
+def _result(scene,binding,report,audit,run,history,source_hash,changed,understanding,fidelity,skill):
+    summary={"prompt_version":PROMPT_VERSION,"rounds":len(history),"changed":changed,
+             "design_sha256":source_hash,"audit":str(audit.relative_to(run)),
+             "engineering":"passed","visual_fidelity":"model_pass_pending_user_review",
+             "materialized_assets":[{"targetId":n["id"],"assetRef":n["assetRef"]} for n in scene["nodes"] if n["type"] == "image"],
+             "understanding":understanding,"fidelity_review":fidelity,"runtime_skill":skill}
+    write_json_atomic(audit/"result.json",{"scene":scene,"binding":binding,"summary":summary})
+    return {"scene":scene,"binding":binding,"report":report,"summary":summary}
