@@ -419,10 +419,16 @@ class HtmlApprovalResult(BaseModel):
     approval: Optional[dict[str, Any]] = None
 
 
+from html_scene_plan_models import (
+    HtmlPlanGenerationRequest as HtmlPlanGenerationRequest,
+    ScenePlanDocument,
+)
+
+
 class HtmlPlanGenerationResult(BaseModel):
     project_id: str
     slide_id: str
-    plan: dict[str, Any]
+    plan: ScenePlanDocument
     evidence: dict[str, Any]
 
 

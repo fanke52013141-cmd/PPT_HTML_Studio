@@ -70,6 +70,11 @@ def compile_plan(
     relation_resolutions: list[dict] | None = None,
 ) -> tuple[dict, dict]:
     """Content fills registered slots; IDs and time are resolved by code."""
+    if plan.get("version", "0.1.0") != "0.1.0":
+        raise HtmlReviewError(
+            "语义规划尚需 A02/A03 对象分解及动作编译，不得按旧单目标模式执行",
+            code="SEMANTIC_COMPILER_PENDING",
+        )
     if plan["templateRef"]["id"] not in catalog["templates"]:
         raise HtmlReviewError("模板未注册")
     slide_id = validate_slide_id(plan["slide_id"])

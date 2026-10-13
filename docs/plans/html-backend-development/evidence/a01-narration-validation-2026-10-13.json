@@ -1,0 +1,78 @@
+{
+  "format": "hps.development.validation",
+  "version": "0.1.0",
+  "date": "2026-10-13 Asia/Shanghai",
+  "task": "2026-10-13 narration A01",
+  "parent_commit": "53410cff955f4428ae6bc8d97b392ea2a6bdb7cb",
+  "implementation_status": "structure_and_source_contract_verified",
+  "runtime_production_integration": "pending_A02_A03",
+  "semantic": "not_run",
+  "audio": "not_run",
+  "human": "pending_review",
+  "real_provider": "not_run",
+  "database_isolation": "pytest checks/conftest.py temporary DB/runs",
+  "source_sha256": {
+    "html_scene_plan_models.py": "17077c83d5d52043e8462c7aa9d1c44c70c2b6684d9d8a40ace880c376063083",
+    "html_narration_semantics.py": "2bab954a544fa818c34b2d26f5bcf3f7a645d553606f2e0b5d558408b38cb8f6",
+    "html_storyboard_planning.py": "c7b1d25bd61b2172a0d027a83bcb245275723243926501425b434f5b58dba30a",
+    "html_visual_review_service.py": "b4bdf6adf9e52d658af63f1a03184daa68c42651f0f1052ea48fe775bf3f9483",
+    "html_production_service.py": "a08fab28f655eb22532af334bfbc2d2e3f1fe9b3a965aedf991492c75570c4d8",
+    "html_visual_review_routes.py": "df7c27a36ede95f6b1509bc8fd06ecd5b7fa13fa82bbb2df9a660128260722dd",
+    "agent_api/routes.py": "6b51442ae8b1ec4c6856855eb471b17b4da638241a42cdda8fd3523d506dc602",
+    "agent_contract/models.py": "e0e33b4e02014c722f82c896b28cc3f675c385d58b97bf29b17691d762fda55b",
+    "agent_contract/capabilities.py": "fd55ec90fa5f26fecc22cc9ec305698b449cac03748e26b92816eaa6e05d4dca",
+    "agent_contract/versions.py": "653a76d89c75e7becb2eaa68290ba5cb79cc23983a2cd33aabe492fd53141973",
+    "agent_client/client.py": "2fdd7cbd4dc185b76c53742f2b09e8ee11b6aaf82082699a66bcd7307dd57e29",
+    "mcp_server/tools.py": "8f40a7eb6ae0c5d1c0737b3fcb3bee50945e3e7d86968d1cea9b41f423116ec7",
+    "cli/pptctl.py": "cef7d779623ce893910e2b1a54adcfa777d534a1ad88c81fba77a027e77976fd",
+    "checks/test_html_narration_semantics.py": "7c4c0b56e24673420851654835e8a9ff1764cacd99fd332c63b971bb527610ae",
+    "checks/test_html_semantic_plan_transports.py": "6c12ded04642f11e65cdd7e0cce101c6d682bf19676be1557f51dbe377c4b8ba"
+  },
+  "commands": [
+    {
+      "command": ".venv/Scripts/python.exe -m pytest checks/test_html_narration_semantics.py checks/test_html_semantic_plan_transports.py checks/test_html_storyboard_planning.py checks/test_html_visual_review.py checks/test_html_design_brief.py checks/test_html_production_integration.py checks/test_html_creation_workflow.py checks/test_html_production_recovery.py checks/test_html_model_binding_integration.py checks/test_source_runtime_safeguards.py checks/test_database_migrations.py checks/test_invalidation_service.py checks/agent/ -q",
+      "exit_code": 0,
+      "result": "550 passed, 1 existing deprecation warning",
+      "scope": "broad regression before final schema/identity/evidence-isolation refinements"
+    },
+    {
+      "command": ".venv/Scripts/python.exe -m pytest checks/test_html_narration_semantics.py checks/test_html_semantic_plan_transports.py checks/test_html_visual_review.py -q",
+      "exit_code": 0,
+      "result": "45 passed, 1 existing deprecation warning",
+      "scope": "final refinement regression"
+    },
+    {
+      "command": ".venv/Scripts/python.exe -m pytest checks/test_architecture_size_boundaries.py -q",
+      "exit_code": 1,
+      "result": "1 failed, 1 passed; server.py 1162 > 1100",
+      "scope": "known V01, unchanged server.py"
+    },
+    {
+      "command": ".venv/Scripts/python.exe scripts/check_source_registration_contract.py",
+      "exit_code": 0
+    },
+    {
+      "command": ".venv/Scripts/python.exe scripts/check_python_startup_hooks.py",
+      "exit_code": 0
+    },
+    {
+      "command": ".venv/Scripts/python.exe scripts/generate_agent_contracts.py --check",
+      "exit_code": 0
+    }
+  ],
+  "known_failure": "V01 unchanged server.py architecture limit; full repository run not claimed",
+  "source_review": {
+    "method": "code-review-and-quality five axes, local diff and test review",
+    "correctness": "version gating, source preservation, independent action identities and strict types checked",
+    "architecture": "pure planning validation; service orchestrates; shared transport models",
+    "security": "real isolated HTTP account/backend gates preserved; no scripts executed from model output",
+    "performance": "bounded beat/target/action counts; no new model retry budget or dependencies",
+    "resolved_findings": [
+      "legacy missing beats diagnostic",
+      "MCP/CLI payload forwarding and existing client json keyword bug",
+      "version-isolated evidence files",
+      "single action identity rule",
+      "visible=true JSON Schema matches runtime"
+    ]
+  }
+}

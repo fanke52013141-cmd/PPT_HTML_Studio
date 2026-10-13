@@ -118,7 +118,16 @@ def _registered_capabilities(repo_root: Path) -> Dict[str, Any]:
     return {"catalog": catalog, "effects": effects, "node_contracts": node_contracts}
 
 
-def _plan_schema_hint() -> str:
+def _plan_schema_hint(plan_version: str = "0.1.0") -> str:
+    if plan_version == "0.2.0":
+        return (
+            '输出 JSON：{version:"0.2.0",slide_id,templateRef:{id,version},'
+            'slots:{槽位名:{kind,...内容}},objects:[{id,slot,kind,icon?,exit?,transitional?}],'
+            'beats:[{id,visualIntent,targets:[{objectId,role:instructional|context|decorative,meaning}],'
+            'actions:[{actionKey,objectId,type:enter|emphasize,expectedState:{visible:true,meaning}}],'
+            'narration_only?:false,narration_only_reason?}],'
+            'assets:[{id,role,render_owner:code|image_asset,need?,slot?}]}。'
+        )
     return (
         "输出 JSON 对象：{slide_id, templateRef:{id,version}, slots:{槽位名:"
         "{kind,...内容}}, objects:[{id,slot,kind,icon?,exit?,transitional?}], "
@@ -132,6 +141,8 @@ def build_plan_generation_prompts(
     contract_slide: Dict[str, Any],
     capabilities: Dict[str, Any],
     brief: Optional[Dict[str, Any]] = None,
+    *,
+    plan_version: str = "0.1.0",
 ) -> Dict[str, str]:
     """AC06: the model request context lists registered capabilities only."""
     templates = capabilities["catalog"]["templates"]
@@ -170,12 +181,45 @@ def build_plan_generation_prompts(
         + "\n槽位内容字段契约（kind 对应 type，不输出 id/slot/type）："
         + json.dumps(capabilities.get("node_contracts", {}), ensure_ascii=False)
     )
+    if plan_version == "0.2.0":
+        system = (
+            "PromptVersion:html-plan-0.5.0。你是讲稿驱动的课程视觉规划器，只输出一个 JSON 对象。"
+            "spoken_text 是不可改写的语义真值；视觉说明、设计参考不得覆盖原句。"
+            "不得输出 HTML/CSS/JS、猜测像素/音频时长，或使用未列出的模板、槽位、图标、动作。"
+            "按讲稿逐语块表达含义，而不只是覆盖 ID。visualIntent 说明要解释的具体关系/状态；"
+            "targets 逐个说明对象表达什么及其角色，instructional 为讲解对象、context 为背景、"
+            "decorative 为装饰。每个非纯旁白语块至少有一个 instructional 目标和自身动作。"
+            "动作可一对多，同对象可跨语块重复强调；每次动作给出整页唯一、可复用的 actionKey，"
+            "只允许 enter/emphasize，objectId 必须属于本语块 targets。expectedState 声明动作后"
+            "对象可见和具体表达含义，不能仅写‘强调图片’。装饰不得承担讲解动作。"
+            "无法用注册能力表达时不得虚构图内可独立运动对象。纯旁白须明确 narration_only:true、"
+            "narration_only_reason，并将 targets/actions 设为空；不得把能力不足默认改成纯旁白。"
+            "不要输出 spoken_text、散列或 actionId，宿主从权威讲稿与 actionKey 确定性生成。"
+            "每个内容槽位必须在 objects 中有一个同 kind 对象。图片只生成独立主体；"
+            "已有资源引用保持身份/版本，新图片需求声明 image_asset 和 need。"
+            "这些是计划声明，不能自称语义 QA 或用户批准已通过。\n已注册模板与槽位：\n"
+            + "\n".join(template_lines)
+            + "\n已注册图标：" + ", ".join(capabilities["catalog"]["icons"])
+            + "\n必须输出的顶层结构：" + _plan_schema_hint(plan_version)
+            + '\n语块示例：{"id":"输入语块ID","visualIntent":"说明液态水放热变为冰",'
+              '"targets":[{"objectId":"本页对象ID","role":"instructional","meaning":"液态到固态关系"}],'
+              '"actions":[{"actionKey":"freezing-relation-enter","objectId":"本页对象ID","type":"enter",'
+              '"expectedState":{"visible":true,"meaning":"显示液态水→固态冰及放热说明"}}]}。'
+              '示例只说明字段，ID必须引用本次输入或本页声明。slots存内容，objects存身份；'
+              'beats存意图、目标和动作。'
+            + "\n槽位内容字段契约（kind 对应 type，不输出 id/slot/type）："
+            + json.dumps(capabilities.get("node_contracts", {}), ensure_ascii=False)
+        )
     user = json.dumps(
         {
             "slide": {
                 "slide_id": contract_slide.get("slide_id"),
                 "visual_groups": contract_slide.get("visual_groups") or [],
-                "narration_beats": contract_slide.get("narration_beats") or [],
+                "narration_beats": (
+                    [{"id": b.get("id"), "spoken_text": b.get("spoken_text")}
+                     for b in contract_slide.get("narration_beats") or [] if isinstance(b, dict)]
+                    if plan_version == "0.2.0" else contract_slide.get("narration_beats") or []
+                ),
             },
             "design_brief": brief,
         },
@@ -184,7 +228,7 @@ def build_plan_generation_prompts(
     return {
         "system_prompt": system,
         "user_prompt": user,
-        "schema_hint": _plan_schema_hint(),
+        "schema_hint": _plan_schema_hint(plan_version),
     }
 
 
@@ -196,6 +240,7 @@ def generate_scene_plan(
     json_generator: Callable[..., Dict[str, Any]],
     brief: Optional[Dict[str, Any]] = None,
     artifact_prefix: Optional[str] = None,
+    plan_version: str = "0.1.0",
 ) -> Dict[str, Any]:
     """Model → validated scene plan, with one bounded repair round.
 
@@ -205,9 +250,20 @@ def generate_scene_plan(
     final diagnostics. A model output that fails normalization twice is
     an error — validators never bend toward the model.
     """
+    if plan_version not in ("0.1.0", "0.2.0"):
+        raise HtmlReviewError("未知规划版本", code="PLAN_VERSION_MISMATCH", status_code=422)
+    if plan_version == "0.2.0":
+        # Fail before a paid request when authority is absent or malformed.
+        from html_narration_semantics import NarrationSemanticError, validate_narration_source
+
+        try:
+            validate_narration_source(contract_slide)
+        except NarrationSemanticError as exc:
+            raise HtmlReviewError(str(exc), code=exc.code, status_code=422) from exc
     capabilities = _registered_capabilities(Path(repo_root))
-    prompts = build_plan_generation_prompts(contract_slide, capabilities, brief)
-    prefix = artifact_prefix or f"html_scene_plan_{contract_slide.get('slide_id')}"
+    prompts = build_plan_generation_prompts(contract_slide, capabilities, brief, plan_version=plan_version)
+    version_suffix = "_v0_2_0" if plan_version == "0.2.0" else ""
+    prefix = artifact_prefix or f"html_scene_plan_{contract_slide.get('slide_id')}{version_suffix}"
     attempts: list[Dict[str, Any]] = []
     plan = None
     previous_response = None
@@ -219,6 +275,9 @@ def generate_scene_plan(
                 f"上一次输出未通过校验：{last_failure.code} {last_failure}。"
                 "请严格按已注册模板/槽位/图标重新输出完整 JSON。"
             )
+            if plan_version == "0.2.0":
+                # The dynamic diagnostic and rejected plan are already in user input.
+                repair_note = ""
         response = json_generator(
             system_prompt=prompts["system_prompt"] + repair_note,
             user_prompt=(prompts["user_prompt"] if previous_response is None else json.dumps({"task":json.loads(prompts["user_prompt"]),"invalid_plan":previous_response,"diagnostic":{"code":last_failure.code,"message":str(last_failure)}},ensure_ascii=False)),
@@ -236,6 +295,7 @@ def generate_scene_plan(
                 response,
                 capabilities["catalog"],
                 contract_slide=contract_slide,
+                expected_version=plan_version,
             )
             attempts.append(
                 {
@@ -262,6 +322,7 @@ def generate_scene_plan(
         "slide_id": contract_slide.get("slide_id"),
         "artifact_prefix": prefix,
         "request_context": {
+            "plan_version": plan_version,
             "catalog_sha256": capabilities["catalog"]["sha256"],
             "effect_registry_sha256": capabilities["effects"]["sha256"],
             "brief_sha256": (brief or {}).get("sha256"),
@@ -273,7 +334,8 @@ def generate_scene_plan(
         "plan_evidence": plan_evidence(plan) if plan else None,
     }
     records_dir = Path(run_dir) / RECORDS_DIR
-    _write_json(records_dir / f"plan-{contract_slide.get('slide_id')}.json", record)
+    record_suffix = "-v0.2.0" if plan_version == "0.2.0" else ""
+    _write_json(records_dir / f"plan-{contract_slide.get('slide_id')}{record_suffix}.json", record)
     if plan is None:
         raise HtmlReviewError(
             "模型输出两次未通过注册能力校验；诊断已保存，请调整后重试："

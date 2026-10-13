@@ -629,7 +629,7 @@ def build_parser() -> argparse.ArgumentParser:
                 command.add_argument('--' + field.replace('_', '-'), required=True)
         if cap.id.startswith("html_repair.") or cap.id in ("html_visual.scene_write", "project_model_binding.write", "html_editor.write", "html_editor.preview", 'html_sheet.generate', 'html_sheet.review', 'html_sheet.accept', 'html_sheet.assess', 'html_sheet.retry'):
             command.add_argument("--file", required=True, help="JSON request matching the registered capability schema")
-        elif cap.id in ("html_review.review","html_review.approve", "html_review.produce"): command.add_argument("--file",help="Optional JSON request matching the capability schema")
+        elif cap.id in ("html_review.review","html_review.approve", "html_review.produce", "html_review.plan_generate"): command.add_argument("--file",help="Optional JSON request matching the capability schema")
         command.set_defaults(func=cmd_html,capability_id=cap.id)
 
     # project

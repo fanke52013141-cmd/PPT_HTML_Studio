@@ -126,6 +126,7 @@ def normalize_html_scene_plan(
     catalog: Dict[str, Any],
     *,
     contract_slide: Optional[Dict[str, Any]] = None,
+    expected_version: str | None = None,
 ) -> Dict[str, Any]:
     """Validate and freeze one slide's HTML scene plan.
 
@@ -143,6 +144,11 @@ def normalize_html_scene_plan(
     """
     if not isinstance(plan_input, dict):
         raise HtmlScenePlanError("PLAN_INVALID", "场景计划必须是 JSON 对象")
+    version = plan_input.get("version", "0.1.0")
+    if version not in ("0.1.0", "0.2.0") or (expected_version and version != expected_version):
+        raise HtmlScenePlanError("PLAN_VERSION_MISMATCH", "规划版本未知或与请求不一致；不得降级")
+    if plan_input.get("format", "hps.html.scene_plan") != "hps.html.scene_plan":
+        raise HtmlScenePlanError("PLAN_FORMAT_INVALID", "场景规划格式不合法")
     slide_id = _clean_text(
         plan_input.get("slide_id"), max_length=80, label="slide_id"
     )
@@ -202,13 +208,35 @@ def normalize_html_scene_plan(
 
     objects = _normalize_objects(plan_input, slot_rules, catalog["icons"])
 
-    beats = _normalize_beats(plan_input, contract_slide)
+    if version == "0.2.0":
+        object_slots = {obj["slot"]: obj for obj in objects}
+        if (
+            len(object_slots) != len(objects) or set(object_slots) != set(normalized_slots)
+            or any(obj["kind"] != normalized_slots[slot]["kind"] for slot, obj in object_slots.items())
+        ):
+            raise HtmlScenePlanError("OBJECT_SLOT_MISMATCH", "语义对象与内容槽位必须一一对应")
+        from html_narration_semantics import NarrationSemanticError, normalize_semantic_beats
+
+        try:
+            beats = normalize_semantic_beats(
+                {**plan_input, "slide_id": slide_id, "objects": objects}, contract_slide
+            )
+        except NarrationSemanticError as exc:
+            raise HtmlScenePlanError(exc.code, str(exc)) from exc
+    else:
+        legacy_beats = plan_input.get("beats")
+        if any(
+            isinstance(beat, dict) and set(beat) & {"visualIntent", "targets", "actions"}
+            for beat in (legacy_beats if isinstance(legacy_beats, list) else [])
+        ):
+            raise HtmlScenePlanError("PLAN_VERSION_MISMATCH", "语义字段必须使用规划 0.2.0")
+        beats = _normalize_beats(plan_input, contract_slide)
 
     assets = _normalize_assets(plan_input)
 
     plan = {
         "format": "hps.html.scene_plan",
-        "version": "0.1.0",
+        "version": version,
         "slide_id": slide_id,
         "templateRef": {"id": template_id, "version": template_version},
         "structure": str(template.get("structure")),
@@ -406,7 +434,14 @@ def beat_action_map(plan: Dict[str, Any]) -> Dict[str, Any]:
     """AC07 evidence: every narration beat → its on-screen target."""
     mapping: Dict[str, Any] = {}
     for beat in plan.get("beats", []):
-        if beat.get("narration_only"):
+        if plan.get("version") == "0.2.0":
+            mapping[beat["id"]] = {
+                key: beat[key] for key in (
+                    "spoken_text", "spoken_text_sha256", "visualIntent", "targets",
+                    "actions", "narration_only", "narration_only_reason"
+                ) if key in beat
+            }
+        elif beat.get("narration_only"):
             mapping[beat["id"]] = {"narration_only": True}
         else:
             mapping[beat["id"]] = {
@@ -428,7 +463,7 @@ def transitional_objects(plan: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 def plan_evidence(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Compact AC07 evidence block for acceptance manifests."""
-    return {
+    evidence = {
         "slide_id": plan.get("slide_id"),
         "templateRef": plan.get("templateRef"),
         "structure": plan.get("structure"),
@@ -447,6 +482,13 @@ def plan_evidence(plan: Dict[str, Any]) -> Dict[str, Any]:
         ],
         "catalog_sha256": (plan.get("registered") or {}).get("catalog_sha256"),
     }
+    if plan.get("version") == "0.2.0":
+        evidence["plan_version"] = "0.2.0"
+        evidence["validation"] = {
+            "structure": "passed", "semantic": "not_run",
+            "audio": "not_run", "human": "pending_review",
+        }
+    return evidence
 
 
 def dedupe_plan_beats(beats: Any) -> List[Dict[str, Any]]:

@@ -33,6 +33,7 @@ from agent_contract.models import (
     HtmlProduceRequest,
     HtmlDesignCandidateResult,
     HtmlPlanGenerationResult,
+    HtmlPlanGenerationRequest,
     HtmlReviewReportResult,
     HtmlSceneBodyRequest,
     HtmlSceneDocumentResult,
@@ -497,7 +498,9 @@ def agent_html_approval_status(
     response_model=HtmlPlanGenerationResult,
 )
 def agent_html_plan_generate(
-    project_id: str, slide_id: str, db: Session = Depends(get_db)
+    project_id: str, slide_id: str,
+    payload: HtmlPlanGenerationRequest | None = None,
+    db: Session = Depends(get_db),
 ):
     project = _html_project_or_404(project_id, db)
     from project_path_service import project_run_dir_or_500
@@ -505,15 +508,18 @@ def agent_html_plan_generate(
     run_dir = project_run_dir_or_500(project)
     contract_slide = _contract_slide_or_404(run_dir, slide_id)
     deps = _agent_review_deps()
+    selection = payload or HtmlPlanGenerationRequest()
     try:
         plan = html_review.generate_scene_plan(
             contract_slide,
             run_dir=run_dir,
             repo_root=deps.repo_root,
             json_generator=deps.json_generator,
+            plan_version=selection.plan_version,
+            brief=selection.brief,
         )
     except html_review.HtmlReviewError as error:
-        raise HTTPException(status_code=error.status_code, detail=str(error))
+        raise HTTPException(status_code=error.status_code, detail={"code": error.code, "message": str(error)})
     from html_storyboard_planning import plan_evidence
 
     return HtmlPlanGenerationResult(

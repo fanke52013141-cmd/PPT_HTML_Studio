@@ -819,6 +819,8 @@ generated caches may be rebuilt, while explicit deletion needs a separate action
 
 ## Integrated HTML Backend Ownership and Acceptance
 
+- A01 narration semantics: `html_scene_plan_models.py` owns shared Web/Agent request and typed beat contracts; `html_narration_semantics.py` implements pure validation under `html_storyboard_planning.py`. Read `docs/contracts/html-presentation/runtime/visual-v1/narration-semantics-0.2.0.md`. Plan 0.2.0 is explicitly selected; absent version preserves 0.1.0. Source text/hash and actionId are host-derived; structure acceptance is not semantic/audio/human approval. Until A02/A03 integrate it, the production compiler must reject 0.2.0 rather than discard semantics. No automatic author/approval migration.
+
 - html_production_service.py orchestrates registered plans, cached labeled effect references, configured image transport, independent resources, candidate keyframes and scene compilation. It does not generate executable HTML/JavaScript and never automatically approves.
 - html_workflow_jobs.py owns the bounded persistent worker. html_task_store.py owns task state transitions; cancellation/success use database compare-and-set. Startup marks abandoned tasks interrupted. Cancellation is cooperative at stage boundaries; submitted remote requests may finish before the next checkpoint.
 - html_visual_store.py owns documents/revisions/no-op writes. html_visual_review_service.py owns shared review and approval of stored current scenes. Web and Agent enforce project/account access before dispatch.

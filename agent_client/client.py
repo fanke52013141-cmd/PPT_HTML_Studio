@@ -387,12 +387,12 @@ class AgentClient:
         )
 
     def post_html_plan_generate(
-        self, project_id: str, slide_id: str
+        self, project_id: str, slide_id: str, payload: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         return self._request(
             "POST",
             f"/projects/{project_id}/html-review/{slide_id}/plan/generate",
-            json={},
+            body=payload if payload is not None else {},
         )
 
     def post_html_review(
