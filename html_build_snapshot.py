@@ -244,7 +244,7 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
     root = Path(repo_root or Path(__file__).parent).resolve()
     run = Path(run_dir).resolve()
     slide_id = validate_slide_id(slide_id)
-    if target not in {"html_preview", "video", "pptx"}:
+    if target not in {"html_preview", "video", "pptx", "semantic_review"}:
         raise SnapshotError("SNAPSHOT_TARGET_UNSUPPORTED")
     with project_artifact_lock(run):
         revision = _read_revision(run)["revision"]
@@ -255,6 +255,12 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
         if scene.get("id") != slide_id:
             raise SnapshotError("SNAPSHOT_SCENE_ID_MISMATCH")
         _no_secrets(scene)
+        semantic = target == "semantic_review"
+        if semantic:
+            from html_semantic_review import capture_semantic_inputs
+            capture.add("input/author-scene.json", json_bytes(scene))
+            scene = capture_semantic_inputs(run, root, slide_id, scene, capture)
+            capture.add("input/scene.json", json_bytes(scene))
         if target == "pptx":
             from html_input_manifest import html_readiness
             if not html_readiness(run, root, [slide_id])["ready"]:
@@ -336,5 +342,5 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
         capture.add("preview/index.html", html.encode("utf-8"))
         capture.add("preview/data.js", b"window.VisualData=" + json_bytes({"catalog": catalog, "scenes": [scene], "pack": pack}).replace(b"<", b"\\u003c") + b";")
         return _commit(run, capture, {"kind": "render", "slide_id": slide_id, "target": target,
-            "clock": "confirmed_audio_inputs" if target == "video" else "author",
+            "clock": "real_audio_unconfirmed" if semantic else "confirmed_audio_inputs" if target == "video" else "author",
             "scene_digest": digest(json_bytes(scene)), "font_scope": "local_only", "approval_granted": False}, revision)

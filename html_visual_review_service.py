@@ -71,6 +71,7 @@ class HtmlReviewDependencies:
     node_bin: str = "node"
     review_script: Path = REVIEW_SCRIPT
     stage_timeout_sec: float = 240.0
+    semantic_model_identity: Dict[str, Any] | None = None
 
 
 def _sha256_bytes(payload: bytes) -> str:
@@ -412,6 +413,12 @@ def review_scene(
     diagnostic: bool = False,
 ) -> Dict[str, Any]:
     """Compile + measure + screenshot one scene via the shared bundle."""
+    if scene.get("version") == "0.6.0" and not diagnostic:
+        from html_semantic_review import review_semantic_scene
+        try:
+            return review_semantic_scene(scene, run_dir=run_dir, deps=deps)
+        except (ValueError, OSError, KeyError, TypeError, subprocess.SubprocessError) as exc:
+            raise HtmlReviewError("语义审阅未完成：" + str(exc), code="SEMANTIC_REVIEW_BLOCKED", status_code=409) from exc
     from html_visual_store import validate_slide_id, HtmlVisualError
 
     try:
@@ -482,7 +489,14 @@ def approve_scene(
     reviewer: str = "user",
 ) -> Dict[str, Any]:
     """Freeze an approval bound to every hash a later change could touch."""
-    report = review_scene(scene, run_dir=run_dir, deps=deps)
+    if scene.get("version") == "0.6.0":
+        from html_semantic_review import semantic_status
+        semantic = semantic_status(scene, run_dir, deps.repo_root)
+        if not semantic["valid"] or not semantic["passed"]:
+            raise HtmlReviewError("新场景须先通过独立语义审阅；低置信结果待审", code="SEMANTIC_APPROVAL_BLOCKED", status_code=409)
+        report = semantic["report"]
+    else:
+        report = review_scene(scene, run_dir=run_dir, deps=deps)
     if not report.get("passed"):
         raise HtmlReviewError(
             "静态审阅未通过，不能批准："
@@ -516,6 +530,8 @@ def approve_scene(
     approval["resolved_input_digest"] = resolved_scene_inputs(
         scene, run_dir, deps.repo_root
     )["digest"]
+    if scene.get("version") == "0.6.0":
+        approval["semantic_report_digest"] = report["report_digest"]
     approval["sha256"] = _sha256_bytes(
         json.dumps(approval, ensure_ascii=False, sort_keys=True).encode("utf-8")
     )
@@ -541,6 +557,11 @@ def approval_status(
     approval = json.loads(path.read_text(encoding="utf-8"))
     if scene is None:
         return {"valid": False, "approval": approval, "reason": "scene_missing"}
+    if scene.get("version") == "0.6.0":
+        from html_semantic_review import semantic_status
+        semantic = semantic_status(scene, run_dir, deps.repo_root)
+        if not semantic["valid"] or not semantic["passed"] or approval.get("semantic_report_digest") != semantic.get("report_digest"):
+            return {"valid": False, "approval": approval, "reason": "semantic_review_required", "quality": semantic}
     # Most specific reason first: a theme swap also changes the whole-scene
     # hash, but naming the real cause is what the user needs.
     if scene.get("themeRef") != approval.get("theme"):

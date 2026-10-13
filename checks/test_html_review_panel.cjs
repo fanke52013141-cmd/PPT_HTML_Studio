@@ -28,7 +28,18 @@ const {chromium}=require("../html_engine/node_modules/playwright");
   await page.locator('[data-action="produce"]').click();
   await page.waitForFunction(()=>document.querySelector('[data-html-status]').textContent.includes('静态检查通过'));
   assert((await page.evaluate(()=>calls)).includes('/api/projects/p1/html-review/s1/produce'));
+  await page.evaluate(()=>{
+    const old=API.post;
+    API.post=async(url)=>url.endsWith('/review')?{review:{passed:false,checks:{engineering:'passed',semantic:'failed',audio:'pending_review',human:'pending_review'},evaluations:[{status:'failed',evidence:[{quote:'<img id="injected" src=x>',reason:'没有表达输出预留空间'}]}]}}:old(url);
+  });
+  await page.locator('[data-action="review"]').click();
+  await page.waitForFunction(()=>document.querySelector('[data-html-status]').textContent.includes('语义：failed'));
+  assert.equal(await page.locator('[data-html-semantic-evidence] details').count(),1);
+  assert.equal(await page.locator('[data-html-semantic-evidence] img').count(),3);
+  assert.equal(await page.locator('#injected').count(),0);
+  assert((await page.locator('[data-html-semantic-evidence] img').first().getAttribute('src')).includes('beat_index=0&frame_index=0'));
   await page.evaluate(()=>{PPTStudio.runtime.state.activeSlideIndex=1;HtmlReviewPanel.refresh();});
+  assert.equal(await page.locator('[data-html-semantic-evidence] details').count(),0);
   await page.locator('[data-action="approve"]').click();
   await page.waitForFunction(()=>document.querySelector('[data-html-status]').textContent.includes('已批准'));
   assert((await page.evaluate(()=>calls)).includes('/api/projects/p1/html-review/s2/approve'));
@@ -44,6 +55,6 @@ const {chromium}=require("../html_engine/node_modules/playwright");
   await page.evaluate(()=>{PPTStudio.runtime.state.currentProject.visual_backend='image';HtmlReviewPanel.refresh();});
   assert.equal(await page.locator('#html-review-panel-section').isHidden(),true);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({checks:11,errors,correctPanel:true,stableRefresh:true,modelProjectIsolation:true}));
+  console.log(JSON.stringify({checks:16,errors,correctPanel:true,stableRefresh:true,modelProjectIsolation:true,semanticEvidenceEscaped:true}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

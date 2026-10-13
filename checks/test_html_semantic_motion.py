@@ -109,7 +109,7 @@ def test_actual_player_seek_states_and_repeat_emphasis(tmp_path):
     assert len(report["frames"]) == 6
 
 
-def real_timing_plan(page):
+def real_timing_plan(page, *, return_plan=False):
     plan = decomposition_plan()
     plan["slide_id"] = page["slide_id"]
     plan["slots"]["header"]["title"] = "语块时间绑定工程验证"
@@ -131,7 +131,9 @@ def real_timing_plan(page):
     from test_html_object_decomposition import add_definitions
     add_definitions(plan)
     source = {"slide_id": page["slide_id"], "narration_beats": page["narration_beats"]}
-    return compile_plan(normalize(plan, source, budget=0), source, CATALOG)
+    frozen = normalize(plan, source, budget=0)
+    scene, binding = compile_plan(frozen, source, CATALOG)
+    return (frozen, scene, binding) if return_plan else (scene, binding)
 
 
 def test_all_twenty_real_provider_beats_bind_without_tts_or_proportional_fallback(tmp_path):

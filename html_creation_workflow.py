@@ -477,6 +477,11 @@ def _visual_slide_facts(
                 ),
                 "reason": approval.get("reason"),
             }
+            if scene.get("version") == "0.6.0":
+                from html_semantic_review import semantic_status
+                quality = semantic_status(scene, run_dir, repo_root)
+                facts[slide_id]["quality"] = quality.get("checks", {"engineering": "not_run", "semantic": "not_run", "audio": "pending_review", "human": "pending_review"})
+                facts[slide_id]["semantic_review_valid"] = quality["valid"]
         except (HtmlVisualError, OSError, ValueError, KeyError, TypeError) as exc:
             facts[slide_id] = {"status": "blocked", "reason": str(exc)}
     return facts

@@ -92,8 +92,13 @@ def resolved_scene_inputs(
         ),
     }
     if scene.get("version") == "0.6.0":
-        for name in ("html_audio_binder.py", "html_semantic_motion.py"):
+        for name in ("html_audio_binder.py", "html_semantic_motion.py", "html_semantic_qa.py", "html_semantic_review.py"):
             files["binding_runtime/" + name] = _hash(repo / name)
+        files["semantic_plan"] = _hash(run / "planning/html_visual" / f"plan-{scene['id']}.json")
+        files["semantic_contract"] = _hash(run / "planning/visual_contract.json")
+        files["semantic_model_binding"] = _hash(run / "planning/project_model_binding.json")
+        for name in ("audio_timeline.json", "voice.mp3"):
+            files["semantic_audio/" + name] = _hash(run / "slides" / scene["id"] / name)
     provenance_path = run / "planning/html_visual" / f"production-provenance-{scene['id']}.json"
     if provenance_path.is_file():
         # Legacy scenes without E provenance retain their old fingerprint shape.

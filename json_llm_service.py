@@ -158,6 +158,7 @@ def _generate_json_with_configured_llm(
     request_timeout: float = 120.0,
     max_tokens_limit: int | None = None,
     image_paths: list[str] | None = None,
+    strict_response: bool = False,
 ) -> Dict[str, Any]:
     llm_api_key = getattr(model_binding, "api_key", None) if model_binding is not None else get_setting("llm_api_key")
     llm_base_url = getattr(model_binding, "endpoint", None) if model_binding is not None else get_setting("llm_base_url")
@@ -214,7 +215,7 @@ def _generate_json_with_configured_llm(
                         ],
                     )
             except Exception as format_error:
-                if not is_llm_format_incompatibility(format_error):
+                if strict_response or not is_llm_format_incompatibility(format_error):
                     raise
                 logger.warning(
                     "AI JSON generation with response_format failed for %s, retrying without it: %s",
@@ -237,6 +238,13 @@ def _generate_json_with_configured_llm(
             raise HTTPException(status_code=500, detail=f"AI 生成失败: {exc}") from exc
 
         raw_content = response.choices[0].message.content.strip()
+        if strict_response:
+            # Evidence review must not make another text-only decision to repair
+            # a malformed multimodal judgement or retry an unknown request.
+            value = json.loads(clean_json_markdown(raw_content))
+            if not isinstance(value, dict):
+                raise ValueError("LLM response must be a JSON object")
+            return value
         return parse_json_or_repair_with_llm(
             cleaned_content=clean_json_markdown(raw_content),
             raw_content=raw_content,

@@ -31,6 +31,35 @@
     const target = section.querySelector('[data-html-status]');
     if (target.textContent !== message) target.textContent = message;
   }
+  function showSemanticEvidence(section, report, base) {
+    let box = section.querySelector('[data-html-semantic-evidence]');
+    if (!box) {
+      box = document.createElement('div');
+      box.dataset.htmlSemanticEvidence = '';
+      section.querySelector('[data-html-status]').after(box);
+    }
+    box.replaceChildren();
+    for (const [index, evaluation] of (report?.evaluations || []).entries()) {
+      const details = document.createElement('details'), title = document.createElement('summary');
+      const labels = {passed:'通过',failed:'未通过',pending_review:'待审'};
+      title.textContent = `语块 ${index + 1}：${labels[evaluation.status] || evaluation.status}`;
+      details.append(title);
+      for (const evidence of evaluation.evidence || []) {
+        const p = document.createElement('p');
+        p.textContent = `原句：${evidence.quote}；依据：${evidence.reason}`;
+        details.append(p);
+      }
+      if (evaluation.error) {
+        const p = document.createElement('p');p.textContent='评估未完成，需要重新审阅。';details.append(p);
+      }
+      for (const [frameIndex, label] of ['开始','中点','结束'].entries()) {
+        const image = document.createElement('img');image.alt=`语块 ${index + 1} ${label}帧`;image.loading='lazy';
+        image.style.maxWidth='100%';image.src=`${base}/screenshot?beat_index=${index}&frame_index=${frameIndex}`;
+        details.append(image);
+      }
+      box.append(details);
+    }
+  }
   const stageLabels = {queued:'等待处理',running:'正在处理',plan:'内容规划',brief:'设计规划',design:'设计参考',compile:'编译场景',review:'页面检查',rebuild:'重建影响',json_request:'模型请求',json_returned:'模型已返回',image_request:'图片请求',image_returned:'图片已返回',image_unknown:'图片结果待核实',json_unknown:'模型结果待核实',design_review:'等待设计确认'};
   const taskStatusLabels={queued:'等待处理',running:'生产中',succeeded:'任务结束',failed:'生产失败',interrupted:'任务中断',cancelled:'已停止'};
   function taskFacts(section, task) {
@@ -225,13 +254,16 @@
           }
           if (token !== generation || context().project?.id !== current.project.id || context().slideId !== current.slideId) return;
           if (result.stage === 'design_review' && result.design) {
+            showSemanticEvidence(section, null, base);
             showAssetRetry(section, null);
             showDesign(section, result.design, base);
             status(section, result.message);
           } else if (result.review) {
+            showSemanticEvidence(section, result.review, base);
             showDesign(section, null, base);
             if (result.design_candidate_key) showAssetRetry(section, result.design_candidate_key);
-            status(section, result.review.passed ? '静态检查通过，请查看画面后决定是否批准。' : `检查未通过：${result.review.message || result.review.code}`);
+            const checks = result.review.checks;
+            status(section, checks?.semantic ? `工程：${checks.engineering}；语义：${checks.semantic}；音频：${checks.audio}；人工：${checks.human}。请结合逐句证据审阅。` : result.review.passed ? '静态检查通过，请查看画面后决定是否批准。' : `检查未通过：${result.review.message || result.review.code}`);
             if (result.review.screenshot_url) {
               const image = section.querySelector('[data-html-preview]');
               image.src = result.review.screenshot_url; image.hidden = false;
@@ -282,6 +314,7 @@
       designCandidate = null;
       showAssetRetry(section, null);
       showDesign(section, null, '');
+      section.querySelector('[data-html-semantic-evidence]')?.replaceChildren();
       section.querySelector('[data-design-instruction]').value = '';
       section.querySelector('[data-asset-instruction]').value = '';
       section.querySelectorAll('button').forEach(b=>b.disabled=false);

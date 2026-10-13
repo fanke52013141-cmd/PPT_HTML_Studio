@@ -1,0 +1,126 @@
+{
+  "format": "hps.a04.validation",
+  "date": "2026-10-13",
+  "parent_commit": "c0d6739eca1100b41de4fa4507034e525efa72d4",
+  "statuses": {
+    "engineering": "passed_in_isolated_regression",
+    "semantic_gate_implementation": "passed_in_isolated_regression",
+    "real_provider_semantic_accuracy": "not_run",
+    "audio_human_review": "pending_review",
+    "human_course_acceptance": "pending_review",
+    "image_to_html_reconstruction": "not_run_in_a04",
+    "autonomous_course_orchestration": "A05_pending",
+    "formal_export": "not_run"
+  },
+  "scope": "Local A04 implementation and isolated test fixtures. No real provider, paid image generation, TTS, user-course mutation, approval write, push, or deployment. Browser screenshots are HTML engineering fixtures, not generated design references and not image-to-HTML reconstruction.",
+  "checks": [
+    {
+      "command": ".venv/Scripts/python.exe -m pytest checks/test_html_semantic_qa.py checks/test_html_semantic_motion.py checks/test_html_visual_review.py checks/test_html_build_snapshot.py checks/test_html_temporal_qa.py checks/test_html_creation_workflow.py checks/test_html_workflow_status.py checks/test_html_formal_export.py checks/test_html_production_integration.py checks/test_html_semantic_plan_transports.py checks/test_server_composition_boundaries.py checks/test_route_inventory.py checks/agent/ -q",
+      "passed": 535,
+      "failed": 0,
+      "warnings": 1,
+      "exit_code": 0
+    },
+    {
+      "command": "node checks/test_html_review_panel.cjs",
+      "checks": 16,
+      "errors": [],
+      "exit_code": 0,
+      "coverage": [
+        "separate engineering/semantic/audio/human status",
+        "real sentence and per-beat frame evidence",
+        "HTML escaping",
+        "page/project switch clearing",
+        "stable refresh",
+        "project model isolation"
+      ]
+    },
+    {
+      "command": "ruff check all changed Python files",
+      "result": "All checks passed",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/generate_agent_contracts.py --check",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/check_source_registration_contract.py",
+      "exit_code": 0
+    },
+    {
+      "command": "scripts/check_python_startup_hooks.py",
+      "exit_code": 0
+    },
+    {
+      "command": "node --check static/html_review_panel.js; node --check html_engine/tools/review-semantic-snapshot.cjs; git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "fixture_boundary": {
+    "negative_case": "S08 Token slide 05 narration sentence 3 is evaluated with an isolated stubbed omitted verdict; a geometric engineering pass does not permit semantic approval.",
+    "positive_case": "Stubbed related judgments verify the report and evidence gates; they do not establish general model accuracy.",
+    "provider_calls": 0,
+    "tts_calls": 0,
+    "image_generation_calls": 0,
+    "approval_writes_to_user_projects": 0
+  },
+  "source_sha256": {
+    "html_semantic_qa.py": "752258673b48c2542b45cedac424410d1dbbd9fe2e63840c6416eafe940ba8d5",
+    "html_semantic_review.py": "fc9b30621a16b9d70dcbac4587f03523f7752f32a6f850ef1dd75fe25ce828c4",
+    "html_semantic_motion.py": "f73bcdc09a3e819332b726110860eb2e186d9cd1a9a2ffa0baef35d4c85d8fcd",
+    "html_build_snapshot.py": "cae59b3723367f854683203ca6da22e559df59451e6e1f1aa58744867ec748bb",
+    "html_input_manifest.py": "49412d0bce4a1e05109ce31a51198842ad216f64c7e4df2ba27d9ae7e7898407",
+    "html_visual_review_service.py": "61b922c8750db30d69ba5bdaee8042de6624e6d4f4ebbdf9f91d1abb88952304",
+    "html_visual_review_routes.py": "ba0cc716d2e6e780db176e8b5eb2af35ee9a3f757c9d0d11cbbad4298d40cc74",
+    "html_creation_workflow.py": "6aaaebeaf225e4df1880c12e09e957047243b89320f1d434bee4beb438298804",
+    "agent_api/routes.py": "c152eb4f188f3541e205fea160922bf1e7cabbacb69cd5a04556863764942d4c",
+    "agent_contract/capabilities.py": "4354692eb20a9e9777d2a42ed6bc9ce44a1727d6b7240f143e01242b6536752f",
+    "agent_contract/versions.py": "a988e2fb2628bcbcc1cb48e26bcf5b9b6f34686cbfbb5a2c39cbbd3a5a15e833",
+    "json_llm_service.py": "dd76d477d93b29349029c55abbe1805e4db5cb537aa85e4f8e3d90bddf313148",
+    "static/html_review_panel.js": "9653bc89eb3c5f5515c1e92c7762db6713eb7c2cfdaba3e42459c8b7478c8086",
+    "html_engine/tools/review-semantic-snapshot.cjs": "fcee36ba0e5791be6bfed2c266d817079a4da9462e098ff007952cd114bd1ca5",
+    "checks/test_html_semantic_qa.py": "fae764e7b2245ff3159970876cd576db115814ec26100d70e33660e8db02ee73",
+    "checks/test_html_semantic_motion.py": "df9da09e24e64412f0cdd369d7430f72aa59e24054fa71a3af6d4ed4985177b8",
+    "checks/test_html_review_panel.cjs": "2a432a598a8f542c9d51f048e167561440efd40dc761490e4db0335dd82a5a16",
+    "AGENTS.md": "4d9b995b4e49bfc6dd00ece0bcfde94f14e936f30bc44c1365b0c4d63a989fe6",
+    "docs/contracts/html-presentation/CHANGELOG.md": "7c5f6693e59f4bbbfd201cce6bcef92bc4c1752e7ad56cb7b4b308326e460e1d",
+    "docs/contracts/html-presentation/README.md": "fc2ce8d838fbca8f8d04be4a17bed28c27111c0aec3294ab1a58403ce50ff09d",
+    "docs/contracts/html-presentation/contract-index.json": "604e592661abc027fed2bc9e874d9cc5a1a3641d711c2b977a7ffb60bbc75832",
+    "docs/contracts/html-presentation/runtime/visual-v1/semantic-qa-0.1.0.md": "08756a0d3c80da5d8428a91a05630f0669d8499b13ee71a8839668a94a40b629",
+    "docs/plans/html-backend-development/handoff-2026-10-13.md": "62314f2a383c2b64a021f711ccb37f2fc435488f0e3b78f5514b0c50a0cda54d",
+    "docs/plans/html-backend-development/progress-narration-a04-2026-10-13.md": "790bf4d85ec7193e4931a111b8a6068311212e719de162fb9975d9f9e8d0552a"
+  },
+  "known_limitations": [
+    "Real provider judgment quality and course meaning remain unvalidated.",
+    "Real audio was frozen as input in contract tests but no human listening/approval was done.",
+    "The user-approved generated-image-to-HTML reconstruction workflow was not exercised in A04.",
+    "V01 server.py 1162 > 1100 remains; this is not a full-repository green claim."
+  ],
+  "post_suite_changes": {
+    "description": "After the 535-pass integration run, bound the exact catalog bytes before compilation and added approval/review/model-binding integration sources to the semantic report checker; corrected two contract-index runtime_scope strings.",
+    "validation": [
+      {
+        "command": ".venv/Scripts/python.exe -m py_compile html_semantic_review.py",
+        "exit_code": 0
+      },
+      {
+        "command": ".venv/Scripts/python.exe -m json.tool docs/contracts/html-presentation/contract-index.json",
+        "exit_code": 0
+      },
+      {
+        "command": ".venv/Scripts/python.exe -m ruff check html_semantic_review.py",
+        "exit_code": 0
+      },
+      {
+        "command": "node --check html_engine/tools/review-semantic-snapshot.cjs",
+        "exit_code": 0
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0
+      }
+    ],
+    "suite_rerun": false
+  }
+}

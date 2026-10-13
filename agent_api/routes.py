@@ -427,8 +427,12 @@ def agent_html_review(
     if scene.get("id") != slide_id:
         raise HTTPException(400, "场景标识必须与 Slide 一致")
     try:
+        deps = _agent_review_deps()
+        if scene.get("version") == "0.6.0":
+            from html_semantic_review import project_review_dependencies
+            deps = project_review_dependencies(project, deps)
         report = html_review.review_scene(
-            scene, run_dir=run_dir, deps=_agent_review_deps()
+            scene, run_dir=run_dir, deps=deps
         )
     except html_review.HtmlReviewError as error:
         raise HTTPException(status_code=error.status_code, detail=str(error))

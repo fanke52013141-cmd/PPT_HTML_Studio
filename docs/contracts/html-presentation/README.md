@@ -1,6 +1,8 @@
 # HTML 演示体系契约
 
-契约包版本：0.9.34。生效日期：2026-10-13。
+契约包版本：0.9.35。生效日期：2026-10-13。
+
+2026-10-13 A04：[独立语义QA合同](runtime/visual-v1/semantic-qa-0.1.0.md) 接入新场景既有review/approve/status入口；冻结真实时间轴、规划与三帧证据，确定性检查及独立多模态评估分别记录engineering/semantic/audio/human。缺证据、低置信和无法判断不授予通过，新场景批准/输出须有效语义报告；旧静态路线保留。沿用项目模型绑定，Agent API1.25.0，review/approve/status1.1；真实模型语义效果和课程签收仍待验。见[A04记录](../../plans/html-backend-development/progress-narration-a04-2026-10-13.md)。下方历史条目以本增量为准。
 
 2026-10-13 A03：[语义动作编译与真实配音绑定](runtime/visual-v1/semantic-motion-0.6.0.md) 已接入规划0.3.0、场景0.6.0与绑定0.2.0。显式初始状态、稳定actionId、重复强调、标注依赖及真实语块时钟共用播放器/编辑/输出服务；新场景缺绑定拒绝。Agent API1.24.0。旧路线保留，普通生产默认与整课调度在A05接入；语义QA、听审和课程签收未完成。见[A03交付记录](../../plans/html-backend-development/progress-narration-a03-2026-10-13.md)。以下A01/A02条目保留当时状态，以本增量为准。
 

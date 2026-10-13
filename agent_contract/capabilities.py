@@ -357,9 +357,9 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="html_review.review",
-        version="1.0",
+        version="1.1",
         status=CapabilityStatus.stable,
-        description="Compile, measure, and screenshot one html scene through the shared bundle; returns object-level diagnostics.",
+        description="Review one HTML scene through the shared bundle. Scene0.6.0 requires saved semantic sources and real audio inputs, freezes per-beat frames and independently evaluates meaning; engineering/semantic/audio/human states remain separate. Legacy scenes retain static review.",
         request_model=HtmlSceneBodyRequest,
         response_model=HtmlReviewReportResult,
         agent_api_method="POST",
@@ -370,9 +370,9 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="html_review.approve",
-        version="1.0",
+        version="1.1",
         status=CapabilityStatus.stable,
-        description="Approve one html scene; the record binds scene/theme/template/layout/asset/runtime hashes and fails on any static-review error.",
+        description="User approval bound to current scene/assets/runtime hashes; scene0.6.0 additionally requires valid independent semantic evidence. Model evaluation never grants user or audio approval.",
         request_model=HtmlSceneBodyRequest,
         response_model=HtmlApprovalResult,
         agent_api_method="POST",
@@ -383,7 +383,7 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="html_review.approval_status",
-        version="1.0",
+        version="1.1",
         status=CapabilityStatus.stable,
         description="Read the current approval validity and invalidation reason for one slide.",
         request_model=BaseModel,

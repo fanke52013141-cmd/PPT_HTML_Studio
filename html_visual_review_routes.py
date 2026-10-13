@@ -153,7 +153,11 @@ def review_scene(
     run_dir = project_run_dir_or_500(project)
     scene = _stored_scene_or_body(project_id, slide_id, run_dir, payload)
     try:
-        report = review.review_scene(scene, run_dir=run_dir, deps=_service_deps())
+        deps = _service_deps()
+        if scene.get("version") == "0.6.0":
+            from html_semantic_review import project_review_dependencies
+            deps = project_review_dependencies(project, deps)
+        report = review.review_scene(scene, run_dir=run_dir, deps=deps)
     except review.HtmlReviewError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc))
     report["screenshot_url"] = (
@@ -306,12 +310,20 @@ def task_cancel(project_id: str, job_id: str, db: Any = Depends(_get_db)):
 
 
 @router.get("/api/projects/{project_id}/html-review/{slide_id}/screenshot")
-def screenshot(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
+def screenshot(project_id: str, slide_id: str, db: Any = Depends(_get_db), beat_index: int | None = None, frame_index: int | None = None):
     from fastapi.responses import FileResponse
     from html_visual_store import validate_slide_id
     from pathlib import Path
 
     project = _html_project(project_id, db)
+    if beat_index is not None or frame_index is not None:
+        from html_semantic_review import semantic_frame_path
+        try:
+            path = semantic_frame_path(project_run_dir_or_500(project), slide_id, beat_index, frame_index,
+                                       repo_root=_dependencies.repo_root)
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
+        return FileResponse(path, media_type="image/png", headers={"Cache-Control": "no-store"})
     path = (
         Path(project_run_dir_or_500(project))
         / review.REVIEW_DIR
