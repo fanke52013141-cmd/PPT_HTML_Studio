@@ -48,8 +48,12 @@ class ProductionStages:
                 raise store.HtmlTaskError("快照依赖已变化，请重新提交", 409)
         return manifest
 
-    def _persist(self, key, record):
-        job = self.checkpoint()
+    def _persist(self, key, record, *, external_outcome=False):
+        # Recording the outcome of a submitted request must survive source
+        # changes. Author execution still uses the strict checkpoint.
+        job = store._job(self.db, self.job_id, self.attempt) if external_outcome else self.checkpoint()
+        if job.status != "running":
+            raise store.HtmlTaskError("任务已停止；拒绝迟到产物", 409)
         payload = job.get_payload()
         payload.setdefault("production_stages", {})[key] = record
         return store._transition(self.db, job, ("running",), {
@@ -67,7 +71,10 @@ class ProductionStages:
         store._transition(self.db, job, ("running",), {"payload_json": store.json_dumps(payload)})
 
     def _save(self, key, value, stage, kind):
-        self.checkpoint()
+        external = key.startswith(("json:", "image:"))
+        job = store._job(self.db, self.job_id, self.attempt) if external else self.checkpoint()
+        if job.status != "running":
+            raise store.HtmlTaskError("任务已停止；拒绝迟到产物", 409)
         data = value if kind == "image" else json_bytes(value)
         identity = digest(data)
         relative = f"planning/html_visual/task-stages/{self.job_id}/{identity}.{'png' if kind == 'image' else 'json'}"
@@ -75,7 +82,7 @@ class ProductionStages:
         path.parent.mkdir(parents=True, exist_ok=True)
         from html_visual_store import _atomic_write_bytes
         _atomic_write_bytes(path, data)
-        job = self.checkpoint()
+        job = store._job(self.db, self.job_id, self.attempt) if external else self.checkpoint()
         previous = job.get_payload().get("production_stages", {}).get(key, {})
         record = {**previous, "state": "returned", "stage": stage, "kind": kind,
                   "file": relative, "sha256": identity}
@@ -84,11 +91,19 @@ class ProductionStages:
             write_receipt(receipt_path(self.run, self.job_id, digest(key.encode())), {
                 "job_id": self.job_id, "snapshot_id": self.snapshot_id, "key": key, "record": record,
             })
-        self._persist(key, record)
+        self._persist(key, record, external_outcome=external)
+        self.checkpoint()
         return value
 
     def wrap(self, function, kind):
         def invoke(*args, **kwargs):
+            from functools import partial
+            original = function
+            while isinstance(original, partial):
+                original = original.func
+            streaming = kind == "json" and getattr(original, "supports_stream_progress", False)
+            if streaming:
+                kwargs = {**kwargs, "stream_output": True, "request_timeout": 1800}
             # Hash attachment bytes, not only mutable path strings.
             attachments = kwargs.get("reference_paths", kwargs.get("image_paths", [])) or []
             request = {"args": args, "kwargs": kwargs,
@@ -122,11 +137,14 @@ class ProductionStages:
             intent = {"state": "intent", "stage": kind + "_request", "kind": kind,
                       "attempt": self.attempt, "request_id": request_id, "lookup_supported": lookup_supported}
             self._persist(key, intent)
-            from functools import partial
-            original = function
-            while isinstance(original, partial):
-                original = original.func
             native_tasks = kind == "image" and getattr(original, "supports_upstream_task", False)
+            def stream_progress(value):
+                current = store._job(self.db, self.job_id, self.attempt)
+                if current.status != "running":
+                    raise store.HtmlTaskError("任务已停止；拒绝迟到进度", 409)
+                data = current.get_payload()
+                data["progress"] = {**data.get("progress", {}), "model_stream": value}
+                store._transition(self.db, current, ("running",), {"payload_json": store.json_dumps(data)})
             def submitted(task_id):
                 import re
                 if not isinstance(task_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,256}", task_id):
@@ -139,11 +157,21 @@ class ProductionStages:
                 })
                 self._persist(key, record)
             try:
-                value = function.invoke_with_request_id(request_id, *args, **kwargs) if lookup_supported else function(*args, **kwargs, **({"on_task_submitted": submitted} if native_tasks else {}))
-            except Exception:
-                previous = self.checkpoint().get_payload().get("production_stages", {}).get(key, intent)
-                self._persist(key, {**previous, "state": "unknown", "stage": kind + "_unknown"})
-                raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：供应商结果待核实，禁止自动重复请求", 409) from None
+                callbacks = {"on_task_submitted": submitted} if native_tasks else {}
+                if streaming:
+                    callbacks["on_stream_progress"] = stream_progress
+                value = function.invoke_with_request_id(request_id, *args, **kwargs) if lookup_supported else function(*args, **kwargs, **callbacks)
+            except Exception as error:
+                previous = store._job(self.db, self.job_id, self.attempt).get_payload().get("production_stages", {}).get(key, intent)
+                from html_production_recovery import receipt_path, write_receipt
+                record = {**previous, "state": "unknown", "stage": kind + "_unknown",
+                          "error_class": type(error).__name__,
+                          "cause_class": type(error.__cause__).__name__ if error.__cause__ else None}
+                write_receipt(receipt_path(self.run, self.job_id, "unknown-" + digest(key.encode())), {
+                    "job_id": self.job_id, "snapshot_id": self.snapshot_id, "key": key, "record": record,
+                })
+                self._persist(key, record, external_outcome=True)
+                raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：供应商结果待核实，禁止自动重复请求", 409) from error
             # Persist raw returned bytes/JSON before validation or downstream work.
             self._save(key, value, kind + "_returned", kind)
             if kind == "image":

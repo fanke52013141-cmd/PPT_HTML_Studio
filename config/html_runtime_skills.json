@@ -28,7 +28,7 @@
       "output_contract": "design-understanding-output/0.1.0",
       "body": {
         "path": "config/html_runtime_skills/design-understanding-0.1.0.md",
-        "sha256": "57f0cd6355a3b1d192838bf282ea854bc89328fff1a2ab41a64505c76df6ff4a"
+        "sha256": "a21e478adabcc4695b769d8cda04f0c39b9249746ed8bf3502a12e634c0c30e1"
       },
       "references": {}
     },
@@ -40,7 +40,7 @@
       "output_contract": "design-reconstruction-output/0.1.0",
       "body": {
         "path": "config/html_runtime_skills/design-reconstruction-0.1.0.md",
-        "sha256": "cda9b53ed97735c8b84792639372ec140d5dda7216f5942dd72e00059413b59e"
+        "sha256": "d032e6d716d5e2ad89c7a15ad62838bb8fba3e161cef13b62e7e4518006751e8"
       },
       "references": {}
     },
@@ -52,7 +52,7 @@
       "output_contract": "design-review-output/0.1.0",
       "body": {
         "path": "config/html_runtime_skills/design-fidelity-review-0.1.0.md",
-        "sha256": "3e526356d0d63d7ef908d4eeb649ed6c5394ae6410d7d019ad975689f7590302"
+        "sha256": "d99124d903350ed281d1bf0fa3aa4b4080088a34b6acc35980b3c305faa5dc04"
       },
       "references": {}
     }

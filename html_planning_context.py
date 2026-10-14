@@ -23,7 +23,7 @@ def planning_context(contract: dict, brief: dict | None) -> dict:
         seen.add(beat["id"])
         beats.append({"id": beat.get("id"), "spoken_text": text})
     joined = "".join(str(b["spoken_text"] or "") for b in beats)
-    title = contract.get("title")
+    title = contract.get("title") if contract.get("title") is not None else contract.get("main_title")
     if title is not None and not isinstance(title, str):
         raise ValueError("标题必须是文字")
     duplicates = {joined}
@@ -36,13 +36,18 @@ def planning_context(contract: dict, brief: dict | None) -> dict:
     for group in raw_groups:
         if not isinstance(group, dict):
             raise ValueError("视觉组必须是对象")
-        if any(group.get(k) is not None and not isinstance(group[k], str) for k in ("id", "description", "content")):
+        if any(group.get(k) is not None and not isinstance(group[k], str) for k in
+               ("id", "description", "content", "visible_text", "display_text", "visual_anchor")):
             raise ValueError("视觉组标识、描述和屏幕文字必须是字符串")
-        row = {k: group[k] for k in ("id", "description") if group.get(k)}
+        row = {"id": group["id"]} if group.get("id") else {}
+        description = group.get("description") or group.get("visual_anchor")
+        if description:
+            row["description"] = description
         # Only exact textual duplication is removed. Differing display copy
         # can be important; never summarize or guess semantic equivalence.
-        if group.get("content") and group["content"] not in duplicates:
-            row["content"] = group["content"]
+        content = group.get("content") or group.get("display_text") or group.get("visible_text")
+        if content and content not in duplicates:
+            row["content"] = content
         if group.get("available_assets"):
             if not isinstance(group["available_assets"], list) or any(not isinstance(item, dict) for item in group["available_assets"]):
                 raise ValueError("已有素材声明必须是对象列表")

@@ -1,5 +1,7 @@
 # 2026-10-14 HTML Studio 开发与线上同步交接
 
+后续修复与本机新课程停点见 [模型流式修复发布交接](handoff-2026-10-14-model-stream-publication.md)。本文保留丽梅电脑旧项目的历史证据，不代表本机当前任务状态。
+
 本交接随 2026-10-14 代码发布。规范唯一来源仍是 [`docs/contracts/html-presentation/README.md`](../../contracts/html-presentation/README.md)，当前契约包 0.9.42；各阶段实测细节和原始失败记录保存在本目录的 A04、A05、A06 handoff 与 evidence 文件。本文区分**已实现**、**已验证**和**待签收**，不把运行脚本或工程检查通过当作整课交付。
 
 ## 本次同步的范围

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 from PIL import Image
@@ -15,7 +16,7 @@ from html_design_agent import understand_design, review_fidelity, apply_allocati
 from html_runtime_skills import load_runtime_skill
 from pipeline_lifecycle import write_json_atomic
 
-PROMPT_VERSION = "html-design-reconstruct/0.5.0"
+PROMPT_VERSION = "html-design-reconstruct/0.5.1"
 REQUEST_TIMEOUT_SECONDS = 600
 
 
@@ -49,6 +50,27 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
     current, allocation_operations = apply_allocations(scene,binding,understanding,run_dir=run,manual=manual,beats=beats)
     write_json_atomic(audit/"allocation-applied.json",{"operations":allocation_operations,"scene":current,
                                                      "source":"validated_model_understanding","human_approval":"pending"})
+    # A variant can invalidate a layout that passed before allocation. Repair
+    # the actual selected components before spending a reconstruction request.
+    allocation_report = review_scene(current, run_dir=run, deps=deps)
+    write_json_atomic(audit / "allocation-strict-review.json", allocation_report)
+    if not allocation_report.get("passed"):
+        if "CONTENT_CAPACITY_EXCEEDED" not in str(allocation_report.get("message", "")):
+            raise HtmlReviewError("组件选择后的工程检查失败：" + str(allocation_report.get("message")),
+                                  code="CANDIDATE_REJECTED", status_code=422)
+        from html_candidate_agent import repair_candidate
+        repaired = repair_candidate(current, binding, run_dir=run, deps=deps,
+                                    manual=manual, checkpoint=checkpoint, progress=progress)
+        current, binding = repaired["scene"], repaired["binding"]
+        shutil.copytree(run / repaired["summary"]["audit"], audit / "allocation-layout-agent",
+                        dirs_exist_ok=True)
+        allocation_report = review_scene(current, run_dir=run, deps=deps)
+        write_json_atomic(audit / "allocation-capacity-repair.json", {
+            "scene": current, "binding": binding, "summary": repaired["summary"],
+            "report": allocation_report,
+        })
+        if not allocation_report.get("passed"):
+            raise HtmlReviewError("组件容量修复后的工程检查仍失败", code="CANDIDATE_REJECTED", status_code=422)
     history = []
     diagnostic = None
     seen = set()

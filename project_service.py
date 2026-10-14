@@ -380,7 +380,8 @@ class ProjectService:
                     else None
                 )
                 if (
-                    isinstance(image_style, dict)
+                    visual_backend == "image"
+                    and isinstance(image_style, dict)
                     and self.dependencies.materialize_image_style is not None
                 ):
                     self.dependencies.materialize_image_style(project, image_style)

@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 import json
 
+import pytest
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -94,8 +96,9 @@ def test_project_can_be_created_with_portrait_canvas_profile(
         db.close()
 
 
+@pytest.mark.parametrize("backend", ["image", "html"])
 def test_project_creation_binds_and_snapshots_creation_config(
-    tmp_path: Path,
+    tmp_path: Path, backend: str,
 ) -> None:
     engine = create_engine(f"sqlite:///{tmp_path / 'config.db'}")
     Base.metadata.create_all(engine)
@@ -148,6 +151,7 @@ def test_project_creation_binds_and_snapshots_creation_config(
                 name="Configured project",
                 creation_config_package_id="science",
                 creation_config_version=3,
+                visual_backend=backend,
             ),
             db,
         )
@@ -169,7 +173,8 @@ def test_project_creation_binds_and_snapshots_creation_config(
         assert saved_subtitle["enabled"] is False
         assert saved_subtitle["font_size"] == 52
         assert saved_subtitle["color"] == "#123456"
-        assert materialized == [(project_id, effective["payload"]["image_style"])]
+        assert materialized == ([(project_id, effective["payload"]["image_style"])]
+                                if backend == "image" else [])
     finally:
         db.close()
 

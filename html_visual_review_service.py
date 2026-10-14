@@ -42,6 +42,7 @@ APPROVAL_PREFIX = "planning/html_visual/approval-"
 REVIEW_SCRIPT = Path("html_engine") / "tools" / "review-scene.cjs"
 BUNDLE_PATH = Path("html_engine") / "visual" / "preview" / "player.js"
 MAX_REVIEW_PIXELS = 4_000_000
+PLAN_REQUEST_TIMEOUT_SECONDS = 1800
 
 
 class HtmlReviewError(ValueError):
@@ -286,6 +287,8 @@ def generate_scene_plan(
             "plan_version": plan_version,
             "system_prompt": actual_system, "user_prompt": actual_user,
             "schema_hint": prompts["schema_hint"],
+            "request_timeout_seconds": PLAN_REQUEST_TIMEOUT_SECONDS,
+            "stream_output": True,
             "system_prompt_sha256": _sha256_bytes(actual_system.encode("utf-8")),
             "user_prompt_sha256": _sha256_bytes(actual_user.encode("utf-8")),
         })
@@ -296,6 +299,8 @@ def generate_scene_plan(
             run_dir=str(run_dir),
             artifact_prefix=prefix,
             schema_hint=prompts["schema_hint"],
+            request_timeout=PLAN_REQUEST_TIMEOUT_SECONDS,
+            stream_output=True,
         )
         previous_response = response
         _write_json(Path(run_dir) / REVIEW_DIR / f"{prefix}-round-{round_index}.json", {"prompts": prompts, "response": response})

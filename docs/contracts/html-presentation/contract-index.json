@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.42",
+  "contract_version": "0.9.44",
   "effective_date": "2026-10-14",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,8 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-14 HPS-011/014--017: normal storyboard title/display/anchor projection; bounded HTML JSON streaming with private reasoning counters; outcome receipts survive source changes while author execution stays strict.",
+    "2026-10-14 HPS-023--025: strict capacity check after applying design allocations; bounded existing layout repair before reconstruction, full repair audit included in provenance. Registry hashes match LF bytes; no new author/approval or unknown retry capability.",
     "2026-10-14 A06 manual-candidate-review-0.1.0: immutable original-task evidence and human accept/reject record for unsaved candidates after ID-less unknown; no retry, author save, or visual approval.",
     "2026-10-14 A06 course-acceptance-0.1.0: normal wizard preserves explicit HTML backend/16:9; workspace uses existing HTML panel rather than raster-stage requests; current flow bridge and image restoration. Real model/recovery/user approval recorded separately.",
     "2026-10-14 A05 course-orchestration-0.1.0: original one-click HTML branch, existing LocalJob parent and original child IDs, frozen inputs, TTS/A04/approval/video chain; no automatic approvals or unknown request resend. Agent API1.28.0. Implementation and real full-course acceptance separately recorded.",

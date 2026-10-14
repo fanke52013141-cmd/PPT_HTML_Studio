@@ -1,0 +1,101 @@
+from contextlib import nullcontext
+import json
+from types import SimpleNamespace as NS
+
+import pytest
+
+from json_llm_transport import receive_completion
+import json_llm_service as service
+
+
+class Stream:
+    def __init__(self, chunks):
+        self.chunks = chunks
+        self.closed = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        self.closed = True
+
+    def __iter__(self):
+        return iter(self.chunks)
+
+
+def chunk(text="", *, reasoning="", finish=None):
+    return NS(choices=[NS(index=0, delta=NS(content=text, reasoning_content=reasoning),
+                          finish_reason=finish)], usage=None)
+
+
+def client_for(chunks, calls):
+    stream = Stream(chunks)
+    def create(**kwargs):
+        calls.append(kwargs)
+        return stream
+    return NS(chat=NS(completions=NS(create=create)), close=lambda: None), stream
+
+
+def test_aggregates_only_content_and_keeps_reasoning_private(tmp_path):
+    calls, progress = [], []
+    client, stream = client_for([chunk(reasoning="private reasoning"), chunk('{"ok":'),
+                                 chunk('true}', finish="stop")], calls)
+    path = tmp_path / "transport.json"
+    result = receive_completion(client, {"model": "test"}, streaming=True,
+                                evidence_path=path, progress=progress.append)
+    assert result.choices[0].message.content == '{"ok":true}' and stream.closed
+    assert calls[0]["stream"] and calls[0]["stream_options"]["include_usage"]
+    record = json.loads(path.read_text())
+    assert record["state"] == "completed" and record["reasoning_chars"] == 17
+    assert "private reasoning" not in path.read_text() + str(progress)
+
+
+@pytest.mark.parametrize("finish", [None, "length", "content_filter"])
+def test_partial_stream_never_enters_json_repair(tmp_path, monkeypatch, finish):
+    calls = []
+    client, stream = client_for([chunk('{"ok":true}', finish=finish)], calls)
+    monkeypatch.setattr(service, "get_openai_client", lambda **_kw: client)
+    monkeypatch.setattr(service, "get_setting", lambda key, default=None: {
+        "llm_api_key": "fake", "llm_model": "glm-5.3"}.get(key, default))
+    monkeypatch.setattr(service, "governed_llm_request", lambda *_args: nullcontext())
+    monkeypatch.setattr(service, "parse_json_or_repair_with_llm", lambda **_kw: pytest.fail("partial output parsed"))
+    with pytest.raises(service.HTTPException):
+        service.generate_json_with_configured_llm(system_prompt="s", user_prompt="u",
+            run_dir=str(tmp_path), artifact_prefix="partial", schema_hint="{}", stream_output=True)
+    assert len(calls) == 1 and stream.closed
+
+
+def test_stream_wall_budget_and_error_metadata(tmp_path, monkeypatch):
+    import json_llm_transport as transport
+    clock = {"now": 0}
+    monkeypatch.setattr(transport.time, "monotonic", lambda: clock["now"])
+    def chunks():
+        clock["now"] = 2
+        yield chunk(reasoning="hidden")
+        clock["now"] = 11
+        yield chunk("late", finish="stop")
+    client, stream = client_for(chunks(), [])
+    path = tmp_path / "timeout.json"
+    with pytest.raises(TimeoutError):
+        receive_completion(client, {}, streaming=True, timeout=10, evidence_path=path)
+    report = json.loads(path.read_text())
+    assert report["error_class"] == "TimeoutError" and report["state"] == "failed"
+    assert stream.closed and report["content_chars"] == 0
+
+
+def test_stream_repair_preserves_frozen_options(tmp_path, monkeypatch):
+    captured = []
+    def create(**kwargs):
+        captured.append(kwargs)
+        return Stream([chunk('{"ok":' if len(captured) == 1 else '{"ok":true}', finish="stop")])
+    client = NS(chat=NS(completions=NS(create=create)), close=lambda: None)
+    monkeypatch.setattr(service, "get_openai_client", lambda **_kw: client)
+    monkeypatch.setattr(service, "governed_llm_request", lambda *_args: nullcontext())
+    binding = NS(api_key="fake", endpoint="https://example.test/v4", model="glm-5.3",
+                 max_tokens=65536, temperature=1.0, reasoning_effort="max")
+    assert service.generate_json_with_configured_llm(model_binding=binding, system_prompt="s",
+        user_prompt="u", run_dir=str(tmp_path), artifact_prefix="repair", schema_hint="{}",
+        stream_output=True) == {"ok": True}
+    assert len(captured) == 2
+    assert all(c["stream"] and c["max_tokens"] == 65536 and c["reasoning_effort"] == "max"
+               and c["extra_body"]["thinking"]["type"] == "enabled" for c in captured)

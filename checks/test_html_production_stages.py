@@ -67,6 +67,27 @@ def test_unknown_provider_outcome_blocks_resubmission(stage):
         restart(stage)
 
 
+def test_unknown_outcome_is_recorded_even_when_source_changes_in_flight(stage, monkeypatch):
+    def timeout(**_kwargs):
+        monkeypatch.setattr(stage, "verify_inputs", lambda **_kw: (_ for _ in ()).throw(store.HtmlTaskError("source changed")))
+        raise TimeoutError("private provider message")
+    with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
+        stage.wrap(timeout, "json")()
+    record = next(iter(store._job(stage.db, stage.job_id).get_payload()["production_stages"].values()))
+    assert record["state"] == "unknown" and record["error_class"] == "TimeoutError"
+    assert "private provider message" not in str(record)
+
+
+def test_returned_response_is_sealed_but_not_executed_after_source_change(stage, monkeypatch):
+    def returned(**_kwargs):
+        monkeypatch.setattr(stage, "verify_inputs", lambda **_kw: (_ for _ in ()).throw(store.HtmlTaskError("source changed")))
+        return {"complete": True}
+    with pytest.raises(store.HtmlTaskError, match="source changed"):
+        stage.wrap(returned, "json")()
+    record = next(iter(store._job(stage.db, stage.job_id).get_payload()["production_stages"].values()))
+    assert record["state"] == "returned" and (stage.run / record["file"]).is_file()
+
+
 def test_cancelled_snapshot_task_is_not_restarted(stage):
     store.cancel_task(stage.db, stage.job_id)
     with pytest.raises(store.HtmlTaskError):

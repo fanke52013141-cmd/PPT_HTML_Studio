@@ -138,3 +138,65 @@ def test_new_component_choices_apply_before_layout_without_guessing_geometry(tmp
     report=review_scene(updated,run_dir=tmp_path,deps=HtmlReviewDependencies(root,lambda **kw:None),diagnostic=True)
     assert not report["passed"] and report.get("geometry")
     assert any("registered variant requires" in issue.get("message","") for issue in report.get("capacityIssues",[]))
+
+
+@pytest.mark.parametrize("stop", [False, True])
+def test_allocated_capacity_is_repaired_before_reconstruction_or_stops(tmp_path, stop):
+    from PIL import Image
+    folder = ROOT / "html_engine/visual/fixtures/presentation-details"
+    scene = json.loads((folder / "source-scene.json").read_text(encoding="utf-8"))
+    binding = json.loads((folder / "binding.json").read_text(encoding="utf-8"))
+    contract = json.loads((folder / "contract.json").read_text(encoding="utf-8"))
+    from pipeline_lifecycle import write_json_atomic
+    write_json_atomic(tmp_path / "planning/visual_contract.json", {"slides": [contract]})
+    reference = tmp_path / "reference.png"
+    Image.new("RGB", (1280, 720), "white").save(reference)
+    context = component_context(scene, ROOT)
+    allocation = ready(context)
+    icons = {"stat-input": "speech", "stat-output": "document", "stat-pricing": "coins",
+             "billing-summary": "check-plain"}
+    for item in allocation["objects"]:
+        if item["targetId"] in icons:
+            item.update(variant="summary-relationship-panel" if item["targetId"] == "billing-summary"
+                        else "text-card-label", icon=icons[item["targetId"]])
+    operations = json.loads((folder / "operations.json").read_text(encoding="utf-8"))
+    operations = [op for op in operations if op["kind"] != "set_variant"]
+    calls = []
+
+    def generator(**kw):
+        prefix = kw["artifact_prefix"]
+        calls.append(prefix)
+        if prefix.startswith("design_understanding-"):
+            return allocation
+        if prefix.startswith("layout-agent-"):
+            payload = json.loads(kw["user_prompt"])
+            assert payload["diagnostic"]["capacityIssues"]
+            assert any(n.get("presentation", {}).get("variant") == "summary-relationship-panel"
+                       for n in payload["nodes"])
+            return {"action": "stop", "message": "fixture protected capacity"} if stop else {
+                "action": "patch", "operations": operations}
+        if prefix.startswith("design-reconstruct-"):
+            payload = json.loads(kw["user_prompt"])
+            summary = next(n for n in payload["objects"] if n["id"] == "billing-summary")
+            assert summary["presentation"]["height"] == 160
+            return {"status": "unchanged", "message": "fixture layout repaired"}
+        return response_for(kw)
+
+    kwargs = dict(run_dir=tmp_path, deps=HtmlReviewDependencies(ROOT, generator),
+                  beats=contract["narration_beats"])
+    before = copy.deepcopy(scene)
+    if stop:
+        with pytest.raises(HtmlReviewError) as caught:
+            reconstruct_design(scene, binding, reference, **kwargs)
+        assert caught.value.code == "CANDIDATE_AGENT_REJECTED"
+        assert not any(p.startswith(("design-reconstruct-", "design_fidelity_review-")) for p in calls)
+    else:
+        result = reconstruct_design(scene, binding, reference, **kwargs)
+        assert result["report"]["passed"] and result["binding"] == binding
+        assert result["scene"]["motion"] == scene["motion"]
+        assert result["summary"]["fidelity_review"]["human_approval"] == "pending"
+        audit = tmp_path / result["summary"]["audit"]
+        assert (audit / "allocation-layout-agent/0/diagnostic.png").is_file()
+        assert not json.loads((audit / "allocation-strict-review.json").read_text(encoding="utf-8"))["passed"]
+    assert scene == before
+    assert not (tmp_path / "planning/html_visual/scene-token-03.json").exists()

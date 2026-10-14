@@ -110,6 +110,21 @@ def test_prompt_adds_true_capacity_not_all_effects():
     assert "仅是资料" in prompts["system_prompt"]
 
 
+def test_normal_storyboard_contract_preserves_title_display_and_visual_anchor():
+    contract = copy.deepcopy(CONTRACT_SLIDE)
+    contract.pop("title", None)
+    contract["main_title"] = "正常入口标题"
+    contract["visual_groups"] = [{"id": "g1", "display_text": "屏幕文字", "visible_text": "屏幕文字",
+                                  "visual_anchor": "分词器连接到独立编号对象", "mask_target": "unused"}]
+    before = copy.deepcopy(contract)
+    payload = planning_context(contract, None)["slide"]
+    assert payload["title"] == "正常入口标题"
+    assert payload["visual_groups"] == [{"id": "g1", "content": "屏幕文字",
+                                         "description": "分词器连接到独立编号对象"}]
+    assert payload["narration_beats"][0]["spoken_text"] == contract["narration_beats"][0]["spoken_text"]
+    assert contract == before
+
+
 def test_bad_authority_is_rejected_before_provider(tmp_path):
     contract = copy.deepcopy(CONTRACT_SLIDE)
     contract["narration_beats"][1]["id"] = contract["narration_beats"][0]["id"]

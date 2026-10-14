@@ -21,6 +21,8 @@
 
 html-semantic-plan/0.2.0 使用白名单输入：本页id/title、每个beat的id/spoken_text、视觉组id/description/不同的屏幕content、可用素材id/version/description。brief只带templateRef/theme/asset_budget/subtitle_reserve/asset_needs的决策字段。音频路径、时间记录、散列和完整效果目录不进入user消息。
 
+2026-10-14正常入口字段兼容：缺title时取main_title；description取原description或visual_anchor；屏幕content依次取content/display_text/visible_text。同一含义只保留一个投影值，旧显式字段优先。对所有候选源字段严格检查文字类型，不修改作者contract或讲稿，不将原图片Mask身份/元数据传入模型。
+
 只删除与本页原句串联（含明确标题前缀）完全相同的content；独立屏幕文字保留。不得通过摘要替换原句或猜测语义等价。system提供模板/合法kind/字段、真实box/maxLines和工具范围。新增必要上下文可增加system长度，不能以更短为优先目标。
 
 源语块缺失、重复或原句为空、无效素材声明、非法budget在调用模型前拒绝。结构修复的具体诊断只在user提供一次；Pydantic错误只保留前8条loc/type/msg及剩余数量，不回显整段输入和说明URL。原失败响应完整保留在本地；最多一次结构修复仍保留。

@@ -17,10 +17,10 @@ from checks.test_html_workflow_acceptance import plan_for, write
 
 def test_response_disk_receipt_recovers_failed_database_registration(stage, monkeypatch):
     persist = stage._persist
-    def fail_registration(key, record):
+    def fail_registration(key, record, **kwargs):
         if record["state"] == "returned":
             raise RuntimeError("DB unavailable after response receipt")
-        return persist(key, record)
+        return persist(key, record, **kwargs)
     monkeypatch.setattr(stage, "_persist", fail_registration)
     calls = []
     fn = lambda **kw: calls.append(1) or {"result": "arrived"}

@@ -75,6 +75,11 @@
     if (task.input_state === 'stale') line('此任务对应旧输入，不能作为当前页面完成结果。');
     if (task.snapshot_id) line(`输入版本：${task.snapshot_id}`);
     const progress=task.progress || {};
+    if (progress.model_stream) {
+      const stream=progress.model_stream;
+      const labels={waiting:'等待模型响应',thinking:'模型思考中',outputting:'正在接收结果',completed:'结果接收完成',failed:'接收中断，需核验原请求'};
+      line(`${labels[stream.state] || '模型处理中'} · ${Math.round(stream.elapsed_seconds || 0)} 秒 · 已接收正文 ${stream.content_chars || 0} 字符`);
+    }
     if (progress.repair_round != null) line(`排版修复：${progress.repair_round} / ${progress.max_rounds} 轮`);
     for (const skill of progress.runtime_skill?.skills || []) line(`已加载 Skill：${skill.id} ${skill.version}`);
     const returned=Object.values(task.stages || {}).filter(s=>s.state==='returned');

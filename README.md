@@ -1,6 +1,6 @@
 # PPT HTML Studio
 
-最新交接：[2026-10-14 HTML Studio 开发与线上同步交接](docs/plans/html-backend-development/handoff-2026-10-14-publication.md)。A04/A05 已实现并保留分项证据；A06 真实整课仍在第一页工程门禁，人工候选评审入口已接入。工程、真实模型实测与用户签收分别记录。
+最新交接：[2026-10-14 模型流式修复与本机 A06 发布交接](docs/plans/html-backend-development/handoff-2026-10-14-model-stream-publication.md)。已修复模型输入字段、流式进度与未知结果留档，本机真实第一页规划与设计图返回，当前等待设计人工确认；A06 整课仍待验收。工程、真实模型实测与用户签收分别记录，丽梅电脑旧运行与本机新课程分开留档。
 
 面向课程演示与短视频的 HTML 画面系统。通过公共组件、布局、风格包、独立素材和
 讲稿驱动的动作，构建兼具视觉质量与元素控制能力的演示，目标输出包括 HTML、视频

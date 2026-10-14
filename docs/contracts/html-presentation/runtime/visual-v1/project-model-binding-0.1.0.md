@@ -31,6 +31,8 @@
 
 项目 fixed 优先；HTML 阶段默认 html_planning_connection_id / html_visual_connection_id 仅用于未固定用途。未配置独立 planning 时沿用有效 text；阶段默认连接失效则报错，不回落其他供应商。旧项目的固定模型保持原值；任务启动前冻结 planning/text/image，并把独立规划身份加入任务/候选/快照来源。连接变化阻止原任务冒充原请求恢复，不修改已批准音频或作品。
 
-连接 public_config 可提供 max_tokens、reasoning_effort(low/high/max)、temperature(0–2)、supports_images 布尔值。有效参数进入冻结指纹和公开摘要，密钥仅在凭据库保存引用。GLM-5.3 系列请求显式开启 thinking，默认 reasoning_effort=max，格式回退和 JSON 修复同样保留思考；glm-5.3 收到图片在本地拒绝。新配置保持现有64000输出上限，不把65536静默宣称实际参数。
+连接 public_config 可提供 max_tokens、reasoning_effort(low/high/max)、temperature(0–2)、supports_images 布尔值。有效参数进入冻结指纹和公开摘要，密钥仅在凭据库保存引用。GLM-5.3 系列请求显式开启 thinking，默认 reasoning_effort=max，格式回退和 JSON 修复同样保留思考；glm-5.3 收到图片在本地拒绝。2026-10-14用户要求拉满输出额度：冻结绑定及JSON适配器上限同步到65536，已有低额度及显式任务max_tokens_limit保持；已冻结/已提交请求不追改，固定项目须明确rebind后才消费新连接参数。65536是请求额度，不保证供应商一定接受或返回同等长度，真实调用另记。
 
 规划使用专用 generator；设计/视觉阶段继续使用原 json_generator；两者均经原任务阶段回执，未知上游结果不盲目重试。正式规划 Web/Agent 共用入口也解析冻结 planning。工程连接验证不代表规划语义、设计还原或视觉签收通过。
+
+2026-10-14 本机验收修复：共享generate_scene_plan显式传request_timeout=600，包括最多一次结构修复；请求前证据登记实际600秒参数。原先未传参数时落入JSON适配器120秒默认。保持正常思考参数和严格结构检查，超时异常直接退出，不当作结构失败重试。旧unknown仍按原任务核验，不能通过源码超时修复或新快照补发同一语义请求。

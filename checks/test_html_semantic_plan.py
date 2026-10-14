@@ -126,6 +126,7 @@ def test_generator_repairs_downgrade_once_and_records_actual_version(tmp_path):
         return responses.pop(0)
     result = generate_scene_plan(CONTRACT_SLIDE, run_dir=tmp_path, repo_root=ROOT, json_generator=generator, plan_version="0.2.0")
     assert result["version"] == "0.2.0" and len(calls) == 2
+    assert all(call["request_timeout"] == 1800 and call["stream_output"] for call in calls)
     assert "单一已注册动作" not in calls[0]["system_prompt"]
     assert "为回复预留空间" in calls[0]["system_prompt"]
     record = json.loads((tmp_path / "planning/html_visual/records/plan-slide_001.json").read_text(encoding="utf-8"))
@@ -134,6 +135,7 @@ def test_generator_repairs_downgrade_once_and_records_actual_version(tmp_path):
     request = json.loads((tmp_path / "planning/html_visual/review/html_scene_plan_slide_001-round-2-request.json").read_text(encoding="utf-8"))
     assert request["system_prompt"] == calls[1]["system_prompt"]
     assert request["user_prompt"] == calls[1]["user_prompt"]
+    assert request["request_timeout_seconds"] == calls[1]["request_timeout"]
 
 
 def test_schema_same_for_web_agent_mcp_cli():
@@ -198,12 +200,16 @@ def test_downgrade_never_falls_back_after_two_failures(tmp_path):
 
 
 def test_request_evidence_survives_provider_exception(tmp_path):
+    calls = []
     def generator(**kwargs):
+        calls.append(kwargs)
         raise TimeoutError("not a provider success")
     with pytest.raises(TimeoutError):
         generate_scene_plan(CONTRACT_SLIDE, run_dir=tmp_path, repo_root=ROOT, json_generator=generator, plan_version="0.2.0")
     request = json.loads((tmp_path / "planning/html_visual/review/html_scene_plan_slide_001-round-1-request.json").read_text(encoding="utf-8"))
     assert request["plan_version"] == "0.2.0"
+    assert len(calls) == 1 and calls[0]["request_timeout"] == 1800
+    assert request["request_timeout_seconds"] == 1800 and request["stream_output"]
     assert request["system_prompt_sha256"] == hashlib.sha256(request["system_prompt"].encode()).hexdigest()
 
 

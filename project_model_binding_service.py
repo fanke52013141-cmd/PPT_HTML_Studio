@@ -216,7 +216,7 @@ def freeze_project_models(project, *, required=("text",), resolver=None, credent
                 from runtime_support import parse_int_setting
                 value = (snapshot["public_config"].get("max_tokens", 12000)
                          if source != "global" else setting("llm_max_tokens") or 12000)
-                max_tokens = parse_int_setting(value, 12000, 1024, 64000)
+                max_tokens = parse_int_setting(value, 12000, 1024, 65536)
                 public["effective_parameters"] = {"max_tokens": max_tokens}
             config = snapshot["public_config"]
             effort = config.get("reasoning_effort")

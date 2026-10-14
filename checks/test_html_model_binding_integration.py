@@ -36,6 +36,9 @@ def test_submit_change_settings_worker_keeps_old_configuration(tmp_path, monkeyp
     captured = []
     def json_create(**kwargs):
         captured.append(("text", kwargs))
+        if kwargs.get("stream"):
+            from checks.test_json_llm_transport import Stream, chunk
+            return Stream([chunk('{"ok":true}', finish="stop")])
         return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"ok":true}'))])
     text_client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=json_create)), close=lambda: None)
     monkeypatch.setattr(llm, "get_openai_client", lambda **kw: text_client)
@@ -106,7 +109,7 @@ def test_frozen_parameter_hash_changes_and_clamps(tmp_path):
     first = freeze()
     settings["llm_max_tokens"] = "999999"
     second = freeze()
-    assert first.text.max_tokens == 4096 and second.text.max_tokens == 64000
+    assert first.text.max_tokens == 4096 and second.text.max_tokens == 65536
     assert first.text.config_hash != second.text.config_hash
     assert replace(first.text, error="missing").api_key == first.text.api_key
 
@@ -120,7 +123,7 @@ def test_glm_text_rejects_images_before_request(tmp_path, monkeypatch):
 
 def test_glm_flash_sends_real_image_and_enabled_thinking(tmp_path, monkeypatch):
     from checks.test_html_asset_service import png_bytes
-    frozen = freeze_project_models(SimpleNamespace(run_dir=str(tmp_path)), setting={"llm_model": "glm-5.3-flash", "llm_api_key": "fake"}.get)
+    frozen = freeze_project_models(SimpleNamespace(run_dir=str(tmp_path)), setting={"llm_model": "glm-5.3-flash", "llm_api_key": "fake", "llm_max_tokens": "65536"}.get)
     path = tmp_path / "image.png"
     path.write_bytes(png_bytes())
     captured = []
@@ -133,6 +136,7 @@ def test_glm_flash_sends_real_image_and_enabled_thinking(tmp_path, monkeypatch):
     assert llm.generate_json_with_configured_llm(model_binding=frozen.text, system_prompt="s", user_prompt="u", run_dir=str(tmp_path), artifact_prefix="test", schema_hint="{}", image_paths=[str(path)]) == {"ok":True}
     assert captured[0]["extra_body"] == {"thinking":{"type":"enabled"}}
     assert captured[0]["reasoning_effort"] == "max"
+    assert captured[0]["max_tokens"] == 65536
     assert captured[0]["messages"][1]["content"][1]["type"] == "image_url"
 
 
