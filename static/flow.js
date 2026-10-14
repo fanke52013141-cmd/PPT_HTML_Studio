@@ -101,7 +101,7 @@
   // 内部 key 不变（图片 3/4、Mask 5、音频 6/7、批注 10、数字人 9、输出 8）。
   const HTML_STAGE_ITEM = Object.freeze({
     step: 5,
-    label: '场景与对象',
+    label: 'HTML 还原与动画',
     relevantSteps: Object.freeze([3, 4]),
     completionSteps: Object.freeze([4]),
     htmlStage: true
@@ -109,23 +109,23 @@
   let activeBackend = 'image';
   let VISIBLE_FLOW = buildVisibleFlow();
 
-  function applyBackendFlow() {
-    if (activeBackend !== 'html') {
-      VISIBLE_FLOW = buildVisibleFlow(activeFeatures);
-      return;
-    }
-    VISIBLE_FLOW = Object.freeze(FULL_FLOW.filter(item => {
-      if (item.step === 10) return activeFeatures.handwritten_annotations;
-      if (item.step === 9) return activeFeatures.digital_human;
+  function backendFlow(backend, features = activeFeatures) {
+    if (backend !== 'html') return buildVisibleFlow(features);
+    return Object.freeze(FULL_FLOW.filter(item => {
+      if (item.step === 10) return false; // HTML emphasis belongs to scene actions.
+      if (item.step === 9) return features.digital_human;
       return true;
     }).map(item => {
       if (item.step === 5) return HTML_STAGE_ITEM;
       if (item.step === 3) {
-        return Object.freeze({ ...item, label: '视觉素材' });
+        return Object.freeze({ ...item, label: '设计图生成' });
       }
+      if (item.step === 6) return Object.freeze({ ...item, label: '配音与同步' });
+      if (item.step === 9) return Object.freeze({ ...item, label: '数字人讲解（可选）' });
       return item;
     }));
   }
+  function applyBackendFlow() { VISIBLE_FLOW = backendFlow(activeBackend); }
 
   // 供测试与未来运行期剖面切换使用；浏览器正常路径只在模块加载时构建一次。
   // 不带参数时回到发行剖面检测值（window.PPTStudioDistribution）。
@@ -149,7 +149,7 @@
     if (numericStep === 4) return 5;
     if (numericStep === 7) return 6;
     // 精简发行版没有勾画/数字人面板：对禁用步骤的直接导航统一落回作品输出。
-    if (numericStep === 10 && !activeFeatures.handwritten_annotations) return 8;
+    if (numericStep === 10 && (activeBackend === 'html' || !activeFeatures.handwritten_annotations)) return 8;
     if (numericStep === 9 && !activeFeatures.digital_human) return 8;
     return numericStep;
   }
@@ -167,20 +167,21 @@
     const internalStep = Number(project.current_step || 1);
     if (internalStep === 7 && project.audio_confirmed === true) {
       // 精简版没有勾画标注模块：音频确认后直接进入作品输出。
-      return activeFeatures.handwritten_annotations ? 10 : 8;
+      return activeBackend !== 'html' && activeFeatures.handwritten_annotations ? 10 : 8;
     }
     // 精简版旧项目停留在已禁用的内部步骤 9/10：按音频确认情况回退到
     // 作品输出或旁白，绝不落入不存在的页面。
-    if ((internalStep === 9 || internalStep === 10)
-      && !activeFeatures.handwritten_annotations) {
+    if ((internalStep === 10 && activeBackend === 'html')
+      || ((internalStep === 9 || internalStep === 10) && !activeFeatures.handwritten_annotations)) {
       return project.audio_confirmed === true ? 8 : 6;
     }
     return normalizeVisibleStep(internalStep);
   }
 
-  function getFlowItem(step) {
-    const normalized = normalizeVisibleStep(step);
-    return VISIBLE_FLOW.find(item => item.step === normalized) || null;
+  function getFlowItem(step, context = {}) {
+    const normalized = context.visualBackend && Number(step) === 10 ? 10 : normalizeVisibleStep(step);
+    const flow = context.visualBackend ? backendFlow(context.visualBackend) : VISIBLE_FLOW;
+    return flow.find(item => item.step === normalized) || null;
   }
 
   function visibleStepNumber(step) {
@@ -194,8 +195,14 @@
   }
 
   function getVisibleStepState(step, status = {}, context = {}) {
-    const item = getFlowItem(step);
+    const item = getFlowItem(step, context);
     if (!item) return 'pending';
+    if ((context.visualBackend || activeBackend) === 'html') {
+      const projected = context.htmlStepStates?.[String(item.step)];
+      if (projected) return projected;
+      // Missing current evidence never turns old raster completion into HTML approval.
+      if ([3,5,6,9,8].includes(item.step)) return 'pending';
+    }
 
     // HTML 场景与对象：就绪事实优先；就绪前按底层阶段状态展示。
     if (item.htmlStage && context.htmlScenesReady === true) {
@@ -249,7 +256,8 @@
   }
 
   function calculateVisibleProgress(status = {}, context = {}) {
-    const required = VISIBLE_FLOW.filter(item => {
+    const flow = context.visualBackend ? backendFlow(context.visualBackend) : VISIBLE_FLOW;
+    const required = flow.filter(item => {
       if (item.optional) return false;
       if (item.isDecisionModule) {
         // 未进入决策的项目不进分母(旧项目兼容);一旦编辑/启用即计入
@@ -263,6 +271,11 @@
       item => getVisibleStepState(item.step, status, context) === 'completed'
     ).length;
     return Math.round((Math.min(completed, required.length) / required.length) * 100);
+  }
+
+  function getRequiredStepStates(status={},context={}) {
+    const flow=context.visualBackend?backendFlow(context.visualBackend):VISIBLE_FLOW;
+    return flow.filter(item=>!item.optional).map(item=>({step:item.step,label:item.label,state:getVisibleStepState(item.step,status,context)}));
   }
 
   function getPreviousVisibleStep(step) {
@@ -343,6 +356,14 @@
   });
 
   function downstreamImpactTable() {
+    if (activeBackend === 'html') return {
+      1: '修改文章后，分镜、设计图、还原页面、配音同步和已输出作品可能需要更新。',
+      2: '修改分镜后，设计图、还原页面、动画和逐句同步可能需要更新。',
+      3: '修改设计后，独立配图与还原页面需要重新检查，已有画面确认和输出可能失效。',
+      5: '修改页面或动画后，需要重新检查画面、逐句同步和已输出作品。',
+      6: '修改配音后，动画与字幕的同步需要重新检查，音频确认和输出可能失效。',
+      9: '修改数字人讲解后，已输出作品需要更新。'
+    };
     return (activeFeatures.handwritten_annotations && activeFeatures.digital_human)
       ? DOWNSTREAM_EDIT_IMPACT
       : DOWNSTREAM_EDIT_IMPACT_LIGHT;
@@ -397,6 +418,7 @@
     displayFlow,
     getVisibleStepState,
     calculateVisibleProgress,
+    getRequiredStepStates,
     resolveVisualBackend,
     getPreviousVisibleStep,
     nextVisibleStep,

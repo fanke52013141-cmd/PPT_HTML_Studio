@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>06 步骤4 场景与对象 - PPT Studio</title>
+<!-- Tailwind CSS v3 CDN with forms & container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#EE5D36',
+              50: '#FFF5F0',
+              100: '#FFE8DF',
+              600: '#DE4D26',
+              700: '#C73F1B'
+            },
+            dark: '#18181B'
+          }
+        }
+      }
+    };
+  </script>
+<style data-purpose="custom-scrollbars">
+    /* Subtle scrollbar for modern UI appearance */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f8fafc;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-[#F8F9FA] text-[#1E293B] antialiased min-h-screen flex flex-col font-sans select-none">
+<!-- BEGIN: TopHeader -->
+<header class="h-[60px] bg-white border-b border-gray-200 px-6 flex items-center justify-between sticky top-0 z-30">
+<!-- Left branding & project badge -->
+<div class="flex items-center space-x-6">
+<!-- Logo Container -->
+<div class="flex items-center space-x-2.5">
+<svg class="w-7 h-7 text-[#0284C7]" fill="none" viewbox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.5 8C6.91 8 4 10.91 4 14.5C4 18.09 6.91 21 10.5 21C13.2 21 15.5 19.34 16.44 17C17.38 19.34 19.68 21 22.38 21C25.97 21 28.88 18.09 28.88 14.5C28.88 10.91 25.97 8 22.38 8C19.68 8 17.38 9.66 16.44 12C15.5 9.66 13.2 8 10.5 8Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<span class="text-xl font-bold tracking-tight text-[#EE5D36]">PPT Studio</span>
+</div>
+<!-- Project Badge -->
+<div class="flex items-center space-x-2 text-xs">
+<span class="text-gray-400 font-normal">当前项目:</span>
+<div class="flex items-center space-x-1.5 px-3 py-1 bg-[#FFF5F0] border border-[#FCD9CC] rounded-full text-[#EE5D36] font-medium shadow-xs">
+<span>#</span>
+<span>水为什么结冰 · 动作与真实旁白联调</span>
+</div>
+</div>
+</div>
+<!-- Right Header Actions -->
+<div class="flex items-center">
+<button class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors shadow-2xs" type="button">
+<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>返回首页</span>
+</button>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContentWrapper -->
+<div class="flex-1 flex overflow-hidden">
+<!-- BEGIN: LeftSidebarRail -->
+<aside class="w-60 bg-white border-r border-gray-200 flex flex-col justify-between shrink-0 select-none">
+<div class="p-4 space-y-4">
+<!-- Status Legend -->
+<div class="flex items-center justify-between px-2 pt-1 pb-2 border-b border-gray-100 text-[11px] text-gray-400">
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
+<span>已完成</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-[#EE5D36]"></span>
+<span>进行中</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-gray-300"></span>
+<span>待完成</span>
+</div>
+</div>
+<!-- Navigation Steps List -->
+<nav class="space-y-1">
+<!-- Step 1: 导入文章 (Completed) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 text-center font-medium text-gray-400">1</span>
+<span class="font-medium">导入文章</span>
+</div>
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-[#ECFDF5] text-[#10B981]">
+<svg class="w-3 h-3 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</span>
+</div>
+<!-- Step 2: 分镜规划 (Completed) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 text-center font-medium text-gray-400">2</span>
+<span class="font-medium">分镜规划</span>
+</div>
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-[#ECFDF5] text-[#10B981]">
+<svg class="w-3 h-3 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</span>
+</div>
+<!-- Step 3: 视觉素材 (Highlighted State matching https://lh3.googleusercontent.com/aida-public/AB6AXuBQSJv-tSGltU94BXFFfLeXo9OJHDINYTOb7oLNq3y7qX9LKJxwEwR6Hn1L2LLc4WJSgFecWkoNs1KS36AEg9QkN25IHjbCMkhGKnOav8Do2-caRzga_eu-zTFXVA5hQBhImeC3YDyw4Di5F9hxbIWoZEa_Xd7_85W34gl98-D0C98avZUKG8DFwmO7Yan46Vxhv_iNNEZymWMQ8yaWkPG9H8s5Ii6JfOzHDgQ94uWbttrO2Z9eCY2kI-VrqFmRaVHXOOIUDqUg-ow) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs rounded-lg bg-[#FFF5F0] text-[#EE5D36] font-medium border border-[#FCD9CC]">
+<div class="flex items-center space-x-2.5">
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-[#EE5D36] text-white text-[10px] font-bold">3</span>
+<span>视觉素材</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-[#EE5D36]"></span>
+</div>
+<!-- Step 4: 场景与对象 (Completed Icon in screenshot state) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 text-center font-medium text-gray-400">4</span>
+<span class="font-medium">场景与对象</span>
+</div>
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-[#ECFDF5] text-[#10B981]">
+<svg class="w-3 h-3 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</span>
+</div>
+<!-- Step 5: 旁白与音频 (Pending) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-400 hover:bg-gray-50 transition-colors">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 text-center font-medium">5</span>
+<span>旁白与音频</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300 mr-1.5"></span>
+</div>
+<!-- Step 6: 勾画标注 (Pending) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-400 hover:bg-gray-50 transition-colors">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 text-center font-medium">6</span>
+<span>勾画标注</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300 mr-1.5"></span>
+</div>
+<!-- Step 7: 数字人讲解 (Pending) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-400 hover:bg-gray-50 transition-colors">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 text-center font-medium">7</span>
+<span>数字人讲解</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300 mr-1.5"></span>
+</div>
+<!-- Step 8: 作品输出 (Pending) -->
+<div class="flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-400 hover:bg-gray-50 transition-colors">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 text-center font-medium">8</span>
+<span>作品输出</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300 mr-1.5"></span>
+</div>
+</nav>
+</div>
+<!-- Bottom Fixed CTA Button -->
+<div class="p-4 border-t border-gray-100">
+<button class="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-[#EE5D36] hover:bg-[#DE4D26] active:bg-[#C73F1B] text-white text-xs font-semibold rounded-lg shadow-sm transition-all duration-150" type="button">
+<svg class="w-4 h-4 fill-white" viewbox="0 0 20 20">
+<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<span>一键生成视频</span>
+</button>
+</div>
+</aside>
+<!-- END: LeftSidebarRail -->
+<!-- BEGIN: MainContentArea -->
+<main class="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+<!-- BEGIN: SceneProductionCard -->
+<section class="bg-white rounded-xl border border-gray-200/90 shadow-2xs p-6 space-y-4" data-purpose="scene-generation-and-review">
+<!-- Section Header Row -->
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-baseline space-x-2">
+<h2 class="text-[15px] font-bold text-gray-900 tracking-tight flex items-center">
+<span class="w-1 h-3.5 bg-[#EE5D36] rounded-full mr-2 inline-block"></span>
+              HTML 场景生产与审阅
+            </h2>
+<span class="text-xs text-gray-400 font-normal">分镜页面</span>
+</div>
+<!-- Page Dropdown Selector -->
+<div class="relative w-80">
+<div class="w-full flex items-center justify-between px-3 py-1.5 bg-gray-50/70 hover:bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 cursor-pointer shadow-2xs">
+<span class="font-medium">1. 水为什么结冰</span>
+<svg class="w-4 h-4 text-gray-400 stroke-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19.5 8.25l-7.5 7.5-7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Upper Action Buttons Bar -->
+<div class="flex flex-wrap items-center gap-2 pt-1" data-purpose="scene-action-toolbar">
+<button class="px-3.5 py-1.5 bg-[#18181B] hover:bg-black text-white text-xs font-medium rounded-md shadow-2xs transition-colors" type="button">
+            生成设计与场景
+          </button>
+<button class="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+            静态审阅
+          </button>
+<button class="px-3.5 py-1.5 bg-[#18181B] hover:bg-black text-white text-xs font-medium rounded-md shadow-2xs transition-colors" type="button">
+            批准本页
+          </button>
+<button class="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+            编辑对象与动作
+          </button>
+<button class="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+            项目生成模型
+          </button>
+<button class="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+            批量生成配图
+          </button>
+</div>
+<!-- Status & QA Diagnostic Block -->
+<div class="space-y-1 text-xs text-gray-500 pt-1 leading-relaxed" data-purpose="status-notes">
+<p class="text-gray-500">旧任务缺少完整版本信息，请重新检查当前页面。</p>
+<p class="text-gray-500">页面 freezing-water · 任务结束 · succeeded · 第1次尝试</p>
+<div class="pt-2">
+<h3 class="text-xs font-semibold text-gray-800">逐句语义 QA</h3>
+<p class="text-gray-500 mt-0.5">旧版场景：未执行新语义 QA，保留原门禁。</p>
+</div>
+</div>
+<!-- Review Textarea -->
+<div class="relative pt-1">
+<textarea class="w-full text-xs rounded-lg border border-gray-200 bg-white/70 p-3 placeholder-gray-400 focus:border-[#EE5D36] focus:ring-1 focus:ring-[#EE5D36] focus:outline-none transition resize-none" placeholder="查看逐句帧、原句和结论后填写审阅说明" rows="3"></textarea>
+</div>
+<!-- Bottom QA Execution Buttons -->
+<div class="flex flex-wrap items-center gap-2 pt-1" data-purpose="qa-control-buttons">
+<button class="px-3.5 py-1.5 bg-gray-100 text-gray-400 border border-gray-200 rounded-md text-xs font-medium cursor-not-allowed" disabled="" type="button">
+            开始逐句语义 QA
+          </button>
+<button class="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+            刷新语义结果
+          </button>
+<button class="px-3.5 py-1.5 bg-gray-100 text-gray-400 border border-gray-200 rounded-md text-xs font-medium cursor-not-allowed" disabled="" type="button">
+            人工签收语义结果
+          </button>
+<button class="px-3.5 py-1.5 bg-gray-100 text-gray-400 border border-gray-200 rounded-md text-xs font-medium cursor-not-allowed" disabled="" type="button">
+            退回语义结果
+          </button>
+</div>
+</section>
+<!-- END: SceneProductionCard -->
+<!-- BEGIN: ImageGenerationSection -->
+<section class="bg-white rounded-xl border border-gray-200/90 shadow-2xs p-5" data-purpose="image-generation-and-management">
+<div class="flex items-center justify-between">
+<!-- Section Title with Orange Indicator -->
+<div class="flex items-center space-x-2">
+<span class="w-1 h-3.5 bg-[#EE5D36] rounded-full inline-block"></span>
+<h2 class="text-[15px] font-bold text-gray-900 tracking-tight">图片生成与管理</h2>
+</div>
+<!-- Action Toolbar Right -->
+<div class="flex items-center space-x-2">
+<!-- Group of White Secondary Control Buttons -->
+<button class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+              生图 Prompt
+            </button>
+<button class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+              图片风格
+            </button>
+<button class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+              IP 形象
+            </button>
+<button class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+              视频背景
+            </button>
+<button class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+              批量上传
+            </button>
+<button class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+              复制提示词
+            </button>
+<button class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+              批量生图
+            </button>
+<button class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs font-medium shadow-2xs transition-colors" type="button">
+              批量删除
+            </button>
+<!-- Dark Highlight Action Button -->
+<button class="ml-2 inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-[#18181B] hover:bg-black text-white text-xs font-medium rounded-md shadow-2xs transition-colors" type="button">
+<span>进入 AI 标注</span>
+<span class="text-xs">→</span>
+</button>
+</div>
+</div>
+</section>
+<!-- END: ImageGenerationSection -->
+</main>
+<!-- END: MainContentArea -->
+</div>
+<!-- END: MainContentWrapper -->
+</body></html>

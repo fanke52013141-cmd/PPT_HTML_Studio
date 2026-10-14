@@ -105,7 +105,9 @@ function projectFlowContext(project = state.currentProject) {
     audioConfirmed: project?.audio_confirmed === true,
     // HTML 后端场景就绪事实由工作区在加载后写入（html-visual/status）。
     visualBackend: project?.visual_backend === 'html' ? 'html' : 'image',
+    htmlStepStates: window.HtmlWorkflowState?.get(project?.id)?.states,
     htmlScenesReady: project?.visual_backend === 'html'
+      && project.id === state.currentProject?.id
       && window.__htmlVisualReady === true,
     digitalHumanEnabled: window.__dhEnabled === true && distributionFeatures.digital_human !== false,
     // 勾画标注(模块六)决策态与输出开关;由 annotations 模块维护

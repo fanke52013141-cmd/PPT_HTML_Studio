@@ -217,18 +217,28 @@ console.log('visible flow checks passed');
 flow.configureVisibleFlow(undefined, { visualBackend: 'html' });
 assert.equal(flow.resolveVisualBackend({ visual_backend: 'html' }), 'html');
 assert.equal(flow.resolveVisualBackend({}), 'image');
-assert.equal(flow.visibleStepLabel(5), '场景与对象');
-assert.equal(flow.visibleStepLabel(3), '视觉素材');
-assert.equal(flow.getVisibleStepState(5, {}, { htmlScenesReady: true }), 'completed');
+assert.equal(flow.visibleStepLabel(5), 'HTML 还原与动画');
+assert.equal(flow.visibleStepLabel(3), '设计图生成');
+assert.deepEqual(flow.VISIBLE_FLOW_STEPS, [1,2,3,5,6,9,8]);
+assert.equal(flow.visibleStepNumber(9), 6);
+assert.equal(flow.visibleStepNumber(8), 7);
+assert.equal(flow.nextVisibleStep(6), 9);
+assert.equal(flow.resolveProjectVisibleStep({current_step:7,audio_confirmed:true}),8);
+assert.equal(flow.resolveProjectVisibleStep({current_step:10,audio_confirmed:false}),6);
+assert.equal(flow.resolveProjectVisibleStep({current_step:9,audio_confirmed:true}),9);
+assert.equal(flow.getVisibleStepState(5, {}, { htmlScenesReady: true }), 'pending');
+assert.equal(flow.getVisibleStepState(5, {'4':'completed'}, {htmlScenesReady:false}), 'pending');
+assert.equal(flow.getVisibleStepState(5, {}, {htmlStepStates:{'5':'completed'}}), 'completed');
+assert.deepEqual(flow.getRequiredStepStates({}, {htmlStepStates:{'2':'completed','5':'completed'}}).map(s=>s.state),['pending','completed','pending','completed','pending','pending']);
 assert.equal(flow.getVisibleStepState(5, {}, { htmlScenesReady: false }), 'pending');
-// HTML 路线不要求 AI Mask 产物：状态仍由底层阶段给出，但不再出现 Mask 标签
+// HTML 状态必须来自当前分项事实，不能由旧图片完成位或单一 ready 推断。
 assert.equal(flow.VISIBLE_FLOW.find(item => item.step === 5).htmlStage, true);
 assert.equal(
-  flow.calculateVisibleProgress({}, { htmlScenesReady: true }) >
+  flow.calculateVisibleProgress({}, { htmlStepStates:{'5':'completed'} }) >
   flow.calculateVisibleProgress({}, { htmlScenesReady: false }),
   true
 );
-assert.equal(flow.getDownstreamEditImpact(3, 8, { 4: 'completed' })?.includes('Mask'), true);
+assert.equal(flow.getDownstreamEditImpact(3, 8, { 4: 'completed' }), null);
 
 // 默认（图片路线）行为完全不变
 flow.configureVisibleFlow();
@@ -236,5 +246,8 @@ assert.equal(flow.visibleStepLabel(5), 'AI Mask 标注');
 assert.equal(flow.visibleStepLabel(3), '图片生成');
 assert.equal(flow.getVisibleStepState(5, { 5: 'completed' }, {}), 'completed');
 assert.equal(flow.getVisibleStepState(5, {}, { htmlScenesReady: true }), 'pending');
+// Home cards compute each backend without changing the active image workspace.
+assert.equal(flow.calculateVisibleProgress({'1':'completed','2':'completed'},{visualBackend:'html'}),33);
+assert.equal(flow.visibleStepLabel(5),'AI Mask 标注');
 
 console.log('html backend flow checks passed');

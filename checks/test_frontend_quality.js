@@ -1377,4 +1377,5 @@ if (app.includes('ProjectModelBinding.mount') || app.includes('HtmlSceneEditor.o
 const semanticQaUi=fs.readFileSync(path.join(root,'static/html_semantic_qa.js'),'utf8');
 if(!html.includes('src="html_semantic_qa.js?')||html.indexOf('src="html_semantic_qa.js?')>html.indexOf('src="html_review_panel.js?'))throw Error('Semantic QA must load before review panel');
 if(/\bfetch\s*\(/.test(semanticQaUi)||semanticQaUi.includes('MutationObserver'))throw Error('Semantic QA must use shared API and explicit lifecycle');
-if(!htmlReviewPanel.includes('HtmlSemanticQA?.mount')||app.includes('HtmlSemanticQA'))throw Error('Semantic QA mounting belongs to HTML feature module');
+const htmlAudioReview=fs.readFileSync(path.join(root,'static/html_audio_review.js'),'utf8');
+if(!htmlAudioReview.includes('HtmlSemanticQA?.mount')||htmlReviewPanel.includes('HtmlSemanticQA?.mount')||app.includes('HtmlSemanticQA'))throw Error('Semantic QA mounting belongs to HTML audio review module');

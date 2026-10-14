@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>05 步骤3 设计预览态 - 精细对比稿</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#EE5D36',
+              soft: '#FFF5F0',
+              hover: '#d94b25',
+              dark: '#18181b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-100/70 text-slate-800 antialiased font-sans min-h-screen flex flex-col">
+<!-- BEGIN: TopHeader -->
+<header class="h-14 bg-white border-b border-gray-200 px-6 flex items-center justify-between sticky top-0 z-30 select-none">
+<div class="flex items-center space-x-4">
+<!-- PPT Studio Logo -->
+<div class="flex items-center space-x-2">
+<svg class="w-6 h-6 text-sky-500" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M12 12c-2-2.5-5.5-4-8-1.5s-1.5 6.5 1 7.5 5.5-1 7-6c1.5-5 4.5-6.5 7-6s3.5 5 1 7.5-6 1-8-1.5z"></path>
+</svg>
+<span class="font-black text-xl tracking-tight text-[#EE5D36]">PPT Studio</span>
+</div>
+<!-- Current Project Tag Pill -->
+<div class="flex items-center space-x-2 text-xs">
+<span class="text-gray-400">当前项目:</span>
+<div class="bg-[#FFF5F0] border border-[#EE5D36]/30 text-[#EE5D36] px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5">
+<span>#</span>
+<span>A06 Token 五页课程 · 本机重新验收 20261014</span>
+</div>
+</div>
+</div>
+<!-- Right Controls -->
+<div>
+<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors shadow-2xs" type="button">
+<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+<span>返回首页</span>
+</button>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainLayout -->
+<div class="flex-1 flex overflow-hidden">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-60 bg-white border-r border-gray-200 flex flex-col justify-between p-4 shrink-0 select-none">
+<div>
+<!-- Legend Indicator -->
+<div class="flex items-center justify-between text-[11px] text-gray-500 pb-4 mb-3 border-b border-gray-100">
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+<span>已完成</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#EE5D36] inline-block"></span>
+<span>进行中</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block"></span>
+<span>待完成</span>
+</div>
+</div>
+<!-- 8 Steps Navigation -->
+<nav class="space-y-1">
+<!-- Step 1 -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-gray-50 cursor-pointer">
+<div class="flex items-center gap-2.5">
+<span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold">1</span>
+<span>导入文章</span>
+</div>
+<svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Step 2 -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-gray-50 cursor-pointer">
+<div class="flex items-center gap-2.5">
+<span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold">2</span>
+<span>分镜规划</span>
+</div>
+<svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Step 3: ACTIVE -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-xs bg-[#FFF5F0] text-[#EE5D36] font-semibold cursor-pointer shadow-2xs">
+<div class="flex items-center gap-2.5">
+<span class="w-4 h-4 rounded-full bg-[#EE5D36] text-white flex items-center justify-center text-[10px] font-bold">3</span>
+<span>视觉素材</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-[#EE5D36]"></span>
+</div>
+<!-- Step 4 -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-gray-50 cursor-pointer">
+<div class="flex items-center gap-2.5">
+<span class="w-4 h-4 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-[10px]">4</span>
+<span>场景与对象</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+</div>
+<!-- Step 5 -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-gray-50 cursor-pointer">
+<div class="flex items-center gap-2.5">
+<span class="w-4 h-4 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-[10px]">5</span>
+<span>旁白与音频</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+</div>
+<!-- Step 6 -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-gray-50 cursor-pointer">
+<div class="flex items-center gap-2.5">
+<span class="w-4 h-4 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-[10px]">6</span>
+<span>勾画标注</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+</div>
+<!-- Step 7 -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-gray-50 cursor-pointer">
+<div class="flex items-center gap-2.5">
+<span class="w-4 h-4 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-[10px]">7</span>
+<span>数字人讲解</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+</div>
+<!-- Step 8 -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-gray-50 cursor-pointer">
+<div class="flex items-center gap-2.5">
+<span class="w-4 h-4 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-[10px]">8</span>
+<span>作品输出</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+</div>
+</nav>
+</div>
+<!-- Bottom Primary CTA Button -->
+<div class="pt-4 border-t border-gray-100">
+<button class="w-full bg-[#EE5D36] hover:bg-[#d94b25] text-white py-2.5 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-colors" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93 4.93 19.07"></path>
+</svg>
+<span>+ 一键生成视频</span>
+</button>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: WorkspaceContent -->
+<main class="flex-1 overflow-y-auto p-6 flex flex-col items-center">
+<div class="w-full max-w-[1360px] bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col space-y-4">
+<!-- Header row with page title and slide picker dropdown -->
+<div class="flex items-center justify-between border-b border-gray-100 pb-4">
+<div class="flex items-baseline gap-2">
+<h1 class="text-base font-bold text-gray-900">HTML 场景生产与审阅</h1>
+<span class="text-xs text-gray-400">分镜页面</span>
+</div>
+<!-- Slide Selector -->
+<div class="relative">
+<button class="w-64 flex items-center justify-between bg-slate-50 border border-gray-200 hover:border-gray-300 px-3.5 py-1.5 rounded-lg text-xs text-gray-700 font-medium" type="button">
+<span>1. slide_001</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- Action Buttons Bar -->
+<div class="flex items-center gap-2 flex-wrap">
+<button class="h-8 px-3.5 bg-[#18181b] hover:bg-black text-white text-xs font-medium rounded-md transition-colors shadow-2xs" type="button">
+            生成设计与场景
+          </button>
+<button class="h-8 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-md transition-colors" type="button">
+            静态审阅
+          </button>
+<button class="h-8 px-3.5 bg-[#18181b] hover:bg-black text-white text-xs font-medium rounded-md transition-colors shadow-2xs" type="button">
+            批准本页
+          </button>
+<button class="h-8 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-md transition-colors" type="button">
+            编辑对象与动作
+          </button>
+<button class="h-8 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-md transition-colors" type="button">
+            项目生成模型
+          </button>
+<button class="h-8 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-md transition-colors" type="button">
+            批量生成配图
+          </button>
+</div>
+<!-- Gray Terminal / Status Info Lines -->
+<div class="text-[12px] leading-relaxed text-gray-500 space-y-0.5 pt-1">
+<p>已恢复待确认的设计参考。</p>
+<p>页面 slide_001 · 任务结束 · 等待设计确认 · 第1次尝试</p>
+<p class="font-mono text-[11px] text-gray-400">输入版本: a029ee17eb66a8ef21d26f8c5120a0915badde1b1f6b665d89d40f41287d80ca</p>
+<p>结果接收完成 · 535 秒 · 已接收正文 7787 字符</p>
+<p>已记录阶段: 模型已返回、内容规划、设计规划、图片已返回、设计参考</p>
+<p>这是设计参考。确认后生成独立素材和实际 HTML; 最终页面仍需审阅。</p>
+</div>
+<!-- BEGIN: SlidePreviewCanvas -->
+<div class="mt-2 border border-gray-200 rounded-xl bg-white p-8 relative shadow-xs">
+<!-- Slide Heading Section -->
+<div class="space-y-3 mb-8">
+<div class="inline-flex items-center gap-2">
+<span class="bg-[#18181b] text-white text-xs px-2.5 py-0.5 rounded-full font-bold">01</span>
+<span class="text-2xl font-black text-gray-900 tracking-tight">Token是模型处理文本的基本单位</span>
+</div>
+<div>
+<h2 class="text-xl font-bold text-gray-900 tracking-tight">搞清楚 Token 到底是什么</h2>
+<p class="text-gray-600 text-sm mt-1">
+                Token 是模型处理文本的<strong class="font-bold text-gray-900">基本单位</strong>。
+              </p>
+</div>
+</div>
+<!-- Middle Split Section: 3 Feature Cards (Left) & Token Flow Visualizer (Right) -->
+<div class="grid grid-cols-12 gap-6 items-stretch mb-8">
+<!-- Left 3 Key Feature Cards -->
+<div class="col-span-6 flex flex-col justify-between space-y-3.5">
+<!-- Card 1 -->
+<div class="bg-gray-50/70 border border-gray-200/80 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition-colors">
+<div class="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-2xs">
+<svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="space-y-0.5">
+<h3 class="text-sm font-bold text-gray-900">分词器切分</h3>
+<p class="text-xs text-gray-500 leading-normal">Token 由分词器按规则从连续文本中切分而来。</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-gray-50/70 border border-gray-200/80 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition-colors">
+<div class="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-2xs">
+<svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="space-y-0.5">
+<h3 class="text-sm font-bold text-gray-900">边界 ≠ 单词</h3>
+<p class="text-xs text-gray-500 leading-normal">Token 的边界并不等同于日常的单词: 块大小不一, 部分与单词边界不对齐。</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-gray-50/70 border border-gray-200/80 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition-colors">
+<div class="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-2xs">
+<svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="space-y-0.5">
+<h3 class="text-sm font-bold text-gray-900">编号 → 向量</h3>
+<p class="text-xs text-gray-500 leading-normal">每个 Token 对应词表中的编号, 模型把编号转成向量再计算。</p>
+</div>
+</div>
+</div>
+<!-- Right Flow Diagram Visualizer -->
+<div class="col-span-6 bg-gray-50/70 border border-gray-200/80 rounded-xl p-6 flex flex-col justify-between relative overflow-hidden">
+<!-- Top Pill Badge -->
+<div class="flex justify-center">
+<div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-2xs flex items-center gap-2 text-xs font-medium text-gray-700">
+<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M7 17L17 7M17 7H7M17 7V17" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>文本 → 分词器 → Token</span>
+</div>
+</div>
+<!-- Token block chain graphic -->
+<div class="relative py-8 flex items-center justify-center">
+<div class="flex items-center gap-1.5">
+<div class="w-14 h-10 rounded-lg bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-200/60 shadow-2xs"></div>
+<div class="w-7 h-10 rounded-lg bg-gray-300 border border-gray-300"></div>
+<div class="w-10 h-10 rounded-lg bg-gray-400 border border-gray-400"></div>
+<div class="w-6 h-10 rounded-lg bg-gray-300 border border-gray-300"></div>
+<div class="w-5 h-10 rounded-lg bg-gray-400 border border-gray-400"></div>
+<div class="w-6 h-10 rounded-lg bg-gray-300 border border-gray-300"></div>
+<div class="w-12 h-10 rounded-lg bg-gray-700 border border-gray-700"></div>
+</div>
+<!-- Callout pointer label "分词流程" -->
+<div class="absolute right-2 top-4 flex items-center">
+<div class="relative">
+<svg class="w-10 h-8 text-gray-400" fill="none" viewbox="0 0 40 32">
+<path d="M 0 24 L 20 6 L 40 6" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="bg-white border border-gray-200 text-gray-800 text-xs px-2.5 py-1 rounded-md shadow-2xs ml-1">
+                    分词流程
+                  </div>
+</div>
+</div>
+<!-- Bottom Pill Badge -->
+<div class="flex justify-center">
+<div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-2xs flex items-center gap-2 text-xs text-gray-700">
+<svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Token 边界 ≠ 单词</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Horizontal Banner Card -->
+<div class="bg-gray-50/70 border border-gray-200/80 rounded-xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-2xs">
+<svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h4 class="text-sm font-bold text-gray-900">Token 的三个表示层次</h4>
+<p class="text-xs text-gray-500">文本、编号、向量是三个不同层次</p>
+</div>
+</div>
+<!-- Horizontal Step Nodes -->
+<div class="flex items-center gap-3">
+<span class="bg-white border border-gray-200 text-gray-700 text-xs px-4 py-1.5 rounded-full font-medium shadow-2xs">
+                文本
+              </span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="bg-gray-200/80 text-gray-800 text-xs px-5 py-1.5 rounded-full font-medium">
+                词表编号
+              </span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="bg-white border border-gray-200 text-gray-700 text-xs px-5 py-1.5 rounded-full font-medium shadow-2xs">
+                向量
+              </span>
+</div>
+</div>
+</div>
+<!-- END: SlidePreviewCanvas -->
+</div>
+</main>
+<!-- END: WorkspaceContent -->
+</div>
+<!-- END: MainLayout -->
+</body></html>

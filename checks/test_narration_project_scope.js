@@ -12,6 +12,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const STATIC_DIR = path.join(__dirname, '..', 'static');
+const flow = require('../static/flow.js');
 
 function makeElement(id) {
   return {
@@ -56,6 +57,7 @@ function deferred() {
 
 function createSandbox() {
   const sandbox = {
+    PPTFlow: flow,
     console,
     Promise,
     Date,
@@ -402,11 +404,26 @@ async function scenarioHappyPathUnchanged() {
   assert.equal(box.element('step1-article-input').value, '新生成文章');
 }
 
+async function scenarioHtmlAudioUsesNarrationPages() {
+  const box=createSandbox();
+  box.state.currentProject={...projectFixture('html-project'),visual_backend:'html'};
+  box.PPTFlow.configureVisibleFlow(undefined,{visualBackend:'html'});
+  box.openWorkspace();
+  box.route('/api/projects/html-project/steps/6/result',()=>({success:true,beats:beatsFor('HTML 原句')}));
+  box.route('/api/projects/html-project/steps/7/audio-status',()=>({slides:[{slide_id:'slide_001',audio_exists:true,stale:false}],complete:true}));
+  const slot=box.registerAudioSlot('slide_001');
+  await box.loadStep6Data();await box.loadStep7Data();
+  assert.ok(slot.innerHTML.includes('/api/projects/html-project/slides/slide_001/audio'));
+  assert.equal(box.apiLog.get.some(url=>url.includes('/steps/3/images')),false,'HTML audio must not read raster images');
+  assert.equal(box.element('step6-audio-confirm-label').innerText,'确认音频，核验同步');
+}
+
 (async () => {
   await scenarioSwitchWithinDebounce();
   await scenarioRetryStaysOnOriginalProject();
   await scenarioStaleResponsesDoNotOverwrite();
   await scenarioHappyPathUnchanged();
+  await scenarioHtmlAudioUsesNarrationPages();
   console.log('narration project scope checks passed');
 })().catch(error => {
   console.error(error);

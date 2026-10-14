@@ -13,6 +13,50 @@ let _step8RenderSessionVersion = null;
 // 生成按钮常驻可点：就绪状态缓存在这里，点击时据此 Toast 提示（验收 2026-10-06）。
 let step8RenderReadiness = { hasContract: false, audioComplete: false, audioConfirmed: false };
 
+async function refreshStep8HtmlReadiness(projectId=state.currentProject?.id,sessionVersion=workspaceNavigationVersion) {
+  const panel=document.getElementById('step-panel-8'),button=document.getElementById('step8-btn-render');
+  let box=document.getElementById('html-output-readiness');
+  const pptxButton=document.getElementById('step8-btn-pptx');
+  if(state.currentProject?.visual_backend!=='html'){
+    if(box)box.hidden=true;if(button)button.disabled=Boolean(_step8RenderTaskId);
+    if(pptxButton&&'htmlOriginalTitle' in pptxButton.dataset){pptxButton.textContent=pptxButton.dataset.htmlOriginalLabel;pptxButton.title=pptxButton.dataset.htmlOriginalTitle;}
+    return null;
+  }
+  if(pptxButton){
+    if(!('htmlOriginalTitle' in pptxButton.dataset)){pptxButton.dataset.htmlOriginalTitle=pptxButton.title;pptxButton.dataset.htmlOriginalLabel=pptxButton.textContent;}
+    pptxButton.textContent='生成图片型 PPTX';pptxButton.title='每页保存为图片，PPTX内的文字与对象不可独立编辑';
+  }
+  if(!projectId||!isCurrentWorkspaceProject(projectId,sessionVersion))return null;
+  if(!box){box=document.createElement('section');box.id='html-output-readiness';box.className='html-output-readiness';panel.insertBefore(box,document.getElementById('step8-error-box'));}
+  box.hidden=false;box.replaceChildren();button.disabled=true;
+  const message=document.createElement('p');message.setAttribute('role','status');message.textContent='正在核对当前页面、配音和签收…';box.append(message);
+  try{
+    const facts=await window.HtmlWorkflowState.load(state.currentProject,{force:true});
+    if(!isCurrentWorkspaceProject(projectId,sessionVersion))return null;
+    const target=facts.response?.workflow?.stages?.find(stage=>stage.id==='review_and_output')?.targets?.mp4_video;
+    button.disabled=target?.ready!==true||Boolean(_step8RenderTaskId);
+    if(target?.ready){message.textContent='当前页面、音频和签收已就绪，可以生成 MP4。';return target;}
+    const issues=target?.issues||[];
+    message.textContent='当前内容还不能输出 MP4，请先完成以下检查。';
+    const list=document.createElement('ul');box.append(list);
+    const labels={SCENE_MISSING:'还未生成实际 HTML 页面',VISUAL_APPROVAL_REQUIRED:'实际画面尚未确认',VISUAL_APPROVAL_STALE:'画面确认已过期',AUDIO_CONFIRMATION_REQUIRED:'当前音频尚未确认',AUDIO_CONFIRMATION_STALE:'音频确认已过期',AUDIO_NOT_GENERATED:'配音尚未生成',AUDIO_ARTIFACTS_INCOMPLETE:'音频及时间轴尚未完整',SEMANTIC_QA_REQUIRED:'逐句核验和人工签收尚未完成'};
+    const ids=facts.response?.workflow?.stages?.find(stage=>stage.id==='content_planning')?.facts?.slide_ids||[];
+    for(const issue of issues.slice(0,5)){const li=document.createElement('li'),index=ids.indexOf(issue.slide_id);li.textContent=`${issue.slide_id?(index>=0?`第 ${index+1} 页：`:'指定页面：'):''}${labels[issue.code]||issue.message||'当前输入尚未就绪'}`;list.append(li);}
+    if(issues.length>5){const li=document.createElement('li');li.textContent=`另有 ${issues.length-5} 项，请按流程逐页完成。`;list.append(li);}
+    const first=issues[0]?.code||'';
+    const step=/DIGITAL_HUMAN/.test(first)?9:/AUDIO|SEMANTIC|TIMELINE/.test(first)?6:first==='SCENE_MISSING'&&facts.states[3]!=='completed'?3:5;
+    const go=document.createElement('button');go.type='button';go.textContent=`去${PPTFlow.visibleStepLabel(step)}`;
+    go.onclick=async()=>{
+      if(state.currentProject?.id!==projectId)return;
+      await navigateToStep(step);
+      if(state.currentProject?.id!==projectId||![3,5].includes(step))return;
+      const index=state.slides?.findIndex(slide=>(slide.slide_id||slide.id)===issues[0]?.slide_id);
+      if(index>=0){state.activeSlideIndex=index;window.HtmlReviewPanel?.refresh();}
+    };box.append(go);
+    return target;
+  }catch(error){if(isCurrentWorkspaceProject(projectId,sessionVersion)){message.textContent='输出状态读取失败，请重新进入作品输出后再试。';button.disabled=true;}return null;}
+}
+
 function updateStep8LoadingText(stageLabel, elapsedSec, queueAhead) {
   const text = document.getElementById('step8-loading-text');
   setUiTaskState(text, queueAhead != null ? 'queued' : 'running', text?.textContent || '准备渲染');
@@ -150,6 +194,7 @@ function startStep8RenderPolling(
           showStep8VideoResult(res.videos);
         }
       }
+      await refreshStep8HtmlReadiness(projectId,sessionVersion);
     } catch (e) {
       console.error('Step 8 status poll failed:', e);
       if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
@@ -171,6 +216,8 @@ async function loadStep8Data() {
   const projectId = state.currentProject?.id;
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
+  await refreshStep8HtmlReadiness(projectId,sessionVersion);
+  if(!isCurrentWorkspaceProject(projectId,sessionVersion))return;
   const contract = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
   if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
   if (!contract.success || !contract.contract?.slides?.length) {

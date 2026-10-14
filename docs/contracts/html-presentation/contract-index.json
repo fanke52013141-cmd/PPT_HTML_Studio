@@ -1,14 +1,16 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.44",
-  "effective_date": "2026-10-14",
+  "contract_version": "0.9.46",
+  "effective_date": "2026-10-15",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-15 HPS-010/013/015/017: current per-stage evidence and current video artifact projection; audio-driven shared preview and sentence QA/human decision in audio workspace; independent button gates; Stitch reference layout integration, no public API or author/approval changes.",
+    "2026-10-14 HPS-010/013/015/017/023--030: separate HTML design-image and reconstruction/motion workspaces, remove raster handwriting from HTML flow, preserve backend controls and production/approval contracts; html-workspace-flow-0.1.0.",
     "2026-10-14 HPS-011/014--017: normal storyboard title/display/anchor projection; bounded HTML JSON streaming with private reasoning counters; outcome receipts survive source changes while author execution stays strict.",
     "2026-10-14 HPS-023--025: strict capacity check after applying design allocations; bounded existing layout repair before reconstruction, full repair audit included in provenance. Registry hashes match LF bytes; no new author/approval or unknown retry capability.",
     "2026-10-14 A06 manual-candidate-review-0.1.0: immutable original-task evidence and human accept/reject record for unsaved candidates after ID-less unknown; no retry, author save, or visual approval.",
@@ -54,6 +56,7 @@
     "2026-10-10 E: application-production-0.3.0 defines neutral reference packages, explicit design checkpoint, single-subject retry and provenance fingerprints; Agent 1.17.0. Real provider and user acceptance remain separate."
   ],
   "documents": [
+    { "path": "runtime/visual-v1/html-workspace-flow-0.1.0.md" },
     {
       "path": "runtime/visual-v1/runtime-skills-0.1.0.md"
     },

@@ -39,8 +39,8 @@
     tts: 6,
     render: 8,
     html_pages: 3,
-    semantic: 3,
-    approvals: 3,
+    semantic: 5,
+    approvals: 5,
   };
   const STAGE_LABELS = {
     preflight: '1 导入文章 · 预检查',
@@ -51,7 +51,7 @@
     narration: '5 旁白与音频 · 演讲稿',
     tts: '5 旁白与音频 · 语音合成',
     render: '8 作品输出 · 渲染视频',
-    html_pages: '3 设计与HTML',
+    html_pages: '设计图 → 确认设计 → HTML 还原与动画',
     semantic: '逐句语义审核',
     approvals: '当前签收',
   };
@@ -72,6 +72,10 @@
   };
 
   function stageLabel(value) {
+    if (window.PPTStudio?.runtime?.state.currentProject?.visual_backend === 'html') {
+      const labels = {narration:'5 配音与同步 · 讲稿',tts:'5 配音与同步 · 语音合成',render:'作品输出',semantic:'逐句画面与配音核验'};
+      if (labels[value]) return labels[value];
+    }
     return STAGE_LABELS[value] || value || '准备中';
   }
 
@@ -314,7 +318,8 @@
     const activity = document.getElementById('project-activity-status');
     if (activity) {
       const currentStage = (status?.stages || []).find(stage => stage.id === current);
-      const message = currentStage?.title || stageLabel(current) || currentStage?.message || '';
+      const message = status?.backend === 'html' ? stageLabel(current)
+        : currentStage?.title || stageLabel(current) || currentStage?.message || '';
       // [完成基准 20260904] 一键生成的完成以视频产出为基准：
       // 后端保证 completed 时 status.video.url 存在；前端双保险，
       // 拿不到视频链接时不显示"已完成"，避免渲染仍在后台跑时误报。
@@ -340,9 +345,9 @@
     const list = Array.isArray(status?.stages) ? status.stages : [];
     const features = window.PPTFlow?.distributionFeatures() || {};
     const visibleStages = (status?.backend === 'html' ? [
-      ['2 内容规划', ['storyboard']], ['3 设计与HTML', ['html_pages']],
-      ['5 旁白与音频', ['narration', 'tts']], ['逐句语义审核', ['semantic']],
-      ['当前签收', ['approvals']], ['8 作品输出', ['render']],
+      ['2 分镜规划', ['storyboard']], ['设计图 → HTML 还原与动画', ['html_pages']],
+      ['5 配音与同步', ['narration', 'tts']], ['逐句核验', ['semantic']],
+      ['当前签收', ['approvals']], ['作品输出', ['render']],
     ] : [
       ['1 导入文章', ['preflight']], ['2 分镜规划', ['storyboard']],
       ['3 图片生成', ['images', 'confirm_images']], ['4 AI 标注', ['ai_mask']],

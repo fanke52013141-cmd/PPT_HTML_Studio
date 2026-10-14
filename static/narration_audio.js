@@ -270,6 +270,7 @@ function renderStep6Workspace() {
       `;
       const textarea = row.querySelector('textarea');
       textarea.addEventListener('input', (event) => {
+        if(state.currentProject?.visual_backend==='html')window.HtmlAudioReview?.invalidate();
         autoResizeNarrationTextarea(event.target);
         updateNarrationBeatText(slideIndex, beatIndex, event.target.value);
       });
@@ -401,7 +402,10 @@ async function saveStep6Narration(options = {}) {
       if (isCurrentWorkspaceProject(scope.projectId, scope.sessionVersion)) {
         updateStep6AutosaveStatus('已自动保存');
         if (!silent) showToast('🎉 演讲稿修改保存成功！');
-        refreshCurrentProjectStatus(6).catch(() => {});
+        refreshCurrentProjectStatus(6).then(()=>{
+          if(isCurrentWorkspaceProject(scope.projectId,scope.sessionVersion)&&state.currentStep===6&&state.currentProject?.visual_backend==='html')
+            return window.HtmlAudioReview?.mount(state.currentProject);
+        }).catch(() => {});
       }
       return true;
     }
@@ -473,7 +477,9 @@ async function loadStep7Data() {
   }
 
   const [res, audioStatus] = await Promise.all([
-    API.get(`/api/projects/${projectId}/steps/3/images`),
+    state.currentProject?.visual_backend==='html'
+      ? Promise.resolve({success:true,images:narrationData.slides.map(slide=>({slide_id:slide.slide_id}))})
+      : API.get(`/api/projects/${projectId}/steps/3/images`),
     API.get(`/api/projects/${projectId}/steps/7/audio-status`)
   ]);
   // 音频槽位按通用 slide_id 匹配（slide_001 等跨项目同名）：A 项目的音频状态
@@ -525,11 +531,14 @@ async function loadStep7Data() {
       // 命名统一为「进入勾画标注」（UI 审查第四轮：进入类按钮不带「确认」）。
       // 音频未就绪时由后端门控拦截，完整语义保留在按钮 title 上。
       const confirmLabel = document.getElementById('step6-audio-confirm-label');
-      confirmLabel.innerText = '进入勾画标注';
+      const htmlAudio = state.currentProject.visual_backend === 'html';
+      const nextLabel = htmlAudio ? PPTFlow.visibleStepLabel(PPTFlow.nextVisibleStep(6)) : '勾画标注';
+      confirmLabel.innerText = htmlAudio ? '确认音频，核验同步' : `进入${nextLabel}`;
       const confirmBtn = document.getElementById('step6-btn-audio-confirm-next');
-      if (confirmBtn) confirmBtn.title = state.currentProject.audio_confirmed
-        ? '进入勾画标注'
-        : '确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过';
+      if (confirmBtn) confirmBtn.title = htmlAudio
+        ? '确认当前音频后完成同步试听、逐句核验与人工签收'
+        : state.currentProject.audio_confirmed ? '进入勾画标注'
+          : '确认当前音频已就绪，进入勾画标注步骤；勾画标注默认不需要，可跳过';
     }
   }
 }
@@ -552,6 +561,7 @@ async function runStep7TTS(options = {}) {
   if (forceAllButton) forceAllButton.disabled = true;
   confirmButton.disabled = true;
   document.querySelectorAll('.step6-generate-slide').forEach(button => { button.disabled = true; });
+  if(state.currentProject?.visual_backend==='html')window.HtmlAudioReview?.close();
 
   // 顶部不再挂全局加载条（2026-10-06 用户裁决）：本次合成的目标页直接在
   // 卡片上显示「生成中」，任务结束后清空标记并重取音频状态。
@@ -652,6 +662,8 @@ async function runStep7TTS(options = {}) {
     confirmButton.disabled = false;
     if (forceAllButton) forceAllButton.disabled = false;
     document.querySelectorAll('.step6-generate-slide').forEach(button => { button.disabled = false; });
+    if(state.currentProject?.visual_backend==='html'&&state.currentStep===6)
+      await window.HtmlAudioReview?.mount(state.currentProject);
     }
   }
 }

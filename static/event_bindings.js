@@ -155,7 +155,8 @@ function initGlobalEvents() {
     btn.addEventListener('click', async () => {
       if (state.currentStep === 2) {
         if (!Array.isArray(state.slides) || state.slides.length === 0) {
-          showStep2ValidationError('请先添加至少一个分镜，再进入图片生成。');
+          showStep2ValidationError(state.currentProject?.visual_backend === 'html'
+            ? '请先添加至少一个分镜，再生成设计图。' : '请先添加至少一个分镜，再进入图片生成。');
           return;
         }
         // 手动模式下，跳到 Step 3 前先提交手动分镜到后端
@@ -249,8 +250,21 @@ function initGlobalEvents() {
   document.getElementById('step6-ai-output-example')?.addEventListener('input', () => updateStep6AnnotationFullPrompt());
   document.getElementById('step6-btn-save-and-tts')?.addEventListener('click', () => saveNarrationAndRunTTS());
   document.getElementById('step6-btn-audio-confirm-next')?.addEventListener('click', async () => {
+    const projectId=state.currentProject?.id;
     const confirmed = await confirmStep7Audio();
-    if (confirmed) navigateToStep(PPTFlow.nextVisibleStep(6));
+    if(state.currentProject?.id!==projectId||state.currentStep!==6)return;
+    if (!confirmed) return;
+    if (state.currentProject?.visual_backend === 'html') {
+      await refreshCurrentProjectStatus();
+      if(state.currentProject?.id!==projectId||state.currentStep!==6)return;
+      const ready=window.HtmlWorkflowState?.get(state.currentProject.id)?.states?.['6']==='completed';
+      if(!ready){
+        await window.HtmlAudioReview?.mount(state.currentProject);
+        showToast('音频已确认，请完成同步试听、逐句核验与人工签收。');
+        return;
+      }
+    }
+    navigateToStep(PPTFlow.nextVisibleStep(6));
   });
   document.getElementById('step10-btn-next')?.addEventListener('click', () => navigateToStep(9));
   document.getElementById('step9-btn-skip')?.addEventListener('click', () => navigateToStep(8));

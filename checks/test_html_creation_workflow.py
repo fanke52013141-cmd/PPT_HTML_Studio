@@ -358,9 +358,23 @@ def test_workflow_job_cache_hit_and_changed_input_conflict_preserves_manual_scen
     responses = [original_plan, changed_plan]
     generator_calls = []
 
-    def generator(**_):
+    def generator(**kwargs):
+        from checks.html_design_agent_fixture import response_for
+        result = response_for(kwargs)
+        if result is not None:
+            return result
+        if kwargs.get("artifact_prefix", "").startswith("design-reconstruct-"):
+            return {"status": "unchanged", "message": "Isolated fixture: retain the registered layout, subject to strict review"}
         generator_calls.append(len(generator_calls) + 1)
         return copy.deepcopy(responses[len(generator_calls) - 1])
+
+    def design_provider(_prompt, **kwargs):
+        from PIL import Image
+        import io
+        output = io.BytesIO()
+        size = tuple(int(value) for value in kwargs["size"].split("x"))
+        Image.new("RGB", size, "white").save(output, format="PNG")
+        return output.getvalue()
 
     monkeypatch.setattr(
         production,
@@ -398,6 +412,7 @@ def test_workflow_job_cache_hit_and_changed_input_conflict_preserves_manual_scen
     jobs = jobs_module.HtmlWorkflowJobs(
         SessionLocal,
         HtmlReviewDependencies(repo_root=ROOT, json_generator=generator),
+        provider=design_provider,
         executor=executor,
     )
     try:
@@ -408,6 +423,21 @@ def test_workflow_job_cache_hit_and_changed_input_conflict_preserves_manual_scen
         assert generator_calls == []
 
         executor.run(0)
+        assert len(generator_calls) == 1
+        from database import LocalJob
+        db.expire_all()
+        first_job = db.query(LocalJob).filter(LocalJob.id == first["id"]).one()
+        assert first_job.status == "succeeded", first_job.error
+        first_result = first_job.get_payload()["result"]
+        assert first_result["stage"] == "design_review"
+        # The first phase must not replace the author scene. Explicitly accept
+        # the actual isolated candidate before testing cached production/edits.
+        assert load_scene_with_revision(run_dir, slide_id)["revision"] == 1
+        accepted = jobs.submit(db, project, contract, {"design_candidate_key": first_result["design"]["key"]})
+        executor.run(1)
+        db.expire_all()
+        accepted_job=db.query(LocalJob).filter(LocalJob.id == accepted["id"]).one()
+        assert accepted_job.status == "succeeded", accepted_job.error
         assert len(generator_calls) == 1
 
         current = load_scene_with_revision(run_dir, slide_id)
@@ -431,8 +461,14 @@ def test_workflow_job_cache_hit_and_changed_input_conflict_preserves_manual_scen
         changed_contract["narration_beats"][0]["spoken_text"] += "（合法输入修订）"
         miss = jobs.submit(db, project, changed_contract)
         assert miss["reused"] is False
-        assert len(executor.pending) == 2
-        executor.run(1)
+        assert len(executor.pending) == 3
+        executor.run(2)
+        db.expire_all()
+        changed_result = db.query(LocalJob).filter(LocalJob.id == miss["id"]).one().get_payload()["result"]
+        assert changed_result["stage"] == "design_review"
+        assert load_scene_with_revision(run_dir, slide_id) == before_conflict
+        conflict = jobs.submit(db, project, changed_contract, {"design_candidate_key": changed_result["design"]["key"]})
+        executor.run(3)
 
         assert len(generator_calls) == 2
         after_conflict = load_scene_with_revision(run_dir, slide_id)
@@ -447,9 +483,8 @@ def test_workflow_job_cache_hit_and_changed_input_conflict_preserves_manual_scen
             / "manual-conflicts.json"
         )
         assert conflict_path.is_file()
-        from database import LocalJob
-
-        job = db.query(LocalJob).filter(LocalJob.id == miss["id"]).one()
+        db.expire_all()
+        job = db.query(LocalJob).filter(LocalJob.id == conflict["id"]).one()
         assert job.status == "failed"
         assert "人工修改冲突" in job.error
         recent = project_status(
@@ -459,7 +494,7 @@ def test_workflow_job_cache_hit_and_changed_input_conflict_preserves_manual_scen
             slide_ids=[slide_id],
             db=db,
         )["workflow"]["tasks"]
-        assert {item["id"] for item in recent} >= {first["id"], miss["id"]}
+        assert {item["id"] for item in recent} >= {miss["id"], conflict["id"]}
         assert recent[0]["status"] == "failed"
         assert "submission_key" not in recent[0] and "result" not in recent[0]
     finally:

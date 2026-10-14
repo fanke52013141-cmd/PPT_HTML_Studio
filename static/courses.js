@@ -29,6 +29,7 @@ const CourseTree = (() => {
   // 记录"新建视频"的目标父级（由课程/章节的 +视频 按钮设置，
   // createProject() 在确认创建后会读取并移动项目）
   let pendingProjectParent = null;
+  let loadGeneration=0;
 
   // ===== 图标：与 Stitch 参考稿 1:1 的原始 SVG。
   // 不使用全局 .icon 类——那条规则 fill:none; stroke:currentColor 会覆盖
@@ -115,10 +116,32 @@ const CourseTree = (() => {
   // ===== 数据加载 =====
 
   async function load() {
+    const generation=++loadGeneration;
     try {
-      treeData = await API.get('/api/courses/tree');
+      const [tree, projects] = await Promise.all([API.get('/api/courses/tree'), API.get('/api/projects')]);
+      if(generation!==loadGeneration)return;
+      // Tree briefs omit backend and completion facts. Join the existing
+      // account-scoped project summaries rather than infer them from step IDs.
+      const facts = new Map((Array.isArray(projects) ? projects : []).map(project => [project.id, project]));
+      const htmlProjects = (Array.isArray(projects) ? projects : []).filter(project=>project.visual_backend === 'html');
+      // Bound fan-out for existing per-project read-only current-fact endpoints.
+      for (let index=0;index<htmlProjects.length;index+=3) {
+        await Promise.allSettled(htmlProjects.slice(index,index+3).map(project=>window.HtmlWorkflowState?.load(project,{force:true})));
+        if(generation!==loadGeneration)return;
+      }
+      const enrich = brief => {
+        const project = facts.get(brief.id);
+        return project ? {...brief,visual_backend:project.visual_backend,step_status:project.step_status,
+          audio_confirmed:project.audio_confirmed} : brief;
+      };
+      treeData = {...tree,standalone_projects:(tree.standalone_projects || []).map(enrich),
+        courses:(tree.courses || []).map(course => ({...course,
+          unchaptered_projects:(course.unchaptered_projects || []).map(enrich),
+          chapters:(course.chapters || []).map(chapter => ({...chapter,projects:(chapter.projects || []).map(enrich)}))
+        }))};
       render();
     } catch (e) {
+      if(generation!==loadGeneration)return;
       console.error('CourseTree load error:', e);
       const container = document.getElementById('project-list');
       if (container) {
@@ -393,6 +416,7 @@ const CourseTree = (() => {
   function projectProgress(project) {
     try {
       const completedProgress = calculateVisibleProgress(project.step_status || {}, projectFlowContext(project));
+      if (project.visual_backend === 'html') return completedProgress;
       const completedSteps = Math.round(Math.max(0, Math.min(100, Number(completedProgress) || 0)) / 100 * 7);
       // A project at its current workflow step is visibly in progress even
       // when that step has not been confirmed yet. Keep the card indicator
@@ -517,24 +541,30 @@ const CourseTree = (() => {
     const progressRow = document.createElement('div');
     progressRow.className = 'home-library-video-progress-row stitch-video-progress-row';
     // 数字人为可选步骤，不计入 7 段进度（UI 审查 2026-10-06：给 7/8 差异一个解释入口）。
-    progressRow.title = '共 7 个必做步骤；数字人讲解为可选步骤，不计入进度';
+    const requiredCount = project.visual_backend === 'html' ? 6 : 7;
+    progressRow.title = `共 ${requiredCount} 个必做步骤；数字人讲解为可选步骤，不计入进度`;
     const progressLabel = document.createElement('span');
     progressLabel.textContent = '进度';
     const progressValue = document.createElement('span');
-    const completedSegments = Math.max(0, Math.min(7, Math.round(progress / 100 * 7)));
-    progressValue.textContent = `${completedSegments} / 7`;
+    const completedSegments = Math.max(0, Math.min(requiredCount, Math.round(progress / 100 * requiredCount)));
+    const htmlStepFacts=project.visual_backend==='html'?PPTFlow.getRequiredStepStates(project.step_status||{},projectFlowContext(project)):null;
+    progressValue.textContent = `${completedSegments} / ${requiredCount}`;
     progressRow.append(progressLabel, progressValue);
     const progressTrack = document.createElement('div');
     progressTrack.className = 'home-library-video-progress stitch-video-progress grid grid-cols-7 gap-1 h-1.5 w-full';
+    if (requiredCount !== 7) progressTrack.style.gridTemplateColumns = `repeat(${requiredCount}, minmax(0,1fr))`;
     progressTrack.setAttribute('role', 'progressbar');
     progressTrack.setAttribute('aria-label', `${project.name} 完成进度`);
     progressTrack.setAttribute('aria-valuemin', '0');
     progressTrack.setAttribute('aria-valuemax', '100');
     progressTrack.setAttribute('aria-valuenow', String(progress));
-    for (let index = 0; index < 7; index += 1) {
+    for (let index = 0; index < requiredCount; index += 1) {
       const segment = document.createElement('span');
-      segment.className = `stitch-progress-segment rounded-full ${index < completedSegments ? 'is-complete bg-emerald-500 progress-bar-fill' : 'bg-neutral-200'}`;
-      segment.title = `步骤 ${index + 1}${index < completedSegments ? '：已完成' : '：未完成'}`;
+      const fact=htmlStepFacts?.[index];
+      const completed=fact?fact.state==='completed':index<completedSegments;
+      segment.className = `stitch-progress-segment rounded-full ${completed ? 'is-complete bg-emerald-500 progress-bar-fill' : 'bg-neutral-200'}`;
+      const stateLabel=completed?'已完成':({pending_review:'待确认',pending_reconfirmation:'已过期',blocked:'需处理',ready_to_export:'待输出'})[fact?.state]||'未完成';
+      segment.title = `${fact?.label||`步骤 ${index+1}`}：${stateLabel}`;
       progressTrack.appendChild(segment);
     }
 

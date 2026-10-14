@@ -8,6 +8,47 @@
   let designCandidate = null;
   let acceptedDesignKey = null;
   let manualCandidate = null;
+  const legacyDisplays = new WeakMap();
+  function toggleLegacy(panel, htmlMode) {
+    if (!panel) return;
+    if (panel.dataset.htmlMode !== String(htmlMode)) panel.dataset.htmlMode = String(htmlMode);
+    for (const child of panel.children) {
+      if (child.id === 'html-review-panel-section') continue;
+      if (htmlMode) {
+        if (!legacyDisplays.has(child)) legacyDisplays.set(child, {
+          value: child.style.getPropertyValue('display'), priority: child.style.getPropertyPriority('display')
+        });
+        if (child.style.getPropertyValue('display') !== 'none' || child.style.getPropertyPriority('display') !== 'important') child.style.setProperty('display', 'none', 'important');
+      } else if (legacyDisplays.has(child)) {
+        const original = legacyDisplays.get(child);
+        if (original.value) child.style.setProperty('display', original.value, original.priority);
+        else child.style.removeProperty('display');
+        legacyDisplays.delete(child);
+      }
+    }
+  }
+  function stageView(section, pageMode) {
+    const stage = pageMode ? 'page' : 'design';
+    if (section.dataset.stage === stage) return;
+    section.dataset.stage = stage;
+    section.querySelector('[data-workspace-title]').textContent = pageMode ? 'HTML 还原与动画' : '设计图生成';
+    section.querySelector('[data-workspace-description]').textContent = pageMode
+      ? '根据确认的设计图生成独立配图，用文字、图形和图片还原页面，再调整对象的出现、强调与标注时机。'
+      : '先把分镜生成整页设计图，确认构图、文字层级和风格，再进入 HTML 还原。';
+    section.querySelectorAll('[data-flow-stage]').forEach(item => {
+      if (item.dataset.flowStage === (pageMode ? 'page' : 'design')) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+    });
+  }
+  function pageAvailability(section, ready) {
+    if (ready !== undefined) section.dataset.pageReady = String(ready);
+    const empty=section.querySelector('[data-page-empty]');
+    if(empty)empty.hidden=section.dataset.pageReady==='true';
+    for (const action of ['review','approve','edit']) {
+      const button = section.querySelector(`[data-action="${action}"]`);
+      button.disabled = section.dataset.pageReady !== 'true';
+    }
+  }
   function clearManual(section) {
     manualCandidate = null;
     const box = section.querySelector('[data-html-manual-candidate]');
@@ -41,15 +82,30 @@
     acceptedDesignKey = key;
     section.querySelector('[data-html-asset-retry]').hidden = !key;
   }
+  function unknownProduction() {return Boolean(lastTask?.recovery?.requires_verification&&lastTask.input_state!=='stale');}
+  function productionAvailability(section) {
+    const blocked=['queued','running'].includes(lastTask?.status)||unknownProduction();
+    for(const action of ['produce','revise-design','retry-asset'])section.querySelector(`[data-action="${action}"]`).disabled=blocked;
+    section.querySelector('[data-action="accept-design"]').disabled=blocked||Boolean(designCandidate?.stale)||designCandidate?.status==='accepted_for_reconstruction';
+  }
   function showDesign(section, design, base) {
     designCandidate = design;
     const box = section.querySelector('[data-html-design]');
     box.hidden = !design;
+    const produce=section.querySelector('[data-action="produce"]');
+    produce.hidden=Boolean(design&&!design.stale);
+    produce.textContent=design?.stale?'重新生成当前设计图':'生成本页设计图';
+    const reference=section.querySelector('[data-confirmed-reference]');
+    if(reference){reference.hidden=!design;if(design){reference.querySelector('img').src=design.image_url||`${base}/design/${encodeURIComponent(design.key)}/image`;reference.querySelector('summary').textContent=design.status==='accepted_for_reconstruction'?'已确认的设计参考':'设计参考（尚待确认）';}}
     if (!design) return;
     const image = box.querySelector('img');
     image.src = design.image_url || `${base}/design/${encodeURIComponent(design.key)}/image`;
-    box.querySelector('[data-action="accept-design"]').disabled = Boolean(design.stale);
-    box.querySelector('[data-design-state]').textContent = design.stale ? '内容或修订已变化，请重新生成设计。' : '这是设计参考。确认后生成独立素材和实际 HTML；最终页面仍需审阅。';
+    const accepted = design.status === 'accepted_for_reconstruction';
+    const accept = box.querySelector('[data-action="accept-design"]');
+    accept.hidden = accepted;
+    accept.disabled = Boolean(design.stale) || accepted;
+    box.querySelector('[data-design-state]').textContent = design.stale ? '内容或修订已变化，请重新生成设计。' : accepted ? '此设计已确认，可回看原图。实际 HTML 页面仍需独立审阅。' : '这是设计参考。确认后生成独立素材和实际 HTML；最终页面仍需审阅。';
+    productionAvailability(section);
   }
   function context() {
     const state = window.PPTStudio?.runtime?.state;
@@ -86,7 +142,7 @@
     if (returned.length) line(`已记录阶段：${returned.map(s=>stageLabels[s.stage] || s.stage).join('、')}`);
     if (progress.reused_stages?.length) line(`已复用 ${progress.reused_stages.length} 个原请求结果；后续检查仍需通过。`);
     if (task.error) line(`失败原因：${task.error}`);
-    if (task.recovery?.requires_verification) line('供应商结果或回执需先核实，不能直接重复请求。');
+    if (!['running','queued'].includes(task.status) && task.recovery?.requires_verification) line('供应商结果或回执需先核实，不能直接重复请求。');
     const resume=section.querySelector('[data-action="resume"]');
     resume.hidden=!task.recovery?.can_resume || task.input_state !== 'current';
     resume.disabled=false;
@@ -141,21 +197,25 @@
     finally {
       if(token===generation) {
         activeTask=null;
-        section.querySelectorAll('[data-action="produce"],[data-action="accept-design"],[data-action="revise-design"],[data-action="retry-asset"]').forEach(b=>b.disabled=false);
-        if(designCandidate?.stale) section.querySelector('[data-action="accept-design"]').disabled=true;
+        productionAvailability(section);
         section.querySelector('[data-action="resume"]').disabled=false;
       }
     }
   }
   function refresh() {
-    const host = document.getElementById('step-panel-3');
-    if (!host) return;
+    const designHost = document.getElementById('step-panel-3');
+    if (!designHost) return;
+    const pageHost = document.getElementById('step-panel-5');
     const {project, slideId} = context();
-    const mode = project?.visual_backend === "html" ? "true" : "false";
-    if (host.dataset.htmlMode !== mode) host.dataset.htmlMode = mode;
-    let section = host.querySelector('#html-review-panel-section');
+    const htmlMode = project?.visual_backend === 'html';
+    const workspaceClass = htmlMode && document.body.classList.contains('workspace-open');
+    if (document.body.classList.contains('html-workspace') !== workspaceClass) document.body.classList.toggle('html-workspace', workspaceClass);
+    toggleLegacy(designHost, htmlMode);
+    toggleLegacy(pageHost, htmlMode);
+    const pageMode = window.PPTStudio?.runtime?.state.currentStep === 5;
+    const host = pageMode && pageHost ? pageHost : designHost;
+    let section = document.getElementById('html-review-panel-section');
     if (project?.visual_backend !== 'html') {
-      window.HtmlSemanticQA?.close();
       if (section && !section.hidden) {generation++; activeTask=null; designCandidate=null; acceptedDesignKey=null;}
       if (section) section.hidden = true;
       if (section) {section.dataset.context=''; taskFacts(section,null);}
@@ -167,17 +227,29 @@
       section = document.createElement('section');
       section.id = 'html-review-panel-section';
       section.className = "card soft-outline";
-      section.innerHTML = `<style>#step-panel-3[data-html-mode="true"] .step3-toolbar-row,#step-panel-3[data-html-mode="true"] #step3-images-grid{display:none!important}</style><h3>HTML 场景生产与审阅</h3>
+      section.innerHTML = `<h2 class="html-workspace-heading" data-workspace-title>设计图生成</h2>
+        <p class="html-workspace-description" data-workspace-description></p>
+        <ol class="html-production-flow" aria-label="画面制作流程">
+          <li data-flow-stage="design"><strong>1 · 生成设计图</strong><small>分镜 → 整页画面</small></li>
+          <li><strong>2 · 确认设计</strong><small>检查构图与风格</small></li>
+          <li data-flow-stage="page"><strong>3 · 还原与动画</strong><small>独立配图 + 可编辑对象</small></li>
+          <li><strong>4 · 配音同步</strong><small>逐句播放与验收</small></li>
+        </ol>
+        <div class="html-workspace-toolbar">
         <label>分镜页面 <select data-html-slide></select></label>
-        <button class="success" type="button" data-action="produce">生成设计与场景</button>
-        <button type="button" data-action="review">静态审阅</button>
-        <button class="success" type="button" data-action="approve">批准本页</button>
-        <button type="button" data-action="edit">编辑对象与动作</button>
+        <button class="success" type="button" data-action="produce" data-design-only>生成本页设计图</button>
+        <button type="button" data-action="go-design" data-page-only>查看 / 修改设计图</button>
+        <button type="button" data-action="review" data-page-only>检查还原页面</button>
+        <button class="success" type="button" data-action="approve" data-page-only>确认本页画面</button>
+        <button type="button" data-action="edit" data-page-only>调整页面与动画</button>
         <button type="button" data-action="models">项目生成模型</button>
-        <button type="button" data-action="sheets">批量生成配图</button>
+        </div>
+        <p class="html-stage-note" data-page-only>文字、图形和箭头由代码还原，配图作为独立素材。先确认设计，再检查实际画面；逐句音画核验在“配音与同步”完成。</p>
         <button type="button" data-action="cancel" hidden>停止生产任务</button>
-        <div data-html-status role="status"></div><div data-html-task aria-label="生产任务记录"></div><button type="button" data-action="resume" hidden>继续原生产任务</button>
-        <div data-html-manual-candidate hidden>
+        <div data-html-status role="status"></div>
+        <details class="html-task-details"><summary>运行记录与问题详情</summary><div data-html-task aria-label="生产任务记录"></div></details>
+        <button type="button" data-action="resume" hidden>继续原生产任务</button>
+        <div data-html-manual-candidate data-page-only hidden>
           <h4>人工候选评审（原请求结果未知）</h4><p data-manual-source></p>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
             <figure><figcaption>原设计参考</figcaption><img data-manual-design alt="原设计参考" style="width:100%"></figure>
@@ -188,21 +260,34 @@
           <button type="button" data-manual-action="accept">记录接受</button>
           <button type="button" data-manual-action="reject">记录驳回</button>
         </div>
-        <div data-html-design hidden>
+        <div class="html-design-workbench" data-html-design data-design-only hidden>
+          <figure class="html-design-preview"><figcaption>本页设计图 · 构图参考</figcaption>
+          <img alt="本页设计参考"></figure>
+          <aside class="html-design-inspector"><h3>审阅与确认</h3>
           <p data-design-state></p>
-          <img alt="待确认的黑灰白页面设计参考" style="max-width:100%">
+          <button class="success" type="button" data-action="accept-design">确认设计，开始 HTML 还原</button>
+          <details class="html-design-revision"><summary>需要调整设计</summary>
           <label>设计修改方向 <textarea data-design-instruction maxlength="2000" placeholder="例如：加强标题层级，减少卡片边框"></textarea></label>
           <button type="button" data-action="revise-design">修改设计参考</button>
-          <button class="success" type="button" data-action="accept-design">确认设计并生成实际页面</button>
+          </details><p class="html-design-helper">确认的是构图与风格。还原后的文字、对象和动画需再次检查。</p></aside>
         </div>
-        <div data-html-asset-retry hidden>
+        <details data-confirmed-reference data-page-only hidden><summary>设计参考</summary><img alt="当前页面的原设计参考"></details>
+        <div data-html-asset-retry data-page-only hidden>
           <label>主体素材修改方向 <textarea data-asset-instruction maxlength="2000" placeholder="例如：简化细节，增强主体轮廓"></textarea></label>
           <button type="button" data-action="retry-asset">仅返工主体素材</button>
         </div>
-        <img data-html-preview alt="当前场景的实际渲染" hidden style="max-width:100%">
-        <div data-html-editor></div>
-        <div data-html-models hidden></div><div data-semantic-qa></div>`;
-      const sheetHost = document.createElement('div'); sheetHost.dataset.htmlSheets = ''; sheetHost.hidden = true; section.append(sheetHost);
+        <img data-html-preview data-page-only alt="还原页面的实际渲染" hidden style="max-width:100%">
+        <div class="html-page-empty" data-page-empty data-page-only><strong>实际页面尚未生成</strong><p>先查看并确认本页设计图，系统才会生成独立素材和 HTML 页面。</p><button type="button" data-action="go-design">查看设计图</button></div>
+        <div data-html-editor data-page-only></div>
+        <details data-page-only><summary>独立配图（可选，按页面需要）</summary>
+          <p>系统在设计确认后按需生成主体配图。需要多张配图时，可使用素材板；整页设计图用于还原参考。</p>
+          <button type="button" data-action="sheets">生成 / 管理独立配图</button><div data-html-sheets hidden></div>
+        </details>
+        <div data-html-models hidden></div>
+        <div data-page-only><p>页面确认后，进入配音与同步，试听画面并完成逐句核验。</p>
+          <button type="button" data-go-audio>进入配音与同步</button>
+        </div>`;
+      section.querySelector('[data-go-audio]').onclick=()=>window.navigateToStep?.(6);
       host.prepend(section);
       section.querySelector('[data-html-slide]').addEventListener('change', event => {
         window.PPTStudio.runtime.state.activeSlideIndex = Number(event.target.value);
@@ -225,6 +310,9 @@
         }
         const button = event.target.closest('button[data-action]');
         if (!button) return;
+        if (button.dataset.action === 'go-design') {
+          await window.navigateToStep?.(3); return;
+        }
         if (button.dataset.action === 'sheets') {
           const current = context(); const container = section.querySelector('[data-html-sheets]');
           container.hidden = !container.hidden;
@@ -259,7 +347,7 @@
         if (!current.slideId) { status(section, '请先选择分镜页面。'); return; }
         const token = ++generation;
         const base = `/api/projects/${encodeURIComponent(current.project.id)}/html-review/${encodeURIComponent(current.slideId)}`;
-        section.querySelectorAll('button:not([data-action="cancel"])').forEach(b=>b.disabled=true);
+        section.querySelectorAll('button[data-action]:not([data-action="cancel"])').forEach(b=>b.disabled=true);
         status(section, '处理中…');
         try {
           let action = button.dataset.action;
@@ -267,6 +355,7 @@
           if (action === 'accept-design') {
             if (!designCandidate || designCandidate.stale) throw new Error('请先生成并审阅当前设计。');
             payload = {design_candidate_key: designCandidate.key}; action = 'produce';
+            await window.navigateToStep?.(5);
           } else if (action === 'revise-design') {
             const instruction = section.querySelector('[data-design-instruction]').value.trim();
             if (!instruction) throw new Error('请填写本轮设计修改方向。');
@@ -291,6 +380,7 @@
             showDesign(section, result.design, base);
             status(section, result.message);
           } else if (result.review) {
+            pageAvailability(section, true);
             showDesign(section, null, base);
             if (result.design_candidate_key) showAssetRetry(section, result.design_candidate_key);
             status(section, result.review.passed ? '静态检查通过，请查看画面后决定是否批准。' : `检查未通过：${result.review.message || result.review.code}`);
@@ -307,20 +397,25 @@
         finally {
           if (token === generation) {
             activeTask=null; section.querySelector('[data-action="cancel"]').hidden=true;
-            section.querySelectorAll('button').forEach(b=>b.disabled=false);
-            if (designCandidate?.stale) section.querySelector('[data-action="accept-design"]').disabled=true;
+            section.querySelectorAll('button[data-action]').forEach(b=>b.disabled=false);
+            pageAvailability(section);
+            productionAvailability(section);
+            if(context().project?.id===current.project.id)
+              await window.refreshCurrentProjectStatus?.().catch(()=>{});
           }
         }
       });
     }
+    if (section.parentElement !== host) host.prepend(section);
+    stageView(section, pageMode);
     section.hidden = false;
     const slides = window.PPTStudio.runtime.state.slides || [];
-    const optionsKey = JSON.stringify(slides.map(s=>[s.slide_id || s.id,s.title || s.slide_title || '']));
+    const optionsKey = JSON.stringify(slides.map(s=>[s.slide_id || s.id,s.title || s.slide_title || s.main_title || '']));
     const select = section.querySelector('[data-html-slide]');
     if (select.dataset.options !== optionsKey) {
       select.replaceChildren(...slides.map((slide,index)=>{
         const option=document.createElement('option'); option.value=String(index);
-        option.textContent=`${index+1}. ${slide.title || slide.slide_title || slide.slide_id || slide.id}`;
+        option.textContent=`第 ${index+1} 页 · ${slide.title || slide.slide_title || slide.main_title || '未命名页面'}`;
         return option;
       }));
       select.dataset.options=optionsKey;
@@ -338,7 +433,6 @@
         modelContainer.hidden = true;
         section.dataset.project = project.id;
       }
-      window.HtmlSemanticQA?.close();
       generation++;
       activeTask=null;
       taskFacts(section,null);
@@ -348,22 +442,29 @@
       clearManual(section);
       section.querySelector('[data-design-instruction]').value = '';
       section.querySelector('[data-asset-instruction]').value = '';
-      section.querySelectorAll('button').forEach(b=>b.disabled=false);
+      section.querySelectorAll('button[data-action]').forEach(b=>b.disabled=false);
+      pageAvailability(section, false);
       section.dataset.context = key;
       section.querySelector('[data-action="cancel"]').hidden=true;
       status(section, slideId ? '先生成设计参考，确认后生成实际页面，再审阅批准。' : '请先选择分镜页面。');
       section.querySelector('[data-html-preview]').hidden = true;
       if (slideId) {
         const token = generation;
-        window.HtmlSemanticQA?.mount(section.querySelector("[data-semantic-qa]"),project,slideId);
         restoreTask(section,{project,slideId},token);
         const base = `/api/projects/${encodeURIComponent(project.id)}/html-review/${encodeURIComponent(slideId)}`;
+        API.get(`/api/projects/${encodeURIComponent(project.id)}/html-visual/${encodeURIComponent(slideId)}`, {silent:true}).then(result => {
+          if (token !== generation || section.hidden) return;
+          pageAvailability(section, Boolean(result.scene));
+        }).catch(error => {
+          if (token === generation && error.status !== 404 && error.statusCode !== 404) pageAvailability(section, false);
+        });
         API.get(`${base}/design/current`).then(result => {
           if (token !== generation || section.hidden) return;
           if (result.design?.status === 'needs_review') {
             showDesign(section, result.design, base);
-            status(section, result.design.stale ? '旧设计已过期，请重新生成。' : '已恢复待确认的设计参考。');
+            status(section, unknownProduction() ? '原生产请求结果待核实，请查看运行记录；不能重复提交。' : result.design.stale ? '旧设计已过期，请重新生成。' : '已恢复待确认的设计参考。');
           } else if (result.design?.status === 'accepted_for_reconstruction' && !result.design.stale) {
+            showDesign(section, result.design, base);
             showAssetRetry(section, result.design.key);
           }
         }).catch(error => {if (token === generation) status(section, `设计恢复失败：${error.message}`);});

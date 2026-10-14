@@ -89,6 +89,14 @@ def main():
         ),
         encoding="utf-8",
     )
+    # Synthetic silent audio for clock integration, never real-provider evidence.
+    import wave
+    audio_buffer = io.BytesIO()
+    with wave.open(audio_buffer, "wb") as audio_file:
+        audio_file.setnchannels(1)
+        audio_file.setsampwidth(2)
+        audio_file.setframerate(8000)
+        audio_file.writeframes(b"\0\0" * (18 * 8000))
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
@@ -106,6 +114,17 @@ def main():
             )
 
         def do_GET(self):
+            if self.path == "/audio-test":
+                return self.send(
+                    b'<div id="step-panel-6"><h2>Isolated audio clock fixture</h2><div id="step6-beats-list"></div></div><script>function showToast(){};window.HtmlSemanticQA={close(){},mount:async()=>{}};</script><script src="/static/api_client.js"></script><script src="/static/html_audio_review.js"></script><script>HtmlAudioReview.mount({id:"isolated",visual_backend:"html"})</script>',
+                    mime="text/html; charset=utf-8",
+                )
+            if self.path.endswith("/steps/2/result"):
+                return self.send({"contract": {"slides": [{"slide_id": "condensation", "main_title": "Synthetic clock fixture"}]}})
+            if self.path.endswith("/steps/7/audio-status"):
+                return self.send({"slides": [{"slide_id": "condensation", "audio_exists": True, "stale": False}]})
+            if self.path.split("?")[0].endswith("/slides/condensation/audio"):
+                return self.send(audio_buffer.getvalue(), mime="audio/wav")
             if self.path == "/":
                 return self.send(
                     b'<link rel="stylesheet" href="/static/html_scene_edit.css"><div id="host"></div><script>function showToast() {}</script><script src="/static/api_client.js"></script><script src="/static/html_scene_editor.js"></script><script>HtmlSceneEditor.open(document.getElementById("host"),"isolated","condensation")</script>',
@@ -117,6 +136,7 @@ def main():
                     "api_client.js",
                     "html_scene_editor.js",
                     "html_scene_edit.css",
+                    "html_audio_review.js",
                 ]
             }
             files.update(

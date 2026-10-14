@@ -17,6 +17,7 @@ function isCurrentWorkspaceProject(projectId, sessionVersion = workspaceNavigati
 }
 
 function resetProjectScopedAsyncUi() {
+  window.HtmlAudioReview?.close();
   clearTimeout(state.step2AutoSaveTimer);
   state.step2AutoSaveTimer = null;
   clearTimeout(state.step6AutoSaveTimer);
@@ -91,6 +92,11 @@ async function enterWorkspace(projectId) {
   document.getElementById('page-home').style.display = 'none';
   document.getElementById('page-workspace').style.display = 'flex';
   document.body.classList.add('workspace-open');
+  if (project.visual_backend === 'html') {
+    try {await window.HtmlWorkflowState?.load(project,{force:true});}
+    catch(error) {console.warn('HTML current workflow unavailable',error.message);}
+    if (entryVersion !== workspaceNavigationVersion) return;
+  }
 
   // 加载步骤状态并导航至当前步骤
   if (typeof window.loadAnnotationWorkflowState === 'function') {
@@ -122,6 +128,7 @@ function exitWorkspace() {
 
   state.currentProject = null;
   PPTFlow.configureVisibleFlow();
+  window.HtmlReviewPanel?.refresh();
   syncProjectCanvasCssVars(null);
   loadProjects();
 }
@@ -263,8 +270,14 @@ function updateStepperUI(currentStep, stepStatus) {
   const stepItems = document.querySelectorAll('.step-item');
   stepItems.forEach(item => {
     const step = parseInt(item.dataset.step);
+    const flowItem = PPTFlow.VISIBLE_FLOW.find(entry => entry.step === step);
+    item.hidden = !flowItem;
+    if (!flowItem) { item.style.setProperty('display', 'none', 'important'); return; }
+    item.style.removeProperty('display');
+    const number = item.querySelector('.step-num');
+    if (number) number.textContent = String(visibleStepNumber(step));
     const label = item.querySelector('.step-label');
-    if (label) label.textContent = visibleStepLabel(step);
+    if (label) {label.textContent = visibleStepLabel(step);label.title=label.textContent;}
     item.className = 'step-item'; // 重置
     item.querySelectorAll('.step-status-tag').forEach(badge => badge.remove());
     item.querySelectorAll('.step-running-tag').forEach(badge => badge.remove());
@@ -275,16 +288,25 @@ function updateStepperUI(currentStep, stepStatus) {
     }
 
     const status = getVisibleStepState(step, stepStatus, context);
-    const stateLabel = status === 'completed' ? '已完成'
-      : (step === activeStep || step === stepperRunningStep || status === 'in_progress') ? '进行中' : '待完成';
+    const explicit = {pending_review:'待确认',pending_reconfirmation:'已过期',blocked:'需处理',
+      skipped:'未启用',ready_to_export:'待输出'};
+    const stateLabel = status === 'completed' ? '已完成' : explicit[status]
+      || ((step === stepperRunningStep || status === 'in_progress') ? '进行中' : '待完成');
     const stepLabel = item.querySelector('.step-label')?.textContent?.trim() || `步骤${step}`;
+    let stateText = item.querySelector('.step-state-label');
+    if (!stateText) {stateText=document.createElement('small');stateText.className='step-state-label';item.append(stateText);}
+    stateText.textContent=stateLabel;
     item.dataset.state = stateLabel === '已完成' ? 'completed'
       : stateLabel === '进行中' ? 'in-progress' : 'pending';
     item.setAttribute('aria-label', `${stepLabel}，${stateLabel}`);
     const unavailable = step === 9 && !document.getElementById('step-panel-9');
     item.setAttribute('aria-disabled', String(unavailable));
     item.tabIndex = unavailable ? -1 : 0;
-    if (step === activeStep) item.setAttribute('aria-current', 'step');
+    if (step === activeStep) {
+      item.setAttribute('aria-current', 'step');
+      if(state.currentProject?.visual_backend==='html'&&window.innerWidth<768)
+        item.scrollIntoView({block:'nearest',inline:'nearest'});
+    }
     else item.removeAttribute('aria-current');
     if (status === 'completed') {
       item.classList.add('completed');
@@ -292,6 +314,19 @@ function updateStepperUI(currentStep, stepStatus) {
       item.classList.add('pending_reconfirmation');
     }
   });
+  const nextDesign = document.querySelector('#step-panel-2 .btn-next-step');
+  if (nextDesign) nextDesign.textContent = state.currentProject?.visual_backend === 'html'
+    ? '进入设计图生成' : '进入图片生成';
+  const audioTitle = document.querySelector('#step-panel-6 .workflow-title');
+  if (audioTitle) audioTitle.textContent = state.currentProject?.visual_backend === 'html' ? '配音与同步' : '旁白与音频';
+  const audioNext = document.getElementById('step6-audio-confirm-label');
+  const audioButton = document.getElementById('step6-btn-audio-confirm-next');
+  if (audioNext && audioButton) {
+    const destination = PPTFlow.visibleStepLabel(PPTFlow.nextVisibleStep(6));
+    const htmlAudio=state.currentProject?.visual_backend==='html';
+    audioNext.textContent = htmlAudio ? '确认音频，核验同步' : `进入${destination}`;
+    audioButton.title = htmlAudio ? '确认当前音频后完成同步试听、逐句核验与人工签收' : `确认当前音频已就绪，进入${destination}`;
+  }
   applyStepperRunningMark();
 }
 
@@ -305,8 +340,9 @@ async function refreshCurrentProjectStatus(activeStep = state.currentStep) {
   if (project?.visual_backend === 'html') {
     // HTML 路线的场景就绪是独立事实，不造 Mask 文件骗过旧门槛。
     try {
-      const status = await API.get(`/api/projects/${projectId}/html-visual/status`);
-      window.__htmlVisualReady = status?.ready === true;
+      const value = await window.HtmlWorkflowState.load(project,{force:true});
+      if (navigationVersion !== workspaceNavigationVersion || !isCurrentWorkspaceProject(projectId)) return;
+      window.__htmlVisualReady = value?.response?.ready === true;
     } catch (error) {
       window.__htmlVisualReady = false;
     }
@@ -320,6 +356,7 @@ async function refreshCurrentProjectStatus(activeStep = state.currentStep) {
 
 // 步骤面板切换
 async function navigateToStep(step) {
+  window.HtmlAudioReview?.close();
   const navigationVersion = ++workspaceNavigationVersion;
   step = normalizeVisibleStep(step);
   // 离开勾画标注(可选步骤 10)前等待自动保存落盘;失败保留本地编辑并提示
@@ -364,6 +401,8 @@ async function navigateToStep(step) {
   // 针对特定步骤加载结果数据
   await loadStepData(step);
   window.HtmlReviewPanel?.refresh();
+  if(navigationVersion===workspaceNavigationVersion&&state.currentProject?.visual_backend==='html'&&window.innerWidth<768)
+    document.querySelector(`.step-item[data-step="${step}"]`)?.scrollIntoView({block:'nearest',inline:'nearest'});
 }
 
 async function loadStepData(step) {
@@ -388,14 +427,23 @@ async function loadStepData(step) {
       break;
     case 5:
       if (state.currentProject?.visual_backend === 'html') {
-        await navigateToStep(3); // Existing HTML editor owns objects and actions.
+        const projectId = state.currentProject.id;
+        const sessionVersion = workspaceNavigationVersion;
+        const result = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
+        if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+        state.slides = result.contract?.slides || [];
+        window.HtmlReviewPanel?.refresh();
       } else {
         await loadStep5Data();
       }
       break;
     case 6:
+      const audioProject=state.currentProject;
+      const audioSession=workspaceNavigationVersion;
       await loadStep6Data();
       await loadStep7Data();
+      if(isCurrentWorkspaceProject(audioProject?.id,audioSession)&&state.currentStep===6)
+        await window.HtmlAudioReview?.mount(audioProject);
       break;
     case 8:
       await loadStep8Data();
