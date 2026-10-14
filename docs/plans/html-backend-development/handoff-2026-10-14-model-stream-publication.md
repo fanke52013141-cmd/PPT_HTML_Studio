@@ -2,7 +2,7 @@
 
 这是本轮发布的接续入口，接替 [上一份线上交接](handoff-2026-10-14-publication.md) 的当前停点说明；原记录保留历史。用户已明确授权发布到 `origin` 的 `fanke52013141-cmd/PPT_HTML_Studio` / `main`。禁止推送原图片项目 `upstream`。
 
-规范唯一来源：[HTML 演示契约](../../contracts/html-presentation/README.md)，当前契约包 **0.9.44**。起点 `56c52b0d789fa47df0de4334eb487b1447af1fb9`。代码提交版本在发布验证完成后登记。本文件自身的提交身份可用 `git log -1 -- <本文件路径>` 核验，不能把文档更新误作新的供应商运行证据。
+规范唯一来源：[HTML 演示契约](../../contracts/html-presentation/README.md)，当前契约包 **0.9.44**。起点 `56c52b0d789fa47df0de4334eb487b1447af1fb9`。代码与交接已发布为 [`2219569b08af0fd4a5b475f72167a66f923653be`](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/commit/2219569b08af0fd4a5b475f72167a66f923653be)，`git ls-remote origin refs/heads/main` 已确认该提交在远端；本条另作纯文档提交补充发布版本。本文件自身的最新提交身份可用 `git log -1 -- <本文件路径>` 核验，不能把文档更新误作新的供应商运行证据。
 
 ## 当前结论
 
