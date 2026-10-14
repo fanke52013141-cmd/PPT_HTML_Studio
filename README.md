@@ -2,6 +2,8 @@
 
 最新交接：[2026-10-14 模型流式修复与本机 A06 发布交接](docs/plans/html-backend-development/handoff-2026-10-14-model-stream-publication.md)。已修复模型输入字段、流式进度与未知结果留档，本机真实第一页规划与设计图返回，当前等待设计人工确认；A06 整课仍待验收。工程、真实模型实测与用户签收分别记录，丽梅电脑旧运行与本机新课程分开留档。
 
+界面整理记录：[HTML流程与工作区交接](docs/plans/html-backend-development/handoff-html-workspace-flow-2026-10-14.md)，明确设计图先行、独立还原/动画面板、配音同步与可选数字人，去掉HTML旧勾画步骤。
+
 面向课程演示与短视频的 HTML 画面系统。通过公共组件、布局、风格包、独立素材和
 讲稿驱动的动作，构建兼具视觉质量与元素控制能力的演示，目标输出包括 HTML、视频
 与分层次支持的 PPTX。
@@ -105,3 +107,4 @@
 ## 主分支源码合并
 
 2026-10-08：将 html-studio 已提交源码合并到 main，保留双方历史及主分支规范。后续直接从 main 开发。[合并说明与未完成项](docs/releases/2026-10-08-main-source-merge.md)。工程链通过不等于真实服务和完整课程验收通过。
+本地工作区的流程闭环与布局增量见 [2026-10-15交接](docs/plans/html-backend-development/handoff-html-workflow-closure-2026-10-15.md)；代码提交 `fa5488a`，工程检查与真实课程签收分开。
