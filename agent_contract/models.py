@@ -205,6 +205,10 @@ class PipelineStatusResult(BaseModel):
     blocking_errors: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     artifacts: list[dict[str, Any]] = Field(default_factory=list)
+    backend: str = "image"
+    job_id: str | None = None
+    children: dict[str, Any] = Field(default_factory=dict)
+    historical: bool = False
 
 
 class PipelineResumeRequest(BaseModel):
@@ -310,11 +314,14 @@ class CheckpointInfo(BaseModel):
     name: str
     label: str = ""
     description: str = ""
+    capability: str | None = None
+    web_path: str | None = None
 
 
 class CheckpointListResult(BaseModel):
     project_id: str
     checkpoints: list[CheckpointInfo] = Field(default_factory=list)
+    approval_mode: str = "pipeline_checkpoint"
 
 
 class ProjectDeleteResult(BaseModel):
@@ -376,6 +383,7 @@ class HtmlVisualStatusResult(BaseModel):
     scenes_expected: int
     slides: dict[str, Any] = Field(default_factory=dict)
     workflow: dict[str, Any] = Field(default_factory=dict)
+    semantic_qa: dict[str, Any] = Field(default_factory=dict)
 
 
 class HtmlSceneDocumentResult(BaseModel):
@@ -446,6 +454,18 @@ from html_production_models import HtmlProduceRequest as HtmlProduceRequest
 class HtmlDesignCandidateResult(BaseModel):
     project_id: str
     design: dict[str, Any] | None
+
+
+class HtmlManualCandidateDecisionRequest(BaseModel):
+    key: str
+    decision: Literal["accept", "reject"]
+    note: str
+
+
+class HtmlManualCandidateResult(BaseModel):
+    project_id: str
+    slide_id: str
+    candidate: dict[str, Any]
 
 
 class ProjectModelBindingSaveRequest(ProjectModelBindingUpdate):

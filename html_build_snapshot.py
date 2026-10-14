@@ -165,7 +165,7 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
     validate_slide_id(contract.get("slide_id"))
     options = HtmlProduceRequest.model_validate(options or {}).model_dump()
     identities = copy.deepcopy(model_identity or {})
-    if set(identities) - {"text", "image"} or any(not isinstance(v, dict) or set(v) - {"provider", "model", "config_digest"} for v in identities.values()):
+    if set(identities) - {"text", "image", "planning"} or any(not isinstance(v, dict) or set(v) - {"provider", "model", "config_digest"} for v in identities.values()):
         raise SnapshotError("MODEL_IDENTITY_FIELDS_INVALID")
     _no_secrets([contract, options, identities])
     with project_artifact_lock(run):
@@ -177,7 +177,7 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
         capture.add("input/options.json", json_bytes(options))
         capture.add("input/model-identity.json", json_bytes(identities))
         # Pin the actual planner/runtime definitions; not just their IDs.
-        for name in ["html_storyboard_planning.py", "html_semantic_plan.py", "html_semantic_design.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_planning_context.py", "html_visual_review_service.py", "html_reference_package.py",
+        for name in ["html_semantic_qa.py", "html_semantic_qa_models.py", "html_semantic_review_service.py", "html_semantic_review_jobs.py", "config/html_semantic_qa_prompt.md", "html_engine/tools/semantic-frames.cjs", "project_model_binding_service.py", "html_storyboard_planning.py", "html_semantic_plan.py", "html_semantic_design.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_planning_context.py", "html_visual_review_service.py", "html_reference_package.py",
                      "html_production_service.py", "html_design_brief.py", "html_image_provider.py",
                      "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_engine/visual/presentation-variants.json",
                      "json_llm_service.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
@@ -295,6 +295,13 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
         catalog["assets"], pack = _capture_assets(root, run, capture, used)
         from html_scene_editing import _node
         if target == "video":
+            from html_semantic_review_service import status as semantic_status, folder as semantic_folder
+            qa=semantic_status(run,slide_id,root)
+            if qa["required"]:
+                if not qa["valid"]:
+                    raise SnapshotError("SNAPSHOT_SEMANTIC_QA_REQUIRED")
+                capture.read(semantic_folder(run,slide_id)/qa["key"]/"report.json","input/semantic-qa.json")
+                capture.read(semantic_folder(run,slide_id)/"decision.json","input/semantic-decision.json")
             from html_audio_binder import bind_scene_to_audio
             capture.add("input/author-scene.json", json_bytes(scene))
             timeline = json.loads(capture.files["audio/audio_timeline.json"])

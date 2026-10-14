@@ -75,6 +75,7 @@ async function enterWorkspace(projectId) {
   }
   if (entryVersion !== workspaceNavigationVersion) return;
   state.currentProject = project;
+  PPTFlow.configureVisibleFlow(undefined, { visualBackend: project.visual_backend });
   syncProjectCanvasCssVars(project);
   const visibleStep = resolveProjectVisibleStep(project);
 
@@ -120,6 +121,7 @@ function exitWorkspace() {
   document.getElementById('page-home').style.display = 'block';
 
   state.currentProject = null;
+  PPTFlow.configureVisibleFlow();
   syncProjectCanvasCssVars(null);
   loadProjects();
 }
@@ -261,6 +263,8 @@ function updateStepperUI(currentStep, stepStatus) {
   const stepItems = document.querySelectorAll('.step-item');
   stepItems.forEach(item => {
     const step = parseInt(item.dataset.step);
+    const label = item.querySelector('.step-label');
+    if (label) label.textContent = visibleStepLabel(step);
     item.className = 'step-item'; // 重置
     item.querySelectorAll('.step-status-tag').forEach(badge => badge.remove());
     item.querySelectorAll('.step-running-tag').forEach(badge => badge.remove());
@@ -371,10 +375,23 @@ async function loadStepData(step) {
       await loadStep2Data();
       break;
     case 3:
-      await loadStep3Data();
+      if (state.currentProject?.visual_backend === 'html') {
+        const projectId = state.currentProject.id;
+        const sessionVersion = workspaceNavigationVersion;
+        const result = await API.getOptional(`/api/projects/${projectId}/steps/2/result`);
+        if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
+        state.slides = result.contract?.slides || [];
+        window.HtmlReviewPanel?.refresh();
+      } else {
+        await loadStep3Data();
+      }
       break;
     case 5:
-      await loadStep5Data();
+      if (state.currentProject?.visual_backend === 'html') {
+        await navigateToStep(3); // Existing HTML editor owns objects and actions.
+      } else {
+        await loadStep5Data();
+      }
       break;
     case 6:
       await loadStep6Data();

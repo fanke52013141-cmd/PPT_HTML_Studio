@@ -49,8 +49,9 @@ def start_one_click_route(
         False,
     ) is True
     project.production_mode = "one_click"
-    project.presentation_mode = "reveal" if ai_mask_annotation else "full_frame"
-    project.mask_enabled = 1 if ai_mask_annotation else 0
+    if getattr(project, "visual_backend", "image") != "html":
+        project.presentation_mode = "reveal" if ai_mask_annotation else "full_frame"
+        project.mask_enabled = 1 if ai_mask_annotation else 0
     db.commit()
     db.refresh(project)
     try:

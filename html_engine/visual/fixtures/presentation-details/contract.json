@@ -1,0 +1,21 @@
+{
+  "slide_id": "token-03",
+  "narration_beats": [
+    {
+      "id": "token-03-b1",
+      "spoken_text": "输入 Token 包括你发送给模型的提示和上下文。"
+    },
+    {
+      "id": "token-03-b2",
+      "spoken_text": "输出 Token 是模型生成回复所使用的单位。"
+    },
+    {
+      "id": "token-03-b3",
+      "spoken_text": "输入与输出常有不同单价，具体还可能涉及缓存或推理类别。"
+    },
+    {
+      "id": "token-03-b4",
+      "spoken_text": "计费应结合实际用量与该模型的价目表，不能只看字数。"
+    }
+  ]
+}

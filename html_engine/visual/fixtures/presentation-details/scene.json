@@ -1,0 +1,197 @@
+{
+  "format": "hps.visual.scene",
+  "version": "0.7.0",
+  "id": "token-03",
+  "name": "输入和输出，要分开看用量",
+  "themeRef": {
+    "id": "neutral-baseline",
+    "version": "0.2.0"
+  },
+  "layoutRef": {
+    "id": "data-relation-v1",
+    "version": "0.2.0"
+  },
+  "templateRef": {
+    "id": "data-relation-v1",
+    "version": "0.1.0"
+  },
+  "durationMs": 14000,
+  "nodes": [
+    {
+      "number": "03",
+      "title": "输入和输出，要分开看用量",
+      "id": "header",
+      "slot": "header",
+      "type": "header"
+    },
+    {
+      "role": "body",
+      "runs": [
+        {
+          "text": "输入 Token：你发送的提示与上下文",
+          "emphasis": true
+        }
+      ],
+      "id": "stat-input",
+      "slot": "stat-1",
+      "type": "text",
+      "presentation": {
+        "variant": "text-card-label",
+        "icon": "speech",
+        "height": 150,
+        "typography": {
+          "text": {
+            "fontSizePx": 24,
+            "align": "left",
+            "lineHeight": 1.4
+          }
+        }
+      }
+    },
+    {
+      "role": "body",
+      "runs": [
+        {
+          "text": "输出 Token：模型生成回复使用的单位",
+          "emphasis": true
+        }
+      ],
+      "id": "stat-output",
+      "slot": "stat-2",
+      "type": "text",
+      "presentation": {
+        "variant": "text-card-label",
+        "icon": "document",
+        "height": 150,
+        "typography": {
+          "text": {
+            "fontSizePx": 24,
+            "align": "left",
+            "lineHeight": 1.4
+          }
+        }
+      }
+    },
+    {
+      "role": "body",
+      "runs": [
+        {
+          "text": "单价可能不同：缓存或推理类别会影响计费",
+          "emphasis": true
+        }
+      ],
+      "id": "stat-pricing",
+      "slot": "stat-3",
+      "type": "text",
+      "presentation": {
+        "variant": "text-card-label",
+        "icon": "coins",
+        "height": 150,
+        "typography": {
+          "text": {
+            "fontSizePx": 24,
+            "align": "left",
+            "lineHeight": 1.4
+          }
+        }
+      }
+    },
+    {
+      "role": "caption",
+      "runs": [
+        {
+          "text": "按实际输入与输出用量，并结合具体模型价目表计费，不能只看字数。",
+          "emphasis": false
+        }
+      ],
+      "id": "billing-caption",
+      "slot": "caption",
+      "type": "text",
+      "presentation": {
+        "typography": {
+          "text": {
+            "align": "left"
+          }
+        },
+        "offsetY": 40
+      }
+    },
+    {
+      "heading": {
+        "icon": "check",
+        "text": "计费要点"
+      },
+      "from": {
+        "text": "输入",
+        "tone": "blue"
+      },
+      "to": {
+        "text": "输出",
+        "tone": "green"
+      },
+      "term": "Token 用量",
+      "takeaway": "分开统计用量，按模型价目表计价",
+      "id": "billing-summary",
+      "slot": "summary",
+      "type": "summary",
+      "presentation": {
+        "variant": "summary-relationship-panel",
+        "icon": "check-plain",
+        "height": 160,
+        "offsetY": -60
+      }
+    }
+  ],
+  "initialVisibleIds": [
+    "header"
+  ],
+  "motion": [
+    {
+      "actionId": "token-03-a1",
+      "targetId": "stat-input",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "actionId": "token-03-a2",
+      "targetId": "stat-output",
+      "type": "enter",
+      "startMs": 3500,
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "actionId": "token-03-a3",
+      "targetId": "stat-pricing",
+      "type": "enter",
+      "startMs": 7000,
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "actionId": "token-03-a4",
+      "targetId": "billing-caption",
+      "type": "enter",
+      "startMs": 10500,
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12
+    },
+    {
+      "actionId": "token-03-a5",
+      "targetId": "billing-summary",
+      "type": "enter",
+      "startMs": 10500,
+      "durationMs": 500,
+      "offsetX": 0,
+      "offsetY": 12
+    }
+  ],
+  "beats": [],
+  "source": "课程内容；语义来源保存在分镜契约中。"
+}

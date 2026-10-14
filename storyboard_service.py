@@ -394,14 +394,21 @@ def run_step2_json_llm(
     dependencies = _DEPENDENCIES
     if dependencies is None:
         raise RuntimeError("Storyboard dependencies have not been configured")
-    llm_config = resolve_step2_llm(
-        project,
-        binding_name,
-        resolve_model_connection=dependencies.resolve_model_connection,
-        get_credential=dependencies.get_credential,
-        parse_int_setting=parse_int_setting,
-        fallback=configured_step2_llm,
-    )
+    if getattr(project, "visual_backend", "image") == "html":
+        from storyboard_project_config import resolve_html_step2_llm
+        llm_config, vendor_options = resolve_html_step2_llm(project)
+        timeout_sec = 600
+    else:
+        llm_config = resolve_step2_llm(
+            project,
+            binding_name,
+            resolve_model_connection=dependencies.resolve_model_connection,
+            get_credential=dependencies.get_credential,
+            parse_int_setting=parse_int_setting,
+            fallback=configured_step2_llm,
+        )
+        vendor_options = step2_llm_vendor_options(llm_config[2], llm_config[1])
+        timeout_sec = STEP2_LLM_TIMEOUT_SEC
     return execute_step2_json_llm(
         capabilities=StoryboardLlmCapabilities(
             get_openai_client=get_openai_client,
@@ -418,8 +425,8 @@ def run_step2_json_llm(
         schema_hint=schema_hint,
         trace_id=trace_id,
         llm_config=llm_config,
-        vendor_options=step2_llm_vendor_options(llm_config[2], llm_config[1]),
-        timeout_sec=STEP2_LLM_TIMEOUT_SEC,
+        vendor_options=vendor_options,
+        timeout_sec=timeout_sec,
     )
 
 

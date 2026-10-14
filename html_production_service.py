@@ -308,7 +308,7 @@ def produce_scene(
         contract,
         run_dir=run_dir,
         repo_root=deps.repo_root,
-        json_generator=deps.json_generator,
+        json_generator=deps.planning_generator or deps.json_generator,
         plan_version=selection.plan_version,
     )
     prompt_version = SEMANTIC_PROMPT_VERSION if plan.get("version") == "0.2.0" else PROMPT_VERSION
@@ -488,11 +488,15 @@ def produce_scene(
         if not entry["anchors"]:
             # A generic subject center, not a guessed scientific detail. Users
             # inspect this target in the actual preview before approval.
+            subject_node = next(
+                node for node in allocation_scene["nodes"]
+                if node["slot"] == need["slot"] and node["type"] == "image"
+            )
             x, y, right, bottom = entry["alpha_bbox"]
             px, py = (x + right) // 2, (y + bottom) // 2
             entry["anchors"] = [
                 {
-                    "id": "focus",
+                    "id": subject_node["anchorId"],
                     "x": px,
                     "y": py,
                     "nx": px / entry["size"]["width"],

@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.25.0
-- **Contract Hash**: `a3978c15d873da4d`
-- **Total Capabilities**: 60
+- **Agent API Version**: 1.29.0
+- **Contract Hash**: `a6504e29a5d4fdc6`
+- **Total Capabilities**: 65
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -18,8 +18,11 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_sheet.accept` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/accept` | `ppt_html_sheet_accept` | Yes | `html sheet-accept` | `html_asset_sheet_routes.sheet_accept` | No | No |
 | `html_sheet.assess` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/assess` | `ppt_html_sheet_assess` | Yes | `html sheet-assess` | `html_asset_sheet_routes.sheet_assess` | Yes | No |
 | `html_sheet.retry` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}/{asset_id}/retry` | `ppt_html_sheet_retry` | Yes | `html sheet-retry` | `html_asset_sheet_routes.sheet_retry` | Yes | No |
-| `project_model_binding.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
-| `project_model_binding.write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
+| `html_semantic.submit` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/submit` | `ppt_html_semantic_submit` | Yes | `html semantic-submit` | `html_semantic_review_service.review` | No | No |
+| `html_semantic.status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/status` | `ppt_html_semantic_status` | Yes | `html semantic-status` | `html_semantic_review_service.status` | No | No |
+| `html_semantic.decision` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/decision` | `ppt_html_semantic_decision` | Yes | `html semantic-decision` | `html_semantic_review_service.decide` | No | No |
+| `project_model_binding.read` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
+| `project_model_binding.write` | 1.1 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
 | `html_repair.preview` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
 | `html_repair.save` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
 | `html_repair.evidence` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
@@ -33,6 +36,8 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
 | `html_review.produce` | 1.4 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
 | `html_review.design_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/design/current` | `ppt_html_design_current` | Yes | `html design-current` | `html_design_candidates.current_design` | No | No |
+| `html_review.manual_candidate` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}` | `ppt_html_manual_candidate` | Yes | `html manual-candidate` | `html_manual_candidate_review.inspect_candidate` | No | No |
+| `html_review.manual_candidate_decision` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision` | `ppt_html_manual_candidate_decision` | Yes | `html manual-candidate-decision` | `html_manual_candidate_review.decide_candidate` | No | No |
 | `html_review.task_status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}` | `ppt_html_task_status` | Yes | `html task-status` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
 | `html_review.task_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/task/current` | `ppt_html_task_current` | Yes | `html task-current` | `html_task_store.current_slide_task` | No | No |
 | `html_review.task_resume` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}/resume` | `ppt_html_task_resume` | Yes | `html task-resume` | `html_workflow_jobs.HtmlWorkflowJobs.resume` | No | No |
@@ -48,11 +53,11 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `project.get` | 1.3 | stable | GET | `/api/agent/v1/projects/{project_id}` | `ppt_project_get` | Yes | `project show` | `project_service.ProjectService.get` | No | No |
 | `project.update` | 1.3 | stable | PATCH | `/api/agent/v1/projects/{project_id}` | `ppt_project_update` | Yes | `project update` | `project_service.ProjectService.update` | No | No |
 | `source.set` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/source` | `ppt_source_set` | Yes | `source set` | `article_service.import_article / generate_article_from_topic` | No | No |
-| `pipeline.run` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/runs` | `ppt_pipeline_run` | Yes | `run start` | `one_click_orchestrator.start_one_click` | Yes | No |
-| `pipeline.status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/runs/latest` | `ppt_pipeline_status` | Yes | `run status` | `one_click_orchestrator.get_one_click_status` | No | No |
-| `pipeline.resume` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/runs/latest/resume` | `ppt_pipeline_resume` | Yes | `run resume` | `one_click_orchestrator.start_one_click` | Yes | No |
+| `pipeline.run` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/runs` | `ppt_pipeline_run` | Yes | `run start` | `one_click_orchestrator.start_one_click` | Yes | No |
+| `pipeline.status` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/runs/latest` | `ppt_pipeline_status` | Yes | `run status` | `one_click_orchestrator.get_one_click_status` | No | No |
+| `pipeline.resume` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/runs/latest/resume` | `ppt_pipeline_resume` | Yes | `run resume` | `one_click_orchestrator.start_one_click` | Yes | No |
 | `pipeline.stream` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/runs/latest/stream` | `ppt_pipeline_stream` | No | `run stream` | `agent_api.routes.agent_pipeline_stream` | Yes | No |
-| `checkpoint.approve` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/checkpoints/{checkpoint}/approve` | `ppt_checkpoint_approve` | Yes | `approve` | `one_click_orchestrator (stage gating)` | No | No |
+| `checkpoint.approve` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/checkpoints/{checkpoint}/approve` | `ppt_checkpoint_approve` | Yes | `approve` | `one_click_orchestrator (stage gating)` | No | No |
 | `stage.get` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/stages/{stage}` | `ppt_stage_get` | Yes | `stage get` | `various service read functions` | No | No |
 | `image.regenerate` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/images/{slide_id}/regenerate` | `ppt_image_regenerate` | Yes | `image regenerate` | `image_workflow_service.generate_slide_image` | Yes | No |
 | `narration.update` | 1.1 | stable | PATCH | `/api/agent/v1/projects/{project_id}/narration/{slide_id}` | `ppt_narration_update` | Yes | `narration update` | `storyboard_service.update_narration` | No | No |
@@ -66,7 +71,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `digital_human.health` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/digital-human/health` | `ppt_digital_human_health` | Yes | `digital-human health` | `digital_human_client.get_digital_human_client` | No | No |
 | `digital_human.generate` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/digital-human/generate-full` | `ppt_digital_human_generate` | Yes | `digital-human generate` | `digital_human_client.get_digital_human_client` | No | No |
 | `project.delete` | 1.0 | stable | DELETE | `/api/agent/v1/projects/{project_id}` | `ppt_project_delete` | Yes | `project delete` | `project_service.ProjectService.delete` | No | Yes |
-| `checkpoint.list` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/checkpoints` | `ppt_checkpoint_list` | Yes | `checkpoint list` | `agent_api.routes.agent_list_checkpoints` | No | No |
+| `checkpoint.list` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/checkpoints` | `ppt_checkpoint_list` | Yes | `checkpoint list` | `agent_api.routes.agent_list_checkpoints` | No | No |
 | `image.get` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/slides/{slide_id}/image` | `ppt_image_get` | No | `image get` | `image_workflow_service.get_slide_image_file` | No | No |
 | `audio.get` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/slides/{slide_id}/audio` | `ppt_audio_get` | No | `audio get` | `tts_service.get_slide_audio_file` | No | No |
 | `video.latest` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/videos/latest` | `ppt_video_latest` | No | `video latest` | `video_render_service final_video_download` | No | No |
@@ -85,7 +90,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **55** stable tools:
+The MCP server exposes **60** stable tools:
 
 - `ppt_html_sheet_list` — List account-scoped HTML sheet candidates and latest persisted task for recovery.
 - `ppt_html_sheet_generate` — Submit a bounded HTML sheet task; freeze image model at submission, keep credentials only in memory. Mask requires configured exact segmentation. Query/stop using HTML task APIs.
@@ -94,8 +99,11 @@ The MCP server exposes **55** stable tools:
 - `ppt_html_sheet_accept` — Accept one verified object only after both review gates; additive resources registration, no same-ID overwrite or scene/audio changes.
 - `ppt_html_sheet_assess` — Submit multimodal advisory task on verified candidates with frozen text model. Empty body; advice never approves resources. Use existing task query/cancel.
 - `ppt_html_sheet_retry` — Regenerate only one unaccepted declared object into an independent candidate. Expected revision, optional corrected need/direction; original assets and human edits preserved.
+- `ppt_html_semantic_submit` — Submit persistent independent audio-bound beat/frame semantic QA with frozen multimodal model and expected_revision; no human/audio approval. Unknown requests never blindly repeat.
+- `ppt_html_semantic_status` — Read current per-beat semantic evidence and separate engineering/audio/human states; verify original source and frame hashes, stale evidence cannot pass.
+- `ppt_html_semantic_decision` — Record an explicit human semantic approval/rejection of the current report key with revision and note. Engineering failures and semantic omissions/contradictions cannot be approved.
 - `ppt_project_model_binding_read` — Read account-scoped HTML project model references and redacted effective summaries; legacy/inherit/fixed modes, no credentials or endpoints.
-- `ppt_project_model_binding_write` — Save HTML project text/image model references with expected_revision and explicit rebind. No-op preserves work; changes apply to future generation only. Stale revision returns 409.
+- `ppt_project_model_binding_write` — Save HTML project visual text/image and optional independent planning model references (omitted planning preserves its binding) with expected_revision and explicit rebind. No-op preserves work; changes apply to future generation only. Stale revision returns 409.
 - `ppt_html_repair_preview` — Bounded HTML local repair preview; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
 - `ppt_html_repair_save` — Bounded HTML local repair save; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
 - `ppt_html_repair_evidence` — Bounded HTML local repair evidence; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
@@ -109,6 +117,8 @@ The MCP server exposes **55** stable tools:
 - `ppt_project_create` — Create a project with canvas, production/presentation mode, versioned creation configuration, and optional course/chapter ownership.
 - `ppt_html_produce` — Generate a complete design first; accepted designs enter object understanding and code/image allocation before subject generation, constrained reconstruction, and independent actual-screenshot fidelity review. Bounded layout feedback and explicit planning/asset/capability routing preserve editable content. Human approval remains separate.
 - `ppt_html_design_current` — Read the current immutable design checkpoint, image URL and stale status; never approves a design or HTML scene.
+- `ppt_html_manual_candidate` — Read one unsaved candidate after an unqueryable model outcome; original task, design, preview and engineering facts stay distinct from approval.
+- `ppt_html_manual_candidate_decision` — Record an explicit human accept/reject with evidence note for the exact unsaved candidate. Does not save author scene, retry provider, or grant visual approval.
 - `ppt_html_task_status` — Read persisted HTML task, page, stage, repair/Skill progress, reuse, input freshness and recovery advice; success is not visual approval.
 - `ppt_html_task_current` — Read the latest persisted production task for this page, independently of the project history limit; validates frozen input freshness. Returns null when absent.
 - `ppt_html_task_resume` — Explicitly continue the original frozen production request. Unknown outcomes, cancellation, changed inputs and exhausted budgets remain blocked; active submissions reuse the same task.
@@ -124,10 +134,10 @@ The MCP server exposes **55** stable tools:
 - `ppt_project_get` — Get project details including article/contract status, slide IDs, and mask mode.
 - `ppt_project_update` — Update project name, description, AI mode, production mode, or presentation mode.
 - `ppt_source_set` — Set project source content — either direct article text or a topic for AI generation.
-- `ppt_pipeline_run` — Start or resume the automated pipeline. Supports stop_at checkpoints.
-- `ppt_pipeline_status` — Get current pipeline status including stage progress and blocking errors.
+- `ppt_pipeline_run` — Start or resume the automated pipeline. HTML courses coordinate persistent original stage jobs and require existing per-page approvals; HTML restart/start_from bypass is refused.
+- `ppt_pipeline_status` — Get current pipeline status, stage progress, blocking errors and HTML course child task IDs/current versus historical state.
 - `ppt_pipeline_resume` — Resume a paused or failed pipeline from the last checkpoint.
-- `ppt_checkpoint_approve` — Approve or reject a pipeline checkpoint to continue or halt.
+- `ppt_checkpoint_approve` — Approve or reject an image pipeline checkpoint. HTML courses require original per-page design, visual, audio and semantic decisions; generic approval is refused.
 - `ppt_stage_get` — Get detailed data for a specific pipeline stage (storyboard, narration, etc.).
 - `ppt_image_regenerate` — Regenerate a single slide image with optional modification instruction.
 - `ppt_narration_update` — Update narration text for a specific slide.
@@ -141,7 +151,7 @@ The MCP server exposes **55** stable tools:
 - `ppt_digital_human_health` — Check digital-human service availability and model readiness.
 - `ppt_digital_human_generate` — Trigger full digital-human video generation for all slides.
 - `ppt_project_delete` — Delete a project and all of its derived artifacts. Destructive and irreversible.
-- `ppt_checkpoint_list` — List the pipeline checkpoints available for a project.
+- `ppt_checkpoint_list` — List project checkpoints; HTML lists original stage approval capabilities or Web audio confirmation path.
 
 ## Resource URIs
 

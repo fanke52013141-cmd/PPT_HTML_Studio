@@ -248,7 +248,14 @@ async function main() {
       const final = await page.locator(".visual-stage").screenshot();
       await page.evaluate(() => window.visualPlayer.seek(2500));
       await page.evaluate((t) => window.visualPlayer.seek(t), cup.durationMs);
-      assert.deepEqual(await page.locator(".visual-stage").screenshot(), final, `Theme ${themeId} seek must be deterministic`);
+      const returned = await page.locator(".visual-stage").screenshot();
+      if (!returned.equals(final)) {
+        const folder = path.resolve(root,"../../outputs/presentation-details-2026-10-14/seek-diagnostics");
+        fs.mkdirSync(folder,{recursive:true});
+        fs.writeFileSync(path.join(folder,themeId+"-before.png"),final);
+        fs.writeFileSync(path.join(folder,themeId+"-after.png"),returned);
+      }
+      assert(returned.equals(final), `Theme ${themeId} seek must be deterministic`);
     }
     const old = await page.evaluate(() => window.visualPlayer.scene.id);
     const long = clone(cup);

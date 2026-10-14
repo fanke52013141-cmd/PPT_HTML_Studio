@@ -5,7 +5,7 @@ description: Produce and verify editable HTML slides from this repository's slid
 
 # 可编辑 HTML 生产与局部修复
 
-Skill 版本：1.11.0（2026-10-13）。目标是交付实际可打开、可编辑、来源可追溯的作品。
+Skill 版本：1.13.0（2026-10-14）。目标是交付实际可打开、可编辑、来源可追溯的作品。
 
 本文代码与文档路径均相对仓库根目录；`references/`、`evaluation/` 相对本 Skill 目录。
 先读 `docs/contracts/html-presentation/README.md`，再读其下 `runtime/visual-v1/application-production-0.3.0.md`、`scene-repair-0.1.0.md` 和 `candidate-layout-agent-0.1.0.md`。从 `agent_contract.capabilities` 获取实际可调用能力和请求 Schema。参考图谱不等于运行组件目录。保持内容、场景、资源、绑定为唯一源；DOM/截图/视频为派生物。
@@ -34,7 +34,17 @@ Skill 版本：1.11.0（2026-10-13）。目标是交付实际可打开、可编�
 
 显式继续使用 html_review.task_resume（MCP ppt_html_task_resume / CLI html task-resume --project --job），由原快照恢复 contract/options；不要改参数规避原任务预算或供应商未知结果。取消、坏回执、耗尽、源码/模型/内容变化仍阻断。Web刷新自动恢复轮询，项目切换清空旧状态。编辑器先展示真实 preview 的重建影响再保存；当前交付同时检查 artifact_state 和 historical，旧成功不升级为新版完成。
 
+## A04 逐句语义 QA
+
+先读 `docs/contracts/html-presentation/runtime/visual-v1/semantic-qa-0.1.0.md`。对已保存scene0.6/0.7，使用 html_semantic.submit/status/decision（MCP ppt_html_semantic_* / CLI html semantic-*）。submit仅expected_revision，真实voice.mp3与时间轴必须就绪；原句/对象/动作与plan0.2核对后复用共享播放器每句start/mid/end三帧。没有真实音频不能用作者等分代替。
+
+任务使用原LocalJob，可读/停止/显式继续原任务；冻结模型，已返回帧与模型回执复用，unknown不补发。读取结果分别核对engineering、semantic、audio、human与原visual批准。模型pass只提供语义建议；用户明确签收当前report_key且note记录依据才写decision。omitted/contradiction或工程失败不能批准；uncertain/低置信明确待审。页面/声音/动作/代码变化会使报告stale。
+
+视频输出需要新版当前语义签收；静态PPTX仍独立，不把静态可导出称为课程讲解通过。原句、三帧与证据须展示；不以终态替代逐句检查，不把模型规划的visualIntent当事实证据。生产Prompt唯一源为config/html_semantic_qa_prompt.md，不把本操作Skill整篇传模型。
+
 ## 正式导出
+
+A05课程调度先读`docs/contracts/html-presentation/runtime/visual-v1/course-orchestration-0.1.0.md`。HTML项目沿原pipeline.run/status/resume（CLI run start/status/resume、MCP ppt_pipeline_*）或Web一键入口调用。resume保持课程LocalJob和阶段子任务ID；设计仍在逐页原入口确认，视觉/音频/A04签收独立，不用通用checkpoint.approve代写。restart/start_from不能绕过。刷新查询backend、job_id、children、historical；实际旧子任务unknown或提交ID丢失时停止，不换参数补发。正常生产与故障注入测试分开报告；完整真实整课仍需用户在既有停点审阅。
 
 正式 PPTX/视频先读 `docs/contracts/html-presentation/runtime/visual-v1/formal-export-0.1.0.md`，沿用原导出任务入口。任务固定整课有序快照，视频以页内缓存和整数帧重组；不得手动搬移缓存或强开 allow_legacy_unbound 绕过批准/音频/binding 门禁。检查作品 metadata.export_evidence 和实际可下载文件：分段命中也必须 hash/格式/全解码通过，数字人合成后再次校验最终文件。PPTX 仍为图片式页面，不能宣称可逐对象编辑。historical=true 是旧输入的有效历史结果，不能说成当前项目已完成；检查当前 artifact_state，不以成功任务代替当前输入签收。源码/工具/字体变化须重验，工程通过不代表视觉或真实供应商验收。
 
@@ -53,6 +63,8 @@ Skill 版本：1.11.0（2026-10-13）。目标是交付实际可打开、可编�
 在需要复现一页输入或核对检查版本时，先读 `docs/contracts/html-presentation/runtime/visual-v1/input-snapshot-0.1.0.md`。使用 `scripts/html_snapshot_check.py freeze-render --run-dir <run> --slide <id> --expected-revision <revision>`，随后 `review --snapshot <path>` 检查固定输入，展示返回的实际 HTML。generation 快照已由生产任务消费；恢复规则见 `docs/contracts/html-presentation/runtime/visual-v1/production-recovery-0.1.0.md`。同输入失败/中断可显式重提交，已返回响应复用但归一化与实际检查重做。intent/unknown、坏产物或过期 revision 必须先诊断；不要修改阶段账本或换一个无意义参数绕过阻断重复生图。取消不恢复；作者已保存而任务中断时先读取现有作品核实。QA 校验必须匹配期望快照和证据目录，不能只看报告的 passed。静态 review 检查终态；review-temporal --snapshot <path> --fps 30 --overlap-policy registered 检查全部输出帧和动作边界。先读 temporal-qa-0.1.0.md，核对原请求、coverage、clock、排除依据和证据哈希；帧间连续时间未数学证明，不能代替视觉/音频批准或正式导出门禁。重复补丁/候选或实际无改善提前停止，保留原作品和 stop_reason。不能替代下述作者编辑 API。
 
 恢复对账另读 `docs/contracts/html-presentation/runtime/visual-v1/production-recovery-0.2.0.md`。启动/同输入提交会先检查响应与作者 prepared/sealed 回执；完整作者提交直接补回原任务成功，无须重新规划。ToAPIs 有原 task_id 时只查旧任务；无 ID 的同步超时不补发。回执损坏、文件缺失、新版本或连接变化时停止，不编辑阶段账本或换参数绕过阻断。恢复成功仍不是视觉批准；检查返回的 reconciliation 和实际 editor 内容。
+
+若未知的同步模型调用前已经留下可重演的未保存候选，读 `docs/contracts/html-presentation/runtime/visual-v1/manual-candidate-review-0.1.0.md`。用 `html_review.manual_candidate` 查看绑定原失败任务的设计/截图/工程问题，再由真实评审者走 `html_review.manual_candidate_decision` 明确记录接受或驳回；工程失败只能驳回。决定不会恢复原任务、提交作者scene或批准正式视觉。没有用户的具体审阅决定时不要代写。
 
 1. 读html_editor.read，冻结revision；选定公开对象ID和scope。暂停帧仅用于定位，基础属性会影响对象整个生命周期。
 2. 根据问题选set_presentation、set_text_style、set_motion或set_binding；字段以生产Schema为准。字体/布局需scene0.5，服务显式升级；annotation不能覆盖其坐标空间。

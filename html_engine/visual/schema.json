@@ -1739,7 +1739,9 @@
             "text-card-outline",
             "text-card-soft",
             "header-badge",
-            "summary-panel"
+            "summary-panel",
+            "text-card-label",
+            "summary-relationship-panel"
           ]
         },
         "icon": {

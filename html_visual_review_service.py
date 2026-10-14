@@ -71,6 +71,7 @@ class HtmlReviewDependencies:
     node_bin: str = "node"
     review_script: Path = REVIEW_SCRIPT
     stage_timeout_sec: float = 240.0
+    planning_generator: Callable[..., Dict[str, Any]] | None = None
 
 
 def _sha256_bytes(payload: bytes) -> str:

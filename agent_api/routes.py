@@ -32,6 +32,7 @@ from agent_contract.models import (
     HtmlTaskResult,
     HtmlProduceRequest,
     HtmlDesignCandidateResult,
+    HtmlManualCandidateDecisionRequest, HtmlManualCandidateResult,
     HtmlPlanGenerationResult,
     HtmlPlanGenerateRequest,
     HtmlReviewReportResult,
@@ -944,11 +945,15 @@ def agent_pipeline_status(
         blocking_errors=op.blocking_errors,
         warnings=op.warnings,
         artifacts=op.artifacts,
+        backend=status_dict.get("backend", "image"),
+        job_id=status_dict.get("job_id"),
+        children=status_dict.get("children", {}),
+        historical=status_dict.get("historical", False),
     ).model_dump()
 
 
 _SSE_TERMINAL_STATES = frozenset({
-    "completed", "failed", "waiting_for_review", "waiting_for_user", "idle", "paused",
+    "completed", "failed", "waiting_for_review", "waiting_for_user", "idle", "paused", "interrupted",
 })
 _SSE_POLL_INTERVAL = 1.0
 _SSE_HEARTBEAT_INTERVAL = 15.0
@@ -1154,7 +1159,14 @@ def agent_list_checkpoints(
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """List available checkpoints for a project."""
-    _resolve_project(db, project_id)
+    project = _resolve_project(db, project_id)
+    if getattr(project, "visual_backend", "image") == "html":
+        return {"project_id": project_id, "approval_mode": "existing_stage_endpoints", "checkpoints": [
+            {"name": "design", "label": "本页设计确认", "capability": "html_review.produce"},
+            {"name": "visual", "label": "本页HTML视觉签收", "capability": "html_review.approve"},
+            {"name": "audio", "label": "音频试听确认", "web_path": f"/api/projects/{project_id}/steps/7/confirm"},
+            {"name": "semantic", "label": "逐句语义人工签收", "capability": "html_semantic.decision"},
+        ]}
     return {
         "project_id": project_id,
         "checkpoints": [
@@ -1173,6 +1185,8 @@ def agent_approve_checkpoint(
 ) -> dict[str, Any]:
     """Approve or reject a pipeline checkpoint."""
     project = _resolve_project(db, project_id)
+    if getattr(project, "visual_backend", "image") == "html":
+        raise ValidationFailedError("HTML课程须在原逐页设计、视觉、音频和语义入口签收；通用checkpoint不能代写批准")
     get_checkpoint(checkpoint)
     if payload.checkpoint != checkpoint:
         raise ValidationFailedError("Checkpoint in the path and request body must match")
@@ -1737,6 +1751,24 @@ def agent_html_design_current(project_id: str, slide_id: str, db: Session = Depe
     return HtmlDesignCandidateResult(project_id=project_id, design=design_current(project_id, slide_id, db)["design"])
 
 
+@router.get("/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}", response_model=HtmlManualCandidateResult)
+def agent_html_manual_candidate(project_id: str, slide_id: str, job_id: str, db: Session = Depends(get_db)):
+    from html_visual_review_routes import manual_candidate
+    _html_project_or_404(project_id, db)
+    return HtmlManualCandidateResult(project_id=project_id, slide_id=slide_id,
+                                     candidate=manual_candidate(project_id, slide_id, job_id, db)["candidate"])
+
+
+@router.post("/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision", response_model=HtmlManualCandidateResult)
+def agent_html_manual_candidate_decision(project_id: str, slide_id: str, job_id: str,
+                                         payload: HtmlManualCandidateDecisionRequest, db: Session = Depends(get_db)):
+    from html_visual_review_routes import manual_candidate_decision
+    _html_project_or_404(project_id, db)
+    result = manual_candidate_decision(project_id, slide_id, job_id,
+                                       payload, db)
+    return HtmlManualCandidateResult(project_id=project_id, slide_id=slide_id, candidate=result["candidate"])
+
+
 @router.get("/projects/{project_id}/html-review/tasks/{job_id}", response_model=HtmlTaskResult)
 def agent_html_task_status(project_id: str, job_id: str, db: Session = Depends(get_db)):
     from html_visual_review_routes import task_status
@@ -1793,3 +1825,27 @@ def agent_html_repair_evidence(project_id: str, slide_id: str, payload: Temporal
 def agent_html_repair_generate(project_id: str, slide_id: str, payload: RepairGenerateRequest, db: Session = Depends(get_db)):
     from html_visual_routes import html_repair_generate
     return _html_editor_web_call(html_repair_generate, project_id, slide_id, payload, db)
+
+
+from html_semantic_qa_models import SemanticSubmitRequest,SemanticDecisionRequest,SemanticResult
+
+
+@router.post("/projects/{project_id}/html-review/{slide_id}/semantic/submit",response_model=SemanticResult)
+def agent_semantic_submit(project_id:str,slide_id:str,payload:SemanticSubmitRequest,db:Session=Depends(get_db)):
+    from html_visual_review_routes import _semantic_dispatch
+    _html_project_or_404(project_id,db)
+    return _semantic_dispatch("submit",project_id,slide_id,payload,db)
+
+
+@router.get("/projects/{project_id}/html-review/{slide_id}/semantic/status",response_model=SemanticResult)
+def agent_semantic_status(project_id:str,slide_id:str,db:Session=Depends(get_db)):
+    from html_visual_review_routes import _semantic_dispatch
+    _html_project_or_404(project_id,db)
+    return _semantic_dispatch("status",project_id,slide_id,None,db)
+
+
+@router.post("/projects/{project_id}/html-review/{slide_id}/semantic/decision",response_model=SemanticResult)
+def agent_semantic_decision(project_id:str,slide_id:str,payload:SemanticDecisionRequest,db:Session=Depends(get_db)):
+    from html_visual_review_routes import _semantic_dispatch
+    _html_project_or_404(project_id,db)
+    return _semantic_dispatch("decision",project_id,slide_id,payload,db)

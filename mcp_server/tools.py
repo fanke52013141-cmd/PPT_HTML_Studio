@@ -250,6 +250,14 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
         pid = args.get("project_id", "")
         return client.generate_digital_human(pid)
 
+    if cap_id.startswith("html_semantic."):
+        action=cap_id.split(".")[1]
+        project,slide=args.get("project_id",""),args.get("slide_id","")
+        payload={k:v for k,v in args.items() if k not in ("project_id","slide_id")}
+        if action=="status":
+            return client.html_semantic_status(project,slide)
+        return getattr(client,"html_semantic_"+action)(project,slide,payload)
+
     if cap_id == "html_visual.status":
         return client.get_html_visual_status(args.get("project_id", ""))
     if cap_id == "html_visual.scene_read":
@@ -283,6 +291,11 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
             **{k: args[k] for k in ("design_candidate_key", "design_instruction", "asset_instruction") if k in args})
     if cap_id == "html_review.design_current":
         return client.get_html_design_current(args.get("project_id", ""), args.get("slide_id", ""))
+    if cap_id == "html_review.manual_candidate":
+        return client.html_manual_candidate(args.get("project_id", ""), args.get("slide_id", ""), args.get("job_id", ""))
+    if cap_id == "html_review.manual_candidate_decision":
+        return client.html_manual_candidate_decision(args.get("project_id", ""), args.get("slide_id", ""), args.get("job_id", ""),
+            {k: args[k] for k in ("key", "decision", "note") if k in args})
     if cap_id == "html_review.task_status":
         return client.html_task_status(args.get("project_id", ""), args.get("job_id", ""))
     if cap_id == "html_review.task_cancel":

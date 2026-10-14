@@ -24,3 +24,4 @@ class ProjectModelBindingUpdate(BaseModel):
     expected_revision: int = Field(ge=0)
     text: ModelBindingSelection
     image: ModelBindingSelection
+    planning: ModelBindingSelection | None = None

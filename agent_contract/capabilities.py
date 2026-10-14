@@ -20,9 +20,11 @@ from enum import Enum
 from typing import Optional, Type
 
 from pydantic import BaseModel
+from html_semantic_qa_models import SemanticSubmitRequest, SemanticDecisionRequest, SemanticReadRequest, SemanticResult
 from html_production_models import HtmlProduceRequest
 from html_repair_models import RepairRequest, RepairSaveRequest, TemporalRequest, RepairGenerateRequest, RepairResult
 from agent_contract.models import HtmlDesignCandidateResult
+from agent_contract.models import HtmlManualCandidateDecisionRequest, HtmlManualCandidateResult
 from html_asset_sheet_models import (HtmlSheetReadRequest, HtmlSheetGenerateRequest,
                                     HtmlSheetReviewRequest, HtmlSheetAcceptRequest, HtmlSheetResult, HtmlSheetRetryRequest)
 
@@ -136,8 +138,20 @@ CAPABILITIES: list[AgentCapability] = [
             ('retry', 'POST', '/{sheet_id}/{request_key}/{asset_id}/retry', HtmlSheetRetryRequest, 'Regenerate only one unaccepted declared object into an independent candidate. Expected revision, optional corrected need/direction; original assets and human edits preserved.'),
         ]
     ],
+    *[
+        AgentCapability(id="html_semantic."+action,version="1.0",status=CapabilityStatus.stable,
+            description=description,request_model=request,response_model=SemanticResult,
+            agent_api_method=method,agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/"+action,
+            mcp_tool_name="ppt_html_semantic_"+action,cli_command="html semantic-"+action,
+            service_ref="html_semantic_review_service."+("review" if action=="submit" else "decide" if action=="decision" else "status"))
+        for action,method,request,description in [
+            ("submit","POST",SemanticSubmitRequest,"Submit persistent independent audio-bound beat/frame semantic QA with frozen multimodal model and expected_revision; no human/audio approval. Unknown requests never blindly repeat."),
+            ("status","GET",SemanticReadRequest,"Read current per-beat semantic evidence and separate engineering/audio/human states; verify original source and frame hashes, stale evidence cannot pass."),
+            ("decision","POST",SemanticDecisionRequest,"Record an explicit human semantic approval/rejection of the current report key with revision and note. Engineering failures and semantic omissions/contradictions cannot be approved.")
+        ]
+    ],
     AgentCapability(
-        id="project_model_binding.read", version="1.0", status=CapabilityStatus.stable,
+        id="project_model_binding.read", version="1.1", status=CapabilityStatus.stable,
         description="Read account-scoped HTML project model references and redacted effective summaries; legacy/inherit/fixed modes, no credentials or endpoints.",
         request_model=ProjectModelBindingReadRequest, response_model=ProjectModelBindingResult,
         agent_api_method="GET", agent_api_path="/api/agent/v1/projects/{project_id}/model-binding",
@@ -145,8 +159,8 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_model_binding_service.get_project_model_binding",
     ),
     AgentCapability(
-        id="project_model_binding.write", version="1.0", status=CapabilityStatus.stable,
-        description="Save HTML project text/image model references with expected_revision and explicit rebind. No-op preserves work; changes apply to future generation only. Stale revision returns 409.",
+        id="project_model_binding.write", version="1.1", status=CapabilityStatus.stable,
+        description="Save HTML project visual text/image and optional independent planning model references (omitted planning preserves its binding) with expected_revision and explicit rebind. No-op preserves work; changes apply to future generation only. Stale revision returns 409.",
         request_model=ProjectModelBindingSaveRequest, response_model=ProjectModelBindingSaveResult,
         agent_api_method="PUT", agent_api_path="/api/agent/v1/projects/{project_id}/model-binding",
         mcp_tool_name="ppt_project_model_binding_write", cli_command="html model-write",
@@ -266,6 +280,24 @@ CAPABILITIES: list[AgentCapability] = [
         agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/design/current",
         mcp_tool_name="ppt_html_design_current", cli_command="html design-current",
         service_ref="html_design_candidates.current_design",
+    ),
+    AgentCapability(
+        id="html_review.manual_candidate", version="1.0", status=CapabilityStatus.stable,
+        description="Read one unsaved candidate after an unqueryable model outcome; original task, design, preview and engineering facts stay distinct from approval.",
+        request_model=BaseModel, response_model=HtmlManualCandidateResult,
+        agent_api_method="GET",
+        agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}",
+        mcp_tool_name="ppt_html_manual_candidate", cli_command="html manual-candidate",
+        service_ref="html_manual_candidate_review.inspect_candidate",
+    ),
+    AgentCapability(
+        id="html_review.manual_candidate_decision", version="1.0", status=CapabilityStatus.stable,
+        description="Record an explicit human accept/reject with evidence note for the exact unsaved candidate. Does not save author scene, retry provider, or grant visual approval.",
+        request_model=HtmlManualCandidateDecisionRequest, response_model=HtmlManualCandidateResult,
+        agent_api_method="POST",
+        agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision",
+        mcp_tool_name="ppt_html_manual_candidate_decision", cli_command="html manual-candidate-decision",
+        service_ref="html_manual_candidate_review.decide_candidate",
     ),
     AgentCapability(
         id="html_review.task_status", version="1.1", status=CapabilityStatus.stable,
@@ -448,9 +480,9 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="pipeline.run",
-        version="1.1",
+        version="1.2",
         status=CapabilityStatus.stable,
-        description="Start or resume the automated pipeline. Supports stop_at checkpoints.",
+        description="Start or resume the automated pipeline. HTML courses coordinate persistent original stage jobs and require existing per-page approvals; HTML restart/start_from bypass is refused.",
         request_model=PipelineRunRequest,
         response_model=PipelineRunResult,
         agent_api_method="POST",
@@ -462,9 +494,9 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="pipeline.status",
-        version="1.1",
+        version="1.2",
         status=CapabilityStatus.stable,
-        description="Get current pipeline status including stage progress and blocking errors.",
+        description="Get current pipeline status, stage progress, blocking errors and HTML course child task IDs/current versus historical state.",
         request_model=BaseModel,
         response_model=PipelineStatusResult,
         agent_api_method="GET",
@@ -475,7 +507,7 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="pipeline.resume",
-        version="1.1",
+        version="1.2",
         status=CapabilityStatus.stable,
         description="Resume a paused or failed pipeline from the last checkpoint.",
         request_model=PipelineResumeRequest,
@@ -504,9 +536,9 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="checkpoint.approve",
-        version="1.0",
+        version="1.1",
         status=CapabilityStatus.stable,
-        description="Approve or reject a pipeline checkpoint to continue or halt.",
+        description="Approve or reject an image pipeline checkpoint. HTML courses require original per-page design, visual, audio and semantic decisions; generic approval is refused.",
         request_model=CheckpointApproveRequest,
         response_model=CheckpointResult,
         agent_api_method="POST",
@@ -690,9 +722,9 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="checkpoint.list",
-        version="1.0",
+        version="1.1",
         status=CapabilityStatus.stable,
-        description="List the pipeline checkpoints available for a project.",
+        description="List project checkpoints; HTML lists original stage approval capabilities or Web audio confirmation path.",
         request_model=BaseModel,
         response_model=CheckpointListResult,
         agent_api_method="GET",

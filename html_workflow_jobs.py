@@ -56,6 +56,7 @@ class HtmlWorkflowJobs:
             return {**recovered, "reused": True, "reconciled": True}
         if frozen is not None:
             frozen.text.require_ready()
+            (frozen.planning or frozen.text).require_ready()
             if not options.get("design_candidate_key"):
                 frozen.image.require_ready()  # Every new page requires a full design reference.
         from html_build_snapshot import create_generation_snapshot
@@ -64,7 +65,7 @@ class HtmlWorkflowJobs:
             expected_revision=_read_revision(project.run_dir)["revision"], options=options,
             model_identity={name: {"provider": part.get("provider"), "model": part.get("model"),
                                   "config_digest": part.get("config_hash")}
-                            for name in ("text", "image") if (part := model_summary.get(name))},
+                            for name in ("text", "image", "planning") if (part := model_summary.get(name))},
         )
         if expected_snapshot is not None and snapshot["snapshot_id"] != expected_snapshot:
             raise store.HtmlTaskError("原任务代码、模型或依赖已变化；不能作为原请求继续", 409)
@@ -174,10 +175,14 @@ class HtmlWorkflowJobs:
                 if frozen is not None:
                     deps = replace(self.deps, json_generator=partial(
                         self.deps.json_generator, model_binding=frozen.text,
+                    ), planning_generator=partial(
+                        self.deps.json_generator, model_binding=frozen.planning or frozen.text,
                     ))
                     provider = partial(self.provider, model_binding=frozen.image)
                     extra["model_summary"] = frozen.summary()
                 deps = replace(deps, json_generator=stages.wrap(deps.json_generator, "json"))
+                if deps.planning_generator is not None:
+                    deps = replace(deps, planning_generator=stages.wrap(deps.planning_generator, "json"))
                 if provider is not None:
                     provider = stages.wrap(provider, "image")
                 extra["stage_record"] = stages.record

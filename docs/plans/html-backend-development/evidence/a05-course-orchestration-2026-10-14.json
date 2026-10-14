@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-14",
+  "contract_version": "0.9.40",
+  "agent_api_version": "1.28.0",
+  "definition": "course-orchestration-0.1.0",
+  "implementation": "original one-click HTML branch; existing LocalJob parent and original stage job IDs",
+  "verification": {
+    "final_joint_pytest": {"passed": 213, "failed": 0, "seconds": 43.82},
+    "process_restart": {
+      "test": "checks/test_html_course_jobs.py::test_course_and_child_ids_survive_actual_python_process_restart",
+      "pages": 3,
+      "separate_python_processes": 3,
+      "states": ["running after injected process loss", "interrupted then waiting_for_review", "succeeded after simulated explicit fixture approval"],
+      "same_parent_id": true,
+      "same_registered_child_id": true,
+      "stage_creations": {"html_page_1": 1, "html_page_2": 1, "html_page_3": 1, "tts": 1, "semantic_page_1": 1, "semantic_page_2": 1, "semantic_page_3": 1, "render": 1},
+      "providers": "explicit local stage doubles, not supplier media",
+      "database": "isolated temporary SQLite; shared production LocalJob schema"
+    },
+    "negative_cases": ["unknown storyboard never reissued", "child submission ID loss blocks replacement", "semantic failure blocks render", "cancelled parent never revives", "source/order change becomes historical", "completed output revalidated", "manual scene preserved on source mismatch", "article update rejects stale storyboard", "generic HTML checkpoint approval refused", "restart/start_from bypass refused"],
+    "real_file_adapter_checks": ["modern scene/plan/binding and audio window", "HTML TTS completion avoids raster Reveal builder", "author files unchanged", "mismatched audio source rejected"],
+    "model_routing": "frozen HTML planning model, GLM enabled thinking, temperature 1, max_tokens 64000, timeout 600 checked with explicit fixture model",
+    "frontend": "original one-click row rendering in VM; image eight-step rows retained; HTML six-stage rows; queued polling ownership checks",
+    "ruff": "passed",
+    "agent_generated_contract": "passed",
+    "git_diff_check": "passed"
+  },
+  "new_paid_model_requests": 0,
+  "new_tts_requests": 0,
+  "new_image_requests": 0,
+  "user_approvals_written": 0,
+  "normal_application_full_course_supplier_acceptance": "not_tested",
+  "actual_user_visual_listening_semantic_approval": "pending",
+  "limits": ["process tests use synthetic stage outputs and synthetic approval state", "no real full-service restart or normal browser full-course supplier run in this increment", "unknown TTS/video failures do not automatically create replacement jobs", "three-page fault test is not five-page Token course product acceptance", "A04 real single-page evidence remains separate"]
+}

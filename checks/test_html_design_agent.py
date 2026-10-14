@@ -114,3 +114,27 @@ def test_asset_problem_stops_static_loop_and_preserves_author(case):
         reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"])
     assert caught.value.code=="DESIGN_REVIEW_ROUTED" and len(calls)==3 and scene==before
     assert not (run/"planning/html_visual/scene-token-03.json").exists()
+
+
+def test_new_component_choices_apply_before_layout_without_guessing_geometry(tmp_path):
+    from html_design_agent import component_context, validate_understanding, apply_allocations
+    from html_visual_review_service import HtmlReviewDependencies, review_scene
+    root=Path(__file__).resolve().parents[1]
+    folder=root/"html_engine/visual/fixtures/presentation-details"
+    scene=json.loads((folder/"source-scene.json").read_text(encoding="utf-8"))
+    binding=json.loads((folder/"binding.json").read_text(encoding="utf-8"))
+    contract=json.loads((folder/"contract.json").read_text(encoding="utf-8"))
+    context=component_context(scene,root)
+    objects=[]
+    for n in scene["nodes"]:
+        variant="text-card-label" if n["id"].startswith("stat-") else "summary-relationship-panel" if n["type"]=="summary" else "plain"
+        icon={"stat-input":"speech","stat-output":"document","stat-pricing":"coins","billing-summary":"check-plain"}.get(n["id"])
+        objects.append({"targetId":n["id"],"owner":"code","assetMode":"none","variant":variant,"icon":icon,"appearance":"registered engineering fixture"})
+    result=validate_understanding({"status":"ready","objects":objects,"issues":[]},context)
+    updated,operations=apply_allocations(scene,binding,{"result":result},run_dir=tmp_path,beats=contract["narration_beats"])
+    assert updated["motion"]==scene["motion"]
+    assert all(set(n.get("presentation",{})) <= {"variant","icon"} for n in updated["nodes"])
+    assert len(operations)==len(scene["nodes"])
+    report=review_scene(updated,run_dir=tmp_path,deps=HtmlReviewDependencies(root,lambda **kw:None),diagnostic=True)
+    assert not report["passed"] and report.get("geometry")
+    assert any("registered variant requires" in issue.get("message","") for issue in report.get("capacityIssues",[]))

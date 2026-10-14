@@ -114,11 +114,21 @@ def generate_plan(
     run_dir = project_run_dir_or_500(project)
     contract_slide = _contract_slide(run_dir, slide_id)
     try:
+        generator = _dependencies.json_generator
+        from json_llm_service import generate_json_with_configured_llm
+        if generator is generate_json_with_configured_llm:
+            from functools import partial
+            from project_model_binding_service import freeze_project_models, ModelBindingError
+            try:
+                frozen = freeze_project_models(project, required=("planning",))
+            except ModelBindingError as exc:
+                raise HTTPException(400, str(exc)) from None
+            generator = partial(generator, model_binding=frozen.planning or frozen.text)
         plan = review.generate_scene_plan(
             contract_slide,
             run_dir=run_dir,
             repo_root=_dependencies.repo_root,
-            json_generator=_dependencies.json_generator,
+            json_generator=generator,
             brief=payload.brief,
             plan_version=payload.plan_version,
         )
@@ -279,15 +289,72 @@ def task_status(project_id: str, job_id: str, db: Any = Depends(_get_db)):
     return {"success": True, "task": task_view(_task(project_id, job_id, db), project_run_dir_or_500(project))}
 
 
+from agent_contract.models import HtmlManualCandidateDecisionRequest
+
+
+def _manual_candidate(project_id, slide_id, job_id, db):
+    from html_manual_candidate_review import inspect_candidate, ManualCandidateError
+    project = _html_project(project_id, db)
+    _contract_slide(project_run_dir_or_500(project), slide_id)
+    try:
+        return inspect_candidate(_task(project_id, job_id, db), project_run_dir_or_500(project),
+                                 slide_id, _service_deps().repo_root)
+    except (ManualCandidateError, ValueError, KeyError, OSError) as exc:
+        raise HTTPException(getattr(exc, "status_code", 409), getattr(exc, "code", "CANDIDATE_UNAVAILABLE")) from None
+
+
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}")
+def manual_candidate(project_id: str, slide_id: str, job_id: str, db: Any = Depends(_get_db)):
+    from html_manual_candidate_review import public_candidate
+    packet = _manual_candidate(project_id, slide_id, job_id, db)
+    base = f"/api/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}"
+    return {"success": True, "candidate": {**public_candidate(packet),
+            "preview_url": base + "/preview", "design_url": base + "/design"}}
+
+
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/preview")
+def manual_candidate_preview(project_id: str, slide_id: str, job_id: str, db: Any = Depends(_get_db)):
+    from fastapi.responses import FileResponse
+    return FileResponse(_manual_candidate(project_id, slide_id, job_id, db)["_preview"],
+                        media_type="image/png", headers={"Cache-Control": "no-store"})
+
+
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/design")
+def manual_candidate_design(project_id: str, slide_id: str, job_id: str, db: Any = Depends(_get_db)):
+    from fastapi.responses import FileResponse
+    return FileResponse(_manual_candidate(project_id, slide_id, job_id, db)["_design"],
+                        media_type="image/png", headers={"Cache-Control": "no-store"})
+
+
+@router.post("/api/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision")
+def manual_candidate_decision(project_id: str, slide_id: str, job_id: str,
+                              payload: HtmlManualCandidateDecisionRequest, db: Any = Depends(_get_db)):
+    from html_manual_candidate_review import decide_candidate, ManualCandidateError
+    from account_context import get_current_account_id
+    project = _html_project(project_id, db)
+    _contract_slide(project_run_dir_or_500(project), slide_id)
+    try:
+        result = decide_candidate(_task(project_id, job_id, db), project_run_dir_or_500(project),
+                                  slide_id, _service_deps().repo_root,
+                                  actor_id=get_current_account_id(), **payload.model_dump())
+        return {"success": True, "candidate": result}
+    except (ManualCandidateError, ValueError, KeyError, OSError) as exc:
+        raise HTTPException(getattr(exc, "status_code", 409), getattr(exc, "code", "CANDIDATE_DECISION_FAILED")) from None
+
+
 @router.post("/api/projects/{project_id}/html-review/tasks/{job_id}/resume")
 def task_resume(project_id: str, job_id: str, db: Any = Depends(_get_db)):
     from html_task_store import HtmlTaskError, task_view
     project = _html_project(project_id, db)
     job = _task(project_id, job_id, db)
-    if _jobs is None:
+    if _jobs is None and job.job_type != "html_semantic_review":
         raise HTTPException(503, "HTML 生产任务服务未配置")
     try:
-        resumed = _jobs.resume(db, project, job)
+        if job.job_type == "html_semantic_review":
+            from html_semantic_review_jobs import configured_jobs
+            resumed = configured_jobs().resume(db,project,job)
+        else:
+            resumed = _jobs.resume(db, project, job)
         return {"success": True, "task": {**resumed, **task_view(_task(project_id, resumed["id"], db), project_run_dir_or_500(project))}}
     except HtmlTaskError as exc:
         raise HTTPException(exc.status_code, str(exc)) from exc
@@ -321,3 +388,54 @@ def screenshot(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
     return FileResponse(
         path, media_type="image/png", headers={"Cache-Control": "no-store"}
     )
+
+
+# A04: same account/project gates, task store and services for Web and Agent.
+from html_semantic_qa_models import SemanticSubmitRequest, SemanticDecisionRequest
+
+
+def _semantic_dispatch(mode,project_id,slide_id,payload,db):
+    from html_semantic_review_jobs import configured_jobs
+    from html_semantic_review_service import status,decide,current_task
+    from html_visual_store import HtmlVisualConflict
+    from html_task_store import HtmlTaskError
+    project=_html_project(project_id,db)
+    run=project_run_dir_or_500(project)
+    try:
+        if mode=="submit":
+            return {"success":True,"task":configured_jobs().submit(db,project,slide_id,payload)}
+        result=decide(run,slide_id,payload,_dependencies.repo_root) if mode=="decision" else status(run,slide_id,_dependencies.repo_root)
+        return {"success":True,"semantic_qa":result,"task":current_task(db,project,slide_id)}
+    except HtmlVisualConflict as error:
+        raise HTTPException(409,str(error)) from None
+    except HtmlTaskError as error:
+        raise HTTPException(error.status_code,str(error)) from None
+    except (ValueError,OSError,KeyError,StopIteration) as error:
+        raise HTTPException(400,getattr(error,"code","SEMANTIC_INPUT_INVALID")) from None
+
+
+@router.post("/api/projects/{project_id}/html-review/{slide_id}/semantic/submit")
+def semantic_submit(project_id:str,slide_id:str,payload:SemanticSubmitRequest,db:Any=Depends(_get_db)):
+    return _semantic_dispatch("submit",project_id,slide_id,payload,db)
+
+
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/semantic/status")
+def semantic_status(project_id:str,slide_id:str,db:Any=Depends(_get_db)):
+    return _semantic_dispatch("status",project_id,slide_id,None,db)
+
+
+@router.post("/api/projects/{project_id}/html-review/{slide_id}/semantic/decision")
+def semantic_decision(project_id:str,slide_id:str,payload:SemanticDecisionRequest,db:Any=Depends(_get_db)):
+    return _semantic_dispatch("decision",project_id,slide_id,payload,db)
+
+
+@router.get("/api/projects/{project_id}/html-review/{slide_id}/semantic/frame")
+def semantic_frame(project_id:str,slide_id:str,key:str,beat:int,edge:int,db:Any=Depends(_get_db)):
+    from fastapi.responses import FileResponse
+    from html_semantic_review_service import folder,status
+    project=_html_project(project_id,db)
+    run=project_run_dir_or_500(project)
+    current=status(run,slide_id,_dependencies.repo_root)
+    if current.get("key")!=key or not 0<=beat<len(current.get("beats",[])) or edge not in (0,1,2):
+        raise HTTPException(404,"语义帧不存在或已过期")
+    return FileResponse(folder(run,slide_id)/key/"frames"/f"beat-{beat}-{edge}.png",media_type="image/png")

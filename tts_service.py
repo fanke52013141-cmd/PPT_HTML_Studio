@@ -454,6 +454,14 @@ def _load_beats_by_slide(
 
 def _run_bind_reveal_timeline(project: Any) -> Any:
     """有界运行 bind_reveal_timeline 子进程（审查 M-09 去重）。"""
+    if getattr(project, "visual_backend", "image") == "html":
+        from subprocess import CompletedProcess
+        from html_audio_binding_service import validate_course_audio_bindings
+        try:
+            evidence = validate_course_audio_bindings(project.run_dir)
+            return CompletedProcess(["html-audio-binding"], 0, stdout=json.dumps(evidence, ensure_ascii=False), stderr="")
+        except Exception as error:
+            return CompletedProcess(["html-audio-binding"], 1, stdout="", stderr="HTML_AUDIO_BINDING_INVALID:" + str(getattr(error, "code", type(error).__name__)))
     bind_script = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "scripts", "bind_reveal_timeline.py")
     )

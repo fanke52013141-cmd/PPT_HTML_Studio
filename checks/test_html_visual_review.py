@@ -228,7 +228,7 @@ def test_review_routes_registered_and_gated() -> None:
 
 def test_first_request_contains_consumable_output_contract_and_resolved_refs():
     caps = review._registered_capabilities(REPO_ROOT)
-    assert caps["catalog"]["icons"] == ["air","arrow","check","droplet","eye","lightbulb","molecule","thermometer"]
+    assert caps["catalog"]["icons"] == ["air","arrow","check","check-plain","coins","document","droplet","eye","lightbulb","molecule","speech","thermometer"]
     prompt = review.build_plan_generation_prompts(CONTRACT_SLIDE, caps)
     assert "必须输出的顶层结构" in prompt["system_prompt"]
     assert '"slots"' in prompt["system_prompt"] and '"objects"' in prompt["system_prompt"]

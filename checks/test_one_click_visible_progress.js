@@ -2,10 +2,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../static/one_click_extension.js'), 'utf8');
-const block = source.slice(source.indexOf('    const visibleStages = ['), source.indexOf('    // 阶段变化时同步切换'));
-function render(list, state, features = {}) {
+const block = source.slice(source.indexOf('    const visibleStages = ('), source.indexOf('    // 阶段变化时同步切换'));
+function render(list, state, features = {}, status = {backend:'image'}) {
   const stages = {innerHTML: '', querySelectorAll: () => []};
-  vm.runInNewContext(block, {list, state, stages, features, esc: x => String(x), statusLabel: x => x});
+  vm.runInNewContext(block, {list, state, stages, features, status, esc: x => String(x), statusLabel: x => x});
   return stages.innerHTML;
 }
 const paused = render([{id:'narration',status:'done'},{id:'tts',status:'running',message:'synthesizing'}], 'paused');
@@ -27,3 +27,8 @@ const partial = render([{id:'render',status:'done'}], 'completed', {handwritten_
 assert.equal((partial.match(/<article/g) || []).length, 7);
 assert.match(partial, /7 数字人讲解.*?done/s);
 console.log('one-click visible progress checks passed');
+const html = render([{id:'html_pages',status:'waiting_for_review',message:'confirm actual design'}], 'waiting_for_review', {}, {backend:'html'});
+assert.equal((html.match(/<article/g) || []).length, 6);
+assert.match(html, /设计与HTML.*?paused/s);
+assert.match(html, /逐句语义审核|当前签收/);
+assert.doesNotMatch(html, /AI 标注|勾画标注/);

@@ -13,6 +13,18 @@ from project_config_runtime import (
 )
 
 
+def resolve_html_step2_llm(project):
+    """HTML source planning follows the same frozen planning phase as its pages."""
+    from project_model_binding_service import freeze_project_models
+    from json_llm_service import _request_options
+    frozen = freeze_project_models(project, required=("planning",))
+    model = frozen.planning or frozen.text
+    model.require_ready()
+    return ((model.api_key, model.endpoint, model.model,
+             model.temperature if model.temperature is not None else 0.2,
+             model.max_tokens or 64000), _request_options(model.model, model))
+
+
 def read_step2_prompts_for_project(
     project: Any,
     *,

@@ -38,6 +38,9 @@
     narration: 6,
     tts: 6,
     render: 8,
+    html_pages: 3,
+    semantic: 3,
+    approvals: 3,
   };
   const STAGE_LABELS = {
     preflight: '1 导入文章 · 预检查',
@@ -48,6 +51,9 @@
     narration: '5 旁白与音频 · 演讲稿',
     tts: '5 旁白与音频 · 语音合成',
     render: '8 作品输出 · 渲染视频',
+    html_pages: '3 设计与HTML',
+    semantic: '逐句语义审核',
+    approvals: '当前签收',
   };
   const STATUS_LABELS = {
     idle: '未开始',
@@ -59,6 +65,10 @@
     cancelled: '已取消',
     pending: '待处理',
     success: '已完成',
+    queued: '已排队',
+    waiting_for_review: '等待审阅',
+    waiting_for_user: '等待配置或输入',
+    interrupted: '已中断',
   };
 
   function stageLabel(value) {
@@ -292,8 +302,8 @@
     if (state !== 'running') STATE.pauseRequested = false;
     const pauseButton = document.getElementById('btn-one-click-pause');
     if (pauseButton) {
-      pauseButton.hidden = state !== 'running';
-      pauseButton.disabled = state !== 'running' || STATE.pauseRequestInFlight || STATE.pauseRequested;
+      pauseButton.hidden = !['running', 'queued'].includes(state);
+      pauseButton.disabled = !['running', 'queued'].includes(state) || STATE.pauseRequestInFlight || STATE.pauseRequested;
       pauseButton.textContent = STATE.pauseRequested ? '正在暂停…' : '暂停生成';
     }
     // [轮询自愈 20260904] 本地数据新鲜度：running 态下轮询每 2.5 秒重渲染，
@@ -320,6 +330,7 @@
     summary.innerHTML = `
       <strong>状态：</strong><span class="one-click-pill ${esc(state)}">${esc(statusLabel(state))}</span>
       ${current ? `<span style="margin-left:.5rem;">当前阶段：${esc(stageLabel(current))}</span>` : ''}
+      ${status?.message ? `<br><small>${esc(status.message)}${status.slide_id ? `（${esc(status.slide_id)}）` : ''}</small>` : ''}
       ${state === 'running' ? '<br><small>系统会复用已完成且仍有效的产物；你可以继续查看已解锁步骤。</small>' : ''}
       ${status?.run_started_at || status?.started_at ? `<br><small>本次开始：${esc(status.run_started_at || status.started_at)}　${state === 'running' ? '已用' : '总耗时'}：${esc(formatElapsedSeconds(status.run_elapsed_seconds))}</small>` : ''}
       ${status?.run_finished_at ? `<br><small>本次结束：${esc(status.run_finished_at)}</small>` : ''}
@@ -328,12 +339,16 @@
     `;
     const list = Array.isArray(status?.stages) ? status.stages : [];
     const features = window.PPTFlow?.distributionFeatures() || {};
-    const visibleStages = [
+    const visibleStages = (status?.backend === 'html' ? [
+      ['2 内容规划', ['storyboard']], ['3 设计与HTML', ['html_pages']],
+      ['5 旁白与音频', ['narration', 'tts']], ['逐句语义审核', ['semantic']],
+      ['当前签收', ['approvals']], ['8 作品输出', ['render']],
+    ] : [
       ['1 导入文章', ['preflight']], ['2 分镜规划', ['storyboard']],
       ['3 图片生成', ['images', 'confirm_images']], ['4 AI 标注', ['ai_mask']],
       ['5 旁白与音频', ['narration', 'tts']], ['6 勾画标注', ['annotation']],
       ['7 数字人讲解', ['digital_human']], ['8 作品输出', ['render']],
-    ].filter(([, stageIds]) => {
+    ]).filter(([, stageIds]) => {
       if (stageIds.includes('annotation') && features.handwritten_annotations === false) return false;
       if (stageIds.includes('digital_human') && features.digital_human === false) return false;
       return true;
@@ -346,7 +361,7 @@
       let cardStatus = 'pending';
       if (members.some(item => item.status === 'failed')) cardStatus = 'failed';
       else if (members.some(item => item.status === 'running')) cardStatus = state === 'paused' ? 'paused' : 'running';
-      else if (members.some(item => item.status === 'paused')) cardStatus = 'paused';
+      else if (members.some(item => ['paused', 'waiting_for_review', 'waiting_for_user', 'interrupted'].includes(item.status))) cardStatus = 'paused';
       else if (members.length && ids.every(id => members.some(item => item.id === id && finished(item)))) cardStatus = 'done';
       else if (!members.length && (ids.includes('annotation') || ids.includes('digital_human')) && renderReached) cardStatus = 'done';
       const errors = members.flatMap(item => item.blocking_errors?.length ? item.blocking_errors : item.status === 'failed' && item.message ? [item.message] : []);
@@ -401,7 +416,7 @@
     STATE.lastRefreshAt = Date.now();
     renderStatus(result.status || {});
     const state = result.status?.status;
-    if (state === 'running') startPolling();
+    if (['running', 'queued'].includes(state)) startPolling();
     else stopPolling();
     return result.status;
   }
@@ -508,7 +523,9 @@
     try {
       const result = await apiPost(`/api/projects/${encodeURIComponent(projectId)}/one-click-generate`, { mode });
       if (window.state?.currentProject) {
-        Object.assign(window.state.currentProject, { production_mode: 'one_click', presentation_mode: 'full_frame', mask_enabled: false });
+        Object.assign(window.state.currentProject, window.state.currentProject.visual_backend === 'html'
+          ? { production_mode: 'one_click' }
+          : { production_mode: 'one_click', presentation_mode: 'full_frame', mask_enabled: false });
         window.renderProductionModeSummary?.();
       }
       renderStatus(result.status || {});

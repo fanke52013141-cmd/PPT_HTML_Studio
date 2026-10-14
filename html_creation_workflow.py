@@ -276,6 +276,9 @@ def target_readiness(
         for slide_id in slides:
             issues.extend(_validate_slide_binding(run, slide_id))
 
+    from html_semantic_review_service import status as semantic_status
+    semantic_qa={slide:semantic_status(run,slide,repo) for slide in slides}
+    issues.extend(_issue("SEMANTIC_QA_REQUIRED", f"逐句语义审阅未通过或未人工签收：{item.get("reason")}",slide) for slide,item in semantic_qa.items() if item["required"] and not item["valid"])
     digital_state, digital_issues, digital_enabled = _digital_human_state(run)
     if digital_state == "blocked":
         issues.extend(digital_issues)
@@ -285,6 +288,7 @@ def target_readiness(
         "issues": issues,
         "requires_audio": True,
         "requires_motion_binding": True,
+        "semantic_qa": semantic_qa,
         "audio_confirmation": {
             "confirmed": bool(audio_confirmation and audio_confirmation.get("confirmed")),
             "reason": (audio_confirmation or {}).get("reason"),
@@ -309,6 +313,8 @@ def project_status(
 
     run, repo = Path(run_dir), Path(repo_root)
     slides = [str(item) for item in slide_ids]
+    from html_semantic_review_service import status as semantic_status
+    semantic_qa={slide:semantic_status(run,slide,repo) for slide in slides}
     visual = html_readiness(run, repo, slides)
     stored = read_status(run, slides)
 
@@ -345,6 +351,10 @@ def project_status(
         ]
         animation_state = "blocked" if animation_issues else "ready"
 
+    semantic_issues=[_issue("SEMANTIC_QA_REQUIRED","逐句语义审阅和人工签收尚未完成",slide) for slide,item in semantic_qa.items() if item["required"] and not item["valid"]]
+    animation_issues.extend(semantic_issues)
+    if semantic_issues:
+        animation_state="needs_review"
     digital_state, digital_issues, _ = _digital_human_state(run)
     pptx = target_readiness(run, repo, slides, "pptx")
     video = target_readiness(run, repo, slides, "video")
@@ -419,7 +429,8 @@ def project_status(
                 "动作与音频绑定",
                 animation_state,
                 review_status="not_recorded",
-                source="binding-<slide>.json + confirmed audio timeline",
+                source="binding-<slide>.json + confirmed audio timeline + semantic QA evidence",
+                semantic_qa=semantic_qa,
                 issues=animation_issues,
             ),
             _stage(
@@ -446,6 +457,7 @@ def project_status(
         "approval_scope": "No new human approval is inferred from generated, reviewed, or ready artifacts.",
     }
     return {
+        "semantic_qa":semantic_qa,
         **stored,
         "ready": visual["ready"],
         "issues": visual["issues"],

@@ -144,6 +144,12 @@
           <textarea id="input-project-desc" rows="1" placeholder="可选：说明项目用途、受众或备注。"></textarea>
           <label>可选文章内容</label>
           <textarea id="input-project-article" rows="8" placeholder="可选：创建后自动导入为 Step 1 文章；留空则稍后手动导入。"></textarea>
+          <label for="input-project-visual-backend">画面后端</label>
+          <select id="input-project-visual-backend" class="project-profile-native-select" data-select-menu-native="true">
+            <option value="image" selected>图片页面</option>
+            <option value="html">可编辑 HTML 页面</option>
+          </select>
+          <small>HTML 页面使用横屏 16:9；设计、音频和逐句语义审核分别签收。</small>
         </section>
         <section class="project-profile-section" id="create-creation-config-section">
           <h4>2. 创作配置包</h4>
@@ -204,6 +210,9 @@
   }
 
   function bindModalEvents() {
+    document.getElementById('input-project-visual-backend')?.addEventListener('change', event => {
+      if (event.target.value === 'html') activateOption('canvas_profile', 'landscape_16_9');
+    });
     document.querySelectorAll('[data-profile-option]').forEach(card => {
       card.addEventListener('click', () => {
         const field = card.getAttribute('data-profile-option');
@@ -277,6 +286,11 @@
       toast('⚠️ 请输入项目名称');
       return;
     }
+    const visualBackend = document.getElementById('input-project-visual-backend')?.value || 'image';
+    if (visualBackend === 'html' && selectedOption('canvas_profile', 'landscape_16_9') !== 'landscape_16_9') {
+      toast('HTML 页面当前需要横屏 16:9，请修改画面比例。');
+      return;
+    }
     PROFILE_STATE.creating = true;
     const button = document.getElementById('btn-create-submit');
     const original = button?.textContent || '创建项目';
@@ -294,6 +308,7 @@
         description: desc,
         ai_mode: aiMode,
         canvas_profile: profile.canvas_profile,
+        visual_backend: visualBackend,
         target_duration_sec: targetDurationSec,
         ...(creationConfig ? {
           config_package_id: creationConfig.id,

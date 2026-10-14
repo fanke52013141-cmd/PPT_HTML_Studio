@@ -100,7 +100,7 @@ def _registered_icons(repo_root: str | Path) -> List[str]:
     source = icons_path.read_text(encoding="utf-8")
     block = source.split("const paths = {", 1)[-1].split("};", 1)[0]
     # Match registry property names, never multiline SVG path values.
-    ids = re.findall(r"^\s*([a-z][a-z0-9.-]{0,63}):\s*\[", block, re.MULTILINE)
+    ids = re.findall(r"^\s*[\"']?([a-z][a-z0-9.-]{0,63})[\"']?:\s*\[", block, re.MULTILINE)
     if not ids:
         raise HtmlScenePlanError("ICON_REGISTRY_CORRUPT", "共享图标注册表为空")
     return sorted(ids)

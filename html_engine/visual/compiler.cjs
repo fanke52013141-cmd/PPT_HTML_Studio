@@ -170,11 +170,19 @@ function compile(input, catalog) {
       if (!variant || !variant.nodeTypes.includes(node.type)) fail("UNSUPPORTED_PRESENTATION_VARIANT", node.id, p.variant);
     }
     if (p.icon) {
-      if (!['text-card-outline','text-card-soft'].includes(p.variant)) fail("UNSUPPORTED_DECORATIVE_ICON", node.id, p.icon);
+      if (!variants.find(v => v.id === p.variant)?.allowsIcon) fail("UNSUPPORTED_DECORATIVE_ICON", node.id, p.icon);
       checkIcon(p.icon, node.id);
     }
     const slot = layout.slots[node.slot];
     if (!slot) fail("UNRESOLVED_SLOT", "/nodes", node.slot);
+    const registered = variants.find(v => v.id === p.variant);
+    if (registered?.requiresIcon && !p.icon) fail("PRESENTATION_ICON_REQUIRED", node.id, p.variant);
+    if (registered?.labelDelimiter) {
+      const text = node.runs.map(r => r.text).join("");
+      const separator = [...text].findIndex(c => registered.labelDelimiter.includes(c));
+      if (separator <= 0 || separator >= [...text].length - 1) fail("PRESENTATION_LABEL_REQUIRED", node.id, p.variant);
+    }
+    if (p.variant === "summary-relationship-panel" && !node.heading) fail("PRESENTATION_HEADING_REQUIRED", node.id, p.variant);
     for (const part of Object.keys(p.typography || {})) {
       if (
         !(publicTextParts[node.type] || []).includes(part) ||

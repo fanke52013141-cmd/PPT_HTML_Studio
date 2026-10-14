@@ -121,7 +121,7 @@ const PPTStudioRuntime = Object.freeze({
   projectFlowContext,
   getProjectCanvasGeometry,
   flow: Object.freeze({
-    VISIBLE_FLOW,
+    get VISIBLE_FLOW() { return PPTFlow.VISIBLE_FLOW; },
     normalizeVisibleStep,
     resolveProjectVisibleStep,
     visibleStepNumber,

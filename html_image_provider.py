@@ -53,7 +53,20 @@ def _configured_image(
     if not key or not model:
         raise ValueError("未配置图片服务，请先在系统设置中配置。")
     references = [str(Path(p)) for p in reference_paths or []]
+    resolution = getattr(model_binding, "image_resolution", None) or "1K"
+    quality = getattr(model_binding, "image_quality", None) or "low"
     if is_toapis_image_provider(provider, base):
+        if model in {"gpt-image-2.5-flare-official", "gpt-image-2.5-sunburst-official"} and not transparent_background:
+            # Official production API takes pixels, not the playground's metadata.
+            # Scale the existing canvas ratio to the frozen resolution tier.
+            width, height = (int(part) for part in size.split("x", 1))
+            edge = {"1K": 1024, "2K": 2048, "4K": 4096}[resolution]
+            scale = edge / max(width, height)
+            size = "x".join(str(max(16, round(value * scale / 16) * 16)) for value in (width, height))
+        elif transparent_background:
+            # Independent subjects keep their explicit pixel budget; the
+            # connection's default tier belongs to the full design reference.
+            resolution = "1K"
         response = generate_image_response(
             None,
             model,
@@ -64,7 +77,7 @@ def _configured_image(
             provider=provider,
             reference_paths=references,
             transparent_background=transparent_background,
-            public_config={"toapis_resolution": "1k", "toapis_quality": "low"},
+            public_config={"toapis_resolution": resolution.lower(), "toapis_quality": quality},
             **({"resume_task_id": resume_task_id, "timeout": 30} if resume_task_id else {}),
             **({"on_task_submitted": on_task_submitted} if on_task_submitted is not None else {}),
         )
@@ -76,11 +89,11 @@ def _configured_image(
         with ExitStack() as stack:
             params = {"model": model, "prompt": prompt, "size": size, "n": 1}
             if "gpt-image" in model.lower():
-                params["quality"] = "low"
+                params["quality"] = quality
             if "gpt-image-2.5" in model.lower():
-                # This OpenAI-compatible model uses provider metadata for 1K;
+                # This OpenAI-compatible model uses frozen provider metadata;
                 # measured response dimensions, not this hint, are evidence.
-                params["extra_body"] = {"metadata": {"resolution": "1K"}}
+                params["extra_body"] = {"metadata": {"resolution": resolution}}
             if transparent_background:
                 params["background"] = "transparent"
             if references:

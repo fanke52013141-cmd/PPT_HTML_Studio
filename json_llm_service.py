@@ -33,6 +33,14 @@ from runtime_support import (
 logger = logging.getLogger("PPTStudio.JsonLlm")
 
 
+def _request_options(model, binding=None):
+    options = {}
+    if model in {"glm-5.3", "glm-5.3-flash", "glm-5.3-flashx"}:
+        options = {"extra_body": {"thinking": {"type": "enabled"}},
+                   "reasoning_effort": getattr(binding, "reasoning_effort", None) or "max"}
+    return options
+
+
 def parse_json_or_repair_with_llm(
     *,
     cleaned_content: str,
@@ -44,6 +52,7 @@ def parse_json_or_repair_with_llm(
     schema_hint: str = "",
     max_tokens: int = 16000,
     base_url: str = "",
+    request_options: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     try:
         value = json.loads(cleaned_content)
@@ -78,7 +87,8 @@ def parse_json_or_repair_with_llm(
                 with governed_llm_request(base_url):
                     repair_response = client.chat.completions.create(
                         model=model,
-                        temperature=0,
+                        **(request_options or _request_options(model)),
+                        temperature=1.0 if model.startswith("glm-5.3") else 0,
                         max_tokens=max_tokens,
                         response_format={"type": "json_object"},
                         messages=[
@@ -97,7 +107,8 @@ def parse_json_or_repair_with_llm(
                 with governed_llm_request(base_url):
                     repair_response = client.chat.completions.create(
                         model=model,
-                        temperature=0,
+                        **(request_options or _request_options(model)),
+                        temperature=1.0 if model.startswith("glm-5.3") else 0,
                         max_tokens=max_tokens,
                         messages=[
                             {"role": "system", "content": repair_prompt},
@@ -175,8 +186,12 @@ def _generate_json_with_configured_llm(
     )
     if max_tokens_limit is not None:
         max_tokens = min(max_tokens, max(1024, int(max_tokens_limit)))
+    if getattr(model_binding, "temperature", None) is not None:
+        temperature = model_binding.temperature
     user_content = user_prompt
     if image_paths:
+        if llm_model == "glm-5.3" or getattr(model_binding, "supports_images", None) is False:
+            raise HTTPException(400, "此模型只支持文字输入，请选择多模态模型")
         import base64
         from pathlib import Path
         from PIL import Image
@@ -196,6 +211,8 @@ def _generate_json_with_configured_llm(
                 image.verify()
             parts.append({"type":"image_url","image_url":{"url":"data:image/png;base64,"+base64.b64encode(data).decode("ascii")}})
         user_content = parts
+    if llm_model.startswith("glm-5.3") and request_timeout == 120.0:
+        request_timeout = 600.0
     client = get_openai_client(api_key=llm_api_key, base_url=llm_base_url, timeout=request_timeout)
     started = time.monotonic()
     logger.info("JSON task %s: model=%s input_chars=%s max_tokens=%s timeout=%ss", artifact_prefix, llm_model, len(system_prompt) + len(user_prompt), max_tokens, request_timeout)
@@ -205,6 +222,7 @@ def _generate_json_with_configured_llm(
                 with governed_llm_request(llm_base_url):
                     response = client.chat.completions.create(
                         model=llm_model,
+                        **_request_options(llm_model, model_binding),
                         temperature=temperature,
                         max_tokens=max_tokens,
                         response_format={"type": "json_object"},
@@ -224,6 +242,7 @@ def _generate_json_with_configured_llm(
                 with governed_llm_request(llm_base_url):
                     response = client.chat.completions.create(
                         model=llm_model,
+                        **_request_options(llm_model, model_binding),
                         temperature=temperature,
                         max_tokens=max_tokens,
                         messages=[
@@ -247,6 +266,7 @@ def _generate_json_with_configured_llm(
             schema_hint=schema_hint,
             max_tokens=max_tokens,
             base_url=str(llm_base_url or ""),
+            request_options=_request_options(llm_model, model_binding),
         )
     finally:
         client.close()

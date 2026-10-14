@@ -1,5 +1,7 @@
 # 阶段一：共享视觉定义与统一渲染
 
+2026-10-14：新增注册text-card-label与summary-relationship-panel、check-plain；旧造型保留。工程示例与受保护编辑操作见[呈现细节夹具](fixtures/presentation-details/README.md)，规则/预算见[定义卡](../../docs/contracts/html-presentation/runtime/visual-v1/presentation-details-0.1.0.md)。当前GLM截图可见性检查通过，原设计保真和人工审阅未完成。
+
 2026-10-13设计先行增量：scene0.7注册presentation.variant/icon，复用标准组件、主题与原文字/动作；旧词汇仍兼容。单图豆包Pro受控还原、共享组件HTML与实际配音验证见[交接](../../../docs/plans/html-backend-development/handoff-design-first-2026-10-13.md)。美感、设计相似度与语义不由几何通过自动批准。
 
 2026-10-13 A03：scene0.6 使用明确初态及稳定 actionId，支持同一对象重复强调；绑定实际音频的页面仍使用本共享渲染器。旧 scene0.1—0.5 保持。见 [语义运行卡](../../../docs/contracts/html-presentation/runtime/visual-v1/semantic-runtime-0.1.0.md)；图像设计还原、语义与审美验收分别记录。

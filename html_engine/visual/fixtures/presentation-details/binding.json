@@ -1,0 +1,54 @@
+{
+  "format": "hps.html.motion_binding",
+  "version": "0.2.0",
+  "mode": "beat_ids",
+  "actions": {
+    "token-03-a1": {
+      "beatId": "token-03-b1",
+      "edge": "start",
+      "offsetMs": 0
+    },
+    "token-03-a2": {
+      "beatId": "token-03-b2",
+      "edge": "start",
+      "offsetMs": 0
+    },
+    "token-03-a3": {
+      "beatId": "token-03-b3",
+      "edge": "start",
+      "offsetMs": 0
+    },
+    "token-03-a4": {
+      "beatId": "token-03-b4",
+      "edge": "start",
+      "offsetMs": 0
+    },
+    "token-03-a5": {
+      "beatId": "token-03-b4",
+      "edge": "start",
+      "offsetMs": 0
+    }
+  },
+  "sourceBeats": [
+    {
+      "id": "token-03-b1",
+      "spoken_text": "输入 Token 包括你发送给模型的提示和上下文。",
+      "spoken_text_sha256": "8d64b0de0498937a65397c9c5e6250917825fc5c80e8558090b9446a6cf0e94f"
+    },
+    {
+      "id": "token-03-b2",
+      "spoken_text": "输出 Token 是模型生成回复所使用的单位。",
+      "spoken_text_sha256": "819465c0faeae2dc91b7147bd6b03cf43f81917ea4abda65bcfd6d1f79880f34"
+    },
+    {
+      "id": "token-03-b3",
+      "spoken_text": "输入与输出常有不同单价，具体还可能涉及缓存或推理类别。",
+      "spoken_text_sha256": "4c8e4bd14147950159dbb5eb38d87ba52806a3a061606e0b46b0c291990dc319"
+    },
+    {
+      "id": "token-03-b4",
+      "spoken_text": "计费应结合实际用量与该模型的价目表，不能只看字数。",
+      "spoken_text_sha256": "3db58cf2c870b297a495c39ca19b1f5bc3270d4097ce13bfe95d2364fba7ab49"
+    }
+  ]
+}

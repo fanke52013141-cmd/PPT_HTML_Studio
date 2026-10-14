@@ -64,7 +64,7 @@ def component_context(scene, repo_root, *, asset_modes=None):
             "owner": "image" if n["type"] == "image" else "code",
             "assetMode": (asset_modes or {}).get(n["id"], "reuse") if n["type"] == "image" else "none",
             "variants": [v for v in variants if n["type"] in v["nodeTypes"]],
-            "icons": icons if n["type"] == "text" and variants else [],
+            "icons": icons if any(v.get("allowsIcon") and n["type"] in v["nodeTypes"] for v in variants) else [],
         } for n in scene["nodes"]},
     }
 
@@ -86,7 +86,7 @@ def validate_understanding(response, context):
             raise ValueError("Allocation cannot rasterize code or invent image ownership")
         if item.variant is not None and item.variant not in {v["id"] for v in allowed["variants"]}:
             raise ValueError("Variant not applicable")
-        if item.icon is not None and (item.icon not in allowed["icons"] or item.variant not in ("text-card-outline", "text-card-soft")):
+        if item.icon is not None and (item.icon not in allowed["icons"] or not next((v.get("allowsIcon") for v in allowed["variants"] if v["id"] == item.variant), False)):
             raise ValueError("Icon not applicable")
         if item.owner == "image" and (item.variant is not None or item.icon is not None):
             raise ValueError("Image allocation cannot use code variants")

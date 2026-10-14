@@ -52,7 +52,7 @@ def execute_step2_json_llm(
         model=llm_model,
         base_url=llm_base_url,
         max_tokens=planning_max_tokens,
-        thinking_disabled=bool(vendor_options),
+        thinking_disabled=vendor_options.get("extra_body", {}).get("thinking", {}).get("type") == "disabled",
     )
     client = capabilities.get_openai_client(
         api_key=llm_api_key,
@@ -120,6 +120,8 @@ def execute_step2_json_llm(
             artifact_prefix=artifact_prefix,
             schema_hint=schema_hint,
             max_tokens=planning_max_tokens,
+            **({"base_url": llm_base_url, "request_options": vendor_options}
+               if vendor_options.get("extra_body", {}).get("thinking", {}).get("type") == "enabled" else {}),
         )
     except HTTPException as exc:
         capabilities.write_project_log(

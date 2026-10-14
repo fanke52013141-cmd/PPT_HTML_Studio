@@ -1,0 +1,108 @@
+[
+  {
+    "targetId": "stat-input",
+    "kind": "set_variant",
+    "values": {
+      "variant": "text-card-label",
+      "icon": "speech"
+    }
+  },
+  {
+    "targetId": "stat-input",
+    "kind": "set_presentation",
+    "values": {
+      "height": 150
+    }
+  },
+  {
+    "targetId": "stat-input",
+    "kind": "set_text_style",
+    "part": "text",
+    "values": {
+      "fontSizePx": 24,
+      "align": "left",
+      "lineHeight": 1.4
+    }
+  },
+  {
+    "targetId": "stat-output",
+    "kind": "set_variant",
+    "values": {
+      "variant": "text-card-label",
+      "icon": "document"
+    }
+  },
+  {
+    "targetId": "stat-output",
+    "kind": "set_presentation",
+    "values": {
+      "height": 150
+    }
+  },
+  {
+    "targetId": "stat-output",
+    "kind": "set_text_style",
+    "part": "text",
+    "values": {
+      "fontSizePx": 24,
+      "align": "left",
+      "lineHeight": 1.4
+    }
+  },
+  {
+    "targetId": "stat-pricing",
+    "kind": "set_variant",
+    "values": {
+      "variant": "text-card-label",
+      "icon": "coins"
+    }
+  },
+  {
+    "targetId": "stat-pricing",
+    "kind": "set_presentation",
+    "values": {
+      "height": 150
+    }
+  },
+  {
+    "targetId": "stat-pricing",
+    "kind": "set_text_style",
+    "part": "text",
+    "values": {
+      "fontSizePx": 24,
+      "align": "left",
+      "lineHeight": 1.4
+    }
+  },
+  {
+    "targetId": "billing-caption",
+    "kind": "set_text_style",
+    "part": "text",
+    "values": {
+      "align": "left"
+    }
+  },
+  {
+    "targetId": "billing-caption",
+    "kind": "set_presentation",
+    "values": {
+      "offsetY": 40
+    }
+  },
+  {
+    "targetId": "billing-summary",
+    "kind": "set_variant",
+    "values": {
+      "variant": "summary-relationship-panel",
+      "icon": "check-plain"
+    }
+  },
+  {
+    "targetId": "billing-summary",
+    "kind": "set_presentation",
+    "values": {
+      "height": 160,
+      "offsetY": -60
+    }
+  }
+]

@@ -1640,6 +1640,9 @@ def start_one_click(
         # have no runtime side effects.
         raise ManualModeOneClickError("手动模式项目不能启动一键自动化，请逐步完成各个创作环节")
     project_id = str(project.id)
+    if getattr(project, "visual_backend", "image") == "html":
+        from html_course_runtime import configured_course_jobs
+        return configured_course_jobs().start(project, payload)
     dependencies = get_one_click_dependencies()
     with _RUNNING_LOCK:
         thread = _RUNNING.get(project_id)
@@ -1848,6 +1851,9 @@ def _reconcile_completed_status(
 
 
 def get_one_click_status(project: Any) -> dict[str, Any]:
+    if getattr(project, "visual_backend", "image") == "html":
+        from html_course_runtime import configured_course_jobs
+        return configured_course_jobs().status(project)
     project_id = str(project.id)
     status = _status_for_project(project, project_id)
     thread = _registered_worker(project_id)
@@ -1862,6 +1868,8 @@ def get_one_click_status(project: Any) -> dict[str, Any]:
 
 def reject_one_click_checkpoint(project: Any, checkpoint: str, notes: str = "") -> dict[str, Any]:
     """Persist a rejection without allowing the pipeline to continue."""
+    if getattr(project, "visual_backend", "image") == "html":
+        raise ValueError("HTML课程审批使用本页设计、视觉、音频和语义原入口；课程继续不会代写批准")
     project_id = str(project.id)
     status = _status_for_project(project, project_id)
     if status.get("status") != "waiting_for_review":
@@ -1876,6 +1884,9 @@ def reject_one_click_checkpoint(project: Any, checkpoint: str, notes: str = "") 
 
 def pause_one_click(project: Any) -> dict[str, Any]:
     """Request the running pipeline to pause at the next stage boundary."""
+    if getattr(project, "visual_backend", "image") == "html":
+        from html_course_runtime import configured_course_jobs
+        return configured_course_jobs().pause(project)
     project_id = str(project.id)
     thread = _registered_worker(project_id)
     if thread is None:
@@ -1912,6 +1923,10 @@ def batch_one_click_status(
     items: list[dict[str, Any]] = []
     for project in projects:
         project_id = str(project.id)
+        if getattr(project, "visual_backend", "image") == "html":
+            status = get_one_click_status(project)["status"]
+            items.append({"project_id": project_id, "project_name": getattr(project, "name", ""), "status": status["status"], "current_stage": status.get("current_stage", ""), "progress": _overall_progress(status)})
+            continue
         status = _status_for_project(project, project_id)
         thread = _registered_worker(project_id)
         if status.get("status") == "running" and thread is None:

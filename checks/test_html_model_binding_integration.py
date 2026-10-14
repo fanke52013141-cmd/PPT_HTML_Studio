@@ -109,3 +109,79 @@ def test_frozen_parameter_hash_changes_and_clamps(tmp_path):
     assert first.text.max_tokens == 4096 and second.text.max_tokens == 64000
     assert first.text.config_hash != second.text.config_hash
     assert replace(first.text, error="missing").api_key == first.text.api_key
+
+
+def test_glm_text_rejects_images_before_request(tmp_path, monkeypatch):
+    frozen = freeze_project_models(SimpleNamespace(run_dir=str(tmp_path)), setting={"llm_model": "glm-5.3", "llm_api_key": "fake"}.get)
+    monkeypatch.setattr(llm, "get_openai_client", lambda **kw: pytest.fail("must reject before network"))
+    with pytest.raises(llm.HTTPException):
+        llm.generate_json_with_configured_llm(model_binding=frozen.text, system_prompt="s", user_prompt="u", run_dir=str(tmp_path), artifact_prefix="test", schema_hint="{}", image_paths=["missing.png"])
+
+
+def test_glm_flash_sends_real_image_and_enabled_thinking(tmp_path, monkeypatch):
+    from checks.test_html_asset_service import png_bytes
+    frozen = freeze_project_models(SimpleNamespace(run_dir=str(tmp_path)), setting={"llm_model": "glm-5.3-flash", "llm_api_key": "fake"}.get)
+    path = tmp_path / "image.png"
+    path.write_bytes(png_bytes())
+    captured = []
+    def create(**kw):
+        captured.append(kw)
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"ok":true}'))])
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)), close=lambda: None)
+    monkeypatch.setattr(llm, "get_openai_client", lambda **kw: client)
+    monkeypatch.setattr(llm, "governed_llm_request", lambda *args: nullcontext())
+    assert llm.generate_json_with_configured_llm(model_binding=frozen.text, system_prompt="s", user_prompt="u", run_dir=str(tmp_path), artifact_prefix="test", schema_hint="{}", image_paths=[str(path)]) == {"ok":True}
+    assert captured[0]["extra_body"] == {"thinking":{"type":"enabled"}}
+    assert captured[0]["reasoning_effort"] == "max"
+    assert captured[0]["messages"][1]["content"][1]["type"] == "image_url"
+
+
+def test_worker_routes_planning_and_visual_to_frozen_independent_models(tmp_path, monkeypatch):
+    from checks.test_project_model_binding import connection
+    from dataclasses import replace as changed
+    from html_image_provider import configured_image
+    settings = {"html_planning_connection_id":"planning", "html_visual_connection_id":"visual", "image_model":"image", "image_api_key":"fake"}
+    freeze = partial(freeze_project_models, setting=settings.get, resolver=lambda ref: changed(connection(ref), model="glm-5.3" if ref == "planning" else "glm-5.3-flash"), credential=lambda ref:{"api_key":"fake"})
+    calls = []
+    def generator(**kwargs):
+        calls.append(kwargs["model_binding"].model)
+        return {"ok":True}
+    executor = Capture()
+    deps = HtmlReviewDependencies(repo_root=ROOT, json_generator=generator)
+    jobs = jobs_module.HtmlWorkflowJobs(SessionLocal, deps, configured_image, executor, freeze_models=freeze)
+    project = Project(id="roles-"+uuid.uuid4().hex, name="isolated", account_id="default", run_dir=str(tmp_path), visual_backend="html")
+    db = SessionLocal()
+    try:
+        db.add(project); db.commit()
+        task = jobs.submit(db, project, {"slide_id":"s1"})
+        settings.update(html_planning_connection_id="changed", html_visual_connection_id="changed")
+        def produce(contract, *, run_dir, deps, **kwargs):
+            common = dict(system_prompt="s", user_prompt="u", artifact_prefix="planning-test", schema_hint="{}", run_dir=str(run_dir))
+            deps.planning_generator(**common)
+            deps.json_generator(**{**common, "artifact_prefix":"visual-test"})
+            return {"saved":{"changed":False}}
+        monkeypatch.setattr(jobs_module, "produce_scene", produce)
+        args=executor.calls[0]; args[0](*args[1:])
+        db.expire_all()
+        job=db.query(LocalJob).filter(LocalJob.id == task["id"]).one()
+        assert job.status == "succeeded", job.error
+        assert calls == ["glm-5.3", "glm-5.3-flash"]
+        assert job.get_payload()["input"]["model_summary"]["planning"]["model"] == "glm-5.3"
+    finally:
+        db.close()
+
+
+def test_glm_json_repair_preserves_frozen_reasoning(tmp_path, monkeypatch):
+    frozen = freeze_project_models(SimpleNamespace(run_dir=str(tmp_path)), setting={"llm_model":"glm-5.3", "llm_api_key":"fake"}.get)
+    binding = replace(frozen.text, reasoning_effort="high", temperature=1.0)
+    captured=[]
+    def create(**kw):
+        captured.append(kw)
+        content = '{"ok":' if len(captured) == 1 else '{"ok":true}'
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=content))])
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)), close=lambda:None)
+    monkeypatch.setattr(llm,"get_openai_client",lambda **kw:client)
+    monkeypatch.setattr(llm,"governed_llm_request",lambda *args:nullcontext())
+    assert llm.generate_json_with_configured_llm(model_binding=binding,system_prompt="s",user_prompt="u",run_dir=str(tmp_path),artifact_prefix="repair-test",schema_hint="{}") == {"ok":True}
+    assert len(captured)==2
+    assert all(call["reasoning_effort"]=="high" and call["extra_body"]["thinking"]["type"]=="enabled" for call in captured)

@@ -7,6 +7,36 @@
   let lastTask = null;
   let designCandidate = null;
   let acceptedDesignKey = null;
+  let manualCandidate = null;
+  function clearManual(section) {
+    manualCandidate = null;
+    const box = section.querySelector('[data-html-manual-candidate]');
+    if (box) { box.hidden = true; box.querySelectorAll('img').forEach(image => image.removeAttribute('src')); }
+  }
+  async function showManual(section, current, task, token) {
+    clearManual(section);
+    if (task.status !== 'failed' || task.input_state !== 'current' || !task.recovery?.requires_verification) return;
+    const base = `/api/projects/${encodeURIComponent(current.project.id)}/html-review/${encodeURIComponent(current.slideId)}/manual-candidate/${encodeURIComponent(task.id)}`;
+    try {
+      const result = await API.get(base);
+      if (token !== generation) return;
+      manualCandidate = { ...result.candidate, base };
+      const box = section.querySelector('[data-html-manual-candidate]');
+      box.hidden = false;
+      box.querySelector('[data-manual-source]').textContent = `原任务 ${task.id} · 候选 ${manualCandidate.key.slice(0, 12)} · 最终工程检查${manualCandidate.engineering === 'passed' ? '通过' : '未通过'}，模型还原结论未知。`;
+      box.querySelector('[data-manual-design]').src = manualCandidate.design_url;
+      box.querySelector('[data-manual-preview]').src = manualCandidate.preview_url;
+      box.querySelector('[data-manual-decision]').textContent = manualCandidate.decision
+        ? `已记录人工${manualCandidate.decision.decision === 'accept' ? '接受' : '驳回'}：${manualCandidate.decision.note}。原生产任务仍保持失败。`
+        : manualCandidate.engineering === 'passed'
+          ? '请对照原设计与实际页面，填写具体判断依据后决定。接受仅留存候选评审，不会保存作者页面或批准正式视觉。'
+          : `此候选工程检查未通过，只能记录驳回；首个问题：${manualCandidate.engineering_issues?.[0]?.message || '请检查版式容量'}。`;
+      box.querySelectorAll('[data-manual-action]').forEach(button => button.hidden = Boolean(manualCandidate.decision));
+      box.querySelector('[data-manual-action="accept"]').hidden ||= manualCandidate.engineering !== 'passed';
+    } catch (error) {
+      if (token === generation) status(section, `候选不可评审：${error.message}`);
+    }
+  }
   function showAssetRetry(section, key) {
     acceptedDesignKey = key;
     section.querySelector('[data-html-asset-retry]').hidden = !key;
@@ -86,6 +116,7 @@
       section.querySelectorAll('[data-action="produce"],[data-action="accept-design"],[data-action="revise-design"],[data-action="retry-asset"]').forEach(b=>b.disabled=true);
       const task=await followTask(section,response.task,current,token);
       if (!task || token !== generation) return;
+      await showManual(section,current,task,token);
       if (task.status !== 'succeeded') status(section, task.error || taskStatusLabels[task.status] || '任务状态待检查');
       else if (task.input_state === 'stale') status(section,'旧任务已结束；当前页面需要重新检查。');
       else if (task.input_state === 'unknown') status(section,'旧任务缺少完整版本信息，请重新检查当前页面。');
@@ -119,6 +150,7 @@
     if (host.dataset.htmlMode !== mode) host.dataset.htmlMode = mode;
     let section = host.querySelector('#html-review-panel-section');
     if (project?.visual_backend !== 'html') {
+      window.HtmlSemanticQA?.close();
       if (section && !section.hidden) {generation++; activeTask=null; designCandidate=null; acceptedDesignKey=null;}
       if (section) section.hidden = true;
       if (section) {section.dataset.context=''; taskFacts(section,null);}
@@ -140,6 +172,17 @@
         <button type="button" data-action="sheets">批量生成配图</button>
         <button type="button" data-action="cancel" hidden>停止生产任务</button>
         <div data-html-status role="status"></div><div data-html-task aria-label="生产任务记录"></div><button type="button" data-action="resume" hidden>继续原生产任务</button>
+        <div data-html-manual-candidate hidden>
+          <h4>人工候选评审（原请求结果未知）</h4><p data-manual-source></p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+            <figure><figcaption>原设计参考</figcaption><img data-manual-design alt="原设计参考" style="width:100%"></figure>
+            <figure><figcaption>实际候选截图</figcaption><img data-manual-preview alt="候选页面实际截图" style="width:100%"></figure>
+          </div>
+          <p data-manual-decision></p>
+          <label>判断依据 <textarea data-manual-note maxlength="2000" placeholder="说明具体一致或不一致的对象、位置与可读性"></textarea></label>
+          <button type="button" data-manual-action="accept">记录接受</button>
+          <button type="button" data-manual-action="reject">记录驳回</button>
+        </div>
         <div data-html-design hidden>
           <p data-design-state></p>
           <img alt="待确认的黑灰白页面设计参考" style="max-width:100%">
@@ -153,7 +196,7 @@
         </div>
         <img data-html-preview alt="当前场景的实际渲染" hidden style="max-width:100%">
         <div data-html-editor></div>
-        <div data-html-models hidden></div>`;
+        <div data-html-models hidden></div><div data-semantic-qa></div>`;
       const sheetHost = document.createElement('div'); sheetHost.dataset.htmlSheets = ''; sheetHost.hidden = true; section.append(sheetHost);
       host.prepend(section);
       section.querySelector('[data-html-slide]').addEventListener('change', event => {
@@ -161,6 +204,20 @@
         refresh();
       });
       section.addEventListener('click', async event => {
+        const manualButton = event.target.closest('button[data-manual-action]');
+        if (manualButton) {
+          if (!manualCandidate) return;
+          const note = section.querySelector('[data-manual-note]').value.trim();
+          if (note.length < 8) { status(section, '请先填写至少 8 字的具体判断依据。'); return; }
+          manualButton.disabled = true;
+          try {
+            const result = await API.post(`${manualCandidate.base}/decision`, {key:manualCandidate.key,decision:manualButton.dataset.manualAction,note});
+            manualCandidate.decision = result.candidate.decision;
+            section.querySelector('[data-manual-decision]').textContent = `已记录人工${manualCandidate.decision.decision === 'accept' ? '接受' : '驳回'}：${manualCandidate.decision.note}。原生产任务仍保持失败。`;
+            section.querySelectorAll('[data-manual-action]').forEach(button => button.hidden = true);
+          } catch (error) { status(section, `候选决定未保存：${error.message}`); manualButton.disabled = false; }
+          return;
+        }
         const button = event.target.closest('button[data-action]');
         if (!button) return;
         if (button.dataset.action === 'sheets') {
@@ -276,12 +333,14 @@
         modelContainer.hidden = true;
         section.dataset.project = project.id;
       }
+      window.HtmlSemanticQA?.close();
       generation++;
       activeTask=null;
       taskFacts(section,null);
       designCandidate = null;
       showAssetRetry(section, null);
       showDesign(section, null, '');
+      clearManual(section);
       section.querySelector('[data-design-instruction]').value = '';
       section.querySelector('[data-asset-instruction]').value = '';
       section.querySelectorAll('button').forEach(b=>b.disabled=false);
@@ -291,6 +350,7 @@
       section.querySelector('[data-html-preview]').hidden = true;
       if (slideId) {
         const token = generation;
+        window.HtmlSemanticQA?.mount(section.querySelector("[data-semantic-qa]"),project,slideId);
         restoreTask(section,{project,slideId},token);
         const base = `/api/projects/${encodeURIComponent(project.id)}/html-review/${encodeURIComponent(slideId)}`;
         API.get(`${base}/design/current`).then(result => {

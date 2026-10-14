@@ -426,6 +426,21 @@ class AgentClient:
     def get_html_design_current(self, project_id: str, slide_id: str) -> dict[str, Any]:
         return self._request("GET", f"/projects/{project_id}/html-review/{slide_id}/design/current")
 
+    def html_manual_candidate(self, project_id: str, slide_id: str, job_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}")
+
+    def html_manual_candidate_decision(self, project_id: str, slide_id: str, job_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._request("POST", f"/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision", body=payload)
+
+    def html_semantic_submit(self,project_id,slide_id,payload):
+        return self._request("POST",f"/projects/{project_id}/html-review/{slide_id}/semantic/submit",body=payload)
+
+    def html_semantic_status(self,project_id,slide_id):
+        return self._request("GET",f"/projects/{project_id}/html-review/{slide_id}/semantic/status")
+
+    def html_semantic_decision(self,project_id,slide_id,payload):
+        return self._request("POST",f"/projects/{project_id}/html-review/{slide_id}/semantic/decision",body=payload)
+
     def html_task_status(self, project_id: str, job_id: str) -> dict[str, Any]:
         return self._request("GET", f"/projects/{project_id}/html-review/tasks/{job_id}")
 

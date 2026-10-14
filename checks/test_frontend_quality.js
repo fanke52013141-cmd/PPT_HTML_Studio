@@ -1346,6 +1346,12 @@ if (annotationsEditor.includes('decodeAudioData') || app.includes('decodeAudioDa
 
 // HTML review owns only the HTML panel; all requests use the shared transport.
 const htmlReviewPanel = fs.readFileSync(path.join(root,'static/html_review_panel.js'),'utf8');
+const courseUi = fs.readFileSync(path.join(root,'static/one_click_extension.js'),'utf8');
+const projectWizard = fs.readFileSync(path.join(root,'static/project_profile_extension.js'),'utf8');
+if (!projectWizard.includes('id="input-project-visual-backend"') || !projectWizard.includes('visual_backend: visualBackend')) throw new Error('Enhanced project wizard must preserve explicit HTML backend selection');
+const htmlNavigation = fs.readFileSync(path.join(root,'static/workspace_navigation.js'),'utf8');
+if (!htmlNavigation.includes('PPTFlow.configureVisibleFlow(undefined, { visualBackend: project.visual_backend })') || !htmlNavigation.includes('window.HtmlReviewPanel?.refresh()')) throw new Error('HTML workspace must select the shared backend flow and existing review owner');
+if (!courseUi.includes("status?.backend === 'html'") || !courseUi.includes("['running', 'queued'].includes(state)")) throw new Error('HTML course must use original one-click panel and recover queued polling');
 if (/\bfetch\s*\(/.test(htmlReviewPanel) || htmlReviewPanel.includes('MutationObserver')) throw new Error('HTML review must use API and explicit refresh');
 if (!htmlReviewPanel.includes("getElementById('step-panel-3')")) throw new Error('HTML review belongs in the content panel');
 for (const token of ['design_candidate_key', 'design_instruction', 'accept-design', 'design/current', 'design_review']) {
@@ -1367,3 +1373,8 @@ for (const source of [sceneEditor, modelBinding, sheetUi]) {
 }
 if (!htmlReviewPanel.includes('ProjectModelBinding.mount') || !htmlReviewPanel.includes('HtmlSceneEditor.open')) throw new Error('HTML editor/model settings product entries missing');
 if (app.includes('ProjectModelBinding.mount') || app.includes('HtmlSceneEditor.open')) throw new Error('HTML feature mounting must stay out of workflow state');
+
+const semanticQaUi=fs.readFileSync(path.join(root,'static/html_semantic_qa.js'),'utf8');
+if(!html.includes('src="html_semantic_qa.js?')||html.indexOf('src="html_semantic_qa.js?')>html.indexOf('src="html_review_panel.js?'))throw Error('Semantic QA must load before review panel');
+if(/\bfetch\s*\(/.test(semanticQaUi)||semanticQaUi.includes('MutationObserver'))throw Error('Semantic QA must use shared API and explicit lifecycle');
+if(!htmlReviewPanel.includes('HtmlSemanticQA?.mount')||app.includes('HtmlSemanticQA'))throw Error('Semantic QA mounting belongs to HTML feature module');

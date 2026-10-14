@@ -13,6 +13,32 @@ def connection(name="first", kind="text"):
                                    "credential-ref", {}, "active")
 
 
+def test_image_resolution_quality_are_frozen_and_used_by_compatible_transport(env, monkeypatch):
+    import base64
+    import io
+    from PIL import Image
+    import ai_provider_service
+    from html_image_provider import configured_image
+    project, _, kwargs = env
+    image = ResolvedModelConnection("sunburst", 1, "image", "openai_compatible", "gpt-image-2.5-sunburst-official", "https://example.test/v1", "credential-ref", {"resolution": "2K", "quality": "low"}, "active")
+    request = ProjectModelBindingUpdate(expected_revision=0, text={"mode": "inherit"}, image={"mode": "fixed", "connection_id": "sunburst"})
+    service.save_project_model_binding(project, request, binder=lambda *a: image)
+    frozen = service.freeze_project_models(project, **kwargs).image
+    assert frozen.image_resolution == "2K" and frozen.image_quality == "low"
+    assert frozen.summary()["parameters"]["image_resolution"] == "2K"
+    data = io.BytesIO(); Image.new("RGB", (1, 1), "white").save(data, format="PNG")
+    calls = []
+    def generate(*, model, prompt, size, n, quality, extra_body):
+        calls.append({"model": model, "size": size, "quality": quality, "extra_body": extra_body})
+        return SimpleNamespace(data=[SimpleNamespace(b64_json=base64.b64encode(data.getvalue()).decode())])
+    client = SimpleNamespace(images=SimpleNamespace(generate=generate), close=lambda: None)
+    monkeypatch.setattr(ai_provider_service, "get_openai_client", lambda **kw: client)
+    monkeypatch.setattr(ai_provider_service, "_governed_image_request", lambda base, call: call())
+    result = configured_image("fixture", size="1280x720", transparent_background=False, model_binding=frozen)
+    assert result == data.getvalue()
+    assert calls == [{"model": image.model, "size": "1280x720", "quality": "low", "extra_body": {"metadata": {"resolution": "2K"}}}]
+
+
 @pytest.fixture
 def env(tmp_path):
     project = SimpleNamespace(run_dir=str(tmp_path), visual_backend="html")
@@ -193,3 +219,39 @@ def test_save_preserves_approved_work_and_legacy_noop(env, tmp_path):
     assert not service._path(project).exists()
     service.save_project_model_binding(project, update())
     assert approved.read_bytes() == b"approved" and audio.read_bytes() == b"audio"
+
+
+def test_planning_binding_is_independent_and_omission_preserves_it(env):
+    project, settings, kwargs = env
+    request = ProjectModelBindingUpdate(expected_revision=0, text={"mode":"inherit"}, image={"mode":"inherit"}, planning={"mode":"fixed", "connection_id":"glm-planning"})
+    service.save_project_model_binding(project, request, binder=connection)
+    frozen = service.freeze_project_models(project, **kwargs)
+    assert frozen.planning.model == "glm-planning"
+    assert frozen.text.model == "global-text"
+    assert frozen.summary()["planning"]["model"] == "glm-planning"
+    service.save_project_model_binding(project, update(1), binder=connection)
+    assert service.freeze_project_models(project, **kwargs).planning.model == "glm-planning"
+    assert service.get_project_model_binding(project, **kwargs)["effective"]["planning"]["model"] == "glm-planning"
+
+
+def test_stage_defaults_freeze_parameters_and_fail_without_fallback(env):
+    project, settings, kwargs = env
+    settings.update(html_planning_connection_id="planning", html_visual_connection_id="visual")
+    from dataclasses import replace
+    kwargs["resolver"] = lambda ref: replace(connection(ref), public_config={"reasoning_effort": "max", "temperature": 1.0, "supports_images": ref == "visual", "max_tokens": 64000})
+    frozen = service.freeze_project_models(project, **kwargs)
+    assert frozen.planning.model == "planning" and frozen.text.model == "visual"
+    assert frozen.planning.supports_images is False and frozen.text.supports_images is True
+    settings["html_planning_connection_id"] = "changed"
+    assert frozen.planning.model == "planning"
+    kwargs["resolver"] = lambda ref: (_ for _ in ()).throw(ValueError("missing"))
+    with pytest.raises(service.ModelBindingError):
+        service.freeze_project_models(project, **kwargs)
+
+
+def test_legacy_planning_summary_falls_back_to_visual(env):
+    project, settings, kwargs = env
+    frozen = service.freeze_project_models(project, **kwargs)
+    assert frozen.planning is frozen.text
+    assert "planning" not in frozen.summary()
+    assert service.get_project_model_binding(project, **kwargs)["effective"]["planning"]["model"] == frozen.text.model

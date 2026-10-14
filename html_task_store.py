@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-TASK_TYPES = ("html_plan_generate", "html_review", "html_asset_produce", "html_asset_sheet_generate", "html_asset_sheet_assess", "html_asset_sheet_retry")
+TASK_TYPES = ("html_plan_generate", "html_review", "html_asset_produce", "html_asset_sheet_generate", "html_asset_sheet_assess", "html_asset_sheet_retry", "html_semantic_review", "html_course_produce")
 MAX_ATTEMPTS = 3
 ACTIVE_STATUSES = ("queued", "running")
 
@@ -55,10 +55,10 @@ def recovery_action(job):
     unknown = any(r.get("state") in {"intent", "unknown"}
                   for r in payload.get("production_stages", {}).values())
     blocked = unknown or "RECONCILIATION_BLOCKED" in (job.error or "")
-    resumable = (job.job_type == "html_plan_generate"
+    resumable = (job.job_type in ("html_plan_generate","html_semantic_review")
                  and job.status in {"failed", "interrupted"}
                  and int(payload.get("attempt", 1)) < MAX_ATTEMPTS
-                 and bool(payload.get("input", {}).get("snapshot_id"))
+                 and bool(payload.get("input", {}).get("snapshot_id") or (job.job_type=="html_semantic_review" and payload.get("input", {}).get("input_digest")))
                  and not blocked)
     return {"can_resume": resumable, "requires_verification": blocked,
             "reason": "external_outcome_unknown" if blocked else
@@ -97,6 +97,13 @@ def task_view(job, run_dir, *, verify_dependencies=True):
             value["input_state"] = "unknown" if not identity else "current" if contract and sha256_json(contract) == identity else "stale"
         except (OSError, ValueError, TypeError):
             value["input_state"] = "unknown"
+    if value["input_state"]=="current" and job.job_type=="html_semantic_review":
+        from html_semantic_review_service import source
+        try:
+            if source(run_dir,value["slide_id"])["input_digest"]!=job.get_payload()["input"].get("input_digest"):
+                value["input_state"]="stale"
+        except (ValueError,OSError,KeyError,StopIteration):
+            value["input_state"]="stale"
     if value["input_state"] != "current":
         value["recovery"] = {**value["recovery"], "can_resume": False, "reason": "input_changed"}
     return value
@@ -183,7 +190,7 @@ def submit_task(
             continue
         if job.status in ACTIVE_STATUSES or job.status == "succeeded":
             return {**_job_to_dict(job), "reused": True}
-        if job.status == "cancelled" and job_payload.get("input", {}).get("snapshot_id"):
+        if job.status == "cancelled" and (job_payload.get("input", {}).get("snapshot_id") or job.job_type=="html_semantic_review"):
             raise HtmlTaskError("已取消的快照任务不会恢复；请更改输入后创建新任务", 409)
         if any(record.get("state") in {"intent", "unknown"} for record in job_payload.get("production_stages", {}).values()):
             raise HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：外部请求结果不确定，需核实后处理，禁止盲目重试", 409)
@@ -359,3 +366,11 @@ def cancel_task(db, job_id: str) -> Dict[str, Any]:
         ACTIVE_STATUSES,
         {"status": "cancelled", "stage": "cancelled", "finished_at": datetime.now()},
     )
+
+
+def record_progress(db,job_id,progress,expected_attempt=None):
+    """Attempt-fenced progress over the existing persistent job payload."""
+    job=_job(db,job_id,expected_attempt)
+    payload=job.get_payload()
+    payload["progress"]={**payload.get("progress",{}),**progress}
+    return _transition(db,job,("running",),{"payload_json":json_dumps(payload),"stage":"semantic_review"})

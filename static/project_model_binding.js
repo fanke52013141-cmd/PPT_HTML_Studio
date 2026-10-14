@@ -9,7 +9,7 @@
     return el;
   }
   function summaryText(summary) {
-    const sources = {global: '系统设置', creation_config: '创作包', fixed: '项目固定'};
+    const sources = {global: '系统设置', stage_default: 'HTML 阶段默认', creation_config: '创作包', fixed: '项目固定'};
     return `当前：${summary.provider} / ${summary.model || '未配置'} · 来源 ${sources[summary.source] || summary.source}${summary.ready ? '' : ' · ' + summary.error}`;
   }
   async function mount(container, project) {
@@ -30,28 +30,29 @@
     } catch (err) { if (ticket === epoch) status.textContent = err.message; return; }
     if (ticket !== epoch) return;
     const controls = {};
-    for (const kind of ['text', 'image']) {
+    const labels = {planning: '文字规划模型', text: '设计理解与视觉审核模型', image: '图片生成模型'};
+    for (const kind of ['planning', 'text', 'image']) {
       const group = node('fieldset');
-      group.append(node('legend', kind === 'text' ? '文字模型' : '图片模型'));
+      group.append(node('legend', labels[kind]));
       const select = node('select');
-      select.setAttribute('aria-label', kind === 'text' ? '文字模型来源' : '图片模型来源');
+      select.setAttribute('aria-label', labels[kind] + '来源');
       const add = (value, label) => { const option = node('option', label); option.value = value; select.append(option); };
-      const binding = config.bindings[kind];
+      const binding = config.bindings[kind] || {mode: 'legacy'};
       add('legacy', '沿用创作包 / 系统设置');
       add('inherit', '继承系统设置');
-      for (const item of connections.connections.filter(item => item.kind === kind && item.state === 'active')) {
+      for (const item of connections.connections.filter(item => item.kind === (kind === 'planning' ? 'text' : kind) && item.state === 'active')) {
         add(item.id, `固定：${item.name} · ${item.revision.model}`);
       }
       if (binding.mode === 'fixed' && !Array.from(select.options).some(item => item.value === binding.connection_id)) {
         add(binding.connection_id, `固定：${config.effective[kind].model}（保留的连接）`);
       }
       select.value = binding.mode === 'fixed' ? binding.connection_id : binding.mode;
-      const summary = config.effective[kind];
+      const summary = config.effective[kind] || config.effective.text;
       const summaryNode = node('p', summaryText(summary));
       group.append(select, summaryNode);
       const label = node('label');
       const rebind = node('input'); rebind.type = 'checkbox';
-      rebind.setAttribute('aria-label', kind === 'text' ? '重新固定文字模型' : '重新固定图片模型');
+      rebind.setAttribute('aria-label', '重新固定' + labels[kind]);
       label.append(rebind, document.createTextNode('重新固定为该连接的当前配置'));
       group.append(label); panel.append(group);
       controls[kind] = {select, rebind, summaryNode};
@@ -61,7 +62,7 @@
     reload.addEventListener('click', () => mount(container, project));
     save.addEventListener('click', async () => {
       const payload = {expected_revision: config.revision};
-      for (const kind of ['text', 'image']) {
+      for (const kind of ['planning', 'text', 'image']) {
         const {select, rebind} = controls[kind];
         payload[kind] = ['inherit', 'legacy'].includes(select.value) ? {mode: select.value} : {mode: 'fixed', connection_id: select.value, rebind: rebind.checked};
       }
@@ -76,7 +77,7 @@
         try {
           const latest = await API.get(url);
           if (ticket !== epoch) return;
-          for (const kind of ['text', 'image']) controls[kind].summaryNode.textContent = summaryText(latest.effective[kind]);
+          for (const kind of ['planning', 'text', 'image']) controls[kind].summaryNode.textContent = summaryText(latest.effective[kind] || latest.effective.text);
         } catch (_) {
           if (ticket === epoch) status.textContent = '配置已保存，摘要读取失败，请重新读取配置。';
         }

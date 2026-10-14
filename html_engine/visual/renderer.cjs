@@ -345,7 +345,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
   }
   const assetById = new Map(compiled.assets.map((a) => [a.id, a]));
   const textNodes = [],
-    overflowChecks = [];
+    overflowChecks = [], minimumChecks = [];
   try {
     const place = (node, el) => {
       const b = layout.slots[node.slot].box;
@@ -384,7 +384,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           Object.assign(copy.style,{flex:"1",minWidth:"0"});
           if (node.presentation.icon) {
             const bubble=document.createElement("span");
-            Object.assign(bubble.style,{width:px(variant.iconSize),height:px(variant.iconSize),flexShrink:"0",borderRadius:"50%",background:theme.colors.panel,display:"grid",placeItems:"center"});
+            Object.assign(bubble.style,{width:px(variant.iconSize),height:px(variant.iconSize),flexShrink:"0",borderRadius:"50%",background:theme.colors[variant.iconBackgroundToken || "panel"],display:"grid",placeItems:"center"});
             const pictogram=icon(node.presentation.icon);Object.assign(pictogram.style,{width:"38px",height:"38px",color:theme.colors.body});
             bubble.append(pictogram);el.append(bubble);
           }
@@ -392,11 +392,21 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         }
         textStyle(copy, node.role, theme);
         copy.style.whiteSpace = "pre-wrap";
+        const joined = node.runs.map(r => r.text).join("");
+        const prefixEnd = variant?.labelDelimiter ? joined.search(/[:：]/) + 1 : 0;
+        let offset = 0;
         for (const run of node.runs) {
-          const span = document.createElement("span");
-          span.textContent = run.text;
-          if (run.emphasis) span.style.color = theme.colors.accent;
-          copy.append(span);
+          const cut = Math.max(0, Math.min(run.text.length, prefixEnd - offset));
+          const pieces = prefixEnd ? [[run.text.slice(0, cut), true], [run.text.slice(cut), false]] : [[run.text, null]];
+          for (const [text, label] of pieces) {
+            if (!text) continue;
+            const span = document.createElement("span");
+            span.textContent = text;
+            if (run.emphasis) span.style.color = theme.colors.accent;
+            if (label !== null) { span.dataset.textRole = label ? "label" : "body"; span.style.fontWeight = label ? "700" : "400"; }
+            copy.append(span);
+          }
+          offset += run.text.length;
         }
         const slot=layout.slots[node.slot];
         textNodes.push([copy,panel ? {...slot,box:{...slot.box,width:slot.box.width-variant.paddingX*2-(node.presentation.icon ? variant.iconSize+variant.gap : 0),height:slot.box.height-variant.paddingY*2}} : slot,node.id]);
@@ -547,7 +557,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         if (node.heading) {
           const heading = document.createElement("div");
           heading.className = "v-summary-heading";
-          heading.append(icon(node.heading.icon));
+          heading.append(icon(node.presentation?.variant === "summary-relationship-panel" ? node.presentation.icon || node.heading.icon : node.heading.icon));
           heading.append(
             Object.assign(document.createElement("span"), {
               textContent: node.heading.text,
@@ -566,7 +576,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         to.textContent = node.to.text;
         const term = document.createElement("span");
         term.className = "v-term";
-        term.textContent = node.presentation?.variant === "summary-panel" ? node.term : `这个过程叫${node.term}`;
+        term.textContent = ["summary-panel", "summary-relationship-panel"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
         flow.append(from, arrow, to, term);
         el.append(flow);
         const takeaway = document.createElement("strong");
@@ -585,12 +595,38 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           takeaway.style.whiteSpace="normal";
         }
         const slot = layout.slots[node.slot];
-        overflowChecks.push([flow, slot.box.width - 620, node.id]);
-        textNodes.push([
-          takeaway,
-          { ...slot, box: { ...slot.box, width: 540 } },
-          node.id + ":takeaway",
-        ]);
+        if (node.presentation?.variant === "summary-relationship-panel") {
+          const variant = variants.find(v => v.id === node.presentation.variant);
+          const width = slot.box.width - variant.paddingX * 2;
+          const height = slot.box.height - variant.paddingY * 2;
+          const heading = el.querySelector(".v-summary-heading");
+          const fractions = variant.columns.reduce((a, b) => a + b, 0);
+          const columns = variant.columns.map(f => (width - variant.gap * 2) * f / fractions);
+          Object.assign(el.style, {display:"grid",gridTemplateColumns:columns.map(px).join(" "),gap:px(variant.gap),padding:`${variant.paddingY}px ${variant.paddingX}px`,background:theme.colors[variant.backgroundToken],border:"none",borderRadius:px(theme.shapes.cardRadius),boxShadow:"none"});
+          Object.assign(heading.style, {minWidth:"0",height:"100%",borderRight:`1px solid ${theme.colors.line}`,paddingRight:"18px",boxSizing:"border-box",whiteSpace:"normal",gap:"14px"});
+          const mark = heading.querySelector("svg");
+          Object.assign(mark.style, {width:"58px",height:"58px",padding:"13px",boxSizing:"border-box",flexShrink:"0",borderRadius:"50%",background:theme.colors.ink,color:theme.colors.background});
+          Object.assign(flow.style, {minWidth:"0",height:"100%",display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(96px,1.3fr) minmax(0,1fr)",gridTemplateRows:"1fr auto",gap:"6px 8px",borderRight:`1px solid ${theme.colors.line}`,paddingRight:"18px",boxSizing:"border-box",alignItems:"center",justifyItems:"center"});
+          for (const state of [from,to]) Object.assign(state.style,{minWidth:"0",maxWidth:"100%",boxSizing:"border-box",padding:"12px",border:`1px solid ${theme.colors.line}`,background:theme.colors.background,fontSize:"26px"});
+          const connector = vector("svg");
+          attributes(connector, {viewBox:"0 0 160 28",preserveAspectRatio:"none",width:"100%",height:28});
+          connector.dataset.connector = "relationship";
+          Object.assign(connector.style,{width:"100%",height:"28px",display:"block"});
+          const line = vector("path");
+          attributes(line,{d:"M2 14H156M146 4L156 14L146 24",fill:"none",stroke:theme.colors.ink,"stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round","vector-effect":"non-scaling-stroke"});
+          connector.append(line); arrow.replaceWith(connector);
+          Object.assign(term.style,{gridColumn:"1 / 4",gridRow:"2",fontSize:"22px"});
+          Object.assign(takeaway.style,{minWidth:"0",maxWidth:"none",marginLeft:"0",whiteSpace:"normal",fontSize:"26px",lineHeight:"1.4"});
+          const parts = {heading:heading.querySelector("span"),from,to,term,takeaway};
+          for (const [part, text] of Object.entries(parts)) {
+            const available = part === "heading" ? columns[0]-18-58-14 : part === "takeaway" ? columns[2] : part === "term" ? columns[1]-18 : (columns[1]-18-16)*1/3.3-24;
+            textNodes.push([text,{...slot,maxLines:variant.textBudgets[part],box:{...slot.box,width:available,height:part === "from" || part === "to" ? height-32-24 : part === "term" ? 32 : height}},node.id+":"+part]);
+          }
+          overflowChecks.push([el,slot.box.width,node.id]);
+        } else {
+          overflowChecks.push([flow, slot.box.width - 620, node.id]);
+          textNodes.push([takeaway,{ ...slot, box: { ...slot.box, width: 540 } },node.id + ":takeaway"]);
+        }
       } else {
         const svg = vector("svg");
         attributes(svg, {
@@ -658,6 +694,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           target.style.lineHeight = String(style.lineHeight);
         if (style.align !== undefined) target.style.textAlign = style.align;
       }
+      const definition = variants.find(v => v.id === node.presentation?.variant);
+      if (definition?.minWidth || definition?.minHeight) minimumChecks.push([el,definition,node.id,layout.slots[node.slot].box]);
       elements.set(node.id, el);
       stage.append(el);
     }
@@ -689,6 +727,11 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
       host.style.height = px(900 * scale);
     };
     resize();
+    minimumChecks.forEach(([el,definition,id,box]) => checkedMeasure(() => {
+      if (box.width < (definition.minWidth || 0) || box.height < (definition.minHeight || 0))
+        fail("CONTENT_CAPACITY_EXCEEDED",id,`${id}: registered variant requires ${definition.minWidth}x${definition.minHeight}`);
+      return {};
+    },el,{width:definition.minWidth,height:definition.minHeight},id));
     textNodes.forEach(
       ([el, slot, id]) => (measurements[id] = checkedMeasure(measure, el, slot, id)),
     );

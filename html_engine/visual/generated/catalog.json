@@ -1,7 +1,7 @@
 {
   "presentationVariants": {
     "format": "hps.visual.presentation_variants",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "variants": [
       {
         "id": "plain",
@@ -21,7 +21,8 @@
         "paddingX": 22,
         "paddingY": 18,
         "iconSize": 72,
-        "gap": 20
+        "gap": 20,
+        "allowsIcon": true
       },
       {
         "id": "text-card-soft",
@@ -32,7 +33,8 @@
         "paddingX": 22,
         "paddingY": 18,
         "iconSize": 72,
-        "gap": 20
+        "gap": 20,
+        "allowsIcon": true
       },
       {
         "id": "header-badge",
@@ -51,6 +53,49 @@
         "reference": "standard-library:relationship-panel",
         "paddingX": 24,
         "paddingY": 20
+      },
+      {
+        "id": "text-card-label",
+        "nodeTypes": [
+          "text"
+        ],
+        "reference": "standard-library:C02",
+        "paddingX": 22,
+        "paddingY": 18,
+        "iconSize": 72,
+        "gap": 20,
+        "allowsIcon": true,
+        "requiresIcon": true,
+        "minWidth": 440,
+        "minHeight": 136,
+        "labelDelimiter": ":：",
+        "iconBackgroundToken": "blueWash"
+      },
+      {
+        "id": "summary-relationship-panel",
+        "nodeTypes": [
+          "summary"
+        ],
+        "reference": "standard-library:relationship-panel",
+        "paddingX": 24,
+        "paddingY": 20,
+        "gap": 24,
+        "allowsIcon": true,
+        "minWidth": 1100,
+        "minHeight": 140,
+        "columns": [
+          0.8,
+          1.5,
+          1.2
+        ],
+        "textBudgets": {
+          "heading": 2,
+          "from": 1,
+          "to": 1,
+          "term": 1,
+          "takeaway": 2
+        },
+        "backgroundToken": "pinkWash"
       }
     ]
   },

@@ -1,0 +1,122 @@
+{
+  "date": "2026-10-14",
+  "contract": "0.9.42",
+  "state": "manual_candidate_review_available_engineering_failed",
+  "project_id": "d1f5885a_122521",
+  "normal_entry": "actual application browser wizard and automatic one-click",
+  "input": "lecture text only from previously supplied course; no visual plan/assets/scenes/model response injected",
+  "pages": 5,
+  "beats": 25,
+  "planning_model": "glm-5.3",
+  "planning_stage_calls": 2,
+  "actual_http_count": null,
+  "usage": null,
+  "cost": null,
+  "new_images": 4,
+  "new_tts": 0,
+  "user_approvals": 1,
+  "code_change_task": "html_0e2a87c17fcf4d7db50f",
+  "historical_failed_task": "html_55f941b5db4343bebc22",
+  "restart_same_id": true,
+  "restart_boundary": "waiting_for_user; no active remote request",
+  "restart_status": "waiting_for_user",
+  "author_hashes": {
+    "planning\\slide_script_plan.json": "24d710429314b6efb5bd60d48bcfdf6b50b58b893e010c2e8a8a3c0d76e5ad4c",
+    "planning\\slide_visual_plan.json": "a42e5a37f591f979eaca4882b864a9c66586a10e95198ed6110d6a928d0520e8",
+    "planning\\visual_contract.json": "7e8c5921ee47a97d0243ed8e7bab1b6adedde91e2c802544772fa2e5c2d977e1",
+    "planning\\visual_contract.validation.json": "bd2e8d3d1bf204972d9f8571050e86d9819f2a12afe3c23269d3887e03aafa71"
+  },
+  "image_credential_stored_locally": true,
+  "image_key_transmitted_to_gateway": true,
+  "image_model_requested": "gpt-image-2.5-sunburst-official",
+  "image_defaults": {
+    "resolution": "2K",
+    "quality": "low"
+  },
+  "missing": null,
+  "checks": {
+    "normal_entry_browser": "7 checks passed; explicit stub HTTP",
+    "workspace_browser": "passed; explicit stub HTTP",
+    "flow_and_frontend": "passed",
+    "course_agent_joint": "38 passed",
+    "image_binding_course_joint": "40 passed; overlapping",
+    "ruff": "passed",
+    "agent_contract": "passed",
+    "image_transport_binding_course_gateway": "49 passed; overlapping",
+    "size_and_migration": "15 passed",
+    "manual_candidate_tests": "28 passed including Agent contract parity, plus browser panel and frontend quality"
+  },
+  "pending": [
+    "repair candidate variant/geometry through registered operations, then obtain a passing engineering candidate",
+    "human review decision on a passing candidate",
+    "saved author scene and formal visual approval",
+    "remaining four pages, TTS, A04, formal export"
+  ],
+  "image_endpoint": "https://api.toapis.com/v1/images/generations",
+  "image_connection_id": "97f2f9fb37da4f59b1a17be207995a29",
+  "configured_course_job_id": "html_f604714b999f43d89a03",
+  "image_transport_verification": {
+    "tests_passed": 49,
+    "protocol": "official pixels/image_urls/async task",
+    "requested_design_size": "2048x1152",
+    "actual_dimensions": [
+      2048,
+      1152
+    ]
+  },
+  "page_job_id": "html_8b64bbcc5c894528807c",
+  "design_candidate_key": "af2b6dbb527a6d77fee69b0f65394b90aee5cb76eed3310f872ca968c684e47b",
+  "design_approval": "design_selected_for_reconstruction_only; final_visual_pending",
+  "image_upstream_task_id": "tsk_img_01M4WCVCN2SPNKE2C762NF2S6P",
+  "page_planning_calls": 2,
+  "page_planning_repair_reason": "SEMANTIC_IMAGE_STATE_CHANGE",
+  "page_image_calls": 1,
+  "current_course_status": "paused_historical_due_to_code_change; original waiting_for_review on slide_001",
+  "reconstruction_job_id": "html_d2f56980a06f482c8d0d",
+  "reconstruction_result": "failed_before_scene",
+  "reconstruction_error": "ASSET_PIXEL_BUDGET: 2048x2048 > 4000000",
+  "independent_subject": {
+    "width": 2048,
+    "height": 2048,
+    "sha256": "d543113b62a148215e80d69ca70547e227f0184112b55a4fa73197f42a13480b",
+    "upstream_task_id": "tsk_img_01M4WGPGDT9WE147JEM6J32TQ0",
+    "state": "returned",
+    "alpha_range": [
+      0,
+      254
+    ]
+  },
+  "design_confirmation_authorization": "user requested continue A06 after displayed design and recommendation; final visual approval remains pending",
+  "human_content_signoff": "pending",
+  "content_comparison": "key source meaning preserved by Codex manual comparison; 25 beats retained",
+  "current_design_candidate_key": "e434ba0d743a2ac57c1842df1bc4df234f7b32d6854a2fb597865c43521e09a8",
+  "current_reconstruction_job_id": "html_5b3d0bbc80df4d4b83e4",
+  "asset_strategy": "full design 2048x1152; independent subject 1024x1024; 4000000 pixel budget intact",
+  "prior_reconstruction_job_id": "html_dfe1f6aef7d04c048fe6",
+  "prior_reconstruction_error": "UNRESOLVED_ANCHOR: token-mascot-anchor; corrected explicit planned anchor identity",
+  "current_reconstruction_status": "failed",
+  "current_reconstruction_error": "EXTERNAL_OUTCOME_UNKNOWN; GLM design-reconstruct request timed out after 600s; lookup_supported=false; original request must not be resent",
+  "current_reconstruction_returned_stages": [
+    "design_understanding",
+    "1024x1024 transparent image",
+    "asset",
+    "compile",
+    "layout-agent patch"
+  ],
+  "local_preview_strict_review": "passed; candidate unsaved; no design-reconstruction model review",
+  "local_preview_path": "runs/d1f5885a_122521/planning/html_visual/review/review-slide_001.png",
+  "visual_review": "pending; local candidate differs from source design in callout/panel and needs review",
+  "manual_candidate": {
+    "job_id": "html_5b3d0bbc80df4d4b83e4",
+    "key": "b8a62d8d5932f64f5c0bbf97d132082909b29c0e78cdbc71a35ff0aa80cd6ec9",
+    "source_revision": 0,
+    "engineering": "failed",
+    "first_issue": "CONTENT_CAPACITY_EXCEEDED: s1-summary: registered variant requires 1100x140",
+    "model_fidelity": "unknown",
+    "decision": null,
+    "author_saved": false,
+    "original_task": "failed; unknown stage unchanged",
+    "api_read": "200; verified original design and preview PNG",
+    "api_accept": "409 CANDIDATE_ENGINEERING_FAILED; no decision written"
+  }
+}

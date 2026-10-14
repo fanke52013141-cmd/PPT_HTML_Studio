@@ -1,0 +1,575 @@
+{
+  "date": "2026-10-14",
+  "contract": "0.9.39",
+  "definition": "semantic-qa-0.1.0",
+  "agent_api": "1.27.0",
+  "experiment": "isolated production SemanticReviewJobs; registered developer scene fixture; A02 model plan; reused original MiniMax real audio",
+  "audio_source": "outputs/a03-semantic-runtime-2026-10-13-final/run/slides/token-03",
+  "audio_duration_seconds": 16.776,
+  "frame_sampling": "real shared browser player at each bound beat start/middle/end-1ms",
+  "no_auto_repair": true,
+  "supplier_unknown_request_retries": 0,
+  "cases": [
+    {
+      "label": "正常对照",
+      "model": "glm-5.3-flash",
+      "task_status": "succeeded",
+      "engineering": "passed",
+      "semantic": "passed",
+      "audio": "pending",
+      "human": "pending",
+      "visual": "pending",
+      "valid": false,
+      "report_key": "dee3fe85e2b5d3ec723f9ff56f1d12aa6b346f8946b51c85852832d3cbb5373d",
+      "input_digest": "1a6de2215a04e8f3fa4a6e4920e9681de758f6cb48a2617015989e8695da5f9e",
+      "beats": [
+        {
+          "id": "token-03-b1",
+          "spoken_text": "输入 Token 包括你发送给模型的提示和上下文。",
+          "times": [
+            0,
+            1858.0,
+            3715
+          ],
+          "result": {
+            "verdict": "related",
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "frameIndex": 1,
+                "targetId": "stat-input",
+                "observation": "统计卡已显示“输入 Token：你发送的提示与上下文”，与原句“输入 Token 包括你发送给模型的提示和上下文”含义一致"
+              },
+              {
+                "frameIndex": 2,
+                "targetId": "stat-input",
+                "observation": "终态卡片持续可见，内容未变，关键信息在音频窗口内及时出现并保持"
+              },
+              {
+                "frameIndex": 0,
+                "targetId": "stat-input",
+                "observation": "起始帧卡片尚未显示（入场动画，透明为正常），仅标题“03 输入和输出，要分开看用量”可见"
+              }
+            ]
+          }
+        },
+        {
+          "id": "token-03-b2",
+          "spoken_text": "输出 Token 是模型生成回复所使用的单位。",
+          "times": [
+            3716,
+            5405.5,
+            7094
+          ],
+          "result": {
+            "verdict": "related",
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "frameIndex": 0,
+                "targetId": null,
+                "observation": "起始帧仅显示标题和“输入 Token”卡，stat-output 因入场动画尚未可见（正常）"
+              },
+              {
+                "frameIndex": 1,
+                "targetId": "stat-output",
+                "observation": "中帧“输出 Token：模型生成回复使用的单位”卡片已完整显示，与原句含义一致，出现及时（入场动画约在4216ms完成，本帧5405ms已稳定可见）"
+              },
+              {
+                "frameIndex": 2,
+                "targetId": "stat-output",
+                "observation": "末帧该卡片持续可见，无错误关系或缺失内容"
+              }
+            ]
+          }
+        },
+        {
+          "id": "token-03-b3",
+          "spoken_text": "输入与输出常有不同单价，具体还可能涉及缓存或推理类别。",
+          "times": [
+            7095,
+            9391.0,
+            11686
+          ],
+          "result": {
+            "verdict": "related",
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "frameIndex": 0,
+                "targetId": "stat-pricing",
+                "observation": "start帧stat-pricing尚不可见（入场起始透明），画面只有标题与输入/输出两张Token卡"
+              },
+              {
+                "frameIndex": 1,
+                "targetId": "stat-pricing",
+                "observation": "mid帧stat-pricing已入场可见，强调文本为“单价可能不同：缓存或推理类别会影响计费”，与原句“输入与输出常有不同单价，具体还可能涉及缓存或推理类别”语义一致"
+              },
+              {
+                "frameIndex": 2,
+                "targetId": "stat-pricing",
+                "observation": "end帧stat-pricing持续可见，关键内容在窗口中段及时出现并保持到句末"
+              }
+            ]
+          }
+        },
+        {
+          "id": "token-03-b4",
+          "spoken_text": "计费应结合实际用量与该模型的价目表，不能只看字数。",
+          "times": [
+            11687,
+            14156.0,
+            16624
+          ],
+          "result": {
+            "verdict": "related",
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "frameIndex": 1,
+                "targetId": "billing-caption",
+                "observation": "中帧可见说明文字“按实际输入与输出用量，并结合具体模型价目表计费，不能只看字数。”，直接表达原句的用量+价目表计费、不只看字数的含义"
+              },
+              {
+                "frameIndex": 1,
+                "targetId": "billing-summary",
+                "observation": "总结区显示“计费要点”及“输入→输出 Token 用量”，结论“分开统计用量，按模型价目表计价”，与原句一致"
+              },
+              {
+                "frameIndex": 2,
+                "targetId": "billing-caption",
+                "observation": "末帧说明文字与总结区持续可见，关键内容在本句窗口内及时出现且保持"
+              }
+            ]
+          }
+        }
+      ],
+      "frame_sha256": [
+        "415937c7c90132c4c8bfc063a3576379ecfe0ef21a56380bc77cbc3271c1f764",
+        "074f25ca96613145ae6ab28e702dbf0fa5595042c55b5acfc73230d2e2f5d378",
+        "074f25ca96613145ae6ab28e702dbf0fa5595042c55b5acfc73230d2e2f5d378",
+        "f9f83284406f74db3d33f1152e2cd59c35d90c3d2cd4fcb6709f0c7083fe49fa",
+        "5c29c9d55640519565d4036cc568858c8570e3fd3481d5b4ca4c4963a772c901",
+        "5c29c9d55640519565d4036cc568858c8570e3fd3481d5b4ca4c4963a772c901",
+        "90d0094cd1742020acd82b031734f556199ec8c896d71a26be82334748d4238a",
+        "6dff4a264ae9fe2694fb209efd5787269d252cc51d149a925200e953e7dfd46f",
+        "6dff4a264ae9fe2694fb209efd5787269d252cc51d149a925200e953e7dfd46f",
+        "13615d74037dcc6e2d6ebf4704faf042faedde8b4fa68990e967d55ac1584166",
+        "a745cbea9669b3b24d1c90649732884297020c6d6935290f6b5ab76f6633ad19",
+        "a745cbea9669b3b24d1c90649732884297020c6d6935290f6b5ab76f6633ad19"
+      ],
+      "http_count": 4,
+      "total_tokens": 29424,
+      "calls": [
+        {
+          "state": "returned",
+          "image_count": 3,
+          "thinking": {
+            "type": "enabled"
+          },
+          "reasoning_effort": "max",
+          "elapsed_seconds": 12.872,
+          "usage": {
+            "completion_tokens": 796,
+            "prompt_tokens": 6519,
+            "total_tokens": 7315,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": null,
+              "audio_tokens": null,
+              "reasoning_tokens": 649,
+              "rejected_prediction_tokens": null,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "cost": null
+        },
+        {
+          "state": "returned",
+          "image_count": 3,
+          "thinking": {
+            "type": "enabled"
+          },
+          "reasoning_effort": "max",
+          "elapsed_seconds": 10.217,
+          "usage": {
+            "completion_tokens": 600,
+            "prompt_tokens": 6518,
+            "total_tokens": 7118,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": null,
+              "audio_tokens": null,
+              "reasoning_tokens": 435,
+              "rejected_prediction_tokens": null,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "cost": null
+        },
+        {
+          "state": "returned",
+          "image_count": 3,
+          "thinking": {
+            "type": "enabled"
+          },
+          "reasoning_effort": "max",
+          "elapsed_seconds": 12.428,
+          "usage": {
+            "completion_tokens": 736,
+            "prompt_tokens": 6538,
+            "total_tokens": 7274,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": null,
+              "audio_tokens": null,
+              "reasoning_tokens": 556,
+              "rejected_prediction_tokens": null,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "cost": null
+        },
+        {
+          "state": "returned",
+          "image_count": 3,
+          "thinking": {
+            "type": "enabled"
+          },
+          "reasoning_effort": "max",
+          "elapsed_seconds": 28.461,
+          "usage": {
+            "completion_tokens": 945,
+            "prompt_tokens": 6772,
+            "total_tokens": 7717,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": null,
+              "audio_tokens": null,
+              "reasoning_tokens": 757,
+              "rejected_prediction_tokens": null,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "cost": null
+        }
+      ],
+      "new_tts": 0,
+      "new_images": 0,
+      "human_approved": false
+    },
+    {
+      "label": "矛盾负例",
+      "model": "glm-5.3-flash",
+      "task_status": "succeeded",
+      "engineering": "passed",
+      "semantic": "failed",
+      "audio": "pending",
+      "human": "pending",
+      "visual": "pending",
+      "valid": false,
+      "report_key": "ecc0549487a75d8849d7686b65a106ea4c3121e997793f148982958c38b73cb9",
+      "input_digest": "22e26c9105b2971b3a8c9b7aa0b95dce964221405e6b2b3b76ac78ccaaeb3ed5",
+      "beats": [
+        {
+          "id": "token-03-b1",
+          "spoken_text": "输入 Token 包括你发送给模型的提示和上下文。",
+          "times": [
+            0,
+            1858.0,
+            3715
+          ],
+          "result": {
+            "verdict": "contradiction",
+            "confidence": 0.9,
+            "evidence": [
+              {
+                "frameIndex": 1,
+                "targetId": "stat-input",
+                "observation": "卡片实际显示'输出 Token：模型生成回复使用的单位'，而原句讲的是'输入 Token 包括提示和上下文'，卡片表达的是相反的 Token 类型"
+              },
+              {
+                "frameIndex": 2,
+                "targetId": "stat-input",
+                "observation": "窗口结束时该卡片仍显示'输出 Token：模型生成回复使用的单位'，未出现任何'输入 Token'的定义内容"
+              },
+              {
+                "frameIndex": 0,
+                "targetId": null,
+                "observation": "起始帧仅有标题'03 输入和输出，要分开看用量'，无输入 Token 相关卡片内容（入场透明属正常）"
+              }
+            ]
+          }
+        },
+        {
+          "id": "token-03-b2",
+          "spoken_text": "输出 Token 是模型生成回复所使用的单位。",
+          "times": [
+            3716,
+            5405.5,
+            7094
+          ],
+          "result": {
+            "verdict": "related",
+            "confidence": 0.85,
+            "evidence": [
+              {
+                "frameIndex": 0,
+                "targetId": "stat-output",
+                "observation": "句首帧入场动作刚开始，stat-output尚未显示（透明入场起始，属正常）"
+              },
+              {
+                "frameIndex": 1,
+                "targetId": "stat-output",
+                "observation": "stat-output卡片已显示“输出 Token：模型生成回复使用的单位”，与原句含义一致，出现及时"
+              },
+              {
+                "frameIndex": 2,
+                "targetId": "stat-output",
+                "observation": "末帧该卡片持续可见，文字未变；注意画面另有一张同文卡片，但不影响本句定义的达意"
+              }
+            ]
+          }
+        },
+        {
+          "id": "token-03-b3",
+          "spoken_text": "输入与输出常有不同单价，具体还可能涉及缓存或推理类别。",
+          "times": [
+            7095,
+            9391.0,
+            11686
+          ],
+          "result": {
+            "verdict": "related",
+            "confidence": 0.9,
+            "evidence": [
+              {
+                "frameIndex": 0,
+                "targetId": "stat-pricing",
+                "observation": "start帧stat-pricing尚未显示，enter动作恰在窗口起点开始，入场透明属正常"
+              },
+              {
+                "frameIndex": 1,
+                "targetId": "stat-pricing",
+                "observation": "mid帧卡片显示强调文本“单价可能不同：缓存或推理类别会影响计费”，与原句“不同单价”“缓存或推理类别”内容一致"
+              },
+              {
+                "frameIndex": 2,
+                "targetId": "stat-pricing",
+                "observation": "end帧该卡片持续可见，配合标题“输入和输出，要分开看用量”共同表达输入/输出单价差异及缓存、推理类别因素"
+              }
+            ]
+          }
+        },
+        {
+          "id": "token-03-b4",
+          "spoken_text": "计费应结合实际用量与该模型的价目表，不能只看字数。",
+          "times": [
+            11687,
+            14156.0,
+            16624
+          ],
+          "result": {
+            "verdict": "related",
+            "confidence": 0.9,
+            "evidence": [
+              {
+                "frameIndex": 0,
+                "targetId": "billing-caption",
+                "observation": "起始帧说明文字与总结区尚未可见（入场动画从透明开始），属正常入场"
+              },
+              {
+                "frameIndex": 1,
+                "targetId": "billing-caption",
+                "observation": "中段帧说明文字显示“按实际输入与输出用量，并结合具体模型价目表计费，不能只看字数。”，与原句“结合实际用量与价目表、不能只看字数”含义一致"
+              },
+              {
+                "frameIndex": 1,
+                "targetId": "billing-summary",
+                "observation": "总结区显示输入→输出的 Token 用量关系，结论为“分开统计用量，按模型价目表计价”，在音频窗口中段（14156ms）已及时出现"
+              },
+              {
+                "frameIndex": 2,
+                "targetId": null,
+                "observation": "末帧两个关键对象保持可见，无相互矛盾内容，画面持续表达原句要点"
+              }
+            ]
+          }
+        }
+      ],
+      "frame_sha256": [
+        "415937c7c90132c4c8bfc063a3576379ecfe0ef21a56380bc77cbc3271c1f764",
+        "9f17283eca1fdc2b423509786e1cb756bda74f03bcf9386dd854fcbb9d2b3779",
+        "9f17283eca1fdc2b423509786e1cb756bda74f03bcf9386dd854fcbb9d2b3779",
+        "b3558ccc7c1483aa05f0a7822683383e74178cd3cca883c645a9de8fea925ab6",
+        "f679d1fff2cd367e9e0415bb9136318b0c588a42c1961a37b3319a74dbded624",
+        "f679d1fff2cd367e9e0415bb9136318b0c588a42c1961a37b3319a74dbded624",
+        "3d670db4c001c7839fe475d581158cb4ebd2561cdfe02e90fb5a2d867bf73f3a",
+        "9d996333c685dc5b791c077e709d9e80e723830346cee0e42851eaa54021fbf0",
+        "9d996333c685dc5b791c077e709d9e80e723830346cee0e42851eaa54021fbf0",
+        "09b9af27758a8d0ea0c3ae744af296e3ab21d96b9271b760fec09b269356959f",
+        "704ff108887fe1dacaa35c95af73ec9e69c43a7d6015f067dca9706a2f14f458",
+        "704ff108887fe1dacaa35c95af73ec9e69c43a7d6015f067dca9706a2f14f458"
+      ],
+      "http_count": 4,
+      "total_tokens": 36499,
+      "calls": [
+        {
+          "state": "returned",
+          "image_count": 3,
+          "thinking": {
+            "type": "enabled"
+          },
+          "reasoning_effort": "max",
+          "elapsed_seconds": 50.056,
+          "usage": {
+            "completion_tokens": 1830,
+            "prompt_tokens": 6517,
+            "total_tokens": 8347,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": null,
+              "audio_tokens": null,
+              "reasoning_tokens": 1677,
+              "rejected_prediction_tokens": null,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "cost": null
+        },
+        {
+          "state": "returned",
+          "image_count": 3,
+          "thinking": {
+            "type": "enabled"
+          },
+          "reasoning_effort": "max",
+          "elapsed_seconds": 76.736,
+          "usage": {
+            "completion_tokens": 5318,
+            "prompt_tokens": 6518,
+            "total_tokens": 11836,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": null,
+              "audio_tokens": null,
+              "reasoning_tokens": 5184,
+              "rejected_prediction_tokens": null,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "cost": null
+        },
+        {
+          "state": "returned",
+          "image_count": 3,
+          "thinking": {
+            "type": "enabled"
+          },
+          "reasoning_effort": "max",
+          "elapsed_seconds": 21.77,
+          "usage": {
+            "completion_tokens": 1480,
+            "prompt_tokens": 6538,
+            "total_tokens": 8018,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": null,
+              "audio_tokens": null,
+              "reasoning_tokens": 1328,
+              "rejected_prediction_tokens": null,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "cost": null
+        },
+        {
+          "state": "returned",
+          "image_count": 3,
+          "thinking": {
+            "type": "enabled"
+          },
+          "reasoning_effort": "max",
+          "elapsed_seconds": 33.621,
+          "usage": {
+            "completion_tokens": 1526,
+            "prompt_tokens": 6772,
+            "total_tokens": 8298,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": null,
+              "audio_tokens": null,
+              "reasoning_tokens": 1322,
+              "rejected_prediction_tokens": null,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "cost": null
+        }
+      ],
+      "new_tts": 0,
+      "new_images": 0,
+      "human_approved": false
+    }
+  ],
+  "tests": {
+    "semantic_python": "25 passed",
+    "semantic_browser": "6 checks passed, stub transport",
+    "integration": "105 passed",
+    "openapi_mcp_protocol_workflow": "56 passed; 1 pre-existing design-provider-missing fixture failure"
+  },
+  "limitations": [
+    "No normal-application full-course acceptance",
+    "Provider timeline subdivides four semantic beats from two timestamp spans; human listening still pending",
+    "Three frames per beat are bounded evidence, not every video frame",
+    "Original design-reference fidelity and intermittent neutral-science seek issue remain separate"
+  ]
+}

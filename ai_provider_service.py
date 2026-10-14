@@ -457,7 +457,11 @@ def is_toapis_image_provider(provider: Optional[str], base_url: Optional[str] = 
 
 
 def _toapis_base_url(base_url: Optional[str]) -> str:
-    return (str(base_url or "").strip() or "https://toapis.cn").rstrip("/")
+    root = (str(base_url or "").strip() or "https://toapis.cn").rstrip("/")
+    for suffix in ("/v1/images/generations", "/v1"):
+        if root.endswith(suffix):
+            return root[:-len(suffix)]
+    return root
 
 
 def _toapis_ratio(size: Optional[str]) -> str:
@@ -590,7 +594,8 @@ def generate_toapis_image_response(
                 "resolution": resolution if resolution in {"1k", "2k", "4k"} else "2k",
                 "quality": quality if quality in {"low", "medium", "high"} else "high",
             }
-            if model in {"gpt-image-2.5-flare-vip", "gpt-image-2.5-sunburst-vip"}:
+            official = model in {"gpt-image-2.5-flare-official", "gpt-image-2.5-sunburst-official"}
+            if official or model in {"gpt-image-2.5-flare-vip", "gpt-image-2.5-sunburst-vip"}:
                 # VIP uses exact pixels, unlike the legacy ratio/resolution API.
                 payload["size"] = normalize_image_size(size) or "2048x2048"
                 payload.pop("resolution")
@@ -598,7 +603,7 @@ def generate_toapis_image_response(
             if transparent_background:
                 payload["background"] = "transparent"
             if reference_urls:
-                payload["reference_images"] = reference_urls
+                payload["image_urls" if official else "reference_images"] = reference_urls
             try:
                 created = _governed_image_request(
                     base_url,

@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-14",
+  "capabilities": [
+    "text-card-label",
+    "summary-relationship-panel",
+    "check-plain"
+  ],
+  "contract": "0.9.38",
+  "registration_version": "0.2.0",
+  "source_fixture": "html_engine/visual/fixtures/presentation-details/scene.json",
+  "engineering": {
+    "python_design_reconstruction_review": {
+      "passed": 28
+    },
+    "browser_details": {
+      "passed": 6
+    },
+    "original_engine": {
+      "checks": 14,
+      "scenes": 5,
+      "page_errors": 0,
+      "status": "passed_final_run",
+      "previous_issue": "intermittent_theme_seek_buffer_mismatch",
+      "root_cause": "not_determined",
+      "test_assertion": "exact_buffer_equality_preserved_with_bounded_failure_reporting"
+    }
+  },
+  "model_screenshot_review": {
+    "model": "glm-5.3-flash",
+    "thinking": "enabled",
+    "reasoning_effort": "max",
+    "adapter_calls": 1,
+    "http_attempts": null,
+    "elapsed_seconds": 15.415,
+    "usage": null,
+    "cost": null,
+    "result": {
+      "status": "pass",
+      "checks": [
+        {
+          "requirement": 1,
+          "status": "pass",
+          "evidence": "All three statistic cards show a light gray circular backing behind the icon: card 1 has a chat/message glyph, card 2 a document glyph, card 3 a database glyph, each on a soft gray filled circle of equal size."
+        },
+        {
+          "requirement": 2,
+          "status": "pass",
+          "evidence": "In each card the prefix before the colon (输入 Token：/输出 Token：/单价可能不同：) renders in heavier weight while the following description (你发送的提示与上下文 / 模型生成回复使用的单位 / 缓存或推理类别会影响计费) is regular weight; text wraps to two lines at natural breakpoints and remains readable."
+        },
+        {
+          "requirement": 3,
+          "status": "pass",
+          "evidence": "The caption 按实际输入与输出用量，并结合具体模型价目表计费，不能只看字数。 starts at the same left edge as the first card's left border."
+        },
+        {
+          "requirement": 4,
+          "status": "pass",
+          "evidence": "The bottom summary band has a light gray background with rounded corners; two thin vertical separators divide it into three sections: 计费要点 with check icon, the 输入/输出 diagram, and the bold conclusion 分开统计用量，按模型价目表计价."
+        },
+        {
+          "requirement": 5,
+          "status": "pass",
+          "evidence": "A white rounded chip labeled 输入 connects via a long straight horizontal arrow to a chip labeled 输出, and the label Token 用量 sits centered beneath the arrow."
+        },
+        {
+          "requirement": 6,
+          "status": "pass",
+          "evidence": "The 计费要点 title uses a solid black filled circle containing a white checkmark stroke, with no surrounding checkbox/square outline."
+        },
+        {
+          "requirement": 7,
+          "status": "pass",
+          "evidence": "All heading, card, caption, and summary text is fully visible within its container; no truncated characters, overlapping elements, or unreadably small body copy observed."
+        }
+      ],
+      "issues": []
+    },
+    "evidence_sha256": "3c4794c961789325d5e44ea440278437e159438e05ecf983decac9811d10310a"
+  },
+  "original_reference_fidelity": "not_run_original_runtime_image_missing",
+  "audio": "not_tested_no_new_tts",
+  "human_approval": "pending",
+  "author_saved": false,
+  "fixture_origin": "A02 model plan + developer capability operations through guarded editor; not autonomous production"
+}

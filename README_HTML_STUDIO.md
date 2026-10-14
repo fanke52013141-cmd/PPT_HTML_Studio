@@ -1,5 +1,13 @@
 # PPT HTML Studio
 
+2026-10-14 当前交接：[A04—A06 开发与线上同步备注](docs/plans/html-backend-development/handoff-2026-10-14-publication.md)。正常应用已完成五页分镜和第一页整页设计/独立素材；未保存候选的人工审阅入口可追溯原任务，但最终版式容量失败，只能驳回。真实整课、试听/签收与正式输出仍待完成。A06 过程证据见 [专项交接](docs/plans/html-backend-development/handoff-a06-2026-10-14.md)。
+
+2026-10-14 最新增量：[A05 系统内部课程调度与跨进程恢复](docs/plans/html-backend-development/handoff-a05-2026-10-14.md)。原一键入口串联HTML生产/TTS/A04/当前签收/视频任务，课程及原子任务ID持久恢复；真实正常应用整课验收与用户试听/签收留待A06。
+
+前序增量：[A04 逐句语义 QA、真实正反例与 A05 入口](docs/plans/html-backend-development/handoff-a04-2026-10-14.md)。逐句三帧与原句独立审核已实现；真实正常例通过、输入/输出矛盾负例被阻止。音频/人工批准仍独立。
+
+前序增量：[共享呈现细节、GLM截图审阅与下一批入口](docs/plans/html-backend-development/handoff-presentation-details-2026-10-14.md)。文字/多模态模型分开，新增能力工程及截图验证通过，旧原图保真仍待验。
+
 本地最新增量：[设计Agent理解、素材分工与还原审核](docs/plans/html-backend-development/handoff-design-agent-2026-10-13.md)。下方设计先行/A03为前序交接；真实模型、视觉批准与应用整课验收分别记录。
 
 前序增量：[整页设计先行、真实豆包还原与逐句试听](docs/plans/html-backend-development/handoff-design-first-2026-10-13.md)。该轮单页通过工程检查；后续独立视觉审核发现差异并阻止正式保存，以当前设计 Agent 交接为准。A03 仍为历史增量记录。
