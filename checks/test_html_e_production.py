@@ -73,7 +73,7 @@ def test_unsupported_allocation_stops_before_paid_subject_and_author_write(case)
     def generator(**kw):
         if kw.get("artifact_prefix", "").startswith("design_understanding-"):
             data = json.loads(kw["user_prompt"])
-            return {"status":"unsupported","objects":[],"issues":[{"targetId":data["objects"][0]["id"],"route":"capabilities","evidence":"fixture unsupported shape"}]}
+            return {"status":"unsupported","objects":[],"issues":[{"targetId":data["objects"][0]["id"],"route":"capabilities","requirement":"unsupported_presentation","evidence":"fixture unsupported shape"}]}
         return response_for(kw)
     case.deps = HtmlReviewDependencies(ROOT,generator)
     with pytest.raises(HtmlReviewError) as caught:
@@ -160,7 +160,7 @@ def test_stop_resume_real_package_and_no_duplicate_planning(case):
     assert "黑、灰、白" in case.requests[0]["prompt"]
     assert "html-design-reference/0.3.0" in case.requests[0]["prompt"]
     catalog = json.loads((ROOT / "html_engine/visual/generated/catalog.json").read_text(encoding="utf-8"))
-    layout = next(value for value in catalog["layouts"] if value["id"] == record["plan"]["layoutRef"]["id"])
+    layout = next(value for value in catalog["layouts"] if {"id": value["id"], "version": value["version"]} == record["plan"]["layoutRef"])
     geometry = pack["content"]["layoutGeometry"]
     assert geometry["canvas"] == layout["canvas"]
     assert geometry["slots"] == {slot: layout["slots"][slot]["box"] for slot in record["plan"]["slots"]}
@@ -350,11 +350,31 @@ def test_toapis_receives_1k_low_and_actual_paths(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("options", [{"unknown": True}, {"design_candidate_key": "../x"},
-                                        {"design_candidate_key": "a" * 64, "design_instruction": "change"},
+                                        {"design_candidate_key": "a" * 64, "design_instruction": "   "},
+                                        {"design_candidate_key": "a" * 64, "design_instruction": "change", "asset_instruction": "change"},
                                         {"asset_instruction": "change"}])
 def test_strict_request(options):
     with pytest.raises(ValidationError):
         HtmlProduceRequest.model_validate(options)
+
+
+def test_design_revision_reuses_plan_and_attaches_original_without_author_write(case):
+    first = run(case)
+    key = first["design"]["key"]
+    before_calls = len(case.llm_calls)
+    old_record = json.loads((candidate_directory(case.run, "e1", key) / "candidate.json").read_text(encoding="utf-8"))
+    revised = run(case, design_candidate_key=key, design_instruction="仅调整标签位置，保留原构图")
+    assert len(case.llm_calls) == before_calls
+    assert len(case.requests) == 2
+    assert Path(case.requests[-1]["reference_paths"][-1]) == candidate_directory(case.run, "e1", key) / "design-reference.png"
+    assert "最后一张附件" in case.requests[-1]["prompt"]
+    new_record = json.loads((candidate_directory(case.run, "e1", revised["design"]["key"]) / "candidate.json").read_text(encoding="utf-8"))
+    assert new_record["plan"] == old_record["plan"]
+    assert new_record["brief"] == old_record["brief"]
+    assert new_record["candidate"]["design_revision"]["source_key"] == key
+    assert revised["stage"] == "design_review" and revised["saved"]["changed"] is False
+    assert not (case.run / "planning/html_visual/scene-e1.json").exists()
+    assert not (case.run / "planning/html_visual/design-acceptance.json").exists()
 
 
 def test_web_agent_payload_parity_and_current_design(tmp_path, monkeypatch):

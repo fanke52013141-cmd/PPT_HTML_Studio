@@ -20,7 +20,7 @@ def definition_identity(repo_root):
                                       "html_design_candidates.py", "html_image_provider.py", "html_design_brief.py",
                                       "html_candidate_agent.py", "html_scene_repair.py", "html_scene_editing.py",
                                       "html_visual_review_service.py", "html_semantic_plan.py", "html_semantic_design.py",
-                                      "html_planning_context.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_runtime_skills.py", "html_engine/tools/review-scene.cjs")]
+                                      "html_planning_context.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_design_policy.py", "html_runtime_skills.py", "html_engine/tools/review-scene.cjs")]
     from html_runtime_skills import runtime_source_files
     paths += [repo / record["path"] for record in runtime_source_files(repo)]
     for folder in ("themes", "layouts", "templates"):

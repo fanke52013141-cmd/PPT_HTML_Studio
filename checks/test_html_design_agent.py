@@ -29,6 +29,24 @@ def test_three_real_registered_skills_and_source_closure():
     assert any("design-fidelity-review" in f["path"] for f in files)
 
 
+def test_review_receives_authority_and_tools_without_previous_agent_verdict(case):
+    from html_design_agent import review_fidelity
+    run, scene, _, reference, _ = case
+    calls = []
+    def generator(**kwargs):
+        payload = json.loads(kwargs["user_prompt"])
+        calls.append(payload)
+        assert payload["production_policy"]["palette"] == "grayscale"
+        assert "understanding" not in payload
+        for item in payload["capabilities"].values():
+            if "set_text_style" in item["editable"]:
+                assert item["editable"]["set_text_style"]["scope"] == "whole_part_only"
+        return {"status": "pass", "issues": []}
+    result = review_fidelity(scene, reference, reference, {}, {"result": "not independent evidence"},
+        folder=run/"fidelity", run_dir=run, deps=HtmlReviewDependencies(ROOT, generator))
+    assert len(calls) == 1 and result["human_approval"] == "pending"
+
+
 @pytest.mark.parametrize("damage",["missing","duplicate","rasterize","variant","icon"])
 def test_allocation_rejects_missing_duplicate_rasterized_and_unregistered_objects(case,damage):
     _,scene,_,_,_=case
@@ -51,10 +69,30 @@ def test_generated_and_reused_images_require_exact_authoritative_owner():
 
 
 def test_svg_issue_cannot_route_code_to_bitmap_generation():
-    result={"issues":[{"targetId":"summary","category":"asset"},{"targetId":"subject","category":"asset"}]}
+    result={"issues":[{"targetId":"summary","category":"asset","requirement":"asset_identity"},{"targetId":"subject","category":"asset","requirement":"asset_identity"}]}
     scene={"nodes":[{"id":"summary","type":"summary"},{"id":"subject","type":"image"}]}
-    routed=fidelity_routes(result,scene)
+    routed=fidelity_routes(result,scene,{"summary":{},"subject":{}})
     assert [i["route"] for i in routed]==["capabilities","assets"]
+
+
+def test_unsupported_allocation_routes_code_back_to_capabilities_without_more_calls(case):
+    from html_design_agent import understand_design
+    run, scene, _, reference, _ = case
+    before = copy.deepcopy(scene)
+    calls, events = [], []
+    target = next(n["id"] for n in scene["nodes"] if n["type"] != "image")
+    def generator(**kw):
+        calls.append(kw)
+        return {"status": "unsupported", "objects": [], "issues": [
+            {"targetId": target, "route": "assets", "requirement": "unsupported_presentation", "evidence": "fixture code-controlled component unavailable"}]}
+    with pytest.raises(HtmlReviewError) as caught:
+        understand_design(scene, reference, run_dir=run, deps=HtmlReviewDependencies(ROOT, generator), progress=events.append)
+    assert caught.value.code == "DESIGN_ALLOCATION_UNSUPPORTED" and len(calls) == 1
+    assert events[-1]["next_action"]["routes"] == ["capabilities"]
+    assert events[-1]["next_action"]["automatic_retry"] is False and scene == before
+    record = json.loads(next((run / "planning/html_visual/candidates").glob("*/design-understanding/*/result.json")).read_text(encoding="utf-8"))
+    assert record["result"]["issues"][0]["route"] == "assets"
+    assert record["routed_issues"][0]["route"] == "capabilities"
 
 
 def test_component_choices_are_executed_before_layout_without_changing_text_or_actions(case):
@@ -71,10 +109,10 @@ def test_component_choices_are_executed_before_layout_without_changing_text_or_a
 
 
 @pytest.mark.parametrize("response",[
-    {"status":"pass","issues":[{"targetId":"header","category":"layout","severity":"major","evidence":"visible difference","suggestion":"adjust spacing"}]},
+    {"status":"pass","issues":[{"targetId":"header","category":"layout","requirement":"geometry","severity":"major","evidence":"visible difference","suggestion":"adjust spacing"}]},
     {"status":"changes_requested","issues":[]},
     {"status":"pass","issues":[],"approval":True},
-    {"status":"changes_requested","issues":[{"targetId":"invented","category":"layout","severity":"major","evidence":"difference","suggestion":"adjust"}]},
+    {"status":"changes_requested","issues":[{"targetId":"invented","category":"layout","requirement":"geometry","severity":"major","evidence":"difference","suggestion":"adjust"}]},
 ])
 def test_review_never_accepts_contradictions_approval_or_unknown_targets(case,response):
     with pytest.raises(ValueError):validate_fidelity(response,case[1])
@@ -90,7 +128,7 @@ def test_visual_feedback_is_consumed_by_next_real_static_decision(case):
             assert len(kw["image_paths"])==2 and all(Path(p).is_file() for p in kw["image_paths"])
             reviews.append(kw)
             if len(reviews)==1:
-                return {"status":"changes_requested","issues":[{"targetId":"header","category":"layout","severity":"minor","evidence":"header sits above reference baseline","suggestion":"move down"}]}
+                return {"status":"changes_requested","issues":[{"targetId":"header","category":"layout","requirement":"geometry","severity":"minor","evidence":"header sits above reference baseline","suggestion":"move down"}]}
             return fixture
         if fixture is not None:return fixture
         payload=json.loads(kw["user_prompt"])
@@ -104,16 +142,37 @@ def test_visual_feedback_is_consumed_by_next_real_static_decision(case):
 
 
 def test_asset_problem_stops_static_loop_and_preserves_author(case):
-    run,scene,binding,reference,contract=case;before=copy.deepcopy(scene);calls=[]
+    run,scene,binding,reference,contract=case;before=copy.deepcopy(scene);calls=[];events=[]
     def generator(**kw):
         calls.append(kw)
         if kw["artifact_prefix"].startswith("design_fidelity_review-"):
-            return {"status":"changes_requested","issues":[{"targetId":"header","category":"capability","severity":"major","evidence":"unsupported header shape","suggestion":"add registered variant"}]}
+            return {"status":"changes_requested","issues":[{"targetId":"header","category":"capability","requirement":"unsupported_presentation","severity":"major","evidence":"unsupported header shape","suggestion":"add registered variant"}]}
         return response_for(kw) or {"status":"unchanged","message":"fixture"}
     with pytest.raises(HtmlReviewError) as caught:
-        reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"])
+        reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"],progress=events.append)
     assert caught.value.code=="DESIGN_REVIEW_ROUTED" and len(calls)==3 and scene==before
     assert not (run/"planning/html_visual/scene-token-03.json").exists()
+    assert events[-1]["next_action"]["routes"] == ["capabilities"]
+    assert events[-1]["next_action"]["reason"] == "upstream_revision_required"
+
+
+def test_reconstruction_discovers_missing_semantic_labels_and_stops_at_planning(case):
+    run,scene,binding,reference,contract=case
+    calls, events = [], []
+    def generator(**kw):
+        fixture = response_for(kw)
+        if fixture is not None:
+            return fixture
+        calls.append(kw)
+        return {"status": "unsupported", "message": "missing semantic label objects", "issues": [
+            {"targetId": scene["nodes"][0]["id"], "route": "assets", "requirement": "semantic_text",
+             "evidence": "reference labels are absent from the code object table"}]}
+    with pytest.raises(HtmlReviewError) as caught:
+        reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),
+                           beats=contract["narration_beats"],progress=events.append)
+    assert caught.value.code == "RECONSTRUCTION_UNSUPPORTED" and len(calls) == 1
+    assert events[-1]["next_action"]["routes"] == ["planning"]
+    assert not list((run/"planning/html_visual").glob("scene-*.json"))
 
 
 def test_new_component_choices_apply_before_layout_without_guessing_geometry(tmp_path):

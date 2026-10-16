@@ -295,7 +295,8 @@ def produce_scene(
     from runtime_support import run_subprocess_killable
 
     selection = HtmlProduceRequest.model_validate(options or {})
-    if provider is None and not selection.design_candidate_key:
+    revising_design = bool(selection.design_candidate_key and selection.design_instruction.strip())
+    if provider is None and (not selection.design_candidate_key or revising_design):
         raise HtmlReviewError("正式页面需要先生成完整设计参考，请配置图片服务", code="DESIGN_PROVIDER_MISSING")
     definitions = definition_identity(deps.repo_root)
     resumed = None
@@ -331,16 +332,21 @@ def produce_scene(
         "keyframes": required_keyframes(plan),
     }
     references = []
-    if resumed:
+    if resumed and not revising_design:
         candidate = copy.deepcopy(resumed["candidate"])
         references = package["references"] + [str(accepted_image)]
     elif provider is not None:
-        package_path = run_dir / "planning/html_visual/reference-packages" / sha256_json(
-            {"plan": plan, "brief": brief, "definitions": definitions})
-        package = assemble_reference(plan, brief, repo_root=deps.repo_root,
-                                     directory=package_path, runner=run_subprocess_killable)
-        package["directory"] = str(package_path.relative_to(run_dir))
-        references = package["references"]
+        if revising_design:
+            package_path = run_dir / resumed["reference_package"]
+            package["directory"] = str(package_path.relative_to(run_dir))
+            references = package["references"] + [str(accepted_image)]
+        else:
+            package_path = run_dir / "planning/html_visual/reference-packages" / sha256_json(
+                {"plan": plan, "brief": brief, "definitions": definitions})
+            package = assemble_reference(plan, brief, repo_root=deps.repo_root,
+                                         directory=package_path, runner=run_subprocess_killable)
+            package["directory"] = str(package_path.relative_to(run_dir))
+            references = package["references"]
         design_path = (
             run_dir
             / "planning/html_visual/candidates"
@@ -348,7 +354,7 @@ def produce_scene(
             / "design-reference.png"
         )
         design_path.parent.mkdir(parents=True, exist_ok=True)
-        prompt = design_prompt(package, instruction=selection.design_instruction)
+        prompt = design_prompt(package, instruction=selection.design_instruction, revise_existing=revising_design)
         request = {
             "prompt": prompt,
             "reference_paths": references,
@@ -403,8 +409,14 @@ def produce_scene(
             "request_key": key,
             "sha256": hashlib.sha256(design_path.read_bytes()).hexdigest(),
         }
+        if revising_design:
+            candidate["design_revision"] = {"source_key": selection.design_candidate_key,
+                                             "instruction_sha256": sha256_json(selection.design_instruction)}
         checkpoint()
         refreshed = verify_package(package_path)
+        if revising_design:
+            load_design(run_dir=run_dir, contract=contract, key=selection.design_candidate_key,
+                        revision=revision, definitions=definitions, model_summary=model_summary)
         if refreshed["manifest"]["manifestSha256"] != package["manifest"]["manifestSha256"]:
             raise HtmlReviewError("请求期间参考包已变化", code="REFERENCE_PACKAGE_INVALID")
         if definition_identity(deps.repo_root) != definitions:
@@ -432,7 +444,7 @@ def produce_scene(
     asset_modes = {n["id"]: "generate" if n["slot"] in generation_slots else "reuse"
                    for n in allocation_scene["nodes"] if n["type"] == "image"}
     understanding = understand_design(allocation_scene, accepted_image, run_dir=run_dir, deps=deps,
-                                      asset_modes=asset_modes, checkpoint=checkpoint)
+                                      asset_modes=asset_modes, checkpoint=checkpoint, progress=progress_record)
     stage_record("design_understanding", understanding)
     allocation_by_slot = {n["slot"]: next(o for o in understanding["result"]["objects"] if o["targetId"] == n["id"])
                           for n in allocation_scene["nodes"]}

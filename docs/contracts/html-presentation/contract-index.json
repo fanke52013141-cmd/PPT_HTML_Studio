@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.46",
+  "contract_version": "0.9.53",
   "effective_date": "2026-10-15",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,13 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-15 HPS-001/006/007/010/011/013--017/019--030/035--037: optional code labels/relations in a pinned layout version; registered emphasis, upward arrows, figure captions and result-column variants; normal semantic planning prompt0.3.0, Agent1.34.0. Twenty-one offline cases; production approval remains independent.",
+    "2026-10-15 HPS-010/011/013--017/023--030/035--037: design authority and executable requirement routing; runtime design contracts 0.2.0, explicit request timeout preservation, 20-case workflow checklist and isolated same-case diagnostic replay. Agent API 1.33.0; no author/DB/export migration.",
+    "2026-10-15 HPS-010/013/015/017/023--025/035--037: fixed offline workflow incident evaluation, 18 versioned cases, exact parametrized item counts, isolated executors, evidence reports and comparable baseline gates. workflow-evaluation-0.1.0; no production API or approval change.",
+    "2026-10-15 HPS-010/013--017/023--025/035--037: adapter-boundary measurement and reuse evidence, explicit bounded repair exits and ownership-validated capability routes. execution-evidence-0.1.0; Agent API 1.32.0. Provider usage/cost remain unknown; no automatic retry, author save or approval.",
+    "2026-10-15 HPS-010/011/013--017/023--025: source-key design revision reuses plan/brief and original image, stops at design review; current same-page task/design facts refresh read-only with response fencing; interrupted intent can enter strict unsaved evidence replay without retry, author save or approval. Agent API 1.31.0.",
+    "2026-10-15 HPS-011/013/023--025: registered summary-relationship-compact for 1100x91 summary slots; the existing 1100x140 variant remains strict. Archived A06 candidate stays failed/unknown/stale; isolated engineering preview does not approve or save it. See runtime/visual-v1/summary-relationship-compact-0.1.0.md.",
+    "2026-10-15 HPS-010/013/023--025: six-step Codex/Stitch workspace presentation integrated through scoped CSS and audio presentation wrappers; original controls, transport, clocks, approvals and image backend retained. Isolated UI evidence is separate from course and aesthetic acceptance.",
     "2026-10-15 HPS-010/013/015/017: current per-stage evidence and current video artifact projection; audio-driven shared preview and sentence QA/human decision in audio workspace; independent button gates; Stitch reference layout integration, no public API or author/approval changes.",
     "2026-10-14 HPS-010/013/015/017/023--030: separate HTML design-image and reconstruction/motion workspaces, remove raster handwriting from HTML flow, preserve backend controls and production/approval contracts; html-workspace-flow-0.1.0.",
     "2026-10-14 HPS-011/014--017: normal storyboard title/display/anchor projection; bounded HTML JSON streaming with private reasoning counters; outcome receipts survive source changes while author execution stays strict.",
@@ -56,7 +63,18 @@
     "2026-10-10 E: application-production-0.3.0 defines neutral reference packages, explicit design checkpoint, single-subject retry and provenance fingerprints; Agent 1.17.0. Real provider and user acceptance remain separate."
   ],
   "documents": [
-    { "path": "runtime/visual-v1/html-workspace-flow-0.1.0.md" },
+    {
+      "path": "runtime/visual-v1/labeled-explanation-0.1.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/design-review-authority-0.2.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/summary-relationship-compact-0.1.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/html-workspace-flow-0.1.0.md"
+    },
     {
       "path": "runtime/visual-v1/runtime-skills-0.1.0.md"
     },

@@ -11,6 +11,7 @@ from artifact_fingerprint import sha256_file, sha256_json
 from html_runtime_skills import load_runtime_skill
 from html_visual_review_service import HtmlReviewError
 from pipeline_lifecycle import write_json_atomic
+from html_design_policy import Requirement, production_policy, editable_capabilities, resolve_issue
 
 TIMEOUT = 600
 
@@ -32,6 +33,8 @@ class AllocationIssue(Strict):
     targetId: str
     route: Literal["planning", "assets", "capabilities"]
     evidence: str = Field(min_length=1, max_length=1200)
+    requirement: Requirement
+    variant_id: str | None = None
 
 
 class Understanding(Strict):
@@ -46,6 +49,8 @@ class FidelityIssue(Strict):
     severity: Literal["minor", "major"]
     evidence: str = Field(min_length=1, max_length=1200)
     suggestion: str = Field(min_length=1, max_length=1200)
+    requirement: Requirement
+    variant_id: str | None = None
 
 
 class Fidelity(Strict):
@@ -59,12 +64,14 @@ def component_context(scene, repo_root, *, asset_modes=None):
     icons = load_template_catalog(repo_root)["icons"]
     variants = catalog.get("presentationVariants", {}).get("variants", []) if scene["version"] in ("0.6.0", "0.7.0") else []
     return {
+        "production_policy": production_policy(scene),
         "objects": scene["nodes"],
         "capabilities": {n["id"]: {
             "owner": "image" if n["type"] == "image" else "code",
             "assetMode": (asset_modes or {}).get(n["id"], "reuse") if n["type"] == "image" else "none",
             "variants": [v for v in variants if n["type"] in v["nodeTypes"]],
             "icons": icons if any(v.get("allowsIcon") and n["type"] in v["nodeTypes"] for v in variants) else [],
+            "editable": editable_capabilities(n, [v for v in variants if n["type"] in v["nodeTypes"]]),
         } for n in scene["nodes"]},
     }
 
@@ -102,18 +109,25 @@ def validate_fidelity(response, scene):
     return result.model_dump()
 
 
-def fidelity_routes(result, scene):
-    """A model category cannot send code-controlled SVG to bitmap generation."""
+def allocation_routes(result, scene, capabilities):
     nodes = {n["id"]: n for n in scene["nodes"]}
-    routes = {"layout":"reconstruction","content":"planning","asset":"assets","capability":"capabilities"}
     resolved = []
     for issue in result["issues"]:
-        route = routes[issue["category"]]
-        reason = "model_category_validated_against_registered_owner"
-        if issue["category"] == "asset" and nodes[issue["targetId"]]["type"] != "image":
-            route = "capabilities"
-            reason = "code_controlled_object_cannot_be_replaced_by_bitmap_asset"
-        resolved.append({"targetId":issue["targetId"],"category":issue["category"],"route":route,"reason":reason})
+        target = issue["targetId"]
+        route, reason = resolve_issue(issue, nodes[target], capabilities[target])
+        resolved.append({"targetId": target, "requested_route": issue["route"],
+                         "requirement": issue["requirement"], "route": route, "reason": reason})
+    return resolved
+
+
+def fidelity_routes(result, scene, capabilities):
+    """A model category cannot send code-controlled SVG to bitmap generation."""
+    nodes = {n["id"]: n for n in scene["nodes"]}
+    resolved = []
+    for issue in result["issues"]:
+        route, reason = resolve_issue(issue, nodes[issue["targetId"]], capabilities[issue["targetId"]])
+        resolved.append({"targetId":issue["targetId"],"category":issue["category"],
+                         "requirement":issue["requirement"],"route":route,"reason":reason})
     return resolved
 
 
@@ -173,7 +187,7 @@ def decision(stage, payload, images, *, folder, run_dir, deps, checkpoint=lambda
     return response, skill.identity
 
 
-def understand_design(scene, reference, *, run_dir, deps, asset_modes=None, checkpoint=lambda: None):
+def understand_design(scene, reference, *, run_dir, deps, asset_modes=None, checkpoint=lambda: None, progress=lambda value: None):
     context = component_context(scene,deps.repo_root,asset_modes=asset_modes)
     reference = Path(reference).resolve()
     if not reference.is_relative_to(Path(run_dir).resolve()) or not reference.is_file():
@@ -189,16 +203,20 @@ def understand_design(scene, reference, *, run_dir, deps, asset_modes=None, chec
         raise HtmlReviewError("设计理解未通过对象与分工校验",code="DESIGN_UNDERSTANDING_INVALID") from exc
     record = {"result":result,"runtime_skill":skill,"audit":str(folder.relative_to(Path(run_dir))),
               "design_sha256":sha256_file(reference),"scene_sha256":sha256_json(scene)}
+    if result["status"] == "unsupported":
+        record["routed_issues"] = allocation_routes(result, scene, context["capabilities"])
+        record["repair_routes"] = sorted({issue["route"] for issue in record["routed_issues"]})
     write_json_atomic(folder/"result.json",record)
     if result["status"] != "ready":
+        progress({"next_action": {"stage": "design_understanding", "reason": "unsupported",
+                  "routes": record["repair_routes"], "automatic_retry": False}})
         raise HtmlReviewError("设计要求需规划、素材或组件返工，已保留问题证据",code="DESIGN_ALLOCATION_UNSUPPORTED")
     return record
 
 
 def review_fidelity(scene, reference, screenshot, report, understanding, *, folder, run_dir, deps, manual=None, checkpoint=lambda: None):
     from html_scene_editing import manual_protected_paths
-    payload = {"objects":scene["nodes"],"capabilities":component_context(scene,deps.repo_root)["capabilities"],
-               "understanding":understanding["result"],"measurements":report.get("measurements"),
+    payload = {**component_context(scene,deps.repo_root),"measurements":report.get("measurements"),
                "geometry":report.get("geometry"),"manual_protected_paths":manual_protected_paths(manual)}
     response, skill = decision("design_fidelity_review",payload,[reference,screenshot],folder=folder,
                               run_dir=run_dir,deps=deps,checkpoint=checkpoint)
@@ -207,7 +225,7 @@ def review_fidelity(scene, reference, screenshot, report, understanding, *, fold
     except ValueError as exc:
         write_json_atomic(Path(folder)/"diagnostic.json",{"code":"DESIGN_REVIEW_INVALID","message":str(exc)[:1200]})
         raise HtmlReviewError("还原审核响应无效，未签发通过",code="DESIGN_REVIEW_INVALID") from exc
-    routed = fidelity_routes(result,scene)
+    routed = fidelity_routes(result,scene,payload["capabilities"])
     record = {"result":result,"runtime_skill":skill,"scene_sha256":sha256_json(scene),
               "design_sha256":sha256_file(reference),"screenshot_sha256":sha256_file(screenshot),
               "repair_routes":sorted({i["route"] for i in routed}),"routed_issues":routed,"human_approval":"pending"}

@@ -95,6 +95,8 @@ def test_model_binding_read_write_noop_conflict_and_redaction(api):
     url=f"/api/agent/v1/projects/{ids['html']}/model-binding"
     initial=client.get(url); assert initial.status_code==200,initial.text
     assert initial.json()['bindings']['text']['mode']=='legacy'
+    assert initial.json()['bindings']['planning']['mode']=='legacy'
+    assert initial.json()['effective']['planning']['model']==initial.json()['effective']['text']['model']
     data={'expected_revision':0,'text':{'mode':'fixed','connection_id':'model-A'},'image':{'mode':'inherit'}}
     saved=client.put(url,json=data);assert saved.status_code==200,saved.text
     assert saved.json()=={'project_id':ids['html'],'revision':1,'changed':True}
@@ -103,6 +105,7 @@ def test_model_binding_read_write_noop_conflict_and_redaction(api):
     assert client.put(url,json={**data,'expected_revision':0}).status_code==409
     read=client.get(url)
     assert read.json()['effective']['text']['model']=='model-A'
+    assert read.json()['effective']['planning']['model']==read.json()['effective']['text']['model']
     for hidden in ('private-key','credential-private-ref','private-endpoint','secret-text','secret-image'):
         assert hidden not in read.text
     web=client.get(f"/api/projects/{ids['html']}/model-binding").json()
@@ -111,6 +114,22 @@ def test_model_binding_read_write_noop_conflict_and_redaction(api):
         assert client.put(url,json=payload).status_code==422
     assert client.get(f"/api/agent/v1/projects/{ids['foreign']}/model-binding").status_code==404
     assert client.put(f"/api/agent/v1/projects/{ids['image']}/model-binding",json=data).status_code==400
+
+
+def test_model_binding_read_includes_independent_planning(api):
+    client,ids,_,_=api
+    url=f"/api/agent/v1/projects/{ids['html']}/model-binding"
+    saved=client.put(url,json={'expected_revision':0,'text':{'mode':'legacy'},'image':{'mode':'legacy'},
+                               'planning':{'mode':'fixed','connection_id':'model-planning'}})
+    assert saved.status_code==200,saved.text
+    read=client.get(url)
+    assert read.status_code==200,read.text
+    assert read.json()['bindings']['planning']=={'mode':'fixed','connection_id':'model-planning'}
+    assert read.json()['effective']['planning']['model']=='model-planning'
+    assert read.json()['effective']['text']['model']=='global-text'
+    web=client.get(f"/api/projects/{ids['html']}/model-binding").json()
+    assert {k:v for k,v in read.json().items() if k!='project_id'}==web
+    assert 'private-key' not in read.text
 
 
 def test_scene_edit_get_preview_write_reopen_and_conflict(api):

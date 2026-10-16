@@ -126,3 +126,75 @@ def test_image_response_is_reused_after_restart(stage):
     recovered = restart(stage)
     assert recovered.wrap(fn, "image")("subject") == buf.getvalue()
     assert len(calls) == 1
+
+
+def test_measured_call_and_restart_reuse_are_distinct(stage):
+    from html_build_snapshot import json_bytes
+    calls = []
+    kwargs = {"user_prompt": "private instruction", "artifact_prefix": "html_scene_plan_s1"}
+    fn = lambda **kw: calls.append(kw) or {"plan": True}
+    stage.wrap(fn, "json")(**kwargs)
+    first = store._job_to_dict(store._job(stage.db, stage.job_id))
+    metrics = next(iter(first["stages"].values()))["metrics"]
+    assert metrics["role"] == "planning" and metrics["adapter_calls"] == 1
+    assert metrics["adapter_input_bytes"] == len(json_bytes({"args": (), "kwargs": kwargs}))
+    assert metrics["output_bytes"] == len(json_bytes({"plan": True})) and metrics["elapsed_ms"] >= 0
+    assert "private instruction" not in str(metrics) and metrics["usage"] is None
+    recovered = restart(stage)
+    recovered.wrap(fn, "json")(**kwargs)
+    result = store._job_to_dict(store._job(stage.db, stage.job_id))["execution"]
+    assert result["measured_adapter_calls"] == 1 and result["recorded_reuses"] == 1
+    assert result["elapsed_ms"] == metrics["elapsed_ms"] and calls == [kwargs]
+
+
+def test_unfinished_intent_does_not_claim_a_measured_adapter_call(stage):
+    class AbruptExit(BaseException):
+        pass
+    def interrupted(**_):
+        raise AbruptExit()
+    with pytest.raises(AbruptExit):
+        stage.wrap(interrupted, "json")()
+    task = store._job_to_dict(store._job(stage.db, stage.job_id))
+    assert next(iter(task["stages"].values()))["state"] == "intent"
+    assert task["execution"]["measured_adapter_calls"] == 0
+    assert task["execution"]["unmeasured_requests"] == task["execution"]["untimed_requests"] == 1
+
+
+def test_unknown_elapsed_does_not_persist_provider_error_or_invent_usage(stage):
+    def timeout(**_):
+        raise TimeoutError("private provider message")
+    with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
+        stage.wrap(timeout, "json")()
+    task = store._job_to_dict(store._job(stage.db, stage.job_id))
+    assert task["execution"]["measured_adapter_calls"] == 1
+    assert task["execution"]["usage"] is task["execution"]["cost"] is None
+    assert "private provider message" not in str(task["stages"])
+
+
+def test_budget_stop_is_persistent_without_an_extra_provider_call(stage):
+    stage.MAX_CALLS = 1
+    calls = []
+    stage.wrap(lambda **kw: calls.append(1) or {}, "json")(user_prompt="first")
+    with pytest.raises(store.HtmlTaskError, match="预算"):
+        stage.wrap(lambda **kw: calls.append(1) or {}, "json")(user_prompt="second")
+    action = store._job_to_dict(store._job(stage.db, stage.job_id))["progress"]["next_action"]
+    assert action["reason"] == "external_call_budget_exhausted" and not action["automatic_retry"]
+    assert calls == [1]
+
+
+@pytest.mark.parametrize("explicit,expected", [(600, 600), (45, 45), (None, 1800)])
+def test_streaming_honors_explicit_stage_deadline_without_changing_model_parameters(stage, explicit, expected):
+    calls = []
+    def generator(**kw):
+        calls.append(kw)
+        return {"status": "complete"}
+    generator.supports_stream_progress = True
+    options = {"user_prompt": "fixed", "max_tokens_limit": 64000, "temperature": 1.0}
+    if explicit is not None:
+        options["request_timeout"] = explicit
+    stage.wrap(generator, "json")(**options)
+    assert len(calls) == 1 and calls[0]["request_timeout"] == expected and calls[0]["stream_output"] is True
+    assert calls[0]["max_tokens_limit"] == 64000 and calls[0]["temperature"] == 1.0
+    assert "reasoning_effort" not in calls[0]
+    task = store._job_to_dict(store._job(stage.db, stage.job_id))
+    assert next(iter(task["stages"].values()))["metrics"]["request_timeout_seconds"] == expected

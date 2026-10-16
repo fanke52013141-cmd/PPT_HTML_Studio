@@ -28,6 +28,7 @@ class HtmlTaskError(ValueError):
 
 
 def _job_to_dict(job) -> Dict[str, Any]:
+    from html_execution_metrics import execution_summary
     payload = job.get_payload()
     return {
         "id": job.id,
@@ -40,6 +41,7 @@ def _job_to_dict(job) -> Dict[str, Any]:
         "result": payload.get("result"),
         "snapshot_id": payload.get("input", {}).get("snapshot_id"),
         "stages": payload.get("production_stages", {}),
+        "execution": execution_summary(payload.get("production_stages", {})),
         "reconciliation": payload.get("reconciliation"),
         "slide_id": payload.get("input", {}).get("slide_id"),
         "stage": job.stage,
@@ -280,11 +282,15 @@ def _transition(db, job, allowed, fields):
 
 
 def mark_running(db, job_id: str, expected_attempt=None) -> Dict[str, Any]:
+    job = _job(db, job_id, expected_attempt)
+    payload = job.get_payload()
+    for key in ("next_action", "repair_status", "stop_reason"):
+        payload.get("progress", {}).pop(key, None)
     return _transition(
         db,
-        _job(db, job_id, expected_attempt),
+        job,
         ("queued",),
-        {"status": "running", "stage": "running", "started_at": datetime.now()},
+        {"status": "running", "stage": "running", "started_at": datetime.now(), "payload_json": json_dumps(payload)},
     )
 
 
@@ -294,6 +300,8 @@ def mark_succeeded(
     job = _job(db, job_id, expected_attempt)
     payload = job.get_payload()
     payload["result"] = result
+    for key in ("next_action", "repair_status", "stop_reason"):
+        payload.get("progress", {}).pop(key, None)
     return _transition(
         db,
         job,

@@ -1,6 +1,6 @@
 {
   "format": "hps.visual.presentation_variants",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "variants": [
     {
       "id": "plain",
@@ -71,6 +71,32 @@
       "iconBackgroundToken": "blueWash"
     },
     {
+      "id": "summary-relationship-compact",
+      "nodeTypes": [
+        "summary"
+      ],
+      "reference": "standard-library:relationship-panel",
+      "paddingX": 18,
+      "paddingY": 10,
+      "gap": 14,
+      "allowsIcon": true,
+      "minWidth": 1100,
+      "minHeight": 91,
+      "columns": [
+        0.7,
+        1.6,
+        1.5
+      ],
+      "textBudgets": {
+        "heading": 1,
+        "from": 1,
+        "to": 1,
+        "term": 1,
+        "takeaway": 1
+      },
+      "backgroundToken": "pinkWash"
+    },
+    {
       "id": "summary-relationship-panel",
       "nodeTypes": [
         "summary"
@@ -95,6 +121,65 @@
         "takeaway": 2
       },
       "backgroundToken": "pinkWash"
+    },
+    {
+      "id": "text-emphasis-bold",
+      "nodeTypes": [
+        "text"
+      ],
+      "reference": "code-owned:runs-emphasis",
+      "emphasisWeight": 700,
+      "normalWeight": 400
+    },
+    {
+      "id": "figure-caption-top",
+      "nodeTypes": [
+        "figure"
+      ],
+      "reference": "code-owned:figure-captions",
+      "minWidth": 360,
+      "minHeight": 240,
+      "noteTop": 18,
+      "tagTop": 88,
+      "captionInset": 18,
+      "tagBackgroundToken": "blueWash"
+    },
+    {
+      "id": "summary-relationship-columns",
+      "nodeTypes": [
+        "summary"
+      ],
+      "reference": "standard-library:relationship-panel",
+      "paddingX": 18,
+      "paddingY": 10,
+      "gap": 14,
+      "allowsIcon": true,
+      "minWidth": 1100,
+      "minHeight": 110,
+      "columns": [
+        0.7,
+        1.6,
+        1.5
+      ],
+      "textBudgets": {
+        "heading": 2,
+        "from": 1,
+        "to": 1,
+        "term": 1,
+        "takeaway": 2
+      },
+      "backgroundToken": "pinkWash",
+      "termPosition": "takeaway_column",
+      "takeawayChip": true
+    },
+    {
+      "id": "arrow-up",
+      "nodeTypes": [
+        "arrow"
+      ],
+      "reference": "code-owned:directed-relation",
+      "minWidth": 24,
+      "minHeight": 32
     }
   ]
 }

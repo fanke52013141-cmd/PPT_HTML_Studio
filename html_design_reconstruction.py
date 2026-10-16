@@ -8,15 +8,16 @@ from pathlib import Path
 from PIL import Image
 
 from artifact_fingerprint import sha256_file, sha256_json
-from html_scene_repair import PARTS, candidate_from_document
+from html_scene_repair import candidate_from_document
 from html_scene_editing import resources, manual_protected_paths, SceneEditError
 from html_visual_review_service import HtmlReviewError, review_scene
 from html_storyboard_planning import load_template_catalog
-from html_design_agent import understand_design, review_fidelity, apply_allocations
+from html_design_agent import (understand_design, review_fidelity, apply_allocations, component_context,
+                               validate_understanding, allocation_routes)
 from html_runtime_skills import load_runtime_skill
 from pipeline_lifecycle import write_json_atomic
 
-PROMPT_VERSION = "html-design-reconstruct/0.5.1"
+PROMPT_VERSION = "html-design-reconstruct/0.6.0"
 REQUEST_TIMEOUT_SECONDS = 600
 
 
@@ -33,6 +34,12 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
                             "understanding":understanding})
     audit = run/"planning/html_visual/candidates"/scene["id"]/"design-reconstruction"/identity
     audit.mkdir(parents=True,exist_ok=True)
+    def stop(reason, routes, code, message, **evidence):
+        action = {"stage": "reconstruction", "reason": reason, "routes": routes, "automatic_retry": False}
+        write_json_atomic(audit/"result.json", {"status": "rejected", "stop_reason": reason,
+            "next_action": action, "design_sha256": source_hash, "visual_fidelity": "not_accepted", **evidence})
+        progress({"next_action": action})
+        raise HtmlReviewError(message, code=code)
     # PNG is the existing multimodal transport format; keep original source/hash.
     reference = audit/"reference.png"
     with Image.open(design_path) as image:
@@ -40,7 +47,7 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
         if image.width*image.height > 4_000_000:
             raise HtmlReviewError("设计参考超过视觉输入预算",code="RECONSTRUCTION_REFERENCE_INVALID")
         image.save(reference,format="PNG")
-    understanding = understanding or understand_design(scene,reference,run_dir=run,deps=deps,checkpoint=checkpoint)
+    understanding = understanding or understand_design(scene,reference,run_dir=run,deps=deps,checkpoint=checkpoint,progress=progress)
     if understanding["design_sha256"] != source_hash:
         # PNG transport may transcode; compare against the actual original design.
         if understanding["design_sha256"] != sha256_file(reference):
@@ -87,13 +94,14 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
         folder = audit/str(index);folder.mkdir(exist_ok=True)
         current_image = folder/"current.png"
         current_image.write_bytes(shot.read_bytes())
+        context = component_context(current, deps.repo_root)
         user = {"canvas":layout["canvas"],"objects":current["nodes"],
                 "base_slots":{n["slot"]:layout["slots"][n["slot"]] for n in current["nodes"]},
-                "public_parts":{n["id"]:PARTS.get(n["type"],[]) for n in current["nodes"]},
+                "production_policy": context["production_policy"],
+                "capabilities": context["capabilities"],
                 "manual_protected_paths":manual_protected_paths(manual),
                 "actual_geometry":report["geometry"],"actual_measurements":report.get("measurements"),
                 "diagnostic":diagnostic,
-                "design_understanding":understanding["result"],
                 "content_safe_rect":{"x":0,"y":0,"width":1600,"height":800},
                 "motion_extents":{n["id"]:{
                     "minX":min([0]+[a.get("offsetX",0) for a in current["motion"] if a["targetId"]==n["id"]]),
@@ -101,7 +109,6 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
                     "minY":min([0]+[a.get("offsetY",0) for a in current["motion"] if a["targetId"]==n["id"]]),
                     "maxY":max([0]+[a.get("offsetY",0) for a in current["motion"] if a["targetId"]==n["id"]])
                 } for n in current["nodes"]}}
-        user["variant_tools"] = catalog.get("presentationVariants",{}) if current["version"] in ("0.6.0","0.7.0") else {}
         user["geometry_limits"] = {}
         for node in current["nodes"]:
             box = layout["slots"][node["slot"]]["box"]
@@ -116,7 +123,7 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
             }
         user["registered_icons"] = sorted(load_template_catalog(deps.repo_root)["icons"])
         prompts = {"system_prompt":skill.fragment,"user_prompt":json.dumps(user,ensure_ascii=False),
-                   "schema_hint":"{status:candidate,operations:[{targetId,kind,part?,values}]} or {status:unsupported|unchanged,message}"}
+                   "schema_hint":"{status:candidate,operations:[{targetId,kind,part?,values}]} or {status:unchanged,message} or {status:unsupported,message,issues:[{targetId,route,requirement,variant_id?,evidence}]}"}
         images = [str(reference.resolve())]
         if diagnostic is not None:
             images.append(str(current_image.resolve()))
@@ -136,10 +143,14 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
             if not isinstance(response,dict):
                 raise ValueError("Response must be an object")
             if response.get("status") in ("unsupported","unchanged"):
-                if set(response)!={"status","message"} or not isinstance(response["message"],str) or not response["message"].strip():
+                expected = {"status", "message", "issues"} if response["status"] == "unsupported" else {"status", "message"}
+                if set(response)!=expected or not isinstance(response["message"],str) or not response["message"].strip():
                     raise ValueError("Stop requires a message")
                 if response["status"]=="unsupported":
-                    raise HtmlReviewError(response["message"],code="RECONSTRUCTION_UNSUPPORTED")
+                    checked = validate_understanding({"status": "unsupported", "objects": [], "issues": response["issues"]}, context)
+                    routed = allocation_routes(checked, current, context["capabilities"])
+                    stop("unsupported", sorted({i["route"] for i in routed}), "RECONSTRUCTION_UNSUPPORTED",
+                         response["message"], history=history, routed_issues=routed)
                 final = review_scene(current,run_dir=run,deps=deps)
                 if not final.get("passed"):
                     raise ValueError("Unchanged candidate still fails strict review")
@@ -160,7 +171,7 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
                 continue
             identity = sha256_json(proposed)
             if identity in seen:
-                raise HtmlReviewError("还原候选重复且未改善，停止",code="DESIGN_RECONSTRUCTION_NO_PROGRESS")
+                stop("repeated_candidate", ["manual_review"], "DESIGN_RECONSTRUCTION_NO_PROGRESS", "还原候选重复且未改善，停止", history=history)
             seen.add(identity)
             screenshot = run/final.get("screenshot","missing")
             if not screenshot.is_file():
@@ -173,7 +184,8 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
             if fidelity["result"]["status"] == "pass":
                 return _result(proposed,binding,final,audit,run,history,source_hash,proposed!=scene,understanding,fidelity,skill.identity)
             if fidelity["result"]["status"] == "unsupported" or set(fidelity["repair_routes"]) - {"reconstruction"}:
-                raise HtmlReviewError("还原审核要求回到内容、素材或组件能力阶段，已保留证据",code="DESIGN_REVIEW_ROUTED")
+                stop("upstream_revision_required", fidelity["repair_routes"], "DESIGN_REVIEW_ROUTED",
+                     "还原审核要求回到内容、素材或组件能力阶段，已保留证据", history=history, fidelity=fidelity)
             current = proposed
             diagnostic = {"code":"DESIGN_FIDELITY_CHANGES_REQUESTED","issues":fidelity["result"]["issues"]}
         except HtmlReviewError:
@@ -181,9 +193,9 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
         except (ValueError,SceneEditError,KeyError,TypeError) as error:
             diagnostic={"code":getattr(error,"code","RECONSTRUCTION_RESPONSE_INVALID"),"message":str(error)[:1500]}
             write_json_atomic(folder/"diagnostic.json",diagnostic)
-    write_json_atomic(audit/"result.json",{"status":"rejected","history":history,"diagnostic":diagnostic,
-                                         "design_sha256":source_hash,"visual_fidelity":"not_accepted","fidelity":fidelity})
-    raise HtmlReviewError("设计还原未通过受限操作与实际检查，已保留候选",code="RECONSTRUCTION_REJECTED")
+    stop("budget_exhausted", ["manual_review"], "RECONSTRUCTION_REJECTED",
+         "设计还原预算已耗尽，已保留候选，请检查失败证据后决定后续处理。",
+         history=history, diagnostic=diagnostic, fidelity=fidelity)
 
 
 def _result(scene,binding,report,audit,run,history,source_hash,changed,understanding,fidelity,skill):

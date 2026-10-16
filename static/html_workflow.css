@@ -3,21 +3,21 @@ html:has(body.html-workspace) { min-width: 0 !important; }
 html:has(body:not(.workspace-open)),body:not(.workspace-open) { min-width:0 !important; }
 body.html-workspace { min-width: 0 !important; }
 body.html-workspace #page-workspace { flex-direction: row !important; }
-body.html-workspace .sidebar { height: 100%; flex: 0 0 210px !important; width: 210px !important; min-width: 210px !important; }
+body.html-workspace .sidebar { height: 100%; flex: 0 0 224px !important; width: 224px !important; min-width: 224px !important; }
 body.html-workspace #workspace-main { flex: 1 1 0 !important; width: 0; min-width: 0 !important; }
-body.html-workspace { --html-ink:#20252d; --html-muted:#687180; --html-accent:#d8753c; --html-border:#e4e7eb; }
-body.html-workspace #workspace-main { background:#f7f8fa; padding:24px !important; }
-body.html-workspace .step-panel { max-width:1440px; margin-inline:auto; min-width:0; }
+body.html-workspace { --html-ink:#20252d; --html-muted:#687180; --html-accent:#ee5d36; --html-border:#e4e7eb; --html-active:#fff5f0; }
+body.html-workspace #workspace-main { background:#f7f8fa; padding:0 !important; }
+body.html-workspace .step-panel { max-width:none; margin:0; padding:0 24px 24px; min-width:0; }
 body.html-workspace .workflow-title { display:block !important; color:var(--html-ink); font-size:24px; font-weight:650; }
-body.html-workspace .workflow-header { flex-wrap:wrap; gap:16px; margin-bottom:24px; }
-body.html-workspace #workspace-main .workflow-titlebar-actions { display:flex !important; flex-wrap:wrap !important; justify-content:flex-start !important; min-width:0 !important; width:100%; max-width:100%; gap:8px; }
-body.html-workspace #workspace-main .workflow-title { font-size:24px !important; flex:0 0 100%; min-width:0 !important; width:auto !important; margin:0 0 8px; }
+body.html-workspace .workflow-header { flex-wrap:wrap; gap:12px; margin:0 -24px 20px; padding:14px 24px; min-height:59px; background:#fff; border-bottom:1px solid var(--html-border); }
+body.html-workspace #workspace-main .workflow-titlebar-actions { display:flex !important; flex-wrap:wrap !important; justify-content:flex-start !important; min-width:0 !important; max-width:100%; gap:8px; }
+body.html-workspace #workspace-main .workflow-title { font-size:18px !important; flex:0 0 auto; min-width:0 !important; width:auto !important; margin:0; }
 body.html-workspace #workspace-main > :is(#step-panel-1,#step-panel-2,#step-panel-3,#step-panel-5,#step-panel-6,#step-panel-9,#step-panel-8) :is(.workflow-toolbar,.step1-heading-actions,.workflow-titlebar-actions) { flex-wrap:wrap !important; justify-content:flex-start !important; min-width:0 !important; max-width:100%; }
-body.html-workspace #workspace-main #step-panel-2 .workflow-titlebar-actions > .workflow-title { flex:0 0 100% !important; width:100% !important; min-width:0 !important; font-size:24px !important; margin:0 0 8px !important; }
+body.html-workspace #workspace-main #step-panel-2 .workflow-titlebar-actions > .workflow-title { flex:0 0 auto !important; width:auto !important; min-width:0 !important; font-size:18px !important; margin:0 12px 0 0 !important; }
 body.html-workspace .workflow-toolbar { flex-wrap:wrap; gap:8px; }
 body.html-workspace #step6-btn-init { display:inline-flex !important; }
 body.html-workspace button:focus-visible,body.html-workspace select:focus-visible,body.html-workspace textarea:focus-visible { outline:2px solid var(--html-accent); outline-offset:3px; }
-body.html-workspace button:disabled { opacity:.48; cursor:not-allowed; }
+body.html-workspace button:disabled { opacity:.48 !important; cursor:not-allowed; }
 body.html-workspace button,body.html-workspace select { min-height:44px !important; }
 body.html-workspace button { transition:background-color .16s ease,transform .16s ease; }
 body.html-workspace button:not(:disabled):active { transform:translateY(1px); }
@@ -121,3 +121,156 @@ body.html-workspace .html-scene-editor button { min-height:44px; }
   body.html-workspace .step2-script-review-actions { flex:0 0 100%; }
 }
 @media(prefers-reduced-motion:reduce) { body.html-workspace button { transition:none; } body.html-workspace button:not(:disabled):active { transform:none; } }
+
+/* 2026-10-15: six-step Stitch adaptation. Existing controls and state own behavior. */
+body.html-workspace { font-family:"Noto Sans SC","Microsoft YaHei",sans-serif; color:var(--html-ink); }
+body.html-workspace #workspace-main .workflow-header button {
+  height:30px !important; min-height:30px !important; padding:0 10px !important;
+  font-size:12px !important; border-radius:8px !important; box-shadow:none !important;
+}
+body.html-workspace .sidebar .step-item { border-radius:10px !important; }
+body.html-workspace .sidebar .step-item.active {
+  background:var(--html-active) !important; color:var(--html-accent) !important;
+  border-color:#ee5d3633 !important; box-shadow:none !important;
+}
+body.html-workspace #workspace-main button.success {
+  background:var(--html-accent) !important; color:#fff !important;
+  border-color:var(--html-accent) !important; box-shadow:none !important;
+}
+body.html-workspace #workspace-main :is(input:not([type=range]):not([type=checkbox]),textarea,select) {
+  border-color:var(--html-border); border-radius:8px; color:var(--html-ink);
+}
+body.html-workspace #workspace-main :is(input,textarea,select):focus-visible {
+  outline:2px solid var(--html-accent); outline-offset:2px;
+}
+body.html-workspace #step-panel-1 .step1-workflow-tabs { margin:0 0 16px; }
+body.html-workspace #step-panel-1 .step1-content-card {
+  border:1px solid var(--html-border) !important; border-radius:12px !important;
+  box-shadow:0 2px 8px #20252d05 !important; background:#fff !important;
+}
+body.html-workspace #step-panel-1 #step1-markdown-editor {
+  min-height:480px; width:100%; max-width:960px; box-sizing:border-box;
+  margin-inline:auto; padding:28px !important; text-align:left;
+  font-size:16px !important; line-height:1.85 !important; color:var(--html-ink);
+}
+body.html-workspace #step-panel-1 #step1-markdown-editor > * { text-align:left; width:100%; }
+body.html-workspace #step-panel-1 .step1-topic-input-row { gap:12px; flex-wrap:wrap; }
+body.html-workspace #step-panel-2 :is(.step2-script-review,.step2-slide-editor) {
+  max-width:none !important; border-radius:12px !important; box-shadow:none !important;
+}
+body.html-workspace #step-panel-2 .step2-slide-editor {
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:24px;
+  align-items:start; background:transparent !important; border:0 !important; padding:0 !important;
+}
+body.html-workspace #step-panel-2 :is(.step2-slide-fields,.step2-vn-map) {
+  min-width:0; padding:20px; background:#fff; border:1px solid var(--html-border); border-radius:12px;
+}
+body.html-workspace #step-panel-2 .step2-slide-fields { display:grid; grid-template-columns:minmax(0,1fr); }
+body.html-workspace #step-panel-2 #step2-slide-narration-input { min-height:280px; line-height:1.8; }
+body.html-workspace #step-panel-2 .step2-stage { padding:20px; }
+body.html-workspace #step-panel-2 .step2-stage-head { flex-wrap:wrap; }
+@media(min-width:1200px) {
+  /* The renderer owns display:none; only arrange its visible AI review surface. */
+  body.html-workspace #step-panel-2 #step2-script-review[style*="display: block"] {
+    display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
+    gap:24px; align-items:start; padding:0 !important; overflow:visible;
+    background:transparent !important; border:0 !important;
+  }
+  body.html-workspace #step-panel-2 #step2-script-review .step2-stage {
+    min-width:0; padding:20px !important; background:#fff;
+    border:1px solid var(--html-border); border-radius:12px;
+  }
+}
+body.html-workspace #html-review-panel-section {
+  padding:0; border:0 !important; background:transparent !important; box-shadow:none !important;
+}
+body.html-workspace #html-review-panel-section:not([hidden]) { display:block; }
+body.html-workspace #html-review-panel-section .html-workspace-heading {
+  display:block; box-sizing:border-box; width:100%; max-width:100%;
+  padding:16px 20px; margin:0 0 16px; min-height:59px;
+  font-size:18px; background:#fff; border-bottom:1px solid var(--html-border);
+}
+body.html-workspace #html-review-panel-section .html-workspace-description { margin-bottom:16px; font-size:13px; }
+body.html-workspace #html-review-panel-section .html-production-flow { display:none; }
+body.html-workspace #html-review-panel-section .html-workspace-toolbar {
+  padding:12px 16px; background:#fff; border:1px solid var(--html-border); border-radius:12px; gap:8px;
+}
+body.html-workspace #html-review-panel-section .html-workspace-toolbar label {
+  display:flex; align-items:center; gap:10px; flex:1 1 220px; font-size:13px; white-space:nowrap;
+}
+body.html-workspace #html-review-panel-section [data-html-slide] { margin:0; width:auto; flex:1; min-width:0; }
+body.html-workspace #html-review-panel-section .html-workspace-toolbar button { min-height:36px !important; font-size:12px; }
+body.html-workspace #html-review-panel-section .html-design-workbench { border:0; padding-top:0; }
+body.html-workspace #html-review-panel-section .html-design-preview,
+body.html-workspace #html-review-panel-section .html-design-inspector {
+  padding:18px; background:#fff; border:1px solid var(--html-border); border-radius:12px;
+}
+body.html-workspace #html-review-panel-section .html-design-preview img { margin:12px 0 0; border:0; border-radius:8px; }
+body.html-workspace #html-review-panel-section .html-design-inspector { padding:20px; }
+body.html-workspace #html-review-panel-section .html-design-inspector h3 { font-size:16px; }
+body.html-workspace #html-review-panel-section .html-design-inspector textarea { min-height:120px; }
+body.html-workspace #html-review-panel-section .html-task-details {
+  padding:12px 16px; background:#fff; border:1px solid var(--html-border); border-radius:10px;
+}
+body.html-workspace #html-review-panel-section .html-stage-note { font-size:13px; padding:12px 16px; }
+body.html-workspace .html-scene-editor { border-color:var(--html-border); border-radius:12px; padding:16px; }
+body.html-workspace .html-scene-editor .hse-grid {
+  grid-template-columns:140px minmax(0,1fr) 250px; gap:16px;
+}
+body.html-workspace .html-scene-editor :is(nav,aside) { min-width:0; }
+body.html-workspace .html-scene-editor aside { padding:0 0 0 12px; border-left:1px solid var(--html-border); }
+body.html-workspace .html-scene-editor .hse-toolbar { padding-bottom:12px; border-bottom:1px solid var(--html-border); }
+body.html-workspace #html-audio-review { border-color:var(--html-border); border-radius:12px; padding:20px; }
+body.html-workspace #html-audio-review h3 { margin:0 0 8px; font-size:16px; }
+body.html-workspace #html-audio-review > p { margin:0 0 16px; font-size:13px; color:var(--html-muted); }
+body.html-workspace .html-audio-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px; }
+body.html-workspace #html-audio-review .html-audio-toolbar select { flex:1; min-width:0; margin:0; }
+body.html-workspace .html-audio-content {
+  display:grid; grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr); gap:16px 24px; align-items:start;
+}
+body.html-workspace .html-audio-content > [role=status] { grid-column:1/-1; margin:0; font-size:13px; color:var(--html-muted); }
+body.html-workspace .html-audio-content > iframe { grid-column:1; grid-row:2; border-radius:8px; background:#f7f8fa; }
+body.html-workspace #html-audio-review .html-audio-content > audio { grid-column:1; grid-row:3; margin:0; }
+body.html-workspace .html-audio-sentences { grid-column:1; grid-row:4; display:grid; gap:6px; min-width:0; }
+body.html-workspace #html-audio-review .html-audio-sentences button {
+  margin:0; padding:10px 12px; background:#f7f8fa; border:1px solid var(--html-border); line-height:1.7;
+}
+body.html-workspace #html-audio-review .html-audio-sentences button[aria-current=true] {
+  background:var(--html-active); border-color:#ee5d3666; color:var(--html-accent);
+}
+body.html-workspace .html-audio-qa { grid-column:2; grid-row:2/5; min-width:0; border-left:1px solid var(--html-border); padding-left:20px; }
+body.html-workspace .html-audio-qa h4 { margin:0 0 12px; font-size:15px; }
+body.html-workspace .html-audio-qa details { border-bottom:1px solid var(--html-border); padding:10px 0; }
+body.html-workspace .html-audio-qa summary { cursor:pointer; font-size:13px; }
+body.html-workspace #step-panel-6 .step6-tts-input { font-size:14px !important; line-height:1.8 !important; }
+body.html-workspace #step-panel-9 .dh-grid {
+  display:grid !important; grid-template-columns:minmax(0,1fr) 320px !important;
+  gap:20px !important; align-items:start;
+}
+body.html-workspace #step-panel-9 .dh-field:nth-child(2) { grid-column:1; grid-row:1/3; }
+body.html-workspace #step-panel-9 .dh-field:first-child { grid-column:2; grid-row:1; }
+body.html-workspace #step-panel-9 .dh-field:last-child { grid-column:2; grid-row:2; }
+body.html-workspace #step-panel-9 .dh-settings-title { margin-bottom:12px; color:var(--html-muted); font-size:13px; }
+body.html-workspace #step-panel-9 .dh-circle-canvas { width:100%; min-width:0; }
+@media(max-width:1199px) {
+  body.html-workspace .html-scene-editor .hse-grid { grid-template-columns:140px minmax(0,1fr); }
+  body.html-workspace .html-scene-editor aside { grid-column:1/-1; border-left:0; padding:16px 0 0; border-top:1px solid var(--html-border); }
+  body.html-workspace .html-audio-content { grid-template-columns:minmax(0,1fr); }
+  body.html-workspace .html-audio-qa { grid-column:1; grid-row:auto; border-left:0; padding:16px 0 0; border-top:1px solid var(--html-border); }
+  body.html-workspace #step-panel-2 .step2-slide-editor { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:1099px) {
+  body.html-workspace #step-panel-9 .dh-grid { grid-template-columns:minmax(0,1fr) !important; }
+  body.html-workspace #step-panel-9 .dh-field:nth-child(n) { grid-column:1; grid-row:auto; }
+  body.html-workspace #step-panel-9 .dh-field:nth-child(2) { grid-row:1; }
+}
+@media(max-width:767px) {
+  body.html-workspace #workspace-main { padding:0 !important; }
+  body.html-workspace .step-panel { padding:0 12px 16px; }
+  body.html-workspace .workflow-header { margin-inline:-12px; padding:12px; }
+  body.html-workspace #html-review-panel-section .html-workspace-heading { margin-inline:0; padding:16px 12px; }
+  body.html-workspace #step-panel-1 #step1-markdown-editor { padding:18px !important; min-height:360px; }
+  body.html-workspace .html-scene-editor .hse-grid { grid-template-columns:minmax(0,1fr); }
+  body.html-workspace .html-audio-qa { grid-column:1; }
+  body.html-workspace #html-audio-review { padding:16px; }
+}

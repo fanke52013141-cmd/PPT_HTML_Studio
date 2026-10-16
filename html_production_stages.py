@@ -1,6 +1,8 @@
 """Attempt-fenced production checkpoints over LocalJob (no second job store)."""
 from pathlib import Path
 import json
+import time
+from datetime import datetime, timezone
 
 import html_task_store as store
 from html_build_snapshot import digest, json_bytes, safe_file, verify_snapshot, fresh_hash
@@ -70,7 +72,7 @@ class ProductionStages:
         payload["progress"] = {**payload.get("progress", {}), **value}
         store._transition(self.db, job, ("running",), {"payload_json": store.json_dumps(payload)})
 
-    def _save(self, key, value, stage, kind):
+    def _save(self, key, value, stage, kind, *, metrics=None):
         external = key.startswith(("json:", "image:"))
         job = store._job(self.db, self.job_id, self.attempt) if external else self.checkpoint()
         if job.status != "running":
@@ -86,6 +88,8 @@ class ProductionStages:
         previous = job.get_payload().get("production_stages", {}).get(key, {})
         record = {**previous, "state": "returned", "stage": stage, "kind": kind,
                   "file": relative, "sha256": identity}
+        if metrics is not None:
+            record["metrics"] = {**metrics, "output_bytes": len(data)}
         if key.startswith(("json:", "image:")):
             from html_production_recovery import receipt_path, write_receipt
             write_receipt(receipt_path(self.run, self.job_id, digest(key.encode())), {
@@ -103,7 +107,8 @@ class ProductionStages:
                 original = original.func
             streaming = kind == "json" and getattr(original, "supports_stream_progress", False)
             if streaming:
-                kwargs = {**kwargs, "stream_output": True, "request_timeout": 1800}
+                kwargs = {**kwargs, "stream_output": True,
+                          "request_timeout": kwargs.get("request_timeout") if kwargs.get("request_timeout") is not None else 1800}
             # Hash attachment bytes, not only mutable path strings.
             attachments = kwargs.get("reference_paths", kwargs.get("image_paths", [])) or []
             request = {"args": args, "kwargs": kwargs,
@@ -120,6 +125,12 @@ class ProductionStages:
                 if not path.is_file() or fresh_hash(path) != previous["sha256"]:
                     raise store.HtmlTaskError("STAGE_ARTIFACT_INVALID：已返回产物损坏，不能自动重复调用", 409)
                 data = path.read_bytes()
+                from html_execution_metrics import request_role
+                prior_metrics = previous.get("metrics") or {"role": request_role(kind, kwargs),
+                    "adapter_calls": None, "elapsed_ms": None, "usage": None, "cost": None}
+                reused = {**previous, "metrics": {**prior_metrics,
+                          "reuses": prior_metrics.get("reuses", 0) + 1}}
+                self._persist(key, reused)
                 self.progress({"reused_stages": sorted(set(payload.get("progress", {}).get("reused_stages", []) + [key]))})
                 if kind == "image":
                     from ai_provider_service import open_validated_image
@@ -130,12 +141,22 @@ class ProductionStages:
                     raise store.HtmlTaskError("阶段 JSON 必须是对象", 409)
                 return value
             if sum(k.startswith(("json:", "image:")) for k in records) >= self.MAX_CALLS:
+                self.progress({"next_action": {"stage": "production", "reason": "external_call_budget_exhausted",
+                    "routes": ["manual_review"], "automatic_retry": False}})
                 raise store.HtmlTaskError("阶段模型调用预算已耗尽", 409)
             request_id = digest(json_bytes({"job": self.job_id, "snapshot": self.snapshot_id,
                                             "key": key, "attempt": self.attempt}))
             lookup_supported = callable(getattr(function, "lookup", None)) and callable(getattr(function, "invoke_with_request_id", None))
+            from html_execution_metrics import request_role
+            metrics = {"role": request_role(kind, kwargs), "adapter_calls": None, "reuses": 0,
+                       "request_timeout_seconds": kwargs.get("request_timeout"),
+                       "started_at": datetime.now(timezone.utc).isoformat(), "elapsed_ms": None,
+                       "adapter_input_bytes": len(json_bytes({"args": args, "kwargs": kwargs})),
+                       "attachment_bytes": sum(Path(p).stat().st_size for p in attachments),
+                       "output_bytes": None, "usage": None, "cost": None}
             intent = {"state": "intent", "stage": kind + "_request", "kind": kind,
-                      "attempt": self.attempt, "request_id": request_id, "lookup_supported": lookup_supported}
+                      "attempt": self.attempt, "request_id": request_id, "lookup_supported": lookup_supported,
+                      "metrics": metrics}
             self._persist(key, intent)
             native_tasks = kind == "image" and getattr(original, "supports_upstream_task", False)
             def stream_progress(value):
@@ -156,6 +177,7 @@ class ProductionStages:
                     "job_id": self.job_id, "snapshot_id": self.snapshot_id, "key": key, "record": record,
                 })
                 self._persist(key, record)
+            started = time.monotonic()
             try:
                 callbacks = {"on_task_submitted": submitted} if native_tasks else {}
                 if streaming:
@@ -165,6 +187,7 @@ class ProductionStages:
                 previous = store._job(self.db, self.job_id, self.attempt).get_payload().get("production_stages", {}).get(key, intent)
                 from html_production_recovery import receipt_path, write_receipt
                 record = {**previous, "state": "unknown", "stage": kind + "_unknown",
+                          "metrics": {**metrics, "adapter_calls": 1, "elapsed_ms": round((time.monotonic() - started) * 1000, 3)},
                           "error_class": type(error).__name__,
                           "cause_class": type(error.__cause__).__name__ if error.__cause__ else None}
                 write_receipt(receipt_path(self.run, self.job_id, "unknown-" + digest(key.encode())), {
@@ -173,7 +196,8 @@ class ProductionStages:
                 self._persist(key, record, external_outcome=True)
                 raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：供应商结果待核实，禁止自动重复请求", 409) from error
             # Persist raw returned bytes/JSON before validation or downstream work.
-            self._save(key, value, kind + "_returned", kind)
+            self._save(key, value, kind + "_returned", kind,
+                       metrics={**metrics, "adapter_calls": 1, "elapsed_ms": round((time.monotonic() - started) * 1000, 3)})
             if kind == "image":
                 from ai_provider_service import open_validated_image
                 open_validated_image(value)

@@ -29,7 +29,8 @@
     host.append(node('h3','画面与配音同步试听'),node('p','选择页面，试听真实配音并检查动画；完成逐句核验后人工签收。'));
     const select=node('select');select.setAttribute('aria-label','同步试听页面');
     const reload=node('button','刷新试听与核验');reload.type='button';
-    const content=node('div');host.append(select,reload,content);
+    const toolbar=node('div');toolbar.className='html-audio-toolbar';toolbar.append(select,reload);
+    const content=node('div');content.className='html-audio-content';host.append(toolbar,content);
     try {
       const result=await API.get(`/api/projects/${encodeURIComponent(project.id)}/steps/2/result`);
       if(token!==epoch)return;
@@ -45,7 +46,7 @@
         const message=node('p',sid?'正在读取当前画面和音频…':'请先完成分镜规划。');message.setAttribute('role','status');content.append(message);
         if(!sid)return;
         const current=()=>token===epoch&&version===pageVersion;
-        const qa=node('div');content.append(qa);
+        const qa=node('div');qa.className='html-audio-qa';content.append(qa);
         let needsAudio=false;
         try {
           const base=`/api/projects/${encodeURIComponent(project.id)}`;
@@ -67,7 +68,7 @@
           if(!player||!await player.apply(preview.scene,preview.resources))throw Error('当前画面未通过播放器检查。');
           if(!current())return;
           const audio=node('audio');audio.controls=true;audio.preload='metadata';audio.setAttribute('aria-label','画面同步配音');audio.src=`${base}/slides/${encodeURIComponent(sid)}/audio?t=${Date.now()}`;
-          const sentences=node('div');content.insertBefore(audio,qa);content.insertBefore(sentences,qa);
+          const sentences=node('div');sentences.className='html-audio-sentences';content.insertBefore(audio,qa);content.insertBefore(sentences,qa);
           const playback={audio,raf:0};active=playback;
           const beats=preview.scene.beats||[];
           const buttons=beats.map((beat,i)=>{

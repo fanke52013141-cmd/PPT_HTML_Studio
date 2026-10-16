@@ -57,7 +57,7 @@ class HtmlWorkflowJobs:
         if frozen is not None:
             frozen.text.require_ready()
             (frozen.planning or frozen.text).require_ready()
-            if not options.get("design_candidate_key"):
+            if not options.get("design_candidate_key") or options.get("design_instruction", "").strip():
                 frozen.image.require_ready()  # Every new page requires a full design reference.
         from html_build_snapshot import create_generation_snapshot
         snapshot = create_generation_snapshot(

@@ -244,14 +244,18 @@ function collectRuntimeFiles(root, directory, type, category, parameterize) {
     .readdirSync(absolute)
     .filter((name) => name.endsWith(".json"))
     .sort();
-  return names.map((name) => {
+  const records = names.map(name => ({name, raw:readJson(root, `${directory}/${name}`)}));
+  return records.map(({name,raw}) => {
     const relative = `${directory}/${name}`;
-    const raw = readJson(root, relative);
     const id = raw.id || path.basename(name, ".json");
+    // Preserve the original unversioned catalog ID; coexistence needs an
+    // exact version identity rather than an arbitrary first-file winner.
+    const coexist = records.filter(entry => (entry.raw.id || path.basename(entry.name,".json")) === id).length > 1;
+    const catalogId = coexist && name !== `${id}.json` ? `${id}@${raw.version}` : id;
     const idPrefix = type === "runtime-layout" ? "runtime-layout" :
       type === "runtime-template" ? "runtime-template" : "runtime-theme";
     return {
-      id: `${idPrefix}:${id}`,
+      id: `${idPrefix}:${catalogId}`,
       version: raw.version || "unknown",
       type,
       category,
@@ -273,7 +277,7 @@ function collectRuntimeFiles(root, directory, type, category, parameterize) {
       productionMapping: {
         status: "registered",
         directAdapter: true,
-        candidateRuntimeIds: [`${idPrefix}:${id}`],
+        candidateRuntimeIds: [`${idPrefix}:${catalogId}`],
         gap: "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。",
       },
     };

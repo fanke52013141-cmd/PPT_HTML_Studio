@@ -2,6 +2,18 @@
 from html_build_snapshot import digest, json_bytes
 
 
+def repair_exit_reason(report, *, rounds, max_rounds, stopped, reason=None):
+    if report.get("passed"):
+        return None
+    if reason:
+        return reason
+    if stopped:
+        return "model_stop"
+    if "CONTENT_CAPACITY_EXCEEDED" not in str(report.get("message", "")):
+        return "non_capacity_failure"
+    return "budget_exhausted" if rounds >= max_rounds else "missing_diagnostic_evidence"
+
+
 class RepairProgress:
     def __init__(self):
         self.operations = set()

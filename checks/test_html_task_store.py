@@ -104,3 +104,23 @@ def test_cancel_only_touches_active_tasks(db) -> None:
 def test_unknown_task_type_rejected(db) -> None:
     with pytest.raises(store.HtmlTaskError):
         _submit(db, key="x:1", task_type="video_render")
+
+
+def test_new_attempt_and_success_clear_old_intervention_but_keep_evidence(db):
+    import json
+    task = _submit(db, key="intervention:reset")
+    def add_old_action():
+        job = db.query(LocalJob).filter(LocalJob.id == task["id"]).one()
+        payload = job.get_payload()
+        payload["progress"] = {"next_action": {"reason": "budget_exhausted"},
+                               "stop_reason": "budget_exhausted", "repair_status": "failed",
+                               "reused_stages": ["json:example"]}
+        job.payload_json = json.dumps(payload)
+        db.commit()
+    add_old_action()
+    running = store.mark_running(db, task["id"])
+    assert running["progress"] == {"reused_stages": ["json:example"]}
+    add_old_action()
+    done = store.mark_succeeded(db, task["id"], {"stage": "design_review"})
+    assert done["progress"] == {"reused_stages": ["json:example"]}
+    assert done["execution"]["usage"] is None and done["execution"]["cost"] is None

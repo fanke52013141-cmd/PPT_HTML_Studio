@@ -14,7 +14,7 @@ const {chromium}=require('../html_engine/node_modules/playwright');
       document.body.innerHTML='<div id="step-panel-3"></div>';
       window.PPTStudio={runtime:{state:{currentProject:{id:'project-1',visual_backend:'html'},slides:[{slide_id:'slide_001',title:'Token'}],activeSlideIndex:0}}};
       window.API={get:async url=>{
-        if(url.endsWith('/task/current'))return {task:{id:'job-1',slide_id:'slide_001',status:'failed',stage:'failed',attempt:1,input_state:'current',stages:{},recovery:{requires_verification:true},error:'EXTERNAL_OUTCOME_UNKNOWN'}};
+        if(url.endsWith('/task/current'))return {task:{id:'job-1',slide_id:'slide_001',status:'interrupted',stage:'interrupted',attempt:1,input_state:'current',stages:{},recovery:{requires_verification:true},error:'EXTERNAL_OUTCOME_UNKNOWN'}};
         if(url.endsWith('/manual-candidate/job-1'))return {candidate:{key:'abc123',design_url:'/design.png',preview_url:'/preview.png',engineering:'failed',engineering_issues:[{message:'总结面板超过槽位'}],decision:null}};
         if(url.endsWith('/design/current'))return {design:null};
         throw new Error(url);

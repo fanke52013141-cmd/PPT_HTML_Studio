@@ -151,7 +151,7 @@ CAPABILITIES: list[AgentCapability] = [
         ]
     ],
     AgentCapability(
-        id="project_model_binding.read", version="1.1", status=CapabilityStatus.stable,
+        id="project_model_binding.read", version="1.2", status=CapabilityStatus.stable,
         description="Read account-scoped HTML project model references and redacted effective summaries; legacy/inherit/fixed modes, no credentials or endpoints.",
         request_model=ProjectModelBindingReadRequest, response_model=ProjectModelBindingResult,
         agent_api_method="GET", agent_api_path="/api/agent/v1/projects/{project_id}/model-binding",
@@ -263,8 +263,8 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_service.ProjectService.create",
     ),
     AgentCapability(
-        id="html_review.produce", version="1.4", status=CapabilityStatus.stable,
-        description="Generate a complete design first; accepted designs enter object understanding and code/image allocation before subject generation, constrained reconstruction, and independent actual-screenshot fidelity review. Bounded layout feedback and explicit planning/asset/capability routing preserve editable content. Human approval remains separate.",
+        id="html_review.produce", version="1.7", status=CapabilityStatus.stable,
+        description="Generate a design first. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.",
         request_model=HtmlProduceRequest, response_model=HtmlTaskResult,
         agent_api_method="POST",
         agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce",
@@ -282,8 +282,8 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_design_candidates.current_design",
     ),
     AgentCapability(
-        id="html_review.manual_candidate", version="1.0", status=CapabilityStatus.stable,
-        description="Read one unsaved candidate after an unqueryable model outcome; original task, design, preview and engineering facts stay distinct from approval.",
+        id="html_review.manual_candidate", version="1.1", status=CapabilityStatus.stable,
+        description="Read one current unsaved candidate after a failed or interrupted unqueryable JSON outcome, including unresolved intent; bounded repair replay, original task, design and engineering facts stay distinct from approval. Never retries or saves author content.",
         request_model=BaseModel, response_model=HtmlManualCandidateResult,
         agent_api_method="GET",
         agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}",
@@ -291,7 +291,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_manual_candidate_review.inspect_candidate",
     ),
     AgentCapability(
-        id="html_review.manual_candidate_decision", version="1.0", status=CapabilityStatus.stable,
+        id="html_review.manual_candidate_decision", version="1.1", status=CapabilityStatus.stable,
         description="Record an explicit human accept/reject with evidence note for the exact unsaved candidate. Does not save author scene, retry provider, or grant visual approval.",
         request_model=HtmlManualCandidateDecisionRequest, response_model=HtmlManualCandidateResult,
         agent_api_method="POST",
@@ -300,8 +300,8 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_manual_candidate_review.decide_candidate",
     ),
     AgentCapability(
-        id="html_review.task_status", version="1.1", status=CapabilityStatus.stable,
-        description="Read persisted HTML task, page, stage, repair/Skill progress, reuse, input freshness and recovery advice; success is not visual approval.",
+        id="html_review.task_status", version="1.3", status=CapabilityStatus.stable,
+        description="Read persisted HTML task, page, stage, repair/Skill progress, reuse, input freshness and recovery advice; includes measured adapter calls, reuse, partial timing, actual request timeouts and authority/tool-validated intervention routes; success is not visual approval.",
         request_model=BaseModel, response_model=HtmlTaskResult,
         agent_api_method="GET",
         agent_api_path="/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}",
@@ -309,8 +309,8 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_workflow_jobs.HtmlWorkflowJobs",
     ),
     AgentCapability(
-        id="html_review.task_current", version="1.0", status=CapabilityStatus.stable,
-        description="Read the latest persisted production task for this page, independently of the project history limit; validates frozen input freshness. Returns null when absent.",
+        id="html_review.task_current", version="1.2", status=CapabilityStatus.stable,
+        description="Read the latest persisted production task for this page, independently of the project history limit; validates frozen input freshness. Includes adapter measurements, actual request timeouts and authority/tool-validated intervention routes. Returns null when absent.",
         request_model=BaseModel, response_model=HtmlCurrentTaskResult,
         agent_api_method="GET",
         agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/task/current",
@@ -376,9 +376,9 @@ CAPABILITIES: list[AgentCapability] = [
     ),
     AgentCapability(
         id="html_review.plan_generate",
-        version="1.1",
+        version="1.2",
         status=CapabilityStatus.stable,
-        description="Generate a constrained scene plan for one slide through the configured LLM (registered templates/slots/icons only) and record AC06/AC07 evidence.",
+        description="Generate a constrained scene plan through the configured LLM, including registered code-owned illustration labels and relations; record AC06/AC07 evidence. No automatic acceptance or author save.",
         request_model=HtmlPlanGenerateRequest,
         response_model=HtmlPlanGenerationResult,
         agent_api_method="POST",

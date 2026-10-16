@@ -40,8 +40,17 @@ const scene = read("html_engine/visual/fixtures/presentation-details/scene.json"
     const old=structuredClone(scene);old.nodes.find(n=>n.id==="billing-summary").presentation={variant:"summary-panel"};
     for(const n of old.nodes.filter(n=>n.type==="text")) if(n.presentation?.variant)n.presentation.variant="text-card-outline";
     await apply(old);assert.equal(await page.locator('[data-connector="relationship"]').count(),0);
+    const compact=structuredClone(scene), compactSummary=compact.nodes.find(n=>n.id==="billing-summary");
+    compactSummary.presentation={variant:"summary-relationship-compact",icon:"check-plain",height:91};
+    compile(compact,catalog);
+    await apply(compact);await page.evaluate(t=>window.visualPlayer.seek(t),compact.durationMs);
+    assert.equal(await page.locator('[data-connector="relationship"]').count(),1);
+    const compactTooShort=structuredClone(compact);
+    compactTooShort.nodes.find(n=>n.id==="billing-summary").presentation.height=90;
+    assert.equal(await page.evaluate(s=>window.visualPlayer.apply(s),compactTooShort),false);
+    assert.match(await page.locator("#status").innerText(),/CONTENT_CAPACITY_EXCEEDED/);
     assert.deepEqual(errors,[]);
-    fs.writeFileSync(path.join(out,"engineering-evidence.json"),JSON.stringify({status:"passed",parts,checks:["source/motion preserved","registered minimums and icons","literal label/body weights","subregion overflow rejected","old variants preserved","random seek identical"],model:false,humanApproval:"pending"},null,2));
-    console.log(JSON.stringify({passed:true,checks:6,model:false}));
+    fs.writeFileSync(path.join(out,"engineering-evidence.json"),JSON.stringify({status:"passed",parts,checks:["source/motion preserved","registered minimums and icons","literal label/body weights","subregion overflow rejected","old variants preserved","random seek identical","compact relationship at 91px","compact minimum rejects 90px"],model:false,humanApproval:"pending"},null,2));
+    console.log(JSON.stringify({passed:true,checks:8,model:false}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

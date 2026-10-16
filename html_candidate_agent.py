@@ -19,7 +19,7 @@ from html_visual_review_service import HtmlReviewError, review_scene
 from pipeline_lifecycle import write_json_atomic
 from html_build_snapshot import digest, fresh_hash, json_bytes
 from html_runtime_skills import load_runtime_skill
-from html_repair_progress import RepairProgress
+from html_repair_progress import RepairProgress, repair_exit_reason
 
 PROMPT_VERSION = "candidate-layout-agent/0.1.0"
 SYSTEM_PROMPT = """你是受限 HTML 排版修复 Agent。根据实际诊断截图、对象几何和文字测量，
@@ -306,13 +306,18 @@ def repair_candidate(
         "passed": bool(result["report"].get("passed")),
         "stopped": result["stopped"],
         "status": "passed" if result["report"].get("passed") else "needs_revision",
-        "stop_reason": stop_reason or ("model_stop" if result["stopped"] else "budget_or_unsupported_issue"),
+        "stop_reason": repair_exit_reason(result["report"], rounds=result["round"],
+            max_rounds=max_rounds, stopped=result["stopped"], reason=stop_reason),
         "audit": str(audit.relative_to(run)),
     }
+    if not summary["passed"]:
+        routes = ["diagnostics"] if summary["stop_reason"] in {"non_capacity_failure", "missing_diagnostic_evidence"} else ["manual_review"]
+        action = {"stage": "layout_repair", "reason": summary["stop_reason"], "routes": routes,
+                  "automatic_retry": False}
+        summary["next_action"] = action
     write_json_atomic(audit / "result.json", summary)
     if not summary["passed"]:
-        if stop_reason:
-            progress({"repair_status": "needs_revision", "stop_reason": stop_reason})
+        progress({"repair_status": "needs_revision", "stop_reason": summary["stop_reason"], "next_action": action})
         raise HtmlReviewError(
             "候选排版 Agent 未通过；原作品未修改。"
             + ("实际测量没有改善或补丁重复，需重新规划。" if stop_reason else "")

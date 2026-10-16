@@ -182,7 +182,7 @@ function compile(input, catalog) {
       const separator = [...text].findIndex(c => registered.labelDelimiter.includes(c));
       if (separator <= 0 || separator >= [...text].length - 1) fail("PRESENTATION_LABEL_REQUIRED", node.id, p.variant);
     }
-    if (p.variant === "summary-relationship-panel" && !node.heading) fail("PRESENTATION_HEADING_REQUIRED", node.id, p.variant);
+    if (["summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(p.variant) && !node.heading) fail("PRESENTATION_HEADING_REQUIRED", node.id, p.variant);
     for (const part of Object.keys(p.typography || {})) {
       if (
         !(publicTextParts[node.type] || []).includes(part) ||

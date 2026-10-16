@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.29.0
-- **Contract Hash**: `a6504e29a5d4fdc6`
+- **Agent API Version**: 1.34.0
+- **Contract Hash**: `a74f99de4aa057b1`
 - **Total Capabilities**: 65
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -21,7 +21,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_semantic.submit` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/submit` | `ppt_html_semantic_submit` | Yes | `html semantic-submit` | `html_semantic_review_service.review` | No | No |
 | `html_semantic.status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/status` | `ppt_html_semantic_status` | Yes | `html semantic-status` | `html_semantic_review_service.status` | No | No |
 | `html_semantic.decision` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/decision` | `ppt_html_semantic_decision` | Yes | `html semantic-decision` | `html_semantic_review_service.decide` | No | No |
-| `project_model_binding.read` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
+| `project_model_binding.read` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
 | `project_model_binding.write` | 1.1 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
 | `html_repair.preview` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
 | `html_repair.save` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
@@ -34,18 +34,18 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `generation.stop` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/generation/{stage}/stop` | `ppt_generation_stop` | Yes | `generation stop` | `generation_control.request_stop` | No | No |
 | `identity.get` | 1.0 | stable | GET | `/api/agent/v1/identity` | `ppt_identity_get` | Yes | `identity` | `agent_api.auth / account_service` | No | No |
 | `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
-| `html_review.produce` | 1.4 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
+| `html_review.produce` | 1.7 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
 | `html_review.design_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/design/current` | `ppt_html_design_current` | Yes | `html design-current` | `html_design_candidates.current_design` | No | No |
-| `html_review.manual_candidate` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}` | `ppt_html_manual_candidate` | Yes | `html manual-candidate` | `html_manual_candidate_review.inspect_candidate` | No | No |
-| `html_review.manual_candidate_decision` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision` | `ppt_html_manual_candidate_decision` | Yes | `html manual-candidate-decision` | `html_manual_candidate_review.decide_candidate` | No | No |
-| `html_review.task_status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}` | `ppt_html_task_status` | Yes | `html task-status` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
-| `html_review.task_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/task/current` | `ppt_html_task_current` | Yes | `html task-current` | `html_task_store.current_slide_task` | No | No |
+| `html_review.manual_candidate` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}` | `ppt_html_manual_candidate` | Yes | `html manual-candidate` | `html_manual_candidate_review.inspect_candidate` | No | No |
+| `html_review.manual_candidate_decision` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision` | `ppt_html_manual_candidate_decision` | Yes | `html manual-candidate-decision` | `html_manual_candidate_review.decide_candidate` | No | No |
+| `html_review.task_status` | 1.3 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}` | `ppt_html_task_status` | Yes | `html task-status` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
+| `html_review.task_current` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/task/current` | `ppt_html_task_current` | Yes | `html task-current` | `html_task_store.current_slide_task` | No | No |
 | `html_review.task_resume` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}/resume` | `ppt_html_task_resume` | Yes | `html task-resume` | `html_workflow_jobs.HtmlWorkflowJobs.resume` | No | No |
 | `html_review.task_cancel` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/tasks/{job_id}/cancel` | `ppt_html_task_cancel` | Yes | `html task-cancel` | `html_workflow_jobs.HtmlWorkflowJobs` | No | No |
 | `html_visual.status` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/status` | `ppt_html_visual_status` | Yes | `html status` | `html_creation_workflow.project_status` | No | No |
 | `html_visual.scene_read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_read` | Yes | `html scene-read` | `html_visual_store.load_scene_with_revision` | No | No |
 | `html_visual.scene_write` | 1.0 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}` | `ppt_html_scene_write` | Yes | `html scene-write` | `html_visual_store.save_scene` | No | No |
-| `html_review.plan_generate` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/plan/generate` | `ppt_html_plan_generate` | Yes | `html plan-generate` | `html_visual_review_service.generate_scene_plan` | No | No |
+| `html_review.plan_generate` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/plan/generate` | `ppt_html_plan_generate` | Yes | `html plan-generate` | `html_visual_review_service.generate_scene_plan` | No | No |
 | `html_review.review` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/review` | `ppt_html_review` | Yes | `html review` | `html_visual_review_service.review_scene` | No | No |
 | `html_review.approve` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/approve` | `ppt_html_approve` | Yes | `html approve` | `html_visual_review_service.approve_scene` | No | No |
 | `html_review.approval_status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/approval` | `ppt_html_approval_status` | Yes | `html approval-status` | `html_visual_review_service.approval_status` | No | No |
@@ -115,18 +115,18 @@ The MCP server exposes **60** stable tools:
 - `ppt_generation_stop` — Request a safe-boundary stop for the exact active operation ID. In-flight provider requests and render stages finish before stopping.
 - `ppt_identity_get` — Return the creative account and scopes associated with this Agent connection.
 - `ppt_project_create` — Create a project with canvas, production/presentation mode, versioned creation configuration, and optional course/chapter ownership.
-- `ppt_html_produce` — Generate a complete design first; accepted designs enter object understanding and code/image allocation before subject generation, constrained reconstruction, and independent actual-screenshot fidelity review. Bounded layout feedback and explicit planning/asset/capability routing preserve editable content. Human approval remains separate.
+- `ppt_html_produce` — Generate a design first. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.
 - `ppt_html_design_current` — Read the current immutable design checkpoint, image URL and stale status; never approves a design or HTML scene.
-- `ppt_html_manual_candidate` — Read one unsaved candidate after an unqueryable model outcome; original task, design, preview and engineering facts stay distinct from approval.
+- `ppt_html_manual_candidate` — Read one current unsaved candidate after a failed or interrupted unqueryable JSON outcome, including unresolved intent; bounded repair replay, original task, design and engineering facts stay distinct from approval. Never retries or saves author content.
 - `ppt_html_manual_candidate_decision` — Record an explicit human accept/reject with evidence note for the exact unsaved candidate. Does not save author scene, retry provider, or grant visual approval.
-- `ppt_html_task_status` — Read persisted HTML task, page, stage, repair/Skill progress, reuse, input freshness and recovery advice; success is not visual approval.
-- `ppt_html_task_current` — Read the latest persisted production task for this page, independently of the project history limit; validates frozen input freshness. Returns null when absent.
+- `ppt_html_task_status` — Read persisted HTML task, page, stage, repair/Skill progress, reuse, input freshness and recovery advice; includes measured adapter calls, reuse, partial timing, actual request timeouts and authority/tool-validated intervention routes; success is not visual approval.
+- `ppt_html_task_current` — Read the latest persisted production task for this page, independently of the project history limit; validates frozen input freshness. Includes adapter measurements, actual request timeouts and authority/tool-validated intervention routes. Returns null when absent.
 - `ppt_html_task_resume` — Explicitly continue the original frozen production request. Unknown outcomes, cancellation, changed inputs and exhausted budgets remain blocked; active submissions reuse the same task.
 - `ppt_html_task_cancel` — HTML production workflow: task_cancel; persisted task and registered render gates.
 - `ppt_html_visual_status` — Read shared Web/Agent HTML workflow stages, current visual approval readiness, and PPTX/video-specific gates.
 - `ppt_html_scene_read` — Read one slide's stored html scene document with its revision and content hash.
 - `ppt_html_scene_write` — Write one slide's html scene document with expected-revision optimistic concurrency (409 on conflict); html-backend projects only.
-- `ppt_html_plan_generate` — Generate a constrained scene plan for one slide through the configured LLM (registered templates/slots/icons only) and record AC06/AC07 evidence.
+- `ppt_html_plan_generate` — Generate a constrained scene plan through the configured LLM, including registered code-owned illustration labels and relations; record AC06/AC07 evidence. No automatic acceptance or author save.
 - `ppt_html_review` — Compile, measure, and screenshot one html scene through the shared bundle; returns object-level diagnostics.
 - `ppt_html_approve` — Approve one html scene; the record binds scene/theme/template/layout/asset/runtime hashes and fails on any static-review error.
 - `ppt_html_approval_status` — Read the current approval validity and invalidation reason for one slide.

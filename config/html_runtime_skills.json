@@ -22,37 +22,37 @@
     },
     {
       "id": "design-understanding",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "stage": "design_understanding",
-      "input_contract": "design-understanding-input/0.1.0",
-      "output_contract": "design-understanding-output/0.1.0",
+      "input_contract": "design-understanding-input/0.2.0",
+      "output_contract": "design-understanding-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-understanding-0.1.0.md",
-        "sha256": "a21e478adabcc4695b769d8cda04f0c39b9249746ed8bf3502a12e634c0c30e1"
+        "path": "config/html_runtime_skills/design-understanding-0.2.0.md",
+        "sha256": "b88234f43f66193d1465c9bdc2edaf50e6c814a95678452010924ddd2630936a"
       },
       "references": {}
     },
     {
       "id": "design-reconstruction",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "stage": "design_reconstruction",
-      "input_contract": "design-reconstruction-input/0.1.0",
-      "output_contract": "design-reconstruction-output/0.1.0",
+      "input_contract": "design-reconstruction-input/0.2.0",
+      "output_contract": "design-reconstruction-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-reconstruction-0.1.0.md",
-        "sha256": "d032e6d716d5e2ad89c7a15ad62838bb8fba3e161cef13b62e7e4518006751e8"
+        "path": "config/html_runtime_skills/design-reconstruction-0.2.0.md",
+        "sha256": "b3e8b1f362549bf134c324d2f498d757785ba695294f0e107ed52f63b56fa14a"
       },
       "references": {}
     },
     {
       "id": "design-fidelity-review",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "stage": "design_fidelity_review",
-      "input_contract": "design-review-input/0.1.0",
-      "output_contract": "design-review-output/0.1.0",
+      "input_contract": "design-review-input/0.2.0",
+      "output_contract": "design-review-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-fidelity-review-0.1.0.md",
-        "sha256": "d99124d903350ed281d1bf0fa3aa4b4080088a34b6acc35980b3c305faa5dc04"
+        "path": "config/html_runtime_skills/design-fidelity-review-0.2.0.md",
+        "sha256": "9004cae9b03cd4842d7f739f273c2f9ffe63082dc25fccb9d6580473176d9f34"
       },
       "references": {}
     }

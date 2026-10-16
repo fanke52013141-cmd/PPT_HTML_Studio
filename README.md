@@ -1,6 +1,8 @@
 # PPT HTML Studio
 
-最新交接：[2026-10-14 模型流式修复与本机 A06 发布交接](docs/plans/html-backend-development/handoff-2026-10-14-model-stream-publication.md)。已修复模型输入字段、流式进度与未知结果留档，本机真实第一页规划与设计图返回，当前等待设计人工确认；A06 整课仍待验收。工程、真实模型实测与用户签收分别记录，丽梅电脑旧运行与本机新课程分开留档。
+最新发布：[2026-10-15 流程 Agent 与多标签能力发布备注](docs/releases/2026-10-15-workflow-agents-and-labeled-capabilities.md)。契约包0.9.53、Agent API1.34.0；审核依据、能力路由与等待规则已修复，通用多标签和呈现能力已接入，固定流程清单21/21通过。真实遴选案例的新规划因供应商ReadTimeout停止，尚无新计划或HTML通过结果。
+
+最新实施交接：[多标签能力与真实复验停点](docs/plans/html-backend-development/handoff-labeled-capabilities-2026-10-15.md)。[审核规则同案例复验](docs/plans/html-backend-development/handoff-design-review-fix-2026-10-15.md)已证明本例可提前拦截缺少代码标签，但耗时更长；模型效果、工程验证与人工签收分别记录。原[2026-10-14发布交接](docs/plans/html-backend-development/handoff-2026-10-14-model-stream-publication.md)保留为历史。
 
 界面整理记录：[HTML流程与工作区交接](docs/plans/html-backend-development/handoff-html-workspace-flow-2026-10-14.md)，明确设计图先行、独立还原/动画面板、配音同步与可选数字人，去掉HTML旧勾画步骤。
 
@@ -38,7 +40,7 @@
 
 ## 当前阶段
 
-最新进展：[设计 Agent 理解、素材分工与还原审核交接](docs/plans/html-backend-development/handoff-design-agent-2026-10-13.md)。实际多动作与音频已连接，整页设计先行和独立视觉审核已接入；当前实测候选被审核拒绝，组件能力修正和 A04 独立语义 QA 待完成。
+最新进展：[多标签规划与注册呈现能力](docs/plans/html-backend-development/handoff-labeled-capabilities-2026-10-15.md)。六个代码标签、三个代码关系槽及四个变体已实现并通过本批工程检查；真实模型尚未返回使用新能力的完整计划。设计、还原、视觉/逐句语义/音频签收及整课仍分别验证，旧失败不自动改为成功。
 
 [流程先行与并行开发计划](docs/plans/workflow-first-parallel-2026-10-09/README.md)细化七步制作职责、人工确认、失败恢复和多对话文件分工，配合下方视觉参考库路线执行。
 

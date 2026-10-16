@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-15",
+  "projectId": "16819466348601712538",
+  "projectUrl": "https://stitch.withgoogle.com/projects/16819466348601712538",
+  "visibility": "PRIVATE",
+  "referenceMode": "Codex images reviewed locally; visual descriptions and functional constraints supplied to Stitch text input. Images were not uploaded through MCP.",
+  "designAsset": "assets/fec48818ee814cccb19849ee51cfcbca",
+  "designAssetVersion": 2,
+  "artifactDirectory": "outputs/ui-redesign-20261015",
+  "screens": [
+    {"step": 1, "name": "导入文章", "screenId": "89d6d718b3e8431491afabaadbd1ac64", "reference": "step-01-article.png"},
+    {"step": 2, "name": "分镜规划", "screenId": "4dbed37959744c059254bfe90c3df8f8", "reference": "step-02-storyboard.png"},
+    {"step": 3, "name": "设计图生成", "screenId": "7816249cc5b74b869c5f10c18be6ed6a", "reference": "step-03-design.png", "version": 2},
+    {"step": 4, "name": "HTML 还原与动画", "screenId": "ab3214d7ebb647afbcc6fa7f6bcc8ff0", "reference": "step-04-html.png"},
+    {"step": 5, "name": "配音与同步", "screenId": "9eb75064718a4dd492afe6e55cdff628", "reference": "step-05-audio.png"},
+    {"step": 6, "name": "数字人讲解（可选）", "screenId": "e4c8cb8cdea543c6a95030a55f6c0a41", "reference": "step-06-presenter.png"}
+  ],
+  "step3RequestHistory": {
+    "original": "Connection interrupted; result unknown, original request record retained.",
+    "secondVersion": "Explicitly authorized by the user; selected final candidate read back successfully."
+  },
+  "implementation": "Existing application controls and workflow facts take precedence over generated mockup content. No automatic approvals or new generation APIs.",
+  "verification": "Remote final screen readback and isolated application layout checks completed; real-course visual acceptance remains separate."
+}

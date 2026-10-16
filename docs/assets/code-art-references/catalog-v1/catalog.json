@@ -16,8 +16,8 @@
       "pendingOrExperimentalSamples": 2,
       "runtimeNodeTypes": 11,
       "runtimeEffects": 8,
-      "runtimeLayouts": 6,
-      "runtimeTemplates": 4,
+      "runtimeLayouts": 7,
+      "runtimeTemplates": 5,
       "runtimeThemes": 5
     },
     "sourceOfCounts": "counted from standard-pages.json, components.json, components-extensions.json, presentation-variants.json, effects.json, static-catalog.json, and live V1 runtime sources"
@@ -240,7 +240,7 @@
     },
     {
       "path": "html_engine/visual/catalog/production-mapping.json",
-      "sha256": "8abeeeeed7909fe45858807fb08dea96aa4866adedf0e5fa222f4aefa8f1adf6"
+      "sha256": "17743c9cb15ba6b74304cb264c6e19dde7dd847f2d4b2e9598c7d1c0ac0450cd"
     },
     {
       "path": "html_engine/visual/effects/registry.json",
@@ -267,12 +267,16 @@
       "sha256": "6038ee78d9c696a68d795bc9227085ed88d9c6c1f766798b797d68d3be21a7a6"
     },
     {
+      "path": "html_engine/visual/layouts/science-explanation-labels-v1.json",
+      "sha256": "ca930e026b84d16a08098a3d565794f075693f0bfc532778f2a680ac847a7bc9"
+    },
+    {
       "path": "html_engine/visual/layouts/science-explanation-v1.json",
       "sha256": "a57b624ed482f43b72b99f882f531ffa5979aaab85deb242bd5f3d50600a36b8"
     },
     {
       "path": "html_engine/visual/schema.json",
-      "sha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5"
+      "sha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8"
     },
     {
       "path": "html_engine/visual/templates/data-relation-v1.json",
@@ -285,6 +289,10 @@
     {
       "path": "html_engine/visual/templates/explanation-cards-v1.json",
       "sha256": "743cd9b9f70e566151bafc97a43a96d82afe53e4c9c351ab1d1ffac5644e27f6"
+    },
+    {
+      "path": "html_engine/visual/templates/explanation-labeled-v1.json",
+      "sha256": "4226ef27b88ecdc58c0f8d065b1e29cd737f5765d912d803247e50efbef90899"
     },
     {
       "path": "html_engine/visual/templates/process-stage-v1.json",
@@ -1750,9 +1758,10 @@
         "status": "candidate-only",
         "directAdapter": false,
         "candidateRuntimeIds": [
-          "runtime-node:card"
+          "text-card-label",
+          "text-card-outline"
         ],
-        "gap": "语义上接近卡片节点；静态变体、卡片尺寸和槽位仍需显式生产定义。"
+        "gap": "仅scene0.7显式选择注册呈现，标签卡要求原文冒号与图标，尺寸/容量与实例仍严格验证；不是静态整页自动转换。"
       },
       "tags": "C02 描边卡片 卡片与容器 轻量边界 同一个容器结构，可以换填色、边框、圆角与阴影。"
     },
@@ -7070,6 +7079,70 @@
       }
     },
     {
+      "id": "runtime-layout:science-explanation-v1@0.3.0",
+      "version": "0.3.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "图文讲解 / 六个代码标签",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 20,
+        "slots": [
+          "header",
+          "headline",
+          "intro",
+          "card-1",
+          "card-2",
+          "card-3",
+          "figure",
+          "subject",
+          "anchor-label",
+          "summary",
+          "annotation",
+          "marker-1",
+          "marker-2",
+          "marker-3",
+          "marker-4",
+          "marker-5",
+          "marker-6",
+          "relation-1",
+          "relation-2",
+          "relation-3"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/science-explanation-labels-v1.json",
+        "fileSha256": "ca930e026b84d16a08098a3d565794f075693f0bfc532778f2a680ac847a7bc9",
+        "recordSha256": "879deacdaeee6aa4f1d8e897c506ec98292ce2b98dffe59b86b421f7ff3c9c71"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:science-explanation-v1@0.3.0"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-node:annotation",
       "version": "0.2.0",
       "type": "runtime-node",
@@ -7112,7 +7185,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "1779e4bc562190518bef0d299ced5b32d252db3b94f8a2a100be3f5c706048be"
       },
       "screenshot": null,
@@ -7152,7 +7225,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "4ef65f4f0a3c5139f19938ec757c80aa89d2c4549f89e98f2b54de76d662dd83"
       },
       "screenshot": null,
@@ -7207,7 +7280,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "7e1b9f2bafa1348e15f22906303fa47802527d6b5e69a41f772a529203a4f333"
       },
       "screenshot": null,
@@ -7268,7 +7341,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "f377c7d93d2770ed9c6138f13ad9321e23a8a60d8958bd4204221cf39f5208a4"
       },
       "screenshot": null,
@@ -7314,7 +7387,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "55f087a49ca40a8f6530060286ea720be17193869359ac364e7042fd7d789af6"
       },
       "screenshot": null,
@@ -7367,7 +7440,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "b1057fbd41c4dc4ad70b6ef587db13f8246893f889561eea7f34314979aec704"
       },
       "screenshot": null,
@@ -7416,7 +7489,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "6ef8497635172c224efcd175dafe1cfa0cec22b66e9dc14d5a119a167fa4cd64"
       },
       "screenshot": null,
@@ -7479,7 +7552,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "d438e5306b2dabeb38f34d128eed867482e51ad80584ef285ace738c384587e0"
       },
       "screenshot": null,
@@ -7553,7 +7626,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "0587fb4992b4a6c6f04565e07bb14dce73066e7a8ce6a447a71cbaa205b05593"
       },
       "screenshot": null,
@@ -7617,7 +7690,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "992266d45945f11445294e59094ce43b251b76fa3b71c845d5f069d877af42b8"
       },
       "screenshot": null,
@@ -7666,7 +7739,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8a219b681381ac696ea8378b7196a256cf5fd345e39a16173c0d089686fed4c5",
+        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
         "recordSha256": "87c4f3d65f419df6fc952fea94ab74ff9a8ab5eddb12b4ae685281b8300d86d5"
       },
       "screenshot": null,
@@ -8098,6 +8171,167 @@
         "directAdapter": true,
         "candidateRuntimeIds": [
           "runtime-template:explanation-cards-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-template:explanation-labeled-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "图文讲解：独立代码标签",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "science-explanation-v1",
+          "version": "0.3.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "headline": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-3": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "figure": {
+            "kinds": [
+              "figure"
+            ],
+            "required": true
+          },
+          "subject": {
+            "kinds": [
+              "image"
+            ],
+            "required": true
+          },
+          "anchor-label": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          },
+          "annotation": {
+            "kinds": [
+              "annotation"
+            ],
+            "required": true
+          },
+          "marker-1": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-2": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-3": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-4": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-5": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-6": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "relation-1": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-2": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-3": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/explanation-labeled-v1.json",
+        "fileSha256": "4226ef27b88ecdc58c0f8d065b1e29cd737f5765d912d803247e50efbef90899",
+        "recordSha256": "6eacbfc45d8f67bb2af8d85006efa49495660b4752583be90f213867e53f059f"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:explanation-labeled-v1"
         ],
         "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
@@ -8800,5 +9034,5 @@
     "providerCallMade": false,
     "note": "离线装配参考包；不调用生图供应商，不代表真实生图请求已接入。"
   },
-  "snapshotSha256": "26aba4f7ee9e122e3b866969d6959433c9ed2a6a449f8777e271e99e7e923d6f"
+  "snapshotSha256": "dba2c94bade7697fb3178a79b23bb07372076052932eb702633812bc0a3b73c2"
 }

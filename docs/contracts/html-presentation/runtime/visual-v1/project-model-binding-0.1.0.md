@@ -36,3 +36,5 @@
 规划使用专用 generator；设计/视觉阶段继续使用原 json_generator；两者均经原任务阶段回执，未知上游结果不盲目重试。正式规划 Web/Agent 共用入口也解析冻结 planning。工程连接验证不代表规划语义、设计还原或视觉签收通过。
 
 2026-10-14 本机验收修复：共享generate_scene_plan显式传request_timeout=600，包括最多一次结构修复；请求前证据登记实际600秒参数。原先未传参数时落入JSON适配器120秒默认。保持正常思考参数和严格结构检查，超时异常直接退出，不当作结构失败重试。旧unknown仍按原任务核验，不能通过源码超时修复或新快照补发同一语义请求。
+
+2026-10-15 Agent 读取合同补齐：`project_model_binding.read` 的严格输出 Schema 同步包含 `bindings.planning` 与 `effective.planning`，与现有 Web 只读结果一致。未独立绑定时，effective.planning 显示实际回退的 text 模型；仍只暴露脱敏摘要，不改变保存、模型冻结或供应商请求。能力版本 1.2，Agent API 1.30.0。

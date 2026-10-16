@@ -131,10 +131,51 @@ def test_stop_and_noncapacity_failure_do_not_save(draft):
     with pytest.raises(HtmlReviewError):
         repair_candidate(scene, None, run_dir=run, deps=deps)
     assert len(calls) == 1
+
+
+def test_noncapacity_failure_does_not_call_model(draft):
+    run, scene = draft
+    def model(**_):
+        pytest.fail("noncapacity failures must not call the model")
+    deps = HtmlReviewDependencies(ROOT, model)
     broken = copy.deepcopy(scene)
     broken["nodes"][0]["unregistered"] = True
     diagnostic = review_scene(broken, run_dir=run, deps=deps, diagnostic=True)
     assert not diagnostic["passed"] and not diagnostic.get("capacityIssues")
     with pytest.raises(HtmlReviewError):
         repair_candidate(broken, None, run_dir=run, deps=deps)
-    assert len(calls) == 1
+
+
+def test_fault_injected_improving_but_unfixed_capacity_stops_at_budget(draft, monkeypatch):
+    from PIL import Image
+    run, scene = draft
+    original = copy.deepcopy(scene)
+    screenshot = run / "capacity-fixture.png"
+    Image.new("RGB", (64, 64), "white").save(screenshot)
+    calls, events = [], []
+    def review(current, **_):
+        node = next(n for n in current["nodes"] if n["id"] == "headline")
+        size = node["presentation"]["typography"]["text"]["fontSizePx"]
+        return {"passed": False, "message": "CONTENT_CAPACITY_EXCEEDED: fixture",
+                "capacityIssues": [{"target": "headline", "available": 40, "measured": size}],
+                "screenshot": "capacity-fixture.png"}
+    def apply(_run, _slide, request, document):
+        updated = copy.deepcopy(document["scene"])
+        node = next(n for n in updated["nodes"] if n["id"] == "headline")
+        node["presentation"]["typography"]["text"]["fontSizePx"] = request["operations"][0]["values"]["fontSizePx"]
+        return {"scene": updated, "binding": document["binding"]}
+    def model(**_):
+        calls.append(1)
+        return {"action": "patch", "operations": [{"targetId": "headline", "kind": "set_text_style",
+            "part": "text", "values": {"fontSizePx": 80 - 10 * len(calls)}}]}
+    monkeypatch.setattr("html_candidate_agent.review_scene", review)
+    monkeypatch.setattr("html_candidate_agent.candidate_from_document", apply)
+    monkeypatch.setattr("html_candidate_agent.editor.resources", lambda *_: {})
+    with pytest.raises(HtmlReviewError):
+        repair_candidate(scene, None, run_dir=run, deps=HtmlReviewDependencies(ROOT, model),
+                         max_rounds=2, progress=events.append)
+    assert len(calls) == 2 and scene == original
+    action = events[-1]["next_action"]
+    assert action["reason"] == "budget_exhausted" and action["automatic_retry"] is False
+    result = json.loads(next((run / "planning/html_visual/candidates").glob("*/layout-agent/*/result.json")).read_text(encoding="utf-8"))
+    assert result["next_action"] == action and result["passed"] is False

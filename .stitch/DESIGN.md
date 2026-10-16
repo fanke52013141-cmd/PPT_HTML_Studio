@@ -1,7 +1,7 @@
 # Design System: PPT HTML Studio — Course Production Workspace
 
 ## 1. Visual Theme & Atmosphere
-Retain the existing PPT Studio identity and the user's existing Stitch project 8494304199748819775. A focused Chinese-language creation studio, balanced density 5, structured variance 4, restrained motion 2. The actual course/page preview is the focal point. Business facts, pending decisions and the next meaningful action outrank decoration. This document records the local implementation target; it does not replace or upload project-level design tokens.
+Retain the existing PPT Studio identity. The user authorized the new private Stitch project 16819466348601712538 for the six-step redesign; selected screens are recorded in six-step-workspace-20261015.json. Project 8494304199748819775 remains historical reference. A focused Chinese-language creation studio, balanced density 5, structured variance 4, restrained motion 2. The actual course/page preview is the focal point. Business facts, pending decisions and the next meaningful action outrank decoration. Application UI dimensions in docs/ui-spec.md override generated screen suggestions.
 
 ## 2. Color Palette & Roles
 - Canvas Slate (#F7F8FA): application canvas.
@@ -9,15 +9,15 @@ Retain the existing PPT Studio identity and the user's existing Stitch project 8
 - Charcoal Ink (#20252D): headings and primary content; never pure black.
 - Slate Text (#687180): supporting text and metadata.
 - Quiet Border (#E4E7EB): separators and structural boundaries.
-- Studio Amber (#D8753C): single restrained accent for the primary action, current step and focus.
-- Accent Wash (#FFF3EA): active navigation surface. No competing saturated accent, gradient button or glow.
+- Studio Orange (#EE5D36): single restrained accent for the primary action, current step and focus.
+- Accent Wash (#FFF5F0): active navigation surface. No competing saturated accent, gradient button or glow.
 State labels use explicit words/icons as well as neutral contrast; color alone must never communicate approval or failure.
 
 ## 3. Typography Rules
-Use Geist for Latin and numeric UI, with the application's available Noto Sans SC for Chinese. Sans-serif throughout. Page title 24–28px/1.35 at weight 650; section title 16–18px/1.5 at 600; body 14–16px/1.65; labels 13–14px/1.5. Counters and timestamps use tabular numerals. No display-serif, Inter, giant marketing headline, or decorative headline collage in this software workspace. Limit explanation lines to roughly 65 characters.
+Use the application's available Noto Sans SC/Microsoft YaHei stack. Sans-serif throughout. Workspace title 18px; section title 16px/1.5 at 600; body 14–16px/1.65; labels 13–14px/1.5. Counters and timestamps use tabular numerals. No display-serif, giant marketing headline, or decorative headline collage in this software workspace. Limit explanation lines to roughly 65 characters.
 
 ## 4. Component Stylings
-One primary action in each decision area. Secondary actions use quiet outlines or text treatment; technical settings are disclosed progressively. Buttons and selects have at least 44px targets, 8px corners and clear keyboard focus/disabled/busy states. Dividers and aligned spacing replace stacks of nested cards. Main preview surface uses 12px corners and a restrained shadow only to separate it from the canvas. Inputs have labels above, helper/error text below, and no floating labels. Empty states say which predecessor is missing and provide a navigation action. Real status distinguishes generated, awaiting confirmation, stale, blocked, running and complete. Waiting operations use subtle opacity motion and a real progress label; respect reduced motion.
+One primary action in each decision area. Secondary actions use quiet outlines or text treatment; technical settings are disclosed progressively. Titlebar tools use the existing compact 30px contract; content buttons keep 44px targets, 8px corners and clear keyboard focus/disabled/busy states. Dividers and aligned spacing replace stacks of nested cards. Main preview surface uses 12px corners and a restrained shadow only to separate it from the canvas. Inputs have labels above, helper/error text below, and no floating labels. Empty states say which predecessor is missing and provide a navigation action. Real status distinguishes generated, awaiting confirmation, stale, blocked, running and complete. Waiting operations use subtle opacity motion and a real progress label; respect reduced motion.
 
 ## 5. Layout Principles
 Desktop: a compact top bar for project identity, a 210–224px step rail, and one main working surface. At >=1100px use a dominant preview with a narrower decision/inspector column. At 768–1099px stack inspector below preview; below 768px collapse all content grids to one column and use a compact navigation treatment. No horizontal overflow at 420/768/1280px. Containers have min-width:0; grid columns use minmax(0,1fr). Use 8/12/16/24/32px spacing, 24–32px panel padding and a consistent maximum content width of 1440px.

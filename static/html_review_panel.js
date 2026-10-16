@@ -8,6 +8,9 @@
   let designCandidate = null;
   let acceptedDesignKey = null;
   let manualCandidate = null;
+  let syncVersion = 0;
+  let syncing = false;
+  let operationInFlight = false;
   const legacyDisplays = new WeakMap();
   function toggleLegacy(panel, htmlMode) {
     if (!panel) return;
@@ -56,7 +59,7 @@
   }
   async function showManual(section, current, task, token) {
     clearManual(section);
-    if (task.status !== 'failed' || task.input_state !== 'current' || !task.recovery?.requires_verification) return;
+    if (!['failed','interrupted'].includes(task.status) || task.input_state !== 'current' || !task.recovery?.requires_verification) return;
     const base = `/api/projects/${encodeURIComponent(current.project.id)}/html-review/${encodeURIComponent(current.slideId)}/manual-candidate/${encodeURIComponent(task.id)}`;
     try {
       const result = await API.get(base);
@@ -68,7 +71,7 @@
       box.querySelector('[data-manual-design]').src = manualCandidate.design_url;
       box.querySelector('[data-manual-preview]').src = manualCandidate.preview_url;
       box.querySelector('[data-manual-decision]').textContent = manualCandidate.decision
-        ? `已记录人工${manualCandidate.decision.decision === 'accept' ? '接受' : '驳回'}：${manualCandidate.decision.note}。原生产任务仍保持失败。`
+        ? `已记录人工${manualCandidate.decision.decision === 'accept' ? '接受' : '驳回'}：${manualCandidate.decision.note}。原生产任务状态保持不变。`
         : manualCandidate.engineering === 'passed'
           ? '请对照原设计与实际页面，填写具体判断依据后决定。接受仅留存候选评审，不会保存作者页面或批准正式视觉。'
           : `此候选工程检查未通过，只能记录驳回；首个问题：${manualCandidate.engineering_issues?.[0]?.message || '请检查版式容量'}。`;
@@ -131,6 +134,18 @@
     if (task.input_state === 'stale') line('此任务对应旧输入，不能作为当前页面完成结果。');
     if (task.snapshot_id) line(`输入版本：${task.snapshot_id}`);
     const progress=task.progress || {};
+    const execution=task.execution;
+    if(execution){
+      line(`已测量适配器调用 ${execution.measured_adapter_calls} 次 · 已记录结果复用 ${execution.recorded_reuses} 次 · 已结束调用的记录耗时 ${(execution.elapsed_ms/1000).toFixed(1)} 秒`);
+      if(execution.unmeasured_requests || execution.untimed_requests)line('部分旧记录或未完成请求缺少测量，以上不是完整 HTTP 次数、总耗时或费用。');
+      const roles={planning:'内容规划',design_image:'设计生图',asset_image:'独立配图',design_understanding:'设计理解',layout_repair:'排版修复',reconstruction:'设计还原',fidelity_review:'原图对照审核',json:'文字请求',image:'图片请求'};
+      for(const [role,metrics] of Object.entries(execution.roles||{}))line(`${roles[role]||'其他阶段'}：适配器 ${metrics.adapter_calls} 次，复用 ${metrics.reuses} 次，记录耗时 ${(metrics.elapsed_ms/1000).toFixed(1)} 秒`);
+    }
+    if(progress.next_action){
+      const reasons={unsupported:'当前能力不支持',upstream_revision_required:'需返回上游处理',budget_exhausted:'本阶段修复预算耗尽',external_call_budget_exhausted:'生产外部调用预算耗尽',repeated_candidate:'候选重复无改善',repeated_patch:'修复操作重复',unchanged_measurements:'实测没有改善',model_stop:'模型主动停止',non_capacity_failure:'失败不属于排版容量问题',missing_diagnostic_evidence:'缺少可用诊断证据'};
+      const routes={planning:'内容规划',assets:'独立素材',capabilities:'公共组件能力',reconstruction:'页面还原',design_review:'设计与生产规则审阅',manual_review:'人工检查',diagnostics:'工程诊断'};
+      line(`处理建议：${reasons[progress.next_action.reason]||'需要检查运行证据'}；交回 ${(progress.next_action.routes||[]).map(route=>routes[route]||'人工检查').join('、')}。系统不会自动重试或批准。`);
+    }
     if (progress.model_stream) {
       const stream=progress.model_stream;
       const labels={waiting:'等待模型响应',thinking:'模型思考中',outputting:'正在接收结果',completed:'结果接收完成',failed:'接收中断，需核验原请求'};
@@ -201,6 +216,57 @@
         section.querySelector('[data-action="resume"]').disabled=false;
       }
     }
+  }
+  async function syncCurrent() {
+    const section = document.getElementById('html-review-panel-section');
+    const current = context();
+    if (syncing || operationInFlight || document.hidden || !section || section.hidden ||
+        current.project?.visual_backend !== 'html' || !current.slideId ||
+        ![3,5].includes(window.PPTStudio.runtime.state.currentStep)) return;
+    const token = generation, version = ++syncVersion;
+    const base = `/api/projects/${encodeURIComponent(current.project.id)}/html-review/${encodeURIComponent(current.slideId)}`;
+    const valid = () => token === generation && version === syncVersion && !section.hidden &&
+      context().project?.id === current.project.id && context().slideId === current.slideId;
+    syncing = true;
+    try {
+      const [taskResult, designResult, pageResult] = await Promise.all([
+        API.get(`${base}/task/current`, {silent:true}),
+        API.get(`${base}/design/current`, {silent:true}),
+        API.get(`/api/projects/${encodeURIComponent(current.project.id)}/html-visual/${encodeURIComponent(current.slideId)}`, {silent:true})
+          .catch(error => {if (error.status === 404 || error.statusCode === 404) return {scene:null}; throw error;})
+      ]);
+      if (!valid()) return;
+      const task = taskResult.task || null, design = designResult.design || null;
+      if (activeTask?.id === task?.id && ['queued','running'].includes(task?.status)) return;
+      // Reads can straddle an external task completion; do not mix its result
+      // with a different design. The next read obtains a coherent pair.
+      if (task?.status === 'succeeded' && task.result?.stage === 'design_review' &&
+          task.result.design?.key && task.result.design.key !== design?.key) return;
+      const changed = JSON.stringify(task) !== JSON.stringify(lastTask) ||
+        JSON.stringify(design) !== JSON.stringify(designCandidate);
+      if (changed) {
+        const nextToken = ++generation;
+        taskFacts(section, task);
+        showAssetRetry(section, design?.status === 'accepted_for_reconstruction' && !design.stale ? design.key : null);
+        showDesign(section, design, base);
+        if (task && ['queued','running'].includes(task.status)) void restoreTask(section,current,nextToken);
+        else {
+          if (task) void showManual(section,current,task,nextToken);
+          else clearManual(section);
+          status(section, unknownProduction() ? '原生产请求结果待核实，请查看运行记录；不能重复提交。' :
+            design?.stale ? '旧设计已过期，请重新生成。' : design ? '已更新当前设计参考，请审阅。' : '当前暂无设计参考。');
+        }
+      }
+      pageAvailability(section, Boolean(pageResult.scene));
+      productionAvailability(section);
+    } catch (error) {
+      if (valid()) {
+        pageAvailability(section, false);
+        for (const action of ['produce','accept-design','revise-design','retry-asset'])
+          section.querySelector(`[data-action="${action}"]`).disabled = true;
+        status(section, `当前状态读取失败，暂不能提交：${error.message}`);
+      }
+    } finally {syncing = false;}
   }
   function refresh() {
     const designHost = document.getElementById('step-panel-3');
@@ -303,7 +369,7 @@
           try {
             const result = await API.post(`${manualCandidate.base}/decision`, {key:manualCandidate.key,decision:manualButton.dataset.manualAction,note});
             manualCandidate.decision = result.candidate.decision;
-            section.querySelector('[data-manual-decision]').textContent = `已记录人工${manualCandidate.decision.decision === 'accept' ? '接受' : '驳回'}：${manualCandidate.decision.note}。原生产任务仍保持失败。`;
+            section.querySelector('[data-manual-decision]').textContent = `已记录人工${manualCandidate.decision.decision === 'accept' ? '接受' : '驳回'}：${manualCandidate.decision.note}。原生产任务状态保持不变。`;
             section.querySelectorAll('[data-manual-action]').forEach(button => button.hidden = true);
           } catch (error) { status(section, `候选决定未保存：${error.message}`); manualButton.disabled = false; }
           return;
@@ -346,6 +412,7 @@
         const current = context();
         if (!current.slideId) { status(section, '请先选择分镜页面。'); return; }
         const token = ++generation;
+        operationInFlight = token;
         const base = `/api/projects/${encodeURIComponent(current.project.id)}/html-review/${encodeURIComponent(current.slideId)}`;
         section.querySelectorAll('button[data-action]:not([data-action="cancel"])').forEach(b=>b.disabled=true);
         status(section, '处理中…');
@@ -359,7 +426,8 @@
           } else if (action === 'revise-design') {
             const instruction = section.querySelector('[data-design-instruction]').value.trim();
             if (!instruction) throw new Error('请填写本轮设计修改方向。');
-            payload = {design_instruction: instruction, plan_version:'0.2.0'}; action = 'produce';
+            if (!designCandidate || designCandidate.stale) throw new Error('请先读取有效的原设计，再修改设计。');
+            payload = {design_candidate_key:designCandidate.key, design_instruction: instruction, plan_version:'0.2.0'}; action = 'produce';
           } else if (action === 'retry-asset') {
             const instruction = section.querySelector('[data-asset-instruction]').value.trim();
             if (!acceptedDesignKey || !instruction) throw new Error('请填写主体素材修改方向，并确认当前设计仍有效。');
@@ -395,6 +463,7 @@
           else status(section, result.message || '场景已生成，可以静态审阅。');
         } catch(error) { if (token === generation) status(section, `操作失败：${error.message}`); }
         finally {
+          if (operationInFlight === token) operationInFlight = false;
           if (token === generation) {
             activeTask=null; section.querySelector('[data-action="cancel"]').hidden=true;
             section.querySelectorAll('button[data-action]').forEach(b=>b.disabled=false);
@@ -474,5 +543,8 @@
   document.addEventListener('DOMContentLoaded', refresh);
   document.addEventListener('click', () => queueMicrotask(refresh));
   document.addEventListener('ppt:workspace-changed', refresh);
-  window.HtmlReviewPanel = {refresh};
+  document.addEventListener('visibilitychange', () => {if (!document.hidden) void syncCurrent();});
+  document.addEventListener('ppt:html-candidate-changed', () => void syncCurrent());
+  setInterval(() => void syncCurrent(), 5000);
+  window.HtmlReviewPanel = {refresh, syncCurrent};
 })();

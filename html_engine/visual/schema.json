@@ -361,7 +361,7 @@
           "$ref": "#/$defs/ref"
         },
         "layoutRef": {
-          "$ref": "#/$defs/ref"
+          "$ref": "#/$defs/layoutRef"
         },
         "templateRef": {
           "$ref": "#/$defs/templateRef"
@@ -1384,7 +1384,10 @@
           "const": "hps.visual.layout"
         },
         "version": {
-          "const": "0.2.0"
+          "enum": [
+            "0.2.0",
+            "0.3.0"
+          ]
         },
         "id": {
           "$ref": "#/$defs/id"
@@ -1524,7 +1527,7 @@
           ]
         },
         "layoutRef": {
-          "$ref": "#/$defs/ref"
+          "$ref": "#/$defs/layoutRef"
         },
         "slots": {
           "type": "object",
@@ -1741,7 +1744,12 @@
             "header-badge",
             "summary-panel",
             "text-card-label",
-            "summary-relationship-panel"
+            "summary-relationship-panel",
+            "summary-relationship-compact",
+            "text-emphasis-bold",
+            "figure-caption-top",
+            "summary-relationship-columns",
+            "arrow-up"
           ]
         },
         "icon": {
@@ -1751,6 +1759,25 @@
       "default": {
         "offsetX": 0,
         "offsetY": 0
+      }
+    },
+    "layoutRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "version": {
+          "enum": [
+            "0.2.0",
+            "0.3.0"
+          ]
+        }
       }
     }
   }

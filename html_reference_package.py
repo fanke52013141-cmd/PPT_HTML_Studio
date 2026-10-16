@@ -137,7 +137,7 @@ def assemble_reference(plan, brief, *, repo_root, directory, runner):
     return verify_package(directory)
 
 
-def design_prompt(package, *, instruction=""):
+def design_prompt(package, *, instruction="", revise_existing=False):
     # Accurate slot content appears once; hashes, sample IDs and audit metadata
     # stay outside the model input. Reference examples never become new content.
     semantic = "semanticDesign" in package["content"]
@@ -152,6 +152,9 @@ def design_prompt(package, *, instruction=""):
     )
     return (
         f"PromptVersion: {version}。生成一张完整页面的设计参考。"
+        + ("修订模式 html-design-revision/0.1.0：最后一张附件是本次指定的原设计，其余附件是组件参考。"
+           "保留原图构图、内容、对象和视觉关系，仅按本轮修改方向调整；不另选模板或重排整页。"
+           if revise_existing else "")
         + state_rule
         + "只使用黑、灰、白；白色背景。精细字阶、充足留白、清晰线条、柔和灰阶阴影和渐变。"
         "附件分类图只供美感与组件外观参考，不复制其样例文字、数字、编号或栏目。"

@@ -1,0 +1,481 @@
+{
+  "version": "0.3.0",
+  "scope": "offline_workflow_incidents",
+  "cases": [
+    {
+      "id": "WF-001",
+      "title": "指定来源修订，不重做规划",
+      "evidence_kind": "stub_provider_real_reference_package",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_e_production.py::test_design_revision_reuses_plan_and_attaches_original_without_author_write",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "相对初稿新增规划 0 次，设计生图 1 次",
+        "reuse": "原 plan/brief 与原图复用",
+        "route": "design_review",
+        "terminal": "新候选待审",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-002",
+      "title": "返回结果在恢复后复用",
+      "evidence_kind": "fault_injected_persistent_stages",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_production_stages.py::test_measured_call_and_restart_reuse_are_distinct",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "业务适配器累计 1 次",
+        "reuse": "恢复后 reuses=1；原耗时保留",
+        "route": "返回原结果",
+        "terminal": "returned",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-003",
+      "title": "退出意图和未知结果不伪造事实",
+      "evidence_kind": "fault_injected_persistent_stages",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_production_stages.py::test_unfinished_intent_does_not_claim_a_measured_adapter_call",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_production_stages.py::test_unknown_elapsed_does_not_persist_provider_error_or_invent_usage",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "未完成 intent 无已确认调用；异常可确认调用 1 次",
+        "reuse": "本案不触发复用",
+        "route": "未知结果待核实",
+        "terminal": "intent 或 unknown；usage/cost=null",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-004",
+      "title": "回执落盘后数据库登记失败",
+      "evidence_kind": "fault_injected_persistent_stages",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_production_recovery.py::test_response_disk_receipt_recovers_failed_database_registration",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "供应商替身累计 1 次",
+        "reuse": "回执对账后恢复返回值",
+        "route": "reconcile_responses",
+        "terminal": "returned；重复对账为 0",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-005",
+      "title": "查单成功、处理中、未找到",
+      "evidence_kind": "stub_queryable_provider",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_production_recovery.py::test_provider_lookup_never_resubmits",
+          "expected_items": 3
+        }
+      ],
+      "expected": {
+        "calls": "每个参数案例提交累计 1 次，禁止重发",
+        "reuse": "成功查单后复用；其他状态阻断",
+        "route": "查原 request_id",
+        "terminal": "成功可恢复；pending/not_found 仍未知",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-006",
+      "title": "同页新候选、迟到响应和草稿",
+      "evidence_kind": "stub_transport_real_browser",
+      "checks": [
+        {
+          "runner": "node",
+          "target": "checks/test_html_review_panel.cjs",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "只读刷新不触发生产；本地修订按钮单独断言",
+        "reuse": "同页事实更新、草稿保留",
+        "route": "同页更新；跨项目响应隔离",
+        "terminal": "新候选可见；读取失败关闭提交",
+        "author": "本案不写真实作者",
+        "approval": "未知请求不能因迟到设计而获准"
+      }
+    },
+    {
+      "id": "WF-007",
+      "title": "代码组件不能转位图逃避能力缺口",
+      "evidence_kind": "stub_design_understanding",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_design_agent.py::test_unsupported_allocation_routes_code_back_to_capabilities_without_more_calls",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "理解 1 次；无后续请求",
+        "reuse": "不触发复用",
+        "route": "assets 请求被归属校验转 capabilities",
+        "terminal": "unsupported；automatic_retry=false",
+        "author": "输入 scene 保持",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-008",
+      "title": "容量失败经受限修复通过",
+      "evidence_kind": "stub_model_real_renderer",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_candidate_agent.py::test_unsaved_capacity_failure_real_screenshot_agent_and_strict_recheck",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "模型决策 1 次",
+        "reuse": "不触发复用",
+        "route": "capacity → layout_repair → strict_review",
+        "terminal": "未保存候选严格检查通过",
+        "author": "原 scene/动作保持且作者文件不存在",
+        "approval": "工程通过不构成批准"
+      }
+    },
+    {
+      "id": "WF-009",
+      "title": "容量改善但仍失败，预算必须停止",
+      "evidence_kind": "fault_injected_graph_diagnostics_and_editor",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_candidate_agent.py::test_fault_injected_improving_but_unfixed_capacity_stops_at_budget",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "模型决策恰好 2 次",
+        "reuse": "不触发复用",
+        "route": "manual_review",
+        "terminal": "budget_exhausted；automatic_retry=false",
+        "author": "原 scene 保持",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-010",
+      "title": "人工保护字段不能被修复覆盖",
+      "evidence_kind": "stub_model_real_renderer",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_candidate_agent.py::test_manual_protection_and_budget_preserve_original",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "最多 2 次决策",
+        "reuse": "不触发复用",
+        "route": "受保护编辑拒绝",
+        "terminal": "MANUAL_FIELD_PROTECTED 留档；修复失败",
+        "author": "原 scene 保持",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-011",
+      "title": "音频讲稿过期拒绝绑定",
+      "evidence_kind": "local_audio_fixture",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_semantic_qa.py::test_html_tts_completion_rejects_mismatched_audio_source",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "本案不调用供应商",
+        "reuse": "过期音频不能作为有效绑定",
+        "route": "绑定校验拒绝",
+        "terminal": "HTML_AUDIO_BINDING_INVALID",
+        "author": "本案不保存新页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-012",
+      "title": "语义未核验时阻断视频",
+      "evidence_kind": "stub_readiness_local_contract",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_semantic_qa.py::test_video_gate_includes_semantic_but_static_pptx_remains_independent",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "本案不调用供应商",
+        "reuse": "不触发复用",
+        "route": "输出就绪门禁",
+        "terminal": "video=false，SEMANTIC_QA_REQUIRED；静态 PPTX 独立",
+        "author": "本案不保存作者",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-013",
+      "title": "中断候选重演且恢复临时文件",
+      "evidence_kind": "fault_injected_archived_evidence",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_manual_candidate_review.py::test_interrupted_multiround_candidate_replays_and_restores_files",
+          "expected_items": 2
+        }
+      ],
+      "expected": {
+        "calls": "本案不重发未知请求",
+        "reuse": "只检查归档证据",
+        "route": "严格重演与截图核验",
+        "terminal": "匹配时可检查，截图不符拒绝",
+        "author": "原文件恢复",
+        "approval": "检查不构成批准"
+      }
+    },
+    {
+      "id": "WF-014",
+      "title": "人工决定不可改写原任务或反复修改",
+      "evidence_kind": "fault_injected_manual_packet",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_manual_candidate_review.py::test_human_decision_is_immutable_and_does_not_change_original_job",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_manual_candidate_review.py::test_engineering_failure_cannot_be_accepted",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "本案不调用供应商",
+        "reuse": "同决定幂等",
+        "route": "独立人工决定记录",
+        "terminal": "原任务仍 failed；冲突决定拒绝；工程失败拒绝接受",
+        "author": "author_saved=false",
+        "approval": "model_fidelity=unknown；不批准作者页面"
+      }
+    },
+    {
+      "id": "WF-015",
+      "title": "过期计划、版本、模型和定义阻断后续",
+      "evidence_kind": "stub_provider_real_reference_package",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_e_production.py::test_stale_checkpoint_stops_before_asset_requests",
+          "expected_items": 4
+        }
+      ],
+      "expected": {
+        "calls": "初稿设计 1 次；过期后素材新增 0 次",
+        "reuse": "旧候选不能绕过当前性校验",
+        "route": "DESIGN_STALE",
+        "terminal": "四种来源变化均阻断",
+        "author": "作者场景不存在",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-016",
+      "title": "外部调用总预算持久化停止",
+      "evidence_kind": "fault_injected_persistent_stages",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_production_stages.py::test_budget_stop_is_persistent_without_an_extra_provider_call",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "上限 1；第二请求不调用适配器",
+        "reuse": "不触发复用",
+        "route": "manual_review",
+        "terminal": "external_call_budget_exhausted；automatic_retry=false",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-017",
+      "title": "历史缺测和伪造指标不能推断费用",
+      "evidence_kind": "pure_metrics",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_execution_metrics.py::test_legacy_and_unfinished_requests_do_not_invent_calls_time_or_cost",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_execution_metrics.py::test_summary_reports_only_safe_measured_facts",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "历史缺测不推断调用次数",
+        "reuse": "仅汇总合法复用数",
+        "route": "保持未知",
+        "terminal": "usage/cost=null；非法值不计入",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-018",
+      "title": "旧 attempt 不能完成新任务",
+      "evidence_kind": "isolated_database",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_workflow_acceptance.py::test_late_old_attempt_cannot_complete_a_retry",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "本案不调用供应商",
+        "reuse": "沿原任务 attempt 隔离",
+        "route": "拒绝旧 attempt 写回",
+        "terminal": "新 attempt 状态保持",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-019",
+      "title": "审核依据、语义归属与可执行能力",
+      "evidence_kind": "isolated_contract_regression",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_design_policy.py::test_requirement_overrides_misleading_asset_or_layout_category",
+          "expected_items": 10
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_design_policy.py::test_reference_authority_and_missing_discriminant_fail_closed",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_design_policy.py::test_variant_requires_an_explicit_applicable_id",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_design_agent.py::test_review_receives_authority_and_tools_without_previous_agent_verdict",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "每项只执行已声明调用；不追加解释请求",
+        "reuse": "本案不重试历史未知请求",
+        "route": "语义回planning；缺工具回capabilities；主题冲突回design_review",
+        "terminal": "明确停止且automatic_retry=false；显式超时不被覆盖",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-020",
+      "title": "还原缺语义对象停回规划与实际等待预算",
+      "evidence_kind": "isolated_contract_regression",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_design_agent.py::test_reconstruction_discovers_missing_semantic_labels_and_stops_at_planning",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_production_stages.py::test_streaming_honors_explicit_stage_deadline_without_changing_model_parameters",
+          "expected_items": 3
+        }
+      ],
+      "expected": {
+        "calls": "每项只执行已声明调用；不追加解释请求",
+        "reuse": "本案不重试历史未知请求",
+        "route": "语义回planning；缺工具回capabilities；主题冲突回design_review",
+        "terminal": "明确停止且automatic_retry=false；显式超时不被覆盖",
+        "author": "本案不写作者页面",
+        "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-021",
+      "title": "代码标签、关系与呈现能力可由真实注册入口选择",
+      "evidence_kind": "semantic_planning_and_actual_browser",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_labeled_planning.py::test_labels_are_real_semantic_objects_with_source_and_binding",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_labeled_planning.py::test_extra_unregistered_or_unbound_labels_cannot_pass",
+          "expected_items": 3
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_labeled_planning.py::test_registered_variants_use_existing_protected_editor_without_content_changes",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_labeled_planning.py::test_normal_planning_prompt_has_exact_registered_label_budget",
+          "expected_items": 1
+        },
+        {
+          "runner": "node",
+          "target": "checks/test_html_labeled_explanation.cjs",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "离线无提供者调用",
+        "reuse": "旧模板和布局引用保持",
+        "route": "超预算/未绑定/非法变体拒绝",
+        "terminal": "工程与语义结构验证，非视觉批准",
+        "author": "本案不写真实作者页面",
+        "approval": "本案不签发批准"
+      }
+    }
+  ]
+}

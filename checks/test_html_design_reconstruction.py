@@ -67,7 +67,7 @@ def test_transport_unknown_is_not_retried(case):
 
 
 def test_reconstruction_cannot_change_motion(case):
-    run,scene,binding,reference,contract=case;original=copy.deepcopy(scene);calls=[]
+    run,scene,binding,reference,contract=case;original=copy.deepcopy(scene);calls=[];events=[]
     def generator(**kw):
         calls.append(kw)
         from checks.html_design_agent_fixture import response_for
@@ -77,5 +77,7 @@ def test_reconstruction_cannot_change_motion(case):
             return result
         return {"status":"candidate","operations":[{"targetId":"stat-input","kind":"set_motion","action":"enter","values":{"startMs":0}}]}
     with pytest.raises(HtmlReviewError) as caught:
-        reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"])
+        reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"],progress=events.append)
     assert caught.value.code=="RECONSTRUCTION_REJECTED" and len(calls)==2 and scene==original
+    assert events[-1]["next_action"] == {"stage": "reconstruction", "reason": "budget_exhausted",
+                                           "routes": ["manual_review"], "automatic_retry": False}

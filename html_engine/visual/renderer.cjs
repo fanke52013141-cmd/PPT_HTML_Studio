@@ -403,6 +403,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             const span = document.createElement("span");
             span.textContent = text;
             if (run.emphasis) span.style.color = theme.colors.accent;
+            if (variant?.emphasisWeight) span.style.fontWeight = String(run.emphasis ? variant.emphasisWeight : variant.normalWeight);
             if (label !== null) { span.dataset.textRole = label ? "label" : "body"; span.style.fontWeight = label ? "700" : "400"; }
             copy.append(span);
           }
@@ -507,6 +508,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           node.id,
         ]);
       } else if (node.type === "figure") {
+        const captionsTop = node.presentation?.variant === "figure-caption-top";
+        const captionVariant = variants.find(v => v.id === node.presentation?.variant);
         el.classList.add("v-figure");
         el.append(
           Object.assign(document.createElement("div"), {
@@ -523,11 +526,12 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             }),
           );
           el.append(tag);
+          if (captionsTop) Object.assign(tag.style, {top:px(captionVariant.tagTop),left:px(captionVariant.captionInset),maxWidth:px(layout.slots[node.slot].box.width-2*captionVariant.captionInset),boxSizing:"border-box",border:`1px solid ${theme.colors.line}`,background:theme.colors[captionVariant.tagBackgroundToken],borderRadius:"999px",fontSize:"18px",fontWeight:"700"});
           textNodes.push([
             tag.querySelector("span"),
             {
               ...layout.slots[node.slot],
-              box: { ...layout.slots[node.slot].box, height: 40 },
+              box: { ...layout.slots[node.slot].box, width:layout.slots[node.slot].box.width-(captionsTop?94:0), height: 40 },
             },
             node.id + ":tag",
           ]);
@@ -542,11 +546,12 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             }),
           );
           el.append(note);
+          if (captionsTop) Object.assign(note.style, {top:px(captionVariant.noteTop),bottom:"auto",left:px(captionVariant.captionInset),right:px(captionVariant.captionInset),padding:"6px 10px",fontSize:"14px",lineHeight:"1.3",border:"none",background:theme.colors.background,borderRadius:"8px"});
           textNodes.push([
             note.querySelector("span"),
             {
               ...layout.slots[node.slot],
-              box: { ...layout.slots[node.slot].box, height: 40 },
+              box: { ...layout.slots[node.slot].box, width:layout.slots[node.slot].box.width-(captionsTop?86:0), height: captionsTop?44:40 },
               maxLines: 2,
             },
             node.id + ":note",
@@ -557,7 +562,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         if (node.heading) {
           const heading = document.createElement("div");
           heading.className = "v-summary-heading";
-          heading.append(icon(node.presentation?.variant === "summary-relationship-panel" ? node.presentation.icon || node.heading.icon : node.heading.icon));
+          heading.append(icon(["summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant) ? node.presentation.icon || node.heading.icon : node.heading.icon));
           heading.append(
             Object.assign(document.createElement("span"), {
               textContent: node.heading.text,
@@ -576,7 +581,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         to.textContent = node.to.text;
         const term = document.createElement("span");
         term.className = "v-term";
-        term.textContent = ["summary-panel", "summary-relationship-panel"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
+        term.textContent = ["summary-panel", "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
         flow.append(from, arrow, to, term);
         el.append(flow);
         const takeaway = document.createElement("strong");
@@ -595,19 +600,21 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           takeaway.style.whiteSpace="normal";
         }
         const slot = layout.slots[node.slot];
-        if (node.presentation?.variant === "summary-relationship-panel") {
+        if (["summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant)) {
           const variant = variants.find(v => v.id === node.presentation.variant);
+          const columnsResult = variant.termPosition === "takeaway_column";
+          const compact = node.presentation.variant !== "summary-relationship-panel";
           const width = slot.box.width - variant.paddingX * 2;
           const height = slot.box.height - variant.paddingY * 2;
           const heading = el.querySelector(".v-summary-heading");
           const fractions = variant.columns.reduce((a, b) => a + b, 0);
           const columns = variant.columns.map(f => (width - variant.gap * 2) * f / fractions);
           Object.assign(el.style, {display:"grid",gridTemplateColumns:columns.map(px).join(" "),gap:px(variant.gap),padding:`${variant.paddingY}px ${variant.paddingX}px`,background:theme.colors[variant.backgroundToken],border:"none",borderRadius:px(theme.shapes.cardRadius),boxShadow:"none"});
-          Object.assign(heading.style, {minWidth:"0",height:"100%",borderRight:`1px solid ${theme.colors.line}`,paddingRight:"18px",boxSizing:"border-box",whiteSpace:"normal",gap:"14px"});
+          Object.assign(heading.style, {minWidth:"0",height:"100%",borderRight:`1px solid ${theme.colors.line}`,paddingRight:compact?"12px":"18px",boxSizing:"border-box",whiteSpace:"normal",gap:compact?"10px":"14px"});
           const mark = heading.querySelector("svg");
-          Object.assign(mark.style, {width:"58px",height:"58px",padding:"13px",boxSizing:"border-box",flexShrink:"0",borderRadius:"50%",background:theme.colors.ink,color:theme.colors.background});
-          Object.assign(flow.style, {minWidth:"0",height:"100%",display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(96px,1.3fr) minmax(0,1fr)",gridTemplateRows:"1fr auto",gap:"6px 8px",borderRight:`1px solid ${theme.colors.line}`,paddingRight:"18px",boxSizing:"border-box",alignItems:"center",justifyItems:"center"});
-          for (const state of [from,to]) Object.assign(state.style,{minWidth:"0",maxWidth:"100%",boxSizing:"border-box",padding:"12px",border:`1px solid ${theme.colors.line}`,background:theme.colors.background,fontSize:"26px"});
+          Object.assign(mark.style, {width:compact?"42px":"58px",height:compact?"42px":"58px",padding:compact?"9px":"13px",boxSizing:"border-box",flexShrink:"0",borderRadius:"50%",background:theme.colors.ink,color:theme.colors.background});
+          Object.assign(flow.style, {minWidth:"0",height:"100%",display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(80px,1.3fr) minmax(0,1fr)",gridTemplateRows:"1fr auto",gap:compact?"3px 7px":"6px 8px",borderRight:`1px solid ${theme.colors.line}`,paddingRight:compact?"12px":"18px",boxSizing:"border-box",alignItems:"center",justifyItems:"center"});
+          for (const state of [from,to]) Object.assign(state.style,{minWidth:"0",maxWidth:"100%",boxSizing:"border-box",padding:compact?"6px":"12px",border:`1px solid ${theme.colors.line}`,background:theme.colors.background,fontSize:compact?"20px":"26px"});
           const connector = vector("svg");
           attributes(connector, {viewBox:"0 0 160 28",preserveAspectRatio:"none",width:"100%",height:28});
           connector.dataset.connector = "relationship";
@@ -615,12 +622,21 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           const line = vector("path");
           attributes(line,{d:"M2 14H156M146 4L156 14L146 24",fill:"none",stroke:theme.colors.ink,"stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round","vector-effect":"non-scaling-stroke"});
           connector.append(line); arrow.replaceWith(connector);
-          Object.assign(term.style,{gridColumn:"1 / 4",gridRow:"2",fontSize:"22px"});
-          Object.assign(takeaway.style,{minWidth:"0",maxWidth:"none",marginLeft:"0",whiteSpace:"normal",fontSize:"26px",lineHeight:"1.4"});
+          Object.assign(term.style,{gridColumn:"1 / 4",gridRow:"2",fontSize:compact?"17px":"22px"});
+          Object.assign(takeaway.style,{minWidth:"0",maxWidth:"none",marginLeft:"0",whiteSpace:"normal",fontSize:compact?"20px":"26px",lineHeight:compact?"1.2":"1.4"});
+          if (columnsResult) {
+            const result = document.createElement("div");result.className="v-result-column";
+            Object.assign(result.style,{minWidth:"0",height:"100%",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",gap:"6px"});
+            Object.assign(flow.style,{gridTemplateRows:"1fr"});
+            Object.assign(term.style,{fontSize:"24px",fontWeight:"700",lineHeight:"1.2",maxWidth:"100%"});
+            Object.assign(takeaway.style,{fontSize:"17px",lineHeight:"1.2",padding:"6px 10px",border:`1px solid ${theme.colors.line}`,borderRadius:"999px",background:theme.colors.background,boxSizing:"border-box"});
+            result.append(term,takeaway);el.append(result);
+          }
           const parts = {heading:heading.querySelector("span"),from,to,term,takeaway};
           for (const [part, text] of Object.entries(parts)) {
-            const available = part === "heading" ? columns[0]-18-58-14 : part === "takeaway" ? columns[2] : part === "term" ? columns[1]-18 : (columns[1]-18-16)*1/3.3-24;
-            textNodes.push([text,{...slot,maxLines:variant.textBudgets[part],box:{...slot.box,width:available,height:part === "from" || part === "to" ? height-32-24 : part === "term" ? 32 : height}},node.id+":"+part]);
+            const available = part === "heading" ? columns[0]-(compact?12+42+10:18+58+14) : part === "takeaway" ? columns[2]-(columnsResult?22:0) : part === "term" ? (columnsResult?columns[2]:columns[1]-(compact?12:18)) : (columns[1]-(compact?12:18)-16)*1/3.3-(compact?12:24);
+            const partHeight = part === "from" || part === "to" ? height-(compact?12+20:32+24) : part === "term" ? (columnsResult?30:compact?24:32) : columnsResult && part === "takeaway" ? height-48 : height;
+            textNodes.push([text,{...slot,maxLines:variant.textBudgets[part],box:{...slot.box,width:available,height:partHeight}},node.id+":"+part]);
           }
           overflowChecks.push([el,slot.box.width,node.id]);
         } else {
@@ -639,7 +655,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           const b = layout.slots[node.slot].box;
           const line = vector("path");
           attributes(line, {
-            d: `M 2 ${b.height / 2} H ${b.width - 14} M ${b.width - 28} 4 L ${b.width - 8} ${b.height / 2} L ${b.width - 28} ${b.height - 4}`,
+            d: node.presentation?.variant === "arrow-up" ? `M ${b.width/2} ${b.height-2} V 6 M 4 18 L ${b.width/2} 4 L ${b.width-4} 18` : `M 2 ${b.height / 2} H ${b.width - 14} M ${b.width - 28} 4 L ${b.width - 8} ${b.height / 2} L ${b.width - 28} ${b.height - 4}`,
             fill: "none",
             stroke: theme.colors.blue,
             "stroke-width": theme.shapes.strokeWidth,

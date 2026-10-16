@@ -41,12 +41,13 @@ def inspect_candidate(job, run_dir: str | Path, slide_id: str, repo_root: str | 
     run = Path(run_dir)
     view = task_view(job, run)
     if (job.job_type != "html_plan_generate" or view["slide_id"] != slide_id
-            or job.status != "failed" or view.get("input_state") != "current"):
+            or job.status not in {"failed", "interrupted"} or view.get("input_state") != "current"):
         raise ManualCandidateError("CANDIDATE_TASK_NOT_CURRENT")
     unknown = [(key, value) for key, value in view["stages"].items()
-               if value.get("state") == "unknown" and value.get("kind") == "json"
+               if value.get("state") in {"intent", "unknown"} and value.get("kind") == "json"
                and value.get("lookup_supported") is False]
-    if len(unknown) != 1 or not view["recovery"]["requires_verification"]:
+    unresolved = [value for value in view["stages"].values() if value.get("state") in {"intent", "unknown"}]
+    if len(unknown) != 1 or len(unresolved) != 1 or not view["recovery"]["requires_verification"]:
         raise ManualCandidateError("CANDIDATE_OUTCOME_NOT_UNKNOWN")
     if view["source_revision"] != _read_revision(run)["revision"]:
         raise ManualCandidateError("CANDIDATE_REVISION_CHANGED")
@@ -64,7 +65,12 @@ def inspect_candidate(job, run_dir: str | Path, slide_id: str, repo_root: str | 
     base = safe_file(run, f"planning/html_visual/candidates/{slide_id}")
     matching = []
     for folder in (base / "layout-agent").glob("*"):
-        initial, final, strict = folder / "0/scene.json", folder / "1/scene.json", folder / "1/strict-review.json"
+        summary_path = folder / "result.json"
+        summary = _json(summary_path) if summary_path.is_file() else None
+        index = len(summary.get("rounds", [])) if summary else 1
+        if summary and (summary.get("passed") is not True or not 0 <= index <= 3):
+            continue
+        initial, final, strict = folder / "0/scene.json", folder / f"{index}/scene.json", folder / f"{index}/strict-review.json"
         if not all(p.is_file() for p in (initial, final, strict)):
             continue
         if _json(initial) != compile_record["scene"]:
@@ -118,13 +124,37 @@ def inspect_candidate(job, run_dir: str | Path, slide_id: str, repo_root: str | 
         before = resource_path.read_bytes() if resource_path.is_file() else None
         before_review = {path: path.read_bytes() if path.is_file() else None for path in review_paths}
         try:
-            resource_doc = current_resources(run)
-            resource_doc["assets"] = [*resource_doc.get("assets", []), *assets]
+            resource_doc = _json(resource_path) if resource_path.is_file() else {"assets": []}
+            existing = {asset["id"]: asset for asset in resource_doc.get("assets", [])}
+            for asset in assets:
+                if asset["id"] in existing and existing[asset["id"]] != asset:
+                    raise ManualCandidateError("CANDIDATE_ASSET_CONFLICT")
+                existing[asset["id"]] = asset
+            resource_doc["assets"] = list(existing.values())
             write_json_atomic(resource_path, resource_doc)
             candidate, operations = apply_allocations(layout_scene, compile_record["binding"], understanding,
                 run_dir=run, manual=None, beats=beats)
             if candidate != record["scene"] or operations != record["operations"]:
                 raise ManualCandidateError("CANDIDATE_ALLOCATION_CHANGED")
+            capacity_path = audit / "allocation-capacity-repair.json"
+            if capacity_path.is_file():
+                from html_scene_repair import candidate_from_document
+                capacity = _json(capacity_path)
+                rounds = capacity.get("summary", {}).get("rounds", [])
+                if capacity.get("report", {}).get("passed") is not True or len(rounds) > 3:
+                    raise ManualCandidateError("CANDIDATE_CAPACITY_REPAIR_INVALID")
+                for turn in rounds:
+                    response = turn.get("response", {})
+                    if response.get("action") != "patch" or not isinstance(response.get("operations"), list):
+                        raise ManualCandidateError("CANDIDATE_CAPACITY_REPAIR_INVALID")
+                    if any(op.get("kind") not in {"set_presentation", "set_text_style"} for op in response["operations"]):
+                        raise ManualCandidateError("CANDIDATE_CAPACITY_REPAIR_INVALID")
+                    document = {"scene": candidate, "binding": compile_record["binding"], "manual": None,
+                                "resources": current_resources(run), "beats": beats}
+                    candidate = candidate_from_document(run, slide_id, {"expected_revision": 0,
+                        "source": "ai", "operations": response["operations"]}, document)["scene"]
+                if candidate != capacity.get("scene") or capacity.get("binding") != compile_record["binding"]:
+                    raise ManualCandidateError("CANDIDATE_CAPACITY_REPAIR_CHANGED")
             report = review_scene(candidate, run_dir=run,
                 deps=HtmlReviewDependencies(repo_root=Path(repo_root), json_generator=lambda **_kwargs: {}),
                 diagnostic=True)

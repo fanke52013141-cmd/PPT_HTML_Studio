@@ -486,6 +486,7 @@ class ProjectModelBindingSelectionsResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
     text: ProjectModelBindingSelectionResult
     image: ProjectModelBindingSelectionResult
+    planning: ProjectModelBindingSelectionResult
 
 
 class ProjectModelEffectiveResult(BaseModel):
@@ -506,6 +507,7 @@ class ProjectModelsEffectiveResult(BaseModel):
     binding_revision: int
     text: ProjectModelEffectiveResult
     image: ProjectModelEffectiveResult
+    planning: ProjectModelEffectiveResult
 
 
 class ProjectModelBindingResult(BaseModel):

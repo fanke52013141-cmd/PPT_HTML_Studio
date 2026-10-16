@@ -1,0 +1,133 @@
+{
+  "format": "hps.visual.template",
+  "version": "0.1.0",
+  "id": "explanation-labeled-v1",
+  "name": "图文讲解：独立代码标签",
+  "structure": "explanation-cards",
+  "layoutRef": {
+    "id": "science-explanation-v1",
+    "version": "0.3.0"
+  },
+  "slots": {
+    "header": {
+      "kinds": [
+        "header"
+      ],
+      "required": true
+    },
+    "headline": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "intro": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "card-1": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "card-2": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "card-3": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "figure": {
+      "kinds": [
+        "figure"
+      ],
+      "required": true
+    },
+    "subject": {
+      "kinds": [
+        "image"
+      ],
+      "required": true
+    },
+    "anchor-label": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "summary": {
+      "kinds": [
+        "summary"
+      ],
+      "required": true
+    },
+    "annotation": {
+      "kinds": [
+        "annotation"
+      ],
+      "required": true
+    },
+    "marker-1": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "marker-2": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "marker-3": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "marker-4": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "marker-5": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "marker-6": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "relation-1": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-2": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-3": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    }
+  }
+}

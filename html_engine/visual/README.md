@@ -72,3 +72,6 @@ node visual/tests/verify.cjs
 容量和区域检查是技术门槛；局部遮挡、插画边缘质量、小屏观看及整体美感仍须人工审阅。冷杯实验获用户“还OK”的限定反馈，这不等于所有新布局/主题均已批准。本阶段是在既有构图上固化可复用工程，不新增一轮任意生图来替换已验证目标。
 
 2026-10-10：scene0.5受限实例presentation覆盖，由compiler解析布局，renderer应用公开文字部位后测量；旧场景不增加默认覆盖。定义和验收见scene-repair-0.1.0合同与工作流交付记录。
+
+
+2026-10-15：新增explanation-labeled-v1及固定science-explanation-v1@0.3.0，旧@0.2.0保留；六个独立代码标签、三个代码箭头槽和四个呈现变体见[定义卡](../../docs/contracts/html-presentation/runtime/visual-v1/labeled-explanation-0.1.0.md)。能力夹具`fixtures/labeled-explanation/scene.json`仅用于结构/容量/保护/时间确定性验证，标签与箭头的示范组合不代表科学语义或生产画面审阅通过。

@@ -1,8 +1,9 @@
 "use strict";
 const fs=require("fs"),path=require("path"),assert=require("assert");
 const {chromium}=require("../html_engine/node_modules/playwright");
+const {resolveBrowser}=require("../html_engine/tools/browser-runtime.cjs");
 (async()=>{
- const browser=await chromium.launch({headless:true,executablePath:process.env.HPS_CHROME||"C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1247/chrome-win64/chrome.exe"});
+ const browser=await chromium.launch({headless:true,executablePath:resolveBrowser(chromium)});
  try{
   const page=await browser.newPage(); const errors=[];
   page.on("pageerror",e=>errors.push(e.message));
@@ -98,7 +99,7 @@ const {chromium}=require("../html_engine/node_modules/playwright");
    PPTStudio.runtime.state.currentProject={id:'unknown-project',visual_backend:'html'};
    PPTStudio.runtime.state.currentStep=3;
    API.get=async url=>{
-    if(url.endsWith('/task/current'))return {task:{id:'unknown-task',status:'failed',input_state:'current',error:'原请求待核实',recovery:{requires_verification:true}}};
+    if(url.endsWith('/task/current'))return {task:{id:'unknown-task',status:'failed',input_state:'current',error:'原请求待核实',recovery:{requires_verification:true},progress:{next_action:{reason:'unsupported',routes:['capabilities'],automatic_retry:false}},execution:{measured_adapter_calls:2,recorded_reuses:1,elapsed_ms:2000,unmeasured_requests:1,untimed_requests:1,roles:{planning:{adapter_calls:1,reuses:1,elapsed_ms:2000}}}}};
     if(url.includes('/manual-candidate/'))throw Error('无可评审候选');
     if(url.endsWith('/design/current')){await new Promise(r=>setTimeout(r,35));return {design:{key:'unknown-design-key',status:'needs_review',stale:false}};}
     return {task:null};
@@ -108,7 +109,56 @@ const {chromium}=require("../html_engine/node_modules/playwright");
   await page.waitForFunction(()=>document.querySelector('[data-html-status]').textContent.includes('不能重复提交'));
   assert.equal(await page.locator('[data-action="accept-design"]').isDisabled(),true);
   assert.equal(await page.locator('[data-action="revise-design"]').isDisabled(),true);
+  assert.match(await page.locator('[data-html-task]').textContent(),/适配器调用 2 次.*结果复用 1 次/);
+  assert.match(await page.locator('[data-html-task]').textContent(),/部分旧记录或未完成请求缺少测量/);
+  assert.match(await page.locator('[data-html-task]').textContent(),/当前能力不支持.*公共组件能力.*不会自动重试或批准/);
+  // An Agent can complete a new candidate without changing the open page.
+  // Re-reading must update the image and task gates without any mutation or
+  // clearing the user's draft revision note.
+  await page.evaluate(()=>{
+   PPTStudio.runtime.state.currentProject={id:'external-project',visual_backend:'html'};
+   window.externalDesign='old'; window.externalPosts=0;
+   API.post=async()=>{externalPosts++;throw Error('unexpected mutation');};
+   API.get=async url=>url.endsWith('/task/current')?{task:{id:externalDesign,status:'succeeded',input_state:'current',result:{stage:'design_review',design:{key:externalDesign}}}}:
+    url.endsWith('/design/current')?{design:{key:externalDesign,status:'needs_review',stale:false}}:{scene:null};
+   HtmlReviewPanel.refresh();
+  });
+  await page.waitForFunction(()=>document.querySelector('[data-html-design] img').getAttribute('src')?.includes('/old/'));
+  await page.getByText('需要调整设计',{exact:true}).click();
+  await page.locator('[data-design-instruction]').fill('保留正在填写的修改说明');
+  await page.evaluate(async()=>{externalDesign='new';await HtmlReviewPanel.syncCurrent();});
+  assert.match(await page.locator('[data-html-design] img').getAttribute('src'),/\/new\//);
+  assert.equal(await page.locator('[data-design-instruction]').inputValue(),'保留正在填写的修改说明');
+  assert.equal(await page.evaluate(()=>externalPosts),0);
+  await page.evaluate(async()=>{
+   window.workingGet=API.get;
+   API.get=async()=>{throw Error('fixture offline');};
+   await HtmlReviewPanel.syncCurrent();
+  });
+  assert.equal(await page.locator('[data-action="accept-design"]').isDisabled(),true);
+  assert.equal(await page.locator('[data-action="approve"]').isDisabled(),true);
+  await page.evaluate(async()=>{API.get=workingGet;await HtmlReviewPanel.syncCurrent();});
+  assert.equal(await page.locator('[data-action="accept-design"]').isDisabled(),false);
+  // Local revision carries the exact source identity; it is not acceptance.
+  await page.evaluate(()=>{window.revisionBodies=[];API.post=async(url,body)=>{revisionBodies.push(body);return {message:'fixture revision submitted'};};});
+  await page.locator('[data-action="revise-design"]').click();
+  await page.waitForFunction(()=>document.querySelector('[data-html-status]').textContent.includes('fixture revision submitted'));
+  assert.deepEqual(await page.evaluate(()=>revisionBodies),[{design_candidate_key:'new',design_instruction:'保留正在填写的修改说明',plan_version:'0.2.0'}]);
+  // A read started on an old project cannot replace the new project's image.
+  await page.evaluate(()=>{
+   const original=API.get;
+   API.get=url=>url.endsWith('/task/current')?new Promise(resolve=>window.releaseOld=()=>resolve({task:null})):original(url);
+   window.oldSync=HtmlReviewPanel.syncCurrent();
+  });
+  await page.evaluate(()=>{
+   PPTStudio.runtime.state.currentProject={id:'new-project',visual_backend:'html'};
+   API.get=async url=>url.endsWith('/design/current')?{design:{key:'new-project-design',status:'needs_review',stale:false}}:{task:null};
+   HtmlReviewPanel.refresh();
+  });
+  await page.waitForFunction(()=>document.querySelector('[data-html-design] img').getAttribute('src')?.includes('/new-project-design/'));
+  await page.evaluate(async()=>{releaseOld();await oldSync;});
+  assert.match(await page.locator('[data-html-design] img').getAttribute('src'),/\/new-project-design\//);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({checks:21,errors,correctPanel:true,stableRefresh:true,modelProjectIsolation:true,workspaceSeparation:true,designIdentityPreserved:true,acceptedDesignVisible:true,independentButtonProtected:true,lateDesignCannotEnableUnknownRequest:true}));
+  console.log(JSON.stringify({errors,correctPanel:true,stableRefresh:true,modelProjectIsolation:true,workspaceSeparation:true,designIdentityPreserved:true,acceptedDesignVisible:true,independentButtonProtected:true,lateDesignCannotEnableUnknownRequest:true,samePageExternalUpdate:true,draftPreserved:true,readFailureBlocksSubmission:true,revisionSourcePreserved:true,lateProjectReadIgnored:true}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

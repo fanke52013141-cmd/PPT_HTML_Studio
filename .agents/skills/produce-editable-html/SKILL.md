@@ -5,10 +5,14 @@ description: Produce and verify editable HTML slides from this repository's slid
 
 # 可编辑 HTML 生产与局部修复
 
-Skill 版本：1.13.0（2026-10-14）。目标是交付实际可打开、可编辑、来源可追溯的作品。
+Skill 版本：1.15.0（2026-10-15）。目标是交付实际可打开、可编辑、来源可追溯的作品。
 
 本文代码与文档路径均相对仓库根目录；`references/`、`evaluation/` 相对本 Skill 目录。
 先读 `docs/contracts/html-presentation/README.md`，再读其下 `runtime/visual-v1/application-production-0.3.0.md`、`scene-repair-0.1.0.md` 和 `candidate-layout-agent-0.1.0.md`。从 `agent_contract.capabilities` 获取实际可调用能力和请求 Schema。参考图谱不等于运行组件目录。保持内容、场景、资源、绑定为唯一源；DOM/截图/视频为派生物。
+
+先遵循 `docs/contracts/html-presentation/runtime/visual-v1/design-review-authority-0.2.0.md`：准确内容/主题高于设计图，图内标签归代码，需求与注册工具决定返工路径；显式阶段请求预算不得被流包装覆盖。旧设计响应不自动迁移或重签当前身份。
+
+多标签插图先读 `docs/contracts/html-presentation/runtime/visual-v1/labeled-explanation-0.1.0.md`：独立marker/relation槽走正常规划，超六标签/三箭头仍停止；新变体走原受保护编辑。旧设计批准不迁移为新计划批准。
 
 ## 执行主体与任务路由
 

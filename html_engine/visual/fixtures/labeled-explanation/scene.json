@@ -1,0 +1,515 @@
+{
+  "format": "hps.visual.scene",
+  "version": "0.7.0",
+  "id": "labeled-explanation-capability",
+  "name": "通用多标签能力验证",
+  "themeRef": {
+    "id": "neutral-baseline",
+    "version": "0.2.0"
+  },
+  "layoutRef": {
+    "id": "science-explanation-v1",
+    "version": "0.3.0"
+  },
+  "templateRef": {
+    "id": "explanation-labeled-v1",
+    "version": "0.1.0"
+  },
+  "durationMs": 18000,
+  "nodes": [
+    {
+      "id": "header",
+      "slot": "header",
+      "type": "header",
+      "number": "01",
+      "title": "冷杯外的水滴，从哪里来？"
+    },
+    {
+      "id": "headline",
+      "slot": "headline",
+      "type": "text",
+      "role": "headline",
+      "runs": [
+        {
+          "text": "看见的是水滴，关键在空气中的水蒸气。",
+          "emphasis": false
+        }
+      ],
+      "presentation": {
+        "variant": "text-emphasis-bold"
+      }
+    },
+    {
+      "id": "intro",
+      "slot": "intro",
+      "type": "text",
+      "role": "intro",
+      "runs": [
+        {
+          "text": "从空气到杯壁，观察水的状态如何发生变化。",
+          "emphasis": false
+        }
+      ],
+      "presentation": {
+        "variant": "text-emphasis-bold"
+      }
+    },
+    {
+      "id": "card-1",
+      "slot": "card-1",
+      "type": "card",
+      "tone": "pink",
+      "icon": "air",
+      "title": "空气中有水蒸气",
+      "body": "通常看不见，却一直在我们身边。"
+    },
+    {
+      "id": "card-2",
+      "slot": "card-2",
+      "type": "card",
+      "tone": "green",
+      "icon": "thermometer",
+      "title": "遇到较冷的杯壁",
+      "body": "水蒸气冷却，凝结成小水滴。"
+    },
+    {
+      "id": "card-3",
+      "slot": "card-3",
+      "type": "card",
+      "tone": "blue",
+      "icon": "droplet",
+      "title": "杯外水滴来自空气",
+      "body": "并不是杯里的水漏了出来。"
+    },
+    {
+      "id": "figure",
+      "slot": "figure",
+      "type": "figure",
+      "tag": {
+        "icon": "eye",
+        "text": "观察冷杯表面"
+      },
+      "note": {
+        "icon": "droplet",
+        "text": "水滴来自空气中的水蒸气"
+      },
+      "presentation": {
+        "variant": "figure-caption-top"
+      }
+    },
+    {
+      "id": "subject",
+      "slot": "subject",
+      "type": "image",
+      "assetRef": {
+        "id": "condensation",
+        "version": "0.1.0"
+      },
+      "anchorId": "focus"
+    },
+    {
+      "id": "summary",
+      "slot": "summary",
+      "type": "summary",
+      "heading": {
+        "icon": "lightbulb",
+        "text": "关键结论"
+      },
+      "from": {
+        "text": "气态",
+        "tone": "blue"
+      },
+      "to": {
+        "text": "液态",
+        "tone": "green"
+      },
+      "term": "凝结",
+      "takeaway": "不是杯里的水漏出来",
+      "presentation": {
+        "variant": "summary-relationship-columns"
+      }
+    },
+    {
+      "id": "anchor-label",
+      "slot": "anchor-label",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "杯壁上的\n小水滴",
+          "emphasis": false
+        }
+      ]
+    },
+    {
+      "id": "annotation",
+      "slot": "annotation",
+      "type": "annotation",
+      "targetId": "subject",
+      "anchorId": "focus",
+      "radius": 21,
+      "labelId": "anchor-label"
+    },
+    {
+      "id": "marker-1",
+      "slot": "marker-1",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "气态",
+          "emphasis": false
+        }
+      ],
+      "presentation": {
+        "typography": {
+          "text": {
+            "fontSizePx": 18,
+            "lineHeight": 1.2,
+            "align": "center"
+          }
+        }
+      }
+    },
+    {
+      "id": "marker-2",
+      "slot": "marker-2",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "冷却",
+          "emphasis": false
+        }
+      ],
+      "presentation": {
+        "typography": {
+          "text": {
+            "fontSizePx": 18,
+            "lineHeight": 1.2,
+            "align": "center"
+          }
+        }
+      }
+    },
+    {
+      "id": "marker-3",
+      "slot": "marker-3",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "液态",
+          "emphasis": false
+        }
+      ],
+      "presentation": {
+        "typography": {
+          "text": {
+            "fontSizePx": 18,
+            "lineHeight": 1.2,
+            "align": "center"
+          }
+        }
+      }
+    },
+    {
+      "id": "marker-4",
+      "slot": "marker-4",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "表面",
+          "emphasis": false
+        }
+      ],
+      "presentation": {
+        "typography": {
+          "text": {
+            "fontSizePx": 18,
+            "lineHeight": 1.2,
+            "align": "center"
+          }
+        }
+      }
+    },
+    {
+      "id": "marker-5",
+      "slot": "marker-5",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "水滴",
+          "emphasis": false
+        }
+      ],
+      "presentation": {
+        "typography": {
+          "text": {
+            "fontSizePx": 18,
+            "lineHeight": 1.2,
+            "align": "center"
+          }
+        }
+      }
+    },
+    {
+      "id": "marker-6",
+      "slot": "marker-6",
+      "type": "text",
+      "role": "caption",
+      "runs": [
+        {
+          "text": "观察",
+          "emphasis": false
+        }
+      ],
+      "presentation": {
+        "typography": {
+          "text": {
+            "fontSizePx": 18,
+            "lineHeight": 1.2,
+            "align": "center"
+          }
+        }
+      }
+    },
+    {
+      "id": "relation-1",
+      "slot": "relation-1",
+      "type": "arrow",
+      "presentation": {
+        "variant": "arrow-up"
+      }
+    },
+    {
+      "id": "relation-2",
+      "slot": "relation-2",
+      "type": "arrow",
+      "presentation": {
+        "variant": "arrow-up"
+      }
+    },
+    {
+      "id": "relation-3",
+      "slot": "relation-3",
+      "type": "arrow",
+      "presentation": {
+        "variant": "arrow-up"
+      }
+    }
+  ],
+  "motion": [
+    {
+      "targetId": "header",
+      "type": "enter",
+      "startMs": 0,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-0"
+    },
+    {
+      "targetId": "headline",
+      "type": "enter",
+      "startMs": 350,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-1"
+    },
+    {
+      "targetId": "intro",
+      "type": "enter",
+      "startMs": 600,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-2"
+    },
+    {
+      "targetId": "card-1",
+      "type": "enter",
+      "startMs": 2000,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-3"
+    },
+    {
+      "targetId": "card-2",
+      "type": "enter",
+      "startMs": 5000,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-4"
+    },
+    {
+      "targetId": "card-3",
+      "type": "enter",
+      "startMs": 8500,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-5"
+    },
+    {
+      "targetId": "figure",
+      "type": "enter",
+      "startMs": 700,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-6"
+    },
+    {
+      "targetId": "subject",
+      "type": "enter",
+      "startMs": 700,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-7"
+    },
+    {
+      "targetId": "summary",
+      "type": "enter",
+      "startMs": 14000,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 12,
+      "actionId": "original-8"
+    },
+    {
+      "targetId": "anchor-label",
+      "type": "enter",
+      "startMs": 12300,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0,
+      "actionId": "original-9"
+    },
+    {
+      "targetId": "annotation",
+      "type": "enter",
+      "startMs": 12000,
+      "durationMs": 800,
+      "offsetX": 0,
+      "offsetY": 0,
+      "actionId": "original-10"
+    },
+    {
+      "actionId": "marker-1-enter",
+      "targetId": "marker-1",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "actionId": "marker-2-enter",
+      "targetId": "marker-2",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "actionId": "marker-3-enter",
+      "targetId": "marker-3",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "actionId": "marker-4-enter",
+      "targetId": "marker-4",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "actionId": "marker-5-enter",
+      "targetId": "marker-5",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "actionId": "marker-6-enter",
+      "targetId": "marker-6",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "actionId": "relation-1-enter",
+      "targetId": "relation-1",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "actionId": "relation-2-enter",
+      "targetId": "relation-2",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "actionId": "relation-3-enter",
+      "targetId": "relation-3",
+      "type": "enter",
+      "startMs": 1000,
+      "durationMs": 400,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  ],
+  "beats": [
+    {
+      "startMs": 0,
+      "endMs": 3500,
+      "text": "冷杯外的小水滴，并不是杯里的水漏出来了。"
+    },
+    {
+      "startMs": 3500,
+      "endMs": 7000,
+      "text": "空气中含有通常看不见的水蒸气。"
+    },
+    {
+      "startMs": 7000,
+      "endMs": 10500,
+      "text": "水蒸气遇到冷杯表面，冷却并凝结成小水滴。"
+    },
+    {
+      "startMs": 10500,
+      "endMs": 14000,
+      "text": "从气态变成液态，这个过程叫凝结。"
+    },
+    {
+      "startMs": 14000,
+      "endMs": 18000,
+      "text": "所以，冷杯外的水滴来自空气中的水蒸气。"
+    }
+  ],
+  "source": "内容与资产沿用 hybrid-01 冷杯/蒸发实验并经 style-review 校正；科学事实见 docs/styles/science-explainer/content-sources.md。",
+  "initialVisibleIds": []
+}
