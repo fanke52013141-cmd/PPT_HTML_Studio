@@ -274,3 +274,200 @@ body.html-workspace #step-panel-9 .dh-circle-canvas { width:100%; min-width:0; }
   body.html-workspace .html-audio-qa { grid-column:1; }
   body.html-workspace #html-audio-review { padding:16px; }
 }
+
+/* ==================== 2026-10-16: 七步工作区视觉优化层（仅视觉，不改行为） ====================
+   范围：body.html-workspace（视频详情 1-7 步页面、标题栏、内容卡片与工作区弹窗）。
+   依据：.stitch/DESIGN.md 设计系统与 docs/ui-spec.md；仅调整布局、颜色、排版与交互反馈，
+   不新增/删除/重排 DOM，不改任何事件与接口。统一点：状态语义色、禁用主按钮可辨性、
+   状态文字条化、分镜两栏等高、Prompt 弹窗底部动作区、表单焦点反馈、滚动条与空状态。 */
+
+/* 0. 令牌扩展 */
+body.html-workspace {
+  --html-ok: #0e9f6e;
+  --html-ok-soft: #e6f7f0;
+  --html-warn: #b45309;
+  --html-warn-soft: #fff4e5;
+  --html-hover-wash: #f4f6f8;
+  --html-focus-ring: 0 0 0 3px rgba(238, 93, 54, .16);
+}
+
+/* 1. 步骤栏：状态语义着色（文字+颜色双表达），悬停与键盘焦点反馈 */
+body.html-workspace .sidebar .step-item { transition: background-color .16s ease, border-color .16s ease; }
+body.html-workspace .sidebar .step-item:not(.active):hover { background: var(--html-hover-wash); }
+body.html-workspace .sidebar .step-item:focus-visible { outline: 2px solid var(--html-accent); outline-offset: 2px; }
+body.html-workspace .sidebar .step-item .step-num {
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 2px;
+  border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: #eef1f4; color: #5c6672;
+  transition: background-color .16s ease, color .16s ease;
+}
+body.html-workspace .sidebar .step-item.active .step-num { background: var(--html-accent); color: #fff; }
+body.html-workspace .sidebar .step-item.completed .step-num { background: var(--html-ok-soft); color: var(--html-ok); }
+body.html-workspace .sidebar .step-item.pending_reconfirmation .step-num { background: var(--html-warn-soft); color: var(--html-warn); }
+body.html-workspace .sidebar .step-state-label { font-size: 11px; color: #98a2ad; font-variant-numeric: tabular-nums; }
+body.html-workspace .sidebar .step-item.completed .step-state-label { color: var(--html-ok); }
+body.html-workspace .sidebar .step-item.pending_reconfirmation .step-state-label { color: var(--html-warn); }
+body.html-workspace .sidebar .step-item.active .step-state-label { color: var(--html-accent); }
+
+/* 2. 侧栏底部主行动：实心品牌橙（全局唯一主行动，替换白色描边弱形态） */
+body.html-workspace .sidebar #btn-one-click-generate {
+  background: var(--html-accent) !important;
+  color: #fff !important;
+  border: 1px solid var(--html-accent) !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(32, 37, 45, .14) !important;
+}
+body.html-workspace .sidebar #btn-one-click-generate:hover:not(:disabled) {
+  background: #dc5121 !important;
+  border-color: #dc5121 !important;
+  box-shadow: 0 2px 6px rgba(32, 37, 45, .18) !important;
+}
+body.html-workspace .sidebar #btn-one-click-generate:active:not(:disabled) { transform: translateY(1px); box-shadow: none !important; }
+body.html-workspace .sidebar #btn-one-click-generate:disabled { opacity: .45; cursor: not-allowed; }
+
+/* 3. 标题栏工具按钮：悬停加深、暗色主按钮 hover、禁用一致弱化 */
+body.html-workspace #workspace-main .workflow-header button:not(:disabled):not(.ws-primary):not(.success):hover {
+  background: var(--html-hover-wash);
+  border-color: #c9d1d9;
+}
+body.html-workspace #workspace-main .workflow-header button.ws-primary:not(:disabled):hover {
+  background: #2c2e33 !important;
+  border-color: #2c2e33 !important;
+}
+
+/* 4. 内容按钮：统一 8px 圆角；橙色主按钮 hover 与禁用形态可辨 */
+body.html-workspace #workspace-main .step-panel :is(button, select) { border-radius: 8px; }
+body.html-workspace #workspace-main button.success:not(:disabled):hover {
+  background: #dc5121 !important;
+  border-color: #dc5121 !important;
+}
+body.html-workspace #workspace-main button.success:disabled {
+  background: #f0a488 !important;
+  border-color: #f0a488 !important;
+  color: #fff !important;
+  opacity: 1 !important;
+  filter: none;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+/* 5. 表单：悬停描边、聚焦橙描边+柔光环、正文行高 */
+body.html-workspace #workspace-main :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),textarea,select):not(:disabled):hover { border-color: #c9d1d9; }
+body.html-workspace #workspace-main :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),textarea,select):focus {
+  border-color: var(--html-accent);
+  box-shadow: var(--html-focus-ring);
+  background: #fff;
+  outline: none;
+}
+body.html-workspace #workspace-main textarea { line-height: 1.7; }
+
+/* 6. 状态文字条化：设计/页面状态与运行提示统一为浅色信息条 */
+body.html-workspace #html-review-panel-section :is([data-html-status], [data-design-state]):not(:empty) {
+  display: block;
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ef;
+  border-left: 3px solid #9aa6b2;
+  border-radius: 10px;
+  color: #4a5560;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* 7. 空状态：中性虚线卡、层级清晰 */
+body.html-workspace #workspace-main .ws-empty {
+  border-color: rgba(32, 37, 45, .18);
+  background: #fbfcfd;
+  color: var(--html-muted);
+}
+body.html-workspace #html-review-panel-section .html-page-empty { padding: 48px 24px; }
+body.html-workspace #html-review-panel-section .html-page-empty strong { display: block; margin-bottom: 6px; font-size: 15px; color: var(--html-ink); }
+body.html-workspace #html-review-panel-section .html-page-empty button { margin-top: 14px; }
+
+/* 8. 分镜规划两栏等高（≥1200px 已有双栏网格；演讲稿卡片随较高一侧撑满） */
+@media(min-width:1200px) {
+  body.html-workspace #step-panel-2 #step2-script-review[style*="display: block"] { align-items: stretch; }
+  body.html-workspace #step-panel-2 #step2-script-review .step2-stage { display: flex; flex-direction: column; }
+  body.html-workspace #step-panel-2 #step2-script-review .step2-stage--script :is(#step2-script-slides, .step2-script-slide) {
+    display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  }
+  body.html-workspace #step-panel-2 #step2-script-review .step2-stage--script textarea[data-script-field="narration"] {
+    flex: 1 1 auto; min-height: 240px;
+  }
+}
+
+/* 9. Prompt 弹窗：底部动作区固定收尾（修复按钮浮压内容），提示词文本用等宽字体 */
+body.html-workspace #modal-storyboard-rules .config-editor-modal {
+  display: flex; flex-direction: column;
+  max-height: calc(100dvh - 48px);
+}
+body.html-workspace #modal-storyboard-rules .config-editor-scroll { flex: 1 1 auto; min-height: 0; }
+body.html-workspace #modal-storyboard-rules .config-editor-actions {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 14px 28px;
+  background: #fff;
+  border-top: 1px solid #edf0f4;
+  border-radius: 0 0 14px 14px;
+}
+body.html-workspace #modal-storyboard-rules .storyboard-rule-field textarea {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Courier New", monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+body.html-workspace #modal-storyboard-rules .storyboard-rule-field textarea[readonly] { background: #f8f9fb; }
+
+/* 10. 作品输出就绪清单：清单化呈现（圆点列表、行距、数字对齐） */
+body.html-workspace #html-output-readiness { border-radius: 12px; }
+body.html-workspace #html-output-readiness li {
+  position: relative;
+  padding: 5px 0 5px 20px;
+  font-variant-numeric: tabular-nums;
+}
+body.html-workspace #html-output-readiness li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: 13px;
+  width: 7px; height: 7px;
+  border-radius: 999px;
+  background: #eef1f4;
+  box-shadow: inset 0 0 0 1.5px #9aa6b2;
+}
+
+/* 11. 内容区滚动条：细窄胶囊 */
+body.html-workspace #workspace-main ::-webkit-scrollbar,
+body.html-workspace #modal-storyboard-rules ::-webkit-scrollbar { width: 8px; height: 8px; }
+body.html-workspace #workspace-main ::-webkit-scrollbar-thumb,
+body.html-workspace #modal-storyboard-rules ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+body.html-workspace #workspace-main ::-webkit-scrollbar-thumb:hover,
+body.html-workspace #modal-storyboard-rules ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+body.html-workspace #workspace-main ::-webkit-scrollbar-track,
+body.html-workspace #modal-storyboard-rules ::-webkit-scrollbar-track { background: transparent; }
+
+/* 12. 数字计数等宽数字，减少跳动 */
+body.html-workspace #workspace-main :is(.step2-word-count, .step2-autosave-status, .step6-autosave-status, .step-state-label) { font-variant-numeric: tabular-nums; }
+
+/* 13. 导入文章卡片聚焦反馈 */
+body.html-workspace #step-panel-1 .step1-content-card:focus-within {
+  border-color: rgba(238, 93, 54, .5) !important;
+  box-shadow: 0 0 0 3px rgba(238, 93, 54, .10) !important;
+}
+
+/* 8b. 分镜两栏等高的内部填充：覆盖 stitch 层的 block !important，让演讲稿文本域填满卡片 */
+@media(min-width:1200px) {
+  body.html-workspace #step-panel-2 #step2-script-review .step2-stage--script > #step2-script-slides {
+    display: flex !important; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  }
+  body.html-workspace #step-panel-2 #step2-script-review .step2-stage--script .step2-script-field--narration {
+    display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  }
+  body.html-workspace #step-panel-2 #step2-script-review .step2-stage--script .step2-script-field--narration textarea {
+    flex: 1 1 auto; height: auto !important; min-height: 240px;
+  }
+}
+
+/* 10b. 就绪清单去原生 marker（避免与圆点重复） */
+body.html-workspace #html-output-readiness :is(ul, ol) { list-style: none; margin: 0; padding: 0; }
+body.html-workspace #html-output-readiness li { list-style: none; }

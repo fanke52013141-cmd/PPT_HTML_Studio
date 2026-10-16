@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-16",
+  "projectId": "9146137456476276238",
+  "projectTitle": "PPT HTML Studio 视频详情七步工作区优化 20261016",
+  "projectUrl": "https://stitch.withgoogle.com/projects/9146137456476276238",
+  "visibility": "PRIVATE",
+  "transport": "Stitch MCP over HTTP (tools/call); the session host had no mounted stitch tool, so calls went directly to https://stitch.googleapis.com/mcp with the configured API key.",
+  "designSystem": {
+    "source": ".stitch/DESIGN.md uploaded via upload_design_md, then create_design_system_from_design_md",
+    "assetId": "assets/2c6972a0addb46caaad52a7fbd772aee",
+    "displayName": "Course Production Workspace"
+  },
+  "purpose": "Design references for a visual-only refinement of the video-detail (html-workspace) seven-step pages: unified states, clearer disabled primaries, bannerized status text, equal-height storyboard columns, prompt-modal footer, checklist styling. Implementation stays within the existing design system; no functionality changes.",
+  "screens": [
+    {"step": 1, "name": "导入文章", "screenId": "754b4345d7694ac4901a23ee7f6f28a2", "reference": "outputs/ui-optimization-20261016/stitch-step-01.png", "status": "COMPLETE, screenshot downloaded"},
+    {"step": 2, "name": "分镜规划", "screenId": "b81c238159cb48778730eb46066532c9", "reference": "outputs/ui-optimization-20261016/stitch-step-02.png", "status": "COMPLETE after one connection-failure regeneration, screenshot downloaded"},
+    {"step": 4, "name": "HTML 还原与动画", "screenId": "3ae76e0ca1444d6aac9ba74b7566777b", "reference": "outputs/ui-optimization-20261016/stitch-step-04.png", "status": "COMPLETE, screenshot downloaded"}
+  ],
+  "screensGeneratedButIdsNotRecoverable": [
+    {"step": 3, "name": "设计图生成", "note": "generation returned COMPLETE with sessionId 7402738905314143923; screen id sat beyond the truncated result capture"},
+    {"step": 5, "name": "配音与同步", "note": "sessionId 14732905040130228415"},
+    {"step": 6, "name": "数字人讲解（可选）", "note": "sessionId 7264483280965289356"},
+    {"step": 7, "name": "作品输出", "note": "sessionId 364395827261292470"}
+  ],
+  "apiNotes": "list_screens and get_project kept returning zero screens for generated PRO_AGENT screens during this session; get_screen works with known ids. Step-2 regeneration followed the tool's own guidance (connection error, no result; single retry).",
+  "implementation": "static/html_workflow.css appended layer '2026-10-16: 七步工作区视觉优化层（仅视觉，不改行为）' plus index.html cache-version bump. CSS only; DOM, events and APIs untouched.",
+  "verification": "Before/after screenshots for all seven visible steps and the step-2 prompt modal under outputs/ui-optimization-20261016/; 14-point interaction regression passed; checks/test_frontend_quality.js, checks/test_visible_flow.js, checks/test_static_asset_cache_policy.py passed."
+}
