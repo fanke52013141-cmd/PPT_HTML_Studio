@@ -9,8 +9,23 @@ from pipeline_lifecycle import write_json_atomic
 MAX_CONTENT_CHARS = 1_000_000
 
 
+def failure_reason(error):
+    """Classify fixed exception types, never persist provider text or payloads."""
+    current, seen = error, set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if type(current).__name__ == "ReadTimeout":
+            return "read_timeout"
+        current = current.__cause__ or current.__context__
+    if isinstance(error, TimeoutError) and str(error) == "JSON_STREAM_TOTAL_TIMEOUT":
+        return "total_timeout"
+    if isinstance(error, ValueError) and str(error) == "JSON_STREAM_INCOMPLETE":
+        return "incomplete_response"
+    return "transport_error"
+
+
 def receive_completion(client, params, *, streaming=False, timeout=1800,
-                       evidence_path=None, progress=None):
+                       evidence_path=None, progress=None, read_timeout=None):
     if not streaming:
         return client.chat.completions.create(**params)
     started = time.monotonic()
@@ -18,7 +33,10 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
     record = {"stream": True, "first_chunk_seconds": None, "first_content_seconds": None,
               "chunks": 0, "content_chars": 0, "reasoning_chars": 0,
               "finish_reason": None, "usage": None, "state": "waiting",
-              "total_timeout_seconds": timeout}
+              "total_timeout_seconds": timeout, "read_timeout_seconds": read_timeout,
+              "last_chunk_seconds": None, "silence_seconds": 0, "failure_reason": None}
+    effort = params.get("reasoning_effort")
+    record["reasoning_effort"] = effort if effort in {"low", "high", "max"} else None
     last_emit = -5.0
 
     def emit(force=False):
@@ -28,11 +46,14 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
             return
         last_emit = elapsed
         record["elapsed_seconds"] = round(elapsed, 3)
+        record["silence_seconds"] = round(max(0, elapsed - (record["last_chunk_seconds"] or 0)), 3)
         if evidence_path is not None:
             write_json_atomic(evidence_path, record)
         if progress:
             progress({k: record[k] for k in ("state", "elapsed_seconds", "content_chars",
-                                            "reasoning_chars", "first_chunk_seconds")})
+                                            "reasoning_chars", "first_chunk_seconds", "last_chunk_seconds",
+                                            "silence_seconds", "total_timeout_seconds", "read_timeout_seconds",
+                                            "reasoning_effort", "failure_reason")})
 
     try:
         emit(True)
@@ -43,6 +64,7 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
                 if elapsed > timeout:
                     raise TimeoutError("JSON_STREAM_TOTAL_TIMEOUT")
                 record["chunks"] += 1
+                record["last_chunk_seconds"] = round(elapsed, 3)
                 if record["first_chunk_seconds"] is None:
                     record["first_chunk_seconds"] = round(elapsed, 3)
                 usage = getattr(chunk, "usage", None)
@@ -74,6 +96,6 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
         return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="".join(content)))])
     except Exception as error:
         record.update(state="failed", error_class=type(error).__name__,
-                      status_code=getattr(error, "status_code", None))
+                      status_code=getattr(error, "status_code", None), failure_reason=failure_reason(error))
         emit(True)
         raise

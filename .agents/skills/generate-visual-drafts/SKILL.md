@@ -1,44 +1,17 @@
 ---
 name: generate-visual-drafts
-description: Generate one complete pure-white-background 1920x1080 slide image per storyboard page.
+description: Generate or upload full bitmap slide drafts in the PPT Studio image backend using the selected canvas and current visual contract. Use for 图片路线整页生图; exclude HTML design checkpoints and editable reconstruction.
 ---
 
-# Purpose
+# 图片路线整页视觉稿
 
-根据分镜规划生成完整的 `visual_draft.png`。图片本身包含标题、正文、图标、箭头、图表和标注；后续代码不得重绘 PPT 主体。
+只适用于visual_backend=image；先读 [共用边界](../workflow-contracts.md)。HTML设计先行转produce-editable-html，不用位图正文替代HTML对象。
 
-# Inputs
+输入为当前visual_contract、项目画布/样式/可用参考与已保存Prompt；输出为slides/<slide_id>/visual_draft.png及服务维护的raw配对/状态。
 
-- `runs/<run_id>/planning/visual_contract.json`
-- `runs/<run_id>/slides/<slide_id>/visual_prompt.md`
-- `config/style_tokens.yaml`
-- `references/style_reference/PPT模板.png`
-- `references/style_reference/PPT示例.png`
+1. 使用原Step3生成/上传入口及项目图片连接，保留Prompt自定义和已有素材；不默认--overwrite批量重写Prompt。
+2. 画布从项目读取：16:9为1920×1080，9:16为1080×1920。图片外围纯白，内容内封闭白色保留；主体/标题/图表均在位图，独立组分离。
+3. 字幕安全区从当前画布/合同取得，不把横屏y阈值套到竖屏。保持准确文字、层级和数据，不让图片创造事实。
+4. 回读实际图片尺寸/文字/留白/安全区和raw/master有效配对；通过review-visual-drafts审阅。
 
-# Outputs
-
-- `runs/<run_id>/slides/<slide_id>/visual_draft.png`
-
-# Required Rules
-
-- 16:9，1920×1080。
-- 画布外围背景必须是纯白色 `#FFFFFF`，不得使用米白、渐变、纹理、阴影或噪点作为外底。
-- 内容内部可以使用白色；系统只会移除与画布边缘连通的近白色区域。
-- 每页表达一个核心概念，独立内容组之间保留清晰留白。
-- PPT 主体内容保持在 `y < 930`，底部字幕安全区不放内容或装饰。
-- 标题、文字、图标、箭头和总结条必须全部生成在位图中。
-- 不生成假 UI、乱码、无法解释的数据或复杂图表。
-
-# Procedure
-
-1. 读取当前页分镜和固定风格资源。
-2. 运行 `python scripts/write_visual_prompts.py --run-dir runs/<run_id> --overwrite`。
-3. 检查提示词包含“纯白色外围背景”和字幕安全区约束。
-4. 生成或上传完整页面图片。
-5. 目视检查图片尺寸、文字可读性、外围白底和底部安全区。
-
-# Failure Handling
-
-- 外围不是纯白色：重新生成。
-- 文字乱码、对象重叠或内容过密：重新生成或拆页。
-- 内容进入字幕区：调整提示词后重新生成。
+发现乱码/颜色偏差时记录具体问题并提出修订，按授权走原局部生成，不无限自动重生。上传替换也经服务失效Mask/reveal，不能保留旧Mask冒充当前。

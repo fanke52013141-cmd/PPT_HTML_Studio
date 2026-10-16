@@ -3,13 +3,58 @@
 
 let step2ScriptSaveTimer = null;
 let step2ScriptSavePromise = null;
+let step2ScriptReview = null;
+
+function step2HasPendingReview() {
+  return step2ScriptReview?.status === 'pending';
+}
+
+function acceptStep2ScriptReview(review) {
+  step2ScriptReview = review || null;
+  if (step2HasPendingReview() && !review.stale) {
+    state.step2ScriptPlan = JSON.parse(JSON.stringify(review.candidate));
+    state.step2Stage = 'script';
+  }
+}
+
+function renderStep2ContentReview() {
+  const list = document.getElementById('step2-script-slides');
+  if (!list) return;
+  document.getElementById('step2-content-review')?.remove();
+  if (!step2HasPendingReview()) return;
+  const panel = document.createElement('section');
+  panel.id = 'step2-content-review';
+  panel.className = 'step2-script-slide';
+  panel.setAttribute('role', 'status');
+  const title = document.createElement('strong');
+  title.textContent = step2ScriptReview.stale ? '核对候选已过期' : '讲稿待核对';
+  panel.append(title);
+  const note = document.createElement('p');
+  note.textContent = step2ScriptReview.stale
+    ? '原文或正式讲稿已变化。当前候选仅供对照，请重新生成；不会应用过期候选。'
+    : '以下为待核对候选，原正式讲稿仍保留。请修改后点击保存修正讲稿，再生成可视化或继续原课程。';
+  panel.append(note);
+  for (const issue of step2ScriptReview.issues || []) {
+    const text = document.createElement('p');
+    text.textContent = `${issue.slide_id}｜原文：${issue.source_excerpt}；候选：${issue.narration_excerpt}`;
+    panel.append(text);
+  }
+  const save = document.createElement('button');
+  save.type = 'button';
+  save.className = 'btn btn-primary';
+  save.textContent = '保存修正讲稿';
+  save.disabled = Boolean(step2ScriptReview.stale);
+  save.addEventListener('click', () => saveStep2ScriptPlan({ reviewConfirmed: true }));
+  panel.append(save);
+  list.before(panel);
+}
 
 let step2TaskPhases = {};
 function refreshStep2TaskStates() {
   const script = step2TaskPhases.script || (state.step2ScriptPlan?.slides?.length ? 'done' : 'pending');
   const visual = step2TaskPhases.visual || (state.step2VisualExists && !state.step2VisualStale ? 'done' : 'pending');
   const labels = {running: '生成中', done: '已生成', pending: '待生成', error: '生成失败', paused: '已停止'};
-  setUiTaskState(document.getElementById('step2-script-task-status'), script, labels[script]);
+  setUiTaskState(document.getElementById('step2-script-task-status'), step2HasPendingReview() ? 'paused' : script, step2HasPendingReview() ? '待核对' : labels[script]);
   setUiTaskState(document.getElementById('step2-visual-task-status'), visual, labels[visual]);
 }
 function setStep2TaskPhase(phase, status) {
@@ -37,6 +82,10 @@ function setStep2ButtonLabel(button, text) {
 
 // 「内容可视化」只有全部页面演讲稿生成完毕后才可点击。
 function step2VisualButtonReady() {
+  return !step2HasPendingReview() && step2ScriptContentReady();
+}
+
+function step2ScriptContentReady() {
   return Boolean(state.step2ScriptPlan?.slides?.length)
     && state.step2ScriptPlan.slides.every(slide => String(slide.narration || '').trim());
 }
@@ -44,6 +93,8 @@ function step2VisualButtonReady() {
 function resetStep2ScriptState() {
   document.getElementById("step-panel-2")?.classList.remove("is-generating-storyboard");
   step2TaskPhases = {};
+  step2ScriptReview = null;
+  document.getElementById('step2-content-review')?.remove();
   if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
   step2ScriptSaveTimer = null;
   state.step2ScriptPlan = null;
@@ -58,6 +109,7 @@ async function loadStep2Data() {
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId) return;
   state.step2ScriptPlan = null;
+  step2ScriptReview = null;
   try {
     const configRes = await API.get(`/api/projects/${projectId}/steps/2/rules`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
@@ -68,6 +120,7 @@ async function loadStep2Data() {
     const scriptRes = await API.getOptional(`/api/projects/${projectId}/steps/2/script/result`);
     if (!isCurrentWorkspaceProject(projectId, sessionVersion)) return;
     state.step2ScriptPlan = scriptRes.success ? scriptRes.script_plan : null;
+    acceptStep2ScriptReview(scriptRes.script_review);
   } catch (e) {
     state.step2ScriptPlan = null;
   }
@@ -96,6 +149,7 @@ async function loadStep2Data() {
     state.step2DeleteSelection = new Set();
     state.step2BatchOriginalSlides = null;
     state.step2Stage = state.step2VisualStale ? 'script' : 'visual';
+    if (step2HasPendingReview()) state.step2Stage = 'script';
     renderStep2Workspace();
     if (!isManualMode() && state.step2ScriptPlan?.slides?.length) updateStep2AutosaveStatus('');
     void offerArtifactRepair(res, '分镜数据', loadStep2Data);
@@ -110,6 +164,7 @@ async function loadStep2Data() {
     renderStep2Workspace();
     updateStep2AutosaveStatus('');
   }
+  renderStep2ContentReview();
 }
 
 
@@ -147,7 +202,7 @@ async function generateStep2ScriptPlan(requirement = '') {
   if (loadingText) loadingText.textContent = '第一步：AI 正在根据文章生成每页标题和演讲稿…';
   setStep2GenerationStatus('');
   try {
-    if (state.step2ScriptPlan && !(await saveStep2ScriptPlan({ silent: true }))) {
+    if (!step2HasPendingReview() && state.step2ScriptPlan && !(await saveStep2ScriptPlan({ silent: true }))) {
       throw new Error('当前演讲稿未能保存，请检查后重试');
     }
     const payload = String(requirement || '').trim() ? { requirement: String(requirement).trim() } : {};
@@ -164,6 +219,7 @@ async function generateStep2ScriptPlan(requirement = '') {
     }
     if (!response.success || !response.script_plan) throw new Error(response.message || '演讲稿生成失败');
     state.step2ScriptPlan = response.script_plan;
+    step2ScriptReview = null;
     if (typeof response.visual_exists === 'boolean') state.step2VisualExists = response.visual_exists;
     if (typeof response.workflow_pending === 'boolean') state.step2WorkflowPending = response.workflow_pending;
     state.step2VisualStale = response.visual_stale === true
@@ -176,8 +232,15 @@ async function generateStep2ScriptPlan(requirement = '') {
     return true;
   } catch (error) {
     if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
-      setStep2TaskPhase('script', 'error');
-      setStep2GenerationStatus(`演讲稿生成失败：${error?.message || error}`, 'error');
+      const review = error?.body?.detail?.script_review;
+      if (review) {
+        acceptStep2ScriptReview(review);
+        state.step2Stage = 'script';
+        renderStep2Workspace();
+        renderStep2ContentReview();
+      }
+      setStep2TaskPhase('script', review ? 'paused' : 'error');
+      setStep2GenerationStatus(`${review ? '讲稿待核对' : '演讲稿生成失败'}：${error?.message || error}`, 'error');
     }
     return false;
   } finally {
@@ -244,7 +307,7 @@ function renderStep2ScriptReview() {
   const list = document.getElementById('step2-script-slides');
   if (!section || !list) return;
   const plan = state.step2ScriptPlan;
-  const visible = !isManualMode() && !!plan?.slides?.length;
+  const visible = !isManualMode() && (!!plan?.slides?.length || step2HasPendingReview());
   section.style.display = visible ? 'block' : 'none';
   if (!visible) return;
   // 参考稿结构：一次只显示当前页的演讲稿（分页由上方二级菜单切换）。
@@ -296,7 +359,7 @@ function renderStep2ScriptReview() {
       }
       updateStep2AutosaveStatus('演讲稿有未保存修改');
       if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
-      step2ScriptSaveTimer = setTimeout(() => saveStep2ScriptPlan({ silent: true }), 700);
+      if (!step2HasPendingReview()) step2ScriptSaveTimer = setTimeout(() => saveStep2ScriptPlan({ silent: true }), 700);
     });
     if (input.tagName === 'TEXTAREA') autoResizeNarrationTextarea(input);
   });
@@ -306,8 +369,12 @@ async function saveStep2ScriptPlan(options = {}) {
   const projectId = step2CurrentProjectId();
   const sessionVersion = workspaceNavigationVersion;
   if (!projectId || !state.step2ScriptPlan) return false;
-  if (!step2VisualButtonReady()) {
+  if (!step2ScriptContentReady()) {
     updateStep2AutosaveStatus('请填写新幻灯片的演讲稿');
+    return false;
+  }
+  if (step2HasPendingReview() && (!options.reviewConfirmed || step2ScriptReview.stale)) {
+    updateStep2AutosaveStatus('请核对原文后点击保存修正讲稿');
     return false;
   }
   if (step2ScriptSaveTimer) {
@@ -320,14 +387,26 @@ async function saveStep2ScriptPlan(options = {}) {
     }
     if (!isCurrentWorkspaceProject(projectId, sessionVersion) || !state.step2ScriptPlan) return false;
     const snapshot = JSON.parse(JSON.stringify(state.step2ScriptPlan));
-    const savePromise = API.put(`/api/projects/${projectId}/steps/2/script/result`, snapshot);
+    const reviewId = step2HasPendingReview() ? step2ScriptReview.review_id : null;
+    const payload = reviewId ? { ...snapshot, review_id: reviewId } : snapshot;
+    const savePromise = API.put(`/api/projects/${projectId}/steps/2/script/result`, payload);
     step2ScriptSavePromise = savePromise;
     let response;
     try {
       response = await savePromise;
     } catch (error) {
       if (isCurrentWorkspaceProject(projectId, sessionVersion)) {
-        updateStep2AutosaveStatus('演讲稿保存失败，请重试');
+        updateStep2AutosaveStatus(error?.message || '演讲稿未保存');
+        const review = error?.body?.detail?.script_review;
+        if (review) {
+          step2ScriptReview = review;
+          renderStep2ContentReview();
+          const visualButton = document.getElementById('step2-btn-generate-visual');
+          if (visualButton) visualButton.disabled = true;
+          const nextButton = document.getElementById('step2-btn-next');
+          if (nextButton) nextButton.disabled = true;
+          refreshStep2TaskStates();
+        }
         if (!options.silent) showToast(`演讲稿保存失败：${error?.message || error}`);
       }
       return false;
@@ -339,6 +418,8 @@ async function saveStep2ScriptPlan(options = {}) {
       updateStep2AutosaveStatus('演讲稿保存失败，请重试');
       return false;
     }
+    step2ScriptReview = response.script_review || null;
+    renderStep2ContentReview();
     if (JSON.stringify(state.step2ScriptPlan) !== JSON.stringify(snapshot)) {
       updateStep2AutosaveStatus('继续保存最新修改…');
       if (step2ScriptSaveTimer) clearTimeout(step2ScriptSaveTimer);
@@ -358,10 +439,12 @@ async function saveStep2ScriptPlan(options = {}) {
       if (nextButton) nextButton.disabled = false;
     }
     const visualButton = document.getElementById('step2-btn-generate-visual');
+    if (visualButton) visualButton.disabled = !step2VisualButtonReady();
     if (visualButton) setStep2ButtonLabel(visualButton, state.step2VisualStale ? '重新生成可视化' : '内容可视化');
     updateStep2AutosaveStatus('');
+    if (reviewId) setStep2TaskPhase('script', 'done');
     if (response.workflow_changed) refreshCurrentProjectStatus(2).catch(() => {});
-    if (!options.silent) showToast('演讲稿已保存。');
+    if (!options.silent) showToast(reviewId ? '修正讲稿已保存，可生成可视化或继续原课程。' : '演讲稿已保存。');
     return true;
   }
 }
@@ -770,6 +853,7 @@ async function confirmStep2Generation() {
 }
 
 function renderStep2Workspace() {
+  renderStep2ContentReview();
   refreshStep2TaskStates();
   if (state.activeSlideIndex >= step2TabSourceSlides().length) {
     state.activeSlideIndex = Math.max(0, step2TabSourceSlides().length - 1);
@@ -813,11 +897,12 @@ function renderStep2Workspace() {
   }
   if (addSlideBtn) addSlideBtn.disabled = state.step2BatchDeleteMode;
   renderStep2ScriptReview();
+  renderStep2ContentReview();
   // 批量删除/保存按钮在工具栏中（批量导入右侧）常显，方便随时进入删除模式
   document.getElementById('step2-btn-save').style.display = step2TabSourceSlides().length ? 'inline-flex' : 'none';
   const step2NextButton = document.getElementById('step2-btn-next');
   step2NextButton.style.display = hasSlides ? 'inline-flex' : 'none';
-  const visualizationNeedsRefresh = !manual && (state.step2WorkflowPending || state.step2VisualStale);
+  const visualizationNeedsRefresh = !manual && (step2HasPendingReview() || state.step2WorkflowPending || state.step2VisualStale);
   setDisabledReason(step2NextButton, !hasSlides || visualizationNeedsRefresh);
   step2NextButton.removeAttribute('title');
   updateStep2BatchDeleteButton();

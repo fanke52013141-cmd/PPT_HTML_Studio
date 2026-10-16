@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "checks/fixtures/html_workflow_evaluation.json"
-PROFILE = "offline-contract-regression/0.3.0"
+PROFILE = "offline-contract-regression/0.9.0"
 
 
 def sha(data):
@@ -26,7 +26,7 @@ def sha(data):
 
 def load_manifest(path=MANIFEST):
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data["version"] != "0.3.0" or not data["cases"]:
+    if data["version"] != "0.9.0" or not data["cases"]:
         raise ValueError("INVALID_MANIFEST")
     ids = set()
     for case in data["cases"]:
@@ -42,7 +42,7 @@ def load_manifest(path=MANIFEST):
             runner, target = check["runner"], check["target"]
             valid = (runner == "pytest" and re.fullmatch(
                 r"checks/test_[a-z0-9_]+\.py::test_[a-z0-9_]+", target))
-            valid = valid or (runner == "node" and target in {"checks/test_html_review_panel.cjs", "checks/test_html_labeled_explanation.cjs"})
+            valid = valid or (runner == "node" and target in {"checks/test_html_review_panel.cjs", "checks/test_html_labeled_explanation.cjs", "html_engine/visual/tests/capacity.test.cjs", "checks/test_script_review_ui.cjs", "checks/test_one_click_visible_progress.js"})
             if not valid or not (ROOT / target.split("::")[0]).is_file():
                 raise ValueError("INVALID_EXECUTOR")
     return data

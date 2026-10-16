@@ -214,7 +214,7 @@ function ensureAgentTokenDialog() {
         <div><h3 id="agent-token-title" class="highlight-title">生成 Agent Token</h3></div>
         <button type="button" class="icon-button" data-agent-close aria-label="关闭">×</button>
       </div>
-      <label class="form-field"><span>Token 名称</span><input id="agent-token-name" type="text" maxlength="200" value="PPT Studio Agent"></label>
+      <label class="form-field"><span>Token 名称</span><input id="agent-token-name" type="text" maxlength="200" value="HTML Studio Agent"></label>
       <div id="agent-token-result" class="agent-token-result" hidden>
         <label class="form-field"><span>新 Token</span><textarea id="agent-token-value" rows="3" readonly spellcheck="false"></textarea></label>
         <button type="button" class="secondary" data-agent-copy>复制 Token</button>
@@ -238,7 +238,7 @@ function ensureAgentTokenDialog() {
   });
   dialog.querySelector('[data-agent-submit]')?.addEventListener('click', async () => {
     const submit = dialog.querySelector('[data-agent-submit]');
-    const name = document.getElementById('agent-token-name')?.value.trim() || 'PPT Studio Agent';
+    const name = document.getElementById('agent-token-name')?.value.trim() || 'HTML Studio Agent';
     submit.disabled = true;
     try {
       const current = await API.get('/api/accounts/current');

@@ -1,43 +1,16 @@
 ---
 name: render-video
-description: Render the validated v3 reveal scenes, confirmed audio, and transparent subtitles with Remotion.
+description: Render or export current PPT Studio projects through existing persisted jobs and backend-specific gates. Use for 导出视频、正式MP4、PPTX输出; exclude manual CLI bypass of approvals and do not redraw image-backend slide bodies.
 ---
 
-# Purpose
+# 正式输出
 
-使用当前 reveal 场景、已确认音频和字幕渲染最终 MP4。Remotion 只显示 PNG、执行轻量动画、播放音频和绘制字幕，不重绘 PPT 主体。
+读取 [共用边界](../workflow-contracts.md)。输入为实际项目与目标格式，使用原video.render/输出任务服务，不直接用Remotion CLI绕过持久任务、注册和批准。
 
-# Required Sequence
+1. 检查当前backend、画布/帧率、页序及目标门禁。图片路线验证当前图片/Mask、已确认声音和reveal版本；HTML按formal-export及当前视觉/声音/A04签收读取就绪状态。
+2. 图片正文只能PNG；HTML共享renderer与音频时钟，不套图片Mask门禁。可选数字人按已保存决定和发行版能力处理，禁用不阻断输出。
+3. 提交一次原任务并恢复轮询；unknown/旧任务继续沿恢复规则，不新建替代。服务负责重建runtime、快照、staging、产物登记及失效。
+4. 用ffprobe和完整解码验证实际输出，抽查开头/中段/结尾、字幕/尾音、画布/帧率/色彩及缺图。只跑CLI或有MP4文件不证明完成。
+5. 回读下载/作品记录及artifact_state/historical；视频与sidecar同寿命。HTML快照PPTX为图片式，不宣称逐对象编辑。
 
-```powershell
-python scripts/build_reveal_scene.py --manifest runs/<run_id>/reveal_manifest.json --repo-root .
-python scripts/validate_reveal_scene.py --run-dir runs/<run_id> --repo-root .
-python scripts/bind_reveal_timeline.py --run-dir runs/<run_id> --lead-sec 0
-python scripts/build_remotion_props.py --run-dir runs/<run_id> --repo-root .
-```
-
-随后在 `scripts/remotion` 中直接调用 Remotion CLI 渲染 `ArticleVideo`，使用：
-
-- H.264
-- `yuv420p`
-- BT.709
-- 1920×1080
-- 项目配置的帧率
-
-# Rendering Rules
-
-- 每页音频必须已生成并由用户确认。
-- 音频尾部保留安全余量，避免末字被下一页截断。
-- 字幕单行、透明背景、靠近底部但保留安全边距。
-- 视频背景色读取图片管理页的项目设置。
-- 每次渲染前重建 `public/runtime/<run_id>`。
-- MP4 必须生成 `.render.json` sidecar；删除视频时同时删除 sidecar。
-
-# Validation
-
-- `validate_reveal_scene.py` 通过。
-- `validate_run_assets.py --require-layered` 通过。
-- TypeScript 检查通过。
-- `ffprobe` 能识别视频轨和音频轨。
-- `validate_render_color.py` 通过 BT.709 检查。
-- 抽查开头、中段、结尾帧，无黑屏、缺图、字幕底板或内容截断。
+未确认声音或HTML语义签收时报告缺项，不代签。尺寸、背景和时长用项目设置，不写死1920×1080或3–6分钟。

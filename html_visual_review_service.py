@@ -292,6 +292,7 @@ def generate_scene_plan(
             "schema_hint": prompts["schema_hint"],
             "request_timeout_seconds": PLAN_REQUEST_TIMEOUT_SECONDS,
             "stream_output": True,
+            "reasoning_effort_override": "low",
             "system_prompt_sha256": _sha256_bytes(actual_system.encode("utf-8")),
             "user_prompt_sha256": _sha256_bytes(actual_user.encode("utf-8")),
         })
@@ -304,6 +305,7 @@ def generate_scene_plan(
             schema_hint=prompts["schema_hint"],
             request_timeout=PLAN_REQUEST_TIMEOUT_SECONDS,
             stream_output=True,
+            reasoning_effort_override="low",
         )
         previous_response = response
         _write_json(Path(run_dir) / REVIEW_DIR / f"{prefix}-round-{round_index}.json", {"prompts": prompts, "response": response})

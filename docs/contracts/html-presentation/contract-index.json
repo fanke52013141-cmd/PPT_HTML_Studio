@@ -1,14 +1,21 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.53",
-  "effective_date": "2026-10-15",
+  "contract_version": "0.9.60",
+  "effective_date": "2026-10-16",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-16 HPS-011/013--017: only constrained HTML scene-plan requests on GLM-5.3 series override reasoning_effort to low; thinking remains enabled, 65536 max_tokens, project binding, model, prompt, strict validation and all other stages remain unchanged. Effective scalar effort is recorded without reasoning text. Offline regression only; previous unknown retained and live outcome not verified.",
+    "2026-10-16 HPS-010/013/015/017/023--025: capacity stagnation comparison includes precise trigger predicates and effective limits in raw and saved-report details; prose/order are not progress. Existing budgets/strict gates unchanged. API1.39.0; offline checklist0.8.0, live model decisions unverified.",
+    "2026-10-16 HPS-010/011/013--017: durable source-bound script review candidates, explicit versioned correction, waiting_for_user content_review checkpoint and same-course continuation without regenerating script. API1.38.0, checklist0.7.0; no live provider retry or author/DB migration.",
+    "2026-10-16 HPS-010/013/015/017/023--025: scoped-negation source-to-script risk stop before writes/downstream calls; actual capacity trigger dimensions/precision/units without relaxed thresholds. API1.37.0, offline checklist0.6.0, live model fidelity unverified.",
+    "2026-10-16 HPS-010/013/015/017/023--030: workflow skill audit separates operator instructions from four runtime stages; design policies0.3.0 recognize applicable registered variants without changing I/O0.2.0 or approval boundaries. Offline evidence only; no live retry.",
+    "2026-10-16 HPS-010/011/014--017: explicit storyboard cancellation pauses, busy manual operation waits without takeover; cancelled persistent children keep original IDs without resume/replacement; verified current storyboard completion required before continuation. API1.36.0.",
+    "2026-10-16 HPS-010/013--017: read/total stream timeout and incomplete response evidence, last decoded chunk/silence, sanitized provider_verification stop; no deadline extension or automatic retry. Agent1.35.0. Provider reliability and live planning remain unverified.",
     "2026-10-15 HPS-001/006/007/010/011/013--017/019--030/035--037: optional code labels/relations in a pinned layout version; registered emphasis, upward arrows, figure captions and result-column variants; normal semantic planning prompt0.3.0, Agent1.34.0. Twenty-one offline cases; production approval remains independent.",
     "2026-10-15 HPS-010/011/013--017/023--030/035--037: design authority and executable requirement routing; runtime design contracts 0.2.0, explicit request timeout preservation, 20-case workflow checklist and isolated same-case diagnostic replay. Agent API 1.33.0; no author/DB/export migration.",
     "2026-10-15 HPS-010/013/015/017/023--025/035--037: fixed offline workflow incident evaluation, 18 versioned cases, exact parametrized item counts, isolated executors, evidence reports and comparable baseline gates. workflow-evaluation-0.1.0; no production API or approval change.",
@@ -63,6 +70,15 @@
     "2026-10-10 E: application-production-0.3.0 defines neutral reference packages, explicit design checkpoint, single-subject retry and provenance fingerprints; Agent 1.17.0. Real provider and user acceptance remain separate."
   ],
   "documents": [
+    {
+      "path": "runtime/visual-v1/scene-planning-reasoning-0.1.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/course-pause-0.1.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/stream-failure-evidence-0.1.0.md"
+    },
     {
       "path": "runtime/visual-v1/labeled-explanation-0.1.0.md"
     },
@@ -318,7 +334,7 @@
       "normative_status": "active_design_rule",
       "current_enforcement": "design_review",
       "runtime_validation": "partial_application_html",
-      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
+      "runtime_scope": "runtime/visual-v1/production-recovery-0.2.0.md; verified production input identity; S05 formal-export-0.1.0 adds snapshot-only formal exports, verified segments, isolated staging and historical publication. Engineering evidence is separate from visual acceptance; S06 runtime-skills-0.1.0: candidate-only trusted fragments, code-enforced permissions, snapshot/prompt identities and paired evaluation.; scene-planning-reasoning-0.1.0.md: stage-only GLM effort override with binding isolation and request evidence.; A03 runtime/visual-v1/semantic-runtime-0.1.0.md: explicit stable multi-action runtime and audio source matching; not image-first reconstruction or semantic approval."
     },
     {
       "id": "HPS-015",

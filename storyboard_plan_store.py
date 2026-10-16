@@ -3,11 +3,86 @@ from __future__ import annotations
 import json
 import logging
 import os
+import hashlib
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict
 import invalidation_service
 from pipeline_lifecycle import write_json_atomic
 from storyboard_planning import _step2_script_plan_fingerprint
 logger = logging.getLogger("PPTStudio.StoryboardPlanStore")
+
+
+class ScriptReviewConflict(ValueError):
+    pass
+
+
+def _review_digest(value):
+    return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def saved_script(project):
+    path = Path(project.run_dir) / "planning/slide_script_plan.json"
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def script_review(project, article):
+    path = Path(project.run_dir) / "planning/script_review.json"
+    if not path.exists():
+        return None
+    record = json.loads(path.read_text(encoding="utf-8"))
+    if record.get("version") != "0.1.0" or record.get("status") not in {"pending", "resolved", "superseded"}:
+        raise ScriptReviewConflict("SCRIPT_REVIEW_VERSION_UNSUPPORTED：核对记录版本未知，请核实原记录")
+    expected = record.get("resolved_script_hash") if record["status"] == "resolved" else record["base_script_hash"]
+    return {**record, "stale": record["article_hash"] != _review_digest(article)
+            or expected != _review_digest(saved_script(project))}
+
+
+def retain_script_review(project, article, plan, issues, *, base_script, trace_id=None):
+    """Caller holds project_artifact_lock. Official script is never replaced."""
+    if saved_script(project) != base_script:
+        raise ScriptReviewConflict("SCRIPT_REVIEW_STALE：正式讲稿已变化，请重新读取")
+    record = {"version": "0.1.0", "review_id": uuid.uuid4().hex,
+              "created_at": datetime.now(timezone.utc).isoformat(), "trace_id": trace_id,
+              "status": "pending", "article_hash": _review_digest(article),
+              "base_script_hash": _review_digest(base_script),
+              "candidate": plan, "issues": issues, "automatic_retry": False}
+    directory = Path(project.run_dir) / "planning"
+    # Keep the original problem candidate even after correction or replacement.
+    write_json_atomic(str(directory / "script_reviews" / (record["review_id"] + ".json")), record)
+    write_json_atomic(str(directory / "script_review.json"), record)
+    return {**record, "stale": False}
+
+
+def require_script_review_current(project, article, review_id):
+    review = script_review(project, article)
+    if review_id and (not review or review["review_id"] != review_id):
+        raise ScriptReviewConflict("SCRIPT_REVIEW_STALE：核对候选已替换，请重新读取")
+    if review_id and review["status"] == "resolved":
+        raise ScriptReviewConflict("SCRIPT_REVIEW_STALE：此核对已保存，请重新读取最新讲稿")
+    if review and review["status"] == "pending":
+        if review["stale"] or review["review_id"] != review_id:
+            raise ScriptReviewConflict("SCRIPT_REVIEW_STALE：原文、讲稿或核对版本已变化，请重新读取；过期候选须重新生成")
+    return review
+
+
+def resolve_script_review(project, article, plan, review):
+    if not review or review["status"] != "pending":
+        return
+    result = {k: v for k, v in review.items() if k != "stale"}
+    result.update(status="resolved", resolved_script_hash=_review_digest(plan))
+    write_json_atomic(str(Path(project.run_dir) / "planning/script_review.json"), result)
+
+
+def supersede_stale_script_review(project):
+    path = Path(project.run_dir) / "planning/script_review.json"
+    if path.exists():
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if record["status"] == "pending":
+            write_json_atomic(str(path), {**record, "status": "superseded"})
 
 def _step2_visual_plan_status(project: Any, script_plan: Dict[str, Any], *, visual_path: str) -> tuple[bool, bool]:
     if not os.path.isfile(visual_path):

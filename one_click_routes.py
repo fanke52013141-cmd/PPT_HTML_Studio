@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from database import get_db, Project, SessionLocal
+from html_task_store import HtmlTaskError
 from account_context import get_current_account_id
 from project_config_runtime import get_config_value
 from one_click_orchestrator import (
@@ -58,6 +59,8 @@ def start_one_click_route(
         return start_one_click(project, payload)
     except ManualModeOneClickError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except HtmlTaskError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

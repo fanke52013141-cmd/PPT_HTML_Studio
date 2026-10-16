@@ -1,4 +1,16 @@
-# PPT HTML Studio
+# HTML Studio
+
+2026-10-16当前运行状态：[8010已完成换版](docs/plans/html-backend-development/handoff-runtime-activation-2026-10-16.md)，实际API1.39.0/hash2f9000d34a3b464d，静态资源与数据完整性核对通过。此前旧版/审批阻塞记录保留为历史；未发起真实模型实验，未推送。
+
+2026-10-16验证增量：[完整应用隔离TCP冒烟](docs/plans/html-backend-development/handoff-runtime-smoke-2026-10-16.md)，验证新版API1.39.0的候选核对与原课程恢复，修复一键Web冲突误转400；固定清单30/30通过。8010仍旧版，等待手动关闭旧开发服务后换版；隔离测试使用供应商替身，未验证真实模型质量。
+
+2026-10-16本地增量：[容量进展判断](docs/plans/html-backend-development/handoff-capacity-progress-2026-10-16.md)，修复盒尺寸相同但行数/边缘触发项变化时的提前停止，并覆盖已保存报告details。源码API1.39.0，原预算与门禁保持；运行服务仍1.37.0，未推送。
+
+2026-10-16本地增量：[讲稿核对闭环](docs/plans/html-backend-development/handoff-script-review-workflow-2026-10-16.md)，候选独立保留、明确修正保存、原课程等待并复用修正稿继续。源码API1.38.0；服务换版命令被自动审批拒绝，当前8010仍为1.37.0，尚未推送。
+
+2026-10-16本地增量：[讲稿限定范围与容量诊断](docs/plans/html-backend-development/handoff-script-fidelity-capacity-2026-10-16.md)，写前对照原句停止风险结果，容量报告列明有效限值与触发维度；固定清单25/25通过。真实模型保真效果仍待验证，本批未推送。
+
+2026-10-16本地开发：[流等待诊断](docs/plans/html-backend-development/handoff-stream-wait-diagnostics-2026-10-16.md)与[课程父子暂停修复](docs/plans/html-backend-development/handoff-course-pause-2026-10-16.md)，区分读取断流和总预算，明确取消/占用的停止与核实方向。用户选择暂不重发原未知请求；本批尚未推送，最新线上发布仍见下文。
 
 最新发布：[2026-10-15 流程 Agent 与多标签能力发布备注](docs/releases/2026-10-15-workflow-agents-and-labeled-capabilities.md)。契约包0.9.53、Agent API1.34.0；审核依据、能力路由与等待规则已修复，通用多标签和呈现能力已接入，固定流程清单21/21通过。真实遴选案例的新规划因供应商ReadTimeout停止，尚无新计划或HTML通过结果。
 

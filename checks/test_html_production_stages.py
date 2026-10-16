@@ -198,3 +198,24 @@ def test_streaming_honors_explicit_stage_deadline_without_changing_model_paramet
     assert "reasoning_effort" not in calls[0]
     task = store._job_to_dict(store._job(stage.db, stage.job_id))
     assert next(iter(task["stages"].values()))["metrics"]["request_timeout_seconds"] == expected
+
+
+def test_stream_failure_routes_to_verification_and_blocks_resend(stage):
+    calls = []
+    def generator(**kw):
+        calls.append(1)
+        kw["on_stream_progress"]({"state": "failed", "failure_reason": "read_timeout",
+            "elapsed_seconds": 281, "last_chunk_seconds": 156, "silence_seconds": 125,
+            "total_timeout_seconds": 1800, "read_timeout_seconds": 120})
+        raise RuntimeError("private provider detail")
+    generator.supports_stream_progress = True
+    wrapped = stage.wrap(generator, "json")
+    with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
+        wrapped(artifact_prefix="html_scene_plan_s1", request_timeout=1800)
+    task = store._job_to_dict(store._job(stage.db, stage.job_id))
+    assert task["progress"]["next_action"] == {"stage": "planning", "reason": "read_timeout",
+        "routes": ["provider_verification"], "automatic_retry": False}
+    assert task["recovery"]["requires_verification"] and not task["recovery"]["can_resume"]
+    with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
+        wrapped(artifact_prefix="html_scene_plan_s1", request_timeout=1800)
+    assert calls == [1] and "private provider detail" not in str(task)

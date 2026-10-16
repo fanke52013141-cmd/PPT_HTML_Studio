@@ -22,37 +22,37 @@
     },
     {
       "id": "design-understanding",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "stage": "design_understanding",
       "input_contract": "design-understanding-input/0.2.0",
       "output_contract": "design-understanding-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-understanding-0.2.0.md",
-        "sha256": "b88234f43f66193d1465c9bdc2edaf50e6c814a95678452010924ddd2630936a"
+        "path": "config/html_runtime_skills/design-understanding-0.3.0.md",
+        "sha256": "bd6b29791a52c36b112d14b48d398f3168cd8eb67f54199bdb181403e739b96f"
       },
       "references": {}
     },
     {
       "id": "design-reconstruction",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "stage": "design_reconstruction",
       "input_contract": "design-reconstruction-input/0.2.0",
       "output_contract": "design-reconstruction-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-reconstruction-0.2.0.md",
-        "sha256": "b3e8b1f362549bf134c324d2f498d757785ba695294f0e107ed52f63b56fa14a"
+        "path": "config/html_runtime_skills/design-reconstruction-0.3.0.md",
+        "sha256": "7fb915a801c2c30ac3e9567d3c49cce7c0a604a28ed3394988465a2e1d797a7f"
       },
       "references": {}
     },
     {
       "id": "design-fidelity-review",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "stage": "design_fidelity_review",
       "input_contract": "design-review-input/0.2.0",
       "output_contract": "design-review-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-fidelity-review-0.2.0.md",
-        "sha256": "9004cae9b03cd4842d7f739f273c2f9ffe63082dc25fccb9d6580473176d9f34"
+        "path": "config/html_runtime_skills/design-fidelity-review-0.3.0.md",
+        "sha256": "f2286514d3d921ecc51d749686528707dd4edaedfc71e537f8e099ae69edac84"
       },
       "references": {}
     }

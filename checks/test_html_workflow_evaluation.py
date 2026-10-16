@@ -9,8 +9,8 @@ from scripts import evaluate_html_workflow as evaluation
 
 def test_manifest_targets_are_explicit_existing_and_cases_complete():
     manifest = evaluation.load_manifest()
-    assert len(manifest["cases"]) == 21
-    assert {c["id"] for c in manifest["cases"]} == {f"WF-{n:03}" for n in range(1, 22)}
+    assert len(manifest["cases"]) == 30
+    assert {c["id"] for c in manifest["cases"]} == {f"WF-{n:03}" for n in range(1, 31)}
 
 
 def test_missing_failed_and_skipped_parameter_cannot_pass(tmp_path):

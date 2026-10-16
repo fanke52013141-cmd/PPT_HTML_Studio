@@ -15,8 +15,9 @@ STAGES = [("storyboard", "内容规划"), ("html_pages", "设计与HTML"),
 
 
 class CourseBoundary(Exception):
-    def __init__(self, state, stage, message, slide=None):
+    def __init__(self, state, stage, message, slide=None, *, outcome=None):
         self.state, self.stage, self.message, self.slide = state, stage, message, slide
+        self.outcome = outcome
 
 
 class HtmlCourseJobs:
@@ -82,6 +83,13 @@ class HtmlCourseJobs:
             if future and not future.done():
                 return {"success": True, "already_running": True, "status": self.view(job)}
             value = job.get_payload()
+            stopped_storyboard = value.get("production_stages", {}).get("storyboard", {})
+            if stopped_storyboard.get("state") == "content_review":
+                review = getattr(self.actions, "script_review", lambda p: None)(project)
+                if not review or review["status"] != "resolved" or review["stale"]:
+                    raise store.HtmlTaskError("SCRIPT_QUALIFIER_REVIEW_REQUIRED：请先在分镜页修正并保存当前讲稿，再继续原课程", 409)
+            if stopped_storyboard.get("state") in {"cancelled", "busy"} and not self.actions.contract(project):
+                raise store.HtmlTaskError("STORYBOARD_REVIEW_REQUIRED：分镜已停止或由其他操作占用；请在原分镜入口核实并完成，再继续课程", 409)
             if any(c.get("state") in {"intent", "unknown"} and not c.get("id") for c in value.get("children", {}).values()):
                 raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：子任务提交结果未确认，禁止重复创建", 409)
             if any(c.get("state") in {"intent", "unknown"} for c in value.get("production_stages", {}).values()):
@@ -150,6 +158,9 @@ class HtmlCourseJobs:
                         time.sleep(self.poll_seconds); continue
                     if result["status"] in ("succeeded", "completed"):
                         return result
+                    if result["status"] == "cancelled":
+                        raise CourseBoundary("paused", store._job(db, job_id).stage,
+                                             "原子任务已取消；课程暂停，保留原任务，不自动复活或创建替代请求")
                     # Existing HTML resume verifies original snapshots/unknown outcomes.
                     if result.get("can_resume") and not resumed:
                         self.actions.resume_child(db, project, record["id"])
@@ -224,7 +235,13 @@ class HtmlCourseJobs:
                 checkpoint(); store.mark_succeeded(db, job_id, output)
             except CourseBoundary as boundary:
                 db.rollback(); current = store._job(db, job_id); data = current.get_payload()
-                data.update(message=boundary.message, slide_id=boundary.slide, checkpoint="image_review" if boundary.stage == "html_pages" else "audio_review")
+                data.update(message=boundary.message, slide_id=boundary.slide,
+                            checkpoint={"html_pages": "image_review", "tts": "audio_review", "approvals": "audio_review"}.get(boundary.stage, ""))
+                if boundary.stage == "storyboard" and boundary.outcome in {"cancelled", "busy", "content_review"}:
+                    data.setdefault("production_stages", {}).setdefault("storyboard", {}).update(
+                        state=boundary.outcome, requires_review=True)
+                    if boundary.outcome == "content_review":
+                        data["checkpoint"] = "script_review"
                 data.setdefault("course_stages", {}).setdefault(boundary.stage, {}).update(state=boundary.state, message=boundary.message)
                 if current.status == "running":
                     store._transition(db, current, ("running",), {"status": boundary.state, "stage": boundary.stage, "payload_json": store.json_dumps(data), "error": boundary.message if boundary.state == "failed" else None, "finished_at": datetime.now()})

@@ -302,6 +302,11 @@ def compose_step2_system_prompt(system_content: str, output_example: str) -> str
     return f"{system}\n\n<OutputExample>\n{example}\n</OutputExample>"
 
 
+def compose_step2_script_system_prompt(system_content: str, output_example: str) -> str:
+    from storyboard_planning import SCRIPT_FIDELITY_POLICY
+    return compose_step2_system_prompt(system_content, output_example) + "\n\n<FidelityPolicy version=\"0.1.0\">\n" + SCRIPT_FIDELITY_POLICY + "\n</FidelityPolicy>"
+
+
 def step2_script_prompt_uses_legacy_contract(system_content: str) -> bool:
     """Detect old prompts that require fields removed from the Step 2A input/output contract."""
     text = str(system_content or "")
@@ -357,7 +362,7 @@ def step2_prompt_response(project: Project) -> Dict[str, Any]:
         "defaults": default_step2_prompts(),
         "compatibility": step2_prompt_compatibility(prompts),
         "composed": {
-            "script_system_content": compose_step2_system_prompt(
+            "script_system_content": compose_step2_script_system_prompt(
                 prompts["script_system"],
                 prompts["script_output_example"],
             ),

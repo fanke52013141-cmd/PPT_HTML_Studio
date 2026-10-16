@@ -36,6 +36,8 @@ import storyboard_plan_store as plan_store
 import storyboard_template_store as template_store
 from storyboard_template_store import storyboard_template_payload  # noqa: F401 - compatibility export
 from storyboard_planning import _step2_script_plan_fingerprint
+from storyboard_planning import script_qualifier_risks
+from storyboard_prompt_templates import compose_step2_script_system_prompt
 from visual_contract_service import contract_canonical_sha256, reject_blank_slide_ids
 from project_config_runtime import get_config_value
 from storyboard_project_config import read_step2_prompts_for_project, resolve_step2_llm
@@ -606,6 +608,34 @@ def update_step2_prompts(project_id: str, payload: Dict[str, Any], db: Session):
     return step2_prompt_response(project)
 
 
+def _guard_script_qualifiers(article_content, plan, *, review=None):
+    risks = script_qualifier_risks(article_content, plan)
+    if risks:
+        raise HTTPException(status_code=409, detail={
+            "code": "SCRIPT_QUALIFIER_REVIEW_REQUIRED",
+            "message": (
+                f"讲稿限定范围待核对（{risks[0]['slide_id']}）：原文“{risks[0]['source_excerpt']}”；"
+                f"讲稿“{risks[0]['narration_excerpt']}”。请保留原文限定后编辑保存；正式讲稿未改，不会自动重试。"
+            ),
+            "issues": risks, "automatic_retry": False,
+            "script_review": review,
+        })
+
+
+def _script_review_article(source):
+    return {"title": source["title"], "content": source["content"]}
+
+
+def _pending_script_review(project, source):
+    review = plan_store.script_review(project, _script_review_article(source))
+    if review and review["status"] == "pending":
+        raise HTTPException(409, detail={
+            "code": "SCRIPT_QUALIFIER_REVIEW_REQUIRED", "automatic_retry": False,
+            "message": "已有讲稿待核对，请先修正保存；过期候选须重新生成。", "script_review": review,
+        })
+    return review
+
+
 @generation_control.controlled('storyboard_script')
 def execute_step2_script_plan(
     project_id: str,
@@ -616,6 +646,12 @@ def execute_step2_script_plan(
     article_source = read_project_article_source(project)
     project_title = article_source["title"]
     article_content = article_source["content"]
+    with project_artifact_lock(project.run_dir):
+        article_identity = _script_review_article(article_source)
+        existing_review = plan_store.script_review(project, article_identity)
+        if existing_review and existing_review["status"] == "pending" and not existing_review["stale"]:
+            _pending_script_review(project, article_source)
+        base_script = plan_store.saved_script(project)
     generation_requirement = str((payload or {}).get("requirement") or "").strip()
     prompts = read_step2_prompts_for_project(project, read_prompts=read_step2_prompts)
     if step2_script_prompt_uses_legacy_contract(prompts["script_system"]):
@@ -629,7 +665,7 @@ def execute_step2_script_plan(
     trace_id = uuid.uuid4().hex[:8]
     raw_plan = run_step2_json_llm(
         project=project,
-        system_prompt=compose_step2_system_prompt(prompts["script_system"], prompts["script_output_example"]),
+        system_prompt=compose_step2_script_system_prompt(prompts["script_system"], prompts["script_output_example"]),
         user_prompt=build_step2_script_user_prompt(
             project_title=project_title,
             article_content=article_content,
@@ -645,6 +681,19 @@ def execute_step2_script_plan(
     except PlanningError as exc:
         raise _planning_http_error(exc, 502)
     generation_control.checkpoint(project_id, 'storyboard_script')
+    with project_artifact_lock(project.run_dir):
+        if _script_review_article(read_project_article_source(project)) != article_identity or plan_store.saved_script(project) != base_script:
+            raise HTTPException(409, detail="SCRIPT_REVIEW_STALE：生成期间原文或正式讲稿已变化，结果未应用，请重新读取")
+        risks = script_qualifier_risks(article_content, plan)
+        if risks:
+            review = plan_store.retain_script_review(project, article_identity, plan, risks, base_script=base_script, trace_id=trace_id)
+            _guard_script_qualifiers(article_content, plan, review=review)
+        result = _save_generated_script(project, plan, trace_id)
+        plan_store.supersede_stale_script_review(project)
+        return result
+
+
+def _save_generated_script(project, plan, trace_id):
     script_path = step2_script_plan_path(project)
     previous_plan: Dict[str, Any] = {}
     if os.path.isfile(script_path):
@@ -670,22 +719,41 @@ def execute_step2_script_plan(
 
 def get_step2_script_plan(project_id: str, db: Session):
     project = project_or_404(db, project_id)
-    plan = read_plan_json(step2_script_plan_path(project), "尚未生成演讲稿规划")
+    with project_artifact_lock(project.run_dir):
+        plan = plan_store.saved_script(project)
+        review = plan_store.script_review(project, _script_review_article(read_project_article_source(project)))
+    if plan is None and review is None:
+        raise HTTPException(404, detail="尚未生成演讲稿规划")
     return {
         "success": True,
         "script_plan": plan,
-        "target_duration": target_duration_response(project.target_duration_sec, plan),
+        "script_review": review,
+        "target_duration": target_duration_response(project.target_duration_sec, plan or {}),
     }
 
 
 def update_step2_script_plan(project_id: str, payload: Dict[str, Any], db: Session):
     project = project_or_404(db, project_id)
+    with project_artifact_lock(project.run_dir):
+        try:
+            return _update_step2_script_plan(project, payload)
+        except plan_store.ScriptReviewConflict as exc:
+            raise HTTPException(409, detail=str(exc))
+
+
+def _update_step2_script_plan(project, payload):
     article_source = read_project_article_source(project)
     project_title = article_source["title"]
     try:
         plan = normalize_slide_script_plan(payload, project_title)
     except PlanningError as exc:
         raise _planning_http_error(exc, 400)
+    review = plan_store.require_script_review_current(project, _script_review_article(article_source), payload.get("review_id"))
+    risks = script_qualifier_risks(article_source["content"], plan)
+    if risks and (not review or review["status"] != "pending"):
+        review = plan_store.retain_script_review(project, _script_review_article(article_source), plan, risks,
+            base_script=plan_store.saved_script(project))
+    _guard_script_qualifiers(article_source["content"], plan, review=review)
     script_path = step2_script_plan_path(project)
     previous_plan: Dict[str, Any] = {}
     if os.path.isfile(script_path):
@@ -697,9 +765,11 @@ def update_step2_script_plan(project_id: str, payload: Dict[str, Any], db: Sessi
     visual_exists, visual_stale, workflow_changed, workflow_pending = _persist_step2_script_plan(
         project, plan, previous_plan
     )
+    plan_store.resolve_script_review(project, _script_review_article(article_source), plan, review)
     return {
         "success": True,
         "script_plan": plan,
+        "script_review": plan_store.script_review(project, _script_review_article(article_source)),
         "visual_exists": visual_exists,
         "visual_stale": visual_stale,
         "workflow_changed": workflow_changed,
@@ -716,6 +786,8 @@ def _execute_step2_visual_plan(
     previous_visual_plan: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Generate a visual plan, with at most one targeted atomicity repair call."""
+    _pending_script_review(project, read_project_article_source(project))
+    _guard_script_qualifiers(read_project_article_source(project)["content"], script_plan)
     prompts = read_step2_prompts_for_project(project, read_prompts=read_step2_prompts)
     if step2_visual_prompt_uses_legacy_contract(prompts["visual_system"]):
         raise HTTPException(
@@ -833,7 +905,9 @@ def compose_step2_visual_contract(project_id: str, db: Session):
     article_source = read_project_article_source(project)
     project_title = article_source["title"]
     article_summary = article_source["summary"]
+    _pending_script_review(project, article_source)
     script_plan = read_plan_json(step2_script_plan_path(project), "请先生成演讲稿规划")
+    _guard_script_qualifiers(article_source["content"], script_plan)
     try:
         stored_visual_plan = read_plan_json(step2_visual_plan_path(project), "请先生成视觉规划")
         stored_script_hash = str(stored_visual_plan.get("source_script_hash") or "")

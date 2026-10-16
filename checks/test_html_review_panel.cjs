@@ -158,6 +158,18 @@ const {resolveBrowser}=require("../html_engine/tools/browser-runtime.cjs");
   await page.waitForFunction(()=>document.querySelector('[data-html-design] img').getAttribute('src')?.includes('/new-project-design/'));
   await page.evaluate(async()=>{releaseOld();await oldSync;});
   assert.match(await page.locator('[data-html-design] img').getAttribute('src'),/\/new-project-design\//);
+  await page.evaluate(async()=>{
+   API.get=async url=>url.endsWith('/design/current')?{design:null}:{task:{id:'read-timeout',status:'failed',input_state:'current',
+    recovery:{can_resume:false,requires_verification:true},progress:{
+     model_stream:{state:'failed',elapsed_seconds:281,last_chunk_seconds:156,silence_seconds:125,total_timeout_seconds:1800,read_timeout_seconds:120,content_chars:0,failure_reason:'read_timeout'},
+     next_action:{reason:'read_timeout',routes:['provider_verification'],automatic_retry:false}}}};
+   await HtmlReviewPanel.syncCurrent();
+  });
+  assert.match(await page.locator('[data-html-task]').textContent(),/读取等待超时/);
+  assert.match(await page.locator('[data-html-task]').textContent(),/总预算 1800 秒/);
+  assert.match(await page.locator('[data-html-task]').textContent(),/读取等待 120 秒/);
+  assert.match(await page.locator('[data-html-task]').textContent(),/无新数据 125 秒/);
+  assert.equal(await page.locator('[data-action="resume"]').isHidden(),true);
   assert.deepEqual(errors,[]);
   console.log(JSON.stringify({errors,correctPanel:true,stableRefresh:true,modelProjectIsolation:true,workspaceSeparation:true,designIdentityPreserved:true,acceptedDesignVisible:true,independentButtonProtected:true,lateDesignCannotEnableUnknownRequest:true,samePageExternalUpdate:true,draftPreserved:true,readFailureBlocksSubmission:true,revisionSourcePreserved:true,lateProjectReadIgnored:true}));
  }finally{await browser.close();}

@@ -1,0 +1,21 @@
+# 流等待与失败证据 0.1.0
+
+2026-10-16，关联HPS-010/013—017。继承显式请求预算和未知结果禁重发规则；本增量只改善观测与停点，不延长等待、不改变模型/思考/输出配置，不宣称供应商可靠性修复。
+
+## 定义卡
+
+`json_llm_transport.py` 统一记录和回调：total_timeout_seconds为单次completion流预算，read_timeout_seconds为实际SDK读取等待配置，last_chunk_seconds为最后已解码chunk相对请求开始时间，silence_seconds为记录时距该chunk的时长。没有chunk时last_chunk_seconds=null，silence从开始计。心跳/数据块可能没有正文，content_chars=0不等于未接收数据或供应商没接单。
+
+进度只随流事件和结束/失败更新；没有新增后台心跳。界面必须显示“记录时”无新数据时长，不能把静态旧进度伪装为实时连接正常。SSE注释等未产生SDK chunk的网络活动不在此计数，silence不是TCP抓包结果。
+
+失败仅输出固定failure_reason：ReadTimeout及其异常链为read_timeout；本地流总预算触发为total_timeout；流缺stop/完整正文为incomplete_response；其他错误为transport_error。API通用超时在没有ReadTimeout原因证据时不能猜作读取超时。类型与固定码分类，不持久化异常原文、endpoint、密钥或思考内容。
+
+ProductionStages沿流回调保存脱敏证据，失败仍以unknown回执留档。next_action将上述原因交provider_verification，automatic_retry=false；不是新的自动查单、补发或恢复接口。同步JSON没有已证实供应商任务ID时，不通过换目录/参数/模型规避未知结果。重新开始之前须明确核实或保留未知结果并获得新实验授权。
+
+源变化时仍应保存已发请求的失败证据，不能因为快照过期而丢弃原unknown回执。attempt/终态隔离和禁止迟到写入保持。旧流记录可缺新字段，展示未知，不回填历史“最后chunk”或虚构读等待。
+
+## 兼容与验证卡
+
+无数据库、作者、输出格式或请求字段变化。API1.35.0的task_status1.4/task_current1.3公开既有progress内的新事实和停点语义；前端显示总预算、读取预算、最后chunk/记录时静默及核实原请求方向，恢复按钮依旧受requires_verification约束。
+
+验证覆盖连续思考后静默125秒读取失败与1800总预算区分、截断不进入JSON修复、连接超时不冒充读超时、异常文本不泄漏、unknown重复调用拒绝及实际浏览器展示。采用模拟时钟和流，不等待真实长超时或发出付费请求。原案例ReadTimeout保留，不自动重跑；此增量尚不证明真实供应商连接稳定或新规划成功。

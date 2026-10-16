@@ -235,6 +235,22 @@ def test_manual_project_route_returns_conflict(monkeypatch) -> None:
         raise AssertionError("manual project route should return HTTP 409")
 
 
+def test_web_route_keeps_typed_task_conflict_and_legacy_bad_request(monkeypatch):
+    import pytest
+    from html_task_store import HtmlTaskError
+    project = SimpleNamespace(id="isolated-web-conflict", ai_mode="auto", visual_backend="html", run_dir="unused")
+    monkeypatch.setattr(one_click_routes, "_project_or_404", lambda *_: project)
+    monkeypatch.setattr(one_click_routes, "get_config_value", lambda *_: False)
+    db = SimpleNamespace(commit=lambda: None, refresh=lambda p: None)
+    for error, expected in [(HtmlTaskError("SCRIPT_QUALIFIER_REVIEW_REQUIRED", 409), 409), (ValueError("bad request"), 400)]:
+        def reject(*args):
+            raise error
+        monkeypatch.setattr(one_click_routes, "start_one_click", reject)
+        with pytest.raises(HTTPException) as caught:
+            one_click_routes.start_one_click_route(project.id, {}, db=db)
+        assert caught.value.status_code == expected
+
+
 def test_one_click_route_enables_reveal_only_when_package_requests_ai_mask(monkeypatch) -> None:
     project = SimpleNamespace(id="auto-project", ai_mode="auto", run_dir="unused")
     commits: list[str] = []

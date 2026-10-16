@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 from artifact_fingerprint import sha256_json, sha256_file
 from html_course_jobs import CourseBoundary, HtmlCourseJobs
+from fastapi import HTTPException
 
 
 class CourseActions:
@@ -19,12 +20,15 @@ class CourseActions:
         from tts_service import current_tts_cache_key
         article = self.deps.read_project_article_source(project, required=True)
         models = freeze_project_models(project).summary()
-        sources = ("html_course_jobs.py", "html_course_runtime.py", "html_production_service.py", "html_workflow_jobs.py", "html_semantic_review_service.py", "html_audio_binder.py", "html_audio_binding_service.py", "tts_service.py", "storyboard_service.py", "storyboard_project_config.py", "storyboard_llm.py")
+        sources = ("html_course_jobs.py", "html_course_runtime.py", "html_production_service.py", "html_workflow_jobs.py", "html_semantic_review_service.py", "html_audio_binder.py", "html_audio_binding_service.py", "tts_service.py", "storyboard_service.py", "storyboard_plan_store.py", "storyboard_planning.py", "storyboard_prompt_templates.py", "storyboard_project_config.py", "storyboard_llm.py")
         return {"article_sha256": sha256_json(article), "config_sha256": sha256_json(load_project_config(project)),
                 "models": models, "tts": current_tts_cache_key(project),
                 "sources": {s: sha256_file(self.root/s) for s in sources}}
 
     def contract(self, project):
+        review = self.script_review(project)
+        if review and review["status"] == "pending":
+            return None
         path = Path(project.run_dir)/"planning/visual_contract.json"
         if not path.exists():
             return None
@@ -47,10 +51,38 @@ class CourseActions:
 
     def storyboard(self, db, project):
         services = self.services(db, project)
-        for method in (services.storyboard_script, services.storyboard_visual, services.storyboard_compose):
-            result = method()
+        review = self.script_review(project)
+        if review and review["status"] == "pending":
+            raise CourseBoundary("waiting_for_user", "storyboard", "讲稿待核对，请在分镜页修正并保存后继续", outcome="content_review")
+        methods = [services.storyboard_script, services.storyboard_visual, services.storyboard_compose]
+        if review and review["status"] == "resolved" and not review["stale"]:
+            # Continue from the explicitly corrected script, never regenerate it.
+            methods = methods[1:]
+            from storyboard_plan_store import saved_script, _step2_visual_plan_status
+            exists, stale = _step2_visual_plan_status(project, saved_script(project),
+                visual_path=str(Path(project.run_dir)/"planning/slide_visual_plan.json"))
+            if exists and not stale:
+                methods = methods[1:]
+        for method in methods:
+            try:
+                result = method()
+            except HTTPException as error:
+                if isinstance(error.detail, dict) and error.detail.get("code") == "SCRIPT_QUALIFIER_REVIEW_REQUIRED":
+                    raise CourseBoundary("waiting_for_user", "storyboard", "讲稿待核对，请在分镜页修正并保存后继续", outcome="content_review") from error
+                raise
+            if result.get("cancelled") is True:
+                raise CourseBoundary("paused", "storyboard", "分镜操作已按请求停止；已完成产物保留，请核实原分镜后继续课程", outcome="cancelled")
+            if result.get("busy") is True:
+                raise CourseBoundary("waiting_for_user", "storyboard", "已有分镜操作正在运行；本课程未接管或停止该操作，请在原入口核实", outcome="busy")
             if result.get("success") is False:
                 raise ValueError("分镜阶段未成功")
+
+    def script_review(self, project):
+        from storyboard_plan_store import script_review
+        if not (Path(project.run_dir)/"planning/script_review.json").exists():
+            return None
+        article = self.deps.read_project_article_source(project, required=True)
+        return script_review(project, {"title": article["title"], "content": article["content"]})
 
     def scene_ready(self, project, slide):
         from html_visual_store import load_scene

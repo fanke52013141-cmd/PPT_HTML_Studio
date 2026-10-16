@@ -143,13 +143,16 @@
     }
     if(progress.next_action){
       const reasons={unsupported:'当前能力不支持',upstream_revision_required:'需返回上游处理',budget_exhausted:'本阶段修复预算耗尽',external_call_budget_exhausted:'生产外部调用预算耗尽',repeated_candidate:'候选重复无改善',repeated_patch:'修复操作重复',unchanged_measurements:'实测没有改善',model_stop:'模型主动停止',non_capacity_failure:'失败不属于排版容量问题',missing_diagnostic_evidence:'缺少可用诊断证据'};
-      const routes={planning:'内容规划',assets:'独立素材',capabilities:'公共组件能力',reconstruction:'页面还原',design_review:'设计与生产规则审阅',manual_review:'人工检查',diagnostics:'工程诊断'};
+      Object.assign(reasons,{read_timeout:'读取等待超时，原请求结果未知',total_timeout:'单次流总预算耗尽，原请求结果未知',incomplete_response:'流已结束但结果不完整',transport_error:'传输失败，原请求结果待核实'});
+      const routes={planning:'内容规划',assets:'独立素材',capabilities:'公共组件能力',reconstruction:'页面还原',design_review:'设计与生产规则审阅',manual_review:'人工检查',diagnostics:'工程诊断',provider_verification:'原供应商请求核实'};
       line(`处理建议：${reasons[progress.next_action.reason]||'需要检查运行证据'}；交回 ${(progress.next_action.routes||[]).map(route=>routes[route]||'人工检查').join('、')}。系统不会自动重试或批准。`);
     }
     if (progress.model_stream) {
       const stream=progress.model_stream;
       const labels={waiting:'等待模型响应',thinking:'模型思考中',outputting:'正在接收结果',completed:'结果接收完成',failed:'接收中断，需核验原请求'};
       line(`${labels[stream.state] || '模型处理中'} · ${Math.round(stream.elapsed_seconds || 0)} 秒 · 已接收正文 ${stream.content_chars || 0} 字符`);
+      if(stream.total_timeout_seconds != null)line(`本次流总预算 ${stream.total_timeout_seconds} 秒；单次读取等待 ${stream.read_timeout_seconds ?? '未记录'} 秒。`);
+      if(stream.last_chunk_seconds != null)line(`最后数据到达于第 ${Math.round(stream.last_chunk_seconds)} 秒；记录时已无新数据 ${Math.round(stream.silence_seconds || 0)} 秒。`);
     }
     if (progress.repair_round != null) line(`排版修复：${progress.repair_round} / ${progress.max_rounds} 轮`);
     for (const skill of progress.runtime_skill?.skills || []) line(`已加载 Skill：${skill.id} ${skill.version}`);

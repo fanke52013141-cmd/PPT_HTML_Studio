@@ -1,0 +1,4 @@
+interface:
+  display_name: "流程 Skill 专家"
+  short_description: "设计、审计并优化工作流 Skill，核对真实执行边界、输入输出和验证证据"
+  default_prompt: "使用 $workflow-skill-expert 审计并优化当前项目的工作流 Skill，核对触发条件、实际执行入口、输入输出、停止规则与验证证据。"

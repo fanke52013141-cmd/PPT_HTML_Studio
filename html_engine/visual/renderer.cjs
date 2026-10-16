@@ -4,6 +4,7 @@ const { imagePlacement, ease } = require("../src/timeline.cjs");
 const { fail } = require("./compiler.cjs");
 const { icon } = require("./icons.browser.cjs");
 const variants = require("./presentation-variants.json").variants;
+const { capacityEvidence } = require("./capacity.cjs");
 const SVG = "http://www.w3.org/2000/svg";
 const vector = (tag) => document.createElementNS(SVG, tag);
 const attributes = (el, values) =>
@@ -41,21 +42,14 @@ function measure(el, slot, id, stage) {
   const lines = new Set(
     rects.map((r) => Math.round((r.top - bounds.top) / scale)),
   );
-  if (
-    bounds.width / scale > slot.box.width + 1 ||
-    bounds.height / scale > slot.box.height + 1 ||
-    lines.size > slot.maxLines ||
-    el.scrollHeight > el.clientHeight + 1 ||
-    el.scrollWidth > el.clientWidth + 1 ||
-    rects.some(
-      (r) => r.right > bounds.right + 1 || r.bottom > bounds.bottom + 1,
-    )
-  )
-    fail(
-      "CONTENT_CAPACITY_EXCEEDED",
-      id,
-      `${id}: text exceeds ${slot.maxLines} line(s) or its slot (${lines.size} lines; ${el.scrollWidth}x${el.scrollHeight}/${el.clientWidth}x${el.clientHeight})`,
-    );
+  const evidence = capacityEvidence({
+    width: bounds.width / scale, height: bounds.height / scale,
+    lines: lines.size, scrollWidth: el.scrollWidth, scrollHeight: el.scrollHeight,
+    clientWidth: el.clientWidth, clientHeight: el.clientHeight,
+    textRight: Math.max(0, ...rects.map(r => r.right - bounds.right)),
+    textBottom: Math.max(0, ...rects.map(r => r.bottom - bounds.bottom)),
+  }, { width: slot.box.width, height: slot.box.height, maxLines: slot.maxLines });
+  assertCapacity(id, evidence);
   return { lines: lines.size, width: slot.box.width, height: slot.box.height };
 }
 
@@ -282,17 +276,23 @@ function themeStylesheet(theme) {
 function measureOverflow(el, width, id, stage) {
   const scale = stage.getBoundingClientRect().width / 1600;
   const bounds = el.getBoundingClientRect();
-  if (
-    bounds.width / scale > width + 1 ||
-    el.scrollWidth > el.clientWidth + 1 ||
-    el.scrollHeight > el.clientHeight + 1
-  )
-    fail(
-      "CONTENT_CAPACITY_EXCEEDED",
-      id,
-      `${id}: composite content exceeds its slot width (${bounds.width / scale} > ${width})`,
-    );
+  assertCapacity(id, capacityEvidence({
+    width: bounds.width / scale, height: bounds.height / scale,
+    scrollWidth: el.scrollWidth, scrollHeight: el.scrollHeight,
+    clientWidth: el.clientWidth, clientHeight: el.clientHeight,
+  }, { width }));
   return { lines: 1, width, height: bounds.height / scale };
+}
+
+function assertCapacity(id, evidence) {
+  if (!evidence.triggers.length) return;
+  try {
+    fail("CONTENT_CAPACITY_EXCEEDED", id,
+      `${id}: ${evidence.triggers.map(t => `${t.dimension}: ${t.actual} > ${t.limit} + ${t.tolerance} ${t.unit}`).join("; ")}`);
+  } catch (error) {
+    error.capacityEvidence = evidence;
+    throw error;
+  }
 }
 
 async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
@@ -326,6 +326,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
       const scale = stage.getBoundingClientRect().width / 1600;
       const issue = {
         code: error.code, target: id, message: error.message,
+        ...error.capacityEvidence,
         available: typeof limit === "number" ? { width: limit } : limit,
         measured: { width: box.width / scale, height: box.height / scale,
           scrollWidth: el.scrollWidth, scrollHeight: el.scrollHeight,

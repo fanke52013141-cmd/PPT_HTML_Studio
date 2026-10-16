@@ -33,11 +33,15 @@ from runtime_support import (
 logger = logging.getLogger("PPTStudio.JsonLlm")
 
 
-def _request_options(model, binding=None):
+def _request_options(model, binding=None, *, reasoning_effort_override=None):
     options = {}
     if model in {"glm-5.3", "glm-5.3-flash", "glm-5.3-flashx"}:
+        if (reasoning_effort_override is not None
+                and reasoning_effort_override not in {"low", "high", "max"}):
+            raise ValueError("reasoning_effort_override must be low, high, or max")
         options = {"extra_body": {"thinking": {"type": "enabled"}},
-                   "reasoning_effort": getattr(binding, "reasoning_effort", None) or "max"}
+                   "reasoning_effort": reasoning_effort_override
+                   or getattr(binding, "reasoning_effort", None) or "max"}
     return options
 
 
@@ -172,6 +176,7 @@ def _generate_json_with_configured_llm(
     image_paths: list[str] | None = None,
     stream_output: bool = False,
     on_stream_progress=None,
+    reasoning_effort_override: str | None = None,
 ) -> Dict[str, Any]:
     llm_api_key = getattr(model_binding, "api_key", None) if model_binding is not None else get_setting("llm_api_key")
     llm_base_url = getattr(model_binding, "endpoint", None) if model_binding is not None else get_setting("llm_base_url")
@@ -180,6 +185,8 @@ def _generate_json_with_configured_llm(
         raise HTTPException(status_code=400, detail="未配置大模型 API 密钥，请在系统设置中配置后再试。")
     if not llm_model:
         raise HTTPException(status_code=400, detail="未配置大模型名称，请在系统设置中配置后再试。")
+    request_options = _request_options(llm_model, model_binding,
+                                       reasoning_effort_override=reasoning_effort_override)
     max_tokens = parse_int_setting(
         getattr(model_binding, "max_tokens", None) if getattr(model_binding, "max_tokens", None) is not None
         else get_setting("llm_max_tokens", str(max_tokens_default)),
@@ -225,17 +232,20 @@ def _generate_json_with_configured_llm(
         nonlocal calls
         calls += 1
         return receive_completion(client, params, streaming=stream_output, timeout=request_timeout,
+            read_timeout=min(request_timeout, 120) if stream_output else request_timeout,
             evidence_path=Path(run_dir) / "logs" / f"{artifact_prefix}-stream-{calls}.json",
             progress=on_stream_progress)
     started = time.monotonic()
-    logger.info("JSON task %s: model=%s input_chars=%s max_tokens=%s timeout=%ss", artifact_prefix, llm_model, len(system_prompt) + len(user_prompt), max_tokens, request_timeout)
+    logger.info("JSON task %s: model=%s input_chars=%s max_tokens=%s reasoning_effort=%s timeout=%ss",
+                artifact_prefix, llm_model, len(system_prompt) + len(user_prompt), max_tokens,
+                request_options.get("reasoning_effort", "provider_default"), request_timeout)
     try:
         try:
             try:
                 with governed_llm_request(llm_base_url):
                     response = complete(
                         model=llm_model,
-                        **_request_options(llm_model, model_binding),
+                        **request_options,
                         temperature=temperature,
                         max_tokens=max_tokens,
                         response_format={"type": "json_object"},
@@ -255,7 +265,7 @@ def _generate_json_with_configured_llm(
                 with governed_llm_request(llm_base_url):
                     response = complete(
                         model=llm_model,
-                        **_request_options(llm_model, model_binding),
+                        **request_options,
                         temperature=temperature,
                         max_tokens=max_tokens,
                         messages=[
@@ -279,7 +289,7 @@ def _generate_json_with_configured_llm(
             schema_hint=schema_hint,
             max_tokens=max_tokens,
             base_url=str(llm_base_url or ""),
-            request_options=_request_options(llm_model, model_binding),
+            request_options=request_options,
             completion_callback=complete,
         )
     finally:

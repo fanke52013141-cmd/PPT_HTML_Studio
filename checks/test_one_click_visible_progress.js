@@ -29,6 +29,26 @@ assert.match(partial, /7 数字人讲解.*?done/s);
 console.log('one-click visible progress checks passed');
 const html = render([{id:'html_pages',status:'waiting_for_review',message:'confirm actual design'}], 'waiting_for_review', {}, {backend:'html'});
 assert.equal((html.match(/<article/g) || []).length, 6);
-assert.match(html, /设计与HTML.*?paused/s);
+assert.match(html, /设计图 → HTML 还原与动画.*?paused/s);
 assert.match(html, /逐句语义审核|当前签收/);
 assert.doesNotMatch(html, /AI 标注|勾画标注/);
+
+async function reviewCheckpointRefresh() {
+  const live = source.slice(source.indexOf('  async function syncLivePanel('), source.indexOf('  function renderStatus('));
+  let reads = 0;
+  const runtime = {currentProject:{id:'fixture'},currentStep:2};
+  const context = {window:{PPTStudio:{runtime:{state:runtime}},loadStep2Data:async()=>{reads++;}},
+    activeProjectId:()=>runtime.currentProject.id,console};
+  vm.runInNewContext('let panelRefreshInFlight=false, previousPanelStage="", oneClickContentStage="", loadedScriptReviewKey="";'+live+';globalThis.sync=syncLivePanel;',context);
+  const waiting = {status:'waiting_for_user',current_stage:'storyboard',job_id:'original',review_checkpoint:'script_review'};
+  await context.sync(waiting);
+  await context.sync(waiting);
+  assert.equal(reads,1,'polling must not reload the review editor while typing');
+  await context.sync({status:'running',current_stage:'storyboard'});
+  await context.sync(waiting);
+  assert.equal(reads,2,'a later review boundary must be readable again');
+  runtime.currentStep=3;
+  await context.sync({...waiting,job_id:'another'});
+  assert.equal(reads,2,'other panels must not load storyboard review');
+}
+reviewCheckpointRefresh().catch(error=>{console.error(error);process.exitCode=1;});

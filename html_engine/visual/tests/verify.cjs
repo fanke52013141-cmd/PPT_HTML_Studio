@@ -270,6 +270,7 @@ async function main() {
       await page.locator("#status").innerText(),
       /CONTENT_CAPACITY_EXCEEDED/,
     );
+    assert.match(await page.locator("#status").innerText(), /(?:box_width|line_count|scroll_width|text_right_overflow):/);
     const malicious = clone(cup);
     malicious.nodes.find((n) => n.id === "intro").runs[0].text =
       "<img src=x onerror=alert(1)>";

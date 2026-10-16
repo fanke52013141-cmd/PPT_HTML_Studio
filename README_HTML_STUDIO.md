@@ -1,4 +1,4 @@
-# PPT HTML Studio
+# HTML Studio
 
 2026-10-14 当前交接：[A04—A06 开发与线上同步备注](docs/plans/html-backend-development/handoff-2026-10-14-publication.md)。正常应用已完成五页分镜和第一页整页设计/独立素材；未保存候选的人工审阅入口可追溯原任务，但最终版式容量失败，只能驳回。真实整课、试听/签收与正式输出仍待完成。A06 过程证据见 [专项交接](docs/plans/html-backend-development/handoff-a06-2026-10-14.md)。
 

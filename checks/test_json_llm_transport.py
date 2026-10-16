@@ -81,6 +81,7 @@ def test_stream_wall_budget_and_error_metadata(tmp_path, monkeypatch):
     report = json.loads(path.read_text())
     assert report["error_class"] == "TimeoutError" and report["state"] == "failed"
     assert stream.closed and report["content_chars"] == 0
+    assert report["failure_reason"] == "total_timeout"
 
 
 def test_stream_repair_preserves_frozen_options(tmp_path, monkeypatch):
@@ -99,3 +100,56 @@ def test_stream_repair_preserves_frozen_options(tmp_path, monkeypatch):
     assert len(captured) == 2
     assert all(c["stream"] and c["max_tokens"] == 65536 and c["reasoning_effort"] == "max"
                and c["extra_body"]["thinking"]["type"] == "enabled" for c in captured)
+
+
+def test_explicit_scene_planning_effort_override_is_scoped_and_audited(tmp_path, monkeypatch):
+    captured = []
+    client, _stream = client_for([chunk('{"ok":true}', finish="stop")], captured)
+    monkeypatch.setattr(service, "get_openai_client", lambda **_kw: client)
+    monkeypatch.setattr(service, "governed_llm_request", lambda *_args: nullcontext())
+    binding = NS(api_key="fake", endpoint="https://example.test/v4", model="glm-5.3",
+                 max_tokens=65536, temperature=1.0, reasoning_effort="max")
+    result = service.generate_json_with_configured_llm(
+        model_binding=binding, system_prompt="s", user_prompt="u", run_dir=str(tmp_path),
+        artifact_prefix="scene-plan", schema_hint="{}", stream_output=True,
+        reasoning_effort_override="low",
+    )
+    assert result == {"ok": True}
+    assert len(captured) == 1
+    assert captured[0]["reasoning_effort"] == "low"
+    assert captured[0]["max_tokens"] == 65536
+    assert captured[0]["extra_body"]["thinking"]["type"] == "enabled"
+    assert binding.reasoning_effort == "max"
+    evidence = json.loads((tmp_path / "logs/scene-plan-stream-1.json").read_text())
+    assert evidence["reasoning_effort"] == "low"
+
+
+def test_read_silence_is_distinct_from_total_budget_and_never_retries(tmp_path, monkeypatch):
+    import httpx
+    import json_llm_transport as transport
+    clock = {"now": 0}
+    monkeypatch.setattr(transport.time, "monotonic", lambda: clock["now"])
+    def chunks():
+        clock["now"] = 156
+        yield chunk(reasoning="private")
+        clock["now"] = 281
+        raise httpx.ReadTimeout("secret provider endpoint")
+    calls, events = [], []
+    client, stream = client_for(chunks(), calls)
+    path = tmp_path / "read-timeout.json"
+    with pytest.raises(httpx.ReadTimeout):
+        receive_completion(client, {}, streaming=True, timeout=1800, read_timeout=120,
+                           evidence_path=path, progress=events.append)
+    report = json.loads(path.read_text())
+    assert report["failure_reason"] == "read_timeout" and report["last_chunk_seconds"] == 156
+    assert report["silence_seconds"] == 125 and report["total_timeout_seconds"] == 1800
+    assert events[-1]["read_timeout_seconds"] == 120 and events[-1]["failure_reason"] == "read_timeout"
+    assert len(calls) == 1 and stream.closed and report["content_chars"] == 0
+    assert "secret provider endpoint" not in path.read_text() + str(events)
+
+
+def test_provider_error_classification_does_not_treat_all_timeouts_as_read_timeouts():
+    from json_llm_transport import failure_reason
+    import httpx
+    assert failure_reason(httpx.ConnectTimeout("private")) == "transport_error"
+    assert failure_reason(ValueError("JSON_STREAM_INCOMPLETE")) == "incomplete_response"

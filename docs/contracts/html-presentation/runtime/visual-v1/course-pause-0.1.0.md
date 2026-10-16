@@ -1,0 +1,13 @@
+# 课程父子任务暂停 0.1.0
+
+2026-10-16，HPS-010/011/014—017。修复真实案例中明确取消被普通失败掩盖的问题，不新增远端取消或任意重试权限。
+
+原分镜服务由generation_control在安全边界返回success=false/cancelled=true；CourseActions须先识别取消，父任务paused、error=null，保留已完成产物，不执行后续visual/compose。busy=true表示其他同项目操作占用，父任务waiting_for_user，不接管、停止或重发手动请求。普通success=false和异常仍按失败/未知处理，不能借暂停清除原意图。
+
+课程production_stages.storyboard将明确结果记为cancelled/busy，保留attempts和requires_review。它们不是returned成功或unknown。没有有效当前分镜合同时，直接继续报STORYBOARD_REVIEW_REQUIRED；需要从原分镜入口核实/完成。有效当前合同就绪后可继续原父任务、跳过重新分镜；不重做已完成请求。原intent/unknown和取消父任务仍保持原阻断，旧事故记录不回填。
+
+已取消的持久子任务使父任务在实际阶段paused，保留子ID与returned提交事实，既不调用resume_child也不创建替代子任务，即使子结果误给can_resume=true也不能复活。后续仍要核实该页/阶段的真实当前产物，不能仅凭已保存子ID或历史成功推进。父暂停不声明已取消供应商请求。
+
+不再给storyboard停点伪造audio_review；只有对应HTML/音频签收阶段使用原checkpoint。网页/Agent/CLI继续使用既有课程入口，API1.36.0，pipeline.run/status/resume1.3；无请求字段、数据库或作者格式变化。
+
+隔离验证覆盖真实适配层的明确cancelled与busy、后续方法不调用、同父ID手动合同完成后继续、取消子任务不复活、不替换ID，以及实际generation_control手动占用不被课程接管。未知提交仍禁重发，进程重启和旧成功/签收测试保持。真实整课提供者和生产取消未新增付费复验；本地原事故保留历史失败。

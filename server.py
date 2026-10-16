@@ -144,7 +144,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger("PPTStudio")
 init_db()
 
-app = FastAPI(title="PPT Visualization Studio", description="本地 PPT 演示视频生成系统（Soft Pastel Studio 界面）")
+app = FastAPI(title="HTML Studio", description="本地内容可视化与演示制作系统")
 
 # 解决跨域
 app.add_middleware(

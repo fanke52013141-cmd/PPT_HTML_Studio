@@ -264,6 +264,7 @@
   let panelRefreshInFlight = false;
   let previousPanelStage = '';
   let oneClickContentStage = '';
+  let loadedScriptReviewKey = '';
   async function syncLivePanel(status) {
     window.syncStoryboardGenerationState?.(status);
     const contentStage = status?.status === 'running' ? status?.current_stage : '';
@@ -288,6 +289,15 @@
       if (runtimeState.currentStep === 3 && ['images', 'confirm_images'].includes(stage)) await window.refreshStep3Images?.();
       if (runtimeState.currentStep === 6 && stage === 'tts') await window.loadStep7Data?.();
       if (previous === 'storyboard' && stage !== 'storyboard' && runtimeState.currentStep === 2) await window.loadStep2Data?.();
+      if (status?.review_checkpoint !== 'script_review') loadedScriptReviewKey = '';
+      if (status?.review_checkpoint === 'script_review' && runtimeState.currentStep === 2) {
+        const key = `${activeProjectId()}:${status.job_id || status.run_id}:script_review`;
+        if (key !== loadedScriptReviewKey) {
+          // One read on entering the checkpoint; polling must not erase edits.
+          await window.loadStep2Data?.();
+          loadedScriptReviewKey = key;
+        }
+      }
       if (previous === 'tts' && stage !== 'tts' && runtimeState.currentStep === 6) await window.loadStep7Data?.();
     } catch (error) {
       console.warn('Live generation presentation refresh failed', error);

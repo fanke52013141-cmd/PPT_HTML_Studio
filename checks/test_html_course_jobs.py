@@ -4,6 +4,7 @@ import json
 import uuid
 from concurrent.futures import Future
 from types import SimpleNamespace
+from pathlib import Path
 import pytest
 from database import SessionLocal, Project, LocalJob
 from html_course_jobs import HtmlCourseJobs, CourseBoundary
@@ -193,6 +194,120 @@ def test_unknown_storyboard_not_reissued(course):
     with pytest.raises(HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
         c.jobs.start(c.project)
     assert c.actions.calls == ["storyboard"]
+
+
+def test_real_content_review_waits_corrects_and_resumes_same_parent_without_new_script(course, monkeypatch):
+    from fastapi import HTTPException
+    from html_course_runtime import CourseActions
+    import storyboard_service as service
+    from test_script_qualifier_fidelity import SOURCE, plan
+    c = course; c.actions.doc = None; c.actions.design = True
+    source = {"title": "test", "content": SOURCE, "summary": ""}
+    calls = []
+    monkeypatch.setattr(service, "project_or_404", lambda *args: c.project)
+    monkeypatch.setattr(service, "read_project_article_source", lambda *args: source)
+    monkeypatch.setattr(service, "read_step2_prompts_for_project", lambda *args, **kw: {"script_system": "custom", "script_output_example": "{}"})
+    monkeypatch.setattr(service, "run_step2_json_llm", lambda **kw: calls.append("script") or plan("没有统一标准。"))
+    def compose():
+        calls.append("compose")
+        c.actions.doc = {"slides": [{"slide_id": "page-1"}]}
+        return {"success": True}
+    services = SimpleNamespace(
+        storyboard_script=lambda: service.execute_step2_script_plan.__wrapped__(c.project.id, None),
+        storyboard_visual=lambda: calls.append("visual") or {"success": True},
+        storyboard_compose=compose)
+    adapter = CourseActions(SimpleNamespace(repo_root=Path(__file__).resolve().parents[1],
+        read_project_article_source=lambda *args, **kw: source,
+        pipeline_service_factory=lambda *_: services))
+    c.actions.storyboard = adapter.storyboard
+    c.actions.script_review = adapter.script_review
+    job_id, state = finish(c)
+    assert state["status"] == "waiting_for_user" and state["review_checkpoint"] == "script_review"
+    assert calls == ["script"] and not c.actions.calls
+    # Recreate the coordinator: pending review is not an in-memory-only stop.
+    c.jobs = HtmlCourseJobs(SessionLocal, c.actions, c.executor, poll_seconds=0)
+    with pytest.raises(HtmlTaskError, match="SCRIPT_QUALIFIER_REVIEW_REQUIRED"):
+        c.jobs.start(c.project)
+    review = service.get_step2_script_plan(c.project.id, None)["script_review"]
+    service.update_step2_script_plan(c.project.id, {**plan(SOURCE), "review_id": review["review_id"]}, None)
+    resumed_id, state = finish(c)
+    assert resumed_id == job_id and state["status"] == "waiting_for_review"
+    assert calls == ["script", "visual", "compose"]
+    assert c.actions.calls == ["html:page-1"]
+
+
+@pytest.mark.parametrize("outcome,expected", [("cancelled", "paused"), ("busy", "waiting_for_user")])
+def test_real_storyboard_adapter_preserves_explicit_stop_without_repeating_stage(course, outcome, expected):
+    from html_course_runtime import CourseActions
+    c = course
+    c.actions.doc = None
+    calls = []
+    def script():
+        calls.append("script")
+        return {"success": False, outcome: True, "message": "private detail not copied"}
+    def unwanted():
+        pytest.fail("must not continue visual or compose after stop")
+    services = SimpleNamespace(storyboard_script=script, storyboard_visual=unwanted, storyboard_compose=unwanted)
+    adapter = CourseActions(SimpleNamespace(repo_root=Path(__file__).resolve().parents[1],
+        pipeline_service_factory=lambda *_: services))
+    c.actions.storyboard = adapter.storyboard
+    job_id, state = finish(c)
+    assert state["status"] == expected and state["current_stage"] == "storyboard"
+    assert state["review_checkpoint"] == "" and "HTML_COURSE_STAGE_FAILED" not in state["message"]
+    with SessionLocal() as db:
+        job = db.query(LocalJob).filter(LocalJob.id == job_id).one()
+        assert job.error is None
+        assert job.get_payload()["production_stages"]["storyboard"]["state"] == outcome
+    with pytest.raises(HtmlTaskError, match="STORYBOARD_REVIEW_REQUIRED"):
+        c.jobs.start(c.project)
+    assert calls == ["script"] and not c.actions.calls
+    # An explicit manual completion provides a current valid contract; the
+    # original parent can continue without repeating this storyboard operation.
+    c.actions.doc = {"slides": [{"slide_id": "page-1"}]}
+    resumed_id, state = finish(c)
+    assert resumed_id == job_id and state["status"] == "waiting_for_review"
+    assert calls == ["script"]
+
+
+def test_cancelled_child_pauses_parent_and_never_resumes_or_replaces_it(course):
+    c = course
+    original = c.actions.child
+    def cancelled(db, project, child_id):
+        result = original(db, project, child_id)
+        return {**result, "status": "cancelled", "can_resume": True}
+    c.actions.child = cancelled
+    job_id, state = finish(c)
+    child_id = state["children"]["html:page-1"]["id"]
+    assert state["status"] == "paused" and state["current_stage"] == "html_pages"
+    assert state["children"]["html:page-1"]["state"] == "returned"
+    c.actions.scenes.discard("page-1")
+    resumed_id, next_state = finish(c)
+    assert resumed_id == job_id and next_state["status"] == "paused"
+    assert next_state["children"]["html:page-1"]["id"] == child_id
+    assert c.actions.calls == ["html:page-1"]
+
+
+def test_manual_storyboard_operation_is_not_taken_over_or_stopped_by_course(course):
+    from html_course_runtime import CourseActions
+    import generation_control as control
+    c = course; c.actions.doc = None
+    @control.controlled("storyboard_script")
+    def script(project):
+        pytest.fail("manual operation lock must prevent a second script request")
+    operation_id = control.reserve(c.project.id, "storyboard_script")
+    try:
+        services = SimpleNamespace(storyboard_script=lambda: script(c.project),
+            storyboard_visual=lambda: pytest.fail("visual must not start"),
+            storyboard_compose=lambda: pytest.fail("compose must not start"))
+        adapter = CourseActions(SimpleNamespace(repo_root=Path(__file__).resolve().parents[1],
+            pipeline_service_factory=lambda *_: services))
+        c.actions.storyboard = adapter.storyboard
+        _, state = finish(c)
+        assert state["status"] == "waiting_for_user"
+        manual = control.status(c.project.id, "storyboard_script")
+        assert manual["active"] and manual["operation_id"] == operation_id and not manual["stop_requested"]
+    finally:
+        control.finish(c.project.id, "storyboard_script", operation_id)
 
 
 def test_semantic_failure_blocks_approval_and_render(course):

@@ -45,9 +45,16 @@ const projectProfile = fs.readFileSync(path.join(root, 'static', 'project_profil
 const background = fs.readFileSync(path.join(root, 'static', 'storyboard_background_extension.js'), 'utf8');
 const styleManager = fs.readFileSync(path.join(root, 'static', 'style_reference_manager_extension.js'), 'utf8');
 const oneClick = fs.readFileSync(path.join(root, 'static', 'one_click_extension.js'), 'utf8');
-if ([html, images, storyboard, narrationAudio, aiMask, maskWorkspace, outputRender, oneClick]
+if ([html, images, narrationAudio, aiMask, maskWorkspace, outputRender, oneClick]
     .some(source => /待核对|建议检查|待检查|等待审查/.test(source))) {
   throw new Error('Non-actionable review notices must not appear in the workspace');
+}
+// Source-backed script review is an actionable checkpoint requested by the user.
+if (/建议检查|待检查|等待审查/.test(storyboard)
+    || !storyboard.includes('保存修正讲稿') || !storyboard.includes('review_id')
+    || !storyboard.includes('source_excerpt') || !storyboard.includes('narration_excerpt')
+    || app.includes('function renderStep2ContentReview(')) {
+  throw new Error('Script review must retain source evidence, explicit save, and storyboard ownership');
 }
 if ([uiFoundation, images, oneClick].some(source => source.includes('showFailureBadge'))) {
   throw new Error('Persistent failure badges duplicate in-context job errors');

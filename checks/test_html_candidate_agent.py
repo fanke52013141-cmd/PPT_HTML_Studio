@@ -69,6 +69,10 @@ def test_unsaved_capacity_failure_real_screenshot_agent_and_strict_recheck(draft
     assert not review_scene(scene, run_dir=run, deps=deps)["passed"]
     diagnosis = review_scene(scene, run_dir=run, deps=deps, diagnostic=True)
     assert not diagnosis["passed"] and diagnosis["diagnosticOnly"]
+    issue = diagnosis["capacityIssues"][0]
+    assert issue["triggers"]
+    assert issue["effectiveLimits"]["width"] > 0
+    assert all(trigger["actual"] > trigger["limit"] + trigger["tolerance"] for trigger in issue["triggers"])
     result = repair_candidate(scene, None, run_dir=run, deps=deps)
     assert result["report"]["passed"] and len(calls) == 1
     assert result["summary"]["framework"] == "LangGraph"

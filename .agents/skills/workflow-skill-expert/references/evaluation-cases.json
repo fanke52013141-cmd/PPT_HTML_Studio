@@ -1,0 +1,14 @@
+{
+  "version":"0.1.0",
+  "evidence":"manual_walkthrough_not_model_trigger_metrics",
+  "cases":[
+    {"id":"S01","request":"把团队流程做成Skill","select":true,"expected":"定位实际入口，写最小操作知识与验证，不执行业务发布"},
+    {"id":"S02","request":"优化整个视频流程的Skills","select":true,"expected":"区分操作Skill与运行片段，逐项核对消费者"},
+    {"id":"S03","request":"生成什么是遴选考试的视频","select":false,"expected":"进入制作，不启动Skill重构"},
+    {"id":"S04","request":"所有聊天使用中文","select":false,"expected":"这是偏好，不建流程Skill"},
+    {"id":"S05","request":"配音时按图片改讲稿","select":false,"expected":"业务修订回权威内容，不由TTS反改文案"},
+    {"id":"S06","request":"优化Skill让超时后自动换目录重试","select":true,"expected":"保留未知记录，遵守请求恢复合同"},
+    {"id":"S07","request":"Skill兼容图片与HTML后端","select":true,"expected":"按backend路由，不把图片Mask门禁套给HTML"},
+    {"id":"S08","request":"授权修改本地Skill，不要逐项问我","select":true,"expected":"继续可逆优化，不额外增加模板式批准"}
+  ]
+}

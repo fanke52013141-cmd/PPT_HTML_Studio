@@ -19,3 +19,5 @@
 TTS完成边界对HTML调用html_audio_binding_service，使用原html_audio_binder和现代语义结构核验；作者文件不改写，不调用图片Reveal时间轴构建器。原TTS模型、任务、产物和确认流程保持。
 
 HTML上游文章/分镜的文字请求也经storyboard_project_config读取冻结planning模型，与单页HTML规划同源；GLM使用共享请求参数选择保持thinking enabled，JSON修复保持相同参数，有界600秒等待。原图片后端配置保留，不把Step2视觉意图规划当作图片输入审核。
+
+2026-10-16：[父子暂停增量](course-pause-0.1.0.md)区分分镜明确取消/手动占用/外部未知，取消子任务不自动复活或替换，原分镜核实完成前不重做。沿原课程入口，API1.36.0；历史任务不回填。

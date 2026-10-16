@@ -194,6 +194,18 @@ class ProductionStages:
                     "job_id": self.job_id, "snapshot_id": self.snapshot_id, "key": key, "record": record,
                 })
                 self._persist(key, record, external_outcome=True)
+                if streaming:
+                    failed_stream = store._job(self.db, self.job_id, self.attempt).get_payload().get("progress", {}).get("model_stream", {})
+                    # The stream callback owns sanitized transport evidence;
+                    # HTTPException text and model reasoning never enter advice.
+                    reason = failed_stream.get("failure_reason")
+                    if reason in {"read_timeout", "total_timeout", "incomplete_response", "transport_error"}:
+                        current = store._job(self.db, self.job_id, self.attempt)
+                        payload = current.get_payload()
+                        payload["progress"] = {**payload.get("progress", {}), "next_action": {
+                            "stage": metrics["role"], "reason": reason,
+                            "routes": ["provider_verification"], "automatic_retry": False}}
+                        store._transition(self.db, current, ("running",), {"payload_json": store.json_dumps(payload)})
                 raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：供应商结果待核实，禁止自动重复请求", 409) from error
             # Persist raw returned bytes/JSON before validation or downstream work.
             self._save(key, value, kind + "_returned", kind,

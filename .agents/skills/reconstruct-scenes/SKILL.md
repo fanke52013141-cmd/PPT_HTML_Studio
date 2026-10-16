@@ -1,44 +1,21 @@
 ---
 name: reconstruct-scenes
-description: Build deterministic reveal scenes from complete slide images and optional manual masks.
+description: Build and validate exact-RLE PNG reveal assets for the PPT Studio image backend. Use for 图片Mask图层构建、Reveal场景重建; exclude editable HTML reconstruction and semantic rematching.
 ---
 
-# Purpose
+# 图片Reveal场景构建
 
-把每页完整位图、AI Mask 保存的精确 RLE 所有权和可选手工修正转换为 Remotion 使用的 PNG reveal 图层。生产版本固定为 `exact_rle_mask_with_manual_corrections_v6`。
+读取 [共用边界](../workflow-contracts.md)，只用于image backend。输入为当前reveal_manifest、完整位图与已保存精确RLE/手工修正；输出为各页scene/timeline/report与被引用PNG层。
 
-# Behavior
-
-- 无 Mask：整页静态显示，`composition_method=full_slide_static`。
-- 有 Mask：从用户设置的视频背景开始合成，绝不复用完整原图作为背景。
-- 每个自动 Mask 是处理边界；手工涂抹/擦除只作为其上的修正。只移除从该边界向内连通的近白色背景。
-- 被内容包围的白色区域保留。
-- Reveal builder 不重新判断语义归属，不做前景腐蚀或自动扩边。
-- 抗锯齿边缘使用柔和透明度并去除白色污染。
-- 自动 Mask 必须达到至少 99.5% 前景覆盖、零未分配组件和零跨组像素交叉。
-
-# Command
+唯一生产builder为scripts/build_reveal_scene.py，版本从ai_mask_contracts.REVEAL_PIPELINE_VERSION读取。需要独立诊断时运行：
 
 ```powershell
-python scripts/build_reveal_scene.py `
-  --manifest runs/<run_id>/reveal_manifest.json `
-  --repo-root .
-
-python scripts/validate_reveal_scene.py `
-  --run-dir runs/<run_id> `
-  --repo-root .
+python scripts/build_reveal_scene.py --manifest <run>/reveal_manifest.json --repo-root .
+python scripts/validate_reveal_scene.py --run-dir <run> --repo-root .
 ```
 
-# Outputs
+无Mask是合法静态整页，不强制拆层。有Mask从项目视频背景开始，不以原整图当背景。遵守有效raw/master配对；每组只从Mask边界向内去近白，保留封闭白区、抗锯齿及手工修正。
 
-- `slides/<slide_id>/scene.json`
-- `slides/<slide_id>/animation_timeline.json`
-- `slides/<slide_id>/reveal_report.json`
-- `slides/<slide_id>/assets/*.png`
+语义所有权属于AI Mask阶段，builder不得重新匹配。自动Mask须达到99.5%前景覆盖、零未分配、零跨组像素重叠；失败回Mask阶段，不扩边/侵蚀来掩盖。
 
-# Blocking Conditions
-
-- 当前页图片或 Mask 文件缺失。
-- 生成资产与当前图片、Mask 或管线版本不一致。
-- Mask 页面错误复用完整原图作为背景。
-- `assets/` 中存在未被场景引用的旧文件。
+拒绝坏引用、错版本、陈旧/未引用资产；HTMLbackend转produce-editable-html，不能生成PNG层后冒称可编辑HTML。

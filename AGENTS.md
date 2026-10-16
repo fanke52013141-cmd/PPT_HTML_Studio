@@ -219,7 +219,7 @@ For the shared workspace chrome in visible Steps 1–6, the user-supplied
 storyboard HTML is the exact reference: its header, three-state sidebar, and
 59px right title bar use `#ee5d36` / `#fff5f0` as documented in
 `docs/ui-spec.md`. Keep these four regions uniform across the six steps.
-The current header uses a blue Möbius logo and orange `PPT Studio` wordmark.
+The current header uses a blue Möbius logo and orange `HTML Studio` wordmark.
 The two Step 1 content views follow the supplied Prepare Article reference;
 its sidebar, global header, and `准备文章` heading are outside that reference scope.
 

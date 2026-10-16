@@ -84,6 +84,10 @@ def test_plan_generation_records_ac06_context_and_ac07_evidence(tmp_path) -> Non
     )
     assert plan["slide_id"] == "slide_001"
     assert len(calls) == 1
+    assert calls[0]["reasoning_effort_override"] == "low"
+    request_path = run_dir / "planning/html_visual/review/html_scene_plan_slide_001-round-1-request.json"
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    assert request["reasoning_effort_override"] == "low"
     # AC06: the request context enumerated registered capabilities only.
     sent = calls[0]
     assert "data-relation-v1" in sent["system_prompt"]

@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0",
+  "version": "0.9.0",
   "scope": "offline_workflow_incidents",
   "cases": [
     {
@@ -475,6 +475,266 @@
         "terminal": "工程与语义结构验证，非视觉批准",
         "author": "本案不写真实作者页面",
         "approval": "本案不签发批准"
+      }
+    },
+    {
+      "id": "WF-022",
+      "title": "流静默与总预算区分，未知请求停止核实",
+      "evidence_kind": "fake_clock_stream_and_persistent_task",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_json_llm_transport.py::test_read_silence_is_distinct_from_total_budget_and_never_retries",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_json_llm_transport.py::test_stream_wall_budget_and_error_metadata",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_production_stages.py::test_stream_failure_routes_to_verification_and_blocks_resend",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "原适配器1次，不补发",
+        "reuse": "unknown不复用为成功",
+        "route": "provider_verification",
+        "terminal": "read_timeout或total_timeout明确区分，automatic_retry=false",
+        "author": "不写作者",
+        "approval": "不签发批准"
+      }
+    },
+    {
+      "id": "WF-023",
+      "title": "课程取消暂停、手动分镜不被接管",
+      "evidence_kind": "real_adapter_and_generation_control_isolated",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_course_jobs.py::test_real_storyboard_adapter_preserves_explicit_stop_without_repeating_stage",
+          "expected_items": 2
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_course_jobs.py::test_cancelled_child_pauses_parent_and_never_resumes_or_replaces_it",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_course_jobs.py::test_manual_storyboard_operation_is_not_taken_over_or_stopped_by_course",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_course_jobs.py::test_unknown_storyboard_not_reissued",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "停止后无后续/替代请求",
+        "reuse": "保留原父子ID及已完成产物",
+        "route": "原阶段核实完成后继续",
+        "terminal": "cancelled→paused，busy→waiting_for_user，unknown禁重发",
+        "author": "不写真实作者",
+        "approval": "不代签批准"
+      }
+    },
+    {
+      "id": "WF-024",
+      "title": "讲稿限定范围弱化，写前停止",
+      "evidence_kind": "offline_exact_rule_regression",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_script_qualifier_fidelity.py::test_scoped_negative_must_not_become_absolute",
+          "expected_items": 3
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_script_qualifier_fidelity.py::test_actual_generation_stops_before_persistence_without_retry",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_script_qualifier_fidelity.py::test_preserved_scope_and_unrelated_claims_do_not_trigger",
+          "expected_items": 4
+        }
+      ],
+      "expected": {
+        "calls": "离线替身或纯函数，无付费调用",
+        "reuse": "保留已有数据",
+        "route": "script/source_review",
+        "terminal": "409，不保存，不自动重发",
+        "author": "不写作者页面",
+        "approval": "不授予批准"
+      }
+    },
+    {
+      "id": "WF-025",
+      "title": "容量错误说明明确真实触发维度",
+      "evidence_kind": "offline_exact_rule_regression",
+      "checks": [
+        {
+          "runner": "node",
+          "target": "html_engine/visual/tests/capacity.test.cjs",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "离线替身或纯函数，无付费调用",
+        "reuse": "保留已有数据",
+        "route": "capacity/diagnostics",
+        "terminal": "不放宽原容量阈值",
+        "author": "不写作者页面",
+        "approval": "不授予批准"
+      }
+    },
+    {
+      "id": "WF-026",
+      "title": "讲稿候选等待修正，原课程恢复不重复生成",
+      "evidence_kind": "isolated_store_coordinator_and_browser_api_double",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_html_course_jobs.py::test_real_content_review_waits_corrects_and_resumes_same_parent_without_new_script",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "讲稿模型替身最多1次，修正后不重发；无付费模型",
+        "reuse": "原课程ID和当前修正讲稿；问题候选留存",
+        "route": "script_review → 保存修正 → visual/compose",
+        "terminal": "待用户核对；修正后从原课程继续",
+        "author": "核对前不替换正式讲稿/作者场景；过期拒绝",
+        "approval": "内容保存不授予HTML或音频批准"
+      }
+    },
+    {
+      "id": "WF-027",
+      "title": "核对候选版本与原文变化保护",
+      "evidence_kind": "isolated_store_coordinator_and_browser_api_double",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_script_review_workflow.py::test_candidate_survives_reload_and_fix_does_not_regenerate_script",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_script_review_workflow.py::test_stale_source_official_or_review_identity_cannot_overwrite",
+          "expected_items": 3
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_script_review_workflow.py::test_source_changes_during_model_request_are_not_applied",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_script_review_workflow.py::test_pending_keeps_official_and_downstream_bytes_and_blocks_compose",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_script_review_workflow.py::test_manual_risky_edit_also_retains_candidate_without_overwriting_official",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "讲稿模型替身最多1次，修正后不重发；无付费模型",
+        "reuse": "原课程ID和当前修正讲稿；问题候选留存",
+        "route": "script_review → 保存修正 → visual/compose",
+        "terminal": "待用户核对；修正后从原课程继续",
+        "author": "核对前不替换正式讲稿/作者场景；过期拒绝",
+        "approval": "内容保存不授予HTML或音频批准"
+      }
+    },
+    {
+      "id": "WF-028",
+      "title": "核对编辑器明确保存，轮询与跨项目响应隔离",
+      "evidence_kind": "isolated_store_coordinator_and_browser_api_double",
+      "checks": [
+        {
+          "runner": "node",
+          "target": "checks/test_script_review_ui.cjs",
+          "expected_items": 1
+        },
+        {
+          "runner": "node",
+          "target": "checks/test_one_click_visible_progress.js",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "讲稿模型替身最多1次，修正后不重发；无付费模型",
+        "reuse": "原课程ID和当前修正讲稿；问题候选留存",
+        "route": "script_review → 保存修正 → visual/compose",
+        "terminal": "待用户核对；修正后从原课程继续",
+        "author": "核对前不替换正式讲稿/作者场景；过期拒绝",
+        "approval": "内容保存不授予HTML或音频批准"
+      }
+    },
+    {
+      "id": "WF-029",
+      "title": "容量触发项变化不能被相同DOM尺寸掩盖",
+      "evidence_kind": "deterministic_progress_and_real_agent_with_checker_model_doubles",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_capacity_evidence_progress.py::test_line_progress_is_not_hidden_by_unchanged_dom_box",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_capacity_evidence_progress.py::test_effective_limit_changes_are_measurement_facts",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_capacity_evidence_progress.py::test_saved_report_details_preserve_trigger_progress_without_prose_noise",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_capacity_evidence_progress.py::test_actual_agent_consumes_triggers_and_preserves_bounded_stop",
+          "expected_items": 3
+        }
+      ],
+      "expected": {
+        "calls": "替身：改善后通过2次、测量不变1次、预算耗尽2次；无付费调用",
+        "reuse": "保留原场景与绑定，不写作者",
+        "route": "容量证据 → 原受限修复 → 严格重验",
+        "terminal": "变化允许预算内继续；不变或预算耗尽停止，automatic_retry=false",
+        "author": "未保存候选，不覆盖正式场景",
+        "approval": "严格通过不授予审美或正式批准"
+      }
+    },
+    {
+      "id": "WF-030",
+      "title": "当前完整应用的隔离TCP核对与原课程恢复",
+      "evidence_kind": "full_app_loopback_tcp_isolated_database_provider_boundaries_doubled",
+      "checks": [
+        {
+          "runner": "pytest",
+          "target": "checks/test_local_runtime_smoke.py::test_current_application_tcp_review_and_course_resume",
+          "expected_items": 1
+        },
+        {
+          "runner": "pytest",
+          "target": "checks/test_one_click_orchestrator.py::test_web_route_keeps_typed_task_conflict_and_legacy_bad_request",
+          "expected_items": 1
+        }
+      ],
+      "expected": {
+        "calls": "讲稿供应商替身1次，修正后0次；下游模型前停住，无外部连接",
+        "reuse": "同一父任务与当前修正讲稿，真实数据库隔离",
+        "route": "Web409 → script_review → 明确修正 → visual边界",
+        "terminal": "隔离服务新版运行成功；8010是否换版另核对",
+        "author": "只写临时项目，不碰真实项目或作者产物",
+        "approval": "不批准视觉、音频或真实模型质量"
       }
     }
   ]

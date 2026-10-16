@@ -1,63 +1,24 @@
 ---
 name: qa-video
-description: Review a slide preview or final video and route revisions to the right stage.
+description: Evaluate actual PPT Studio previews or outputs and route concrete defects to their owning stage. Use for 成片检查、音画不对应、输出验收; separate engineering/model findings from human approval and image/HTML routes.
 ---
 
-# Purpose
+# 预览与输出QA
 
-对视频预览做最终质量检查，并把问题路由回正确阶段，避免笼统地“重新做”。
+读取 [共用边界](../workflow-contracts.md)。输入为当前实际预览/视频、权威讲稿、timeline、项目配置与相关批准身份；拿不到实际媒体应标未测，不仅凭文件名评判。
 
-# Inputs
+逐项记录slide_id、时间/区域、证据、严重度、需求与下一阶段，不写“感觉不好→全重做”：
 
-```json
-{
-  "video_path": "runs/<run_id>/video/rough_cut.mp4 或 slide preview",
-  "qa_checklist_path": "checks/qa_checklist.md",
-  "slide_plan_path": "runs/<run_id>/planning/slide_plan.json",
-  "subtitles_path": "runs/<run_id>/media/final_subtitles.srt 可选"
-}
-```
+| 问题 | 所有者 |
+| --- | --- |
+| 事实/限定词/缺语义对象 | 原文章/分镜规划 |
+| 声音/断字/字幕文案 | 原旁白与TTS |
+| HTML缺呈现工具 | capabilities；图内语义文字不是assets |
+| HTML可执行静态布局/字号 | 受控编辑/还原；先核对注册工具 |
+| 图片错误/Mask归属 | 图片生成或AI Mask；builder不重匹配 |
+| 动作时机/绑定 | 相应backend的绑定服务 |
+| 输出格式/缺帧/解码 | 原导出任务 |
 
-# Outputs
+HTML逐句语义使用原A04实际音频三帧，终态审核不替代；诊断qa_log是建议，不等于应用签收。用户决定须绑定对应报告/候选和当前版本走原入口。
 
-```json
-{
-  "qa_log_path": "runs/<run_id>/logs/qa_log.md"
-}
-```
-
-`qa_log.md` 必须包含：
-
-- `status`: `approved | revise_audio | revise_animation | revise_scene | revise_slide`
-- `issues[]`
-- `route_to_stage`
-- `requested_changes[]`
-
-# Procedure
-
-1. 检查画面、语音、字幕、动画、节奏和平台适配。
-2. 每个问题都定位到具体 slide 和具体阶段。
-3. 如果是语音问题，回到 `generate-audio-subtitles`。
-4. 如果是动画时机问题，回到 `bind-animation-timeline`。
-5. 如果是画面元素问题，回到 `reconstruct-scenes`。
-6. 如果是内容逻辑问题，回到 `plan-slides`。
-
-# Validation
-
-- QA 不能只写“感觉不好”，必须给出可执行修改。
-- 成片必须满足 3 到 6 分钟。
-- 字幕不能遮挡主体信息。
-- B 站、抖音、视频号横屏发布都能接受。
-
-# Failure Handling
-
-- 如果无法判断问题阶段，先标记 `needs_human_decision`。
-- 同类问题出现两次，记录 bad case。
-
-# Bad Case Tags
-
-- `validation-weak`
-- `animation-mismatch`
-- `audio-timing-weak`
-- `output-unclear`
-
+检查时长、比例和平台规格以用户目标为准，不强制所有成片3–6分钟或横屏。未检查的音频/动态/平台不宣称通过；不确定问题标needs_review并给可核查建议。
