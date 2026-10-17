@@ -60,3 +60,7 @@ CI环境先因Python3.11不兼容锁定NumPy而失败，改为3.13；随后暴�
 曾误提前提交其余页面，核查发现设计候选绑定全局revision，第一页保存可能使其失效，已通过原cancel入口撤销：slide_002的html_71bbfc95a27947df8a2f有一次已发出的规划请求，20.9秒时因取消关闭流，供应商终态未知；不得宣称上游已取消或自动补发。slide_003的html_4ae13803bc624fbbbe4c、slide_004的html_6b8994b181a942f4a000在排队状态撤销，零模型调用；这些取消任务不复活。记录在outputs/real-course-acceptance/2026-10-18/，后续回逐页原服务推进。
 
 ffed5df的远端Windows CI已实际成功：检查117525006980、run39076626748，canonical full含2507 passed/8 skipped/2 warnings（1139.73秒）、16项Node及Remotion TypeScript。该结果覆盖1.0.1修改前版本，不能声称后续新head也已通过。PR #2已更新该实际证据并保持草稿；整课与正式发布仍partial。
+
+1.0.1固定图复验位于outputs/real-course-acceptance/2026-10-18/review-101-fixed-case-v2：实际用户负载、Schema、图片hash、600秒预算及思考参数均与失败审核相同，模型冻结摘要也逐项匹配，只改系统提示。两次HTTP为已知400格式拒绝及原兼容入口的一次流式请求；407.38秒后完整返回。九种requirement枚举合法，56/56事实无缺漏/重复；obj-summary.typography的reference_alignment=uncertain使原守卫继续停止（DESIGN_REVIEW_COVERAGE_INCOMPLETE）。未保存、未生图/配音、未批准，费用null；前一单HTTP预算诊断因阻止原格式回退而停止，不能算有效模型对照，原记录保留。
+
+核查text_alignment_contract仅列headline/intro/anchor-label/marker-1普通text，summary是含多种对齐的复合模块，整体reference_alignment本来不适用。运行片段1.0.2明确只有所列普通text的typography需要该字段，其余null；复合组件真实字体差异仍须报告，certainty或reference_alignment为uncertain的原拒绝规则不变。旧响应不改写、不签发通过；新片段另验。源定义变化后旧候选不能自动重签为当前，后续应沿原生产入口生成当前版本候选与审阅，不能把该独立诊断当成正式恢复。

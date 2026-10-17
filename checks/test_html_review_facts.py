@@ -69,7 +69,9 @@ def test_actual_model_schema_has_facts_only_and_no_parallel_coverage_or_status(t
         for value in requirements:
             assert value in kwargs['system_prompt']
         assert 'content和structure仅属于dimension，禁止作为requirement' in kwargs['system_prompt']
-        assert 'design-fidelity-review/1.0.1' in kwargs['system_prompt']
+        assert 'design-fidelity-review/1.0.2' in kwargs['system_prompt']
+        assert 'targetId列于text_alignment_contract' in kwargs['system_prompt']
+        assert '其余事实必须填null' in kwargs['system_prompt']
         assert all(k not in schema['$defs']['Difference']['properties'] for k in ('targetId','evidence','reference_alignment'))
         assert len(kwargs['image_paths'])==2
         return facts()
@@ -87,3 +89,19 @@ def test_dimension_names_cannot_be_guessed_into_requirements(alias):
     with pytest.raises(ValueError):
         validate_fidelity(raw,scene(),alignment={'caption':{'align':'left'}},require_facts=True)
     assert raw==before
+
+
+@pytest.mark.parametrize('uncertain_field', [None, 'certainty', 'reference_alignment'])
+def test_compound_typography_uses_inapplicable_alignment_without_masking_uncertainty(uncertain_field):
+    compound={'version':'0.7.0','nodes':[{'id':'flow','type':'summary','slot':'summary'}]}
+    raw={'facts':[{**check,'certainty':'confirmed','evidence':'Observed individual component typography',
+                  'reference_alignment':None,'differences':[]} for check in review_checklist(compound)]}
+    row=next(r for r in raw['facts'] if r['dimension']=='typography')
+    if uncertain_field:
+        row[uncertain_field]='uncertain'
+        with pytest.raises(ValueError):
+            validate_fidelity(raw,compound,alignment={},require_facts=True)
+    else:
+        result=validate_fidelity(raw,compound,alignment={},require_facts=True)
+        assert result['status']=='pass'
+        assert len(result['coverage'])==len(review_checklist(compound))

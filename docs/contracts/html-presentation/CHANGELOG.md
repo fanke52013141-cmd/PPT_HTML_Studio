@@ -1,5 +1,7 @@
 # HTML 演示契约变更记录
 
+2026-10-18兼容提示修复：保真审核运行片段1.0.2明确reference_alignment只适用当前text_alignment_contract列出的普通text；复合组件以null表示该字段不适用，实际字体差异和观察不确定仍须报告。原uncertain拒绝、全覆盖与批准要求保持，不自动修复旧响应。
+
 2026-10-18兼容提示修复：保真审核运行片段1.0.1明列既有requirement枚举，禁止混用dimension的content/structure；严格解析、覆盖和调用预算不变，旧失效响应不推断或改写。见review-facts-localization-0.1.0中的真实失败记录。
 
 2026-10-18兼容提示修复：语义规划Prompt 0.3.3显式区分标注图片目标、图片内部焦点及文字标签身份，落实既有A02校验；不改契约字段、两轮预算或批准要求。实际失败及验证边界见scene-planning-evidence-0.1.0。
