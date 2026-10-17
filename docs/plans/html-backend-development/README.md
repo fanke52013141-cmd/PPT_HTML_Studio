@@ -1,5 +1,17 @@
 # HTML 后端改造：开发与验收交接包
 
+当前入口：[2026-10-18编辑器与视频验收](handoff-editor-validation-2026-10-18.md)。真实单页输出、协作/模型对照和设备压力已实测；真实整课及仓库原架构门禁未完成，整体partial。下方为历史阶段记录。
+
+当前本地入口：[单页视频输出验证](handoff-single-page-video-2026-10-17.md)。工程闭环21项通过，真实旁白页缺视觉批准，当前审阅图已生成；整体partial，未发布。下方为此前增量。
+
+当前本地入口：[真实旁白与音频刷新](handoff-editor-audio-freshness-2026-10-17.md)。已有旁白只读副本与合成换音频分别验收；原run未变，未发布。
+
+最新本地增量：[P3人工保护保存边界](handoff-editor-protection-p3-2026-10-17.md)。承接P2，服务层候选与最终保存共享叶字段保护；真实旁白和完整P3/P5签收另验，未发布。
+
+当前本地开发入口：[P2动作时间轴](handoff-editor-timeline-p2-2026-10-17.md)，已有动作编辑与合成音频浏览器通过；承接P1补验，真实旁白与正式输出仍待验，未提交/发布。下方为历史增量。
+
+当前本机开发增量：[P1正式布局编辑交接](handoff-editor-layout-p1-2026-10-17.md)，承接[P0](handoff-editor-adapters-p0-2026-10-17.md)。正式编辑器已接入移动、缩放、多选及原子撤销/保存；本批未提交或发布，完整P1与真实课程验收仍有待办。下方历史方案状态以最新交接为准。
+
 当前换机开发请先读[最新handoff：开源编辑与Agent优化](handoff-open-source-editor-2026-10-17.md)，契约0.9.78、本批98项隔离测试通过；发布范围见[本批备注](../../releases/2026-10-17-edge-reports-editor-handoff.md)。下一实施起点P0适配验证，不将开源方案当作已集成能力。
 
 最新方案：[开源组件驱动的还原与二次编辑优化](open-source-editor-optimization-2026-10-17.md)。主选Moveable+Selecto+React Timeline Editor，Scena作为编辑组合参考；列明P0–P5、现有数据/音频/保护接线及固定验收。当前为方案，未安装依赖或实施拖动/时间轴新功能。

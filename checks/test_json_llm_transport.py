@@ -4,7 +4,7 @@ from types import SimpleNamespace as NS
 
 import pytest
 
-from json_llm_transport import receive_completion, failure_reason
+from json_llm_transport import receive_completion
 import json_llm_service as service
 
 

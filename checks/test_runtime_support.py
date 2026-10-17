@@ -165,7 +165,7 @@ def test_numeric_ranges_and_nested_timeouts_are_bounded() -> None:
     )
 
 
-def test_decode_process_output_prefers_utf8_and_recovers_host_codepage() -> None:
+def test_decode_process_output_prefers_utf8_and_recovers_host_codepage(monkeypatch) -> None:
     import locale
 
     assert runtime.decode_process_output("plain") == "plain"
@@ -173,10 +173,9 @@ def test_decode_process_output_prefers_utf8_and_recovers_host_codepage() -> None
     utf8_bytes = "参考音频不存在".encode("utf-8")
     assert runtime.decode_process_output(utf8_bytes) == "参考音频不存在"
 
-    preferred = locale.getpreferredencoding(False) or ""
-    if preferred.lower() not in ("utf-8", "utf8"):
-        ansi_bytes = "参考音频不存在".encode(preferred)
-        assert runtime.decode_process_output(ansi_bytes) == "参考音频不存在"
+    for preferred, text in (("gbk", "参考音频不存在"), ("cp1252", "référence absente")):
+        monkeypatch.setattr(locale, "getpreferredencoding", lambda _do_setlocale, value=preferred: value)
+        assert runtime.decode_process_output(text.encode(preferred)) == text
 
     # 既不是 UTF-8 也不是本机代码页时兜底为替换字符，绝不能抛错。
     lossy = runtime.decode_process_output(bytes([255, 255, 255, 255]))

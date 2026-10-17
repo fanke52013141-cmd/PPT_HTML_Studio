@@ -21,6 +21,26 @@ def test_repair_prompt_defines_required_operation_fields(page):
     assert "set_motion与set_binding必须提供action" in prompts["system_prompt"]
 
 
+def test_repair_prompt_scopes_protected_leaves_actions_and_historical_ancestors(page):
+    run, scene = page
+    doc = edit.load_editor(run, scene["id"])
+    doc["manual"] = {"protected_paths": [
+        ["scene", "nodes", "headline", "presentation", "offsetX"],
+        ["scene", "nodes", "card-1", "presentation"],
+        ["binding", "actions", "headline:enter", "offsetMs"],
+        ["binding", "actions", "card-1:enter"],
+        ["scene", "nodes"],
+        ["scene", "motion", "headline:enter", "durationMs"],
+    ]}
+    prompts = repair.build_repair_prompts(doc, "只改标题", ["headline"], {})
+    paths = json.loads(prompts["user_prompt"])["protected_paths"]
+    assert paths == [doc["manual"]["protected_paths"][i] for i in (0, 2, 4, 5)]
+    assert "祖先路径保护整个子树" in prompts["system_prompt"]
+    assert "needs_input或unsupported" in prompts["system_prompt"]
+    doc["manual"] = None
+    assert json.loads(repair.build_repair_prompts(doc, "调整", ["headline"], {})["user_prompt"])["protected_paths"] == []
+
+
 def test_repair_model_gets_snapshot_frames_and_all_issues_not_full_trace(page):
     run, scene = page
     report = {"frames": [{"timeMs": i * 250, "geometry": {"id": "same"}} for i in range(71)],
@@ -153,6 +173,23 @@ def test_scope_and_key_do_not_expand(page):
     with pytest.raises(edit.SceneEditError, match="变化"):
         repair.save_repair(run, scene["id"], {**req(), "candidate_key": "0" * 64})
     assert store.load_scene(run, scene["id"]) == scene
+
+
+def test_ai_candidate_uses_shared_leaf_guard_and_reports_the_protected_path(page):
+    run, scene = page
+    scene["version"] = "0.5.0"
+    scene["nodes"][0]["presentation"] = {"offsetX": 20}
+    edit.save_editor(run, scene["id"], scene, None, 1)
+    request = req(expected_revision=2, source="ai", scope=["header"], operations=[
+        {"targetId": "header", "kind": "set_presentation", "values": {"width": 1400}}])
+    candidate = repair.candidate(run, scene["id"], request)
+    assert candidate["scene"]["nodes"][0]["presentation"] == {"offsetX": 20, "width": 1400}
+    request["operations"][0]["values"] = {"offsetX": 30}
+    with pytest.raises(edit.SceneEditError) as conflict:
+        repair.candidate(run, scene["id"], request)
+    assert conflict.value.code == "MANUAL_FIELD_PROTECTED"
+    assert "scene/nodes/header/presentation/offsetX" in str(conflict.value)
+    assert edit.load_editor(run, scene["id"])["revision"] == 2
 
 
 def test_temporal_intermediate_collision_and_repair(page):

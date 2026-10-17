@@ -1,5 +1,4 @@
 """Shared reference policy and real pixel continuity, independent of model wording."""
-import copy
 import json
 from pathlib import Path
 
@@ -8,7 +7,6 @@ from PIL import Image, ImageDraw
 
 from html_design_agent import (validate_fidelity, validate_understanding, component_context,
                                review_target_evidence, retain_unchanged_issues, review_fidelity)
-from html_design_policy import reference_observation
 from html_visual_review_service import HtmlReviewDependencies, HtmlReviewError
 from checks.html_design_agent_fixture import response_for, with_coverage
 

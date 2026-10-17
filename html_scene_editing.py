@@ -35,6 +35,18 @@ def read_json(path, default=None):
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else default
 
 
+def audio_revision(run, slide):
+    from tts_artifacts import artifact_hashes
+    return _digest(artifact_hashes(run, slide))
+
+
+def _check_audio_revision(run, slide, expected):
+    current = audio_revision(run, slide)
+    if expected is not None and expected != current:
+        raise SceneEditError("AUDIO_REVISION_CONFLICT", "配音产物已变化；本地草稿保留，请刷新配音与时序")
+    return current
+
+
 def edit_path(run, slide):
     return Path(run) / store.SCENE_DIR / f"edits-{store.validate_slide_id(slide)}.json"
 
@@ -109,6 +121,7 @@ def load_editor(run, slide):
     return {
         **doc,
         "binding": binding,
+        "audio_revision": audio_revision(run, slide),
         "anchor_overrides": {},
         "beats": beats_for(run, slide),
         "resources": resources(run),
@@ -273,8 +286,17 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
     )
 
 
-def preview_editor(run, slide, scene, binding, anchor_overrides=None, *, beats=None):
+def preview_editor(run, slide, scene, binding, anchor_overrides=None, *, beats=None, expected_revision=None, expected_audio_revision=None):
     """Resolve timing through the existing binder; no writes or TTS."""
+    if expected_revision is not None:
+        current = store.load_scene_with_revision(run, slide)
+        if current is None:
+            raise SceneEditError("SCENE_MISSING", "场景不存在")
+        if type(expected_revision) is not int or expected_revision < 0:
+            raise SceneEditError("REVISION_INVALID", "expected_revision 必须是非负整数")
+        if current["revision"] != expected_revision:
+            raise store.HtmlVisualConflict(expected_revision, current["revision"])
+    current_audio = _check_audio_revision(run, slide, expected_audio_revision)
     scene = copy.deepcopy(scene)
     project = resources(run)
     assets, _, _ = _anchor_variants(run, scene, anchor_overrides or {}, project)
@@ -296,22 +318,27 @@ def preview_editor(run, slide, scene, binding, anchor_overrides=None, *, beats=N
         Path(run) / "slides" / store.validate_slide_id(slide) / "audio_timeline.json"
     )
     clock = "author"
+    timing = None
     if timeline is not None:
-        from html_audio_binder import bind_scene_to_audio, AudioBindingError
+        from html_audio_binder import bind_scene_to_audio, editor_timing, AudioBindingError
 
         try:
             scene = bind_scene_to_audio(scene, timeline, binding)
+            timing = editor_timing(author_candidate, scene, timeline, binding)
         except AudioBindingError as exc:
             raise SceneEditError(exc.code, str(exc)) from exc
         clock = "audio_timeline"
     _compile(scene, assets)
     from html_rebuild_plan import scene_rebuild
     original = store.load_scene(run, slide)
+    _check_audio_revision(run, slide, current_audio)
     return {
+        "audio_revision": current_audio,
         "rebuild_plan": scene_rebuild(slide, original, author_candidate, read_json(binding_path(run, slide)), binding),
         "scene": scene,
         "resources": {"assets": runtime_assets, "pack": project["pack"]},
         "clock": clock,
+        "timing": timing,
         "audio_status": "现有音频时间轴（输出仍检查确认状态）"
         if timeline
         else "作者时钟；尚无音频时间轴，beat 绑定在输出时解析",
@@ -387,6 +414,10 @@ def protected_edit_paths(before, after, prefix):
             return {k: named(v) for k, v in value.items()}
         return value
     def diff(a, b, path):
+        if a is None and isinstance(b, dict) and b:
+            a = {}
+        if b is None and isinstance(a, dict) and a:
+            b = {}
         if isinstance(a, dict) and isinstance(b, dict):
             return [p for k in a.keys() | b.keys() for p in diff(a.get(k), b.get(k), path + [k])]
         return [] if a == b else [path]
@@ -402,7 +433,18 @@ def manual_protected_paths(manual):
     return protected_edit_paths(manual["base_scene"], manual["scene"], "scene") + protected_edit_paths(manual.get("base_binding"), manual.get("binding"), "binding")
 
 
-def save_editor(run, slide, scene, binding, expected_revision, anchor_overrides=None, *, origin="human"):
+def assert_manual_fields_unmodified(document, scene, binding):
+    """One protection rule for candidate preview and the final AI save boundary."""
+    protected = manual_protected_paths(document.get("manual"))
+    changed = protected_edit_paths(document["scene"], scene, "scene") + protected_edit_paths(document.get("binding"), binding, "binding")
+    conflicts = sorted({tuple(q) for p in changed for q in protected
+                        if p[:len(q)] == list(q) or list(q)[:len(p)] == p})
+    if conflicts:
+        paths = "、".join("/".join(str(part) for part in path) for path in conflicts[:3])
+        raise SceneEditError("MANUAL_FIELD_PROTECTED", f"AI不能覆盖已有人工字段：{paths}；请人工明确修改该字段")
+
+
+def save_editor(run, slide, scene, binding, expected_revision, anchor_overrides=None, *, origin="human", expected_audio_revision=None):
     """Caller must hold project_artifact_lock across this operation."""
     document = store.load_scene_with_revision(run, slide)
     if not document:
@@ -411,6 +453,9 @@ def save_editor(run, slide, scene, binding, expected_revision, anchor_overrides=
         raise SceneEditError("REVISION_INVALID", "expected_revision 必须是非负整数")
     if document["revision"] != expected_revision:
         raise store.HtmlVisualConflict(expected_revision, document["revision"])
+    if origin not in ("human", "ai"):
+        raise SceneEditError("EDIT_ORIGIN_INVALID", "编辑来源不合法")
+    current_audio = _check_audio_revision(run, slide, expected_audio_revision)
     scene = copy.deepcopy(scene)
     _node(
         """
@@ -447,6 +492,11 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
     assets, manifest, files = _anchor_variants(
         run, scene, anchor_overrides or {}, project_resources
     )
+    previous = read_json(edit_path(run, slide))
+    if origin == "ai":
+        # Validate the final author candidate, including materialized anchor refs.
+        assert_manual_fields_unmodified({**document, "binding": existing_binding,
+            "manual": previous}, scene, binding)
     _compile(scene, assets)  # Validate without silently migrating stored source.
     timeline = read_json(Path(run) / "slides" / slide / "audio_timeline.json")
     if timeline is not None:
@@ -459,6 +509,7 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
     changed = scene != document["scene"] or binding != existing_binding
     from html_rebuild_plan import scene_rebuild
     rebuild_plan = scene_rebuild(slide, document["scene"], scene, existing_binding, binding)
+    _check_audio_revision(run, slide, current_audio)
     if not changed:
         return {
             "revision": expected_revision,
@@ -466,12 +517,9 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
             "sha256": document["sha256"],
             "rebuild_plan": rebuild_plan,
         }
-    previous = read_json(edit_path(run, slide))
     protected = manual_protected_paths(previous)
     if origin == "human":
         protected += protected_edit_paths(document["scene"], scene, "scene") + protected_edit_paths(existing_binding, binding, "binding")
-    elif origin != "ai":
-        raise SceneEditError("EDIT_ORIGIN_INVALID", "编辑来源不合法")
     manual = {
         "protected_paths": sorted(set(tuple(p) for p in protected)),
         "last_origin": origin,

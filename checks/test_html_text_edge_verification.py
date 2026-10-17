@@ -45,7 +45,7 @@ def test_tight_but_non_crossing_boundary_does_not_claim_complete():
 
 @pytest.mark.parametrize('kind',['rule','icon','neighbour','container','image_edge','background','blank','low_contrast'])
 def test_ambiguous_evidence_abstains(kind):
-    image,box=sample('left');kwargs={};draw=ImageDraw.Draw(image)
+    image,box=sample('left');kwargs={}
     if kind=='rule':
         image,box=sample();ImageDraw.Draw(image).line((45,80,200,80),fill='black',width=2)
     if kind=='icon':

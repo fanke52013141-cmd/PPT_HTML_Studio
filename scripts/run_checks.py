@@ -38,6 +38,10 @@ def standalone_python_checks() -> list[Path]:
     """Return script-style checks that pytest cannot discover."""
     result: list[Path] = []
     for path in sorted((ROOT / "checks").glob("test_*.py")):
+        # Browser fixture server is launched with an isolated directory by its
+        # acceptance test; running it bare is neither a check nor a finite task.
+        if path.name == "test_html_scene_editor_fixture.py":
+            continue
         module = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         has_pytest_tests = any(
             isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))

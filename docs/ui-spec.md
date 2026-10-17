@@ -1,5 +1,9 @@
 # HTML Studio UI 规范（工作区 shell + 分镜规划）
 
+动作编辑器的“刷新配音与时序”保留草稿与原句偏移，并重新校验及加载媒体。配音产物变化时停止旧音频、动作轨道只读，提示刷新；场景revision冲突仍比较服务器版本。规则见[音频新鲜度契约](contracts/html-presentation/runtime/visual-v1/editor-audio-freshness-0.1.0.md)。
+
+正式HTML场景编辑器新增动作时间轴：音频控件与轨道置于共享播放器下方，讲稿轨道只读；已有动作条联动对象/属性，拖动改原句偏移，左右手柄改时长。浅底轨道配深色文字，当前对象以原橙色高亮。作者/实际时长及裁短原因通过动作提示展示，无有效配音时明确只读。定义和验收见[时间轴契约](contracts/html-presentation/runtime/visual-v1/editor-timeline-0.1.0.md)及[P2交接](plans/html-backend-development/handoff-editor-timeline-p2-2026-10-17.md)。
+
 ## HTML 六步工作区适配（2026-10-15）
 
 HTML 路线采用已生成的六页 Codex 视觉参考及 Stitch 私有项目

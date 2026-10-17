@@ -1,7 +1,6 @@
 """Synthetic labels test metrics only; these are not real human annotations."""
 import copy
 import json
-from pathlib import Path
 import shutil
 import subprocess
 

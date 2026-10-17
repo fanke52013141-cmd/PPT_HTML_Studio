@@ -5,7 +5,7 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 
 # 可编辑HTML生产与修复
 
-版本1.16.0，2026-10-16。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
+版本1.17.0，2026-10-17。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
 
 ## 选择任务
 
@@ -30,5 +30,9 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 读取实际任务进度、runtime_skill身份、调用/HTTP与复用事实、read/total等待预算；unknown用量/费用为null。查看当前scene、实际截图和声音/动作证据，给实际产物路径、revision、状态和未验证项。几何通过不等于审美批准。
 
 例：灰阶HTML不抄原图彩色；图内缺字应补规划对象，不让主体图补字；cancelled子任务不复活；仅改布局的同值保存不重TTS。
+
+按局部编辑Skill执行：核对受保护叶字段，绝对赋值；已有动作只改原句偏移；缺能力或冲突明确停止，不改source、不生图、不合成声音。
+
+保护祖先适用于整个子树，manual_protection=true不等于整页禁止编辑。固定效果对照使用 `scripts/benchmark_html_editor.py`，Skill组只传上面的操作摘要；只有显式--live才请求模型，四例和失败/unknown均计入分母，费用未知保留null，单次耗时差不宣称稳定提升。
 
 本Skill演进读 [references/evolution.md](references/evolution.md)，案例在 [evaluation/cases.json](evaluation/cases.json)。历史案例声明需与当前合同核对，不能当作新能力或签收。

@@ -330,7 +330,8 @@ def test_workflow_connector_stops_at_step_six_and_step2_errors_are_visible():
     assert "height: calc((64px + 0.35rem) * 5)" in css
     assert "step2-generation-status" in html
     assert "setStep2GenerationStatus" in storyboard
-    assert "setStep2GenerationStatus(`演讲稿生成失败" in storyboard
+    assert "review ? '讲稿待核对' : '演讲稿生成失败'" in storyboard
+    assert "${error?.message || error}`" in storyboard
     assert "setStep2GenerationStatus(`可视化生成失败" in storyboard
 
 

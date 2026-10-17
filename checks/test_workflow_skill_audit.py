@@ -42,7 +42,10 @@ def test_current_inventory_and_runtime_sources_are_valid():
     )
     assert result["issues"] == []
     assert len(result["skills"]) == 13
-    assert len(result["runtime"]) == 4
+    assert {item['stage'] for item in result['runtime']} == {
+        'candidate_capacity_repair', 'design_understanding', 'design_fidelity_review',
+        'design_reconstruction', 'design_fidelity_review_local', 'design_reference_localization',
+    }
 
 
 def test_existing_report_cannot_be_overwritten(tmp_path):

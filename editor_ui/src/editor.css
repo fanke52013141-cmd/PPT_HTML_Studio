@@ -1,0 +1,4 @@
+.timeline-editor { background: #fff; color: #283141; border: 1px solid #dfe3e8; border-radius: 8px; }
+.timeline-editor .timeline-editor-action { background: #ee5d36; color: white; border-radius: 4px; }
+.timeline-editor .timeline-editor-action span { padding: 0 6px; font: 12px system-ui; white-space: nowrap; }
+.timeline-editor .timeline-editor-action:not(.timeline-editor-action-movable) { background: #e6eaf0; color: #283141; }

@@ -127,6 +127,12 @@ def render_input_fingerprint(
     html_inputs = html_project_inputs(root)
     if html_inputs is not None:
         components["html_resolved_inputs"] = sha256_json(html_inputs)
+        # Composition changes affect MP4s, not scene/voice approvals or PPTX.
+        repo = Path(__file__).resolve().parent
+        components["html_video_composition"] = sha256_json({
+            name: sha256_file(repo / name)
+            for name in ("html_render_runner.py", "html_frozen_video.py", "html_export_snapshot.py")
+        })
     digital_config_path = root / "planning" / "digital_human.json"
     digital_config_key = "planning/digital_human.json"
     if digital_config_key in components:

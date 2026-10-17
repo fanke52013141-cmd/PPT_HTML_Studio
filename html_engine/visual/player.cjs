@@ -151,6 +151,11 @@ window.visualPlayer = {
   play,
   pause,
   seek,
+  // UI-only layout evaluation; never mutates the author scene or playback clock.
+  layout() {
+    pause();
+    return current?.renderAt(current.timeMs, false, true);
+  },
   get playing() {
     return playing;
   },

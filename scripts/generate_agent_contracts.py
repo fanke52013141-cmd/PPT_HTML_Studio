@@ -135,7 +135,7 @@ def main() -> int:
 
     # Generate mode
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    OUTPUT_FILE.write_text(content, encoding="utf-8")
+    OUTPUT_FILE.write_text(content, encoding="utf-8", newline="\n")
     print(f"Generated: {OUTPUT_FILE}")
     print(f"  Capabilities: {len(CAPABILITIES)}")
     print(f"  Contract hash: {get_contract_hash()}")

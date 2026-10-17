@@ -1,0 +1,72 @@
+{
+  "format": "hps.editor_ui.build",
+  "version": "0.1.0",
+  "sources": {
+    "package.json": "2abe956196d36b003742449625fa100ef089e12140b7432c954d35146e5bc1f7",
+    "package-lock.json": "47ee07dd5e910b7780d53591fef1226a4b218262e21263ba472bea72f7f4cf93",
+    "build.mjs": "589480686bf936f0b5773f947bb3fc6a6988517982f4c4a9771c61b969df9dc0",
+    "src/canvas-entry.js": "47a9251eabec4eb866ea8eb20444686b9db0c6aab6e46b342885d0eac3b38f33",
+    "src/canvas.js": "45cf76b337a6acd0fc1bec0953dfe3078481768f58b205421bf00bd25ce39d22",
+    "src/commands.mjs": "082b38f62a6036280ac94fbc8701513b45d3aa7490c13cf86c93b8d69e9fe248",
+    "src/editor.css": "aeb339f4470448908a1338c44d57e970fbda8c27cabaf0adece28bdbb107cb7b",
+    "src/index.jsx": "99688c028c47e78380fa35d634eb792148e11108f6eb906ddf3333867c4d196f",
+    "src/timeline-entry.js": "9afeb2540f0c73c6cb91585f3070c14be9585ae755f90f9615048853e812ef44",
+    "src/timeline.jsx": "a29cf0d9599addc59c2ebe82950d669d214631052acca43d1db5ad7fc58d0f55",
+    "licenses/cfcs--core.LICENSE": "03a23caffda8e43fdefcdce73b05ac9a75fcfb63776a7408bf5c8202ff3c8e2a",
+    "licenses/cfcs.NOTICE": "da87bce8a43e4e518f169b1c08521a770801e2efc73c23086c3c710c399127ff",
+    "licenses/croact-css-styled.LICENSE": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e",
+    "licenses/croact.LICENSE": "340a74a957c585d626b1717c9d27ccde64116622a5b8b9726b896e7671d26b2e",
+    "licenses/css-styled.LICENSE": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e",
+    "licenses/egjs--component.LICENSE": "fd3cd1d05b9e05d8310eeeaba997140b2fdd21f237ff3afe1d94bfa64b3b96ed",
+    "licenses/keycon.LICENSE": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e",
+    "licenses/records.json": "33eee8e7636ee17447fe292e9745ae75409981af6a08cf690ee90e020cd6051a",
+    "licenses/xzdarcy--react-timeline-editor.LICENSE": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe",
+    "licenses/xzdarcy--timeline-engine.LICENSE": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe"
+  },
+  "files": {
+    "editor.js": {
+      "bytes": 674625,
+      "sha256": "32c972c79ac21750761ee9ff3a08f0d4d50b43160f7b55735ce522a5e1ae05ee"
+    },
+    "editor.css": {
+      "bytes": 5037,
+      "sha256": "5e94af52fd3198f71aed6ff46f4ff7edbbd023d64b5da0616414cd1719675a99"
+    },
+    "editor.js.LEGAL.txt": {
+      "bytes": 4805,
+      "sha256": "7b2d7151fbf757b7c52c70ab237cbaa42b7c1fb3650ec2a0597bdc03fea5c324"
+    },
+    "THIRD_PARTY_NOTICES.txt": {
+      "bytes": 66450,
+      "sha256": "1a13a78271424b34bd986bf07e627638869314958dd873be312b8ea631ff970d"
+    },
+    "canvas.js": {
+      "bytes": 280724,
+      "sha256": "ab6ba090a8ef0e33b015dd17fe12e0995b92bd069a7db9a098f07593b5174b61"
+    },
+    "canvas.js.LEGAL.txt": {
+      "bytes": 2861,
+      "sha256": "39ec620ee6916b57705d422dcb3928d5f425ba426e60af2223a2e4339a244117"
+    },
+    "CANVAS_THIRD_PARTY_NOTICES.txt": {
+      "bytes": 38125,
+      "sha256": "5ac742f6693d5cf48883fa1d4dcf8cd3d414ed6d59f09e85f3c46e5787e2a612"
+    },
+    "timeline.js": {
+      "bytes": 393846,
+      "sha256": "d54bd7d151705f431277c02240581bf73bf767386cdcecb053b68376f0ff66ad"
+    },
+    "timeline.css": {
+      "bytes": 4648,
+      "sha256": "949a3ba480168ebd39eb63159d4bf1446f52aafb01100eba366bbb043f6cc8f2"
+    },
+    "timeline.js.LEGAL.txt": {
+      "bytes": 1973,
+      "sha256": "8e2180857969c383ada42fd412a1f92e325102252055761c9b3e724f0d91dadf"
+    },
+    "TIMELINE_THIRD_PARTY_NOTICES.txt": {
+      "bytes": 28293,
+      "sha256": "aa8672a5a7671111bcc0bed0042e877ebbbc10155793925bca4054434deaca5a"
+    }
+  }
+}

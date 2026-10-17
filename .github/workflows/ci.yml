@@ -15,16 +15,20 @@ permissions:
 jobs:
   basic-checks:
     name: Basic static checks
-    runs-on: ubuntu-latest
+    # Production rendering pins Windows Microsoft YaHei fonts.
+    runs-on: windows-latest
 
     steps:
+      - name: Preserve committed bytes for source fingerprints
+        run: git config --global core.autocrlf false
+
       - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -36,11 +40,38 @@ jobs:
       - name: Install Python dependencies
         run: python -m pip install -r requirements-dev.txt
 
+      - name: Install locked HTML and editor dependencies
+        run: |
+          npm ci --prefix html_engine
+          npm ci --prefix editor_ui
+          npm ci --prefix scripts/remotion
+
+      - name: Install rendering browser
+        working-directory: html_engine
+        run: npx playwright install chromium
+
+      - name: Verify production media and font prerequisites
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            $env:PATH += ';C:\ProgramData\chocolatey\bin'
+          }
+          ffmpeg -version
+          ffprobe -version
+          foreach ($font in @('msyh.ttc', 'msyhbd.ttc', 'msyhl.ttc')) {
+            if (-not (Test-Path (Join-Path "$env:WINDIR\Fonts" $font))) {
+              throw "Production font missing: $font; install the licensed Windows Chinese font capability."
+            }
+          }
+
+      - name: Verify editor build closure
+        run: npm test --prefix editor_ui
+
       - name: Run canonical full checks
         run: python scripts/run_checks.py --level full
 
       - name: Check Remotion TypeScript
         working-directory: scripts/remotion
         run: |
-          npm ci
           npx tsc --noEmit -p tsconfig.json

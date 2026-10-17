@@ -94,7 +94,7 @@ def test_three_page_real_video_duration_color_and_cleanup(tmp_path):
     assert abs(float(result.probe["format"]["duration"]) - expected) < 0.15
     assert video["color_space"] == "bt709" and video["pix_fmt"] == "yuv420p"
     assert list((run / "planning/html_visual/render_work").glob("segment-*.mp4")) == []
-    evidence = ROOT / "docs/reviews/2026-10-08-html-optimization"
+    evidence = ROOT / "outputs/html-video-acceptance"
     evidence.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(result.output_path, evidence / "three-page-smoke.mp4")
     (evidence / "video-benchmark.json").write_text(

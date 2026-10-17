@@ -262,6 +262,7 @@ from storyboard_planning import (
     target_duration_requirement,
     target_duration_response,
     compose_visual_contract_from_plans,
+    compose_manual_skeleton_slides,
     element_visible_text,
     narration_sequence_key,
     normalize_body_points,
@@ -1442,33 +1443,10 @@ def submit_step2_manual_skeleton(
     project_title = article_source.get("title") or project.name or project_id
     article_summary = article_source.get("summary", "")
 
-    contract_slides: List[Dict[str, Any]] = []
-    for index, slide in enumerate(payload.slides, start=1):
-        slide_id = (slide.slide_id or f"slide_{index:03d}").strip()
-        main_title = (slide.main_title or "").strip()
-        narration = (slide.narration or "").strip()
-        if not main_title:
-            raise HTTPException(status_code=400, detail=f"{slide_id} 标题不能为空")
-        if not narration:
-            raise HTTPException(status_code=400, detail=f"{slide_id} 演讲稿不能为空")
-        contract_slides.append({
-            "slide_id": slide_id,
-            "main_title": main_title,
-            "subtitle": "",
-            "core_message": narration,
-            "body_content": [narration],
-            "visual_groups": [],
-            "narration_beats": [
-                {
-                    "id": f"{slide_id}_beat_001",
-                    "group_id": None,
-                    "visible_anchor": "",
-                    "spoken_intent": main_title,
-                    "spoken_text": narration,
-                    "content_unit_id": f"{slide_id}_unit_001",
-                }
-            ],
-        })
+    try:
+        contract_slides = compose_manual_skeleton_slides([slide.model_dump() for slide in payload.slides])
+    except PlanningError as exc:
+        raise _planning_http_error(exc, 400)
 
     previous_contract = read_json_file(
         os.path.join(project.run_dir, "planning", "visual_contract.json"),
