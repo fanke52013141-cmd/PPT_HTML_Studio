@@ -19,6 +19,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Preserve committed bytes for source fingerprints
+        run: git config --global core.autocrlf false
+
       - name: Check out repository
         uses: actions/checkout@v4
 
