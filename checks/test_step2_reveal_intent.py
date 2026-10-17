@@ -129,7 +129,7 @@ def test_compose_retries_atomicity_failure_once_with_the_repaired_plan(monkeypat
     ])
     repair_calls: list[dict] = []
     monkeypatch.setattr(service, "project_or_404", lambda _db, _id: project)
-    monkeypatch.setattr(service, "read_project_article_source", lambda _project: {"title": "测试主题", "summary": ""})
+    monkeypatch.setattr(service, "read_project_article_source", lambda _project: {"title": "测试主题", "summary": "", "content": "先看三个阶段。它们在这一段说明中同时展示。"})
     monkeypatch.setattr(service, "read_project_pipeline_profile", lambda _project: {})
     monkeypatch.setattr(service, "write_project_log", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(service, "handle_step_navigation", lambda *_args, **_kwargs: None)
@@ -184,10 +184,12 @@ def test_visual_retry_names_missing_body_instead_of_missing_slide(monkeypatch, t
     monkeypatch.setattr(service, "step2_visual_prompt_uses_legacy_contract", lambda _prompt: False)
     monkeypatch.setattr(service, "run_step2_json_llm", lambda **kwargs: (prompts.append(kwargs["user_prompt"]), next(responses))[1])
     monkeypatch.setattr(service, "step2_visual_plan_path", lambda _project: str(tmp_path / "visual.json"))
+    monkeypatch.setattr(service, "read_project_article_source", lambda _project: {
+        "title": "测试主题", "content": "先看三个阶段。它们在这一段说明中同时展示。", "summary": ""})
     monkeypatch.setattr(service, "write_project_log", lambda *_args, **_kwargs: None)
 
     result = service._execute_step2_visual_plan(
-        SimpleNamespace(mask_enabled=1), SCRIPT_PLAN,
+        SimpleNamespace(mask_enabled=1, run_dir=str(tmp_path)), SCRIPT_PLAN,
     )
 
     assert result["success"] is True

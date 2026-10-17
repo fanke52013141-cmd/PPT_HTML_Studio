@@ -20,7 +20,7 @@
     }
   },
   "sources": {
-    "editor_ui/package.json": "9156cd9a3216afa7474c1c60e8cff2ec388b2c6053f56dd5d8afe11671df49f2",
+    "editor_ui/package.json": "2abe956196d36b003742449625fa100ef089e12140b7432c954d35146e5bc1f7",
     "editor_ui/package-lock.json": "47ee07dd5e910b7780d53591fef1226a4b218262e21263ba472bea72f7f4cf93",
     "editor_ui/build.mjs": "589480686bf936f0b5773f947bb3fc6a6988517982f4c4a9771c61b969df9dc0",
     "editor_ui/src/timeline.jsx": "a29cf0d9599addc59c2ebe82950d669d214631052acca43d1db5ad7fc58d0f55",

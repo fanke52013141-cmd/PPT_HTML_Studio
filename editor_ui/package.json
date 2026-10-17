@@ -5,7 +5,7 @@
   "description": "Local build-only editor adapters; no server or replacement player",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/build.test.mjs tests/commands.test.mjs"
   },
   "dependencies": {
     "moveable": "0.53.0",
