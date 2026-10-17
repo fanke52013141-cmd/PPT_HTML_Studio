@@ -56,13 +56,13 @@
     },
     {
       "id": "design-fidelity-review",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "stage": "design_fidelity_review",
       "input_contract": "design-review-input/0.3.0",
       "output_contract": "design-review-facts/0.1.0",
       "body": {
-        "path": "config/html_runtime_skills/design-fidelity-review-1.0.0.md",
-        "sha256": "cdacdc7ca46018d1d93eba0a3b0b3734e647a6f7e50fda5b7d0b07cc3e611dc6"
+        "path": "config/html_runtime_skills/design-fidelity-review-1.0.1.md",
+        "sha256": "80720b6410cded2435a01e4ed84dc9fea3576c34336fc95e63f83634207dee47"
       },
       "references": {
         "reference-policy": {

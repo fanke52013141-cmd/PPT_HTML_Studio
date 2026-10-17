@@ -50,3 +50,13 @@ CI环境先因Python3.11不兼容锁定NumPy而失败，改为3.13；随后暴�
 第一页候选key为3aeb952adf68928daae85812d0bc1c1f7b3465352c4cb3fb915beb7ac1b09bb1，图片SHA256为96de0f0265a5e21e6906acbc43ba5d4b55c669c9c30bf5d6f15f36f6174cdb71；实际文件哈希匹配，approval_status=not_recorded。已向用户展示此图并询问设计接受，尚未收到决定。批准后须携该key沿原produce入口继续还原；普通自动继续和旧单页批准均不等于新设计接受，也不等于后续HTML/声音/A04批准。任务与费用证据保存在outputs/real-course-acceptance/2026-10-18/prompt-033-design-task.json。
 
 源码88226fd已推送PR #2（草稿），最新核对CI 117523515123仍in_progress；日志临时HTTP502不改变任务状态，不代表测试失败或成功。后续以最新head实际检查为准。生产服务PID3904、127.0.0.1:8010在本次核验时存活，继续前核查单实例，不能仅凭历史PID启动第二份。
+
+## 接受设计后的真实还原与 CI 结果
+
+用户已明确接受候选3aeb952a用于继续还原。原produce入口携完整key启动html_aee5b4c3778e469a995b（快照f7547ed5748adf10f1480bf5dfedaa82e581c4b88c35169dd4e590124c44f773）。设计理解282.13秒通过，独立主体素材144.89秒返回，还原首轮496.37秒返回并通过容量/几何检查。随后独立审核328.34秒完整返回，但六处differences.requirement误写为dimension值structure，严格Schema拒绝，任务failed；没有保存正式场景、生成旁白或签发视觉批准。实际未保存截图和原响应位于该页design-reconstruction/cf5f67d3a9450d525740ef4e5837b3c6ac8d852db952461c864795ebf91dd95d/0/，不把用户接受设计等同此候选通过。
+
+已按optimize-prompts追踪实际出站Schema及消费者，新增运行审核片段1.0.1，显式列出既有九种requirement并禁止content/structure混用；注册路径/hash同步，新片段进入新源闭包，旧1.0.0保留。Schema、覆盖、原请求预算和人工门禁不变，不自动猜测修正六处分类。相关64项及Agent同步通过；新片段实际模型结果待验，不能重签旧冻结失败任务。
+
+曾误提前提交其余页面，核查发现设计候选绑定全局revision，第一页保存可能使其失效，已通过原cancel入口撤销：slide_002的html_71bbfc95a27947df8a2f有一次已发出的规划请求，20.9秒时因取消关闭流，供应商终态未知；不得宣称上游已取消或自动补发。slide_003的html_4ae13803bc624fbbbe4c、slide_004的html_6b8994b181a942f4a000在排队状态撤销，零模型调用；这些取消任务不复活。记录在outputs/real-course-acceptance/2026-10-18/，后续回逐页原服务推进。
+
+ffed5df的远端Windows CI已实际成功：检查117525006980、run39076626748，canonical full含2507 passed/8 skipped/2 warnings（1139.73秒）、16项Node及Remotion TypeScript。该结果覆盖1.0.1修改前版本，不能声称后续新head也已通过。PR #2已更新该实际证据并保持草稿；整课与正式发布仍partial。

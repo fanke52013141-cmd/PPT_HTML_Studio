@@ -64,9 +64,26 @@ def test_actual_model_schema_has_facts_only_and_no_parallel_coverage_or_status(t
     def generator(**kwargs):
         schema=json.loads(kwargs['schema_hint'])
         assert set(schema['properties'])=={'facts'}
+        requirements = schema['$defs']['Difference']['properties']['requirement']['enum']
+        assert 'structure' not in requirements and 'content' not in requirements
+        for value in requirements:
+            assert value in kwargs['system_prompt']
+        assert 'content和structure仅属于dimension，禁止作为requirement' in kwargs['system_prompt']
+        assert 'design-fidelity-review/1.0.1' in kwargs['system_prompt']
         assert all(k not in schema['$defs']['Difference']['properties'] for k in ('targetId','evidence','reference_alignment'))
         assert len(kwargs['image_paths'])==2
         return facts()
     result=review_fidelity(scene(),picture,picture,{},None,folder=tmp_path/'review',run_dir=tmp_path,
                            deps=HtmlReviewDependencies(ROOT,generator))
     assert len(result['result']['facts'])==4 and result['coverage_check']['status']=='complete'
+
+
+@pytest.mark.parametrize('alias', ['structure', 'content'])
+def test_dimension_names_cannot_be_guessed_into_requirements(alias):
+    raw=facts()
+    row=next(f for f in raw['facts'] if f['dimension']==alias)
+    row['differences']=[{'requirement':alias,'severity':'minor','suggestion':'Check actual mismatch'}]
+    before=copy.deepcopy(raw)
+    with pytest.raises(ValueError):
+        validate_fidelity(raw,scene(),alignment={'caption':{'align':'left'}},require_facts=True)
+    assert raw==before
