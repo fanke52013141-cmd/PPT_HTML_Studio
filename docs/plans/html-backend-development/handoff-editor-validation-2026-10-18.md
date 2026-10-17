@@ -28,3 +28,11 @@ canonical quick检查发现原仓库门禁失败：storyboard_service.py1368非�
 已将手工标题/旁白页面的纯组装移入既有storyboard_planning.compose_manual_skeleton_slides，请求服务继续持有权限、数据库、最终校验和失效。视频启动依赖装配归入video_runtime.configure_video_runtime，server显式注入同一配置/回调；不移动业务政策、不改路由或公开Schema，不提高行数阈值。storyboard_service和server架构门禁均通过。新增手工组装字段/空输入反例；分镜与正式输出相关31项、架构/装配/路由等9项通过。
 
 quick继续发现设置脱敏自检仅填充旧密钥清单，新增字段触发KeyError；夹具现在为完整SETTINGS_SECRET_KEYS填入测试值，仍要求每一项掩码。独立真实服务脱敏自检通过。最终quick日志为outputs/editor-quick-checks-final.txt，门禁最终状态以该日志为准。此前“架构失败”描述保留为发现历史，以本段后续证据更新。
+
+canonical quick最终通过。首次完整检查为2500 passed/6 failed/8 skipped：失败集中于历史验收夹具没有提供当前设计理解/重建响应、缺正文/run_dir、旧UI错误文案和旧runtime Skill清单。夹具按现合同补齐，正式校验与预算未放宽；相关39项复验通过。浏览器夹具服务器从无参数独立脚本发现中排除，仍由真实编辑器验收启动；新增发现器回归。视频测试证据改写忽略outputs，避免修改历史已跟踪媒体。
+
+CI环境先因Python3.11不兼容锁定NumPy而失败，改为3.13；随后暴露未安装引擎npm依赖。CI现为Windows完整渲染检查，安装三个锁定npm包、Chromium，显式核对Windows字体和FFmpeg。实际CI已通过这些前置，下一失败为Node20不展开测试通配符；editor_ui测试命令改显式文件名，本地16项通过并重建manifest。最新完整pytest输出为outputs/editor-pytest-final-v2.txt，未完成时不可声明全库通过。
+
+## 真实整课候选已启动
+
+未收到课程主题回复后，沿用已有《水为什么结冰》原文章，通过原项目/文章服务建立独立guided HTML验收项目ec60bbd4_010236，原单页不变。原课程任务html_c184f91c3fdc4ffeacb6实际调用已配置模型生成四页讲稿，随后进入画面规划。项目与任务ID写入outputs/real-course-acceptance/2026-10-18；继续前须检查原任务，不因等待或观察超时自动重发。新设计和最终作品仍需明确批准，当前不声明真实整课已完成。此段替代先前“没有整课输入”的阻塞描述。
