@@ -36,3 +36,9 @@ CI环境先因Python3.11不兼容锁定NumPy而失败，改为3.13；随后暴�
 ## 真实整课候选已启动
 
 未收到课程主题回复后，沿用已有《水为什么结冰》原文章，通过原项目/文章服务建立独立guided HTML验收项目ec60bbd4_010236，原单页不变。原课程任务html_c184f91c3fdc4ffeacb6实际调用已配置模型生成四页讲稿，随后进入画面规划。项目与任务ID写入outputs/real-course-acceptance/2026-10-18；继续前须检查原任务，不因等待或观察超时自动重发。新设计和最终作品仍需明确批准，当前不声明真实整课已完成。此段替代先前“没有整课输入”的阻塞描述。
+
+## 最新核验
+
+本地完整pytest最终为2506 passed、8 skipped、2 warnings（716.84秒），输出editor-pytest-final-v2.txt。远端b6dcbce完整检查为2505 passed、1 failed、8 skipped：PPTX任务构造测试启动真实后台工作线程，读取时状态已由queued变成running。测试现在隔离submit并核对唯一提交的任务ID，仍严格校验queued、账号权限和输入指纹；不改生产状态机。
+
+真实整课的四页讲稿和画面规划已由原服务生成，但第一页语义计划两轮均被原校验拒绝，最终为SEMANTIC_ANNOTATION_TARGET（前轮为SEMANTIC_ANNOTATION_ANCHOR）。父任务html_c184f91c3fdc4ffeacb6与子任务html_996b82a3b8654636880c均failed；没有设计图、旁白或整课视频可供签收，未绕过门禁或再次发起付费尝试。中途观察脚本退出造成的本地子任务回执关联已据唯一子任务及一致快照窄修复，审计见outputs/real-course-acceptance/2026-10-18/local-child-link-recovery.json；修复后通过原HTTP入口续行，未重复第一轮请求。继续优化应先检查annotation目标/焦点约束在规划提示中的覆盖，不能把两个失败响应作为批准内容。
