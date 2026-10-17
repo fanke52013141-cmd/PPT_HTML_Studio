@@ -22,3 +22,9 @@ canonical quick检查发现原仓库门禁失败：storyboard_service.py1368非�
 归档上游许可证及esbuild生成LEGAL/NOTICES保留原字节（含CRLF/尾空白），不为git whitespace检查改写许可证据或失配构建hash；手写代码的排除式diff检查单独执行。
 
 **整体目标仍partial**：本机没有已生成多页HTML真实课程，已向用户请求课程主题/项目；不能把合成静音/信号或单页重复当作真实整课。真实0.7语义课程的A04模型/人工签收亦独立待验。分支发布不等于main合并或部署；整课输入和全库门禁未完成前不宣称五项全部完成。
+
+## 发布门禁后续修复（2026-10-18）
+
+已将手工标题/旁白页面的纯组装移入既有storyboard_planning.compose_manual_skeleton_slides，请求服务继续持有权限、数据库、最终校验和失效。视频启动依赖装配归入video_runtime.configure_video_runtime，server显式注入同一配置/回调；不移动业务政策、不改路由或公开Schema，不提高行数阈值。storyboard_service和server架构门禁均通过。新增手工组装字段/空输入反例；分镜与正式输出相关31项、架构/装配/路由等9项通过。
+
+quick继续发现设置脱敏自检仅填充旧密钥清单，新增字段触发KeyError；夹具现在为完整SETTINGS_SECRET_KEYS填入测试值，仍要求每一项掩码。独立真实服务脱敏自检通过。最终quick日志为outputs/editor-quick-checks-final.txt，门禁最终状态以该日志为准。此前“架构失败”描述保留为发现历史，以本段后续证据更新。

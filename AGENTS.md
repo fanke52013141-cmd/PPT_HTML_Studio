@@ -154,6 +154,8 @@ visual mapping validation, minimal AI user-input serialization, and Visual
 Contract composition. `storyboard_service.py` re-exports those functions for
 compatibility but must keep request orchestration, persistence, and finalization
 separate from the pure planning layer.
+
+`compose_manual_skeleton_slides` in that pure planning owner constructs manual title/narration pages; the request service retains persistence and authorization. `video_runtime.py` owns explicit video startup wiring with supplied dependencies and must not import server or add business policy.
 `storyboard_profiles.py` owns pipeline-profile sanitization, YAML validation,
 editor patches, project profile loading, and built-in storyboard rules. Profile
 logic must not return to the request-oriented service module.
