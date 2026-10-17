@@ -92,6 +92,30 @@ def test_planning_repairs_bad_annotation_before_design_image(tmp_path):
     assert record["attempts"][0]["diagnostic_code"] == "SEMANTIC_ANNOTATION_TARGET"
 
 
+def test_annotation_identity_rules_reach_both_provider_rounds(tmp_path):
+    bad, good = semantic_plan(), semantic_plan()
+    bad["slots"]["annotation"]["targetId"] = "anchor-label"
+    requests = []
+
+    def provider(**request):
+        requests.append(request)
+        return bad if len(requests) == 1 else good
+
+    generate_scene_plan(CONTRACT_SLIDE, run_dir=tmp_path, repo_root=ROOT,
+                        json_generator=provider, plan_version="0.2.0")
+    assert len(requests) == 2
+    for request in requests:
+        prompt = request["system_prompt"]
+        assert "html-semantic-plan/0.3.3" in prompt
+        assert "targetId 引用图片对象ID、图片槽位ID或该图片的素材ID" in prompt
+        assert "annotation.anchorId 必须等于所指图片槽位的 anchorId" in prompt
+        assert "labelId 单独引用 kind=text" in prompt
+        assert request["reasoning_effort_override"] == "low"
+    retry = json.loads(requests[1]["user_prompt"])
+    assert retry["invalid_plan"] == bad
+    assert retry["diagnostic"]["code"] == "SEMANTIC_ANNOTATION_TARGET"
+
+
 def test_image_internal_state_change_is_not_assumed_possible():
     plan = normalize(semantic_plan())
     for i, expression in enumerate(("完整未分词文本", "分离后的Token块")):
