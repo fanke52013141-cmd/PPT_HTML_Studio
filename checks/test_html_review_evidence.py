@@ -97,7 +97,7 @@ def test_local_comparison_experiment_is_not_default_production_policy(tmp_path):
     def generator(**kwargs):
         payload=json.loads(kwargs['user_prompt'])
         assert len(kwargs['image_paths'])==2 and 'local_comparisons' not in payload
-        assert 'design-fidelity-review/1.0.0' in kwargs['system_prompt']
+        assert 'design-fidelity-review/1.0.2' in kwargs['system_prompt']
         return with_coverage(payload,{'status':'pass','issues':[]})
     result=review_fidelity(scene,ref,shot,report,None,folder=tmp_path/'review',run_dir=tmp_path,
                           deps=HtmlReviewDependencies(ROOT,generator))
