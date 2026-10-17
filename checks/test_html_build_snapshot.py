@@ -182,3 +182,39 @@ def test_pass_without_evidence_is_not_valid(page):
     snap = snapshots.create_render_snapshot(run, scene["id"])
     report = build_quality_report(snap["path"], {"passed": True}, evidence_files=[], checker_identity={})
     assert validate_quality_report(report, snap["path"], evidence_dir=Path(snap["path"]))["reason"] == "evidence_missing"
+
+
+def test_product_editor_sources_pin_independent_canvas_and_timeline_bundles(page):
+    run, scene = page
+    result = snapshots.create_render_snapshot(run, scene["id"])
+    files = {entry["path"] for entry in snapshots.verify_snapshot(result["path"])["files"]}
+    assert "tooling/static/html_scene_editor.js" in files
+    assert "tooling/static/editor_ui/canvas.js" in files
+    assert "tooling/static/editor_ui/editor.js" not in files
+    assert "tooling/editor_ui/src/timeline.jsx" in files
+    assert "tooling/static/editor_ui/timeline.js" in files
+    assert "tooling/static/html_editor_timeline_bridge.js" in files
+
+
+def test_editor_build_rejects_changed_bundle_and_unrelated_paths(tmp_path):
+    manifest = json.loads((ROOT/"static/editor_ui/canvas-manifest.json").read_text(encoding="utf-8"))
+    target = tmp_path/"static/editor_ui/canvas-manifest.json"
+    target.parent.mkdir(parents=True)
+    for relative in set(manifest["files"]) | set(manifest["sources"]):
+        dest = tmp_path/relative
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes((ROOT/relative).read_bytes())
+    target.write_text(json.dumps(manifest), encoding="utf-8")
+    bundle = tmp_path/"static/editor_ui/canvas.js"
+    bundle.write_bytes(bundle.read_bytes() + b"\n// changed")
+    with pytest.raises(snapshots.SnapshotError, match="EDITOR_BUILD_SOURCE_CHANGED"):
+        snapshots._capture_editor_sources(tmp_path, snapshots._Capture())
+    manifest["sources"] = {"editor_ui/.env": "0" * 64}
+    target.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(snapshots.SnapshotError, match="EDITOR_BUILD_SOURCE_PATH_INVALID"):
+        snapshots._capture_editor_sources(tmp_path, snapshots._Capture())
+    manifest = json.loads((ROOT/"static/editor_ui/canvas-manifest.json").read_text(encoding="utf-8"))
+    manifest["files"].pop("static/editor_ui/canvas.js")
+    target.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(snapshots.SnapshotError, match="EDITOR_BUILD_MANIFEST_INCOMPLETE"):
+        snapshots._capture_editor_sources(tmp_path, snapshots._Capture())

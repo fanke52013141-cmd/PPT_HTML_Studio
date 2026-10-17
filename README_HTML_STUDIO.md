@@ -1,5 +1,17 @@
 # HTML Studio
 
+当前交接：[编辑器与视频优化验收](docs/plans/html-backend-development/handoff-editor-validation-2026-10-18.md)，契约0.9.85/API1.44。真实单页视频及模型/设备验证通过；真实整课与全库门禁pending。
+
+2026-10-17 当前本地入口：[单页视频输出验证](docs/plans/html-backend-development/handoff-single-page-video-2026-10-17.md)。工程对应帧及编辑后批准/重建检查通过；真实页面待视觉批准，未发布。
+
+2026-10-17 最新本地增量：[真实旁白与音频新鲜度](docs/plans/html-backend-development/handoff-editor-audio-freshness-2026-10-17.md)。真实MP3隔离副本编辑/跳转/重开通过；增加音频指纹过期409、保留草稿刷新配音/时序。契约0.9.83、Agent API1.43；未提交或发布。
+
+2026-10-17 最新本地优化：[P3人工字段保护与保存边界](docs/plans/html-backend-development/handoff-editor-protection-p3-2026-10-17.md)。AI候选/最终保存共用叶字段保护，允许未保护兄弟字段，拒绝间接资源覆盖并定位冲突；契约0.9.82，未提交或发布。
+
+2026-10-17 最新本地开发：[P2动作时间轴交接](docs/plans/html-backend-development/handoff-editor-timeline-p2-2026-10-17.md)。正式编辑器接入已有动作偏移/拉伸、只读讲稿与同一音频时钟；合成音频浏览器通过，真实旁白/输出待验。契约0.9.81，尚未提交或发布。
+
+2026-10-17 本地开发：正式编辑器已接入 P1 布局编辑，支持移动、缩放、多选移动、撤销及原服务保存；工程与隔离浏览器通过范围、未验收项见[最新开发交接](docs/plans/html-backend-development/handoff-editor-layout-p1-2026-10-17.md)。契约0.9.80；尚未提交、推送或部署。
+
 最新换机入口：[开源编辑与Agent优化handoff](docs/plans/html-backend-development/handoff-open-source-editor-2026-10-17.md)及[本批发布备注](docs/releases/2026-10-17-edge-reports-editor-handoff.md)。契约0.9.78；98项本批隔离测试通过，开源画布/时间轴尚未集成。以下历史状态不替代最新交接。
 
 2026-10-17当前开发/换机入口：[流程优化与文字边缘核验发布](docs/releases/2026-10-17-review-and-handoff.md)及[跨机开发交接](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)。当前远端`main`已包含应用源码与guided HTML后端；原图片工作流继续保留。下方10月14日及更早记录属于历史快照，不代表当前代码、分支或验收状态。

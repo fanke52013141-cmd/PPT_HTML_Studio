@@ -815,7 +815,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
     checkSubtitles(32);
     let time = 0,
       subtitleSize = 32;
-    function renderAt(ms, reduced = false) {
+    function renderAt(ms, reduced = false, editorLayout = false) {
       if (!Number.isFinite(ms) || ms < 0 || ms > scene.durationMs)
         fail("INVALID_TIME", "timeMs", String(ms));
       time = ms;
@@ -843,14 +843,16 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           }
         }
         const state = {
-          opacity,
-          x: reduced ? 0 : (enter?.offsetX || 0) * (1 - p),
-          y: reduced ? 0 : (enter?.offsetY || 0) * (1 - p) + lift,
-          lift,
+          opacity: editorLayout ? 1 : opacity,
+          x: reduced || editorLayout ? 0 : (enter?.offsetX || 0) * (1 - p),
+          y: editorLayout ? 0 : (reduced ? 0 : (enter?.offsetY || 0) * (1 - p)) + lift,
+          lift: editorLayout ? 0 : lift,
         };
         states.set(node.id, state);
         const el = elements.get(node.id);
-        el.style.opacity = String(opacity);
+        if (editorLayout && opacity === 0) el.setAttribute('data-editor-hidden', 'true');
+        else el.removeAttribute('data-editor-hidden');
+        el.style.opacity = String(state.opacity);
         el.style.transform = `translate3d(${state.x}px,${state.y}px,0)`;
         if (node.type === "image") {
           const asset = assetById.get(node.assetRef.id),
@@ -893,7 +895,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         const annotationEnter = (motionsByTarget.get(node.id) || []).find(
           (a) => a.type === "enter",
         );
-        const progress = annotationEnter ? ease(
+        const progress = annotationEnter && !editorLayout ? ease(
           "smoothstep",
           (ms - annotationEnter.startMs) / annotationEnter.durationMs,
         ) : 1;
@@ -915,21 +917,9 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
       for (const node of scene.nodes) {
         const b = layout.slots[node.slot].box;
         const s = states.get(node.id);
-        if (geometry[node.id]) {
-          if (geometry[node.id].box === undefined) {
-            geometry[node.id] = {
-              ...geometry[node.id],
-              box: {
-                x: b.x + s.x,
-                y: b.y + s.y,
-                width: b.width,
-                height: b.height,
-              },
-            };
-          }
-          continue;
-        }
+        if (node.type === 'image') continue;
         geometry[node.id] = {
+          ...(node.type === 'annotation' ? geometry[node.id] : {}),
           kind: node.type,
           box: { x: b.x + s.x, y: b.y + s.y, width: b.width, height: b.height },
         };
@@ -939,7 +929,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           b.startMs <= ms &&
           (ms < b.endMs || (ms === scene.durationMs && b.endMs === ms)),
       );
-      subtitleText.textContent = beat?.text || "";
+      subtitleText.textContent = editorLayout ? "" : beat?.text || "";
       return { timeMs: ms, geometry, measurements, capacityIssues, subtitleFont: subtitleSize };
     }
     const observer = new ResizeObserver(resize);

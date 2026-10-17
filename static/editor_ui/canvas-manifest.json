@@ -1,0 +1,40 @@
+{
+  "format": "hps.editor_canvas.build",
+  "version": "0.1.0",
+  "files": {
+    "static/editor_ui/canvas.js": {
+      "bytes": 280724,
+      "sha256": "ab6ba090a8ef0e33b015dd17fe12e0995b92bd069a7db9a098f07593b5174b61"
+    },
+    "static/editor_ui/canvas.js.LEGAL.txt": {
+      "bytes": 2861,
+      "sha256": "39ec620ee6916b57705d422dcb3928d5f425ba426e60af2223a2e4339a244117"
+    },
+    "static/editor_ui/CANVAS_THIRD_PARTY_NOTICES.txt": {
+      "bytes": 38125,
+      "sha256": "5ac742f6693d5cf48883fa1d4dcf8cd3d414ed6d59f09e85f3c46e5787e2a612"
+    }
+  },
+  "sources": {
+    "editor_ui/package.json": "9156cd9a3216afa7474c1c60e8cff2ec388b2c6053f56dd5d8afe11671df49f2",
+    "editor_ui/package-lock.json": "47ee07dd5e910b7780d53591fef1226a4b218262e21263ba472bea72f7f4cf93",
+    "editor_ui/build.mjs": "589480686bf936f0b5773f947bb3fc6a6988517982f4c4a9771c61b969df9dc0",
+    "editor_ui/src/commands.mjs": "082b38f62a6036280ac94fbc8701513b45d3aa7490c13cf86c93b8d69e9fe248",
+    "editor_ui/src/canvas.js": "45cf76b337a6acd0fc1bec0953dfe3078481768f58b205421bf00bd25ce39d22",
+    "editor_ui/src/canvas-entry.js": "47a9251eabec4eb866ea8eb20444686b9db0c6aab6e46b342885d0eac3b38f33",
+    "editor_ui/licenses/cfcs--core.LICENSE": "03a23caffda8e43fdefcdce73b05ac9a75fcfb63776a7408bf5c8202ff3c8e2a",
+    "editor_ui/licenses/cfcs.NOTICE": "da87bce8a43e4e518f169b1c08521a770801e2efc73c23086c3c710c399127ff",
+    "editor_ui/licenses/croact-css-styled.LICENSE": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e",
+    "editor_ui/licenses/croact.LICENSE": "340a74a957c585d626b1717c9d27ccde64116622a5b8b9726b896e7671d26b2e",
+    "editor_ui/licenses/css-styled.LICENSE": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e",
+    "editor_ui/licenses/egjs--component.LICENSE": "fd3cd1d05b9e05d8310eeeaba997140b2fdd21f237ff3afe1d94bfa64b3b96ed",
+    "editor_ui/licenses/keycon.LICENSE": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e",
+    "editor_ui/licenses/records.json": "33eee8e7636ee17447fe292e9745ae75409981af6a08cf690ee90e020cd6051a",
+    "editor_ui/licenses/xzdarcy--react-timeline-editor.LICENSE": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe",
+    "editor_ui/licenses/xzdarcy--timeline-engine.LICENSE": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe",
+    "static/html_editor_canvas.js": "f45a39e87b0e4889dc899a11927b8ee314d79c93e5cf6fbd671170cc2877f9d0",
+    "static/html_scene_editor.js": "84c1e562a68c355672c6d285511bae0d9be8504839e4e9e50fd9e9d5f743edcb",
+    "static/html_scene_edit.css": "40ea37147f95fb6f902ccc6307ddf6780f4dea964d6798f13f7e88d6746cb1d5",
+    "static/index.html": "51c9f454f4423157c27b8b73ab62e8ea440d0d4ccb2eff7e8eb89c406dc99fa3"
+  }
+}

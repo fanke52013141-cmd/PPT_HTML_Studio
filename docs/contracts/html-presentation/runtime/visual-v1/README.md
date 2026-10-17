@@ -1,5 +1,17 @@
 # V1 共享视觉定义：阶段一实施卡
 
+视频合成与AAC对齐按[video-audio-alignment-0.1.0](video-audio-alignment-0.1.0.md)，契约0.9.85；单/多页音轨起点、页序和对应帧分别留证。
+
+局部修复提供scope相关人工保护路径，按[editor-repair-context-0.1.0](editor-repair-context-0.1.0.md)，契约0.9.84、Agent API1.44；模型效果与服务边界分别验证。
+
+编辑器音频指纹、过期阻断与保留草稿刷新按[editor-audio-freshness-0.1.0](editor-audio-freshness-0.1.0.md)。
+
+人工字段与AI保存边界按[editor-protection-0.1.0](editor-protection-0.1.0.md)，候选及最终保存共用稳定叶字段保护。
+
+正式动作时间轴按[editor-timeline-0.1.0](editor-timeline-0.1.0.md)，真实配音/输出与合成音频工程验收分别记录。
+
+开源编辑组件隔离适配按 [editor-adapters-p0-0.1.0](editor-adapters-p0-0.1.0.md)；正式布局编辑按[editor-layout-0.1.0](editor-layout-0.1.0.md)，工程/隔离浏览器范围见最新P1交接；P1完整签收及P2—P5另验。
+
 场景规划失败分类、必填槽约束和同案例复验见 [场景规划失败证据 0.1.0](scene-planning-evidence-0.1.0.md)。
 
 生产执行指标与返工停点见 [执行证据 0.1.0](execution-evidence-0.1.0.md)，不改变本卡的作者格式或视觉批准状态。

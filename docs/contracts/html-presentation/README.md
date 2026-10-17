@@ -1,5 +1,19 @@
 # HTML 演示体系契约
 
+0.9.85（2026-10-17）：[视频音轨对齐](runtime/visual-v1/video-audio-alignment-0.1.0.md)修复AAC priming在concat阶段形成前导静音；单页保留分段，多页独立解码后按页拼接。合成源码进入HTML视频指纹，不影响声音/视觉批准及PPTX，无公开Schema变更。
+
+0.9.84（2026-10-17）：[局部修复保护上下文](runtime/visual-v1/editor-repair-context-0.1.0.md)提供scope相关叶字段/祖先保护路径，原服务守卫保持；真实模型固定案例及设备压力证据分别记录。Agent API1.44、repair.generate1.3，无新公开字段。
+
+0.9.83（2026-10-17）：[编辑器音频新鲜度](runtime/visual-v1/editor-audio-freshness-0.1.0.md)复用产物指纹，preview/save可选音频乐观锁、过期409；播放核对加载媒体，显式刷新保留草稿/原句偏移。Agent API1.43同步；真实旁白副本与合成时序变更分开留证。
+
+0.9.82（2026-10-17）：[人工保护保存边界](runtime/visual-v1/editor-protection-0.1.0.md)统一候选及最终AI保存检查，按稳定叶字段保护、保留旧父级保护、锚点转换后复核、冲突路径定位；非法origin在no-op之前拒绝。无新公开请求字段；Agent API1.42、repair.preview/save1.4。
+
+0.9.81（2026-10-17）：[正式动作时间轴](runtime/visual-v1/editor-timeline-0.1.0.md)复用原preview/save及音频binder；只读timing、作者/有效时长、单时钟、越句阻断和独立bundle快照闭包，Agent API1.41。工程与合成音频浏览器通过，真实配音/课程/输出另验。
+
+0.9.80（2026-10-17）：[正式布局编辑](runtime/visual-v1/editor-layout-0.1.0.md)接入生产编辑器代码：辅助层、作者坐标、群组原子事务、原preview/save校验与独立layout求值；preview可选revision冲突409，Agent同步。canvas来源及许可证进入tooling快照闭包。验收范围与待办见[本地交接](../../plans/html-backend-development/handoff-editor-layout-p1-2026-10-17.md)，未发布。
+
+0.9.79（2026-10-17）：[开源编辑适配 P0](runtime/visual-v1/editor-adapters-p0-0.1.0.md)定义局部构建包、iframe 作者坐标、已有动作相对偏移及单时钟边界。隔离适配与正式编辑器接入分别验收；纠正四个 runtime Skill 登记哈希以匹配 Git 中 LF 字节，Prompt 内容和版本不变。
+
 0.9.78（2026-10-17）：[可选人工校准工具](runtime/visual-v1/text-edge-human-benchmark-0.1.0.md)分开盲审真值、弃权与计时，缺标注时指标null；不作为生产或自动修正开发门禁。用户要求后续优先系统Agent自动闭环。
 
 0.9.77（2026-10-17）：[文字边缘证据审阅页](runtime/visual-v1/text-edge-review-report-0.1.0.md)为独立定位自动生成只读离线HTML，展示原图、原框、跨界墨迹及不确定原因；不修改区域或批准状态。

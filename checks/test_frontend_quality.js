@@ -1365,6 +1365,16 @@ for (const token of ['design_candidate_key', 'design_instruction', 'accept-desig
   if (!htmlReviewPanel.includes(token)) throw new Error(`HTML design checkpoint missing: ${token}`);
 }
 const sceneEditor = fs.readFileSync(path.join(root,'static/html_scene_editor.js'),'utf8');
+const editorCanvas = fs.readFileSync(path.join(root,'static/html_editor_canvas.js'),'utf8');
+const editorTimeline = fs.readFileSync(path.join(root,'static/html_editor_timeline_bridge.js'),'utf8');
+if (!html.includes('src="html_editor_timeline_bridge.js?') || html.indexOf('src="html_editor_timeline_bridge.js?') > html.indexOf('src="html_scene_editor.js?')) throw Error('Timeline bridge must load before editor');
+if (/\bfetch\s*\(/.test(editorTimeline) || editorTimeline.includes('MutationObserver')) throw Error('Timeline bridge must use API and explicit lifecycle');
+for (const token of ['audio.currentTime', 'widget.destroy()', 'cancelAnimationFrame', 'timelineEdit', 'audio-status']) if (!editorTimeline.includes(token)) throw Error(`Timeline lifecycle/clock missing: ${token}`);
+if (!html.includes('src="html_editor_canvas.js?') || html.indexOf('src="html_editor_canvas.js?') > html.indexOf('src="html_scene_editor.js?')) throw Error('Canvas lifecycle bridge must load before scene editor');
+if (!sceneEditor.includes('/static/editor_ui/canvas.js') || sceneEditor.includes('/static/editor_ui/editor.js')) throw Error('Product editor must load canvas-only bundle in its iframe');
+if (!editorCanvas.includes('HtmlEditorCanvas.mountCanvas') || !editorCanvas.includes('canvas?.destroy()')) throw Error('Canvas bridge must own library creation and cleanup');
+if (/\bfetch\s*\(/.test(editorCanvas) || editorCanvas.includes('MutationObserver')) throw Error('Canvas bridge must use explicit lifecycle and editor service callbacks');
+if (app.includes('HtmlEditorCanvas') || app.includes('Moveable') || app.includes('Selecto')) throw Error('Canvas editing must stay out of shared workflow state');
 const modelBinding = fs.readFileSync(path.join(root,'static/project_model_binding.js'),'utf8');
 for (const script of ['html_scene_editor.js', 'project_model_binding.js', 'html_asset_sheets.js', 'html_review_panel.js']) {
   if (!html.includes(`src="${script}?`)) throw new Error(`HTML module must use the application static route: ${script}`);

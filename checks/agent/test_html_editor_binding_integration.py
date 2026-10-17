@@ -26,6 +26,21 @@ NEW_IDS = ("project_model_binding.read", "project_model_binding.write", "html_ed
            "html_editor.write", "html_editor.preview")
 
 
+def test_web_and_agent_reject_changed_audio_with_409(api):
+    client, ids, run, scene = api
+    web = f"/api/projects/{ids['html']}/html-visual/condensation/editor"
+    token = client.get(web).json()["audio_revision"]
+    audio = run / "slides/condensation/voice.mp3"; audio.parent.mkdir(parents=True, exist_ok=True)
+    audio.write_bytes(b"replacement")
+    payload = {"scene": scene, "binding": None, "expected_revision": 1, "expected_audio_revision": token}
+    for base in [web, f"/api/agent/v1/projects/{ids['html']}/html-visual/condensation/editor"]:
+        for method, suffix in [("POST", "/preview"), ("PUT", "")]:
+            response = client.request(method, base + suffix, json=payload)
+            assert response.status_code == 409, response.text
+            assert "AUDIO_REVISION_CONFLICT" in response.text
+    assert client.get(web).json()["revision"] == 1
+
+
 @pytest.fixture
 def api(tmp_path, monkeypatch):
     import project_model_binding_routes as model_routes
@@ -164,6 +179,21 @@ def test_scene_edit_get_preview_write_reopen_and_conflict(api):
     assert client.put(url,json=invalid).status_code==422
     assert client.get(url.replace(ids['html'],ids['foreign'])).status_code==404
     assert client.post(url.replace(ids['html'],ids['image'])+'/preview',json=data).status_code==400
+
+
+def test_stale_editor_preview_rejected_by_both_transports_without_writes(api):
+    client, ids, run, scene = api
+    agent_url = f"/api/agent/v1/projects/{ids['html']}/html-visual/condensation/editor"
+    web_url = f"/api/projects/{ids['html']}/html-visual/condensation/editor"
+    scene['nodes'][0]['title'] = '并发版本'
+    payload = {'scene': scene, 'binding': None, 'expected_revision': 1, 'anchor_overrides': {}}
+    assert client.put(agent_url, json=payload).status_code == 200
+    before = {p.name: p.read_bytes() for p in (run/'planning/html_visual').glob('*.json')}
+    for url in (agent_url, web_url):
+        response = client.post(url + '/preview', json=payload)
+        assert response.status_code == 409, response.text
+        assert 'REVISION_CONFLICT' in response.text
+    assert before == {p.name: p.read_bytes() for p in (run/'planning/html_visual').glob('*.json')}
 
 
 @pytest.mark.parametrize('cap_id',NEW_IDS)
