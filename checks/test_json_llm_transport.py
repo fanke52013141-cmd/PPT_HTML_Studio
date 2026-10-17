@@ -4,7 +4,7 @@ from types import SimpleNamespace as NS
 
 import pytest
 
-from json_llm_transport import receive_completion
+from json_llm_transport import receive_completion, failure_reason
 import json_llm_service as service
 
 
@@ -63,6 +63,8 @@ def test_partial_stream_never_enters_json_repair(tmp_path, monkeypatch, finish):
         service.generate_json_with_configured_llm(system_prompt="s", user_prompt="u",
             run_dir=str(tmp_path), artifact_prefix="partial", schema_hint="{}", stream_output=True)
     assert len(calls) == 1 and stream.closed
+    evidence = json.loads((tmp_path / "logs/partial-stream-1.json").read_text())
+    assert evidence["failure_reason"] == ("output_limit" if finish == "length" else "incomplete_response")
 
 
 def test_stream_wall_budget_and_error_metadata(tmp_path, monkeypatch):
@@ -153,3 +155,21 @@ def test_provider_error_classification_does_not_treat_all_timeouts_as_read_timeo
     import httpx
     assert failure_reason(httpx.ConnectTimeout("private")) == "transport_error"
     assert failure_reason(ValueError("JSON_STREAM_INCOMPLETE")) == "incomplete_response"
+    assert failure_reason(ValueError("JSON_STREAM_OUTPUT_LIMIT")) == "output_limit"
+
+
+def test_output_limit_reports_only_safe_usage_and_final_reason(tmp_path):
+    events = []
+    usage = NS(model_dump=lambda: {"prompt_tokens": 4516, "completion_tokens": 64000,
+        "total_tokens": 68516, "completion_tokens_details": {"reasoning_tokens": 62196,
+        "provider_private_field": "secret"}, "provider_private_field": "secret"})
+    terminal = NS(choices=[NS(index=0, delta=NS(content="", reasoning_content=""),
+                              finish_reason="length")], usage=usage)
+    client, _ = client_for([chunk('{"partial":'), terminal], [])
+    with pytest.raises(ValueError, match="JSON_STREAM_OUTPUT_LIMIT"):
+        receive_completion(client, {}, streaming=True, evidence_path=tmp_path / "stream.json",
+                           progress=events.append)
+    final = events[-1]
+    assert final["failure_reason"] == "output_limit" and final["finish_reason"] == "length"
+    assert final["usage"]["completion_tokens_details"]["reasoning_tokens"] == 62196
+    assert "secret" not in str(final) + (tmp_path / "stream.json").read_text()

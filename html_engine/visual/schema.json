@@ -1743,6 +1743,8 @@
             "text-card-soft",
             "header-badge",
             "summary-panel",
+            "summary-arrow-overlay",
+            "text-card-stacked",
             "text-card-label",
             "summary-relationship-panel",
             "summary-relationship-compact",

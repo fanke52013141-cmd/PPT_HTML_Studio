@@ -12,6 +12,11 @@ from html_production_service import produce_scene
 from html_visual_store import load_scene_with_revision
 import html_task_store as store
 
+# Historical candidate identity from before the explicit unknown-result
+# experiment path. The source bytes are pinned by Git; this hash is used only
+# when the complete candidate definition digest also matches.
+LEGACY_DESIGN_CANDIDATES_SHA256 = "05ee4141c548bf5839da44ba16fa7b1a683bf4653d4042cfba2d533ceaf9fc1f"
+
 
 class HtmlWorkflowJobs:
     def __init__(self, session_factory, deps, provider=None, executor=None, freeze_models=None):
@@ -49,6 +54,9 @@ class HtmlWorkflowJobs:
         options = HtmlProduceRequest.model_validate(options or {}).model_dump()
         frozen = self.freeze_models(project) if self.freeze_models is not None else None
         model_summary = frozen.summary() if frozen is not None else {"source": "injected"}
+        definition_override = None
+        if options.get("prior_unknown_task_id"):
+            definition_override = self._verify_prior_unknown(db, project, contract, options, model_summary)
         # Reconcile before building a new revision-dependent submission key.
         # Otherwise an already-saved page would be generated again as a new job.
         recovered = self.reconcile_project(db, project, contract, options, model_summary)
@@ -96,6 +104,7 @@ class HtmlWorkflowJobs:
                     "snapshot_id": snapshot["snapshot_id"],
                     "source_revision": _read_revision(project.run_dir)["revision"],
                     "contract_sha256": sha256_json(contract),
+                    "definition_hash_override": definition_override,
                 },
             )
             if not task["reused"] or task.get("retried"):
@@ -111,6 +120,70 @@ class HtmlWorkflowJobs:
                     options,
                 )
         return task
+
+    def _verify_prior_unknown(self, db, project, contract, options, model_summary):
+        """Allow a separately keyed experiment only after checking local evidence.
+
+        This never resolves the provider outcome or changes the original job.
+        """
+        import json
+        from database import LocalJob
+        from html_build_snapshot import safe_file, verify_snapshot
+        from html_production_recovery import reconcile_responses, receipt_path
+        from html_visual_store import _read_revision
+        from artifact_fingerprint import sha256_file, sha256_json
+        from html_design_candidates import definition_identity, candidate_directory
+
+        job = db.query(LocalJob).filter(
+            LocalJob.id == options["prior_unknown_task_id"],
+            LocalJob.project_id == project.id,
+            LocalJob.job_type == "html_plan_generate",
+        ).first()
+        if job is None or job.status not in {"failed", "interrupted"}:
+            raise store.HtmlTaskError("PRIOR_UNKNOWN_TASK_INVALID：原任务不存在或不在失败状态", 409)
+        payload = job.get_payload()
+        snapshot_id = payload.get("input", {}).get("snapshot_id")
+        if not snapshot_id:
+            raise store.HtmlTaskError("PRIOR_UNKNOWN_TASK_INVALID：原任务缺少输入快照", 409)
+        folder = safe_file(project.run_dir, "planning/html_visual/builds/" + snapshot_id)
+        manifest = verify_snapshot(folder)
+        original_options = {k: v for k, v in json.loads((folder / "input/options.json").read_text(encoding="utf-8")).items()
+                            if k != "prior_unknown_task_id"}
+        repeated_options = {k: v for k, v in options.items() if k != "prior_unknown_task_id"}
+        if (manifest["kind"] != "generation"
+                or json.loads((folder / "input/contract.json").read_text(encoding="utf-8")) != contract
+                or original_options != repeated_options
+                or payload.get("input", {}).get("model_summary") != model_summary
+                or manifest["source_revision"] != _read_revision(project.run_dir)["revision"]):
+            raise store.HtmlTaskError("PRIOR_UNKNOWN_TASK_MISMATCH：新实验必须使用原讲稿、设计和模型绑定", 409)
+        # A returned response receipt takes precedence over a new paid call.
+        reconcile_responses(db, job.id, project.run_dir)
+        records = store._job(db, job.id).get_payload().get("production_stages", {})
+        pending = [r for r in records.values() if r.get("state") in {"intent", "unknown"}]
+        if (len(pending) != 1 or pending[0].get("kind") != "json"
+                or pending[0].get("lookup_supported") is not False
+                or receipt_path(project.run_dir, job.id, f"author-{payload.get('attempt', 1)}").exists()):
+            raise store.HtmlTaskError("PRIOR_UNKNOWN_TASK_UNVERIFIED：先核实原任务产物或供应商回执", 409)
+        override = {name: sha256_file(folder / "source" / name) for name in (
+            "html_design_agent.py", "html_production_service.py")}
+        candidate_key = options["design_candidate_key"]
+        candidate_file = candidate_directory(project.run_dir, contract["slide_id"], candidate_key) / "candidate.json"
+        candidate = json.loads(candidate_file.read_text(encoding="utf-8"))
+        if (sha256_json(candidate) != candidate_key
+                or sha256_file(candidate_file.parent / "design-reference.png") != candidate.get("image_sha256")):
+            raise store.HtmlTaskError("PRIOR_UNKNOWN_DESIGN_INVALID：原设计候选字节或身份已变化", 409)
+        candidate_source_hashes = (sha256_file(self.deps.repo_root / "html_design_candidates.py"),
+                                   LEGACY_DESIGN_CANDIDATES_SHA256)
+        matched = None
+        for source_hash in candidate_source_hashes:
+            trial = {**override, "html_design_candidates.py": source_hash}
+            if candidate.get("definitions_sha256") == definition_identity(
+                    self.deps.repo_root, source_hash_overrides=trial):
+                matched = trial
+                break
+        if matched is None or candidate.get("image_sha256") is None:
+            raise store.HtmlTaskError("PRIOR_UNKNOWN_DEFINITION_MISMATCH：设计定义差异超过允许的运行策略", 409)
+        return matched
 
     def resume(self, db, project, job):
         """Explicit retry of the frozen request, through the original submit path."""
@@ -134,6 +207,9 @@ class HtmlWorkflowJobs:
                 raise ValueError("revision changed")
         except (ValueError, OSError, KeyError) as exc:
             raise store.HtmlTaskError("原任务输入或版本已变化；请重新读取当前页面", 409) from exc
+        if (self.freeze_models is not None
+                and self.freeze_models(project).summary() != job.get_payload().get("input", {}).get("model_summary")):
+            raise store.HtmlTaskError("原任务代码、模型或依赖已变化；不能作为原请求继续", 409)
         return self.submit(db, project, contract, options=options, expected_snapshot=manifest["snapshot_id"])
 
     def run(self, job_id, project_id, run_dir, contract, account_id, attempt=None, frozen=None, options=None):
@@ -187,6 +263,9 @@ class HtmlWorkflowJobs:
                     provider = stages.wrap(provider, "image")
                 extra["stage_record"] = stages.record
                 extra["progress_record"] = stages.progress
+                extra["plan_override"] = stages.returned_phase("plan")
+                if job.get_payload().get("input", {}).get("definition_hash_override"):
+                    extra["definition_hash_override"] = job.get_payload()["input"]["definition_hash_override"]
                 from html_production_recovery import seal_author_commit
                 extra["commit_record"] = partial(seal_author_commit, db, job_id, attempt, run_dir, snapshot_id)
                 result = produce_scene(
@@ -269,12 +348,13 @@ class HtmlWorkflowJobs:
                     job_lookups = dict(lookups)
                     from html_image_provider import configured_image, lookup_toapis_result
                     if self.provider is configured_image and self.freeze_models is not None:
-                        def native_lookup(record):
+                        def native_lookup(record, *, on_transport_event=None):
                             bound = self.freeze_models(project)
                             expected = job.get_payload().get("input", {}).get("model_summary", {}).get("image", {})
                             if bound.image.config_hash != expected.get("config_hash"):
                                 raise store.HtmlTaskError("PROVIDER_CONNECTION_CHANGED", 409)
-                            return lookup_toapis_result(record, model_binding=bound.image)
+                            return lookup_toapis_result(record, model_binding=bound.image,
+                                                        on_transport_event=on_transport_event)
                         job_lookups["toapis"] = native_lookup
                     reconcile_responses(db, job.id, project.run_dir, lookups=job_lookups)
                     if contract is not None:

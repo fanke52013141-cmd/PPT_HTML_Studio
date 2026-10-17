@@ -75,3 +75,5 @@ node visual/tests/verify.cjs
 
 
 2026-10-15：新增explanation-labeled-v1及固定science-explanation-v1@0.3.0，旧@0.2.0保留；六个独立代码标签、三个代码箭头槽和四个呈现变体见[定义卡](../../docs/contracts/html-presentation/runtime/visual-v1/labeled-explanation-0.1.0.md)。能力夹具`fixtures/labeled-explanation/scene.json`仅用于结构/容量/保护/时间确定性验证，标签与箭头的示范组合不代表科学语义或生产画面审阅通过。
+
+2026-10-17：新增text-card-stacked与summary-arrow-overlay，旧变体保持。定义见../../../docs/contracts/html-presentation/runtime/visual-v1/stacked-relation-0.1.0.md；新变体浏览器验证：node visual/tests/stacked-relation.test.cjs。

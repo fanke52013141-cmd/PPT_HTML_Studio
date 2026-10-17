@@ -3,19 +3,21 @@
 ## HTML Studio Development Scope
 
 The GitHub project is `https://github.com/fanke52013141-cmd/PPT_HTML_Studio`.
-Its publication contains project specifications, supporting documents, and the
-standalone E1 engine. The local development checkout also contains an isolated original
-image-application baseline; publishing that application source is a separate
-change. Never push this project's updates to the original image-project
-`upstream` remote. The project overview in root `README.md` links the canonical
-contracts and records the current documentation-first publication scope.
+Its `main` branch contains project specifications, supporting documents, the
+standalone E1 engine, the application source and the guided HTML backend.
+Never push this project's updates to the original image-project `upstream`
+remote. Keep local databases, runs, outputs, credentials, and generated media
+out of publication. Root `README.md` links the canonical contracts and current
+cross-machine handoff.
 
 This checkout is the independent `PPT HTML Studio` development copy, created
 from the user's local image-production project on 2026-10-07. Read
 `README_HTML_STUDIO.md`, `docs/contracts/html-presentation/README.md`, and
 `docs/plans/html-studio-adaptation.md` for scope.
-The current application still runs the original image workflow; the HTML
-backend is planned, not implemented.
+The application preserves the original image workflow and includes the guided
+HTML backend. Full real-course, provider, visual-approval and delivery
+acceptance remains a separate validation state; see the current handoff linked
+from root `README.md`.
 
 The image-only content, white-background, OCR, Mask and PNG-layer requirements
 below govern the existing image backend. The user has authorized planning a

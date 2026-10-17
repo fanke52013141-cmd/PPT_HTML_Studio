@@ -9,10 +9,58 @@ from database import SessionLocal, Project
 from html_workflow_jobs import HtmlWorkflowJobs
 from html_visual_review_service import HtmlReviewDependencies
 from html_production_recovery import reconcile_responses, receipt_path, read_receipt
+from html_production_models import HtmlProduceRequest
 import html_task_store as store
 from checks.test_html_production_stages import restart, ROOT
 from checks.test_html_production_stages import stage as stage
 from checks.test_html_workflow_acceptance import plan_for, write
+
+
+def test_explicit_new_experiment_keeps_unqueryable_unknown_task(tmp_path):
+    from html_build_snapshot import create_generation_snapshot
+    from html_production_stages import ProductionStages
+    from html_design_candidates import definition_identity, candidate_directory
+    from artifact_fingerprint import sha256_file, sha256_json
+    from PIL import Image
+    class Capture:
+        def submit(self, *args):
+            pass
+    db = SessionLocal()
+    project = Project(id="unknown-repeat-" + uuid.uuid4().hex, name="unknown repeat",
+                      account_id="default", visual_backend="html", run_dir=str(tmp_path))
+    db.add(project)
+    db.commit()
+    contract = {"slide_id": "s1"}
+    image = tmp_path / "design-reference.png"
+    Image.new("RGB", (16, 16), "white").save(image)
+    candidate = {"definitions_sha256": definition_identity(ROOT), "image_sha256": sha256_file(image)}
+    candidate_key = sha256_json(candidate)
+    candidate_dir = candidate_directory(tmp_path, "s1", candidate_key)
+    candidate_dir.mkdir(parents=True)
+    (candidate_dir / "candidate.json").write_text(json.dumps(candidate), encoding="utf-8")
+    (candidate_dir / "design-reference.png").write_bytes(image.read_bytes())
+    original_options = HtmlProduceRequest(
+        design_candidate_key=candidate_key).model_dump()
+    snapshot = create_generation_snapshot(tmp_path, contract, repo_root=ROOT, options=original_options)
+    task = store.submit_task(db, project_id=project.id, task_type="html_plan_generate",
+                             submission_key="original-unknown", payload={
+                                 "snapshot_id": snapshot["snapshot_id"],
+                                 "model_summary": {"source": "injected"},
+                             })
+    store.mark_running(db, task["id"], expected_attempt=1)
+    stage = ProductionStages(db, task["id"], 1, tmp_path, snapshot["snapshot_id"], ROOT)
+    with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
+        stage.wrap(lambda **kw: (_ for _ in ()).throw(TimeoutError("lost")), "json")()
+    store.mark_failed(db, task["id"], "unknown", expected_attempt=1)
+    jobs = HtmlWorkflowJobs(SessionLocal, HtmlReviewDependencies(ROOT, lambda **kw: {}), executor=Capture())
+    options = {**original_options, "prior_unknown_task_id": task["id"]}
+    repeated = jobs.submit(db, project, contract, options=options)
+    assert repeated["id"] != task["id"] and not repeated["reused"]
+    assert store._job(db, task["id"]).get_payload()["production_stages"]
+    assert store._job(db, task["id"]).status == "failed"
+    with pytest.raises(store.HtmlTaskError, match="MISMATCH"):
+        jobs.submit(db, project, contract, options={**options, "design_candidate_key": "b" * 64})
+    db.close()
 
 
 def test_response_disk_receipt_recovers_failed_database_registration(stage, monkeypatch):
@@ -75,6 +123,27 @@ def test_provider_identity_mismatch_rejected(stage):
         reconcile_responses(stage.db, stage.job_id, stage.run, lookups={"json": provider.lookup})
 
 
+@pytest.mark.parametrize("submitted", [False, True])
+def test_upload_only_connection_failure_is_distinct_from_generation_unknown(stage, submitted):
+    from html_image_provider import ImageProviderBoundaryError
+    def failing(prompt, *, on_transport_event, **kwargs):
+        on_transport_event("upload")
+        if submitted:
+            on_transport_event("submit")
+        raise ImageProviderBoundaryError("connection_failed", "submit")
+    failing.supports_upstream_task = True
+    with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
+        stage.wrap(failing, "image")("fixture")
+    store.mark_failed(stage.db, stage.job_id, "interrupted", expected_attempt=1)
+    assert reconcile_responses(stage.db, stage.job_id, stage.run) == int(not submitted)
+    job = store._job(stage.db, stage.job_id)
+    record = next(iter(job.get_payload()["production_stages"].values()))
+    assert record["state"] == ("unknown" if submitted else "not_submitted")
+    assert store.recovery_action(job)["requires_verification"] == submitted
+    if not submitted:
+        assert job.get_payload()["pre_submit_failures"][0]["record"]["state"] == "unknown"
+
+
 def test_response_receipt_cannot_reconcile_cancelled_job(stage):
     stage.wrap(lambda **kw: {}, "json")()
     store.cancel_task(stage.db, stage.job_id)
@@ -130,12 +199,88 @@ def test_native_toapis_id_persisted_before_poll_and_recovered_without_post(stage
     with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
         stage.wrap(generate, "image")("subject")
     store.mark_failed(stage.db, stage.job_id, "poll interrupted", expected_attempt=1)
+    before = next(iter(store._job(stage.db, stage.job_id).get_payload()["production_stages"].values()))
+    assert before["transport"]["boundary_entries"]["submit"] == 1
+    assert before["transport"]["boundary_entries"]["poll"] >= 1
     ready["value"] = True
     assert reconcile_responses(stage.db, stage.job_id, stage.run, lookups={
         "toapis": partial(html_image_provider.lookup_toapis_result, model_binding=binding),
     }) == 1
     assert restart(stage).wrap(generate, "image")("subject") == buf.getvalue()
     assert sum(method == "POST" for method, url in calls) == 1
+    after = next(iter(store._job(stage.db, stage.job_id).get_payload()["production_stages"].values()))
+    assert after["transport"]["lookup_boundary_entries"] == {"poll": 1, "extract": 1}
+
+
+def test_lookup_rejects_submit_boundary_before_paid_operation(stage):
+    def native(prompt, *, on_task_submitted, **_kwargs):
+        on_task_submitted("existing-task-id")
+        raise TimeoutError("lost")
+    native.supports_upstream_task = True
+    with pytest.raises(store.HtmlTaskError):
+        stage.wrap(native, "image")("fixture")
+    store.mark_failed(stage.db, stage.job_id, "interrupted", expected_attempt=1)
+    sent = []
+    def wrong_lookup(record, *, on_transport_event):
+        on_transport_event("submit")
+        sent.append(record["upstream_task_id"])
+    with pytest.raises(store.HtmlTaskError, match="LOOKUP_SUBMISSION_FORBIDDEN"):
+        reconcile_responses(stage.db, stage.job_id, stage.run, lookups={"toapis": wrong_lookup})
+    assert sent == []
+
+
+def test_design_result_resume_reuses_sealed_plan_and_image(tmp_path, monkeypatch):
+    """A returned image followed by a local interruption must not buy a new plan or image."""
+    from checks.test_html_e_production import png
+    import html_design_candidates
+
+    source = json.loads((ROOT / "html_engine/visual/scenes/condensation.json").read_text(encoding="utf-8"))
+    plan, contract = plan_for(source, "resume-design")
+    write(tmp_path / "planning/visual_contract.json", {"slides": [contract]})
+    db = SessionLocal()
+    project = Project(id="design-resume-" + uuid.uuid4().hex, name="design resume",
+                      account_id="default", visual_backend="html", run_dir=str(tmp_path))
+    db.add(project)
+    db.commit()
+
+    class Capture:
+        def submit(self, *args):
+            self.args = args
+        def run(self):
+            return self.args[0](*self.args[1:])
+
+    calls = {"plan": 0, "image": 0}
+    def generator(**_kwargs):
+        calls["plan"] += 1
+        result = copy.deepcopy(plan)
+        if calls["plan"] == 1:
+            result.pop("templateRef")  # Force the real bounded planning-repair round.
+        return result
+    def provider(*_args, **_kwargs):
+        calls["image"] += 1
+        return png()
+    executor = Capture()
+    jobs = HtmlWorkflowJobs(SessionLocal, HtmlReviewDependencies(ROOT, generator),
+                            provider=provider, executor=executor)
+    def interrupted_save(**_kwargs):
+        raise RuntimeError("injected after returned design image")
+    original_save = html_design_candidates.save_design
+    monkeypatch.setattr(html_design_candidates, "save_design", interrupted_save)
+    first = jobs.submit(db, project, contract)
+    executor.run()
+    db.expire_all()
+    assert store._job(db, first["id"]).status == "failed"
+    assert calls == {"plan": 2, "image": 1}
+    monkeypatch.setattr(html_design_candidates, "save_design", original_save)
+    resumed = jobs.submit(db, project, contract)
+    assert resumed["id"] == first["id"] and resumed["retried"]
+    executor.run()
+    db.expire_all()
+    job = store._job(db, first["id"])
+    assert job.status == "succeeded", {"error": job.error, "calls": calls, "payload": job.get_payload().get("progress")}
+    assert job.get_payload()["result"]["stage"] == "design_review"
+    assert calls == {"plan": 2, "image": 1}
+    db.close()
 
 
 @pytest.fixture

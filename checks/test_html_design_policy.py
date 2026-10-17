@@ -25,6 +25,9 @@ def test_variant_requires_an_explicit_applicable_id():
     issue = {"requirement": "registered_variant"}
     assert resolve_issue(issue, node, capability)[0] == "capabilities"
     assert resolve_issue({**issue, "variant_id": "invented"}, node, capability)[0] == "capabilities"
+    assert resolve_issue({**issue, "variant_id": "plain"}, node, capability) == (
+        "capabilities", "requested_variant_already_active_requires_fact_review")
+    node['presentation'] = {'variant': 'text-card-label'}
     assert resolve_issue({**issue, "variant_id": "plain"}, node, capability)[0] == "reconstruction"
 
 

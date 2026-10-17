@@ -1,5 +1,9 @@
 # HTML Studio
 
+2026-10-17 当前发布：[流程优化与文字边缘核验发布备注](docs/releases/2026-10-17-review-and-handoff.md)。契约包0.9.76；本批相关隔离回归255项通过。换机继续步骤、已验证边界和数据迁移说明见[交接文档](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)。本机`data/`、`runs/`、`outputs/`及模型凭据不随Git同步；跨机代码与可重建控制组已纳入本次发布。
+
+此前10月16日各条目记录的是当时的未提交状态，仅作历史账本。本批代码、契约和交接已在本次提交推送；当前跨机开发以[2026-10-17交接](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)为准。
+
 2026-10-16当前运行状态：[8010已完成换版](docs/plans/html-backend-development/handoff-runtime-activation-2026-10-16.md)，实际API1.39.0/hash2f9000d34a3b464d，静态资源与数据完整性核对通过。此前旧版/审批阻塞记录保留为历史；未发起真实模型实验，未推送。
 
 2026-10-16验证增量：[完整应用隔离TCP冒烟](docs/plans/html-backend-development/handoff-runtime-smoke-2026-10-16.md)，验证新版API1.39.0的候选核对与原课程恢复，修复一键Web冲突误转400；固定清单30/30通过。8010仍旧版，等待手动关闭旧开发服务后换版；隔离测试使用供应商替身，未验证真实模型质量。

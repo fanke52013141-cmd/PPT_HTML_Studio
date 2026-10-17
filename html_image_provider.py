@@ -7,10 +7,19 @@ from pathlib import Path
 from contextlib import ExitStack
 
 
+class ImageProviderBoundaryError(ValueError):
+    """Safe provider classification without upstream response text or credentials."""
+
+    def __init__(self, code: str, phase: str):
+        self.code = code
+        self.phase = phase
+        super().__init__("图片服务请求失败，请检查模型连接、限流状态或稍后重试。")
+
+
 def configured_image(
     prompt, *, size="1024x1024", reference_paths=None, transparent_background=True,
     model_binding=None,
-    resume_task_id="", on_task_submitted=None,
+    resume_task_id="", on_task_submitted=None, on_transport_event=None,
 ):
     if model_binding is not None:
         model_binding.require_ready()
@@ -19,16 +28,20 @@ def configured_image(
             prompt, size=size, reference_paths=reference_paths,
             transparent_background=transparent_background, model_binding=model_binding,
             resume_task_id=resume_task_id, on_task_submitted=on_task_submitted,
+            on_transport_event=on_transport_event,
         )
-    except Exception:
+    except Exception as error:
         # SDK initialization, request and close errors can contain auth headers.
+        from image_generation_errors import ImageGenerationError
+        if isinstance(error, ImageGenerationError):
+            raise ImageProviderBoundaryError(error.info.code, error.info.phase) from None
         raise ValueError("图片服务请求失败，请检查模型连接、限流状态或稍后重试。") from None
 
 
 def _configured_image(
     prompt, *, size="1024x1024", reference_paths=None, transparent_background=True,
     model_binding=None,
-    resume_task_id="", on_task_submitted=None,
+    resume_task_id="", on_task_submitted=None, on_transport_event=None,
 ):
     from config_store import get_setting
     from ai_provider_service import (
@@ -80,7 +93,10 @@ def _configured_image(
             public_config={"toapis_resolution": resolution.lower(), "toapis_quality": quality},
             **({"resume_task_id": resume_task_id, "timeout": 30} if resume_task_id else {}),
             **({"on_task_submitted": on_task_submitted} if on_task_submitted is not None else {}),
+            **({"on_transport_event": on_transport_event} if on_transport_event is not None else {}),
         )
+        if on_transport_event is not None:
+            on_transport_event("extract")
         return extract_image_bytes_from_response(response)
     if resume_task_id:
         raise ValueError("当前图片供应商不支持按任务 ID 对账，禁止重新提交。")
@@ -115,7 +131,8 @@ def _configured_image(
 configured_image.supports_upstream_task = True
 
 
-def lookup_toapis_result(record, *, model_binding):
+def lookup_toapis_result(record, *, model_binding, on_transport_event=None):
     """Resume the paid task only; no reference uploads or image POST."""
-    result = configured_image("", model_binding=model_binding, resume_task_id=record["upstream_task_id"])
+    result = configured_image("", model_binding=model_binding, resume_task_id=record["upstream_task_id"],
+                              on_transport_event=on_transport_event)
     return {"request_id": record["request_id"], "state": "succeeded", "result": result}

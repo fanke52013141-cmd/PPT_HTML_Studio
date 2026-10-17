@@ -33,6 +33,27 @@ def build_semantic_design(plan: dict, *, asset_budget: int = 1) -> dict:
     if set(images) != {a.get("slot") for a in image_needs} or len(image_needs) != len(images):
         fail("SEMANTIC_ASSET_OWNERSHIP", "每个图片对象必须与一个显式 image_asset 需求一一对应")
     by_slot = {a["slot"]: a for a in image_needs}
+    # Validate explicit references before an image is generated. The runtime
+    # compiler deliberately refuses to infer a target from an anchor name.
+    objects_by_id = {o["id"]: o for o in objects}
+    objects_by_slot = {o["slot"]: o for o in objects}
+    image_asset_slots = {a["id"]: a["slot"] for a in image_needs}
+    for obj in objects:
+        if obj["kind"] != "annotation":
+            continue
+        content = plan["slots"][obj["slot"]]
+        target_id = content.get("targetId")
+        target = objects_by_id.get(target_id)
+        if target is None:
+            target = objects_by_slot.get(image_asset_slots.get(target_id, target_id))
+        if target is None or target["kind"] != "image":
+            fail("SEMANTIC_ANNOTATION_TARGET", "标注 targetId 必须显式对应图片对象、槽位或素材 ID")
+        if content.get("anchorId") != plan["slots"][target["slot"]].get("anchorId", "focus"):
+            fail("SEMANTIC_ANNOTATION_ANCHOR", "标注 anchorId 与图片焦点不一致")
+        label_id = content.get("labelId")
+        label = objects_by_id.get(label_id) or objects_by_slot.get(label_id)
+        if label is None or label["kind"] != "text":
+            fail("SEMANTIC_ANNOTATION_LABEL", "标注 labelId 必须显式对应文字对象或槽位")
     allocations = []
     for obj in objects:
         content = plan["slots"][obj["slot"]]

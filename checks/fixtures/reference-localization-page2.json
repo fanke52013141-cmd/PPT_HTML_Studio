@@ -1,0 +1,55 @@
+{
+  "version": "0.1.0",
+  "reference_sha256": "326d7425690b31f32675d757cce53388469bbf58fce5fe32ae5cfb002cb9b09a",
+  "image_size": [
+    2048,
+    1152
+  ],
+  "source": "Independent direct inspection of original reference before inspecting model regions; approximate outer visible bounds, not candidate HTML geometry",
+  "criteria": {
+    "minimum_iou": 0.6,
+    "minimum_gold_coverage": 0.9
+  },
+  "targets": {
+    "header": [
+      82,
+      102,
+      1342,
+      160
+    ],
+    "stat-1": [
+      85,
+      289,
+      686,
+      479
+    ],
+    "stat-2": [
+      724,
+      289,
+      1326,
+      479
+    ],
+    "stat-3": [
+      1363,
+      289,
+      1965,
+      479
+    ],
+    "caption": [
+      226,
+      557,
+      851,
+      591
+    ],
+    "summary": [
+      85,
+      671,
+      1965,
+      923
+    ]
+  },
+  "scope": "header visible title including number; text caption excludes optional icon/surface; cards and summary include complete modules",
+  "negative_target": "missing-control",
+  "negative_expected": "not_found",
+  "limitations": "One reference page, approximate manual inspection bounds; not formal user acceptance or general localization benchmark"
+}

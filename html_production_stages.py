@@ -66,6 +66,28 @@ class ProductionStages:
         """Deterministic stage evidence; never bypass final review on recovery."""
         self._save("phase:" + name, value, name, "json")
 
+    def returned_phase(self, name):
+        """Read a sealed deterministic result from an earlier attempt."""
+        job = self.checkpoint()
+        record = job.get_payload().get("production_stages", {}).get("phase:" + name)
+        if not record:
+            return None
+        if record.get("state") != "returned" or record.get("kind") != "json":
+            raise store.HtmlTaskError("STAGE_ARTIFACT_INVALID：阶段记录不完整", 409)
+        try:
+            path = safe_file(self.run, record["file"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise store.HtmlTaskError("STAGE_ARTIFACT_INVALID：阶段路径无效", 409) from exc
+        if not path.is_file() or fresh_hash(path) != record["sha256"]:
+            raise store.HtmlTaskError("STAGE_ARTIFACT_INVALID：阶段产物损坏", 409)
+        try:
+            value = json.loads(path.read_bytes())
+        except (ValueError, UnicodeError) as exc:
+            raise store.HtmlTaskError("STAGE_ARTIFACT_INVALID：阶段 JSON 格式错误", 409) from exc
+        if not isinstance(value, dict):
+            raise store.HtmlTaskError("STAGE_ARTIFACT_INVALID：阶段 JSON 格式错误", 409)
+        return value
+
     def progress(self, value):
         job = self.checkpoint()
         payload = job.get_payload()
@@ -118,8 +140,10 @@ class ProductionStages:
             payload = job.get_payload()
             records = payload.get("production_stages", {})
             previous = records.get(key)
-            if previous:
+            if previous and previous.get("state") != "not_submitted":
                 if previous["state"] != "returned":
+                    if previous["state"] == "output_limit":
+                        raise store.HtmlTaskError("MODEL_OUTPUT_LIMIT：规划输出额度耗尽，请调整规划任务后创建新实验", 409)
                     raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：请求结果不确定，不能自动重复调用", 409)
                 path = safe_file(self.run, previous["file"])
                 if not path.is_file() or fresh_hash(path) != previous["sha256"]:
@@ -171,41 +195,70 @@ class ProductionStages:
                 if not isinstance(task_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,256}", task_id):
                     raise store.HtmlTaskError("PROVIDER_TASK_ID_INVALID", 409)
                 self.checkpoint()
-                record = {**intent, "upstream_task_id": task_id, "lookup_supported": True}
+                current = store._job(self.db, self.job_id, self.attempt)
+                previous = current.get_payload().get("production_stages", {}).get(key, intent)
+                record = {**previous, "upstream_task_id": task_id, "lookup_supported": True}
                 from html_production_recovery import receipt_path, write_receipt
                 write_receipt(receipt_path(self.run, self.job_id, "upstream-" + digest(key.encode())), {
                     "job_id": self.job_id, "snapshot_id": self.snapshot_id, "key": key, "record": record,
                 })
                 self._persist(key, record)
+            def transport_event(phase):
+                if phase not in {"upload", "submit", "poll", "extract"}:
+                    raise store.HtmlTaskError("PROVIDER_EVENT_INVALID", 409)
+                current = store._job(self.db, self.job_id, self.attempt)
+                previous = current.get_payload().get("production_stages", {}).get(key, intent)
+                transport = previous.get("transport", {})
+                counts = {**transport.get("boundary_entries", {})}
+                counts[phase] = counts.get(phase, 0) + 1
+                self._persist(key, {**previous, "transport": {
+                    "last_phase": phase, "boundary_entries": counts,
+                }}, external_outcome=True)
             started = time.monotonic()
             try:
-                callbacks = {"on_task_submitted": submitted} if native_tasks else {}
+                callbacks = {"on_task_submitted": submitted, "on_transport_event": transport_event} if native_tasks else {}
                 if streaming:
                     callbacks["on_stream_progress"] = stream_progress
                 value = function.invoke_with_request_id(request_id, *args, **kwargs) if lookup_supported else function(*args, **kwargs, **callbacks)
             except Exception as error:
                 previous = store._job(self.db, self.job_id, self.attempt).get_payload().get("production_stages", {}).get(key, intent)
+                failed_stream = (store._job(self.db, self.job_id, self.attempt).get_payload()
+                                 .get("progress", {}).get("model_stream", {})) if streaming else {}
+                output_limit = (failed_stream.get("failure_reason") == "output_limit"
+                                and failed_stream.get("finish_reason") == "length")
+                from json_llm_transport import _safe_usage
+                usage = _safe_usage(failed_stream.get("usage"))
                 from html_production_recovery import receipt_path, write_receipt
-                record = {**previous, "state": "unknown", "stage": kind + "_unknown",
-                          "metrics": {**metrics, "adapter_calls": 1, "elapsed_ms": round((time.monotonic() - started) * 1000, 3)},
+                record = {**previous, "state": "output_limit" if output_limit else "unknown",
+                          "stage": kind + ("_output_limit" if output_limit else "_unknown"),
+                          "metrics": {**metrics, "adapter_calls": 1,
+                                      "elapsed_ms": round((time.monotonic() - started) * 1000, 3),
+                                      "usage": usage, "finish_reason": failed_stream.get("finish_reason")},
                           "error_class": type(error).__name__,
                           "cause_class": type(error.__cause__).__name__ if error.__cause__ else None}
-                write_receipt(receipt_path(self.run, self.job_id, "unknown-" + digest(key.encode())), {
+                if kind == "image":
+                    from html_image_provider import ImageProviderBoundaryError
+                    if isinstance(error, ImageProviderBoundaryError):
+                        record["provider_error"] = {"code": error.code, "phase": error.phase}
+                write_receipt(receipt_path(self.run, self.job_id,
+                                           ("output-limit-" if output_limit else "unknown-") + digest(key.encode())), {
                     "job_id": self.job_id, "snapshot_id": self.snapshot_id, "key": key, "record": record,
                 })
                 self._persist(key, record, external_outcome=True)
                 if streaming:
-                    failed_stream = store._job(self.db, self.job_id, self.attempt).get_payload().get("progress", {}).get("model_stream", {})
                     # The stream callback owns sanitized transport evidence;
                     # HTTPException text and model reasoning never enter advice.
                     reason = failed_stream.get("failure_reason")
-                    if reason in {"read_timeout", "total_timeout", "incomplete_response", "transport_error"}:
+                    if reason in {"read_timeout", "total_timeout", "incomplete_response", "transport_error", "output_limit"}:
                         current = store._job(self.db, self.job_id, self.attempt)
                         payload = current.get_payload()
                         payload["progress"] = {**payload.get("progress", {}), "next_action": {
                             "stage": metrics["role"], "reason": reason,
-                            "routes": ["provider_verification"], "automatic_retry": False}}
+                            "routes": ["planning_revision"] if output_limit else ["provider_verification"],
+                            "automatic_retry": False}}
                         store._transition(self.db, current, ("running",), {"payload_json": store.json_dumps(payload)})
+                if output_limit:
+                    raise store.HtmlTaskError("MODEL_OUTPUT_LIMIT：模型已用尽输出额度，场景规划未完成；请优化规划输入后创建新实验", 409) from error
                 raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：供应商结果待核实，禁止自动重复请求", 409) from error
             # Persist raw returned bytes/JSON before validation or downstream work.
             self._save(key, value, kind + "_returned", kind,

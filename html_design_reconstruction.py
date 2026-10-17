@@ -129,13 +129,14 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
             images.append(str(current_image.resolve()))
         write_json_atomic(folder/"request.json",{**prompts,"prompt_version":PROMPT_VERSION,
                          "request_timeout_seconds":REQUEST_TIMEOUT_SECONDS,
-                         "thinking_policy":"preserve_provider_configuration",
+                         "thinking_policy":"enabled_low_for_glm",
+                         "reasoning_effort_override":"low",
                          "runtime_skill":skill.identity,
                          "source_design_sha256":source_hash,"image_sha256":[sha256_file(Path(p)) for p in images]})
         progress({"design_reconstruction_round":index+1,"design_reconstruction_max_rounds":2})
         # A transport exception is not structural: let persistent stages handle unknown.
         response = deps.json_generator(**prompts,run_dir=str(run),artifact_prefix=f"design-reconstruct-{scene['id']}-{index}",image_paths=images,
-                                      request_timeout=REQUEST_TIMEOUT_SECONDS)
+                                      request_timeout=REQUEST_TIMEOUT_SECONDS,reasoning_effort_override="low")
         write_json_atomic(folder/"response.json",response)
         history.append({"round":index+1,"response":response})
         checkpoint(); skill.verify()
@@ -180,7 +181,7 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
             archived_shot.write_bytes(screenshot.read_bytes())
             progress({"design_review_round":index+1,"design_review_max_rounds":2})
             fidelity = review_fidelity(proposed,reference,archived_shot,final,understanding,folder=folder/"fidelity",
-                                       run_dir=run,deps=deps,manual=manual,checkpoint=checkpoint)
+                                       run_dir=run,deps=deps,manual=manual,checkpoint=checkpoint,previous=fidelity)
             if fidelity["result"]["status"] == "pass":
                 return _result(proposed,binding,final,audit,run,history,source_hash,proposed!=scene,understanding,fidelity,skill.identity)
             if fidelity["result"]["status"] == "unsupported" or set(fidelity["repair_routes"]) - {"reconstruction"}:

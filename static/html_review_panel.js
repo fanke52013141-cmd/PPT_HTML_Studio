@@ -120,7 +120,7 @@
     const target = section.querySelector('[data-html-status]');
     if (target.textContent !== message) target.textContent = message;
   }
-  const stageLabels = {queued:'等待处理',running:'正在处理',plan:'内容规划',brief:'设计规划',design:'设计参考',design_understanding:'设计理解与素材分工',design_reconstruction:'依据设计图还原',design_fidelity_review:'设计还原审核',compile:'构建画面',review:'页面检查',rebuild:'重建影响',json_request:'模型请求',json_returned:'模型已返回',image_request:'图片请求',image_returned:'图片已返回',image_unknown:'图片结果待核实',json_unknown:'模型结果待核实',design_review:'等待设计确认'};
+  const stageLabels = {queued:'等待处理',running:'正在处理',plan:'内容规划',brief:'设计规划',design:'设计参考',design_understanding:'设计理解与素材分工',design_reconstruction:'依据设计图还原',design_fidelity_review:'设计还原审核',compile:'构建画面',review:'页面检查',rebuild:'重建影响',json_request:'模型请求',json_returned:'模型已返回',json_output_limit:'模型输出额度耗尽',image_request:'图片请求',image_returned:'图片已返回',image_unknown:'图片结果待核实',json_unknown:'模型结果待核实',design_review:'等待设计确认'};
   const taskStatusLabels={queued:'等待处理',running:'生产中',succeeded:'任务结束',failed:'生产失败',interrupted:'任务中断',cancelled:'已停止'};
   function taskFacts(section, task) {
     lastTask = task;
@@ -137,19 +137,23 @@
     const execution=task.execution;
     if(execution){
       line(`已测量适配器调用 ${execution.measured_adapter_calls} 次 · 已记录结果复用 ${execution.recorded_reuses} 次 · 已结束调用的记录耗时 ${(execution.elapsed_ms/1000).toFixed(1)} 秒`);
+      if(execution.usage?.completion_tokens != null){
+        const usage=execution.usage;
+        line(`模型用量：输入 ${usage.prompt_tokens ?? '未记录'} token · 输出 ${usage.completion_tokens} token · 其中推理 ${usage.completion_tokens_details?.reasoning_tokens ?? '未记录'} token${execution.usage_complete ? '' : '（部分请求用量未记录）'}`);
+      }
       if(execution.unmeasured_requests || execution.untimed_requests)line('部分旧记录或未完成请求缺少测量，以上不是完整 HTTP 次数、总耗时或费用。');
       const roles={planning:'内容规划',design_image:'设计生图',asset_image:'独立配图',design_understanding:'设计理解',layout_repair:'排版修复',reconstruction:'设计还原',fidelity_review:'原图对照审核',json:'文字请求',image:'图片请求'};
       for(const [role,metrics] of Object.entries(execution.roles||{}))line(`${roles[role]||'其他阶段'}：适配器 ${metrics.adapter_calls} 次，复用 ${metrics.reuses} 次，记录耗时 ${(metrics.elapsed_ms/1000).toFixed(1)} 秒`);
     }
     if(progress.next_action){
       const reasons={unsupported:'当前能力不支持',upstream_revision_required:'需返回上游处理',budget_exhausted:'本阶段修复预算耗尽',external_call_budget_exhausted:'生产外部调用预算耗尽',repeated_candidate:'候选重复无改善',repeated_patch:'修复操作重复',unchanged_measurements:'实测没有改善',model_stop:'模型主动停止',non_capacity_failure:'失败不属于排版容量问题',missing_diagnostic_evidence:'缺少可用诊断证据'};
-      Object.assign(reasons,{read_timeout:'读取等待超时，原请求结果未知',total_timeout:'单次流总预算耗尽，原请求结果未知',incomplete_response:'流已结束但结果不完整',transport_error:'传输失败，原请求结果待核实'});
-      const routes={planning:'内容规划',assets:'独立素材',capabilities:'公共组件能力',reconstruction:'页面还原',design_review:'设计与生产规则审阅',manual_review:'人工检查',diagnostics:'工程诊断',provider_verification:'原供应商请求核实'};
+      Object.assign(reasons,{read_timeout:'读取等待超时，原请求结果未知',total_timeout:'单次流总预算耗尽，原请求结果未知',incomplete_response:'流已结束但结果不完整',transport_error:'传输失败，原请求结果待核实',output_limit:'模型已结束，但输出额度耗尽，场景规划未完成'});
+      const routes={planning:'内容规划',planning_revision:'规划输入与容量调整',assets:'独立素材',capabilities:'公共组件能力',reconstruction:'页面还原',design_review:'设计与生产规则审阅',manual_review:'人工检查',diagnostics:'工程诊断',provider_verification:'原供应商请求核实'};
       line(`处理建议：${reasons[progress.next_action.reason]||'需要检查运行证据'}；交回 ${(progress.next_action.routes||[]).map(route=>routes[route]||'人工检查').join('、')}。系统不会自动重试或批准。`);
     }
     if (progress.model_stream) {
       const stream=progress.model_stream;
-      const labels={waiting:'等待模型响应',thinking:'模型思考中',outputting:'正在接收结果',completed:'结果接收完成',failed:'接收中断，需核验原请求'};
+      const labels={waiting:'等待模型响应',thinking:'模型思考中',outputting:'正在接收结果',completed:'结果接收完成',failed:stream.failure_reason==='output_limit'?'输出额度耗尽':'接收中断，需核验原请求'};
       line(`${labels[stream.state] || '模型处理中'} · ${Math.round(stream.elapsed_seconds || 0)} 秒 · 已接收正文 ${stream.content_chars || 0} 字符`);
       if(stream.total_timeout_seconds != null)line(`本次流总预算 ${stream.total_timeout_seconds} 秒；单次读取等待 ${stream.read_timeout_seconds ?? '未记录'} 秒。`);
       if(stream.last_chunk_seconds != null)line(`最后数据到达于第 ${Math.round(stream.last_chunk_seconds)} 秒；记录时已无新数据 ${Math.round(stream.silence_seconds || 0)} 秒。`);

@@ -9,6 +9,22 @@ from pipeline_lifecycle import write_json_atomic
 MAX_CONTENT_CHARS = 1_000_000
 
 
+def _safe_usage(value):
+    """Only provider counters enter task progress; never persist opaque metadata."""
+    if value is None:
+        return None
+    data = value.model_dump() if hasattr(value, "model_dump") else value
+    if not isinstance(data, dict):
+        return None
+    details = data.get("completion_tokens_details") or {}
+    return {key: data[key] for key in ("prompt_tokens", "completion_tokens", "total_tokens")
+            if type(data.get(key)) is int and data[key] >= 0} | {
+        "completion_tokens_details": {"reasoning_tokens": details["reasoning_tokens"]}
+        if isinstance(details, dict) and type(details.get("reasoning_tokens")) is int
+        and details["reasoning_tokens"] >= 0 else {}
+    }
+
+
 def failure_reason(error):
     """Classify fixed exception types, never persist provider text or payloads."""
     current, seen = error, set()
@@ -19,6 +35,8 @@ def failure_reason(error):
         current = current.__cause__ or current.__context__
     if isinstance(error, TimeoutError) and str(error) == "JSON_STREAM_TOTAL_TIMEOUT":
         return "total_timeout"
+    if isinstance(error, ValueError) and str(error) == "JSON_STREAM_OUTPUT_LIMIT":
+        return "output_limit"
     if isinstance(error, ValueError) and str(error) == "JSON_STREAM_INCOMPLETE":
         return "incomplete_response"
     return "transport_error"
@@ -53,7 +71,7 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
             progress({k: record[k] for k in ("state", "elapsed_seconds", "content_chars",
                                             "reasoning_chars", "first_chunk_seconds", "last_chunk_seconds",
                                             "silence_seconds", "total_timeout_seconds", "read_timeout_seconds",
-                                            "reasoning_effort", "failure_reason")})
+                                            "reasoning_effort", "failure_reason", "finish_reason", "usage")})
 
     try:
         emit(True)
@@ -69,7 +87,7 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
                     record["first_chunk_seconds"] = round(elapsed, 3)
                 usage = getattr(chunk, "usage", None)
                 if usage is not None:
-                    record["usage"] = usage.model_dump()
+                    record["usage"] = _safe_usage(usage)
                 for choice in chunk.choices:
                     if choice.index != 0:
                         raise ValueError("JSON_STREAM_MULTIPLE_CHOICES")
@@ -89,6 +107,8 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
                 record["state"] = "outputting" if record["content_chars"] else "thinking"
                 emit()
         # Partial/truncated output is never parsed or sent to JSON repair.
+        if record["finish_reason"] == "length":
+            raise ValueError("JSON_STREAM_OUTPUT_LIMIT")
         if record["finish_reason"] != "stop" or not content:
             raise ValueError("JSON_STREAM_INCOMPLETE")
         record["state"] = "completed"

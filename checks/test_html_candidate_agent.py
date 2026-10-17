@@ -7,6 +7,16 @@ from pathlib import Path
 import pytest
 
 from html_candidate_agent import repair_candidate
+
+
+def test_geometry_constraints_keep_width_and_include_motion_safe_zone():
+    from html_candidate_agent import _geometry_constraints
+    node = {'id':'summary','slot':'summary','presentation':{'variant':'summary-arrow-overlay'}}
+    scene = {'motion':[{'targetId':'summary','offsetY':12}]}
+    layout = {'slots':{'summary':{'box':{'x':58,'y':660,'width':1477,'height':110}}}}
+    result = _geometry_constraints(node,scene,layout,[{'id':'summary-arrow-overlay','minWidth':900,'minHeight':170}])
+    assert result['suggestedPresentation'] == {'width':1477,'height':170,'offsetX':0,'offsetY':-42}
+    assert result['feasible']
 from html_visual_review_service import (
     HtmlReviewDependencies,
     HtmlReviewError,
@@ -50,6 +60,33 @@ def patch():
     }
 
 
+def test_summary_panel_long_state_uses_available_width_without_font_shrink(draft):
+    run, scene = draft
+    next(n for n in scene['nodes'] if n['id']=='headline')['presentation']['typography']['text']['fontSizePx'] = 28
+    scene['version'] = '0.7.0'
+    scene['initialVisibleIds'] = [n['id'] for n in scene['nodes']]
+    scene['motion'] = []
+    summary = next(n for n in scene['nodes'] if n['type']=='summary')
+    summary['from']['text'] = '下级机关'
+    summary['to']['text'] = '市地级以上'
+    summary['term'] = '公开遴选'
+    summary['presentation'] = {'variant':'summary-panel', 'width':1477}
+    report = review_scene(scene, run_dir=run, deps=HtmlReviewDependencies(ROOT, lambda **kw: {}))
+    assert report['passed'], report.get('message')
+    assert 'typography' not in summary['presentation']
+
+
+def test_summary_overflow_diagnostic_names_internal_parts(draft):
+    run, scene = draft
+    summary = next(n for n in scene['nodes'] if n['type']=='summary')
+    # Legacy flow remains strict when its content really exceeds the slot.
+    summary['term'] = '字' * 24
+    report = review_scene(scene, run_dir=run, deps=HtmlReviewDependencies(ROOT, lambda **kw: {}), diagnostic=True)
+    issue = next(i for i in report['capacityIssues'] if i['target']==summary['id'])
+    assert {p['part'] for p in issue['internalParts']} == {'from','to','term','takeaway'}
+    assert all('paddingX' in p and 'clientWidth' in p for p in issue['internalParts'])
+
+
 def test_unsaved_capacity_failure_real_screenshot_agent_and_strict_recheck(draft):
     run, scene = draft
     original = copy.deepcopy(scene)
@@ -61,6 +98,13 @@ def test_unsaved_capacity_failure_real_screenshot_agent_and_strict_recheck(draft
 
         inspect.signature(_generate_json_with_configured_llm).bind(**kw)
         calls.append(kw)
+        assert kw['request_timeout'] == 180
+        assert kw['reasoning_effort_override'] == 'low'
+        assert json.loads(kw['user_prompt'])['previousDecisions'] == []
+        node = next(n for n in json.loads(kw['user_prompt'])['nodes'] if n['id'] == 'headline')
+        assert node['presentationSizeEditable']
+        # Line/scroll-only failures have no canvas box trigger: do not invent a size hint.
+        assert isinstance(node['capacitySizeHint'], dict)
         assert Path(kw["image_paths"][0]).read_bytes().startswith(b"\x89PNG")
         assert json.loads(kw["user_prompt"])["diagnostic"]["capacityIssues"]
         return patch()

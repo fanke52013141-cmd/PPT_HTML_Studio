@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-17当前开发/换机入口：[流程优化与文字边缘核验发布](docs/releases/2026-10-17-review-and-handoff.md)及[跨机开发交接](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)。当前远端`main`已包含应用源码与guided HTML后端；原图片工作流继续保留。下方10月14日及更早记录属于历史快照，不代表当前代码、分支或验收状态。
+
 2026-10-14 当前交接：[A04—A06 开发与线上同步备注](docs/plans/html-backend-development/handoff-2026-10-14-publication.md)。正常应用已完成五页分镜和第一页整页设计/独立素材；未保存候选的人工审阅入口可追溯原任务，但最终版式容量失败，只能驳回。真实整课、试听/签收与正式输出仍待完成。A06 过程证据见 [专项交接](docs/plans/html-backend-development/handoff-a06-2026-10-14.md)。
 
 2026-10-14 最新增量：[A05 系统内部课程调度与跨进程恢复](docs/plans/html-backend-development/handoff-a05-2026-10-14.md)。原一键入口串联HTML生产/TTS/A04/当前签收/视频任务，课程及原子任务ID持久恢复；真实正常应用整课验收与用户试听/签收留待A06。
@@ -14,7 +16,7 @@
 
 上一批开发交接（2026-10-13）：[当前已交付、待验证及讲稿同步/系统自动制作后续方案](docs/plans/html-backend-development/handoff-2026-10-13.md)。用户已认可整体审美；语义同步和完整产品自动制作尚未通过，历史工程通过记录不表示这两项已实现。
 
-这是 HTML 课程演示与视频系统的独立开发副本。应用目前运行原图片工作流基线；E1 独立数据驱动渲染已实现，应用内 HTML 生成/标注和原生可编辑 PPTX 尚未实现。
+这是 HTML 课程演示与视频系统的独立开发仓库。应用保留原图片工作流，并已接入guided HTML设计、还原、审核与受约束导出；standalone E1仍是独立工具，不等同应用后端。真实模型可靠性、九页完整验收、用户视觉签收及PPTX原生可编辑能力仍分别待验。
 
 ## 本地来源
 

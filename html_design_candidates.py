@@ -11,7 +11,7 @@ from html_visual_review_service import HtmlReviewError
 from html_reference_package import verify_package
 
 
-def definition_identity(repo_root):
+def definition_identity(repo_root, *, source_hash_overrides=None):
     repo = Path(repo_root)
     visual = repo / "html_engine/visual"
     paths = [visual / "preview/player.js", visual / "generated/catalog.json", visual / "effects/registry.json", visual / "presentation-variants.json",
@@ -28,7 +28,13 @@ def definition_identity(repo_root):
     catalog_path = visual / "catalog/catalog.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     paths += [repo / entry["path"] for entry in catalog["sourceManifest"]]
-    return sha256_json({str(p.relative_to(repo)): sha256_file(p) for p in paths})
+    hashes = {str(p.relative_to(repo)): sha256_file(p) for p in paths}
+    for name, value in (source_hash_overrides or {}).items():
+        if name not in hashes or name not in {"html_design_agent.py", "html_design_candidates.py",
+                                             "html_production_service.py"}:
+            raise ValueError("DESIGN_DEFINITION_OVERRIDE_INVALID")
+        hashes[name] = value
+    return sha256_json(hashes)
 
 
 def candidate_directory(run_dir, slide_id, key):

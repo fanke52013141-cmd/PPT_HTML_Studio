@@ -61,6 +61,22 @@ def reconcile_responses(db, job_id, run, *, lookups=None):
         path = receipt_path(run, job_id, digest(key.encode()))
         if not path.is_file():
             upstream_path = receipt_path(run, job_id, "upstream-" + digest(key.encode()))
+            boundaries = record.get("transport", {}).get("boundary_entries", {})
+            # Instrumented submit callback persists before every generation POST.
+            # An upload connection failure with no submit entry proves only this
+            # local invocation never reached generation, not that all unknowns failed.
+            if (record.get("kind") == "image" and record.get("state") == "unknown"
+                    and record.get("error_class") == "ImageProviderBoundaryError"
+                    and record.get("provider_error", {}).get("code") == "connection_failed"
+                    and set(boundaries) == {"upload"} and type(boundaries["upload"]) is int
+                    and boundaries["upload"] > 0 and not record.get("upstream_task_id")
+                    and not upstream_path.exists()):
+                payload.setdefault("pre_submit_failures", []).append({"key": key, "record": dict(record)})
+                # Remove the unsubmitted adapter boundary from active lookup keys;
+                # retain the original unknown evidence separately and on disk.
+                record.update({"state": "not_submitted", "stage": "image_upload_failed"})
+                count += 1
+                continue
             if upstream_path.is_file():
                 upstream = read_receipt(upstream_path)
                 attached = upstream["record"]
@@ -76,7 +92,19 @@ def reconcile_responses(db, job_id, run, *, lookups=None):
                 continue
             record["lookup_attempts"] = int(record.get("lookup_attempts", 0)) + 1
             store._transition(db, job, ("failed", "interrupted"), {"payload_json": store.json_dumps(payload)})
-            response = lookup(record if record.get("upstream_task_id") else record["request_id"])
+            def lookup_event(phase):
+                # Resume must never upload references or create a new paid task.
+                if phase not in {"poll", "extract"}:
+                    raise store.HtmlTaskError("PROVIDER_LOOKUP_SUBMISSION_FORBIDDEN", 409)
+                transport = record.get("transport", {})
+                counts = {**transport.get("lookup_boundary_entries", {})}
+                counts[phase] = counts.get(phase, 0) + 1
+                record["transport"] = {**transport, "last_phase": phase,
+                                       "lookup_boundary_entries": counts}
+                store._transition(db, job, ("failed", "interrupted"), {
+                    "payload_json": store.json_dumps(payload)})
+            response = (lookup(record, on_transport_event=lookup_event) if record.get("upstream_task_id") else
+                        lookup(record["request_id"]))
             if not isinstance(response, dict) or response.get("request_id") != record["request_id"]:
                 raise store.HtmlTaskError("PROVIDER_RESULT_IDENTITY_MISMATCH", 409)
             if response.get("state") != "succeeded":

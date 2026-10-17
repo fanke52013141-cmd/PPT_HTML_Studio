@@ -7,6 +7,7 @@ class HtmlProduceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     plan_version: Literal["0.1.0", "0.2.0"] = "0.1.0"
     design_candidate_key: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    prior_unknown_task_id: str | None = Field(default=None, pattern=r"^html_[0-9a-f]{20}$")
     design_instruction: str = Field(default="", max_length=2000)
     asset_instruction: str = Field(default="", max_length=2000)
 
@@ -18,4 +19,6 @@ class HtmlProduceRequest(BaseModel):
             raise ValueError("设计修订与素材返工不能同时提交")
         if self.asset_instruction and not self.design_candidate_key:
             raise ValueError("局部素材返工必须复用明确的已确认设计候选")
+        if self.prior_unknown_task_id and not self.design_candidate_key:
+            raise ValueError("未知结果后的新实验必须复用明确的已确认设计候选")
         return self

@@ -5,13 +5,13 @@
   "skills": [
     {
       "id": "candidate-layout-repair",
-      "version": "0.1.0",
+      "version": "0.3.0",
       "stage": "candidate_capacity_repair",
       "input_contract": "candidate-layout-input/0.1.0",
       "output_contract": "candidate-layout-decision/0.1.0",
       "body": {
-        "path": "config/html_runtime_skills/candidate-layout-repair-0.1.0.md",
-        "sha256": "fc9794601a921b51f304a9b6007bd5e307444bc0543e85abdf67cb6a070915e6"
+        "path": "config/html_runtime_skills/candidate-layout-repair-0.3.0.md",
+        "sha256": "a1e9d657ad5c9d707048004d06eb500d0377375c001e944d93538afa161225aa"
       },
       "references": {
         "layout-evidence": {
@@ -22,37 +22,81 @@
     },
     {
       "id": "design-understanding",
-      "version": "0.3.0",
+      "version": "0.6.0",
       "stage": "design_understanding",
       "input_contract": "design-understanding-input/0.2.0",
       "output_contract": "design-understanding-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-understanding-0.3.0.md",
-        "sha256": "bd6b29791a52c36b112d14b48d398f3168cd8eb67f54199bdb181403e739b96f"
+        "path": "config/html_runtime_skills/design-understanding-0.6.0.md",
+        "sha256": "d926caa9cefe31977fd14afe3d809dcc638e657161fbf2a62dde31a4b7162a61"
       },
-      "references": {}
+      "references": {
+        "reference-policy": {
+          "path": "config/html_runtime_skills/reference-workflow-policy-0.1.0.md",
+          "sha256": "094794ed3212b19c9fdc5fcc4e3ea788c11791e98fc16b9c31f609ca0db83d9f"
+        }
+      }
     },
     {
       "id": "design-reconstruction",
-      "version": "0.3.0",
+      "version": "0.6.0",
       "stage": "design_reconstruction",
       "input_contract": "design-reconstruction-input/0.2.0",
       "output_contract": "design-reconstruction-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-reconstruction-0.3.0.md",
-        "sha256": "7fb915a801c2c30ac3e9567d3c49cce7c0a604a28ed3394988465a2e1d797a7f"
+        "path": "config/html_runtime_skills/design-reconstruction-0.6.0.md",
+        "sha256": "96b40f17d6f0b897da7762148d9c01f7d29ef348ba61a4681ba355ee1be62b40"
       },
-      "references": {}
+      "references": {
+        "reference-policy": {
+          "path": "config/html_runtime_skills/reference-workflow-policy-0.1.0.md",
+          "sha256": "094794ed3212b19c9fdc5fcc4e3ea788c11791e98fc16b9c31f609ca0db83d9f"
+        }
+      }
     },
     {
       "id": "design-fidelity-review",
-      "version": "0.3.0",
+      "version": "1.0.0",
       "stage": "design_fidelity_review",
+      "input_contract": "design-review-input/0.3.0",
+      "output_contract": "design-review-facts/0.1.0",
+      "body": {
+        "path": "config/html_runtime_skills/design-fidelity-review-1.0.0.md",
+        "sha256": "cdacdc7ca46018d1d93eba0a3b0b3734e647a6f7e50fda5b7d0b07cc3e611dc6"
+      },
+      "references": {
+        "reference-policy": {
+          "path": "config/html_runtime_skills/reference-workflow-policy-0.1.0.md",
+          "sha256": "094794ed3212b19c9fdc5fcc4e3ea788c11791e98fc16b9c31f609ca0db83d9f"
+        }
+      }
+    },
+    {
+      "id": "design-fidelity-review-local",
+      "version": "0.9.0",
+      "stage": "design_fidelity_review_local",
       "input_contract": "design-review-input/0.2.0",
       "output_contract": "design-review-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-fidelity-review-0.3.0.md",
-        "sha256": "f2286514d3d921ecc51d749686528707dd4edaedfc71e537f8e099ae69edac84"
+        "path": "config/html_runtime_skills/design-fidelity-review-0.9.0.md",
+        "sha256": "9dac446865561796972b67101f466ba85e9723bf33191e023cb97be2d73c9484"
+      },
+      "references": {
+        "reference-policy": {
+          "path": "config/html_runtime_skills/reference-workflow-policy-0.1.0.md",
+          "sha256": "094794ed3212b19c9fdc5fcc4e3ea788c11791e98fc16b9c31f609ca0db83d9f"
+        }
+      }
+    },
+    {
+      "id": "design-reference-localization",
+      "version": "0.5.1",
+      "stage": "design_reference_localization",
+      "input_contract": "reference-localization-input/0.5.0",
+      "output_contract": "reference-localization-output/0.5.0",
+      "body": {
+        "path": "config/html_runtime_skills/design-reference-localization-0.5.1.md",
+        "sha256": "12fa7f9425191311f03d73ef869b5c7b396f9c6863082af156d5d18dcd0b65b7"
       },
       "references": {}
     }

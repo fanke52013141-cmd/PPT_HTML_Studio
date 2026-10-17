@@ -94,7 +94,7 @@ def test_compile_rejects_unknown_annotation_alias_even_with_one_image_and_label(
     assert error.value.code == code
 
 
-def test_replanning_keeps_manual_title_and_private_anchor(tmp_path, monkeypatch):
+def test_manual_merge_keeps_title_and_private_anchor(tmp_path, monkeypatch):
     scene, contract, folder, inspected, deps = prepare(tmp_path, monkeypatch)
     changed = copy.deepcopy(scene)
     changed['nodes'][0]['title'] = '人工保留标题'
@@ -111,16 +111,15 @@ def test_replanning_keeps_manual_title_and_private_anchor(tmp_path, monkeypatch)
     editor.save_editor(tmp_path, scene['id'], changed, None, 1,
                        {image['id']: [anchor]})
     edited = store.load_scene(tmp_path, scene['id'])
-    result = production.produce_scene(contract, run_dir=tmp_path, deps=deps,
-                                     model_summary={'image': {'config_hash': 'frozen-image'}})
+    manual = editor.read_json(editor.edit_path(tmp_path, scene['id']))
+    result = editor.merge_manual_edits(scene, None, manual)
+    assert result['conflicts'] == []
     assert result['scene']['nodes'][0]['title'] == '人工保留标题'
     assert next(n for n in result['scene']['nodes'] if n['id'] == image['id'])['assetRef'] == next(n for n in edited['nodes'] if n['id'] == image['id'])['assetRef']
-    assert inspected[-1] == result['scene']
     assert editor.edit_path(tmp_path, scene['id']).is_file()
-    assert json.loads((folder / 'candidates/condensation/models.json').read_text())['image']['config_hash'] == 'frozen-image'
 
 
-def test_replanning_conflict_preserves_current_scene(tmp_path, monkeypatch):
+def test_manual_merge_conflict_preserves_current_scene(tmp_path, monkeypatch):
     scene, contract, folder, inspected, deps = prepare(tmp_path, monkeypatch)
     changed = copy.deepcopy(scene)
     changed['nodes'][0]['title'] = '人工标题'
@@ -128,13 +127,11 @@ def test_replanning_conflict_preserves_current_scene(tmp_path, monkeypatch):
     before = store.load_scene_with_revision(tmp_path, scene['id'])
     broken = copy.deepcopy(scene)
     broken['nodes'] = broken['nodes'][1:]
-    monkeypatch.setattr(production, 'compile_plan', lambda *a: (broken, None))
-    with pytest.raises(HtmlReviewError) as exc:
-        production.produce_scene(contract, run_dir=tmp_path, deps=deps)
-    assert exc.value.code == 'MANUAL_EDIT_CONFLICT'
+    manual = editor.read_json(editor.edit_path(tmp_path, scene['id']))
+    result = editor.merge_manual_edits(broken, None, manual)
+    assert result['conflicts'][0]['code'] == 'MANUAL_TARGET_CONFLICT'
     assert store.load_scene_with_revision(tmp_path, scene['id']) == before
     assert not inspected
-    assert (folder / 'candidates/condensation/manual-conflicts.json').is_file()
 
 
 def test_asset_model_change_invalidates_generation_cache(tmp_path):

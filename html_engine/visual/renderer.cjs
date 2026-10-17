@@ -334,6 +334,18 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         typography: { fontSizePx: parseFloat(style.fontSize),
           lineHeight: style.lineHeight, weight: style.fontWeight },
       };
+      const summary = el.closest('.v-summary');
+      if (summary) {
+        issue.internalParts = Object.entries({from:'.v-state-from',to:'.v-state-to',term:'.v-term',takeaway:'.v-takeaway'})
+          .map(([part,selector]) => {
+            const child = summary.querySelector(selector), css = getComputedStyle(child);
+            return {part, width:child.getBoundingClientRect().width / scale,
+              scrollWidth:child.scrollWidth,clientWidth:child.clientWidth,
+              fontSizePx:parseFloat(css.fontSize),
+              paddingX:parseFloat(css.paddingLeft)+parseFloat(css.paddingRight)};
+          });
+        issue.flowColumns = getComputedStyle(summary.querySelector('.v-flow')).gridTemplateColumns;
+      }
       capacityIssues.push(issue);
       return { ...issue.measured, failed: true };
     }
@@ -395,6 +407,12 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         copy.style.whiteSpace = "pre-wrap";
         const joined = node.runs.map(r => r.text).join("");
         const prefixEnd = variant?.labelDelimiter ? joined.search(/[:：]/) + 1 : 0;
+        let labelBox, bodyBox;
+        if (variant?.stackedLabel) {
+          labelBox = document.createElement("div"); bodyBox = document.createElement("div");
+          labelBox.className = "v-stacked-label"; bodyBox.className = "v-stacked-body";
+          copy.append(labelBox, bodyBox);
+        }
         let offset = 0;
         for (const run of node.runs) {
           const cut = Math.max(0, Math.min(run.text.length, prefixEnd - offset));
@@ -406,7 +424,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             if (run.emphasis) span.style.color = theme.colors.accent;
             if (variant?.emphasisWeight) span.style.fontWeight = String(run.emphasis ? variant.emphasisWeight : variant.normalWeight);
             if (label !== null) { span.dataset.textRole = label ? "label" : "body"; span.style.fontWeight = label ? "700" : "400"; }
-            copy.append(span);
+            (variant?.stackedLabel ? (label ? labelBox : bodyBox) : copy).append(span);
           }
           offset += run.text.length;
         }
@@ -582,7 +600,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         to.textContent = node.to.text;
         const term = document.createElement("span");
         term.className = "v-term";
-        term.textContent = ["summary-panel", "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
+        term.textContent = ["summary-arrow-overlay", "summary-panel", "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
         flow.append(from, arrow, to, term);
         el.append(flow);
         const takeaway = document.createElement("strong");
@@ -593,7 +611,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           Object.assign(el.style,{border:`1px solid ${theme.colors.line}`,background:theme.colors.panel,padding:"20px 24px",gap:"24px",borderRadius:px(theme.shapes.cardRadius)});
           const heading=el.querySelector('.v-summary-heading');
           if(heading) {heading.style.flexShrink="0"; const mark=heading.querySelector('svg');Object.assign(mark.style,{width:"64px",height:"64px",padding:"14px",borderRadius:"50%",background:theme.colors.ink,color:theme.colors.background});}
-          Object.assign(flow.style,{display:"grid",gridTemplateColumns:"120px 132px 120px",gap:"8px 14px",alignItems:"center",justifyItems:"center",flexShrink:"0"});
+          Object.assign(flow.style,{display:"grid",gridTemplateColumns:"minmax(120px,max-content) 132px minmax(120px,max-content)",gap:"8px 14px",alignItems:"center",justifyItems:"center",flexShrink:"0"});
           Object.assign(from.style,{gridColumn:"1",gridRow:"1",background:theme.colors.background,border:`1px solid ${theme.colors.line}`,padding:"16px 28px"});
           Object.assign(to.style,{gridColumn:"3",gridRow:"1",background:theme.colors.background,border:`1px solid ${theme.colors.line}`,padding:"16px 28px"});
           Object.assign(arrow.style,{gridColumn:"2",gridRow:"1",width:"100px",height:"28px"});
@@ -601,7 +619,27 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           takeaway.style.whiteSpace="normal";
         }
         const slot = layout.slots[node.slot];
-        if (["summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant)) {
+        if (node.presentation?.variant === "summary-arrow-overlay") {
+          const width = slot.box.width - 48;
+          Object.assign(el.style,{display:"flex",flexDirection:"column",justifyContent:"center",padding:"16px 24px",gap:"12px",border:`1px solid ${theme.colors.line}`,borderRadius:px(theme.shapes.cardRadius),background:theme.colors.panel});
+          Object.assign(flow.style,{display:"grid",gridTemplateColumns:"1fr 2fr 1fr",width:"100%",gap:"0",alignItems:"center",justifyItems:"center",minHeight:"52px",flexShrink:"0"});
+          Object.assign(from.style,{gridColumn:"1",gridRow:"1",maxWidth:"100%",boxSizing:"border-box"});
+          Object.assign(to.style,{gridColumn:"3",gridRow:"1",maxWidth:"100%",boxSizing:"border-box"});
+          Object.assign(arrow.style,{gridColumn:"2",gridRow:"1",width:"100%",height:"28px"});
+          // A square icon's viewBox keeps its painted path narrow even when
+          // its SVG element is wide. This relation owns an actual long path.
+          attributes(arrow,{viewBox:"0 0 600 28",preserveAspectRatio:"none"});
+          const line = vector('path');
+          attributes(line,{d:"M 2 14 H 596 M 582 3 L 596 14 L 582 25",fill:"none",stroke:theme.colors.body,"stroke-width":2,"vector-effect":"non-scaling-stroke"});
+          arrow.replaceChildren(line);
+          Object.assign(term.style,{gridColumn:"2",gridRow:"1",zIndex:"1",padding:"6px 18px",borderRadius:"999px",background:theme.colors.ink,color:theme.colors.background,maxWidth:"100%",boxSizing:"border-box"});
+          Object.assign(takeaway.style,{marginLeft:"0",maxWidth:"100%",textAlign:"center",whiteSpace:"normal",lineHeight:"1.3",fontSize:"24px"});
+          const heading = el.querySelector('.v-summary-heading');
+          if (heading) textNodes.push([heading,{...slot,maxLines:1,box:{...slot.box,width,height:40}},node.id+":heading"]);
+          for (const [part,text,w,h,lines] of [["from",from,width/4,52,1],["to",to,width/4,52,1],["term",term,width/2,52,1],["takeaway",takeaway,width,64,2]])
+            textNodes.push([text,{...slot,maxLines:lines,box:{...slot.box,width:w,height:h}},node.id+":"+part]);
+          textNodes.push([el,{...slot,maxLines:node.heading?5:4},node.id+":container"]);
+        } else if (["summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant)) {
           const variant = variants.find(v => v.id === node.presentation.variant);
           const columnsResult = variant.termPosition === "takeaway_column";
           const compact = node.presentation.variant !== "summary-relationship-panel";

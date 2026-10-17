@@ -22,13 +22,32 @@ def execution_summary(stages):
     summary = {"version": "0.1.0", "recorded_requests": len(records), "measured_adapter_calls": 0,
                "recorded_reuses": 0, "unmeasured_requests": 0, "elapsed_ms": 0,
                "untimed_requests": 0, "adapter_input_bytes": 0, "attachment_bytes": 0,
-               "output_bytes": 0, "usage": None, "cost": None, "roles": roles}
+               "output_bytes": 0, "usage": None, "usage_complete": bool(records),
+               "cost": None, "roles": roles}
     for record in records:
         metrics = record.get("metrics")
         if not isinstance(metrics, dict):
             summary["unmeasured_requests"] += 1
             summary["untimed_requests"] += 1
+            summary["usage_complete"] = False
             continue
+        usage = metrics.get("usage")
+        if isinstance(usage, dict):
+            if any(type(usage.get(field)) is not int or usage[field] < 0
+                   for field in ("prompt_tokens", "completion_tokens", "total_tokens")):
+                summary["usage_complete"] = False
+            if summary["usage"] is None:
+                summary["usage"] = {"prompt_tokens": 0, "completion_tokens": 0,
+                                    "total_tokens": 0, "completion_tokens_details": {"reasoning_tokens": 0}}
+            for field in ("prompt_tokens", "completion_tokens", "total_tokens"):
+                count = usage.get(field)
+                if type(count) is int and count >= 0:
+                    summary["usage"][field] += count
+            reasoning = (usage.get("completion_tokens_details") or {}).get("reasoning_tokens")
+            if type(reasoning) is int and reasoning >= 0:
+                summary["usage"]["completion_tokens_details"]["reasoning_tokens"] += reasoning
+        else:
+            summary["usage_complete"] = False
         if type(metrics.get("adapter_calls")) is not int:
             summary["unmeasured_requests"] += 1
         role = metrics.get("role")

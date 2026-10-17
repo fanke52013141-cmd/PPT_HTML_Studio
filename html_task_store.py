@@ -56,14 +56,17 @@ def recovery_action(job):
     payload = job.get_payload()
     unknown = any(r.get("state") in {"intent", "unknown"}
                   for r in payload.get("production_stages", {}).values())
+    output_limit = any(r.get("state") == "output_limit"
+                       for r in payload.get("production_stages", {}).values())
     blocked = unknown or "RECONCILIATION_BLOCKED" in (job.error or "")
     resumable = (job.job_type in ("html_plan_generate","html_semantic_review")
                  and job.status in {"failed", "interrupted"}
                  and int(payload.get("attempt", 1)) < MAX_ATTEMPTS
                  and bool(payload.get("input", {}).get("snapshot_id") or (job.job_type=="html_semantic_review" and payload.get("input", {}).get("input_digest")))
-                 and not blocked)
+                 and not blocked and not output_limit)
     return {"can_resume": resumable, "requires_verification": blocked,
             "reason": "external_outcome_unknown" if blocked else
+                      "model_output_limit" if output_limit else
                       "resume_original_request" if resumable else "not_resumable"}
 
 
@@ -196,6 +199,8 @@ def submit_task(
             raise HtmlTaskError("已取消的快照任务不会恢复；请更改输入后创建新任务", 409)
         if any(record.get("state") in {"intent", "unknown"} for record in job_payload.get("production_stages", {}).values()):
             raise HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：外部请求结果不确定，需核实后处理，禁止盲目重试", 409)
+        if any(record.get("state") == "output_limit" for record in job_payload.get("production_stages", {}).values()):
+            raise HtmlTaskError("MODEL_OUTPUT_LIMIT：原请求输出额度耗尽，请调整规划输入后创建新实验", 409)
         attempt = int(job_payload.get("attempt", 1))
         if attempt >= MAX_ATTEMPTS:
             raise HtmlTaskError(

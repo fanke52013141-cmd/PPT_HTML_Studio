@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from checks.test_html_design_reconstruction import case as case
-from checks.html_design_agent_fixture import response_for
+from checks.html_design_agent_fixture import response_for, with_coverage
 from html_design_agent import component_context, validate_understanding, validate_fidelity, apply_allocations, fidelity_routes
 from html_design_reconstruction import reconstruct_design
 from html_visual_review_service import HtmlReviewDependencies, HtmlReviewError
@@ -17,6 +17,138 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def ready(context):
     return response_for({"artifact_prefix":"design_understanding-case","user_prompt":json.dumps(context)})
+
+
+def test_design_stages_use_low_effort_with_existing_deadline(case):
+    from html_design_agent import decision
+    run, scene, _, reference, _ = case
+    calls = []
+    def generator(**kwargs):
+        calls.append(kwargs)
+        return response_for(kwargs)
+    deps = HtmlReviewDependencies(ROOT, generator)
+    context = component_context(scene, ROOT)
+    folder = run / "understanding-effort"
+    decision("design_understanding", context, [reference], folder=folder, run_dir=run, deps=deps)
+    assert calls[0]["reasoning_effort_override"] == "low"
+    request = json.loads((folder / "request.json").read_text(encoding="utf-8"))
+    assert request["reasoning_effort_override"] == "low"
+    assert request["request_timeout_seconds"] == 600
+    decision("design_fidelity_review", context, [reference], folder=run / "fidelity-effort", run_dir=run, deps=deps)
+    assert calls[1]["reasoning_effort_override"] == "low"
+
+
+def test_design_understanding_repairs_complete_invalid_response_once(case):
+    from html_design_agent import understand_design
+    run, scene, _, reference, _ = case
+    calls = []
+    def generator(**kwargs):
+        calls.append(kwargs)
+        return ({"status": "ready", "objects": [None], "issues": []}
+                if len(calls) == 1 else response_for(kwargs))
+    record = understand_design(scene, reference, run_dir=run,
+                                deps=HtmlReviewDependencies(ROOT, generator))
+    assert record["result"]["status"] == "ready" and len(calls) == 2
+    assert all(call["reasoning_effort_override"] == "low" for call in calls)
+    assert "repair_feedback" in json.loads(calls[1]["user_prompt"])
+
+
+def test_variant_with_required_heading_is_not_offered_or_accepted(case):
+    run, scene, _, _, _ = case
+    summary = next(node for node in scene["nodes"] if node["type"] == "summary")
+    summary.pop("heading", None)
+    context = component_context(scene, ROOT)
+    variants = {v["id"] for v in context["capabilities"][summary["id"]]["variants"]}
+    assert "summary-relationship-panel" not in variants
+    allocation = ready(context)
+    next(item for item in allocation["objects"] if item["targetId"] == summary["id"])["variant"] = "summary-relationship-panel"
+    with pytest.raises(ValueError, match="Variant not applicable"):
+        validate_understanding(allocation, context)
+
+
+def test_required_stacked_text_stops_before_asset_or_reconstruction(case):
+    context = component_context(case[1], ROOT)
+    node = next(n for n in case[1]['nodes'] if n['type'] == 'text')
+    result = ready(context)
+    item = next(o for o in result['objects'] if o['targetId'] == node['id'])
+    item['required_features'] = ['label_value_stacked']
+    result = validate_understanding(result, context)
+    assert result['status'] == 'unsupported' and not result['objects']
+    assert result['issues'][0]['targetId'] == node['id']
+    assert result['issues'][0]['requirement'] == 'unsupported_presentation'
+
+
+def test_existing_variant_review_suggestion_is_flagged_without_passing_or_retry(case):
+    scene = copy.deepcopy(case[1])
+    summary = next(n for n in scene['nodes'] if n['type'] == 'summary')
+    summary['presentation'] = {'variant': 'summary-panel'}
+    result = {'issues':[{'targetId':summary['id'],'category':'layout',
+                        'requirement':'registered_variant','variant_id':'summary-panel'}]}
+    routed = fidelity_routes(result, scene, component_context(scene, ROOT)['capabilities'])
+    assert routed[0]['route'] == 'capabilities' and routed[0]['fact_conflict']
+    assert routed[0]['requested_variant'] == routed[0]['current_variant']
+
+
+def test_required_feature_stops_whole_reconstruction_before_downstream_requests(case):
+    run, scene, binding, reference, contract = case
+    calls = []
+    def generator(**kwargs):
+        calls.append(kwargs['artifact_prefix'])
+        assert kwargs['artifact_prefix'].startswith('design_understanding-')
+        context = component_context(scene, ROOT)
+        result = ready(context)
+        text = next(n for n in scene['nodes'] if n['type'] == 'text')
+        next(o for o in result['objects'] if o['targetId'] == text['id'])['required_features'] = ['label_value_stacked']
+        return result
+    before = copy.deepcopy(scene)
+    with pytest.raises(HtmlReviewError) as caught:
+        reconstruct_design(scene, binding, reference, run_dir=run,
+            deps=HtmlReviewDependencies(ROOT, generator), beats=contract['narration_beats'])
+    assert caught.value.code == 'DESIGN_ALLOCATION_UNSUPPORTED'
+    assert len(calls) == 1 and scene == before
+    assert not list((run / 'planning/html_visual').glob('scene-*.json'))
+
+
+def test_existing_card_stacked_feature_remains_supported():
+    scene = json.loads((ROOT / 'html_engine/visual/fixtures/labeled-explanation/scene.json').read_text(encoding='utf-8'))
+    context = component_context(scene, ROOT)
+    result = ready(context)
+    card = next(n for n in scene['nodes'] if n['type'] == 'card')
+    next(o for o in result['objects'] if o['targetId'] == card['id'])['required_features'] = ['label_value_stacked']
+    assert validate_understanding(result, context)['status'] == 'ready'
+
+
+def test_new_registered_variants_satisfy_explicit_reference_features(case):
+    context = component_context(case[1], ROOT)
+    result = ready(context)
+    for item in result['objects']:
+        node = next(n for n in case[1]['nodes'] if n['id'] == item['targetId'])
+        if node['type'] == 'text' and any(c in ''.join(r['text'] for r in node['runs']) for c in ':：'):
+            item.update(variant='text-card-stacked', required_features=['label_value_stacked'])
+        if node['type'] == 'summary':
+            item.update(variant='summary-arrow-overlay', required_features=['term_overlay_on_arrow','takeaway_below_flow'])
+    assert validate_understanding(result, context)['status'] == 'ready'
+    # Old variants continue rejecting the same explicit structure requirements.
+    summary = next(o for o in result['objects'] if o['variant'] == 'summary-arrow-overlay')
+    summary['variant'] = 'summary-panel'
+    assert validate_understanding(result, context)['status'] == 'unsupported'
+
+
+def test_existing_card_icons_are_rendered_without_editable_icon_choice():
+    scene = json.loads((ROOT / "html_engine/visual/fixtures/labeled-explanation/scene.json").read_text(encoding="utf-8"))
+    cards = [node for node in scene["nodes"] if node["type"] == "card"]
+    assert cards
+    context = component_context(scene, ROOT)
+    for card in cards:
+        capability = context["capabilities"][card["id"]]
+        assert capability["currentRender"] == {"icon": card["icon"], "source": "scene_card"}
+        assert capability["icons"] == []
+    allocation = ready(context)
+    assert validate_understanding(allocation, context)["status"] == "ready"
+    item = next(item for item in allocation["objects"] if item["targetId"] == cards[0]["id"])
+    item["icon"] = cards[0]["icon"]
+    with pytest.raises(ValueError, match="Icon not applicable"):
+        validate_understanding(allocation, context)
 
 
 def test_three_real_registered_skills_and_source_closure():
@@ -41,7 +173,7 @@ def test_review_receives_authority_and_tools_without_previous_agent_verdict(case
         for item in payload["capabilities"].values():
             if "set_text_style" in item["editable"]:
                 assert item["editable"]["set_text_style"]["scope"] == "whole_part_only"
-        return {"status": "pass", "issues": []}
+        return with_coverage(payload, {"status": "pass", "issues": []})
     result = review_fidelity(scene, reference, reference, {}, {"result": "not independent evidence"},
         folder=run/"fidelity", run_dir=run, deps=HtmlReviewDependencies(ROOT, generator))
     assert len(calls) == 1 and result["human_approval"] == "pending"
@@ -126,9 +258,10 @@ def test_visual_feedback_is_consumed_by_next_real_static_decision(case):
         fixture=response_for(kw)
         if kw["artifact_prefix"].startswith("design_fidelity_review-"):
             assert len(kw["image_paths"])==2 and all(Path(p).is_file() for p in kw["image_paths"])
+            assert 'local_comparisons' not in json.loads(kw['user_prompt'])
             reviews.append(kw)
             if len(reviews)==1:
-                return {"status":"changes_requested","issues":[{"targetId":"header","category":"layout","requirement":"geometry","severity":"minor","evidence":"header sits above reference baseline","suggestion":"move down"}]}
+                return with_coverage(json.loads(kw["user_prompt"]), {"status":"changes_requested","issues":[{"targetId":"header","category":"layout","requirement":"geometry","severity":"minor","evidence":"header sits above reference baseline","suggestion":"move down"}]})
             return fixture
         if fixture is not None:return fixture
         payload=json.loads(kw["user_prompt"])
@@ -146,7 +279,7 @@ def test_asset_problem_stops_static_loop_and_preserves_author(case):
     def generator(**kw):
         calls.append(kw)
         if kw["artifact_prefix"].startswith("design_fidelity_review-"):
-            return {"status":"changes_requested","issues":[{"targetId":"header","category":"capability","requirement":"unsupported_presentation","severity":"major","evidence":"unsupported header shape","suggestion":"add registered variant"}]}
+            return with_coverage(json.loads(kw["user_prompt"]), {"status":"changes_requested","issues":[{"targetId":"header","category":"capability","requirement":"unsupported_presentation","severity":"major","evidence":"unsupported header shape","suggestion":"add registered variant"}]})
         return response_for(kw) or {"status":"unchanged","message":"fixture"}
     with pytest.raises(HtmlReviewError) as caught:
         reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"],progress=events.append)

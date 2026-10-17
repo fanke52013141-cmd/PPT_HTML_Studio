@@ -71,7 +71,9 @@ def test_registered_variants_use_existing_protected_editor_without_content_chang
 def test_normal_planning_prompt_has_exact_registered_label_budget():
     capabilities = _registered_capabilities(ROOT)
     prompts = build_plan_generation_prompts(CONTRACT_SLIDE, capabilities, plan_version="0.2.0")
-    assert "html-semantic-plan/0.3.0" in prompts["system_prompt"]
+    assert "html-semantic-plan/0.3.2" in prompts["system_prompt"]
+    assert "必填=" in prompts["system_prompt"]
+    assert "assets.role 是不超过64字" in prompts["system_prompt"]
     template = capabilities["catalog"]["templates"]["explanation-labeled-v1"]
     assert [s for s in template["slots"] if s.startswith("marker-")] == [f"marker-{i}" for i in range(1, 7)]
     assert "marker-6" in prompts["system_prompt"] and "图片需求" in prompts["system_prompt"]

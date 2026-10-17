@@ -38,6 +38,33 @@ def test_title_change_only_rebuilds_target_visual(inputs):
     assert any("header" in path or "headline" in path for path in plan["pages"]["p2"]["diff"])
 
 
+@pytest.mark.parametrize("change", ["layout", "narration", "asset"])
+def test_nine_page_changes_preserve_other_eight_pages(inputs, change):
+    before = copy.deepcopy(inputs)
+    template = before["pages"]["p2"]
+    before["pages"] = {f"slide_{i:03}": copy.deepcopy(template) for i in range(1, 10)}
+    before["order"] = list(before["pages"])
+    for identity, page in before["pages"].items():
+        page["scene"]["id"] = identity
+    after = copy.deepcopy(before)
+    target = "slide_002"
+    if change == "layout":
+        after["pages"][target]["scene"]["nodes"][0]["title"] = "edited title"
+    elif change == "narration":
+        after["pages"][target]["narration"] = "edited authoritative narration"
+    else:
+        image = next(n for n in after["pages"][target]["scene"]["nodes"] if n["type"] == "image")
+        image["assetRef"] = {"id": "page-two-replacement", "version": "0.1.0"}
+        after["assets"] = {"page-two-replacement": "replacement-content-hash"}
+    report = plan_rebuild(before, after)
+    assert stages(report, target)
+    assert all(not stages(report, identity) for identity in before["order"] if identity != target)
+    if change == "narration":
+        assert "tts" in stages(report, target)
+    else:
+        assert "tts" not in stages(report, target)
+
+
 def test_narration_requires_page_tts_and_timing_not_image(inputs):
     after = copy.deepcopy(inputs)
     after["pages"]["p2"]["narration"] = "different spoken input"
@@ -231,10 +258,16 @@ def test_new_rebuild_snapshot_cannot_bypass_unknown_model_request(tmp_path):
         db.add(project)
         db.commit()
         executor = Capture()
-        jobs = HtmlWorkflowJobs(SessionLocal, HtmlReviewDependencies(ROOT, timeout), executor=executor)
+        def forbidden_image(*args, **kwargs):
+            raise AssertionError("unknown planning must stop before image generation")
+        jobs = HtmlWorkflowJobs(SessionLocal, HtmlReviewDependencies(ROOT, timeout),
+                                provider=forbidden_image, executor=executor)
         task = jobs.submit(db, project, contract)
         executor.args[0](*executor.args[1:])
         job = tasks._job(db, task["id"])
+        assert calls == [1]
+        assert any(record.get("state") == "unknown" for record in
+                   job.get_payload().get("production_stages", {}).values())
         payload = job.get_payload()
         payload["submission_key"] = "old-code-snapshot-key"
         tasks._transition(db, job, ("failed",), {"payload_json": tasks.json_dumps(payload)})

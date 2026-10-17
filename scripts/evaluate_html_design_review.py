@@ -81,6 +81,7 @@ def main(argv=None):
     parser.add_argument("--understanding", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--live", action="store_true")
+    parser.add_argument("--reconstruct", action="store_true", help="Run the actual bounded reconstruction pipeline instead of independent review")
     args = parser.parse_args(argv)
     if not args.live:
         print(json.dumps({"profile": "same-case-design-review/0.1.0", "adapter_decisions": 2,
@@ -123,7 +124,7 @@ def main(argv=None):
         client = factory(**kwargs)
         create = client.chat.completions.create
         def capture(**request):
-            if len(calls) >= 6:
+            if len(calls) >= (12 if args.reconstruct else 6):
                 raise RuntimeError("HTTP_BUDGET_EXHAUSTED")
             item = {"state": "intent", "model": request["model"], "stream": request.get("stream"),
                     "max_tokens": request.get("max_tokens"), "temperature": request.get("temperature"),
@@ -148,7 +149,11 @@ def main(argv=None):
     llm.get_openai_client = client_factory
 
     def generator(**kwargs):
-        item = {"stage": "understanding" if kwargs["artifact_prefix"].startswith("design_understanding") else "fidelity",
+        prefix = kwargs['artifact_prefix']
+        stage = ('understanding' if prefix.startswith('design_understanding') else
+                 'reconstruction' if prefix.startswith('design-reconstruct') else
+                 'layout_repair' if prefix.startswith('layout-agent') else 'fidelity')
+        item = {"stage": stage,
                 "state": "intent", "request_timeout_seconds": kwargs["request_timeout"],
                 "input_bytes": len(kwargs["system_prompt"].encode()) + len(kwargs["user_prompt"].encode()),
                 "image_count": len(kwargs.get("image_paths", []))}
@@ -171,6 +176,24 @@ def main(argv=None):
     result = {"profile": evidence["profile"], "author_writes": 0, "new_images": 0,
               "human_approval": False, "full_production_revalidated": False}
     try:
+        if args.reconstruct:
+            from html_design_reconstruction import reconstruct_design
+            from html_production_service import compile_plan
+            from html_storyboard_planning import load_template_catalog
+            candidate = read(args.design_folder / 'candidate.json')
+            contracts = read(args.source_run / 'planning/visual_contract.json')
+            contract = next(c for c in contracts['slides'] if c['slide_id'] == candidate['slide_id'])
+            shutil.copy2(args.source_run / 'planning/visual_contract.json', run / 'planning/visual_contract.json')
+            scene, binding = compile_plan(candidate['plan'], contract, load_template_catalog(ROOT))
+            result['scope'] = 'actual bounded system reconstruction; author save and human acceptance excluded'
+            result['reconstruction'] = reconstruct_design(scene, binding, run / 'reference.png',
+                run_dir=run, deps=deps, beats=contract['narration_beats'], progress=events.append)
+            result['state'] = 'returned'
+            return_code = 0
+            result.update(decisions=decisions, http_attempts=len(calls), events=events)
+            write_json_atomic(out / 'summary.json', result)
+            print(json.dumps({'state':result['state'], 'decisions':decisions, 'http_attempts':len(calls)},ensure_ascii=False))
+            return return_code
         try:
             understood = understand_design(original, run / "reference.png", run_dir=run, deps=deps,
                 asset_modes={n["id"]: "generate" for n in original["nodes"] if n["type"] == "image"}, progress=events.append)

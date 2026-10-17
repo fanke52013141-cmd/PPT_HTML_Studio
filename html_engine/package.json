@@ -12,7 +12,8 @@
     "build:visual": "node visual/build.cjs",
     "test:visual": "node visual/tests/capacity.test.cjs && node visual/tests/verify.cjs",
     "effects:cache": "node visual/tools/effect-cache.cjs",
-    "export:frames": "node visual/tools/export-frames.cjs"
+    "export:frames": "node visual/tools/export-frames.cjs",
+    "test:visual:stacked": "node visual/tests/stacked-relation.test.cjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",

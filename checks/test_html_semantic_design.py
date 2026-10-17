@@ -57,6 +57,41 @@ def test_unsupported_allocation_is_blocked(change, code):
     assert caught.value.code == code
 
 
+@pytest.mark.parametrize("field,value,code", [
+    ("targetId", "focus", "SEMANTIC_ANNOTATION_TARGET"),
+    ("anchorId", "wrong-focus", "SEMANTIC_ANNOTATION_ANCHOR"),
+    ("labelId", "missing-label", "SEMANTIC_ANNOTATION_LABEL"),
+])
+def test_annotation_references_fail_before_image_generation(field, value, code):
+    plan = normalize(semantic_plan())
+    plan["slots"]["annotation"][field] = value
+    with pytest.raises(SemanticPlanError) as caught:
+        build_semantic_design(plan)
+    assert caught.value.code == code
+
+
+@pytest.mark.parametrize("target", ["subject", "condensation"])
+def test_annotation_accepts_explicit_image_identity(target):
+    plan = normalize(semantic_plan())
+    plan["slots"]["annotation"]["targetId"] = target
+    assert build_semantic_design(plan)["semantic_review"] == "pending_review"
+
+
+def test_planning_repairs_bad_annotation_before_design_image(tmp_path):
+    bad = semantic_plan()
+    bad["slots"]["annotation"]["targetId"] = "focus"
+    good = semantic_plan()
+    responses = [bad, good]
+    plan = generate_scene_plan(
+        CONTRACT_SLIDE, run_dir=tmp_path, repo_root=ROOT,
+        json_generator=lambda **kw: responses.pop(0), plan_version="0.2.0",
+    )
+    assert plan["slots"]["annotation"]["targetId"] == "subject"
+    record = json.loads((tmp_path / "planning/html_visual/records/plan-slide_001.json").read_text(encoding="utf-8"))
+    assert [item["accepted"] for item in record["attempts"]] == [False, True]
+    assert record["attempts"][0]["diagnostic_code"] == "SEMANTIC_ANNOTATION_TARGET"
+
+
 def test_image_internal_state_change_is_not_assumed_possible():
     plan = normalize(semantic_plan())
     for i, expression in enumerate(("完整未分词文本", "分离后的Token块")):

@@ -270,6 +270,8 @@ def produce_scene(
     stage_record: Callable = lambda name, value: None,
     progress_record: Callable = lambda value: None,
     commit_record: Callable = lambda result, paths, **kwargs: None,
+    definition_hash_override: dict | None = None,
+    plan_override: dict | None = None,
 ) -> dict:
     from html_storyboard_planning import load_template_catalog
 
@@ -298,20 +300,38 @@ def produce_scene(
     revising_design = bool(selection.design_candidate_key and selection.design_instruction.strip())
     if provider is None and (not selection.design_candidate_key or revising_design):
         raise HtmlReviewError("正式页面需要先生成完整设计参考，请配置图片服务", code="DESIGN_PROVIDER_MISSING")
-    definitions = definition_identity(deps.repo_root)
+    compatible_sources = {"html_design_agent.py", "html_design_candidates.py", "html_production_service.py"}
+    if definition_hash_override and (not selection.prior_unknown_task_id
+                                     or set(definition_hash_override) != compatible_sources):
+        raise HtmlReviewError("设计定义兼容范围无效", code="DESIGN_DEFINITION_OVERRIDE_INVALID")
+    def current_definition_identity():
+        return (definition_identity(deps.repo_root, source_hash_overrides=definition_hash_override)
+                if definition_hash_override else definition_identity(deps.repo_root))
+    definitions = current_definition_identity()
+    from artifact_fingerprint import sha256_file
+    current_source_hashes = {name: sha256_file(deps.repo_root / name) for name in compatible_sources}
+    def definitions_unchanged():
+        return (current_definition_identity() == definitions
+                and all(sha256_file(deps.repo_root / name) == value
+                        for name, value in current_source_hashes.items()))
     resumed = None
     if selection.design_candidate_key:
         resumed, package, accepted_image = load_design(
             run_dir=run_dir, contract=contract, key=selection.design_candidate_key,
             revision=revision, definitions=definitions, model_summary=model_summary,
         )
-    plan = copy.deepcopy(resumed["plan"]) if resumed else generate_scene_plan(
-        contract,
-        run_dir=run_dir,
-        repo_root=deps.repo_root,
-        json_generator=deps.planning_generator or deps.json_generator,
-        plan_version=selection.plan_version,
-    )
+    if resumed:
+        plan = copy.deepcopy(resumed["plan"])
+    elif plan_override is not None:
+        plan = copy.deepcopy(plan_override)
+    else:
+        plan = generate_scene_plan(
+            contract,
+            run_dir=run_dir,
+            repo_root=deps.repo_root,
+            json_generator=deps.planning_generator or deps.json_generator,
+            plan_version=selection.plan_version,
+        )
     prompt_version = SEMANTIC_PROMPT_VERSION if plan.get("version") == "0.2.0" else PROMPT_VERSION
     brief = copy.deepcopy(resumed["brief"]) if resumed else build_design_brief(
         plan,
@@ -343,8 +363,9 @@ def produce_scene(
         else:
             package_path = run_dir / "planning/html_visual/reference-packages" / sha256_json(
                 {"plan": plan, "brief": brief, "definitions": definitions})
-            package = assemble_reference(plan, brief, repo_root=deps.repo_root,
-                                         directory=package_path, runner=run_subprocess_killable)
+            package = (verify_package(package_path) if package_path.exists() else
+                       assemble_reference(plan, brief, repo_root=deps.repo_root,
+                                          directory=package_path, runner=run_subprocess_killable))
             package["directory"] = str(package_path.relative_to(run_dir))
             references = package["references"]
         design_path = (
@@ -419,7 +440,7 @@ def produce_scene(
                         revision=revision, definitions=definitions, model_summary=model_summary)
         if refreshed["manifest"]["manifestSha256"] != package["manifest"]["manifestSha256"]:
             raise HtmlReviewError("请求期间参考包已变化", code="REFERENCE_PACKAGE_INVALID")
-        if definition_identity(deps.repo_root) != definitions:
+        if not definitions_unchanged():
             raise HtmlReviewError("生成期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
         stage_record("design", candidate)
         return save_design(run_dir=run_dir, contract=contract, revision=revision,
@@ -545,7 +566,7 @@ def produce_scene(
         current_revision = _read_revision(run_dir)["revision"]
         if current_revision != revision:
             raise HtmlVisualConflict(revision, current_revision)
-        if definition_identity(deps.repo_root) != definitions:
+        if not definitions_unchanged():
             raise HtmlReviewError("生成期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
         if resumed:
             load_design(run_dir=run_dir, contract=contract, key=selection.design_candidate_key,
@@ -650,7 +671,7 @@ def produce_scene(
             current_revision = _read_revision(run_dir)["revision"]
             if current_revision != revision:
                 raise HtmlVisualConflict(revision, current_revision)
-            if definition_identity(deps.repo_root) != definitions:
+            if not definitions_unchanged():
                 raise HtmlReviewError("修复期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
             provenance = {"format": "hps.html.production_provenance", "version": "0.1.0",
                           "model_summary": model_summary, "themeRef": scene["themeRef"],

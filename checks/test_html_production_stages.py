@@ -45,6 +45,17 @@ def test_returned_response_reused_across_attempts(stage):
         stage.record("late", {"bad": True})
 
 
+def test_sealed_plan_phase_survives_restart_without_replanning(stage):
+    plan = {"slide_id": "s1", "version": "0.2.0", "objects": [{"id": "n1"}]}
+    stage.record("plan", plan)
+    recovered = restart(stage)
+    assert recovered.returned_phase("plan") == plan
+    record = store._job(recovered.db, recovered.job_id).get_payload()["production_stages"]["phase:plan"]
+    (recovered.run / record["file"]).write_text("{}", encoding="utf-8")
+    with pytest.raises(store.HtmlTaskError, match="STAGE_ARTIFACT_INVALID"):
+        recovered.returned_phase("plan")
+
+
 def test_deleted_result_is_not_reused_or_rerequested(stage):
     calls = []
     fn = lambda **kw: calls.append(1) or {"plan": True}
@@ -65,6 +76,24 @@ def test_unknown_provider_outcome_blocks_resubmission(stage):
         stage.wrap(timeout, "json")()
     with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
         restart(stage)
+
+
+def test_image_unknown_records_safe_provider_phase_without_upstream_text(stage, monkeypatch):
+    import html_image_provider
+    from image_generation_errors import ImageGenerationError, ImageGenerationErrorInfo
+
+    def fail(*_args, **_kwargs):
+        raise ImageGenerationError(ImageGenerationErrorInfo(
+            code="connection_reset", phase="submit", retryable=False,
+            safe_message="private upstream detail",
+        ))
+
+    monkeypatch.setattr(html_image_provider, "_configured_image", fail)
+    with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
+        stage.wrap(html_image_provider.configured_image, "image")("fixture")
+    record = next(iter(store._job(stage.db, stage.job_id).get_payload()["production_stages"].values()))
+    assert record["provider_error"] == {"code": "connection_reset", "phase": "submit"}
+    assert "private upstream detail" not in str(record)
 
 
 def test_unknown_outcome_is_recorded_even_when_source_changes_in_flight(stage, monkeypatch):
@@ -218,4 +247,31 @@ def test_stream_failure_routes_to_verification_and_blocks_resend(stage):
     assert task["recovery"]["requires_verification"] and not task["recovery"]["can_resume"]
     with pytest.raises(store.HtmlTaskError, match="EXTERNAL_OUTCOME_UNKNOWN"):
         wrapped(artifact_prefix="html_scene_plan_s1", request_timeout=1800)
+    assert calls == [1] and "private provider detail" not in str(task)
+
+
+def test_completed_length_stream_is_known_output_limit_with_usage(stage):
+    calls = []
+    def generator(**kw):
+        calls.append(1)
+        kw["on_stream_progress"]({"state": "failed", "failure_reason": "output_limit",
+            "finish_reason": "length", "usage": {"prompt_tokens": 4516,
+                "completion_tokens": 64000, "total_tokens": 68516,
+                "completion_tokens_details": {"reasoning_tokens": 62196}}})
+        raise RuntimeError("private provider detail")
+    generator.supports_stream_progress = True
+    wrapped = stage.wrap(generator, "json")
+    with pytest.raises(store.HtmlTaskError, match="MODEL_OUTPUT_LIMIT"):
+        wrapped(artifact_prefix="html_scene_plan_s1")
+    task = store._job_to_dict(store._job(stage.db, stage.job_id))
+    record = next(iter(task["stages"].values()))
+    assert record["state"] == "output_limit"
+    assert record["metrics"]["usage"]["completion_tokens"] == 64000
+    assert task["execution"]["usage"]["completion_tokens"] == 64000
+    assert task["execution"]["usage_complete"]
+    assert task["progress"]["next_action"] == {"stage": "planning", "reason": "output_limit",
+        "routes": ["planning_revision"], "automatic_retry": False}
+    assert not task["recovery"]["requires_verification"]
+    with pytest.raises(store.HtmlTaskError, match="MODEL_OUTPUT_LIMIT"):
+        wrapped(artifact_prefix="html_scene_plan_s1")
     assert calls == [1] and "private provider detail" not in str(task)

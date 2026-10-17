@@ -6,16 +6,57 @@ Requirement = Literal[
     "asset_identity", "asset_rendering", "theme_conflict", "unsupported_presentation",
 ]
 
+ReferenceDetail = Literal['decorative_icon', 'surface_chrome']
+
+
+def allowed_reference_details(node):
+    if node['type'] == 'text' and ''.join(r.get('text','') for r in node.get('runs',[])).strip():
+        return ['decorative_icon', 'surface_chrome']
+    if node['type'] == 'header' and node.get('title'):
+        return ['decorative_icon', 'surface_chrome']
+    if node['type'] == 'summary' and all(node.get(k) for k in ('from','to','term','takeaway')):
+        return ['decorative_icon', 'surface_chrome']
+    return []
+
+
+def reference_observation(issue, node):
+    """Only explicit reference-only decoration can be nonblocking; minor alone never suffices."""
+    return (issue.get('reference_detail') in allowed_reference_details(node)
+            and issue.get('requirement') == 'unsupported_presentation'
+            and issue.get('severity') != 'major')
+
+
+def presentation_facts(node, variant=None):
+    """Renderer-owned facts; reference names never imply unimplemented features."""
+    variant = variant if variant is not None else node.get("presentation", {}).get("variant", "plain")
+    stacked = node['type'] == 'text' and variant == 'text-card-stacked'
+    overlay = node['type'] == 'summary' and variant == 'summary-arrow-overlay'
+    facts = {"variant": variant, "label_value_stacked": node["type"] == "card" or stacked,
+             "term_overlay_on_arrow": overlay, "takeaway_below_flow": overlay}
+    if node["type"] == "text":
+        facts["text_layout"] = "stacked_label_body" if stacked else "inline_runs"
+        facts["label_split"] = "block_after_first_colon" if stacked else "inline_emphasized_prefix" if variant == "text-card-label" else "none"
+    if node["type"] == "summary":
+        facts.update(term_position="on_connector" if overlay else "below_connector" if variant == "summary-panel" else "registered_layout",
+                     takeaway_position="below_flow" if overlay else "side_column")
+    return facts
+
 
 def production_policy(scene):
     return {
-        "version": "0.1.0",
+        "version": "0.2.0",
         "theme": scene.get("themeRef"),
         "palette": "grayscale" if (scene.get("themeRef") or {}).get("id") == "neutral-baseline" else "registered_theme",
         "text_owner": "code_including_labels_inside_illustrations",
         "relation_owner": "code",
         "reference_role": "composition_reference_below_authoritative_content_and_theme",
         "asset_scope": "nonsemantic_illustration_only_no_text_labels_or_semantic_relations",
+        "reference_adaptation": {
+            "allowed_details": ['decorative_icon','surface_chrome'],
+            "missing_decorative_icon": 'omit_rather_than_invent_or_use_unrelated_icon',
+            "required": ['authoritative_text','semantic_relations','explicit_structure','readability','asset_identity','manual_protection'],
+            "minor_alone_is_not_exemption": True,
+        },
     }
 
 
@@ -48,5 +89,7 @@ def resolve_issue(issue, node, capability):
     if need == "typography" and "set_text_style" in operations:
         return "reconstruction", "registered_whole_part_typography_operation"
     if need == "registered_variant" and issue.get("variant_id") in operations.get("set_variant", []):
+        if issue["variant_id"] == node.get("presentation", {}).get("variant", "plain"):
+            return "capabilities", "requested_variant_already_active_requires_fact_review"
         return "reconstruction", "explicit_applicable_registered_variant"
     return "capabilities", "required_presentation_not_executable_by_registered_static_tools"

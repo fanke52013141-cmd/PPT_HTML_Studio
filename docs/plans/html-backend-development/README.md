@@ -1,6 +1,6 @@
 # HTML 后端改造：开发与验收交接包
 
-最新发布入口：[流程Agent与多标签能力备注](../../releases/2026-10-15-workflow-agents-and-labeled-capabilities.md)。当前契约0.9.53/API1.34.0，固定清单21/21；新能力真实案例规划因ReadTimeout未完成，详见[最新交接](handoff-labeled-capabilities-2026-10-15.md)。下方早期阶段记录保留，当前实现/验证状态以上述入口为准。
+最新发布入口：[2026-10-17流程优化与文字边缘核验](../../releases/2026-10-17-review-and-handoff.md)，契约0.9.76；本批相关隔离回归255项通过。换机开发按[跨机优化交接](handoff-cross-machine-optimization-2026-10-17.md)，真实页文字边缘结论按[专项验证记录](reference-text-edges-2026-10-17.md)。早期阶段记录保留为历史，下方路线图不替代当前实现/验证结论。
 
 > 2026-10-09 流程与并行任务安排见[流程先行与并行开发计划](../workflow-first-parallel-2026-10-09/README.md)。参考库、设计输入、还原和课程接入仍按现行视觉参考库路线的依赖推进；新计划补充用户确认、失败恢复、文件归属和各线交付。
 

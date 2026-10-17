@@ -32,7 +32,7 @@ def registry(tmp_path):
     root = tmp_path / "repo"
     for name in [
         REGISTRY,
-        PACKAGE + "candidate-layout-repair-0.1.0.md",
+        PACKAGE + "candidate-layout-repair-0.3.0.md",
         PACKAGE + "layout-evidence-0.1.0.md",
     ]:
         dest = root / name
@@ -99,7 +99,7 @@ def test_bad_registry_never_falls_back(registry, change):
 
 def test_missing_tampered_and_unregistered_reference_rejected(registry):
     selected = load_runtime_skill(registry, mode="runtime_skill")
-    body = registry / PACKAGE / "candidate-layout-repair-0.1.0.md"
+    body = registry / PACKAGE / "candidate-layout-repair-0.3.0.md"
     body.write_text(
         body.read_text(encoding="utf-8") + "\n[external](https://example.com/)",
         encoding="utf-8",
@@ -119,7 +119,7 @@ def test_missing_tampered_and_unregistered_reference_rejected(registry):
 
 def test_new_published_content_changes_selection_identity(registry):
     before = load_runtime_skill(registry, mode="runtime_skill")
-    body = registry / PACKAGE / "candidate-layout-repair-0.1.0.md"
+    body = registry / PACKAGE / "candidate-layout-repair-0.3.0.md"
     body.write_text(body.read_text(encoding="utf-8") + "\n新版策略。", encoding="utf-8")
     edit_registry(
         registry,
@@ -153,7 +153,10 @@ def test_actual_outgoing_prompt_identity_and_code_gate(draft, mode):
         run_dir,
         artifact_prefix,
         image_paths,
+        request_timeout,
+        reasoning_effort_override,
     ):
+        assert request_timeout == 180 and reasoning_effort_override == "low"
         calls.append(system_prompt)
         if mode == "legacy_prompt":
             assert system_prompt == SYSTEM_PROMPT
@@ -245,6 +248,10 @@ def test_generation_snapshot_contains_actual_skill_closure(tmp_path):
     manifest = verify_snapshot(snap["path"])
     paths = {e["path"] for e in manifest["files"]}
     assert "source/html_runtime_skills.py" in paths
+    assert "source/html_review_evidence.py" in paths
+    assert "source/html_review_facts.py" in paths
+    assert "source/html_reference_localization.py" in paths
+    assert "source/html_text_edge_verification.py" in paths
     assert "source/" + REGISTRY in paths
     assert all(
         "source/" + record["path"] in paths for record in load_runtime_skill(ROOT).files
@@ -267,7 +274,7 @@ def test_skill_hash_change_between_validation_and_capture_blocks_snapshot(
 
 def test_deleted_loaded_fragment_has_clear_changed_error(registry):
     selected = load_runtime_skill(registry)
-    (registry / PACKAGE / "candidate-layout-repair-0.1.0.md").unlink()
+    (registry / PACKAGE / "candidate-layout-repair-0.3.0.md").unlink()
     with pytest.raises(RuntimeSkillError, match="CHANGED_DURING_RUN"):
         selected.verify()
 

@@ -1,5 +1,11 @@
 # S02 外部结果对账与作者提交恢复 0.2.0
 
+上传前置失败的窄核实规则（2026-10-17，HPS-011/014/015/017）：仅image unknown且安全异常为ImageProviderBoundaryError/connection_failed、持久传输入口只有正整数upload计数、没有submit/poll/extract、无上游ID/上游回执/返回回执时，可由对账标记not_submitted。原unknown完整复制至pre_submit_failures并保留磁盘回执；只证明该本地调用未进入生成POST，上传是否送达未知。只要出现submit或证据不完整仍unknown。后续执行仍核验快照、源码和模型；源码变化形成新任务，不能冒充原快照续跑。该规则不允许对无传输证据的旧unknown补发，也不推断费用。
+
+2026-10-17兼容增量（HPS-010/011/014/015/017）：同任务冻结来源仍有效时，恢复读取散列校验的`phase:plan`，复用已归一化的计划；同计划/brief/定义哈希目录上的参考包须通过`verify_package`才复用。损坏阶段或参考包失败关闭，不重新调用模型来掩盖损坏。当前源码与作者修订仍逐边界核验，原unknown和人工门禁不变。
+
+ToAPIs可选传输事件只接收upload/submit/poll/extract枚举。`transport.boundary_entries`记录实际本地HTTP操作入口次数（extract为结果提取入口），`lookup_boundary_entries`记录恢复入口次数；不等于供应商送达、计费或精确下载/解码成功。恢复只接受poll/extract，在HTTP操作前拒绝上传/提交。结构化图片异常仅保存安全code/phase，不保存上游异常原文或凭据；旧回执不补造新证据。无公共请求Schema、数据库迁移或自动重试策略变化，图片后端默认调用不受可选事件影响。实际验收和限制见[阶段1、2账本](../../../../plans/html-backend-development/validation-ledger-2026-10-17.md)。
+
 2026-10-12；HPS-010/011/014/015/017。[0.1.0](production-recovery-0.1.0.md) 的兼容增量；不改作者 Schema、批准格式和生产 API 路径。
 
 | 项目 | 定义与实际接线 |
