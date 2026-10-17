@@ -293,5 +293,7 @@ def localize_reference(scene, reference, *, folder, run_dir, deps, checkpoint=la
             'box_coordinates':'original_image_pixels',
             'located':sum(t['status']=='located' for t in result['targets']),
             'quality':'model_proposed_unverified','human_approval':'pending','candidate_geometry_supplied':False}
+    from html_text_edge_report import write_text_edge_report
+    record['edge_report'] = write_text_edge_report(reference, record, folder/'text-edges.html')
     write_json_atomic(folder/'result.json',record)
     return record

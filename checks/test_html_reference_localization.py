@@ -63,6 +63,10 @@ def test_locator_receives_reference_only_and_ignores_all_html_positions(tmp_path
     assert record['edge_verification']['status']=='uncertain' # White fixture has no text pixel evidence.
     assert record['edge_verification']['policy']=='reference-text-edge/0.1.0'
     assert not record['edge_verification']['automatic_review_eligible']
+    assert record['edge_report']['regions'] == 1
+    assert (tmp_path/'loc/text-edges.html').is_file()
+    from artifact_fingerprint import sha256_file
+    assert record['edge_report']['sha256'] == sha256_file(tmp_path/'loc/text-edges.html')
     assert record['result']['targets'][0]['pixel_box']==[100,150,700,200]
     with Image.open(tmp_path/'loc/target-1.png') as crop:assert crop.size==(600,50)
     changed=scene();changed['nodes'][0]['presentation']={'offsetX':-500}

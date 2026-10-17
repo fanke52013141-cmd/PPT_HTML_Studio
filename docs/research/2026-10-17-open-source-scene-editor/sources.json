@@ -1,0 +1,65 @@
+{
+  "research_id": "RES-20261017-01",
+  "date": "2026-10-17",
+  "timezone": "Asia/Shanghai",
+  "status": "researched_not_implemented",
+  "sources": [
+    {
+      "id": "moveable",
+      "role": "candidate_direct_dependency_canvas",
+      "source": "https://registry.npmjs.org/moveable/latest",
+      "version": "0.53.0",
+      "license": "MIT",
+      "peerDependencies": {},
+      "dist_integrity": "sha512-71jS9zIoQzMhnNvduhg4tUEdm23+fO/40FN7muVMbZvVwbTku2MIxxLhnU4qFvxI4oVxn75l79SbtgjuA+s7Pw==",
+      "metadata_sha256": "78cbd99cc4287ff887f05ba74056289c697396ba9d85cffc763664c5de2563c3",
+      "integration_tested": false
+    },
+    {
+      "id": "selecto",
+      "role": "candidate_direct_dependency_selection",
+      "source": "https://registry.npmjs.org/selecto/latest",
+      "version": "1.26.3",
+      "license": "MIT",
+      "peerDependencies": {},
+      "dist_integrity": "sha512-gZHgqMy5uyB6/2YDjv3Qqaf7bd2hTDOpPdxXlrez4R3/L0GiEWDCFaUfrflomgqdb3SxHF2IXY0Jw0EamZi7cw==",
+      "metadata_sha256": "1a1729a486010f32cfcaa96bcf79a0a53fb60d3df2d52532f1b3b2763e21de54",
+      "integration_tested": false
+    },
+    {
+      "id": "@xzdarcy/react-timeline-editor",
+      "role": "candidate_direct_dependency_timeline",
+      "source": "https://registry.npmjs.org/@xzdarcy%2Freact-timeline-editor/latest",
+      "version": "1.0.0",
+      "license": "MIT",
+      "peerDependencies": {
+        "react": ">=18.0.0",
+        "react-dom": ">=18.0.0"
+      },
+      "dist_integrity": "sha512-8kf3o9qat44ZGbusKAPnBYQivzL/RSL2du4w47UyelEeib/5ZZmN8mTlch3J5JsIEtkhpAsJYSJUx12j7/XMtg==",
+      "metadata_sha256": "cdb413f6f89465570a736bd9c609d3927e2b0d87c9aa0bb137387d2bd0828c6f",
+      "integration_tested": false
+    },
+    {
+      "id": "daybrush/scena",
+      "role": "reference_source_editor_composition",
+      "source": "https://github.com/daybrush/scena",
+      "commit": "eae65fb0b1f9a3b2989c3228c331dc7d0bf9211f",
+      "license": "MIT",
+      "integration_tested": false
+    },
+    {
+      "id": "theatre-js/theatre",
+      "role": "reference_interaction_only_not_selected_dependency",
+      "source": "https://github.com/theatre-js/theatre",
+      "commit": "6ea82b938ea49609489f6377ded693ccc6ee8f5b",
+      "license_note": "Core Apache-2.0; Studio AGPL-3.0 per project README",
+      "integration_tested": false
+    }
+  ],
+  "notes": [
+    "Versions read from npm latest metadata on research date; target versions for integration spike, not installed dependencies.",
+    "GitHub REST was rate-limited; source commits resolved by git ls-remote; no source clone or dependency installation.",
+    "Existing rendering, audio alignment, author revisions and protected edits remain application owners."
+  ]
+}

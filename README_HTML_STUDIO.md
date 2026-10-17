@@ -1,5 +1,7 @@
 # HTML Studio
 
+最新换机入口：[开源编辑与Agent优化handoff](docs/plans/html-backend-development/handoff-open-source-editor-2026-10-17.md)及[本批发布备注](docs/releases/2026-10-17-edge-reports-editor-handoff.md)。契约0.9.78；98项本批隔离测试通过，开源画布/时间轴尚未集成。以下历史状态不替代最新交接。
+
 2026-10-17当前开发/换机入口：[流程优化与文字边缘核验发布](docs/releases/2026-10-17-review-and-handoff.md)及[跨机开发交接](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)。当前远端`main`已包含应用源码与guided HTML后端；原图片工作流继续保留。下方10月14日及更早记录属于历史快照，不代表当前代码、分支或验收状态。
 
 2026-10-14 当前交接：[A04—A06 开发与线上同步备注](docs/plans/html-backend-development/handoff-2026-10-14-publication.md)。正常应用已完成五页分镜和第一页整页设计/独立素材；未保存候选的人工审阅入口可追溯原任务，但最终版式容量失败，只能驳回。真实整课、试听/签收与正式输出仍待完成。A06 过程证据见 [专项交接](docs/plans/html-backend-development/handoff-a06-2026-10-14.md)。
@@ -29,34 +31,24 @@
 
 ## 启动
 
-唯一开发与运行目录：`D:\Program Files (x86)\PPT_HTML_Studio`。
+当前机器工作目录是 `D:\software\PPT_HTML_Studio`；另一台使用实际clone目录，所有命令从仓库根执行，不照搬旧绝对目录或桌面快捷方式。
 
-正常使用桌面上的 **PPT HTML Studio** 快捷方式。它直接执行本目录的
-`open-html-studio.ps1`，每次打开都先核对并停止本项目的旧服务，再从当前源码
-启动并打开浏览器。关闭浏览器不会自动停止服务，再次打开快捷方式会重启服务。
-原项目的服务和数据库与此副本隔离。
+仓库包含 `start_server.py` 和 `start_here.bat`。历史 `open-html-studio.ps1`、`start-html-studio.ps1`、`stop-html-studio.ps1` 不在本次版本库中；不要把它们作为换机必要入口。
 
-代码更新规则：后续修改均发生在本目录，不另建桌面运行副本，不使用打包版本代替
-源码入口。打开快捷方式会使用已保存的本地最新代码，不自动拉取远程仓库。
-HTML/CSS/JS 响应禁止浏览器缓存；重启服务后重新打开页面即可使用更新。
-上次启动目录、时间与进程号记录在 `logs/desktop-launch.json`，失败详情在
-`logs/desktop-launch.error.log` 和 `logs/desktop-server.stderr.log`。
-
-前台排查可运行：
+按锁文件准备虚拟环境后，在独立终端执行：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\start-html-studio.ps1
+$studioCheckout = (Get-Location).Path
+$env:PPT_STUDIO_HOST = '127.0.0.1'
+$env:PPT_STUDIO_PORT = '8010'
+$env:PPT_STUDIO_DB_PATH = Join-Path $studioCheckout 'data/projects.db'
+$env:PPT_STUDIO_RUNS_DIR = Join-Path $studioCheckout 'runs'
+.\.venv\Scripts\python.exe start_server.py
 ```
 
-默认访问 `http://127.0.0.1:8010`。在前台启动时按 Ctrl+C 即可停止；后台服务可以运行以下命令停止，脚本会核对进程属于当前副本：
+访问 `http://127.0.0.1:8010`，前台按Ctrl+C停止。启动器默认8000，8010需要显式设置；端口占用会拒绝启动，禁止第二实例共享同一数据目录。不要指向原图片项目的数据库/runs。模型连接、可选数字人端点和依赖在目标机单独配置。
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\stop-html-studio.ps1
-```
-
-该入口强制使用副本自己的 `data/projects.db` 和 `runs/`，数字人客户端默认连接独立的 `9011` 端口。复制来的旧启动脚本继续保留作为原项目参考；本副本优先使用新入口。
-
-数字人代码已保留，但本次未部署 GPU 模型、启动数字人服务或调用付费生成接口。未来可以复用机器上的 ComfyUI 推理服务，项目配置、头像与任务数据仍需隔离。
+本机数据库、原图片/响应、凭据、字体和虚拟环境不随Git迁移；可复现测试和原案例私下迁移边界见最新handoff。本次未部署或重启任何应用服务。静态资源仍按既有无缓存策略提供。
 
 ## HTML 体系的正式契约入口
 

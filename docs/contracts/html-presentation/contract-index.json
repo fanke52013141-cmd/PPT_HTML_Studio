@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.76",
+  "contract_version": "0.9.78",
   "effective_date": "2026-10-17",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,8 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-17 HPS-010/011/013--017/023--025/037: optional offline blind human calibration and abstention-aware metrics; never production gating or prerequisite for Agent repair development. Empty labels keep rates/time null; no fabricated human truth or model calls. See runtime/visual-v1/text-edge-human-benchmark-0.1.0.md.",
+    "2026-10-17 HPS-010/011/013--017/023--025/037: read-only self-contained text-edge reports bind original image and localization hashes, show line boxes and connected ink with filters/zoom; no repair, provider calls, approval or formal-review integration. See runtime/visual-v1/text-edge-review-report-0.1.0.md.",
     "2026-10-17 HPS-010/011/013--017/023--025/037: local text-edge evidence0.1.0 follows connected foreground across original line boxes; possible_clip/uncertain/no_detected_clip never imply OCR or approval. No box repair, provider request or formal-review integration; preserved source closure and pre/post reference hashes. See runtime/visual-v1/reference-text-edges-0.1.0.md.",
     "2026-10-17 HPS-010/011/013--017/023--025/037: localization0.5.0 preserves header.number and maps stable content paths to transcribed pixel regions, deriving legacy geometry. Strict completeness is not pixel verification. Four controlled raster layouts and presealed gold provide common line/container metrics; no production review integration. See runtime/visual-v1/reference-part-mapping-0.1.0.md.",
     "2026-10-17 HPS-010/011/013--017/023--025/037: localization0.4.0 requires explicit container_presence consistent with box and status; located uncertain fails closed. Independent text/container gold and layer metrics supplement unchanged selected-region gold. Legacy absence inferred from box only for historical scoring, not explicit claim. See runtime/visual-v1/reference-layer-evaluation-0.1.0.md. Patch0.4.1 makes identity_evidence conditional: optional only for not_found with absent/no boxes/no transcription; mandatory for located/ambiguous. Original real rejection retained. Offline replay has text17/18, present containers15/15, joint2/3; header numeral missing, no new provider validation or review integration.",

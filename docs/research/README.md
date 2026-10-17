@@ -1,5 +1,7 @@
 # 调研与借鉴档案
 
+RES-20261017-01：[开源画布与动画编辑器借鉴](2026-10-17-open-source-scene-editor/README.md)。已核对Moveable、Selecto、React Timeline Editor、Scena及Theatre官方来源/包版本；[详细优化方案](../plans/html-backend-development/open-source-editor-optimization-2026-10-17.md)明确直接集成、适配、分阶段验收。依赖未安装，集成尚未验证，不作为已实现能力。
+
 RES-20261008-04追加：[Token编辑式还原实测](2026-10-08-image25-sheet-experiment/token-editorial-reconstruction-v1.md)。整页设计参考获批准，33对象HTML与原音频视频已实际输出并技术验证；新HTML视觉及灯泡边缘尚待审阅，批量自动化效率仍未量测。
 
 本目录保存分析的来源、判断、验证计划与后续决策，使调研可以被检索、复核和落实。

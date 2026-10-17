@@ -26,19 +26,20 @@ contracts rather than applying image-only gates to HTML or weakening them for
 the image backend. Shared service ownership, migrations, Agent synchronization,
 prompt optimization and downstream impact requirements continue to apply.
 
-The canonical development checkout is `D:\Program Files (x86)\PPT_HTML_Studio`.
-Make subsequent changes directly here; do not create another runnable copy on
-the desktop or launch a portable build for this project. The desktop shortcut
-executes `open-html-studio.ps1` here. Each invocation restarts this checkout's
-verified service and opens its current source; do not replace this with a
-cached build or silently pull remote code. Static assets must remain uncached.
+The current handoff checkout on this machine is `D:\software\PPT_HTML_Studio`.
+On another machine, use the actual checkout attached to the task; do not hardcode
+historical `D:\Program Files (x86)` paths, create a second runnable desktop copy,
+or launch a portable build in place of this source. Static assets remain uncached.
 
-Use `open-html-studio.ps1` for normal launch, or `start-html-studio.ps1` for
-foreground diagnostics (default port 8010). Its database,
-run files and digital-human endpoint are isolated. Never launch this checkout
-against the source project's database or run directory. Uncommitted source
-changes inherited at copy time are recorded in `docs/baseline/source-snapshot.json`.
-Keep initial setup distinct from implementing unapproved product decisions.
+The versioned launcher is `start_server.py`. Set `PPT_STUDIO_HOST=127.0.0.1`,
+`PPT_STUDIO_PORT=8010`, `PPT_STUDIO_DB_PATH` and `PPT_STUDIO_RUNS_DIR` explicitly
+for this checkout; its own default port is 8000. Historical desktop PowerShell
+wrappers are not present in this repository and are not a cross-machine prerequisite.
+Never use the source image project's database/run directory or run a second
+instance against the same data. Verify model and optional digital-human endpoints
+locally. See the latest handoff linked from root README for exact startup commands.
+Uncommitted source changes inherited at copy time remain recorded in
+`docs/baseline/source-snapshot.json`.
 
 ## HTML Presentation Contract Policy
 

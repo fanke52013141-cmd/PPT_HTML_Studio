@@ -1,8 +1,10 @@
 # HTML Studio
 
-2026-10-17 当前发布：[流程优化与文字边缘核验发布备注](docs/releases/2026-10-17-review-and-handoff.md)。契约包0.9.76；本批相关隔离回归255项通过。换机继续步骤、已验证边界和数据迁移说明见[交接文档](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)。本机`data/`、`runs/`、`outputs/`及模型凭据不随Git同步；跨机代码与可重建控制组已纳入本次发布。
+2026-10-17 最新发布：[文字边缘报告与开源编辑交接备注](docs/releases/2026-10-17-edge-reports-editor-handoff.md)，契约0.9.78；本批5个相关测试文件98项通过。换机从[最新handoff](docs/plans/html-backend-development/handoff-open-source-editor-2026-10-17.md)继续，下一步P0开源组件适配、P1布局编辑。Moveable/Selecto/时间轴目前是已调研方案，尚未集成；人工逐行标注不作前置条件。
 
-此前10月16日各条目记录的是当时的未提交状态，仅作历史账本。本批代码、契约和交接已在本次提交推送；当前跨机开发以[2026-10-17交接](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)为准。
+2026-10-17 前一批发布：[流程优化与文字边缘核验发布备注](docs/releases/2026-10-17-review-and-handoff.md)。契约包0.9.76；本批相关隔离回归255项通过。换机继续步骤、已验证边界和数据迁移说明见[交接文档](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)。本机`data/`、`runs/`、`outputs/`及模型凭据不随Git同步；跨机代码与可重建控制组已纳入本次发布。
+
+此前10月16日各条目记录的是当时的未提交状态，仅作历史账本。本批代码、契约和交接已在本次提交推送；前一批交接保留于[2026-10-17流程交接](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)，当前继续步骤以本文顶部最新handoff为准。
 
 2026-10-16当前运行状态：[8010已完成换版](docs/plans/html-backend-development/handoff-runtime-activation-2026-10-16.md)，实际API1.39.0/hash2f9000d34a3b464d，静态资源与数据完整性核对通过。此前旧版/审批阻塞记录保留为历史；未发起真实模型实验，未推送。
 
@@ -56,11 +58,13 @@
 
 ## 当前阶段
 
+当前新增开发路线为[开源组件驱动的还原与二次编辑](docs/plans/html-backend-development/open-source-editor-optimization-2026-10-17.md)，状态及依赖以最新handoff为准。下方早期条目保留为历史背景。
+
 最新进展：[多标签规划与注册呈现能力](docs/plans/html-backend-development/handoff-labeled-capabilities-2026-10-15.md)。六个代码标签、三个代码关系槽及四个变体已实现并通过本批工程检查；真实模型尚未返回使用新能力的完整计划。设计、还原、视觉/逐句语义/音频签收及整课仍分别验证，旧失败不自动改为成功。
 
 [流程先行与并行开发计划](docs/plans/workflow-first-parallel-2026-10-09/README.md)细化七步制作职责、人工确认、失败恢复和多对话文件分工，配合下方视觉参考库路线执行。
 
-**后续唯一执行顺序：[视觉参考库收束与详细开发计划](docs/plans/html-backend-development/visual-reference-roadmap-2026-10-09.md)。**
+**前期视觉参考库执行记录：[视觉参考库收束与详细开发计划](docs/plans/html-backend-development/visual-reference-roadmap-2026-10-09.md)。**
 
 后续以 [标准组件库 1.0](html_engine/reference-library/STANDARD-LIBRARY.md) 为静态组件基线：24 张黑白灰参考页、32 个基础组件、16 种呈现变体、28 种效果、18 个组合及 5 种字体。组件源代码、截图、编号查询和验证记录一同保存；配色与图片风格独立输入。见 [发布交接备注](html_engine/reference-library/HANDOFF-1.0.md)。被否定的模板不再作为入口，历史批准实例保留。生产适配和课程量产仍按计划验证。
 

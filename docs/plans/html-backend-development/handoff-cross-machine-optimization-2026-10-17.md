@@ -1,5 +1,13 @@
 # 跨机开发交接：HTML Studio流程优化，2026-10-17
 
+本文保留前一批基线和历史证据。当前换机执行入口已移至[开源编辑与Agent优化handoff](handoff-open-source-editor-2026-10-17.md)，包含0.9.78、本批98项测试、P0/P1停点及实际启动命令。
+
+后续详细方案已补充：[开源组件驱动的还原与二次编辑优化](open-source-editor-optimization-2026-10-17.md)。拟直接复用Moveable/Selecto/React Timeline Editor，借鉴Scena组织方式；下一实施起点为P0适配验证。该方案尚未安装依赖或实施新编辑能力，不将文档当作已完成开发。
+
+用户最新方向见[评估工具与自动闭环优先](text-edge-benchmark-2026-10-17.md)：人工标注不作生产或开发前置条件，下一轮以受控真值自动回归和系统Agent闭环为主，不要求用户逐页核对。
+
+后续开发增量见[文字边缘证据审阅页](text-edge-review-report-2026-10-17.md)（契约0.9.77）：已完成只读展示与离线入口，76项相关回归通过；本机浏览器被禁用，实际浏览器显示待核验。以下0.9.76是先前已发布基线，不能把下方“展示待开发”当作增量后的当前状态。
+
 ## 当前交接点
 
 本交接随本次提交发布到 `https://github.com/fanke52013141-cmd/PPT_HTML_Studio` 的 `origin/main`。接收机应使用推送后的最新 `origin/main`，并记下 `git rev-parse HEAD` 与 `git rev-parse origin/main` 核对。不要使用旧版2026-10-16交接中的 `241b980` 作为当前基线。

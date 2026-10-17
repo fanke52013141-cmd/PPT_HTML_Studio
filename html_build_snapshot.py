@@ -182,7 +182,7 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
                      "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_engine/visual/presentation-variants.json",
                      "json_llm_service.py", "json_llm_transport.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
                      "html_rebuild_plan.py", "html_scene_editing.py", "html_input_manifest.py", "invalidation_service.py", "project_impact_service.py",
-                     "html_task_store.py", "html_execution_metrics.py", "html_design_policy.py", "html_review_evidence.py", "html_review_facts.py", "html_reference_localization.py", "html_text_edge_verification.py", "html_repair_progress.py", "html_engine/tools/temporal-review.cjs", "html_engine/tools/review-temporal.cjs", "html_engine/visual/qa/overlap-policy.json", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:
+                     "html_task_store.py", "html_execution_metrics.py", "html_design_policy.py", "html_review_evidence.py", "html_review_facts.py", "html_reference_localization.py", "html_text_edge_verification.py", "html_text_edge_report.py", "html_repair_progress.py", "html_engine/tools/temporal-review.cjs", "html_engine/tools/review-temporal.cjs", "html_engine/visual/qa/overlap-policy.json", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:
             capture.read(root / name, "source/" + name)
         from html_runtime_skills import runtime_source_files
         for record in runtime_source_files(root):
