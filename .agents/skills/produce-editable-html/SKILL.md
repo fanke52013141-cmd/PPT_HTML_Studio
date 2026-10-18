@@ -52,3 +52,5 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 端点修复Prompt0.1.1必须把严格输出Schema放入首次system消息；共享schema_hint仅供JSON语法恢复。关系键顶层映射仍拒绝，不自动转换旧响应或补发请求。
 
 描边文本卡片需要局部强调时使用已注册text-card-outline-emphasis，保留原runs、卡片和图标；不要改为无框text-emphasis-bold或将全段加粗来冒充局部强调。set_variant/typography仍受原保护和容量约束。
+
+其他页保存使项目revision增加时，显式参考复用可在当前revision、本页基础hash未变且无人工覆盖时创建新待审key；旧key仍不能直接接受。不得用旧revision启动付费坐标请求。

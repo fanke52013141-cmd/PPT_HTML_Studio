@@ -110,3 +110,38 @@ def test_reuse_rejects_changed_or_corrupt_inputs(case, monkeypatch, damage):
 def test_reuse_cannot_be_combined_with_acceptance_or_other_work(other):
     with pytest.raises(ValidationError):
         HtmlProduceRequest.model_validate({'reuse_design_candidate_key':'a'*64, **other})
+
+
+def test_explicit_reuse_survives_other_page_save_without_accepting_old_key(case, monkeypatch):
+    from html_visual_store import save_scene
+    key = old_design(case, monkeypatch)
+    other = json.loads((case.deps.repo_root / 'html_engine/visual/scenes/condensation.json').read_text(encoding='utf-8'))
+    other['id'] = 'other-page'
+    save_scene(case.run, other['id'], other, 0)
+    def unexpected(*args, **kwargs):
+        pytest.fail('Unchanged reference reuse must not call providers')
+    deps = HtmlReviewDependencies(case.deps.repo_root, unexpected)
+    with pytest.raises(HtmlReviewError):
+        produce_scene(case.contract, run_dir=case.run, deps=deps,
+                      options={'design_candidate_key': key})
+    result = produce_scene(case.contract, run_dir=case.run, deps=deps,
+                           options={'reuse_design_candidate_key': key})
+    new, _, _ = load_design(run_dir=case.run, contract=case.contract,
+        key=result['design']['key'], revision=1, definitions=definition_identity(deps.repo_root), model_summary={})
+    assert new['revision'] == 1 and new['base_scene_sha256'] is None
+    assert result['design']['approval_status'] == 'not_recorded'
+
+
+@pytest.mark.parametrize('damage', ['stale_revision', 'manual', 'missing_base'])
+def test_cross_page_reuse_keeps_current_revision_and_manual_guards(case, monkeypatch, damage):
+    from html_design_reference_reuse import reference_author_matches
+    from html_visual_store import save_scene
+    from html_scene_editing import edit_path
+    key = old_design(case, monkeypatch)
+    record = json.loads((candidate_directory(case.run, case.contract['slide_id'], key) / 'candidate.json').read_text(encoding='utf-8'))
+    save_scene(case.run, 'other-page', {'id':'other-page'}, 0)
+    if damage == 'manual':
+        edit_path(case.run, case.contract['slide_id']).write_text('{}', encoding='utf-8')
+    if damage == 'missing_base':
+        record.pop('base_scene_sha256')
+    assert not reference_author_matches(case.run, record, key, 0 if damage == 'stale_revision' else 1)

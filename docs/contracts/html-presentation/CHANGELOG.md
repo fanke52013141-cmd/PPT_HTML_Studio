@@ -1,5 +1,9 @@
 # HTML 演示契约变更记录
 
+## 0.9.95 — 2026-10-18
+
+修正全课revision增加误伤未改动页的显式参考复用；当前revision与本页作者hash/人工覆盖共同核验。旧load_design接受、内容、模型、图像、原unknown与预算守卫保持。
+
 ## 0.9.94 — 2026-10-18
 
 新增text-card-outline-emphasis，保留描边卡片及图标，仅按既有runs.emphasis选择400/700字重；复用set_variant，不改变旧变体、文本、动作或音频。实际候选修复与原生产任务状态分开。

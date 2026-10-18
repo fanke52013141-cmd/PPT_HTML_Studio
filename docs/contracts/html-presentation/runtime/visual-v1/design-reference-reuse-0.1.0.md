@@ -16,3 +16,7 @@
 同批补齐annotation-ring-dashed（虚线圈/实线引线）、annotation-line-dashed（实线圈/虚线引线）、annotation-solid（可显式返回实线）；旧annotation-dashed仍为全虚线带箭头。figure标签/说明图标继续来自原准确内容，icons仅是可选装饰选择列表，不代表当前内容图标缺失。几何、绑定、正文与人工保护不变。
 
 验证须包含字节/来源保持、旧key继续stale、任何篡改/内容或作者变化拒绝、新候选仍待审、零provider/TTS调用，以及现有接受后的完整生产路径。
+
+## 0.9.95：其他页保存后的显式参考复用
+
+只在显式reuse路径：调用方revision须等于当前项目revision；旧记录revision较小但本页基础作者hash完全一致（包含尚无作者的null）且无人工覆盖时，可复用旧图/计划创建当前revision的新待审key。旧记录必须显式含base_scene_sha256；同页变化、过期调用revision和人工覆盖拒绝。contract/模型/图片/参考包/normalize守卫保持。普通load_design接受门禁不变，不能接受旧key或继承批准；一次授权修复预算也不变。

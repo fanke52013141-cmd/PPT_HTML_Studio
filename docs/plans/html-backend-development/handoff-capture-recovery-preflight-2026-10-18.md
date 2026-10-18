@@ -81,3 +81,12 @@ outputs/capture-recovery-preflight/保存原合同备份、拟写需求和来源
 ## 后续开发：第三页原代码计划复用
 
 已复读002/004当前semantic/status：revision2、valid=true、semantic passed、human approved、visual approved，不重复请求相同签收。003原html_fdc52bd530634adfbf5c的归档模型计划79381921仅声明code资源，故零供应商请求走原normalize/A02/compile/共享renderer，形成未保存代码候选；通过既有set_variant/set_text_style统一描边卡片、标题徽章、三栏底栏，不重写原文/动作/binding。静态passed、原音频prepare通过、250ms指定遮挡采样passed；平台由min/max/points计算为0℃。这是明确开发整理的代码候选，不冒称原图片供应商任务已成功或当前设计已被接受。outputs/remaining-pages-20261018保存源计划、修改操作、实际截图及验证，未写真实项目第三页。001 Prompt0.1.1尚未新付费请求，旧失败保持。
+
+
+## 第三页保存及第一页一次授权修复：0.9.95
+
+用户接受第三页并授权001一次独立坐标请求。003候选fee9b1bb/画面d0b61ed5与原展示hash核对，原scene_write保存revision3，approve valid。为避免001被其他页保存误伤，显式reuse增加本页基础hash/无人工覆盖/当前revision一致的跨页重建判断；旧load_design接受规则不改。相关37项回归通过，ruff与diff检查通过。确认无active LocalJob后从原PID41972重启唯一8010服务，当前PID25952，明确原data/projects.db与runs，加载Prompt0.1.1及revision修复。
+
+001新任务html_1b5982ca50c6449398b6单次请求返回正确Schema，新待审key6a4c63b47c6049dc6fb062087d04bcbef52a41c0755aa25f75a1eaf246022b6b，图片hash60faefc6与原字节一致，仅point变化。然而真实对象坐标下八方向45°扇区（±22.5°）仅3/8满足，不将任务succeeded冒充语义修复成功，不接受该候选、不追加供应商请求。新增只读diagnose_html_relation_points脚本，显式方向不作NLP推断，按矩形射线派生8份point建议并复算方向；不写原计划/候选/作者。14项离线几何正负例通过，与37项文件互异；实际诊断在outputs/remaining-pages-20261018。
+
+003语义任务html_9051028969db432fb33f完成，report960e33fcc2efec950f2972b70411af23b269a5550cd8a19757b2f4b8e6d196a9 engineering/semantic passed，human pending。原共享工具输出review_only核对视频598帧/19.933秒，H264/AAC30fps双流完整解码通过；音轨相关系数0.999987、lag0ms，4条字幕末尾19.92秒；3个同时间抽样帧MAE0.193—0.303通过。已展示视频并请求独立语义签收。原002/004已签收，无需重问。全课正式输出仍待001与原全课音频确认，不手写confirmation、不宣称发布。

@@ -8,6 +8,23 @@ from html_design_candidates import candidate_directory, _revision_matches, save_
 from html_reference_package import verify_package, assemble_reference
 from html_visual_review_service import HtmlReviewError
 from html_task_store import HtmlTaskError
+from html_visual_store import _read_revision, load_scene_with_revision
+
+
+def reference_author_matches(run, record, key, revision):
+    """Explicit reuse may cross other-page saves; old acceptance stays strict."""
+    if _read_revision(run)['revision'] != revision:
+        return False
+    if _revision_matches(run, record, key, revision):
+        return True
+    if (record.get('revision', revision) >= revision
+            or 'base_scene_sha256' not in record):
+        return False
+    from html_scene_editing import edit_path
+    if edit_path(run, record['slide_id']).exists():
+        return False
+    current = load_scene_with_revision(run, record['slide_id']) or {}
+    return current.get('sha256') == record['base_scene_sha256']
 
 
 def compatible_reuse_models(previous, current):
@@ -49,7 +66,7 @@ def reuse_design_reference(*, run_dir, contract, key, revision, definitions, mod
         if package['manifest']['manifestSha256'] != record['reference_manifest_sha256']:
             raise ValueError('reference package identity')
         if (record['slide_id'] != contract['slide_id'] or record['contract_sha256'] != sha256_json(contract)
-                or not compatible_reuse_models(record['model_summary'], model_summary) or not _revision_matches(run, record, key, revision)
+                or not compatible_reuse_models(record['model_summary'], model_summary) or not reference_author_matches(run, record, key, revision)
                 or record['plan']['version'] != plan_version):
             raise HtmlReviewError('内容、模型或作者输入已变化，不能复用原设计', status_code=409, code='DESIGN_REFERENCE_INPUT_CHANGED')
         plan = normalize_html_scene_plan(copy.deepcopy(record['plan']), load_template_catalog(root), contract_slide=contract)
