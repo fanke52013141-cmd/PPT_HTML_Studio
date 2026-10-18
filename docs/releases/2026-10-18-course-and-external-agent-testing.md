@@ -1,5 +1,7 @@
 # 2026-10-18 课程闭环与外部 Agent 试用更新
 
+后续状态：已按用户授权将PR #2合入main，合并提交23c7019；合并前[完整CI运行60](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/actions/runs/39140034104)成功。现在可直接获取main。以下记录推送时的试用边界；“保留草稿/未合入”状态已被本段取代，公网部署及课程数据迁移仍未进行。
+
 发布目标为项目 origin 的 `codex/editor-adapter-p0-20261017` 分支及 [PR #2](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/pull/2)，基础实现提交为c96b78c。本次是源码仓库更新；PR保持草稿，未合入main，未部署公网网站。契约0.9.96、Agent API1.51。当前[交接](../plans/html-backend-development/handoff-external-agent-2026-10-18.md)与[外部接入说明](../agent/external-page-handoff.md)为操作入口。
 
 ## 已具备的试用能力

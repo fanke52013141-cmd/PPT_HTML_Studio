@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-18 主分支合并完成：[PR #2](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/pull/2)已合入main，合并提交23c7019。合并前完整GitHub CI通过（[运行60](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/actions/runs/39140034104)），含全量检查、编辑器构建及Remotion TypeScript。下方“开发分支/未合入”描述为此前阶段记录；当前从main获取代码。源码合并不包含公网部署或课程数据迁移。
+
 2026-10-18 源码试用更新：[课程闭环与外部Agent试用说明](docs/releases/2026-10-18-course-and-external-agent-testing.md)。目标分支codex/editor-adapter-p0-20261017、PR #2；本次仓库同步不包含公网部署，main尚未合入。发布前511项相关隔离回归及共享视觉检查通过。
 
 2026-10-18 当前开发：[动作诊断与外部Agent交接](docs/plans/html-backend-development/handoff-external-agent-2026-10-18.md)。契约0.9.96/API1.51；四页课程已正式导出并登记当前作品。新增客户端标准任务/结果交接、原修复报告的动作时间风险提示及音频版本保护；本地传输与回归通过，真实外部Agent能力和自动转交尚未验证。下方记录保留为阶段历史。
