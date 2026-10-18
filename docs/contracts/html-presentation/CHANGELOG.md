@@ -2,6 +2,8 @@
 
 2026-10-18兼容提示修复：还原片段0.6.1明确set_variant.values使用variant而非variantId/variant_id；REPAIR_FIELDS诊断给出操作名、未知字段和允许字段，不接受别名、不改Schema、预算、保存与批准。来自真实首轮失败，离线拒绝及实际出站测试另验。
 
+2026-10-18能力事实补全：设计Agent的currentPresentation/variantFacts明确figure无容器边框、figure-caption-top仅为描边胶囊标签；annotation终态实线且无静态样式编辑；summary列出渲染前缀及分隔线数量。仅描述既有renderer，不新增能力、不消除审核差异、不改正文或原失败路由。相关43项通过，真实模型改善待验。
+
 2026-10-18兼容提示修复：保真审核运行片段1.0.2明确reference_alignment只适用当前text_alignment_contract列出的普通text；复合组件以null表示该字段不适用，实际字体差异和观察不确定仍须报告。原uncertain拒绝、全覆盖与批准要求保持，不自动修复旧响应。
 
 2026-10-18兼容提示修复：保真审核运行片段1.0.1明列既有requirement枚举，禁止混用dimension的content/structure；严格解析、覆盖和调用预算不变，旧失效响应不推断或改写。见review-facts-localization-0.1.0中的真实失败记录。

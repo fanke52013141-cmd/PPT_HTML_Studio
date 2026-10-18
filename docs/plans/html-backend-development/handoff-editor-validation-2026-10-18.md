@@ -80,3 +80,5 @@ Agent 固定案例采用三轮轮换顺序复测，每阶段12例，共36例。b
 html_1a8f68a0b8024d1fbe91随后明确failed：第二轮还原工程检查通过，独立审核301.32秒完整返回，43/43事实覆盖、Schema合法。真实差异涉及figure边框/顶部标签、标注虚线与路径、标签变体/位置以及summary三栏分隔；路由capabilities/planning/reconstruction，不能保存或签收。审核将旧plain summary的渲染前缀“这个过程叫”列为文字差异；后续须结合renderer及适用变体核对，不直接改实例正文。未发起第三轮或重配音。
 
 首轮REPAIR_FIELDS定位为set_variant误用values.variantId。运行片段0.6.1明确variant操作字段与问题描述variant_id的区别；共享候选诊断给出操作名、未知字段、允许字段，仍拒绝别名。新提示版本不重签旧候选或扩张真实请求预算；原失败证据留存于design-reconstruction/e1844b7bc1bc6e9c0b4a393aae8b1497c39bc88e6890a8ed0f80df5a1ed0d0d9。
+
+0.6.1实际出站、共享候选与runtime Skill闭包等65项通过。随后能力事实补齐figure无容器描边/顶部胶囊、annotation实线/静态不可编辑、summary渲染前缀与分隔线数量，设计Agent/政策43项通过，ruff及diff检查通过。两组测试存在重叠，不合计为独立覆盖；尚未启动新的真实模型实验，不宣称已提高还原成功率。当前需解决设计参考与注册组件结构差异，再逐页还原、缓存音轨绑定、A04与整课视频验收；五项整体仍partial。
