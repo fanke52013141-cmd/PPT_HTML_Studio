@@ -56,7 +56,7 @@ assert.throws(()=>compile(bad,catalog),/PRESENTATION_HEADING_UNSUPPORTED/);
   await page.evaluate(t=>window.visualPlayer.seek(t),scene.durationMs);
   assert.equal(await page.locator('[data-object-id="annotation"] circle').getAttribute("stroke-dasharray"),null);
   assert.deepEqual(errors,[]);
-  const folder=path.join(root,"outputs/framed-relations-2026-10-18");fs.mkdirSync(folder,{recursive:true});
+  const folder=process.env.HPS_TEST_OUTPUT_DIR||path.join(root,"outputs/framed-relations-2026-10-18");fs.mkdirSync(folder,{recursive:true});
   fs.writeFileSync(path.join(folder,"engineering.png"),first);
   fs.writeFileSync(path.join(folder,"engineering.json"),JSON.stringify({passed:true,facts,model:false,humanApproval:"pending"},null,2));
   console.log(JSON.stringify({passed:true,facts}));
