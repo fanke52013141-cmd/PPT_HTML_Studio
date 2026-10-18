@@ -5,6 +5,7 @@ const { fail } = require("./compiler.cjs");
 const { icon } = require("./icons.browser.cjs");
 const variants = require("./presentation-variants.json").variants;
 const { capacityEvidence } = require("./capacity.cjs");
+const {frameFigure, dividedSummary, dashedAnnotation, drawDashedLeader} = require("./presentation-structures.cjs");
 const SVG = "http://www.w3.org/2000/svg";
 const vector = (tag) => document.createElementNS(SVG, tag);
 const attributes = (el, values) =>
@@ -527,7 +528,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           node.id,
         ]);
       } else if (node.type === "figure") {
-        const captionsTop = node.presentation?.variant === "figure-caption-top";
+        const framed = node.presentation?.variant === "figure-frame-top";
+        const captionsTop = framed || node.presentation?.variant === "figure-caption-top";
         const captionVariant = variants.find(v => v.id === node.presentation?.variant);
         el.classList.add("v-figure");
         el.append(
@@ -535,6 +537,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             className: "v-figure-halo",
           }),
         );
+        if (framed) frameFigure(el, theme);
         if (node.tag) {
           const tag = document.createElement("div");
           tag.className = "v-figure-tag";
@@ -545,7 +548,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             }),
           );
           el.append(tag);
-          if (captionsTop) Object.assign(tag.style, {top:px(captionVariant.tagTop),left:px(captionVariant.captionInset),maxWidth:px(layout.slots[node.slot].box.width-2*captionVariant.captionInset),boxSizing:"border-box",border:`1px solid ${theme.colors.line}`,background:theme.colors[captionVariant.tagBackgroundToken],borderRadius:"999px",fontSize:"18px",fontWeight:"700"});
+          if (captionsTop) Object.assign(tag.style, {top:px(captionVariant.tagTop),left:px(captionVariant.captionInset),maxWidth:px(layout.slots[node.slot].box.width-2*captionVariant.captionInset),boxSizing:"border-box",border:framed?"none":`1px solid ${theme.colors.line}`,background:framed?theme.colors.background:theme.colors[captionVariant.tagBackgroundToken],borderRadius:framed?"0":"999px",fontSize:framed?"24px":"18px",fontWeight:"700"});
           textNodes.push([
             tag.querySelector("span"),
             {
@@ -600,7 +603,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         to.textContent = node.to.text;
         const term = document.createElement("span");
         term.className = "v-term";
-        term.textContent = ["summary-arrow-overlay", "summary-panel", "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
+        term.textContent = ["summary-strip-divided", "summary-arrow-overlay", "summary-panel", "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
         flow.append(from, arrow, to, term);
         el.append(flow);
         const takeaway = document.createElement("strong");
@@ -619,7 +622,10 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           takeaway.style.whiteSpace="normal";
         }
         const slot = layout.slots[node.slot];
-        if (node.presentation?.variant === "summary-arrow-overlay") {
+        if (node.presentation?.variant === "summary-strip-divided") {
+          dividedSummary(el, {flow,from,to,arrow,term,takeaway}, slot, theme,
+            variants.find(v=>v.id === node.presentation.variant), textNodes);
+        } else if (node.presentation?.variant === "summary-arrow-overlay") {
           const width = slot.box.width - 48;
           Object.assign(el.style,{display:"flex",flexDirection:"column",justifyContent:"center",padding:"16px 24px",gap:"12px",border:`1px solid ${theme.colors.line}`,borderRadius:px(theme.shapes.cardRadius),background:theme.colors.panel});
           Object.assign(flow.style,{display:"grid",gridTemplateColumns:"1fr 2fr 1fr",width:"100%",gap:"0",alignItems:"center",justifyItems:"center",minHeight:"52px",flexShrink:"0"});
@@ -715,6 +721,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           leader.setAttribute("pathLength", "1");
           leader.style.strokeDasharray = "1";
           svg.append(ring, leader);
+          if (node.presentation?.variant === "annotation-dashed") dashedAnnotation(ring,leader,svg,theme);
         }
         el.append(svg);
         if (node.type === "annotation") el.classList.add("v-annotation");
@@ -903,6 +910,9 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           d: `M ${anchor.x - origin.x + towards * node.radius} ${anchor.y - origin.y} L ${endpoint.x - origin.x - towards * 14} ${endpoint.y - origin.y}`,
           "stroke-dashoffset": String(1 - progress),
         });
+        if (node.presentation?.variant === "annotation-dashed") drawDashedLeader(elements.get(node.id).querySelector("svg"),
+          {x:anchor.x-origin.x+towards*node.radius,y:anchor.y-origin.y},
+          {x:endpoint.x-origin.x-towards*14,y:endpoint.y-origin.y},progress);
         elements.get(node.id).style.opacity = String(
           Math.min(
             states.get(node.id).opacity,

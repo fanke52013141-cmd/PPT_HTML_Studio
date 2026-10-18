@@ -30,7 +30,7 @@ def test_context_reports_actual_frame_line_and_generated_prefix_facts(case):
     assert presentation_facts({'type': 'figure'}, 'figure-caption-top')['container_frame'] is False
     annotation = presentation_facts({'type': 'annotation'})
     assert annotation['leader_stroke'] == annotation['anchor_stroke'] == 'solid'
-    assert annotation['static_style_editable'] is False
+    assert annotation['static_style_editable'] == 'variant_only'
 
 
 def ready(context):

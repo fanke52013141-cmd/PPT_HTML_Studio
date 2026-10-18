@@ -1,7 +1,7 @@
 {
   "presentationVariants": {
     "format": "hps.visual.presentation_variants",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "variants": [
       {
         "id": "plain",
@@ -209,6 +209,44 @@
         "paddingY": 16,
         "minWidth": 900,
         "minHeight": 170
+      },
+      {
+        "id": "figure-frame-top",
+        "nodeTypes": [
+          "figure"
+        ],
+        "reference": "code-owned:framed-figure",
+        "minWidth": 360,
+        "minHeight": 240,
+        "captionInset": 24,
+        "tagTop": 18,
+        "noteTop": 64
+      },
+      {
+        "id": "annotation-dashed",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-dashed-relation",
+        "dashPattern": "6 5"
+      },
+      {
+        "id": "summary-strip-divided",
+        "nodeTypes": [
+          "summary"
+        ],
+        "reference": "code-owned:divided-relation-strip",
+        "minWidth": 1100,
+        "minHeight": 90,
+        "paddingX": 24,
+        "paddingY": 14,
+        "gap": 24,
+        "columns": [
+          0.35,
+          0.2,
+          0.45
+        ],
+        "headingAllowed": false
       }
     ]
   },

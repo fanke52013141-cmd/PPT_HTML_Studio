@@ -82,3 +82,15 @@ html_1a8f68a0b8024d1fbe91随后明确failed：第二轮还原工程检查通过�
 首轮REPAIR_FIELDS定位为set_variant误用values.variantId。运行片段0.6.1明确variant操作字段与问题描述variant_id的区别；共享候选诊断给出操作名、未知字段、允许字段，仍拒绝别名。新提示版本不重签旧候选或扩张真实请求预算；原失败证据留存于design-reconstruction/e1844b7bc1bc6e9c0b4a393aae8b1497c39bc88e6890a8ed0f80df5a1ed0d0d9。
 
 0.6.1实际出站、共享候选与runtime Skill闭包等65项通过。随后能力事实补齐figure无容器描边/顶部胶囊、annotation实线/静态不可编辑、summary渲染前缀与分隔线数量，设计Agent/政策43项通过，ruff及diff检查通过。两组测试存在重叠，不合计为独立覆盖；尚未启动新的真实模型实验，不宣称已提高还原成功率。当前需解决设计参考与注册组件结构差异，再逐页还原、缓存音轨绑定、A04与整课视频验收；五项整体仍partial。
+
+## 结构差异修复（用户明确要求完成整课后续）
+
+契约0.9.86先定义后实现figure-frame-top、annotation-dashed及summary-strip-divided。旧变体保留；annotation仅允许set_variant，Schema拒绝空间/字体/icon，原target/anchor/label及时间保持。新绘制模块presentation-structures.cjs归共享visual renderer，独立模块进入generation源闭包，bundle与Schema/注册目录重建。设计理解/还原片段0.7.0、Agent API1.45、repair.preview/save1.5、操作Skill1.18同步。
+
+真实共享浏览器回归通过：带框/顶部标题、两条分隔线、无附加term前缀、虚线圆圈/引线/箭头、乱序seek终帧一致、旧实线兼容、过小/溢出拒绝、非法annotation字段拒绝。原呈现细节8项仍通过；相关组合108项、补充人工保护18项（重叠）及canonical quick通过，完整pytest运行中，日志outputs/framed-relations-full-pytest.txt。参考目录41件重建/一致性检查通过；不以工程证据代替新课程视觉通过。
+
+已核对无running/queued任务后，将原8010单实例3904切换为源码进程34184（start_server.py、同DB/runs），exec session50721。真实第一页新任务html_ec9c0f1795fb4fdb862e，快照2556e2b1aca12f20446c1095ac8b60f5ce46e6770ffe1a64a3a3f6cd78d8853c；提交后发现参考目录派生产物尚未重建，补齐目录使该快照依赖过期。已发请求先等待明确终态，不取消为unknown、不盲目补发；后续沿完整新定义的原入口继续。记录structures-086-design-submission.json。这不是正式还原通过或新设计批准。
+
+用户明确回复“接受当前四页旁白”。已把该决定与试听时原始四页产物hash写入outputs/real-course-acceptance/2026-10-18/audio-preview/user-audio-acceptance.json；原确认API需等四页HTML绑定校验通过再调用。未重配音、未用此决定代签画面/A04。
+
+旧快照任务已完整返回规划（175.17秒、报告17509 tokens），随后按原checkpoint明确failed“快照依赖已变化”；没有进入生图或作者保存。不是unknown或取消。参考目录重建且检查41件通过后，原produce入口提交html_e42edd172e9a4b1db05b，快照5bcad9d55102681d881b129a894175f80044ce0cf639f43e2b54114d8f031c55，实际记录structures-086-complete-design-submission.json。继续查询此ID，不再次提交。

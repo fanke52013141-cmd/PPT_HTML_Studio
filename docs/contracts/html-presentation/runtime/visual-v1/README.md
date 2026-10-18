@@ -1,5 +1,7 @@
 # V1 共享视觉定义：阶段一实施卡
 
+契约0.9.86的[结构变体](framed-relations-0.1.0.md)补齐带框顶部标题、只改外观的虚线锚点标注、无标题三栏底栏；scene0.7、Agent API1.45，独立验收不等于课程签收。
+
 视频合成与AAC对齐按[video-audio-alignment-0.1.0](video-audio-alignment-0.1.0.md)，契约0.9.85；单/多页音轨起点、页序和对应帧分别留证。
 
 局部修复提供scope相关人工保护路径，按[editor-repair-context-0.1.0](editor-repair-context-0.1.0.md)，契约0.9.84、Agent API1.44；模型效果与服务边界分别验证。

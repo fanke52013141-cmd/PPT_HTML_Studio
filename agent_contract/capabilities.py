@@ -167,7 +167,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_model_binding_service.save_project_model_binding",
     ),
     AgentCapability(
-        id="html_repair.preview", version="1.4", status=CapabilityStatus.stable,
+        id="html_repair.preview", version="1.5", status=CapabilityStatus.stable,
         description="Bounded HTML local repair preview; shared leaf-field manual protection with conflict paths, registered instance styles/actions, frozen revision, sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.",
         request_model=RepairRequest, response_model=RepairResult,
         agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview",
@@ -175,7 +175,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_scene_repair.preview_repair",
     ),
     AgentCapability(
-        id="html_repair.save", version="1.4", status=CapabilityStatus.stable,
+        id="html_repair.save", version="1.5", status=CapabilityStatus.stable,
         description="Bounded HTML local repair save; shared leaf-field manual protection enforced again at final AI persistence with conflict paths, registered styles/actions, frozen revision and temporal checks. Does not approve aesthetics.",
         request_model=RepairSaveRequest, response_model=RepairResult,
         agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save",

@@ -709,6 +709,18 @@
             },
             "labelId": {
               "$ref": "#/$defs/id"
+            },
+            "presentation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "variant"
+              ],
+              "properties": {
+                "variant": {
+                  "const": "annotation-dashed"
+                }
+              }
             }
           }
         },
@@ -1751,7 +1763,10 @@
             "text-emphasis-bold",
             "figure-caption-top",
             "summary-relationship-columns",
-            "arrow-up"
+            "arrow-up",
+            "figure-frame-top",
+            "annotation-dashed",
+            "summary-strip-divided"
           ]
         },
         "icon": {

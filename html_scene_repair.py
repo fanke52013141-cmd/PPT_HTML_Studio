@@ -84,7 +84,7 @@ def candidate_from_document(run, slide, request, doc):
                 f"允许字段: {', '.join(KINDS[op.kind])}",
             )
         if op.kind in ("set_presentation", "set_text_style", "set_variant"):
-            if node["type"] == "annotation":
+            if node["type"] == "annotation" and op.kind != "set_variant":
                 raise editor.SceneEditError("REPAIR_FIELDS", "圈注空间不能单独覆盖")
             if op.action is not None or op.actionId is not None:
                 raise editor.SceneEditError("REPAIR_FIELDS", "基础样式不接受action")

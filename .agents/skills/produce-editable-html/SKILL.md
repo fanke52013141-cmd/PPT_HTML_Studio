@@ -5,7 +5,7 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 
 # 可编辑HTML生产与修复
 
-版本1.17.0，2026-10-17。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
+版本1.18.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
 
 ## 选择任务
 
@@ -36,3 +36,5 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 保护祖先适用于整个子树，manual_protection=true不等于整页禁止编辑。固定效果对照使用 `scripts/benchmark_html_editor.py`，Skill组只传上面的操作摘要；只有显式--live才请求模型，四例和失败/unknown均计入分母，费用未知保留null，单次耗时差不宣称稳定提升。
 
 本Skill演进读 [references/evolution.md](references/evolution.md)，案例在 [evaluation/cases.json](evaluation/cases.json)。历史案例声明需与当前合同核对，不能当作新能力或签收。
+
+注册结构选择：figure-frame-top为带框顶部标题；annotation-dashed只改虚线外观，target/anchor/label及空间禁止变动；summary-strip-divided只适用无heading的三栏关系，不增加正文前缀。原set_variant、保护、容量与独立签收门禁继续执行。

@@ -1,5 +1,7 @@
 # 节点变更与下游影响登记
 
+0.9.86新增结构变体仍沿原html_scene_changed写入路径和人工保护，无新失效原因。只改presentation不重做旁白/TTS；共享renderer/bundle、Schema或注册定义变化须重新验证视觉、A04与输出，旧批准和视频保留为历史，不重签为当前。
+
 每条写入路径应在 `impact_registry.py` 登记原因、作用范围、受影响产物及复用策略。`InvalidationReport` 拒绝未登记的原因。新增功能须同时更新本表和回归检查。本表区分**已实现**和**待改造**，不能把待改造规则当作现有行为。
 
 HTML视频合成源码变更由render_input_fingerprint的html_video_composition追踪，仅使旧MP4过期；声音、场景视觉批准、PPTX和图片路线保持。它是代码指纹依赖，不是项目编辑写入或新增失效原因。编辑器布局/动作仍复用html_scene_changed；同值保存不触发重建。

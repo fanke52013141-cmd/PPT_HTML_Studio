@@ -1,5 +1,7 @@
 # HTML 演示体系契约
 
+0.9.86（2026-10-18）：[结构变体](runtime/visual-v1/framed-relations-0.1.0.md)增加带框顶部标题插图、只改外观的虚线锚点标注、无标题三栏底栏；原内容/关系/动作/人工保护保持。Agent API1.45、repair.preview/save1.5；工程、真实课程和人工批准分别验收。
+
 0.9.85（2026-10-17）：[视频音轨对齐](runtime/visual-v1/video-audio-alignment-0.1.0.md)修复AAC priming在concat阶段形成前导静音；单页保留分段，多页独立解码后按页拼接。合成源码进入HTML视频指纹，不影响声音/视觉批准及PPTX，无公开Schema变更。
 
 0.9.84（2026-10-17）：[局部修复保护上下文](runtime/visual-v1/editor-repair-context-0.1.0.md)提供scope相关叶字段/祖先保护路径，原服务守卫保持；真实模型固定案例及设备压力证据分别记录。Agent API1.44、repair.generate1.3，无新公开字段。

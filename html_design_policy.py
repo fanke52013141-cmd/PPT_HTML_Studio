@@ -41,17 +41,18 @@ def presentation_facts(node, variant=None):
                      takeaway_position="below_flow" if overlay else "side_column")
         facts["term_prefix"] = "" if variant in {
             "summary-arrow-overlay", "summary-panel", "summary-relationship-panel",
-            "summary-relationship-compact", "summary-relationship-columns",
+            "summary-relationship-compact", "summary-relationship-columns", "summary-strip-divided",
         } else "这个过程叫"
         facts["section_dividers"] = 2 if variant in {
-            "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns",
+            "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns", "summary-strip-divided",
         } else 0
     if node["type"] == "figure":
-        facts.update(container_frame=False,
-                     tag_treatment="outlined_pill" if variant == "figure-caption-top" else "floating_tag")
+        facts.update(container_frame=variant == "figure-frame-top",
+                     tag_treatment="inset_top_caption" if variant == "figure-frame-top" else "outlined_pill" if variant == "figure-caption-top" else "floating_tag")
     if node["type"] == "annotation":
-        facts.update(anchor_stroke="solid", leader_stroke="solid",
-                     leader_geometry="anchor_to_label_edge", static_style_editable=False)
+        dashed = variant == "annotation-dashed"
+        facts.update(anchor_stroke="dashed" if dashed else "solid", leader_stroke="dashed" if dashed else "solid",
+                     leader_geometry="anchor_to_label_edge", static_style_editable="variant_only")
     return facts
 
 
@@ -76,7 +77,7 @@ def production_policy(scene):
 def editable_capabilities(node, variants):
     from html_scene_repair import PARTS, STYLE_KEYS
     if node["type"] == "annotation":
-        return {}
+        return {"set_variant": [v["id"] for v in variants]} if variants else {}
     result = {"set_presentation": ["offsetX", "offsetY", "width", "height"]}
     if PARTS.get(node["type"]):
         result["set_text_style"] = {"parts": PARTS[node["type"]], "fields": sorted(STYLE_KEYS), "scope": "whole_part_only"}

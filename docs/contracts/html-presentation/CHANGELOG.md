@@ -1,5 +1,10 @@
 # HTML 演示契约变更记录
 
+## 0.9.86 — 2026-10-18
+
+- 新增独立注册变体figure-frame-top、annotation-dashed、summary-strip-divided，旧变体不变；annotation仅允许set_variant，无自由位置/字体/图标，不改变锚点关系或时间。
+- 设计理解/还原runtime片段0.7.0，Agent API1.45、repair.preview/save1.5；同一共享renderer用于预览和导出，源码/bundle进入闭包。真实模型、视觉、声音和A04批准仍独立。
+
 2026-10-18兼容提示修复：还原片段0.6.1明确set_variant.values使用variant而非variantId/variant_id；REPAIR_FIELDS诊断给出操作名、未知字段和允许字段，不接受别名、不改Schema、预算、保存与批准。来自真实首轮失败，离线拒绝及实际出站测试另验。
 
 2026-10-18能力事实补全：设计Agent的currentPresentation/variantFacts明确figure无容器边框、figure-caption-top仅为描边胶囊标签；annotation终态实线且无静态样式编辑；summary列出渲染前缀及分隔线数量。仅描述既有renderer，不新增能力、不消除审核差异、不改正文或原失败路由。相关43项通过，真实模型改善待验。

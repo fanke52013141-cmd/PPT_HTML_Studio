@@ -20,6 +20,24 @@ def test_unknown_operation_field_reports_exact_keys_without_accepting_alias(page
     assert edit.load_editor(run, scene['id']) == before
 
 
+def test_annotation_variant_cannot_override_manual_protection_or_edit_geometry(page, monkeypatch):
+    run, scene = page
+    doc = edit.load_editor(run, scene['id'])
+    doc['scene']['version'] = '0.7.0'
+    doc['manual'] = {'protected_paths': [['scene', 'nodes', 'annotation', 'presentation', 'variant']]}
+    def unexpected(*args, **kwargs):
+        pytest.fail('Rejected annotation edit reached preview')
+    monkeypatch.setattr(edit, 'preview_editor', unexpected)
+    request = {'expected_revision': doc['revision'], 'source': 'ai', 'operations': [
+        {'targetId': 'annotation', 'kind': 'set_variant', 'values': {'variant': 'annotation-dashed'}}]}
+    with pytest.raises(edit.SceneEditError, match='AI不能覆盖'):
+        repair.candidate_from_document(run, scene['id'], request, doc)
+    doc['manual'] = None
+    request['operations'][0] = {'targetId': 'annotation', 'kind': 'set_presentation', 'values': {'offsetX': 1}}
+    with pytest.raises(edit.SceneEditError, match='圈注空间不能单独覆盖'):
+        repair.candidate_from_document(run, scene['id'], request, doc)
+
+
 def test_repair_prompt_defines_required_operation_fields(page):
     run, scene = page
     prompts = repair.build_repair_prompts(

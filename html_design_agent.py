@@ -138,6 +138,8 @@ def _applicable_variants(node, variants):
     for variant in variants:
         if node["type"] not in variant["nodeTypes"]:
             continue
+        if variant.get("headingAllowed") is False and node.get("heading"):
+            continue
         if variant["id"] in relationship and not node.get("heading"):
             continue
         delimiters = variant.get("labelDelimiter")
