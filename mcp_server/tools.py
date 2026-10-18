@@ -287,8 +287,9 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
         )
 
     if cap_id == "html_review.produce":
+        from html_production_models import HtmlProduceRequest
         return client.produce_html_scene(args.get("project_id", ""), args.get("slide_id", ""),
-            **{k: args[k] for k in ("design_candidate_key", "design_instruction", "asset_instruction") if k in args})
+            **{k: args[k] for k in HtmlProduceRequest.model_fields if k in args})
     if cap_id == "html_review.design_current":
         return client.get_html_design_current(args.get("project_id", ""), args.get("slide_id", ""))
     if cap_id == "html_review.manual_candidate":

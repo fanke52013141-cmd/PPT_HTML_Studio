@@ -5,7 +5,7 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 
 # 可编辑HTML生产与修复
 
-版本1.21.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
+版本1.22.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
 
 ## 选择任务
 
@@ -44,3 +44,5 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 课程结构离线补齐见course-structures-0.1.0：显式端点关系、chart与三阶段模板，card-outline/figure-frame-dashed/annotation-dashed-no-arrow。权威visual_requirements必须完整映射visual_coverage；没有清单不宣称自动理解全文。新模板必须通过normalize/A02/compile和真实共享渲染，不以手写离线夹具声称模型生产成功。像素、结构、语义和人审分别记录；未通过项不能因工程检查通过被隐去。
 
 正式无头审核/取帧/视频使用共享软件合成捕获策略；交互GPU像素另验。相同已接受设计的素材按设计hash/准确need/模型/参数复用，appearance措辞变化不重生；匹配缓存损坏停止，历史缺身份不可猜测迁移。权威visual_requirements必须进入实际规划请求，缺coverage在生图前阻断。先通过捕获/恢复/真实请求预检验证，再恢复课程生产，不拿离线夹具代替真实批准。
+
+原图正确但显式关系point坐标有误时，可将reuse_design_candidate_key与repair_relation_points说明配对，仅0.2.0语义计划；一次受控模型请求只改既有端点坐标，不改对象/文字/动作/模板，不生图/TTS、不写作者，不代签收。人工覆盖阻断；原unknown不补发。新key仍待接受，普通原图复用仍零模型调用。

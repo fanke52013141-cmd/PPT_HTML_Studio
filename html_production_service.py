@@ -319,7 +319,8 @@ def produce_scene(
         return reuse_design_reference(run_dir=run_dir, contract=contract,
             key=selection.reuse_design_candidate_key, revision=revision, definitions=definitions,
             model_summary=model_summary, repo_root=deps.repo_root, plan_version=selection.plan_version,
-            checkpoint=checkpoint)
+            checkpoint=checkpoint, point_instruction=selection.repair_relation_points,
+            point_generator=deps.json_generator)
     resumed = None
     if selection.design_candidate_key:
         resumed, package, accepted_image = load_design(

@@ -1,5 +1,7 @@
 # HTML 演示体系契约
 
+0.9.91（2026-10-18）：[保留原图的端点修复](runtime/visual-v1/relation-point-recovery-0.1.0.md)为原reuse入口增加显式坐标修复；一次模型请求、原图不变、只改point，新key仍待审。API1.49、produce1.12。
+
 0.9.90（2026-10-18）：真实规划接口修正，Prompt0.3.5的实际schema_hint补齐visual_coverage，明确对象内端点坐标。原记录与预算保留，不代替语义验收。
 
 0.9.89（2026-10-18）：[可重复捕获、素材恢复与真实需求前置](runtime/visual-v1/capture-recovery-preflight-0.1.0.md)统一正式软件捕获、已接受设计的稳定素材身份及真实规划需求传递。API1.48、produce1.11；真实课程批准独立。

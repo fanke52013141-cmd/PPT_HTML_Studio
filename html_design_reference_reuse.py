@@ -10,7 +10,7 @@ from html_visual_review_service import HtmlReviewError
 
 
 def reuse_design_reference(*, run_dir, contract, key, revision, definitions, model_summary,
-                           repo_root, plan_version, checkpoint=lambda: None):
+                           repo_root, plan_version, checkpoint=lambda: None, point_instruction="", point_generator=None):
     from html_storyboard_planning import normalize_html_scene_plan, load_template_catalog
     from html_design_brief import build_design_brief, load_effect_registry
     from runtime_support import run_subprocess_killable
@@ -37,6 +37,16 @@ def reuse_design_reference(*, run_dir, contract, key, revision, definitions, mod
         if ({k: v for k, v in plan.items() if k != 'registered'}
                 != {k: v for k, v in record['plan'].items() if k != 'registered'}):
             raise HtmlReviewError('当前规则要求计划内容变化，请重新规划', code='DESIGN_REFERENCE_PLAN_CHANGED')
+        point_evidence = None
+        if point_instruction:
+            from html_scene_editing import edit_path
+            from html_relation_point_recovery import repair_relation_points
+            if edit_path(run, contract['slide_id']).exists():
+                raise HtmlReviewError('存在作者编辑覆盖，不能更改原计划关系', code='MANUAL_EDIT_CONFLICT', status_code=409)
+            if point_generator is None:
+                raise HtmlReviewError('关系修复需要模型', code='RELATION_POINT_PROVIDER_MISSING')
+            plan, point_evidence = repair_relation_points(plan, image, point_instruction,
+                contract=contract, repo_root=root, run_dir=run, generator=point_generator, checkpoint=checkpoint)
         brief = build_design_brief(plan, theme='neutral-baseline', asset_budget=1,
                                    effect_registry=load_effect_registry(root))
         destination = run / 'planning/html_visual/reference-packages' / sha256_json(
@@ -45,14 +55,18 @@ def reuse_design_reference(*, run_dir, contract, key, revision, definitions, mod
             plan, brief, repo_root=root, directory=destination, runner=run_subprocess_killable)
         package['directory'] = str(destination.relative_to(run))
         checkpoint()
-        if definition_identity(root) != definitions:
+        if definition_identity(root) != definitions or sha256_file(image) != record['image_sha256']:
             raise HtmlReviewError('参考复制期间定义发生变化', status_code=409, code='DESIGN_STALE')
         result = save_design(run_dir=run, contract=contract, revision=revision, definitions=definitions,
             model_summary=model_summary, plan=plan, brief=brief,
             candidate={**copy.deepcopy(record['candidate']), 'source_design_key': key, 'source_image_sha256': record['image_sha256'],
-                       'mode': 'reused_reference_pending_review'}, package=package, design_path=image)
+                       'mode': 'reused_reference_pending_review',
+                       **({'relation_point_recovery': point_evidence} if point_evidence else {})}, package=package, design_path=image)
         result['reference_reused'] = True
         result['message'] = '原图和计划已核验并复制为新待审参考；没有规划/生图/TTS调用，未接受设计或保存HTML。'
+        if point_evidence:
+            result['relation_points_repaired'] = True
+            result['message'] = '只修原关系坐标并原样复用设计图；新候选待审，无生图/TTS或作者保存。'
         return result
     except HtmlReviewError:
         raise
