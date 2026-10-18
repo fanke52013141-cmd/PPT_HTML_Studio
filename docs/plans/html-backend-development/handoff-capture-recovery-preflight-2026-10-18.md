@@ -90,3 +90,8 @@ outputs/capture-recovery-preflight/保存原合同备份、拟写需求和来源
 001新任务html_1b5982ca50c6449398b6单次请求返回正确Schema，新待审key6a4c63b47c6049dc6fb062087d04bcbef52a41c0755aa25f75a1eaf246022b6b，图片hash60faefc6与原字节一致，仅point变化。然而真实对象坐标下八方向45°扇区（±22.5°）仅3/8满足，不将任务succeeded冒充语义修复成功，不接受该候选、不追加供应商请求。新增只读diagnose_html_relation_points脚本，显式方向不作NLP推断，按矩形射线派生8份point建议并复算方向；不写原计划/候选/作者。14项离线几何正负例通过，与37项文件互异；实际诊断在outputs/remaining-pages-20261018。
 
 003语义任务html_9051028969db432fb33f完成，report960e33fcc2efec950f2972b70411af23b269a5550cd8a19757b2f4b8e6d196a9 engineering/semantic passed，human pending。原共享工具输出review_only核对视频598帧/19.933秒，H264/AAC30fps双流完整解码通过；音轨相关系数0.999987、lag0ms，4条字幕末尾19.92秒；3个同时间抽样帧MAE0.193—0.303通过。已展示视频并请求独立语义签收。原002/004已签收，无需重问。全课正式输出仍待001与原全课音频确认，不手写confirmation、不宣称发布。
+
+
+## 第三页人工语义签收完成
+
+用户明确“接受第三页音画与逐句语义验收”。原semantic/decision以当前revision3和完整960e33fc报告key记录approved。随后复读002/003/004：valid=true、engineering/semantic passed、human/visual approved；三个原报告key保持。音频状态仍pending，因全课audio_confirmed尚未建立，不把旁白已接受等同于全课确认已完成。回执outputs/remaining-pages-20261018/page003-user-semantic-acceptance.json。下一阻断是001八方向坐标，原模型3/8、程序建议未写作者；未新增模型、生图或TTS调用。
