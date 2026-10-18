@@ -8,6 +8,18 @@ import html_visual_store as store
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_unknown_operation_field_reports_exact_keys_without_accepting_alias(page):
+    run, scene = page
+    before = edit.load_editor(run, scene['id'])
+    request = {'expected_revision': before['revision'], 'source': 'ai', 'operations': [
+        {'targetId': 'headline', 'kind': 'set_variant', 'values': {'variantId': 'text-card-outline'}}]}
+    with pytest.raises(edit.SceneEditError) as caught:
+        repair.candidate(run, scene['id'], request)
+    assert caught.value.code == 'REPAIR_FIELDS'
+    assert 'variantId' in str(caught.value) and '允许字段: variant, icon' in str(caught.value)
+    assert edit.load_editor(run, scene['id']) == before
+
+
 def test_repair_prompt_defines_required_operation_fields(page):
     run, scene = page
     prompts = repair.build_repair_prompts(

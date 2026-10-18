@@ -39,13 +39,13 @@
     },
     {
       "id": "design-reconstruction",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "stage": "design_reconstruction",
       "input_contract": "design-reconstruction-input/0.2.0",
       "output_contract": "design-reconstruction-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-reconstruction-0.6.0.md",
-        "sha256": "1ae2a514e81301d3305aedde5f32974e27bcdf4ce038ec38e108978f0f305fef"
+        "path": "config/html_runtime_skills/design-reconstruction-0.6.1.md",
+        "sha256": "7cf8a755adf4babfac0aa24024e7c6db478f11456eff13e79c6d715546ec8e7e"
       },
       "references": {
         "reference-policy": {

@@ -76,3 +76,7 @@ Agent 固定案例采用三轮轮换顺序复测，每阶段12例，共36例。b
 当前设计候选24ee8ed7203e608f101bae6b40b95e1ef7d20b9cb1342c26eb91de24fc9705b3已展示，用户随后明确要求直接完成五项，沿原produce入口继续html_1a8f68a0b8024d1fbe91。设计理解和独立素材返回；首轮还原因REPAIR_FIELDS停止，原预算内第二轮仍在运行。继续时首先查询原任务，不能因观察超时重发；此处未记录HTML或整课批准。
 
 9b557f3远端CI为2511 passed/1 failed/8 skipped，唯一失败为测试仍断言审核片段1.0.0；02761a3更新到1.0.2，相关32项本地通过。最新检查117537247752/run39080833949仍in_progress，不将前一版本通过结果冒充当前head结果。整课签收、main合并和部署仍未完成。
+
+html_1a8f68a0b8024d1fbe91随后明确failed：第二轮还原工程检查通过，独立审核301.32秒完整返回，43/43事实覆盖、Schema合法。真实差异涉及figure边框/顶部标签、标注虚线与路径、标签变体/位置以及summary三栏分隔；路由capabilities/planning/reconstruction，不能保存或签收。审核将旧plain summary的渲染前缀“这个过程叫”列为文字差异；后续须结合renderer及适用变体核对，不直接改实例正文。未发起第三轮或重配音。
+
+首轮REPAIR_FIELDS定位为set_variant误用values.variantId。运行片段0.6.1明确variant操作字段与问题描述variant_id的区别；共享候选诊断给出操作名、未知字段、允许字段，仍拒绝别名。新提示版本不重签旧候选或扩张真实请求预算；原失败证据留存于design-reconstruction/e1844b7bc1bc6e9c0b4a393aae8b1497c39bc88e6890a8ed0f80df5a1ed0d0d9。

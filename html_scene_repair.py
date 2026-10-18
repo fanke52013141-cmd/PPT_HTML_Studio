@@ -75,8 +75,14 @@ def candidate_from_document(run, slide, request, doc):
             raise editor.SceneEditError("REPAIR_SCOPE", "操作越过允许对象范围")
         node = nodes[op.targetId]
         values = op.values
-        if not values or set(values) - set(KINDS[op.kind]):
-            raise editor.SceneEditError("REPAIR_FIELDS", "操作字段为空或未注册")
+        unknown_fields = sorted(set(values) - set(KINDS[op.kind]))
+        if not values or unknown_fields:
+            raise editor.SceneEditError(
+                "REPAIR_FIELDS",
+                f"{op.kind} values字段为空或未注册；"
+                f"未注册字段: {', '.join(unknown_fields) or '(空)'}；"
+                f"允许字段: {', '.join(KINDS[op.kind])}",
+            )
         if op.kind in ("set_presentation", "set_text_style", "set_variant"):
             if node["type"] == "annotation":
                 raise editor.SceneEditError("REPAIR_FIELDS", "圈注空间不能单独覆盖")
