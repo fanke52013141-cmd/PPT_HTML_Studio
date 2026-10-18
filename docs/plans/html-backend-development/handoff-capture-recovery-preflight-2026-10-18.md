@@ -106,3 +106,17 @@ outputs/capture-recovery-preflight/保存原合同备份、拟写需求和来源
 复用用户此前接受四页旁白的原回执，调用原steps/7/confirm，audio_confirmed=true。确认前只读重演timeline写入，4页semantic/bytes均no-op；确认后20个原音频/文本/metadata/SRT/timeline hash全部不变。002/003/004当前valid=true、visual/human approved、audio confirmed，无需重签。
 
 001核对视频review_only为553帧/18.433秒，H264/AAC30fps完整解码通过，原音轨零滞后相关系数0.999919，4条字幕末尾18.408秒，3个抽样帧MAE0.155—0.629通过。已展示视频并请求第一页当前画面+报告合并决定；四页正式导出尚未启动，不绕过该决定。独立结果和原作者写入来源在save-receipt、direction-verification、audio-confirmation-receipt、closure-readiness等JSON。
+
+## 第一页动画反馈与已保存分段动作
+
+用户明确反馈“这个根本没有什么动画呀，这个音频是OK的。”，因此旧a191c027画面/语义仍未获人工批准，声音保持接受。定位原场景所有第二句对象同时500ms入场，之后静止；复用现有关系draw-on能力，仅通过原repair.preview/save的source=ai保护事务调整既有动作。17条binding偏移与18条时长/标签位移分别保存为revision5/6，保留actionId/beatId；正文、对象、关系坐标、原素材等非motion作者内容逐项相等。首个100ms采样预览超预算422，未写入；改为现有250ms采样预算后两次预览及保存均通过，无额外模型、生图或TTS用于修复。
+
+动作顺序为水杯/要点出现、约8.9—13.0秒八支箭头依次向外画出、降温标注、前提卡片、结论。outputs/page001-motion-20261018记录完整前后作者、原事务回执及motion-verification：八箭头在实际共享播放器多时间点的路径长度单调增加且存在中间态；五个同时间预览/编码帧比较通过。新review_only视频18.433秒/553帧/30fps H264/AAC全解码通过，音轨相关系数0.999919、lag0ms，20个已接受声音相关文件hash保持。另有motion-detail.mp4为裁切无声放大核对片段，非正式课程产物。
+
+新独立A04任务html_7ca5aad733fa4c3ab0e5 succeeded，当前report5e61363eec54d2adf5fc9882206cf8480b08f1fc3cfe15c3ad4934c3a3c811da engineering/semantic passed，visual/human pending；不转移旧批准。002/003/004当前revision6下仍valid=true、visual/human approved、audio confirmed，不重复签收。待用户观看新版第一页并决定后，才记录当前第一页批准、走正式四页视频与发布入口。源服务当前唯一8010实例PID2536，输出日志在page001-motion目录；未新增引擎或公开API能力。
+
+## 四页正式视频已导出并登记当前作品
+
+用户明确“接受新版，继续整课导出”。原approve及semantic/decision在revision6记录第一页当前完整5e61363e报告批准，user-acceptance.json留存；四页当前semantic/status均valid。通过原Agent videos/render提交op_29873ef9257a / job b6ff41b7500f4c2d9c1fc0a08e0e7e0a，184.4秒完成，冻结整课2621a4694fc2661aca29641483afe3262c7ec3f026a14cfe88b32e0599636d1a。原作品服务登记videos/render_740350b9c6da466385f8deeab068eda0.mp4为current、historical=false，并更新out.mp4；这是本地项目作品发布，不表示源PR已合并或视频已上传外部平台。
+
+最终视频1600×900、30fps、2267帧、75.5667秒、H264/AAC、bt709，完整双流解码通过，SHA256 a28ca96121dd364bac047fc215a9ee28d920a93797d03e0cd1e523952c0db952。原scripts/verify_html_video_frames.py实跑通过：冻结快照/运行身份/hash复验、四页顺序与78个指定时刻预览/成片帧比较、全部原音轨与三处页间拼接检查通过，四页及边界lag均0ms，无丢失源语音。报告outputs/page001-motion-20261018/formal-verification/report.json。有限抽帧工程检查不替代用户对完整成片的最终观看评价；不得因已交付本课程声称所有项目性能/模型优化目标均已完成。
