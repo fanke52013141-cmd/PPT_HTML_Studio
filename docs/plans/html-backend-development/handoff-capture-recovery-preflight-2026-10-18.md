@@ -48,3 +48,36 @@ outputs/capture-recovery-preflight/保存原合同备份、拟写需求和来源
 修复：任务提交在新端点模型请求前检查图像能力；新请求角色relation_point_repair单列；HtmlTaskError的unknown不再被通用复用错误遮盖。显式复用允许在图片模型摘要不变、原合同/内容/作者验证均通过时刷新text/planning，存source_model_summary，仍须新接受。不靠更改模型绕过unknown重发授权。
 
 源模块/模型/复用/请求边界相关67项通过（63.36秒）；31项聚焦与之重叠。增加冻结worker使用视觉模型进行端点修复的路由及独立指标断言，单独复跑见vision-routing日志。早一版105项仍是0.9.91工程结果，不能替代本次真实调用失败。后续001若需一次独立新请求必须由用户明确授权；003仍保留原供应商失败及未知费用。002/004优先集中设计接受并还原。
+
+
+## 已授权还原收齐与首次输出修正：0.9.93
+
+用户明确接受002当前25e70e83与004当前6e4bc6e3，授权001一次独立坐标请求。实际任务001 html_b23690307eb940a1a2fe返回关系键映射，被严格Schema拒绝；002 html_ff575d786e264190ba16素材返回、还原审核失败（标题、底栏遮挡、图内拥挤）；004 html_8be695dddf1b49088b65还原审核要求内容/能力核实（标签对齐、强调、分隔），均未保存正式页。003原失败不动；本轮无TTS。完整回执与集中阻断表在本机outputs/capture-recovery-preflight/authorized-production-20261018.json及concentrated-blockers-20261018.md。
+
+定位001接口缺陷：共享json_llm_service的schema_hint只用于JSON语法恢复，并不进入首次消息。Prompt0.1.1在首次system提供严格Schema及明确字段；不放宽验证，不转换旧响应，不重发。相关33项离线回归通过（10.25秒），ruff通过。源文件变更未加载运行服务；未进行新真实调用，不能宣称生产修复成功。
+
+
+## 第二、四页集中候选修正：0.9.94
+
+用户授权集中修复现有候选布局/文字。未请求供应商；以原candidate_from_document注册操作及原共享renderer完成明确开发修正，隔离在outputs/candidate-layout-fix-20261018/isolated-run，生产作者和旧失败不写。002三卡移至285/395/505、各高100，底栏从618开始；标题40px，主体与标签分离，原锚点通过私有anchor variant调整至冰块内部，原图hash不变。004三标签居中、新text-card-outline-emphasis（700/400与强调前0.25em视觉间距）保持原runs和卡片，正文20px消除单字换行。原文字、关系、动作、binding逐项相等。
+
+两页静态严格检查、原音频绑定后250ms指定遮挡采样均通过。新变体DOM正负例与legacy验证通过；npm run test:visual的5场景14项通过，无页面错误。证据review.md、correction.json、strict-review.json、temporal/report.json、verification.json在本机outputs/candidate-layout-fix-20261018。五轴自审：注册声明复用现有渲染、不加业务分支或新API、旧变体不变、资源hash与路径守卫保持。源闭包变化后旧候选仍不能当当前批准；尚未保存正式作者、执行A04或导出视频，不将离线开发修正冒充系统Agent真实成功。
+
+
+## 用户接受后正式保存与两页音画核对
+
+用户明确“接受两页修正画面，继续保存和验收”。核对formal-save-preflight中已展示PNG/候选hash后，将已验证素材（含原图不变的私有anchor变体）、原binding/plan以既有原子metadata owner准备，通过原Agent scene_write PUT正式保存002（revision1）及004（revision2）；两个原approve接口均valid，旧失败任务不改写。原语义prepare验证对象、动作、语块身份通过。
+
+独立A04：002 html_fc19fbf0818a42e881a8，report8674d26fc9ef78c4da7ad91616826b179a4802c45bf61ef92fa0e2617fac2649；004 html_8e578a539bfd441aa6c9，report65daef32cba8b836922ea4f473050706627f63ab0ba0eef3aa73ff2efb9f2056。均succeeded/engineering passed/semantic passed/human pending，不代签。
+
+已用原共享export-slide-video工具生成两页review_only视频（不登记正式作品），真实原音轨、原字幕与audio-bound scene：002为623帧/20.766秒，004为493帧/16.433秒，30fps H264/AAC、完整双流解码通过；原音频相关系数0.999946/0.999977且lag0ms，字幕5/4条未超视频末尾；6个同时间预览/编码抽样帧通过（MAE0.094—0.649，不宣称逐帧像素无损）。证据outputs/candidate-layout-fix-20261018/review-videos。原4页全课音频confirmation缺失，原confirm服务需全部HTML binding，因此正式输出仍被001/003未保存阻断；未手写confirmation或allow_legacy绕过。已向用户展示两段视频并请求当前两报告独立语义签收。
+
+
+## 第二、四页当前语义签收已记录
+
+用户明确“接受两页音画与逐句语义验收”。通过原semantic/decision入口在revision2将上述8674d26f与65daef32完整key批准；两页semantic/status复读valid=true、semantic=passed、human=approved、visual=approved。历史任务result中的human=pending是任务结束时快照，以当前status为准，不改原任务。user-semantic-acceptance.json留存完整回执。全课audio确认仍missing_confirmation，001/003未保存，故不宣称四页整课视频/发布完成；不需再次请求002/004相同内容的签收。
+
+
+## 后续开发：第三页原代码计划复用
+
+已复读002/004当前semantic/status：revision2、valid=true、semantic passed、human approved、visual approved，不重复请求相同签收。003原html_fdc52bd530634adfbf5c的归档模型计划79381921仅声明code资源，故零供应商请求走原normalize/A02/compile/共享renderer，形成未保存代码候选；通过既有set_variant/set_text_style统一描边卡片、标题徽章、三栏底栏，不重写原文/动作/binding。静态passed、原音频prepare通过、250ms指定遮挡采样passed；平台由min/max/points计算为0℃。这是明确开发整理的代码候选，不冒称原图片供应商任务已成功或当前设计已被接受。outputs/remaining-pages-20261018保存源计划、修改操作、实际截图及验证，未写真实项目第三页。001 Prompt0.1.1尚未新付费请求，旧失败保持。

@@ -1877,6 +1877,7 @@
           "enum": [
             "plain",
             "text-card-outline",
+            "text-card-outline-emphasis",
             "text-card-soft",
             "header-badge",
             "summary-panel",

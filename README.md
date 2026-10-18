@@ -1,6 +1,6 @@
 # HTML Studio
 
-2026-10-18 当前交接：[可重复捕获、素材恢复与生产需求预检](docs/plans/html-backend-development/handoff-capture-recovery-preflight-2026-10-18.md)。契约0.9.92/API1.50；第二/四页设计待审，视觉模型已与规划分开并增加请求前检查；第一/三页失败保留，真实HTML/语义/整课发布另验。
+2026-10-18 当前交接：[课程候选修复与音画验收](docs/plans/html-backend-development/handoff-capture-recovery-preflight-2026-10-18.md)。契约0.9.94/API1.50；第二、四页已保存并完成当前画面与语义签收。第三页复用原模型代码计划形成待审候选，无新增生图；第一页坐标接口修正已离线验证，正式四页视频与发布尚未完成。
 
 2026-10-18 离线结构补齐：[四页统一修复验证](docs/plans/html-backend-development/handoff-course-structures-offline-2026-10-18.md)。契约0.9.88/API1.47；显式关系、平台图表和三阶段模板已接入离线验证，默认GPU分数缩放像素限制、真实课程与发布仍待验。无新增付费调用。
 

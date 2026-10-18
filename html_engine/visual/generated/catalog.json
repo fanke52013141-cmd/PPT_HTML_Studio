@@ -1,7 +1,7 @@
 {
   "presentationVariants": {
     "format": "hps.visual.presentation_variants",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "variants": [
       {
         "id": "plain",
@@ -23,6 +23,21 @@
         "iconSize": 72,
         "gap": 20,
         "allowsIcon": true
+      },
+      {
+        "id": "text-card-outline-emphasis",
+        "nodeTypes": [
+          "text"
+        ],
+        "reference": "standard-library:C02",
+        "paddingX": 22,
+        "paddingY": 18,
+        "iconSize": 72,
+        "gap": 20,
+        "allowsIcon": true,
+        "emphasisWeight": 700,
+        "normalWeight": 400,
+        "emphasisGapEm": 0.25
       },
       {
         "id": "text-card-soft",

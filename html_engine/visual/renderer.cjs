@@ -425,6 +425,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             span.textContent = text;
             if (run.emphasis) span.style.color = theme.colors.accent;
             if (variant?.emphasisWeight) span.style.fontWeight = String(run.emphasis ? variant.emphasisWeight : variant.normalWeight);
+            if (variant?.emphasisGapEm && run.emphasis && offset > 0 && !label)
+              span.style.marginInlineStart = `${variant.emphasisGapEm}em`;
             if (label !== null) { span.dataset.textRole = label ? "label" : "body"; span.style.fontWeight = label ? "700" : "400"; }
             (variant?.stackedLabel ? (label ? labelBox : bodyBox) : copy).append(span);
           }

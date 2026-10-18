@@ -1,5 +1,13 @@
 # HTML 演示契约变更记录
 
+## 0.9.94 — 2026-10-18
+
+新增text-card-outline-emphasis，保留描边卡片及图标，仅按既有runs.emphasis选择400/700字重；复用set_variant，不改变旧变体、文本、动作或音频。实际候选修复与原生产任务状态分开。
+
+## 0.9.93 — 2026-10-18
+
+端点修复首次system消息包含changes/fromPoint/toPoint的严格Schema；schema_hint仍供共享JSON语法恢复使用，不修改全局适配器。原关系键映射响应继续拒绝，不自动转换、不重发原请求。仅离线验证，真实生产成功另验。
+
 ## 0.9.92 — 2026-10-18
 
 视觉模型supports_images就绪门禁在付费边界前阻断；端点修复独立指标。显式复用允许保持图片模型身份的text/planning刷新，来源记录保留，新key仍待签收；原unknown异常不掩盖。

@@ -73,3 +73,30 @@ def test_image_change_after_request_blocks_acceptance(case, tmp_path):
         repair_relation_points(plan, image, "修正", contract=contract, repo_root=ROOT,
                                run_dir=tmp_path, generator=generator)
     assert caught.value.code == "DESIGN_STALE"
+
+
+def test_initial_request_contains_output_schema_without_repair_fallback(case, tmp_path):
+    plan, contract, image, changes = case
+    calls = []
+    def generator(**request):
+        calls.append(request)
+        # schema_hint is only used by the shared adapter after JSON syntax failure.
+        system = request["system_prompt"]
+        schema = json.loads(system.split("\n输出Schema：", 1)[1])
+        assert schema["required"] == ["changes"]
+        assert schema["additionalProperties"] is False
+        assert set(schema["$defs"]["PointChange"]["required"]) == {"objectId", "fromPoint", "toPoint"}
+        assert request["reasoning_effort_override"] == "low"
+        return {"changes": changes}
+    repair_relation_points(plan, image, "修正", contract=contract, repo_root=ROOT,
+                           run_dir=tmp_path, generator=generator)
+    assert len(calls) == 1
+
+
+def test_relation_keyed_response_is_not_silently_converted(case, tmp_path):
+    response = {c["objectId"]: {"from": {"point": c["fromPoint"]},
+                                "to": {"point": c["toPoint"]}} for c in case[3]}
+    with pytest.raises(HtmlReviewError) as caught:
+        invoke(case, tmp_path, response)
+    assert caught.value.code == "RELATION_POINT_REPAIR_REJECTED"
+    assert not list(tmp_path.rglob("validated-plan.json"))

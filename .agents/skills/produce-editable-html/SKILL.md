@@ -48,3 +48,7 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 原图正确但显式关系point坐标有误时，可将reuse_design_candidate_key与repair_relation_points说明配对，仅0.2.0语义计划；一次受控模型请求只改既有端点坐标，不改对象/文字/动作/模板，不生图/TTS、不写作者，不代签收。人工覆盖阻断；原unknown不补发。新key仍待接受，普通原图复用仍零模型调用。
 
 坐标修复必须先检查项目视觉text模型supports_images=true；planning可使用独立文本模型，image保持。显式原图复用允许在图片模型摘要完全相同时刷新text/planning绑定，保留源模型身份并生成新待审key，不自动转移批准。unknown必须保留，改模型不能当作重发授权。
+
+端点修复Prompt0.1.1必须把严格输出Schema放入首次system消息；共享schema_hint仅供JSON语法恢复。关系键顶层映射仍拒绝，不自动转换旧响应或补发请求。
+
+描边文本卡片需要局部强调时使用已注册text-card-outline-emphasis，保留原runs、卡片和图标；不要改为无框text-emphasis-bold或将全段加粗来冒充局部强调。set_variant/typography仍受原保护和容量约束。
