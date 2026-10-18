@@ -1,6 +1,6 @@
 "use strict";
 const fs=require('node:fs'),path=require('node:path'),{pathToFileURL}=require('node:url');
-const {chromium}=require('playwright'),{resolveBrowser}=require('./browser-runtime.cjs');
+const {chromium}=require('playwright');
 const {timeCoverage,overlapPolicy,checkTemporalPage}=require('./temporal-review.cjs');
 const [folder,specPath,output]=process.argv.slice(2);
 (async()=>{
@@ -12,7 +12,7 @@ const [folder,specPath,output]=process.argv.slice(2);
   fs.mkdirSync(output,{recursive:true});
   try {
     timeCoverage(scene,spec);overlapPolicy(scene,spec,policy);
-    browser=await chromium.launch({headless:true,executablePath:resolveBrowser(chromium)});
+    browser=await chromium.launch(require("./browser-runtime.cjs").captureLaunchOptions(chromium));
     const page=await browser.newPage({viewport:{width:1648,height:1200},deviceScaleFactor:1}),errors=[];
     page.on('pageerror',e=>errors.push(e.name));
     await page.route('**/*',route=>/^https?:/.test(route.request().url())?route.abort():route.continue());

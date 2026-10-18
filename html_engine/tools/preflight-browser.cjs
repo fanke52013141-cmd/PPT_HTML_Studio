@@ -9,7 +9,7 @@ const { resolveBrowser } = require("./browser-runtime.cjs");
   try {
     const spec = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
     const executable = resolveBrowser(chromium);
-    browser = await chromium.launch({ headless: true, executablePath: executable, timeout: 15000 });
+    browser = await chromium.launch({...require("./browser-runtime.cjs").captureLaunchOptions(chromium),timeout:15000});
     const page = await browser.newPage();
     await page.route("**/*", route => /^https?:/.test(route.request().url()) ? route.abort() : route.continue());
     await page.setContent("<html><body>字体检测</body></html>");

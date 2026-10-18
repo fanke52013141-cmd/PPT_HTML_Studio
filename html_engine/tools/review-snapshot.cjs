@@ -3,14 +3,13 @@
 const fs = require("node:fs"), path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
-const { resolveBrowser } = require("./browser-runtime.cjs");
 const [folder, output] = process.argv.slice(2);
 (async () => {
   let browser;
   let report = { passed: false, code: "SNAPSHOT_RENDER_FAILED" };
   fs.mkdirSync(output, { recursive: true });
   try {
-    browser = await chromium.launch({ headless: true, executablePath: resolveBrowser(chromium) });
+    browser = await chromium.launch(require("./browser-runtime.cjs").captureLaunchOptions(chromium));
     const page = await browser.newPage({ viewport: { width: 1648, height: 1200 }, deviceScaleFactor: 1 });
     const errors = [];
     page.on("pageerror", e => errors.push(e.name));

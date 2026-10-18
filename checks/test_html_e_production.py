@@ -263,6 +263,25 @@ def test_single_asset_retry_reuses_design_and_plan(case):
     assert before["scene"]["nodes"][0] == load_scene_with_revision(case.run, "e1")["scene"]["nodes"][0]
 
 
+def test_reconstruction_recovery_reuses_subject_with_changed_observation(case):
+    first = run(case)
+    key = first["design"]["key"]
+    initial = run(case, design_candidate_key=key)
+    original_generator = case.deps.json_generator
+
+    def generator(**kwargs):
+        result = original_generator(**kwargs)
+        if kwargs.get("artifact_prefix", "").startswith("design_understanding-"):
+            for obj in result["objects"]:
+                obj["appearance"] = "同一已接受画面的另一种观察措辞"
+        return result
+
+    case.deps = HtmlReviewDependencies(ROOT, generator)
+    recovered = run(case, design_candidate_key=key)
+    assert len(case.requests) == 2  # One design and one subject; no repeated paid image.
+    assert recovered["scene"] == initial["scene"]
+
+
 def test_reference_hashes_participate_in_approval_inputs(case):
     from html_input_manifest import resolved_scene_inputs
     first = run(case)

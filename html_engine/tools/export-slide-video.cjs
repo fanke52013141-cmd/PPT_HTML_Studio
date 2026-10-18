@@ -76,12 +76,7 @@ function ffprobeJson(target) {
 
 (async () => {
   const playwright = require("playwright");
-  const browser = await playwright.chromium.launch({
-    headless: true,
-    executablePath: require("./browser-runtime.cjs").resolveBrowser(
-      playwright.chromium,
-    ),
-  });
+  const browser = await playwright.chromium.launch(require("./browser-runtime.cjs").captureLaunchOptions(playwright.chromium));
   const errors = [];
   try {
     const page = await browser.newPage({

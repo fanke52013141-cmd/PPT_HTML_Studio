@@ -112,11 +112,7 @@ async function main() {
     ["object-left"];
   assert.throws(() => compile(cup, incompatible), /INCOMPATIBLE_THEME_LAYOUT/);
   // Browser checks share one page across every registered scene.
-  const browser = await chromium.launch({
-    headless: true,
-    executablePath:
-      require("../../tools/browser-runtime.cjs").resolveBrowser(chromium),
-  });
+  const browser = await chromium.launch(require("../../tools/browser-runtime.cjs").captureLaunchOptions(chromium));
   const page = await browser.newPage({
     // Keep space for the preview shell; set its logical stage scale below.
     viewport: { width: 1656, height: 1200 },

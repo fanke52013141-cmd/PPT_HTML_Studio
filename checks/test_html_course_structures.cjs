@@ -34,14 +34,10 @@ zero.from = { objectId: "subject", point: { x: 0.5, y: 0.5 } };
 zero.to = { objectId: "subject", point: { y: 0.5, x: 0.5 } };
 assert.throws(() => compile(bad, catalog), /INVALID_RELATION_ENDPOINT/);
 (async () => {
-  const browser = await chromium.launch({
-    headless: true,
-    args: software ? ["--disable-gpu"] : [],
-    executablePath:
-      require("../html_engine/tools/browser-runtime.cjs").resolveBrowser(
-        chromium,
-      ),
-  });
+  const runtime = require("../html_engine/tools/browser-runtime.cjs");
+  const browser = await chromium.launch(software
+    ? runtime.captureLaunchOptions(chromium)
+    : {headless: true, executablePath: runtime.resolveBrowser(chromium)});
   const results = [];
   try {
     for (const width of [1592, 1600])

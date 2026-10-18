@@ -1,5 +1,7 @@
 # HTML 演示体系契约
 
+0.9.89（2026-10-18）：[可重复捕获、素材恢复与真实需求前置](runtime/visual-v1/capture-recovery-preflight-0.1.0.md)统一正式软件捕获、已接受设计的稳定素材身份及真实规划需求传递。API1.48、produce1.11；真实课程批准独立。
+
 0.9.88（2026-10-18）：[课程结构与前置覆盖](runtime/visual-v1/course-structures-0.1.0.md)补齐显式关系、代码图表、三阶段模板与外观组合；仅离线验证，不自动签收或调用供应商。Agent API1.47、produce1.10、repair.preview/save1.6。
 
 0.9.87（2026-10-18）：[原图复用到新待审参考](runtime/visual-v1/design-reference-reuse-0.1.0.md)保留原计划/图片，当前定义下重新核验，无规划/生图/TTS调用；旧key仍stale，新key须重新接受。补齐混合标注线型及现有figure图标事实。Agent API1.46、produce1.9。

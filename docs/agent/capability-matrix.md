@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.47.0
-- **Contract Hash**: `30d25b6d3b0f8454`
+- **Agent API Version**: 1.48.0
+- **Contract Hash**: `79cf55f12267f288`
 - **Total Capabilities**: 65
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -34,7 +34,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `generation.stop` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/generation/{stage}/stop` | `ppt_generation_stop` | Yes | `generation stop` | `generation_control.request_stop` | No | No |
 | `identity.get` | 1.0 | stable | GET | `/api/agent/v1/identity` | `ppt_identity_get` | Yes | `identity` | `agent_api.auth / account_service` | No | No |
 | `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
-| `html_review.produce` | 1.10 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
+| `html_review.produce` | 1.11 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
 | `html_review.design_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/design/current` | `ppt_html_design_current` | Yes | `html design-current` | `html_design_candidates.current_design` | No | No |
 | `html_review.manual_candidate` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}` | `ppt_html_manual_candidate` | Yes | `html manual-candidate` | `html_manual_candidate_review.inspect_candidate` | No | No |
 | `html_review.manual_candidate_decision` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision` | `ppt_html_manual_candidate_decision` | Yes | `html manual-candidate-decision` | `html_manual_candidate_review.decide_candidate` | No | No |
@@ -115,7 +115,7 @@ The MCP server exposes **60** stable tools:
 - `ppt_generation_stop` — Request a safe-boundary stop for the exact active operation ID. In-flight provider requests and render stages finish before stopping.
 - `ppt_identity_get` — Return the creative account and scopes associated with this Agent connection.
 - `ppt_project_create` — Create a project with canvas, production/presentation mode, versioned creation configuration, and optional course/chapter ownership.
-- `ppt_html_produce` — Registered course structures support explicit endpoint relations, code charts, three-stage layouts and authored visual requirement coverage before design. Meaning and approval remain independent. Bounded stagnation checks retain precise capacity triggers and effective limits, including saved report details, without increasing repair budgets. Generate a design first. Explicit reuse_design_candidate_key revalidates unchanged original image/plan into a new unapproved review checkpoint without provider calls; never accepts stale keys or carries approvals. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.
+- `ppt_html_produce` — Formal captures use a shared software composition policy. Accepted-design assets reuse verified bytes despite observation wording changes; changed design/model/need invalidates reuse, damaged cache stops before a new paid request. Authored visual requirements reach the actual planning context and missing coverage stops before design. Registered course structures support explicit endpoint relations, code charts, three-stage layouts and authored visual requirement coverage before design. Meaning and approval remain independent. Bounded stagnation checks retain precise capacity triggers and effective limits, including saved report details, without increasing repair budgets. Generate a design first. Explicit reuse_design_candidate_key revalidates unchanged original image/plan into a new unapproved review checkpoint without provider calls; never accepts stale keys or carries approvals. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.
 - `ppt_html_design_current` — Read the current immutable design checkpoint, image URL and stale status; never approves a design or HTML scene.
 - `ppt_html_manual_candidate` — Read one current unsaved candidate after a failed or interrupted unqueryable JSON outcome, including unresolved intent; bounded repair replay, original task, design and engineering facts stay distinct from approval. Never retries or saves author content.
 - `ppt_html_manual_candidate_decision` — Record an explicit human accept/reject with evidence note for the exact unsaved candidate. Does not save author scene, retry provider, or grant visual approval.

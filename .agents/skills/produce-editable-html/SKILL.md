@@ -5,7 +5,7 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 
 # 可编辑HTML生产与修复
 
-版本1.20.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
+版本1.21.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
 
 ## 选择任务
 
@@ -42,3 +42,5 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 定义更新后保留原设计：显式reuse_design_candidate_key重新核验同页原计划/图片，返回新待审key，零规划/生图/TTS。不自动接受，不重签旧候选；新key仍需用户接受，旧设计接受不代替HTML/A04。图标先看对象自带tag/note及currentRender，icons只列可选装饰；标注圈/线虚实按注册混合变体分别选。
 
 课程结构离线补齐见course-structures-0.1.0：显式端点关系、chart与三阶段模板，card-outline/figure-frame-dashed/annotation-dashed-no-arrow。权威visual_requirements必须完整映射visual_coverage；没有清单不宣称自动理解全文。新模板必须通过normalize/A02/compile和真实共享渲染，不以手写离线夹具声称模型生产成功。像素、结构、语义和人审分别记录；未通过项不能因工程检查通过被隐去。
+
+正式无头审核/取帧/视频使用共享软件合成捕获策略；交互GPU像素另验。相同已接受设计的素材按设计hash/准确need/模型/参数复用，appearance措辞变化不重生；匹配缓存损坏停止，历史缺身份不可猜测迁移。权威visual_requirements必须进入实际规划请求，缺coverage在生图前阻断。先通过捕获/恢复/真实请求预检验证，再恢复课程生产，不拿离线夹具代替真实批准。

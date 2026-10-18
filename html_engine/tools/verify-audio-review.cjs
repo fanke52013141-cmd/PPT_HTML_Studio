@@ -4,7 +4,7 @@ const fs=require("node:fs"),path=require("node:path"),assert=require("node:asser
 const {chromium}=require("playwright");
 async function main(){
   const directory=path.resolve(process.argv[2]),scene=JSON.parse(fs.readFileSync(path.join(directory,"bound-scene.json"),"utf8"));
-  const browser=await chromium.launch({headless:true,executablePath:require("./browser-runtime.cjs").resolveBrowser(chromium)});
+  const browser=await chromium.launch(require("./browser-runtime.cjs").captureLaunchOptions(chromium));
   const evidence={status:"passed",checks:[],frames:[],errors:[]};
   try{
     const page=await browser.newPage({viewport:{width:1680,height:1100}});

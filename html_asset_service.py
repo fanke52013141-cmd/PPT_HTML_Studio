@@ -166,6 +166,16 @@ def produce_asset(
     }
     if request.get("generation_parameters") is not None:
         normalized_request["generation_parameters"] = request["generation_parameters"]
+    design_hash = request.get("accepted_design_sha256")
+    if design_hash is not None:
+        import re
+        if not isinstance(design_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", design_hash):
+            raise HtmlAssetError("ASSET_DESIGN_IDENTITY_INVALID", "Accepted design hash required")
+        # The accepted pixels, rather than a repeated model observation, own appearance.
+        normalized_request["prompt"] = {
+            "mode": "accepted-design/0.1.0", "sha256": design_hash,
+            "asset_instruction": request.get("asset_instruction", ""),
+        }
     key = _request_key(normalized_request)
     for entry in manifest.get("assets", []):
         if entry.get("id") == asset_id and entry.get("request_key") == key:
@@ -173,7 +183,10 @@ def produce_asset(
             if stored.is_file() and entry.get("sha256") == hashlib.sha256(
                 stored.read_bytes()
             ).hexdigest():
+                inspect_asset_bytes(stored.read_bytes())
                 return {**entry, "cache": "hit"}
+            if design_hash is not None:
+                raise HtmlAssetError("ASSET_HASH_MISMATCH", "Matching accepted-design cache is missing or corrupt; no automatic paid regeneration")
 
     payload = dependencies.provider_callable(prompt, size=size)
     facts = inspect_asset_bytes(payload)
@@ -223,6 +236,7 @@ def produce_asset(
         "file": str(stored.relative_to(Path(dependencies.assets_root))),
         "sha256": digest,
         "request_key": key,
+        **({"accepted_design_sha256": design_hash} if design_hash else {}),
         "model_config_hash": request.get("model_config_hash"),
         "role": role,
         "need": need,

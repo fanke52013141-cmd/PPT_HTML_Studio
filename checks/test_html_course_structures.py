@@ -21,6 +21,16 @@ CASES = json.loads(
 )
 
 
+@pytest.mark.parametrize("case", CASES, ids=lambda c: c["contract"]["slide_id"])
+def test_four_page_requirements_survive_actual_request_context(case):
+    from html_visual_review_service import build_plan_generation_prompts, _registered_capabilities
+    prompts = build_plan_generation_prompts(
+        case["contract"], _registered_capabilities(ROOT), plan_version="0.2.0"
+    )
+    payload = json.loads(prompts["user_prompt"])
+    assert payload["slide"]["visual_requirements"] == case["contract"]["visual_requirements"]
+
+
 def compile_cases(directory):
     catalog = load_template_catalog(ROOT)
     for case in CASES:

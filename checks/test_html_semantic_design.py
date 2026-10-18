@@ -194,6 +194,38 @@ def test_bad_authority_is_rejected_before_provider(tmp_path):
     assert caught.value.code == "PLAN_CONTEXT_INVALID"
 
 
+def test_authoritative_requirements_reach_real_planner_and_block_missing_coverage(tmp_path):
+    contract = copy.deepcopy(CONTRACT_SLIDE)
+    requirements = [{"id": "outward-heat", "kind": "relation", "minCount": 8}]
+    contract["visual_requirements"] = requirements
+    requests = []
+
+    def provider(**kwargs):
+        requests.append(kwargs)
+        payload = json.loads(kwargs["user_prompt"])
+        assert payload.get("task", payload)["slide"]["visual_requirements"] == requirements
+        return semantic_plan()
+
+    with pytest.raises(HtmlReviewError):
+        generate_scene_plan(contract, run_dir=tmp_path, repo_root=ROOT,
+                            json_generator=provider, plan_version="0.2.0")
+    assert requests
+    assert not list(tmp_path.rglob("*.png"))
+
+
+@pytest.mark.parametrize("requirements", [None, [{"id": "x", "kind": "relation", "minCount": True}],
+                                         [{"id": "x", "kind": "guess", "minCount": 1}]])
+def test_bad_requirements_do_not_consume_model_call(tmp_path, requirements):
+    contract = copy.deepcopy(CONTRACT_SLIDE)
+    contract["visual_requirements"] = requirements
+    def provider(**kwargs):
+        pytest.fail("Invalid requirements must stop before provider")
+    with pytest.raises(HtmlReviewError) as caught:
+        generate_scene_plan(contract, run_dir=tmp_path, repo_root=ROOT,
+                            json_generator=provider, plan_version="0.2.0")
+    assert caught.value.code == "PLAN_CONTEXT_INVALID"
+
+
 def test_structural_retry_preserves_valid_action_identity():
     previous = semantic_plan()
     current = copy.deepcopy(previous)

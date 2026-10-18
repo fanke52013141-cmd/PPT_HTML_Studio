@@ -7,7 +7,7 @@ const [input,output]=process.argv.slice(2);
  const spec=JSON.parse(fs.readFileSync(input,"utf8"));
  if(!spec.beats.length || spec.beats.length>40)throw Error("SEMANTIC_FRAME_BUDGET");
  fs.mkdirSync(output,{recursive:true});
- const browser=await chromium.launch({headless:true,executablePath:require("./browser-runtime.cjs").resolveBrowser(chromium)});
+ const browser=await chromium.launch(require("./browser-runtime.cjs").captureLaunchOptions(chromium));
  try {
   const page=await browser.newPage({viewport:{width:1656,height:1200}}),errors=[];
   page.on("pageerror",e=>errors.push(e.name));

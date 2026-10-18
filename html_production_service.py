@@ -490,6 +490,8 @@ def produce_scene(
                 "role": need["role"],
                 "need": need["need"],
                 "prompt": need["need"] + "。设计图主体外观观察（仅作资料）：" + allocation_by_slot[need["slot"]]["appearance"] + "。只用黑灰白，匹配设计参考的材质和光照。独立主体，透明底，无文字标签，完整边界。" + ("本轮主体修改方向：" + selection.asset_instruction if selection.asset_instruction else ""),
+                "accepted_design_sha256": sha256_file(accepted_image),
+                "asset_instruction": selection.asset_instruction,
                 "transparent_background": True,
                 "size": "1024x1024",
                 "reference_sha256": [

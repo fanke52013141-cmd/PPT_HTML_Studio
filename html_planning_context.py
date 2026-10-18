@@ -1,6 +1,8 @@
 """Decision-only planning inputs. Audit metadata remains outside model context."""
 from __future__ import annotations
 
+import copy
+
 
 def planning_context(contract: dict, brief: dict | None) -> dict:
     if not isinstance(contract, dict) or not isinstance(contract.get("narration_beats"), list) or not contract["narration_beats"]:
@@ -60,6 +62,19 @@ def planning_context(contract: dict, brief: dict | None) -> dict:
         if row:
             groups.append(row)
     slide = {"slide_id": contract.get("slide_id"), "narration_beats": beats, "visual_groups": groups}
+    if "visual_requirements" in contract:
+        requirements = contract["visual_requirements"]
+        if not isinstance(requirements, list) or any(
+            not isinstance(r, dict) or set(r) != {"id", "kind", "minCount"}
+            or not isinstance(r["id"], str) or not r["id"].strip()
+            or r["kind"] not in ("relation", "chart", "stage")
+            or type(r["minCount"]) is not int or not 1 <= r["minCount"] <= 40
+            for r in requirements
+        ):
+            raise ValueError("visual_requirements必须为显式id/kind/minCount需求")
+        if len({r["id"] for r in requirements}) != len(requirements):
+            raise ValueError("visual_requirements ID重复")
+        slide["visual_requirements"] = copy.deepcopy(requirements)
     if title:
         slide["title"] = title
     design = {k: brief[k] for k in ("templateRef", "theme", "asset_budget", "subtitle_reserve", "asset_needs") if brief and k in brief}
