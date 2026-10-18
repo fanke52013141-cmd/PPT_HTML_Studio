@@ -142,7 +142,7 @@
         line(`模型用量：输入 ${usage.prompt_tokens ?? '未记录'} token · 输出 ${usage.completion_tokens} token · 其中推理 ${usage.completion_tokens_details?.reasoning_tokens ?? '未记录'} token${execution.usage_complete ? '' : '（部分请求用量未记录）'}`);
       }
       if(execution.unmeasured_requests || execution.untimed_requests)line('部分旧记录或未完成请求缺少测量，以上不是完整 HTTP 次数、总耗时或费用。');
-      const roles={planning:'内容规划',design_image:'设计生图',asset_image:'独立配图',design_understanding:'设计理解',layout_repair:'排版修复',reconstruction:'设计还原',fidelity_review:'原图对照审核',json:'文字请求',image:'图片请求'};
+      const roles={planning:'内容规划',relation_point_repair:'关系坐标修复',design_image:'设计生图',asset_image:'独立配图',design_understanding:'设计理解',layout_repair:'排版修复',reconstruction:'设计还原',fidelity_review:'原图对照审核',json:'文字请求',image:'图片请求'};
       for(const [role,metrics] of Object.entries(execution.roles||{}))line(`${roles[role]||'其他阶段'}：适配器 ${metrics.adapter_calls} 次，复用 ${metrics.reuses} 次，记录耗时 ${(metrics.elapsed_ms/1000).toFixed(1)} 秒`);
     }
     if(progress.next_action){

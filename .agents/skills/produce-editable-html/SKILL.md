@@ -5,7 +5,7 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 
 # 可编辑HTML生产与修复
 
-版本1.22.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
+版本1.23.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
 
 ## 选择任务
 
@@ -46,3 +46,5 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 正式无头审核/取帧/视频使用共享软件合成捕获策略；交互GPU像素另验。相同已接受设计的素材按设计hash/准确need/模型/参数复用，appearance措辞变化不重生；匹配缓存损坏停止，历史缺身份不可猜测迁移。权威visual_requirements必须进入实际规划请求，缺coverage在生图前阻断。先通过捕获/恢复/真实请求预检验证，再恢复课程生产，不拿离线夹具代替真实批准。
 
 原图正确但显式关系point坐标有误时，可将reuse_design_candidate_key与repair_relation_points说明配对，仅0.2.0语义计划；一次受控模型请求只改既有端点坐标，不改对象/文字/动作/模板，不生图/TTS、不写作者，不代签收。人工覆盖阻断；原unknown不补发。新key仍待接受，普通原图复用仍零模型调用。
+
+坐标修复必须先检查项目视觉text模型supports_images=true；planning可使用独立文本模型，image保持。显式原图复用允许在图片模型摘要完全相同时刷新text/planning绑定，保留源模型身份并生成新待审key，不自动转移批准。unknown必须保留，改模型不能当作重发授权。

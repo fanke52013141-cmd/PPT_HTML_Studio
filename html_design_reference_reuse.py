@@ -7,6 +7,25 @@ from artifact_fingerprint import sha256_json, sha256_file
 from html_design_candidates import candidate_directory, _revision_matches, save_design, definition_identity
 from html_reference_package import verify_package, assemble_reference
 from html_visual_review_service import HtmlReviewError
+from html_task_store import HtmlTaskError
+
+
+def compatible_reuse_models(previous, current):
+    """An explicit new review may refresh text workers, never the image owner."""
+    if previous == current:
+        return True
+    allowed = {'binding_revision', 'text', 'planning', 'image'}
+    if (not isinstance(previous, dict) or not isinstance(current, dict)
+            or set(previous) - allowed or set(current) - allowed):
+        return False
+    image = previous.get('image')
+    if (not isinstance(image, dict) or image != current.get('image')
+            or not isinstance(image.get('config_hash'), str) or len(image['config_hash']) != 64):
+        return False
+    return all(isinstance(summary.get('text'), dict)
+               and isinstance(summary['text'].get('config_hash'), str)
+               and len(summary['text']['config_hash']) == 64
+               and summary['text'].get('ready') is True for summary in (previous, current))
 
 
 def reuse_design_reference(*, run_dir, contract, key, revision, definitions, model_summary,
@@ -30,7 +49,7 @@ def reuse_design_reference(*, run_dir, contract, key, revision, definitions, mod
         if package['manifest']['manifestSha256'] != record['reference_manifest_sha256']:
             raise ValueError('reference package identity')
         if (record['slide_id'] != contract['slide_id'] or record['contract_sha256'] != sha256_json(contract)
-                or record['model_summary'] != model_summary or not _revision_matches(run, record, key, revision)
+                or not compatible_reuse_models(record['model_summary'], model_summary) or not _revision_matches(run, record, key, revision)
                 or record['plan']['version'] != plan_version):
             raise HtmlReviewError('内容、模型或作者输入已变化，不能复用原设计', status_code=409, code='DESIGN_REFERENCE_INPUT_CHANGED')
         plan = normalize_html_scene_plan(copy.deepcopy(record['plan']), load_template_catalog(root), contract_slide=contract)
@@ -60,7 +79,7 @@ def reuse_design_reference(*, run_dir, contract, key, revision, definitions, mod
         result = save_design(run_dir=run, contract=contract, revision=revision, definitions=definitions,
             model_summary=model_summary, plan=plan, brief=brief,
             candidate={**copy.deepcopy(record['candidate']), 'source_design_key': key, 'source_image_sha256': record['image_sha256'],
-                       'mode': 'reused_reference_pending_review',
+                       'mode': 'reused_reference_pending_review', 'source_model_summary': record['model_summary'],
                        **({'relation_point_recovery': point_evidence} if point_evidence else {})}, package=package, design_path=image)
         result['reference_reused'] = True
         result['message'] = '原图和计划已核验并复制为新待审参考；没有规划/生图/TTS调用，未接受设计或保存HTML。'
@@ -69,6 +88,8 @@ def reuse_design_reference(*, run_dir, contract, key, revision, definitions, mod
             result['message'] = '只修原关系坐标并原样复用设计图；新候选待审，无生图/TTS或作者保存。'
         return result
     except HtmlReviewError:
+        raise
+    except HtmlTaskError:
         raise
     except (OSError, ValueError, KeyError, TypeError) as error:
         raise HtmlReviewError('原设计无法安全复用', code='DESIGN_REFERENCE_INVALID') from error

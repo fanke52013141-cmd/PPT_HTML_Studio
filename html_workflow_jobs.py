@@ -64,6 +64,8 @@ class HtmlWorkflowJobs:
             return {**recovered, "reused": True, "reconciled": True}
         if frozen is not None:
             frozen.text.require_ready()
+            if options.get("repair_relation_points") and frozen.text.supports_images is not True:
+                raise store.HtmlTaskError("HTML_VISUAL_MODEL_REQUIRED：关系坐标修复需要项目明确支持图像的视觉模型，尚未调用供应商", 409)
             (frozen.planning or frozen.text).require_ready()
             if not options.get("reuse_design_candidate_key") and (not options.get("design_candidate_key") or options.get("design_instruction", "").strip()):
                 frozen.image.require_ready()  # Every new page requires a full design reference.

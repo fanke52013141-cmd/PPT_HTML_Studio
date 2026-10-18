@@ -72,7 +72,7 @@ def repair_relation_points(plan, image, instruction, *, contract, repo_root, run
     write_json_atomic(folder / "request.json", {**prompts, "image_sha256": digest,
                                                "source_plan_sha256": sha256_json(plan),
                                                "request_timeout_seconds": 600})
-    response = generator(**prompts, run_dir=str(run), artifact_prefix="html_scene_plan_endpoint_" + folder.name[:16],
+    response = generator(**prompts, run_dir=str(run), artifact_prefix="design-endpoint-repair-" + folder.name[:16],
                          image_paths=[str(image)], request_timeout=600, reasoning_effort_override="low")
     write_json_atomic(folder / "response.json", response)
     checkpoint()
