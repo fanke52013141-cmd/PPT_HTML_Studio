@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-18 源码试用更新：[课程闭环与外部Agent试用说明](docs/releases/2026-10-18-course-and-external-agent-testing.md)。目标分支codex/editor-adapter-p0-20261017、PR #2；本次仓库同步不包含公网部署，main尚未合入。发布前511项相关隔离回归及共享视觉检查通过。
+
 2026-10-18 当前开发：[动作诊断与外部Agent交接](docs/plans/html-backend-development/handoff-external-agent-2026-10-18.md)。契约0.9.96/API1.51；四页课程已正式导出并登记当前作品。新增客户端标准任务/结果交接、原修复报告的动作时间风险提示及音频版本保护；本地传输与回归通过，真实外部Agent能力和自动转交尚未验证。下方记录保留为阶段历史。
 
 2026-10-18 当前交接：[课程修复与整课输出](docs/plans/html-backend-development/handoff-capture-recovery-preflight-2026-10-18.md)。契约0.9.95/API1.50；四页已保存，整课原音频已确认且20个文件hash不变。第二、三、四页签收有效；第一页八方向程序修复及独立语义、核对视频通过，待当前画面与语义人工确认后正式导出整课。
