@@ -15,8 +15,35 @@ from html_runtime_skills import load_runtime_skill, runtime_source_files
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_context_reports_actual_frame_line_and_generated_prefix_facts(case):
+    from html_design_policy import presentation_facts
+    context = component_context(case[1], ROOT)
+    for node in case[1]['nodes']:
+        facts = context['capabilities'][node['id']]['currentPresentation']
+        if node['type'] == 'summary':
+            assert facts['term_prefix'] == '这个过程叫' and facts['section_dividers'] == 0
+            alternative = context['capabilities'][node['id']]['variantFacts']['summary-panel']
+            assert alternative['term_prefix'] == '' and alternative['section_dividers'] == 0
+        elif node['type'] == 'figure':
+            assert facts['container_frame'] is False
+    # This fact also applies to plans without an annotation node.
+    assert presentation_facts({'type': 'figure'}, 'figure-caption-top')['container_frame'] is False
+    annotation = presentation_facts({'type': 'annotation'})
+    assert annotation['leader_stroke'] == annotation['anchor_stroke'] == 'solid'
+    assert annotation['static_style_editable'] == 'variant_only'
+
+
 def ready(context):
     return response_for({"artifact_prefix":"design_understanding-case","user_prompt":json.dumps(context)})
+
+
+def test_existing_figure_icons_are_distinct_from_optional_decoration_palette(case):
+    scene = copy.deepcopy(case[1])
+    scene['nodes'].append({'id':'existing-caption', 'type':'figure',
+                           'tag':{'icon':'thermometer','text':'Current caption'}})
+    cap = component_context(scene, ROOT)['capabilities']['existing-caption']
+    assert cap['currentRender']['tag'] == {'icon':'thermometer','source':'scene_figure_tag'}
+    assert cap['icons'] == []
 
 
 def test_design_stages_use_low_effort_with_existing_deadline(case):

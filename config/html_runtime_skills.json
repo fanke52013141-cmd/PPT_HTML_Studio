@@ -11,7 +11,7 @@
       "output_contract": "candidate-layout-decision/0.1.0",
       "body": {
         "path": "config/html_runtime_skills/candidate-layout-repair-0.3.0.md",
-        "sha256": "a1e9d657ad5c9d707048004d06eb500d0377375c001e944d93538afa161225aa"
+        "sha256": "fc1cf7ae9206eee688fb871b1a09a493b8a86581c0254744dd71f2720a6cb298"
       },
       "references": {
         "layout-evidence": {
@@ -22,13 +22,13 @@
     },
     {
       "id": "design-understanding",
-      "version": "0.6.0",
+      "version": "0.7.2",
       "stage": "design_understanding",
       "input_contract": "design-understanding-input/0.2.0",
       "output_contract": "design-understanding-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-understanding-0.6.0.md",
-        "sha256": "d926caa9cefe31977fd14afe3d809dcc638e657161fbf2a62dde31a4b7162a61"
+        "path": "config/html_runtime_skills/design-understanding-0.7.2.md",
+        "sha256": "a417b23917483c19039b59f79eab66c2ee2a18846aed1ff969c5a2c0c0f2c0a5"
       },
       "references": {
         "reference-policy": {
@@ -39,13 +39,13 @@
     },
     {
       "id": "design-reconstruction",
-      "version": "0.6.0",
+      "version": "0.7.2",
       "stage": "design_reconstruction",
       "input_contract": "design-reconstruction-input/0.2.0",
       "output_contract": "design-reconstruction-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-reconstruction-0.6.0.md",
-        "sha256": "96b40f17d6f0b897da7762148d9c01f7d29ef348ba61a4681ba355ee1be62b40"
+        "path": "config/html_runtime_skills/design-reconstruction-0.7.2.md",
+        "sha256": "558894d5f2261548214ac86ecb05a9796d5fc264785760f52196b3a5b694b4a2"
       },
       "references": {
         "reference-policy": {
@@ -56,13 +56,13 @@
     },
     {
       "id": "design-fidelity-review",
-      "version": "1.0.0",
+      "version": "1.0.2",
       "stage": "design_fidelity_review",
       "input_contract": "design-review-input/0.3.0",
       "output_contract": "design-review-facts/0.1.0",
       "body": {
-        "path": "config/html_runtime_skills/design-fidelity-review-1.0.0.md",
-        "sha256": "cdacdc7ca46018d1d93eba0a3b0b3734e647a6f7e50fda5b7d0b07cc3e611dc6"
+        "path": "config/html_runtime_skills/design-fidelity-review-1.0.2.md",
+        "sha256": "9081320b6e9d21d4f7597ee60bbb99e5baf4e732c8e6a66928c948ebf82a8d79"
       },
       "references": {
         "reference-policy": {
@@ -96,7 +96,7 @@
       "output_contract": "reference-localization-output/0.5.0",
       "body": {
         "path": "config/html_runtime_skills/design-reference-localization-0.5.1.md",
-        "sha256": "12fa7f9425191311f03d73ef869b5c7b396f9c6863082af156d5d18dcd0b65b7"
+        "sha256": "a66997e7115abbce3603236debe85bed01f55e1078b925f521cceb348c4a2918"
       },
       "references": {}
     }

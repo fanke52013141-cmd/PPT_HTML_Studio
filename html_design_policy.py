@@ -39,6 +39,27 @@ def presentation_facts(node, variant=None):
     if node["type"] == "summary":
         facts.update(term_position="on_connector" if overlay else "below_connector" if variant == "summary-panel" else "registered_layout",
                      takeaway_position="below_flow" if overlay else "side_column")
+        facts["term_prefix"] = "" if variant in {
+            "summary-arrow-overlay", "summary-panel", "summary-relationship-panel",
+            "summary-relationship-compact", "summary-relationship-columns", "summary-strip-divided",
+        } else "这个过程叫"
+        facts["section_dividers"] = 2 if variant in {
+            "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns", "summary-strip-divided",
+        } else 0
+    if node["type"] == "card":
+        facts.update(container_frame=variant == "card-outline", icon_container="circle", surface="background" if variant == "card-outline" else "theme_default")
+    if node["type"] == "arrow":
+        facts.update(explicit_endpoints=bool(node.get("from")), head=node.get("head",True), line_style=node.get("lineStyle","solid"))
+    if node["type"] == "chart":
+        facts.update(code_owned=True, plateau=node.get("plateau"), data_editable_by_local_repair=False)
+    if node["type"] == "figure":
+        facts.update(frame_stroke="dashed" if variant == "figure-frame-dashed" else "solid", container_frame=variant in {"figure-frame-top","figure-frame-dashed"},
+                     tag_treatment="inset_top_caption" if variant in {"figure-frame-top","figure-frame-dashed"} else "outlined_pill" if variant == "figure-caption-top" else "floating_tag")
+    if node["type"] == "annotation":
+        facts.update(anchor_stroke="dashed" if variant in {"annotation-dashed", "annotation-ring-dashed", "annotation-dashed-no-arrow"} else "solid",
+                     leader_stroke="dashed" if variant in {"annotation-dashed", "annotation-line-dashed", "annotation-dashed-no-arrow"} else "solid",
+                     leader_arrow=variant == "annotation-dashed",
+                     leader_geometry="anchor_to_label_edge", static_style_editable="variant_only")
     return facts
 
 
@@ -62,8 +83,10 @@ def production_policy(scene):
 
 def editable_capabilities(node, variants):
     from html_scene_repair import PARTS, STYLE_KEYS
+    if node["type"] == "arrow" and node.get("from"):
+        return {}  # Geometry is derived from semantic endpoints; replan to change them.
     if node["type"] == "annotation":
-        return {}
+        return {"set_variant": [v["id"] for v in variants]} if variants else {}
     result = {"set_presentation": ["offsetX", "offsetY", "width", "height"]}
     if PARTS.get(node["type"]):
         result["set_text_style"] = {"parts": PARTS[node["type"]], "fields": sorted(STYLE_KEYS), "scope": "whole_part_only"}

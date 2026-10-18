@@ -139,6 +139,7 @@ class SceneEditorSaveRequest(BaseModel):
     scene: dict[str, Any]
     binding: dict[str, Any] | None
     expected_revision: StrictInt = Field(ge=0)
+    expected_audio_revision: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     anchor_overrides: dict[str, list[dict[str, Any]]] = Field(default_factory=dict)
 
 
@@ -193,7 +194,7 @@ def html_scene_editor_put(
         ) from exc
     except SceneEditError as exc:
         raise HTTPException(
-            422, detail={"code": exc.code, "message": str(exc)}
+            409 if exc.code == "AUDIO_REVISION_CONFLICT" else 422, detail={"code": exc.code, "message": str(exc)}
         ) from exc
     except store.HtmlVisualError as exc:
         raise HTTPException(400, detail=str(exc)) from exc
@@ -235,11 +236,16 @@ def html_scene_editor_preview(
                     payload.scene,
                     payload.binding,
                     payload.anchor_overrides,
+                    expected_revision=payload.expected_revision,
+                    expected_audio_revision=payload.expected_audio_revision,
                 ),
             }
+    except store.HtmlVisualConflict as exc:
+        raise HTTPException(409, detail={"code": "REVISION_CONFLICT", "message": str(exc),
+            "expected_revision": exc.expected, "current_revision": exc.current}) from exc
     except SceneEditError as exc:
         raise HTTPException(
-            422, detail={"code": exc.code, "message": str(exc)}
+            409 if exc.code == "AUDIO_REVISION_CONFLICT" else 422, detail={"code": exc.code, "message": str(exc)}
         ) from exc
 
 
@@ -276,7 +282,8 @@ def _repair_dispatch(mode, project_id, slide_id, payload, db):
     except store.HtmlVisualConflict as exc:
         raise HTTPException(409, detail={"code":"REVISION_CONFLICT","expected_revision":exc.expected,"current_revision":exc.current}) from exc
     except SceneEditError as exc:
-        raise HTTPException(422, detail={"code":exc.code,"message":str(exc)}) from exc
+        raise HTTPException(409 if exc.code == "AUDIO_REVISION_CONFLICT" else 422,
+                            detail={"code":exc.code,"message":str(exc)}) from exc
     except store.HtmlVisualError as exc:
         raise HTTPException(400, str(exc)) from exc
 

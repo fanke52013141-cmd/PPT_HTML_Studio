@@ -105,9 +105,15 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
             image.save(buffer, "PNG")
             return buffer.getvalue()
 
-        deps = HtmlReviewDependencies(
-            repo_root=ROOT, json_generator=lambda **kw: copy.deepcopy(plan)
-        )
+        def generator(**kw):
+            from checks.html_design_agent_fixture import response_for
+            response = response_for(kw)
+            if response is not None:
+                return response
+            if kw.get('artifact_prefix', '').startswith('design-reconstruct-'):
+                return {'status': 'unchanged', 'message': 'explicit deterministic fixture'}
+            return copy.deepcopy(plan)
+        deps = HtmlReviewDependencies(repo_root=ROOT, json_generator=generator)
         started = time.perf_counter()
         result = produce_scene(contract, run_dir=tmp_path, deps=deps, provider=provider)
         if result.get("stage") == "design_review":
@@ -145,7 +151,7 @@ def test_five_page_production_uses_three_templates_and_real_assets(tmp_path):
         )
         assert len(binding["actions"]) == len(contract["narration_beats"])
     assert len({m["template"] for m in measurements}) == 3
-    assert sum(c["size"] == "1280x720" for c in calls) == 3
+    assert sum(c["size"] == "1280x720" for c in calls) == 5  # Every page has an explicit full-page design checkpoint.
     assert (
         sum(c["size"] == "1024x1024" for c in calls) == 3
     )  # Changed relevant classification bytes must change asset cache identity.
@@ -384,17 +390,28 @@ def test_production_job_runs_and_persists_result(monkeypatch):
     capture = Capture()
     calls = []
     def generator(**kw):
+        from checks.html_design_agent_fixture import response_for
+        response = response_for(kw)
+        if response is not None:
+            return response
+        if kw.get('artifact_prefix', '').startswith('design-reconstruct-'):
+            return {'status': 'unchanged', 'message': 'explicit deterministic fixture'}
         calls.append(kw)
         return copy.deepcopy(plan)
+    from checks.test_html_e_production import png
+    dependencies = HtmlReviewDependencies(repo_root=ROOT, json_generator=generator)
+    provider = lambda *args, **kwargs: png()
+    design = produce_scene(contract, run_dir=run, deps=dependencies, provider=provider)
+    assert design['stage'] == 'design_review'
+    options = {'design_candidate_key': design['design']['key']}
     jobs = HtmlWorkflowJobs(
         SessionLocal,
-        HtmlReviewDependencies(
-            repo_root=ROOT, json_generator=generator
-        ),
+        dependencies,
+        provider=provider,
         executor=capture,
     )
-    task = jobs.submit(db, project, contract)
-    assert jobs.submit(db, project, contract)["reused"]
+    task = jobs.submit(db, project, contract, options=options)
+    assert jobs.submit(db, project, contract, options=options)["reused"]
     import html_production_service
     real_review = html_production_service.review_scene
     def fail_review(*args, **kw):
@@ -406,7 +423,7 @@ def test_production_job_runs_and_persists_result(monkeypatch):
     assert failed.status == "failed"
     assert "phase:compile" in failed.get_payload()["production_stages"]
     monkeypatch.setattr(html_production_service, "review_scene", real_review)
-    retry = jobs.submit(db, project, contract)
+    retry = jobs.submit(db, project, contract, options=options)
     assert retry["id"] == task["id"] and retry["attempt"] == 2
     # Deliberately mutate executor's original argument after submission.
     # The saved page must still come from the verified snapshot.

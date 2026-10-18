@@ -48,6 +48,8 @@ def test_registered_variants_are_consumed_without_changing_text_or_actions(case)
         assert kw["request_timeout"] == 600
         assert "thinking" not in kw and "extra_body" not in kw
         assert "text-card-outline" in kw["user_prompt"]
+        assert 'values字段名必须为variant' in kw['system_prompt']
+        assert 'variantId或variant_id' in kw['system_prompt']
         return {"status":"candidate","operations":operations}
     result=reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"])
     assert result["scene"]["version"]=="0.7.0" and result["report"]["passed"]

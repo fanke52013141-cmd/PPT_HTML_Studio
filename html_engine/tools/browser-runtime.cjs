@@ -19,4 +19,7 @@ function resolveBrowser(chromium, env = process.env, exists = fs.existsSync) {
   if (!found) throw new Error("BROWSER_NOT_FOUND: install Playwright Chromium or configure HPS_CHROME");
   return found;
 }
-module.exports = { resolveBrowser };
+function captureLaunchOptions(chromium) {
+  return {headless:true,executablePath:resolveBrowser(chromium),args:["--disable-gpu"]};
+}
+module.exports = { resolveBrowser, captureLaunchOptions };

@@ -6,6 +6,8 @@
 
 先html_editor.read冻结revision。明确对象scope和actionId；调用html_repair.preview或generate，使用实际测量/截图。注册set_presentation/set_text_style/set_variant只改允许部分，set_motion/set_binding需实际动作；内容/节点增删回规划。preview不写作品，save重新核对candidate_key/revision/人工保护/真实浏览器；409重新读取，不能改source=human绕保护。
 
+根据protected_paths的实际叶字段/祖先范围判断可改部位，保留未保护兄弟字段的编辑能力。绑定动作只改既有beatId下的offset，保持actionId和作者duration；缺能力或必须改保护字段时needs_input/unsupported。基线、工具、Skill效果分开测量，失败与unknown不剔除，未报告费用为null，不把少量样本的耗时差当作稳定优化结论。
+
 时间证据使用真实共享播放器和音频时钟；有限采样/未指定遮挡对不证明整个动画无遮挡。静态几何不替代审美。检查rebuild_plan和实际资源hash，只有真正改变的产物才失效；同值保存不重TTS。失败原场景保持。
 
 ## 声音与逐句QA

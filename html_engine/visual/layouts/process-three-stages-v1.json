@@ -1,0 +1,190 @@
+{
+  "format": "hps.visual.layout",
+  "version": "0.2.0",
+  "id": "process-three-stages-v1",
+  "name": "process-three-stages-v1",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "contentBottom": 800,
+    "subtitleHeight": 100
+  },
+  "slots": {
+    "header": {
+      "box": {
+        "x": 58,
+        "y": 48,
+        "width": 1477,
+        "height": 77
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "stage-1": {
+      "box": {
+        "x": 58,
+        "y": 210,
+        "width": 440,
+        "height": 160
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "stage-2": {
+      "box": {
+        "x": 580,
+        "y": 210,
+        "width": 440,
+        "height": 160
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "stage-3": {
+      "box": {
+        "x": 1102,
+        "y": 210,
+        "width": 440,
+        "height": 160
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "label-1": {
+      "box": {
+        "x": 58,
+        "y": 420,
+        "width": 440,
+        "height": 130
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "label-2": {
+      "box": {
+        "x": 580,
+        "y": 420,
+        "width": 440,
+        "height": 130
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "label-3": {
+      "box": {
+        "x": 1102,
+        "y": 420,
+        "width": 440,
+        "height": 130
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "summary": {
+      "box": {
+        "x": 58,
+        "y": 690,
+        "width": 1477,
+        "height": 90
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "relation-1": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 4
+    },
+    "relation-2": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 4
+    },
+    "relation-3": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 4
+    },
+    "relation-4": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 4
+    },
+    "relation-5": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 4
+    },
+    "relation-6": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 4
+    },
+    "relation-7": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 4
+    },
+    "relation-8": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 800
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 4
+    }
+  }
+}

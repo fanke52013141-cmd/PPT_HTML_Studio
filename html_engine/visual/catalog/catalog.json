@@ -14,10 +14,10 @@
       "fonts": 5,
       "palettes": 3,
       "pendingOrExperimentalSamples": 2,
-      "runtimeNodeTypes": 11,
+      "runtimeNodeTypes": 12,
       "runtimeEffects": 8,
-      "runtimeLayouts": 7,
-      "runtimeTemplates": 5,
+      "runtimeLayouts": 10,
+      "runtimeTemplates": 8,
       "runtimeThemes": 5
     },
     "sourceOfCounts": "counted from standard-pages.json, components.json, components-extensions.json, presentation-variants.json, effects.json, static-catalog.json, and live V1 runtime sources"
@@ -44,11 +44,11 @@
     },
     {
       "path": "html_engine/reference-library/components.json",
-      "sha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748"
+      "sha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c"
     },
     {
       "path": "html_engine/reference-library/effects.json",
-      "sha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6"
+      "sha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6"
     },
     {
       "path": "html_engine/reference-library/palettes.json",
@@ -208,7 +208,7 @@
     },
     {
       "path": "html_engine/reference-library/standard/review.json",
-      "sha256": "76f0a72392dfa89972bfa7ffadcf3d21c743e4ecb27cd4608432bd6e80df4ce6"
+      "sha256": "6b1c60b44c34b068c009569a045c93179277a66f39830f10c51af7fcfdccffe1"
     },
     {
       "path": "html_engine/reference-library/standard/variant-08.png",
@@ -243,80 +243,108 @@
       "sha256": "17743c9cb15ba6b74304cb264c6e19dde7dd847f2d4b2e9598c7d1c0ac0450cd"
     },
     {
+      "path": "html_engine/visual/course-structures.cjs",
+      "sha256": "00e6c217165eb39e12dc4e228ac495c57738a1fce2946d0ecec4fc962be4fa37"
+    },
+    {
       "path": "html_engine/visual/effects/registry.json",
-      "sha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101"
+      "sha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60"
+    },
+    {
+      "path": "html_engine/visual/layouts/chart-explanation-v1.json",
+      "sha256": "16a78e3eff5ad17d4b4f96982734ed384e02663acc377cc5b35cc654f4d5ff30"
     },
     {
       "path": "html_engine/visual/layouts/data-relation-v1.json",
-      "sha256": "57086412612dac2764e71715f26e2e9bee72ae18ffafbb5e3bde61b2141a2514"
+      "sha256": "f5ec0ba6ac8579df761e426bf89585c972ee4cdcb6c768632ec5c4cbce5f5c7c"
     },
     {
       "path": "html_engine/visual/layouts/editorial-three-columns-v1.json",
-      "sha256": "f59729878f42c6889c9660d675661e671e86fe884f9d939ccac2d11f0d51f677"
+      "sha256": "589bef55041cfce51ac7d4420de3af0a9913089419e42f4b7a68c42cf7ace0c9"
     },
     {
       "path": "html_engine/visual/layouts/object-left.json",
-      "sha256": "6242736f76f4a9da885a2f55ad1011c747907801bb2b658f026615581b62ceea"
+      "sha256": "32e08e933fe4d455580930febf4e816ecd17fb11a87d72f1eddce250be88186c"
     },
     {
       "path": "html_engine/visual/layouts/object-right.json",
-      "sha256": "71a590a7da4258aa7891e0012e7f00a923adba6e8337b33238aa92102a636663"
+      "sha256": "1747153e75e7d1674b76a8c64e938645d58e649914d65aa42f924d29aa9ed4e4"
     },
     {
       "path": "html_engine/visual/layouts/process-stage-v1.json",
-      "sha256": "6038ee78d9c696a68d795bc9227085ed88d9c6c1f766798b797d68d3be21a7a6"
+      "sha256": "70b1f58f93e996e0f55f2144173194bdbcbe1418a55b46c95015e5b9f8dccd9a"
+    },
+    {
+      "path": "html_engine/visual/layouts/process-three-stages-v1.json",
+      "sha256": "5fe1e439d11431fd487a46bf8dcde305e9c23ab49fc811fb83c7f757a1581a83"
     },
     {
       "path": "html_engine/visual/layouts/science-explanation-labels-v1.json",
-      "sha256": "ca930e026b84d16a08098a3d565794f075693f0bfc532778f2a680ac847a7bc9"
+      "sha256": "81a3ae67963073594014fa47bb8054721fa4fa57dc3d14bc75f38153f606b45c"
     },
     {
       "path": "html_engine/visual/layouts/science-explanation-v1.json",
-      "sha256": "a57b624ed482f43b72b99f882f531ffa5979aaab85deb242bd5f3d50600a36b8"
+      "sha256": "ed9f1699d811f6c6ee99e8868465509928c4e368754e01e8e081c7423af9d88f"
+    },
+    {
+      "path": "html_engine/visual/layouts/science-relations-v1.json",
+      "sha256": "3a81c7e102edd702f9adc0a19e9566b13b28c4f58107e280b369ef5ae8cfa159"
     },
     {
       "path": "html_engine/visual/schema.json",
-      "sha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8"
+      "sha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3"
+    },
+    {
+      "path": "html_engine/visual/templates/chart-explanation-v1.json",
+      "sha256": "58c999a105969f086300e731802c2a91108540e39ebf7efe3250d064750d41c8"
     },
     {
       "path": "html_engine/visual/templates/data-relation-v1.json",
-      "sha256": "993076bfd69b5b5e43a5122a66b80766da2137fadf2e354173f034f464f28691"
+      "sha256": "01566739c50beed3d796c9d357192297feea1f12529c0dd346039e58c953028f"
     },
     {
       "path": "html_engine/visual/templates/editorial-three-columns-v1.json",
-      "sha256": "ee016dadffa66d5fc00d93726795c049b4baa513ef179042f82e35e0f966b797"
+      "sha256": "3ee3dfdea39007200edd5154eb0489e81412e817209fac7b41cb8bb2369e23e6"
     },
     {
       "path": "html_engine/visual/templates/explanation-cards-v1.json",
-      "sha256": "743cd9b9f70e566151bafc97a43a96d82afe53e4c9c351ab1d1ffac5644e27f6"
+      "sha256": "61a408bff1c4810d63f155dc9a3e4f46536a58287991c4806169b835b1fd1cdf"
     },
     {
       "path": "html_engine/visual/templates/explanation-labeled-v1.json",
-      "sha256": "4226ef27b88ecdc58c0f8d065b1e29cd737f5765d912d803247e50efbef90899"
+      "sha256": "e0933b9939bb1197c3673d34743c14b530d616fd94bef8a2adf028354caf63d7"
     },
     {
       "path": "html_engine/visual/templates/process-stage-v1.json",
-      "sha256": "87b56bfe109cb9d65ffa27c4231dab57d58a353d24e5de4567b3bc1f76319b76"
+      "sha256": "186bd2ffab34901bd9864c667163e00d43e8e865bb4f9db38d98fd9c9234ca5b"
+    },
+    {
+      "path": "html_engine/visual/templates/process-three-stages-v1.json",
+      "sha256": "ca8d1dd7a947774ec8c41a5cfad3fd348d76e324314e9cab12a9727b48950939"
+    },
+    {
+      "path": "html_engine/visual/templates/science-relations-v1.json",
+      "sha256": "7c1f805dd96726a6659ea7943d7029ddf39c00cc782c3329b43499ff50047bad"
     },
     {
       "path": "html_engine/visual/themes/amber-editorial.json",
-      "sha256": "5ad59d5157a5491b225dc42b36e9e3816dfec6d7385cb7400c78f25549f44860"
+      "sha256": "81b48464ab20bb75a6763220b3e23f9355572431834729374f3213c2139e5a96"
     },
     {
       "path": "html_engine/visual/themes/amber-science.json",
-      "sha256": "8a20630d5540cd9c7e6dec02da992c33c732dd2596eed71a3e9bfb7568521a19"
+      "sha256": "6999f229e4b6edadfd3c8ee3e9940b7ead1c104c9963eb882d3443ae359879b3"
     },
     {
       "path": "html_engine/visual/themes/neutral-baseline.json",
-      "sha256": "17e7ab61863c46589f525814fbae0c7a8b3fb02f3c59083fafeed394320790d0"
+      "sha256": "92568b1176e82494f2fe8437a956d192d4226e5816f48493e757cf25e638f11a"
     },
     {
       "path": "html_engine/visual/themes/neutral-science.json",
-      "sha256": "96e51dc2bd1efd327d574ac2cc76e3239945148ab7e8953da1be3aaf894681de"
+      "sha256": "e9669a2679bc6cb0d59461df2534625ce60e5e74bbff4feb23de8ab9c91c9bfd"
     },
     {
       "path": "html_engine/visual/themes/soft-science.json",
-      "sha256": "0d297f989a46c0212ee678592a22c2165a9b173381d65d249cd2f6f074a5ae23"
+      "sha256": "69e6b1c4ad81ae56445506cc9e5f020fa0906b40bdf0c76f4bd138fcdef163b2"
     }
   ],
   "referencePages": [
@@ -1511,7 +1539,7 @@
       "pageId": "page:component-02",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "62df6fc98f86575f407510e0d9c09482aea915a3f11061c076c9da720ee487c1"
       },
       "productionMapping": {
@@ -1559,7 +1587,7 @@
       "pageId": "page:component-02",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "189a5b9ba74122b7fc5cfd6f1a198c1f0282ff561e95b9b0a0a9fab4a702b6d0"
       },
       "productionMapping": {
@@ -1607,7 +1635,7 @@
       "pageId": "page:component-02",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "5d23f87e92d7a451e8f2bc5fa11bef7ba283370abe20abd6309c4cf78df8c97f"
       },
       "productionMapping": {
@@ -1655,7 +1683,7 @@
       "pageId": "page:component-02",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "f3ec748027483fe595352b3ea352dd5c00d0bd6aad950cd689c04ef30d11ddaa"
       },
       "productionMapping": {
@@ -1703,7 +1731,7 @@
       "pageId": "page:component-03",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "f74e1082d06fcee1fb6575e4ce22d446216662159e26f8c8810a908e8f15ec77"
       },
       "productionMapping": {
@@ -1751,7 +1779,7 @@
       "pageId": "page:component-03",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "0a0dccfe67c910f827c92901a32bbbb3241e30044fea546b7395b9f6f2fceb5f"
       },
       "productionMapping": {
@@ -1800,7 +1828,7 @@
       "pageId": "page:component-03",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "7c21a52bbf7b59be5a0d6de75a0ad59694aedc5425dda06bdb59387b85786b45"
       },
       "productionMapping": {
@@ -1848,7 +1876,7 @@
       "pageId": "page:component-03",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "f08b04d22b83eaa75d6f390e0663ebe1cd741938a6a61e97c41356d0391b9e5f"
       },
       "productionMapping": {
@@ -2068,7 +2096,7 @@
       "pageId": "page:effect-12",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "51fe9f90984df9c8b05e8cdc9770471a4ead02aa2f72655515efe181867a0217"
       },
       "productionMapping": {
@@ -2113,7 +2141,7 @@
       "pageId": "page:effect-12",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "99667b5c1b13fd2274841c72c325a190126d3305caa213cf1b57e560e8f139a4"
       },
       "productionMapping": {
@@ -2158,7 +2186,7 @@
       "pageId": "page:effect-12",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "e0fae32f10f48efec340f41fb5ba083c6d9539ea82042a6ff7db6d8aec551d1a"
       },
       "productionMapping": {
@@ -2200,7 +2228,7 @@
       "pageId": "page:effect-12",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "25ae3d6705f9a8b0e0ac76cfbe04033bddfe878c4d3523959a2988ea678c38b7"
       },
       "productionMapping": {
@@ -2245,7 +2273,7 @@
       "pageId": "page:effect-13",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "a52c8a144db9272b15cb233acba6edbef8549fea17d4ebbc4fb0611478e31174"
       },
       "productionMapping": {
@@ -2289,7 +2317,7 @@
       "pageId": "page:effect-13",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "59bbdaaf0932eb75f3c147aeedec08434a1013c4c2e13ef80bb2aa25e6253139"
       },
       "productionMapping": {
@@ -2331,7 +2359,7 @@
       "pageId": "page:effect-13",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "ab14eb13a839faa0116a030c70ea8ae5b3505c8d4c3ef70995b8a39e04bdac99"
       },
       "productionMapping": {
@@ -2373,7 +2401,7 @@
       "pageId": "page:effect-13",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "83043b2827061bde5bb23d926dbac03c85a5de087801f223221821cf605ae583"
       },
       "productionMapping": {
@@ -2415,7 +2443,7 @@
       "pageId": "page:effect-14",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "ceaa8fc3b06e7edf4c7f7e712f71932276614d03917f7f9a9c2121f581b96880"
       },
       "productionMapping": {
@@ -2457,7 +2485,7 @@
       "pageId": "page:effect-14",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "0228c63d5fac2f0fc7058a315bedf090e91e24f0f086b14c88c74d7beef399a1"
       },
       "productionMapping": {
@@ -2499,7 +2527,7 @@
       "pageId": "page:effect-14",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "5294b97a275cd34a2af549c733d51f7367473337443135411eb9033a3d4c7b38"
       },
       "productionMapping": {
@@ -2541,7 +2569,7 @@
       "pageId": "page:effect-14",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "0f0f22dbf6c6f8be06419575c6d86ad8cc110d5d87b5dd24b62c4a5f04f6dae6"
       },
       "productionMapping": {
@@ -2583,7 +2611,7 @@
       "pageId": "page:effect-15",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "e94f70f74ee5fc01474b66707c08922c823feb41463208288b6b8a974be935b1"
       },
       "productionMapping": {
@@ -2625,7 +2653,7 @@
       "pageId": "page:effect-15",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "26bbe03a2b274959f959751bb7caaa0fa120f359d4ee1dab84614128b5a4b135"
       },
       "productionMapping": {
@@ -2667,7 +2695,7 @@
       "pageId": "page:effect-15",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "4090e297faf79230e7e408904c74200a7c9b73c531352dd601b2e1a13a6bf50d"
       },
       "productionMapping": {
@@ -2709,7 +2737,7 @@
       "pageId": "page:effect-15",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "34db2f5e3edf7f9a8dc83ddc006db18a533966a89c200dd9ecdac95dda48f1ad"
       },
       "productionMapping": {
@@ -2751,7 +2779,7 @@
       "pageId": "page:effect-16",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "297bd423b803eb04eaaddb209167983ec3d37d45d8f596ed9caa208579b2e0c5"
       },
       "productionMapping": {
@@ -2793,7 +2821,7 @@
       "pageId": "page:effect-16",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "034859a398a716bc848f2d14376634104f2763930a15172d8ce9ec9e561f97c6"
       },
       "productionMapping": {
@@ -2835,7 +2863,7 @@
       "pageId": "page:effect-16",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "003cbc02ef405ac688e006bcf4c8b1b59d24f5b6797639cf80f3617256b52923"
       },
       "productionMapping": {
@@ -2877,7 +2905,7 @@
       "pageId": "page:effect-16",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "f65a945c22067b2f3b0a1ae6c3736b5e0afc631f664c68f59accc7763f3f7b91"
       },
       "productionMapping": {
@@ -2919,7 +2947,7 @@
       "pageId": "page:effect-17",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "6a0ed3c6ef5ee315058c4e66ac354c7b4e71cb9d390b5c91eee5406a5453e6de"
       },
       "productionMapping": {
@@ -2961,7 +2989,7 @@
       "pageId": "page:effect-17",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "42ee9d9dae023f1219aced90e3022ec6e944abf924341f92d63686fffe6340c2"
       },
       "productionMapping": {
@@ -3003,7 +3031,7 @@
       "pageId": "page:effect-17",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "d1bd29e42a2a8771d60137ab3576abcca3ed019e1ae33eb29a96d322dccfd857"
       },
       "productionMapping": {
@@ -3045,7 +3073,7 @@
       "pageId": "page:effect-17",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "139e8f03073f34510fffdaec0e09dc4066e3f39d77f8d0d5029bfac55413e5c6"
       },
       "productionMapping": {
@@ -3087,7 +3115,7 @@
       "pageId": "page:effect-18",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "265845e04eeb3d7c1e2f76f4c639f38547e03ce2617c4aa4fc62b97a141a1f0c"
       },
       "productionMapping": {
@@ -3129,7 +3157,7 @@
       "pageId": "page:effect-18",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "b61ffe1029336fb8bdf10454c16858ac8d82596ba79e309267b5ad4810a08ab3"
       },
       "productionMapping": {
@@ -3171,7 +3199,7 @@
       "pageId": "page:effect-18",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "585a0eb507fd96c4fa09c8bd4fb379dcbf1d7384493ed97b6df8c111970482e1"
       },
       "productionMapping": {
@@ -3213,7 +3241,7 @@
       "pageId": "page:effect-18",
       "source": {
         "path": "html_engine/reference-library/effects.json",
-        "fileSha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6",
+        "fileSha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6",
         "recordSha256": "8949e7774d035e834cf244c6620150b2899631057c5c9b4c94244bcf2ecb434c"
       },
       "productionMapping": {
@@ -3258,7 +3286,7 @@
       "pageId": "page:fonts",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "c5660ac2c1e1baad72f7d42df70db1d64a2dc38eef6bd26497ecdfb9723408dc"
       },
       "productionMapping": {
@@ -3303,7 +3331,7 @@
       "pageId": "page:fonts",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "5163c46fa70c28599c169d1dcd7fddb3e0657c37cf94a40c570643fc96e22510"
       },
       "productionMapping": {
@@ -3348,7 +3376,7 @@
       "pageId": "page:fonts",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "fb17df855643f349c18cda303e88aae938e507abc67daa54efb1846e5c101df9"
       },
       "productionMapping": {
@@ -3393,7 +3421,7 @@
       "pageId": "page:fonts",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "2a508153ac9f041f120f4c57c71c5f967df93ca3ba6d5a2067c2ce90c6f3b832"
       },
       "productionMapping": {
@@ -3438,7 +3466,7 @@
       "pageId": "page:fonts",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "469d4b021a467f3534c4e52ff439c834f7bb56559dc57bdd4783c519782d0b39"
       },
       "productionMapping": {
@@ -3610,7 +3638,7 @@
       "pageId": "page:component-05",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "81676c3584202996ea1ade6ce936230609c1b241134a619631eb50a4467f55d4"
       },
       "productionMapping": {
@@ -3658,7 +3686,7 @@
       "pageId": "page:component-05",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "f5f81d6248ce9a4f976e1a967f3435422cd0a3770cf8069ea8616f39875ce6b6"
       },
       "productionMapping": {
@@ -3706,7 +3734,7 @@
       "pageId": "page:component-05",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "a44341dd311a2bd42b63042de2bbde1d42dc69f5537ee596fe8d2ae1a35c026e"
       },
       "productionMapping": {
@@ -3754,7 +3782,7 @@
       "pageId": "page:component-05",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "cefd68925d2fd157cad8cb7d72ae1c755dce756c36e031293274e71275bb1635"
       },
       "productionMapping": {
@@ -4824,7 +4852,7 @@
       "pageId": "page:component-04",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "41013cc566ffc0553fc0b1ea4dfc2f298c7b2d4a02f52f6418ad8cdd4a3dfd87"
       },
       "productionMapping": {
@@ -4872,7 +4900,7 @@
       "pageId": "page:component-04",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "8a66c19ee386e67171051cdd6f0fbbec1123a0997b00ac8dced539ddcedbc12a"
       },
       "productionMapping": {
@@ -4920,7 +4948,7 @@
       "pageId": "page:component-04",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "7969e62f9f8cfeb7cb816f14da335f142f0af097624c306e902ef518a504362b"
       },
       "productionMapping": {
@@ -4966,7 +4994,7 @@
       "pageId": "page:component-04",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "f5c602de6725496c7a2df6cf0fc0d549708e6cf8e3329d65d2fe1fa3281cd10c"
       },
       "productionMapping": {
@@ -5012,7 +5040,7 @@
       "pageId": "page:component-01",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "626373d620f0ada7f1c6ca8d04a9ca0a39a537663992bc2911ee510dfa35623b"
       },
       "productionMapping": {
@@ -5060,7 +5088,7 @@
       "pageId": "page:component-01",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "92b2aa8687a8bced49b7daca862630c3ec947f465f40aeb4909e1048361c11a4"
       },
       "productionMapping": {
@@ -5108,7 +5136,7 @@
       "pageId": "page:component-01",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "250fa7ae4c4a1bf1bb691e91cca49470faf0075b12552a9cc1d1a423c25050eb"
       },
       "productionMapping": {
@@ -5156,7 +5184,7 @@
       "pageId": "page:component-01",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "1e74ce196c8ccd7ad43dd7cada09177eb8e6bb27b3d866f7e24552208cf69487"
       },
       "productionMapping": {
@@ -5204,7 +5232,7 @@
       "pageId": "page:component-01",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "86eb42b3899d26bdf6c5022145cec431360aec07785bc10dc94f0f3b7e07ca87"
       },
       "productionMapping": {
@@ -5252,7 +5280,7 @@
       "pageId": "page:component-01",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "151bc8ae42316445a7722e41e66d20d97ce7db96b5d6cb910b400dd893c64039"
       },
       "productionMapping": {
@@ -5300,7 +5328,7 @@
       "pageId": "page:component-01",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "4521c8be8c7b037c5ea016b00854ada782665dde3a069127cfb6a002b028f248"
       },
       "productionMapping": {
@@ -5348,7 +5376,7 @@
       "pageId": "page:component-01",
       "source": {
         "path": "html_engine/reference-library/components.json",
-        "fileSha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748",
+        "fileSha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c",
         "recordSha256": "5007e7c32f482377c0414ebd27ec737a3c9d8923b612e2751c70796624b2d449"
       },
       "productionMapping": {
@@ -6376,11 +6404,11 @@
       "preservedSourceHashes": [
         {
           "path": "html_engine/reference-library/components.json",
-          "sha256": "198c7484e06dfc88343add095ec01b3aa0a5c34448432aa24a75d580317c3748"
+          "sha256": "3007b4338fa567c3610997a58a932e43aba90f526b9871d798d5ced94c66eb4c"
         },
         {
           "path": "html_engine/reference-library/effects.json",
-          "sha256": "aeedf587e2818c7b9bc8d4dc2548d14a6828417c308dc38039052254b9051ac6"
+          "sha256": "7b779009bdc12b6ebc0c7498f3f9649868d9a475d7a853564e67c959a9bf66f6"
         },
         {
           "path": "html_engine/reference-library/standard/manifest.json",
@@ -6435,7 +6463,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/effects/registry.json",
-        "fileSha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101",
+        "fileSha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60",
         "recordSha256": "d23c72b61f71f6735c4792ac27e9a11ae0dfd27ee8a92c5b94aa870dc1a7addb"
       },
       "screenshot": null,
@@ -6473,7 +6501,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/effects/registry.json",
-        "fileSha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101",
+        "fileSha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60",
         "recordSha256": "b8729aba421afead3abca25267d28e64bb78fb5fd597c11cbdb4f673d6392070"
       },
       "screenshot": null,
@@ -6511,7 +6539,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/effects/registry.json",
-        "fileSha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101",
+        "fileSha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60",
         "recordSha256": "a7437e5b65515fe0268f389abb7be170fa4aad741c2a2c03af1dd9a258161e65"
       },
       "screenshot": null,
@@ -6549,7 +6577,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/effects/registry.json",
-        "fileSha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101",
+        "fileSha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60",
         "recordSha256": "c1662ee56b6fa82819196e852950c95cf4b207b72afd76767d012af4fb05adf7"
       },
       "screenshot": null,
@@ -6587,7 +6615,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/effects/registry.json",
-        "fileSha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101",
+        "fileSha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60",
         "recordSha256": "97bde0bb4e7952ec1f87c0a7126daba4e1c58960f69bf453ed1c51eeef14d1cc"
       },
       "screenshot": null,
@@ -6625,7 +6653,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/effects/registry.json",
-        "fileSha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101",
+        "fileSha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60",
         "recordSha256": "40e98f36233050daa334d17dc48724a116bea4dc832b8db64b5b8f7ee647d1dd"
       },
       "screenshot": null,
@@ -6663,7 +6691,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/effects/registry.json",
-        "fileSha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101",
+        "fileSha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60",
         "recordSha256": "d6dbf12677ccdcc0747b948844b8753f81f51d4f37092367c807e92e1b59a048"
       },
       "screenshot": null,
@@ -6701,7 +6729,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/effects/registry.json",
-        "fileSha256": "86f2058f9d456178a49161309338b8003ebcb8d1dfd48771555909d37dc9f101",
+        "fileSha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60",
         "recordSha256": "3cf88efa8105aafdd658032fd367df024128f6c5d7879bffd9ad538398b3da4c"
       },
       "screenshot": null,
@@ -6712,6 +6740,65 @@
           "runtime-effect:state-flow-strip"
         ],
         "gap": "该条目本身是运行时效果注册项；不是一张截图或视觉批准。"
+      }
+    },
+    {
+      "id": "runtime-layout:chart-explanation-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "chart-explanation-v1",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 15,
+        "slots": [
+          "header",
+          "headline",
+          "intro",
+          "card-1",
+          "card-2",
+          "chart",
+          "summary",
+          "relation-1",
+          "relation-2",
+          "relation-3",
+          "relation-4",
+          "relation-5",
+          "relation-6",
+          "relation-7",
+          "relation-8"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/chart-explanation-v1.json",
+        "fileSha256": "16a78e3eff5ad17d4b4f96982734ed384e02663acc377cc5b35cc654f4d5ff30",
+        "recordSha256": "146cccdb1d65f890da5857782d01dca9120547f8b74fe7781186c381b32a678d"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:chart-explanation-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
     },
     {
@@ -6751,7 +6838,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/layouts/data-relation-v1.json",
-        "fileSha256": "57086412612dac2764e71715f26e2e9bee72ae18ffafbb5e3bde61b2141a2514",
+        "fileSha256": "f5ec0ba6ac8579df761e426bf89585c972ee4cdcb6c768632ec5c4cbce5f5c7c",
         "recordSha256": "b2aa92a5add678562431d07cccc814d47dc0eb2e756ae9fa94363ab407b83323"
       },
       "screenshot": null,
@@ -6828,7 +6915,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/layouts/editorial-three-columns-v1.json",
-        "fileSha256": "f59729878f42c6889c9660d675661e671e86fe884f9d939ccac2d11f0d51f677",
+        "fileSha256": "589bef55041cfce51ac7d4420de3af0a9913089419e42f4b7a68c42cf7ace0c9",
         "recordSha256": "5ab445db7f474a9fd111a20cc118baa07a3e575730e4f80144cc60f41c47207c"
       },
       "screenshot": null,
@@ -6892,7 +6979,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/layouts/object-left.json",
-        "fileSha256": "6242736f76f4a9da885a2f55ad1011c747907801bb2b658f026615581b62ceea",
+        "fileSha256": "32e08e933fe4d455580930febf4e816ecd17fb11a87d72f1eddce250be88186c",
         "recordSha256": "ee51317454bc4167d909e480bd9ee9b7f96a8a6ea272790e0d6f57bb088e4c57"
       },
       "screenshot": null,
@@ -6956,7 +7043,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/layouts/object-right.json",
-        "fileSha256": "71a590a7da4258aa7891e0012e7f00a923adba6e8337b33238aa92102a636663",
+        "fileSha256": "1747153e75e7d1674b76a8c64e938645d58e649914d65aa42f924d29aa9ed4e4",
         "recordSha256": "d86b6f931b80babacf96861324d70d228688ea85444563e303b22ac086cbdd12"
       },
       "screenshot": null,
@@ -7010,7 +7097,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/layouts/process-stage-v1.json",
-        "fileSha256": "6038ee78d9c696a68d795bc9227085ed88d9c6c1f766798b797d68d3be21a7a6",
+        "fileSha256": "70b1f58f93e996e0f55f2144173194bdbcbe1418a55b46c95015e5b9f8dccd9a",
         "recordSha256": "1b0cecdafa352daee5e0f54d15d1078144c840e9f9cbd1d50937072098b1927c"
       },
       "screenshot": null,
@@ -7019,6 +7106,66 @@
         "directAdapter": true,
         "candidateRuntimeIds": [
           "runtime-layout:process-stage-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-layout:process-three-stages-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "process-three-stages-v1",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 16,
+        "slots": [
+          "header",
+          "stage-1",
+          "stage-2",
+          "stage-3",
+          "label-1",
+          "label-2",
+          "label-3",
+          "summary",
+          "relation-1",
+          "relation-2",
+          "relation-3",
+          "relation-4",
+          "relation-5",
+          "relation-6",
+          "relation-7",
+          "relation-8"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/process-three-stages-v1.json",
+        "fileSha256": "5fe1e439d11431fd487a46bf8dcde305e9c23ab49fc811fb83c7f757a1581a83",
+        "recordSha256": "4d64efade457896d2b29d063559e3e90e29d2f98380a5681b64ae6e06846189a"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:process-three-stages-v1"
         ],
         "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
@@ -7065,7 +7212,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/layouts/science-explanation-v1.json",
-        "fileSha256": "a57b624ed482f43b72b99f882f531ffa5979aaab85deb242bd5f3d50600a36b8",
+        "fileSha256": "ed9f1699d811f6c6ee99e8868465509928c4e368754e01e8e081c7423af9d88f",
         "recordSha256": "9e1577aad90c25270f92ff7f5313f71c741914f07ffd5db267839892c76626bb"
       },
       "screenshot": null,
@@ -7129,7 +7276,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/layouts/science-explanation-labels-v1.json",
-        "fileSha256": "ca930e026b84d16a08098a3d565794f075693f0bfc532778f2a680ac847a7bc9",
+        "fileSha256": "81a3ae67963073594014fa47bb8054721fa4fa57dc3d14bc75f38153f606b45c",
         "recordSha256": "879deacdaeee6aa4f1d8e897c506ec98292ce2b98dffe59b86b421f7ff3c9c71"
       },
       "screenshot": null,
@@ -7138,6 +7285,75 @@
         "directAdapter": true,
         "candidateRuntimeIds": [
           "runtime-layout:science-explanation-v1@0.3.0"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-layout:science-relations-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "Explicit relations with labeled illustration",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 25,
+        "slots": [
+          "header",
+          "headline",
+          "intro",
+          "card-1",
+          "card-2",
+          "card-3",
+          "figure",
+          "subject",
+          "anchor-label",
+          "summary",
+          "annotation",
+          "marker-1",
+          "marker-2",
+          "marker-3",
+          "marker-4",
+          "marker-5",
+          "marker-6",
+          "relation-1",
+          "relation-2",
+          "relation-3",
+          "relation-4",
+          "relation-5",
+          "relation-6",
+          "relation-7",
+          "relation-8"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/science-relations-v1.json",
+        "fileSha256": "3a81c7e102edd702f9adc0a19e9566b13b28c4f58107e280b369ef5ae8cfa159",
+        "recordSha256": "a0bf4c53e59b196f2186a52109ad137f5163f9b08b7f9b6e12923356265a849f"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:science-relations-v1"
         ],
         "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
@@ -7170,6 +7386,9 @@
           },
           "labelId": {
             "$ref": "#/$defs/id"
+          },
+          "presentation": {
+            "type": "object"
           }
         }
       },
@@ -7185,8 +7404,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
-        "recordSha256": "1779e4bc562190518bef0d299ced5b32d252db3b94f8a2a100be3f5c706048be"
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "recordSha256": "ebadc3bbf0ee94d66fb7304658ab9e1ac0729636fbbbdab96f255b92dd986e79"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7210,6 +7429,21 @@
         "schema": {
           "presentation": {
             "$ref": "#/$defs/presentation"
+          },
+          "from": {
+            "$ref": "#/$defs/relationEndpoint"
+          },
+          "to": {
+            "$ref": "#/$defs/relationEndpoint"
+          },
+          "head": {
+            "type": "boolean"
+          },
+          "lineStyle": {
+            "enum": [
+              "solid",
+              "dashed"
+            ]
           }
         }
       },
@@ -7225,8 +7459,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
-        "recordSha256": "4ef65f4f0a3c5139f19938ec757c80aa89d2c4549f89e98f2b54de76d662dd83"
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "recordSha256": "7237fd3ee1b13cba8cd961c5ad84eb49ed194d88bb92815ec370fdd82350f1c5"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7280,7 +7514,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "7e1b9f2bafa1348e15f22906303fa47802527d6b5e69a41f772a529203a4f333"
       },
       "screenshot": null,
@@ -7341,7 +7575,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "f377c7d93d2770ed9c6138f13ad9321e23a8a60d8958bd4204221cf39f5208a4"
       },
       "screenshot": null,
@@ -7350,6 +7584,79 @@
         "directAdapter": true,
         "candidateRuntimeIds": [
           "runtime-node:card"
+        ],
+        "gap": "该条目本身是运行时 schema 节点定义，不是标准库截图或生成能力保证。"
+      }
+    },
+    {
+      "id": "runtime-node:chart",
+      "version": "0.2.0",
+      "type": "runtime-node",
+      "category": "production-runtime",
+      "name": "运行时节点 chart",
+      "purpose": "当前 V1 scene schema 接受的节点类型。",
+      "parameterRange": {
+        "required": [
+          "points",
+          "xLabel",
+          "yLabel",
+          "min",
+          "max",
+          "unit"
+        ],
+        "schema": {
+          "points": {
+            "type": "array"
+          },
+          "xLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "yLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "min": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 12
+          },
+          "plateau": {
+            "type": "array"
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "schema-bound; requires a compatible registered theme and layout",
+        "colors": "semantic roles only; no arbitrary CSS or reference-image mapping"
+      },
+      "technicalConclusion": "Registered in the current V1 node schema; the parameter schema is included verbatim as bounded summaries.",
+      "visualConclusion": "No user aesthetic approval is inferred from schema registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/schema.json",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "recordSha256": "0fe385d4dd79e7ef312c865d1c98cb788b37a3386103ab2ff0c0c514aaffc5bc"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-node:chart"
         ],
         "gap": "该条目本身是运行时 schema 节点定义，不是标准库截图或生成能力保证。"
       }
@@ -7387,7 +7694,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "55f087a49ca40a8f6530060286ea720be17193869359ac364e7042fd7d789af6"
       },
       "screenshot": null,
@@ -7440,7 +7747,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "b1057fbd41c4dc4ad70b6ef587db13f8246893f889561eea7f34314979aec704"
       },
       "screenshot": null,
@@ -7489,7 +7796,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "6ef8497635172c224efcd175dafe1cfa0cec22b66e9dc14d5a119a167fa4cd64"
       },
       "screenshot": null,
@@ -7552,7 +7859,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "d438e5306b2dabeb38f34d128eed867482e51ad80584ef285ace738c384587e0"
       },
       "screenshot": null,
@@ -7626,7 +7933,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "0587fb4992b4a6c6f04565e07bb14dce73066e7a8ce6a447a71cbaa205b05593"
       },
       "screenshot": null,
@@ -7690,7 +7997,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "992266d45945f11445294e59094ce43b251b76fa3b71c845d5f069d877af42b8"
       },
       "screenshot": null,
@@ -7739,7 +8046,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "697f01d11a29fca07cbab2f8e22bcca7b526c35cfa4aab2b7c89117f20c1b1e8",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "87c4f3d65f419df6fc952fea94ab74ff9a8ab5eddb12b4ae685281b8300d86d5"
       },
       "screenshot": null,
@@ -7750,6 +8057,137 @@
           "runtime-node:text"
         ],
         "gap": "该条目本身是运行时 schema 节点定义，不是标准库截图或生成能力保证。"
+      }
+    },
+    {
+      "id": "runtime-template:chart-explanation-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "chart-explanation-v1",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "chart-explanation-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "headline": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "chart": {
+            "kinds": [
+              "chart"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          },
+          "relation-1": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-2": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-3": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-4": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-5": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-6": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-7": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-8": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/chart-explanation-v1.json",
+        "fileSha256": "58c999a105969f086300e731802c2a91108540e39ebf7efe3250d064750d41c8",
+        "recordSha256": "1ee7c87137d29aa1df8727580a5d2e0551e96b6d41ad17f531111a797f19a202"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:chart-explanation-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
     },
     {
@@ -7816,7 +8254,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/templates/data-relation-v1.json",
-        "fileSha256": "993076bfd69b5b5e43a5122a66b80766da2137fadf2e354173f034f464f28691",
+        "fileSha256": "01566739c50beed3d796c9d357192297feea1f12529c0dd346039e58c953028f",
         "recordSha256": "bf36496935fbfffe4269ae84f87e88fbc3a38cc1cf79c1356c5fa3128ba598a9"
       },
       "screenshot": null,
@@ -8055,7 +8493,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/templates/editorial-three-columns-v1.json",
-        "fileSha256": "ee016dadffa66d5fc00d93726795c049b4baa513ef179042f82e35e0f966b797",
+        "fileSha256": "3ee3dfdea39007200edd5154eb0489e81412e817209fac7b41cb8bb2369e23e6",
         "recordSha256": "29873f9cf2e110012ce5241d69ae461cc7b32653de68fc723d50480cad87d8de"
       },
       "screenshot": null,
@@ -8162,7 +8600,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/templates/explanation-cards-v1.json",
-        "fileSha256": "743cd9b9f70e566151bafc97a43a96d82afe53e4c9c351ab1d1ffac5644e27f6",
+        "fileSha256": "61a408bff1c4810d63f155dc9a3e4f46536a58287991c4806169b835b1fd1cdf",
         "recordSha256": "a12df3047f6f005b3d64d7e05969219a050309d187d2f9caf6ae566b2d286f6f"
       },
       "screenshot": null,
@@ -8323,7 +8761,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/templates/explanation-labeled-v1.json",
-        "fileSha256": "4226ef27b88ecdc58c0f8d065b1e29cd737f5765d912d803247e50efbef90899",
+        "fileSha256": "e0933b9939bb1197c3673d34743c14b530d616fd94bef8a2adf028354caf63d7",
         "recordSha256": "6eacbfc45d8f67bb2af8d85006efa49495660b4752583be90f213867e53f059f"
       },
       "screenshot": null,
@@ -8424,7 +8862,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/templates/process-stage-v1.json",
-        "fileSha256": "87b56bfe109cb9d65ffa27c4231dab57d58a353d24e5de4567b3bc1f76319b76",
+        "fileSha256": "186bd2ffab34901bd9864c667163e00d43e8e865bb4f9db38d98fd9c9234ca5b",
         "recordSha256": "3a720003ce7e85086c2c5f0e9b784de9ef030b7cd3a6197838a743fcef19f2a6"
       },
       "screenshot": null,
@@ -8433,6 +8871,334 @@
         "directAdapter": true,
         "candidateRuntimeIds": [
           "runtime-template:process-stage-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-template:process-three-stages-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "process-three-stages-v1",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "process-stage",
+        "layoutRef": {
+          "id": "process-three-stages-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "stage-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "stage-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "stage-3": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "label-1": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "label-2": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "label-3": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          },
+          "relation-1": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-2": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-3": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-4": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-5": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-6": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-7": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-8": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/process-three-stages-v1.json",
+        "fileSha256": "ca8d1dd7a947774ec8c41a5cfad3fd348d76e324314e9cab12a9727b48950939",
+        "recordSha256": "cc6ea32fd30a7d90631ce68fc3e503a2df1a038c9566e29bf8f1106819fc9b21"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:process-three-stages-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-template:science-relations-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "图文讲解与显式关系",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "science-relations-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "headline": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-3": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "figure": {
+            "kinds": [
+              "figure"
+            ],
+            "required": true
+          },
+          "subject": {
+            "kinds": [
+              "image"
+            ],
+            "required": true
+          },
+          "anchor-label": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          },
+          "annotation": {
+            "kinds": [
+              "annotation"
+            ],
+            "required": true
+          },
+          "marker-1": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-2": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-3": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-4": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-5": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-6": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "relation-1": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-2": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-3": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-4": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-5": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-6": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-7": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-8": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/science-relations-v1.json",
+        "fileSha256": "7c1f805dd96726a6659ea7943d7029ddf39c00cc782c3329b43499ff50047bad",
+        "recordSha256": "e9813803b0a2cb61024ac2c75dcd0ac82a30d8cfff46e5c999f4fab5924fa232"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:science-relations-v1"
         ],
         "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
@@ -8539,7 +9305,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/themes/amber-editorial.json",
-        "fileSha256": "5ad59d5157a5491b225dc42b36e9e3816dfec6d7385cb7400c78f25549f44860",
+        "fileSha256": "81b48464ab20bb75a6763220b3e23f9355572431834729374f3213c2139e5a96",
         "recordSha256": "dfbfc953d49a6d3034ab7f9b62a2b10f7f5cdcfb68566c00468698102eef15c4"
       },
       "screenshot": null,
@@ -8658,7 +9424,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/themes/amber-science.json",
-        "fileSha256": "8a20630d5540cd9c7e6dec02da992c33c732dd2596eed71a3e9bfb7568521a19",
+        "fileSha256": "6999f229e4b6edadfd3c8ee3e9940b7ead1c104c9963eb882d3443ae359879b3",
         "recordSha256": "c200b0089548120e49ecfa3f82c2996429f74a154f7115c3ba3b12d1e6af9a06"
       },
       "screenshot": null,
@@ -8725,7 +9491,10 @@
           "object-left",
           "object-right",
           "process-stage-v1",
-          "science-explanation-v1"
+          "science-explanation-v1",
+          "science-relations-v1",
+          "chart-explanation-v1",
+          "process-three-stages-v1"
         ],
         "shapeTokens": {
           "badgeRadius": 22,
@@ -8777,8 +9546,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/themes/neutral-baseline.json",
-        "fileSha256": "17e7ab61863c46589f525814fbae0c7a8b3fb02f3c59083fafeed394320790d0",
-        "recordSha256": "f4cb1af87aa01a905140f003894500e1aa67bb8ab3cbf486a36269f4151d1780"
+        "fileSha256": "92568b1176e82494f2fe8437a956d192d4226e5816f48493e757cf25e638f11a",
+        "recordSha256": "2536ba2b7a59d7d79c4a775bd28fc99e5f6fd5b1e51e659ab45d56961c97a761"
       },
       "screenshot": null,
       "productionMapping": {
@@ -8896,7 +9665,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/themes/neutral-science.json",
-        "fileSha256": "96e51dc2bd1efd327d574ac2cc76e3239945148ab7e8953da1be3aaf894681de",
+        "fileSha256": "e9669a2679bc6cb0d59461df2534625ce60e5e74bbff4feb23de8ab9c91c9bfd",
         "recordSha256": "0b88812be77c8e32137a08f369e05766ede44bed72d862e7ef81c6a1b0d2410d"
       },
       "screenshot": null,
@@ -9015,7 +9784,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/themes/soft-science.json",
-        "fileSha256": "0d297f989a46c0212ee678592a22c2165a9b173381d65d249cd2f6f074a5ae23",
+        "fileSha256": "69e6b1c4ad81ae56445506cc9e5f020fa0906b40bdf0c76f4bd138fcdef163b2",
         "recordSha256": "130fa7b137893bd903df8a49e38b97f2568295720beae2070169cfedf447c3d9"
       },
       "screenshot": null,
@@ -9034,5 +9803,5 @@
     "providerCallMade": false,
     "note": "离线装配参考包；不调用生图供应商，不代表真实生图请求已接入。"
   },
-  "snapshotSha256": "dba2c94bade7697fb3178a79b23bb07372076052932eb702633812bc0a3b73c2"
+  "snapshotSha256": "0f2ae053c4d99e7b4c8bfb737fb70e92127a0fdba4b2bc334133a787d728cd5a"
 }

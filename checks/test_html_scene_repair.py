@@ -8,6 +8,80 @@ import html_visual_store as store
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_repair_rejects_stale_audio_before_candidate_or_evidence(page, monkeypatch):
+    run, scene = page
+    doc = edit.load_editor(run, scene['id'])
+    request = {'expected_revision': doc['revision'], 'expected_audio_revision': 'f'*64,
+               'operations': [{'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': 1}}]}
+    with pytest.raises(edit.SceneEditError) as caught:
+        repair.candidate(run, scene['id'], request)
+    assert caught.value.code == 'AUDIO_REVISION_CONFLICT'
+    with pytest.raises(edit.SceneEditError, match='配音产物已变化'):
+        repair.evidence(run, scene['id'], request)
+
+
+def test_audio_change_invalidates_candidate_key_without_scene_revision_change(page, monkeypatch):
+    run, scene = page
+    doc = edit.load_editor(run, scene['id'])
+    request = {'expected_revision': doc['revision'], 'operations': [
+        {'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': 1}}]}
+    before = repair.candidate(run, scene['id'], request)
+    original = edit.preview_editor
+    def changed(*args, **kwargs):
+        return {**original(*args, **kwargs), 'audio_revision': 'e'*64}
+    monkeypatch.setattr(edit, 'preview_editor', changed)
+    after = repair.candidate(run, scene['id'], request)
+    assert before['candidate_key'] != after['candidate_key']
+    assert edit.load_editor(run, scene['id'])['revision'] == doc['revision']
+
+
+def test_save_rechecks_audio_after_temporal_work(page, monkeypatch):
+    run, scene = page
+    doc = edit.load_editor(run, scene['id'])
+    request = {'expected_revision': doc['revision'], 'operations': [
+        {'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': 1}}]}
+    candidate = repair.candidate(run, scene['id'], request)
+    original_hash = edit.audio_revision
+    def evidence_with_audio_change(*args, **kwargs):
+        monkeypatch.setattr(edit, 'audio_revision', lambda *a: 'd'*64)
+        return {'passed': True}
+    monkeypatch.setattr(repair, 'evidence', evidence_with_audio_change)
+    with pytest.raises(edit.SceneEditError, match='配音产物已变化'):
+        repair.save_repair(run, scene['id'], {**request, 'candidate_key': candidate['candidate_key']})
+    monkeypatch.setattr(edit, 'audio_revision', original_hash)
+    assert edit.load_editor(run, scene['id']) == doc
+
+
+def test_unknown_operation_field_reports_exact_keys_without_accepting_alias(page):
+    run, scene = page
+    before = edit.load_editor(run, scene['id'])
+    request = {'expected_revision': before['revision'], 'source': 'ai', 'operations': [
+        {'targetId': 'headline', 'kind': 'set_variant', 'values': {'variantId': 'text-card-outline'}}]}
+    with pytest.raises(edit.SceneEditError) as caught:
+        repair.candidate(run, scene['id'], request)
+    assert caught.value.code == 'REPAIR_FIELDS'
+    assert 'variantId' in str(caught.value) and '允许字段: variant, icon' in str(caught.value)
+    assert edit.load_editor(run, scene['id']) == before
+
+
+def test_annotation_variant_cannot_override_manual_protection_or_edit_geometry(page, monkeypatch):
+    run, scene = page
+    doc = edit.load_editor(run, scene['id'])
+    doc['scene']['version'] = '0.7.0'
+    doc['manual'] = {'protected_paths': [['scene', 'nodes', 'annotation', 'presentation', 'variant']]}
+    def unexpected(*args, **kwargs):
+        pytest.fail('Rejected annotation edit reached preview')
+    monkeypatch.setattr(edit, 'preview_editor', unexpected)
+    request = {'expected_revision': doc['revision'], 'source': 'ai', 'operations': [
+        {'targetId': 'annotation', 'kind': 'set_variant', 'values': {'variant': 'annotation-dashed'}}]}
+    with pytest.raises(edit.SceneEditError, match='AI不能覆盖'):
+        repair.candidate_from_document(run, scene['id'], request, doc)
+    doc['manual'] = None
+    request['operations'][0] = {'targetId': 'annotation', 'kind': 'set_presentation', 'values': {'offsetX': 1}}
+    with pytest.raises(edit.SceneEditError, match='圈注空间不能单独覆盖'):
+        repair.candidate_from_document(run, scene['id'], request, doc)
+
+
 def test_repair_prompt_defines_required_operation_fields(page):
     run, scene = page
     prompts = repair.build_repair_prompts(
@@ -21,17 +95,40 @@ def test_repair_prompt_defines_required_operation_fields(page):
     assert "set_motion与set_binding必须提供action" in prompts["system_prompt"]
 
 
+def test_repair_prompt_scopes_protected_leaves_actions_and_historical_ancestors(page):
+    run, scene = page
+    doc = edit.load_editor(run, scene["id"])
+    doc["manual"] = {"protected_paths": [
+        ["scene", "nodes", "headline", "presentation", "offsetX"],
+        ["scene", "nodes", "card-1", "presentation"],
+        ["binding", "actions", "headline:enter", "offsetMs"],
+        ["binding", "actions", "card-1:enter"],
+        ["scene", "nodes"],
+        ["scene", "motion", "headline:enter", "durationMs"],
+    ]}
+    prompts = repair.build_repair_prompts(doc, "只改标题", ["headline"], {})
+    paths = json.loads(prompts["user_prompt"])["protected_paths"]
+    assert paths == [doc["manual"]["protected_paths"][i] for i in (0, 2, 4, 5)]
+    assert "祖先路径保护整个子树" in prompts["system_prompt"]
+    assert "needs_input或unsupported" in prompts["system_prompt"]
+    doc["manual"] = None
+    assert json.loads(repair.build_repair_prompts(doc, "调整", ["headline"], {})["user_prompt"])["protected_paths"] == []
+
+
 def test_repair_model_gets_snapshot_frames_and_all_issues_not_full_trace(page):
     run, scene = page
     report = {"frames": [{"timeMs": i * 250, "geometry": {"id": "same"}} for i in range(71)],
               "screenshots": [{"timeMs": t, "file": "image.png"} for t in (0, 8750, 17500)],
-              "issues": [{"timeMs": 1500, "code": "OVERLAP"}], "passed": False}
+              "issues": [{"timeMs": 1500, "code": "OVERLAP"}], "passed": False,
+              "motion_activity": {"status": "warning", "limits": "schedule only"}}
     original = json.dumps(report)
     prompts = repair.build_repair_prompts(edit.load_editor(run, scene["id"]), "检查", ["headline"], report)
     value = json.loads(prompts["user_prompt"])["temporal_report"]
     assert value["sampledFrameCount"] == 71
     assert [f["timeMs"] for f in value["frames"]] == [0, 8750, 17500]
     assert value["issues"] == report["issues"]
+    assert value['motion_activity'] == report['motion_activity']
+    assert 'html-repair-0.3.2' in prompts['system_prompt']
     assert json.dumps(report) == original
     summary = {"frame_count": 80, "issues": [], "reference_geometry": {}}
     prompts = repair.build_repair_prompts(edit.load_editor(run, scene["id"]), "检查", ["headline"], summary)
@@ -153,6 +250,23 @@ def test_scope_and_key_do_not_expand(page):
     with pytest.raises(edit.SceneEditError, match="变化"):
         repair.save_repair(run, scene["id"], {**req(), "candidate_key": "0" * 64})
     assert store.load_scene(run, scene["id"]) == scene
+
+
+def test_ai_candidate_uses_shared_leaf_guard_and_reports_the_protected_path(page):
+    run, scene = page
+    scene["version"] = "0.5.0"
+    scene["nodes"][0]["presentation"] = {"offsetX": 20}
+    edit.save_editor(run, scene["id"], scene, None, 1)
+    request = req(expected_revision=2, source="ai", scope=["header"], operations=[
+        {"targetId": "header", "kind": "set_presentation", "values": {"width": 1400}}])
+    candidate = repair.candidate(run, scene["id"], request)
+    assert candidate["scene"]["nodes"][0]["presentation"] == {"offsetX": 20, "width": 1400}
+    request["operations"][0]["values"] = {"offsetX": 30}
+    with pytest.raises(edit.SceneEditError) as conflict:
+        repair.candidate(run, scene["id"], request)
+    assert conflict.value.code == "MANUAL_FIELD_PROTECTED"
+    assert "scene/nodes/header/presentation/offsetX" in str(conflict.value)
+    assert edit.load_editor(run, scene["id"])["revision"] == 2
 
 
 def test_temporal_intermediate_collision_and_repair(page):

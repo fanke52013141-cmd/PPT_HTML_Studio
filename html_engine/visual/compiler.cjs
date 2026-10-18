@@ -144,6 +144,7 @@ function compile(input, catalog) {
     scene.nodes.some((node) => node?.type === "shape")
   )
     fail("UNSUPPORTED_NODE_VERSION", "/nodes", "shape requires scene 0.4.0");
+  if (scene.version !== "0.7.0" && scene.nodes.some(n=>n.type === "chart" || (n.type === "arrow" && n.from))) fail("UNSUPPORTED_NODE_VERSION", "/nodes", "Course structures require scene 0.7.0");
   validate("scene", scene);
   const theme = normalizeTheme(
     structuredClone(resolve(catalog.themes, scene.themeRef, "/themeRef")),
@@ -183,6 +184,7 @@ function compile(input, catalog) {
       if (separator <= 0 || separator >= [...text].length - 1) fail("PRESENTATION_LABEL_REQUIRED", node.id, p.variant);
     }
     if (["summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(p.variant) && !node.heading) fail("PRESENTATION_HEADING_REQUIRED", node.id, p.variant);
+    if (p.variant === "summary-strip-divided" && node.heading) fail("PRESENTATION_HEADING_UNSUPPORTED", node.id, p.variant);
     for (const part of Object.keys(p.typography || {})) {
       if (
         !(publicTextParts[node.type] || []).includes(part) ||
@@ -248,6 +250,7 @@ function compile(input, catalog) {
     )
       fail("UNRESOLVED_ANCHOR", "/nodes", n.anchorId);
   }
+  require("./course-structures.cjs").validateStructures(scene,layout,template,fail);
   const semantic = ["0.6.0", "0.7.0"].includes(scene.version);
   const initial = new Set(scene.initialVisibleIds || []);
   for (const id of initial) if (!ids.has(id)) fail("INVALID_INITIAL_TARGET", "/initialVisibleIds", id);

@@ -696,3 +696,35 @@ def _step2_script_plan_fingerprint(plan: Dict[str, Any]) -> str:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
+
+def compose_manual_skeleton_slides(slides: list[dict]) -> list[dict]:
+    """Build static manual pages from title/narration, without runtime side effects."""
+    contract_slides: List[Dict[str, Any]] = []
+    for index, slide in enumerate(slides, start=1):
+        slide_id = (slide.get("slide_id") or f"slide_{index:03d}").strip()
+        main_title = (slide.get("main_title") or "").strip()
+        narration = (slide.get("narration") or "").strip()
+        if not main_title:
+            raise PlanningError(f"{slide_id} 标题不能为空")
+        if not narration:
+            raise PlanningError(f"{slide_id} 演讲稿不能为空")
+        contract_slides.append({
+            "slide_id": slide_id,
+            "main_title": main_title,
+            "subtitle": "",
+            "core_message": narration,
+            "body_content": [narration],
+            "visual_groups": [],
+            "narration_beats": [
+                {
+                    "id": f"{slide_id}_beat_001",
+                    "group_id": None,
+                    "visible_anchor": "",
+                    "spoken_intent": main_title,
+                    "spoken_text": narration,
+                    "content_unit_id": f"{slide_id}_unit_001",
+                }
+            ],
+        })
+
+    return contract_slides

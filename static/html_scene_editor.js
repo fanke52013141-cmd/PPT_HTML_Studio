@@ -23,6 +23,8 @@
       doc: clone(s.doc),
       dirty: s.dirty,
       selected: s.selected,
+      selectedIds: s.selectedIds,
+      lastPreview: s.lastPreview,
     });
   }
   function change(s, fn) {
@@ -172,22 +174,32 @@
       ...s.doc.resources.assets,
     ];
   }
-  function selection(s, id) {
-    s.selected = id;
+  function selection(s, value) {
+    let ids = Array.isArray(value) ? value : [value];
+    if (s.layoutMode && ids.length > 1 && ids.some(id => s.doc.scene.nodes.find(n => n.id === id)?.type === 'annotation')) {
+      ids = ids.filter(id => s.doc.scene.nodes.find(n => n.id === id)?.type !== 'annotation');
+      notify(s, '圈注跟随原锚点，不能加入布局群组。');
+    }
+    if (s.layoutMode && ids.length > 20) { notify(s, '群组编辑最多20个对象'); return; }
+    s.selectedIds = ids.filter(id => s.doc.scene.nodes.some(n => n.id === id));
+    s.selected = s.selectedIds[0] || null;
     properties(s);
     mark(s);
+    s.canvas?.select(s.selectedIds);
+    s.timeline?.select(s.selectedIds);
+    if (s.layoutMode) s.selectionStatus.textContent = `已选 ${s.selectedIds.length} 个对象；属性栏编辑首选对象。`;
     remember(s);
   }
   function mark(s) {
     const doc = s.frame.contentDocument;
     doc?.querySelectorAll("[data-object-id]").forEach((node) => {
       node.style.outline =
-        node.dataset.objectId === s.selected ? "2px solid #ee5d36" : "";
+        s.selectedIds.includes(node.dataset.objectId) ? "2px solid #ee5d36" : "";
     });
     s.list
       .querySelectorAll("button")
       .forEach((b) =>
-        b.setAttribute("aria-pressed", String(b.dataset.object === s.selected)),
+        b.setAttribute("aria-pressed", String(s.selectedIds.includes(b.dataset.object))),
       );
   }
   function nodeList(s) {
@@ -195,7 +207,8 @@
       ...s.doc.scene.nodes.map((n) => {
         const b = el("button", `${n.id} · ${n.type}`, { type: "button" });
         b.dataset.object = n.id;
-        b.onclick = () => selection(s, n.id);
+        b.onclick = event => selection(s, event.shiftKey && s.layoutMode
+          ? (s.selectedIds.includes(n.id) ? s.selectedIds.filter(id => id !== n.id) : [...s.selectedIds, n.id]) : [n.id]);
         return b;
       }),
     );
@@ -241,9 +254,8 @@
     const info = el("button", "测量当前目标", { type: "button" });
     s.props.append(info);
     info.onclick = () => {
-      const report = s.frame.contentWindow.visualPlayer.seek(
-        s.frame.contentWindow.visualPlayer.timeMs,
-      );
+      const p = s.frame.contentWindow.visualPlayer;
+      const report = s.layoutMode ? p.layout() : p.seek(p.timeMs);
       notify(
         s,
         JSON.stringify(
@@ -332,6 +344,7 @@
       const pick = el("button", "在图中定位", { type: "button" });
       row.append(pick);
       pick.onclick = () => {
+        setLayoutMode(s, false);
         s.pick = { nodeId: node.id, index };
         notify(s, "请点击预览主体内部，按实际 contain 映射记录锚点。");
       };
@@ -482,33 +495,86 @@
       output_supported: false,
     };
   }
-  async function preview(s) {
+  async function preview(s, candidate = null, commit = null) {
+    if (s.previewing) return false;
+    s.previewing = true;
+    s.timeline?.pause();
+    const wasInert = s.root.inert;
+    s.root.inert = true;
+    const original = JSON.stringify(snapshot(s));
+    const payload = candidate || snapshot(s);
     const token = ++s.previewGeneration;
-    const resolved = await API.post(`${s.url}/preview`, {
-      ...snapshot(s),
-      expected_revision: s.doc.revision,
-    });
-    if (active !== s || token !== s.previewGeneration) return false;
-    const ok = await s.frame.contentWindow.visualPlayer.apply(
-      resolved.scene,
-      resolved.resources,
-    );
-    if (active !== s || token !== s.previewGeneration) return false;
-    if (!ok)
-      throw Error(s.frame.contentDocument.getElementById("status").textContent);
-    s.seek.max = resolved.scene.durationMs;
-    s.seek.value = Math.min(Number(s.seek.value), resolved.scene.durationMs);
-    s.frame.contentWindow.visualPlayer.seek(Number(s.seek.value));
-    mark(s);
-    s.previewSnapshot = JSON.stringify(snapshot(s));
-    showImpact(s, resolved.rebuild_plan);
-    notify(
-      s,
-      `修订 ${s.doc.revision}${s.dirty ? " · 本地草稿" : ""} · ${resolved.audio_status}`,
-    );
-    return true;
+    notify(s, '正在校验预览…');
+    try {
+      const resolved = await API.post(`${s.url}/preview`, {
+        ...payload,
+        expected_revision: s.doc.revision,
+        expected_audio_revision: s.doc.audio_revision,
+      });
+      if (active !== s || token !== s.previewGeneration || JSON.stringify(snapshot(s)) !== original) return false;
+      s.canvas?.suspend();
+      const ok = await s.frame.contentWindow.visualPlayer.apply(
+        resolved.scene,
+        resolved.resources,
+      );
+      if (active !== s || token !== s.previewGeneration || JSON.stringify(snapshot(s)) !== original) return false;
+      if (!ok)
+        throw Error(s.frame.contentDocument.getElementById("status").textContent);
+      if (commit) commit();
+      s.lastPreview = resolved;
+      s.timeline?.setPreview(resolved);
+      s.seek.max = resolved.scene.durationMs;
+      s.seek.value = Math.min(Number(s.seek.value), resolved.scene.durationMs);
+      s.frame.contentWindow.visualPlayer.seek(Number(s.seek.value));
+      s.timeline?.seek(Number(s.seek.value), false);
+      mark(s);
+      s.previewSnapshot = JSON.stringify(snapshot(s));
+      showImpact(s, resolved.rebuild_plan);
+      notify(
+        s,
+        `修订 ${s.doc.revision}${s.dirty ? " · 本地草稿" : ""} · ${resolved.audio_status}`,
+      );
+      return true;
+    } catch (error) {
+      if (active === s && error.body?.detail?.code === 'AUDIO_REVISION_CONFLICT') s.timeline?.invalidate(error.message);
+      if (active === s && error.status === 409 && error.body?.detail?.code !== 'AUDIO_REVISION_CONFLICT') s.conflict.hidden = false;
+      throw error;
+    } finally {
+      s.previewing = false;
+      s.root.inert = active !== s || wasInert;
+      if (active === s && s.layoutMode) s.canvas?.refresh();
+    }
+  }
+  function setLayoutMode(s, enabled) {
+    if (enabled) s.timeline?.pause();
+    s.layoutMode = enabled;
+    s.timeline?.setLayout(enabled);
+    s.layoutButton.setAttribute('aria-pressed', String(enabled));
+    s.selectionStatus.hidden = !enabled;
+    s.canvas?.setEnabled(enabled);
+  }
+  async function layoutTransaction(s, operations) {
+    if (active !== s || s.previewing || s.saving) throw Error('编辑器正在校验，请稍后重试');
+    const scene = s.frame.contentWindow.HtmlEditorCanvas.applyPresentationOperations(s.doc.scene, operations);
+    if (JSON.stringify(scene) === JSON.stringify(s.doc.scene)) return;
+    const candidate = { ...snapshot(s), scene };
+    if (!await preview(s, candidate, () => change(s, () => { s.doc.scene = scene; })))
+      throw Error('页面已切换；布局修改未应用');
+    nodeList(s); properties(s); mark(s);
+    notify(s, `布局修改已校验；${operations.length} 个对象，尚未保存。`);
+  }
+  async function timelineTransaction(s, candidate) {
+    if (active !== s || s.previewing || s.saving) throw Error('编辑器正在校验，请稍后重试');
+    const next = { ...snapshot(s), scene: candidate.scene, binding: candidate.binding };
+    if (!await preview(s, next, () => change(s, () => {
+      s.doc.scene = candidate.scene; s.doc.binding = candidate.binding;
+    }))) throw Error('页面已切换；动作修改未应用');
+    nodeList(s); properties(s); mark(s);
+    notify(s, '动作修改已校验；尚未保存。');
   }
   async function save(s) {
+    if (s.saving || s.previewing) return;
+    s.saving = true;
     s.root.inert = true;
     s.save.disabled = true;
     try {
@@ -517,7 +583,8 @@
         return;
       }
       if (!(await preview(s))) return;
-      const payload = { ...snapshot(s), expected_revision: s.doc.revision };
+      const payload = { ...snapshot(s), expected_revision: s.doc.revision, expected_audio_revision: s.doc.audio_revision };
+      notify(s, '正在保存修改…');
       const result = await API.put(s.url, payload);
       if (active !== s) return;
       s.doc = await API.get(s.url);
@@ -536,7 +603,9 @@
       );
     } catch (e) {
       remember(s);
-      if (e.status === 409) {
+      if (e.body?.detail?.code === 'AUDIO_REVISION_CONFLICT') {
+        s.timeline?.invalidate(e.message); notify(s, e.message);
+      } else if (e.status === 409) {
         s.conflict.hidden = false;
         notify(
           s,
@@ -544,8 +613,9 @@
         );
       } else notify(s, e.message);
     } finally {
+      s.saving = false;
       s.save.disabled = false;
-      s.root.inert = false;
+      s.root.inert = active !== s;
     }
   }
   const impactLabels = {scene_plan:'内容规划',asset_generation:'生成素材',asset_qa:'素材检查',scene_compile:'场景编译',static_qa:'静态检查',temporal_qa:'动画检查',visual_approval:'视觉审阅',tts:'旁白音频',audio_alignment:'音频对齐',audio_confirmation:'音频确认',subtitles:'字幕',motion_binding:'动作绑定',page_video:'本页视频',course_video:'课程视频',course_qa:'课程检查',subtitle_offsets:'字幕时间',course_order:'课程顺序',reference_qa:'引用检查',future_task_identity:'后续生成任务身份'};
@@ -567,7 +637,7 @@
     s.impact.append(el('p','复用需核验实际产物；页面与音频批准仍按各自规则检查。'));
   }
   async function open(host, projectId, slideId) {
-    if (active) remember(active);
+    close();
     const token = ++generation,
       key = `${projectId}:${slideId}`,
       url = `/api/projects/${encodeURIComponent(projectId)}/html-visual/${encodeURIComponent(slideId)}/editor`;
@@ -576,6 +646,7 @@
     if (token !== generation) return;
     const root = el("section", "");
     root.className = "html-scene-editor";
+    root.inert = true;
     host.replaceChildren(root);
     const bar = el("div", "");
     bar.className = "hse-toolbar";
@@ -583,6 +654,10 @@
     const status = el("p", "", { role: "status" });
     status.dataset.editorStatus = "";
     root.append(status);
+    const selectionStatus = el('p', '布局编辑：拖动或调整尺寸，Shift 或空白处框选多对象；失败会保留原草稿。');
+    selectionStatus.dataset.layoutSelection = '';
+    selectionStatus.hidden = true;
+    root.append(selectionStatus);
     const impact=el('section','');
     impact.dataset.rebuildImpact='';
     impact.hidden=true;
@@ -612,12 +687,15 @@
     });
     time.setAttribute("aria-label", "跳转毫秒");
     middle.append(time);
+    const timelineHost = el('section', ''); timelineHost.className = 'hse-timeline';
+    timelineHost.setAttribute('aria-label', '动作时间轴'); middle.append(timelineHost);
     const conflict = el("div", "");
     conflict.hidden = true;
     root.append(conflict);
     const s = {
       root,
       status,
+      selectionStatus,
       impact,
       list,
       props,
@@ -630,6 +708,9 @@
       doc,
       dirty: existing?.dirty || false,
       selected: existing?.selected || doc.scene.nodes[0].id,
+      selectedIds: existing?.selectedIds || [existing?.selected || doc.scene.nodes[0].id],
+      layoutMode: false,
+      lastPreview: existing?.lastPreview,
       undo: [],
       redo: [],
       previewGeneration: 0,
@@ -640,6 +721,7 @@
       bar.append(b);
       b.onclick = async () => {
         try {
+          if (s.previewing || s.saving || s.refreshing || active !== s) return;
           await action();
         } catch (e) {
           notify(s, e.message);
@@ -648,14 +730,46 @@
       return b;
     };
     button("校验预览", () => preview(s));
+    button('刷新配音与时序', async () => {
+      s.refreshing = true; const wasInert = s.root.inert; s.root.inert = true;
+      try {
+        s.timeline?.pause();
+        const latest = await API.get(s.url);
+        if (active !== s) return;
+        if (latest.revision !== s.doc.revision) { s.conflict.hidden = false; throw Error('场景修订冲突；草稿保留，请先比较服务器版本'); }
+        const previous = s.doc.audio_revision; s.doc.audio_revision = latest.audio_revision;
+        try {
+          if (!await preview(s)) return;
+          await s.timeline?.reloadAudio();
+          if (active !== s) return;
+          notify(s, '配音与时序已刷新；本地草稿和原句偏移保留。');
+        } catch (error) { s.doc.audio_revision = previous; s.timeline?.invalidate(error.message); throw error; }
+      } finally { s.refreshing = false; s.root.inert = active !== s || wasInert; }
+    });
+    s.layoutButton = button('布局编辑', async () => {
+      if (s.layoutMode) setLayoutMode(s, false);
+      else if (await preview(s)) {
+        setLayoutMode(s, true);
+        notify(s, '布局编辑已开启；拖动结束校验，保存后本页需要重新审阅。');
+      }
+    });
+    s.layoutButton.setAttribute('aria-pressed', 'false');
+    const snapLabel = el('label', '吸附'), snap = el('input', '', { type: 'checkbox', checked: true });
+    snap.setAttribute('aria-label', '布局吸附');
+    snapLabel.className = 'hse-snap'; snapLabel.prepend(snap); bar.append(snapLabel);
+    snap.onchange = () => s.canvas?.setSnap(snap.checked);
     s.save = button("保存修改", () => save(s));
     button("撤销", () => history(s, "undo", "redo"));
     button("重做", () => history(s, "redo", "undo"));
     button("播放 / 暂停", () => {
+      setLayoutMode(s, false);
+      if (s.timeline) return s.timeline.play();
       const p = frame.contentWindow.visualPlayer;
       p.playing ? p.pause() : p.play();
     });
     button("重播", () => {
+      setLayoutMode(s, false);
+      if (s.timeline) return s.timeline.play(true);
       const p = frame.contentWindow.visualPlayer;
       p.pause();
       p.seek(0);
@@ -695,13 +809,22 @@
     };
     seek.oninput = () => seekTo(s, Number(seek.value));
     time.onchange = () => seekTo(s, Number(time.value));
-    frame.srcdoc = `<!doctype html><meta charset="utf-8"><style>body{margin:0}#viewport{width:100%}.runtime-controls{display:none}</style><div id="viewport"></div><div class="runtime-controls"><select id="scene"></select><select id="theme"></select><textarea id="definition"></textarea><button id="apply"></button><button id="play"></button><button id="end"></button><input id="seek"><span id="time"></span><input id="font" value="32"><span id="font-value"></span><input type="checkbox" id="reduced"><p id="status"></p></div><script src="/api/html-scene-editor/runtime/data.js"></script><script src="/api/html-scene-editor/runtime/player.js"></script>`;
+    time.oninput = () => { if (time.value !== '') seekTo(s, Number(time.value)); };
+    frame.srcdoc = `<!doctype html><meta charset="utf-8"><style>body{margin:0}#viewport{width:100%}.runtime-controls{display:none}</style><div id="viewport"></div><div class="runtime-controls"><select id="scene"></select><select id="theme"></select><textarea id="definition"></textarea><button id="apply"></button><button id="play"></button><button id="end"></button><input id="seek"><span id="time"></span><input id="font" value="32"><span id="font-value"></span><input type="checkbox" id="reduced"><p id="status"></p></div><script src="/api/html-scene-editor/runtime/data.js"></script><script src="/api/html-scene-editor/runtime/player.js"></script><script src="/static/editor_ui/canvas.js"></script>`;
     await new Promise((resolve, reject) => {
       frame.onload = resolve;
       frame.onerror = () => reject(Error("播放器加载失败"));
     });
     if (active !== s) return;
     if (!frame.contentWindow.visualPlayer) throw Error("共享播放器未加载");
+    s.canvas = HtmlEditorCanvasBridge.create({ frame, getDocument: () => s.doc,
+      getSelection: () => s.selectedIds, onSelect: ids => selection(s, ids),
+      onCommit: operations => layoutTransaction(s, operations),
+      onError: error => { if (active === s) notify(s, `布局修改未应用：${error.message}`); } });
+    if (!frame.contentWindow.HtmlEditorCanvas) {
+      s.layoutButton.disabled = true;
+      s.layoutButton.title = '布局组件未加载，请重新打开编辑器';
+    }
     frame.contentDocument.addEventListener("pointerup", (event) => {
       if (s.pick) {
         const node = s.doc.scene.nodes.find((n) => n.id === s.pick.nodeId),
@@ -730,29 +853,59 @@
         properties(s);
         return;
       }
+      if (s.layoutMode) return;
       const target = event.target.closest("[data-object-id]");
       if (target) selection(s, target.dataset.objectId);
     });
     nodeList(s);
     properties(s);
-    await preview(s);
+    try {
+      const timeline = await HtmlEditorTimelineBridge.create({ host: timelineHost, frame, projectId, slideId,
+        getDocument: () => s.doc, onEdit: candidate => timelineTransaction(s, candidate),
+        onSelect: id => selection(s, id), onClock: ms => { if (active === s) { s.seek.value = ms; s.time.value = Math.round(ms); } },
+        onPlay: () => { if (s.layoutMode) setLayoutMode(s, false); },
+        onValidateAudio: async loadedRevision => {
+          const [latest, audioStatus] = await Promise.all([API.get(s.url, { silent: true }),
+            API.get(`/api/projects/${encodeURIComponent(projectId)}/steps/7/audio-status`, { silent: true })]);
+          const audio = audioStatus.slides?.find(a => a.slide_id === slideId);
+          if (active !== s || latest.audio_revision !== loadedRevision || latest.audio_revision !== s.doc.audio_revision || !audio?.audio_exists || audio.stale || audio.voice_config_stale)
+            throw Error('配音产物或状态已变化；本地草稿保留，请刷新配音与时序');
+        },
+        onError: error => { if (active === s) notify(s, `动作修改未应用：${error.message}`); } });
+      if (active !== s) { timeline.destroy(); return; }
+      s.timeline = timeline;
+      s.timeline.select(s.selectedIds);
+    } catch (error) { timelineHost.textContent = `动作时间轴不可用：${error.message}`; }
+    try { await preview(s); }
+    catch (error) {
+      if (error.status !== 409) throw error;
+      if (s.lastPreview && active === s) {
+        const p = frame.contentWindow.visualPlayer;
+        await p.apply(s.lastPreview.scene, s.lastPreview.resources);
+        p.seek(Math.min(Number(s.seek.value), s.lastPreview.scene.durationMs)); mark(s);
+      }
+      notify(s, error.body?.detail?.code === 'AUDIO_REVISION_CONFLICT' ? error.message : '修订冲突：本地草稿已保留；上次预览未经当前修订核验，请比较服务器版本。');
+    }
+    if (active === s) root.inert = false;
   }
   function seekTo(s, ms) {
+    if (!Number.isFinite(ms)) return;
+    setLayoutMode(s, false);
     const p = s.frame.contentWindow.visualPlayer;
     p.pause();
     const t = Math.max(0, Math.min(p.scene.durationMs, ms));
-    p.seek(t);
+    if (s.timeline) s.timeline.seek(t); else p.seek(t);
     s.seek.value = t;
     s.time.value = Math.round(t);
     mark(s);
   }
-  function history(s, source, target) {
+  async function history(s, source, target) {
     if (!s[source].length) return;
-    s[target].push(snapshot(s));
-    Object.assign(s.doc, s[source].pop());
-    s.dirty = true;
-    s.impact.hidden = true;
-    remember(s);
+    const candidate = clone(s[source].at(-1));
+    if (!await preview(s, candidate, () => {
+      s[target].push(snapshot(s)); Object.assign(s.doc, s[source].pop());
+      s.dirty = true; s.impact.hidden = true; remember(s);
+    })) return;
     nodeList(s);
     properties(s);
     notify(s, "会话编辑已恢复，请校验预览后保存。");
@@ -760,6 +913,10 @@
   function close() {
     if (active) {
       remember(active);
+      active.root.inert = true;
+      active.canvas?.destroy();
+      active.timeline?.destroy();
+      active.previewGeneration++;
       active.frame.contentWindow.visualPlayer?.pause();
     }
     active = null;

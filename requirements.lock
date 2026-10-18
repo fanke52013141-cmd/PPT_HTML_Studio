@@ -67,3 +67,9 @@ uuid_utils==0.17.1
 websockets==16.1.1
 xxhash==4.0.1
 zstandard==0.25.0
+# Course structure JSON Schema preflight (verified installed versions).
+attrs==26.1.0
+jsonschema==4.23.0
+jsonschema-specifications==2025.9.1
+referencing==0.37.0
+rpds-py==2026.6.3

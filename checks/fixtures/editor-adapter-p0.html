@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><title>HTML 编辑组件 P0 隔离验证</title>
+<link rel="stylesheet" href="/static/editor_ui/editor.css">
+<style>
+body{font:14px system-ui;margin:24px;background:#f7f8fa;color:#283141}button,select{padding:8px;margin:4px;border:1px solid #ddd;border-radius:8px;background:white}button{cursor:pointer}h1{font-size:20px}iframe{border:1px solid #ddd;width:800px;height:470px;background:white}#timeline{max-width:1000px}pre{white-space:pre-wrap;background:white;padding:16px}#status{min-height:24px}button:focus{outline:2px solid #ee5d36}
+</style>
+<h1>开源编辑组件适配 · P0</h1>
+<p>隔离冷杯场景；作者预览时钟。未连接真实课程、模型或真实声音；本页不改变应用入口。</p>
+<div id="tools"><button id="layout">布局编辑</button><button id="undo">撤销</button><button id="redo">重做</button><button id="save">保存</button><button id="reload">重新读取</button><button id="play">播放 / 暂停</button><button id="dispose">销毁组件</button>
+<label>显示缩放 <select id="zoom"><option>0.5</option><option>1</option><option>1.5</option><option>2</option></select></label></div>
+<p id="status" role="status">加载中</p><iframe id="frame" title="原共享播放器"></iframe>
+<h2>已有动作（绑定 b1，0–6秒，只读语块参照）</h2><div id="timeline"></div>
+<pre id="facts"></pre>
+<script src="/static/editor_ui/editor.js"></script>
+<script src="/fixtures/editor-adapter-p0.js"></script></html>

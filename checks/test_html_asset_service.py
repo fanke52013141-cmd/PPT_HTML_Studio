@@ -87,6 +87,51 @@ def test_inspect_reports_alpha_bbox_and_transparency() -> None:
     assert facts["opaque_edges"]["top"] is False
 
 
+def test_accepted_design_reuses_asset_despite_observation_wording(tmp_path):
+    service, calls = deps(tmp_path, [png_bytes()])
+    original = {**request(), "accepted_design_sha256": "a" * 64}
+    first = produce_asset(original, service)
+    second = produce_asset({**original, "prompt": "同一设计的新外观描述"}, service)
+    assert second["cache"] == "hit" and second["sha256"] == first["sha256"]
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("field,value", [
+    ("accepted_design_sha256", "b" * 64), ("need", "另一主体需求"),
+    ("model_config_hash", "changed"), ("asset_instruction", "修改主体"),
+    ("reference_sha256", ["c" * 64]),
+    ("generation_parameters", {"quality": "high"}),
+])
+def test_accepted_design_cache_invalidates_changed_identity(tmp_path, field, value):
+    service, calls = deps(tmp_path, [png_bytes(), png_bytes()])
+    original = {**request(), "accepted_design_sha256": "a" * 64}
+    produce_asset(original, service)
+    assert produce_asset({**original, field: value}, service)["cache"] == "miss"
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("missing", [False, True])
+def test_accepted_cache_damage_does_not_silently_regenerate(tmp_path, missing):
+    service, calls = deps(tmp_path, [png_bytes()])
+    original = {**request(), "accepted_design_sha256": "a" * 64}
+    entry = produce_asset(original, service)
+    stored = service.assets_root / entry["file"]
+    if missing:
+        stored.unlink()
+    else:
+        stored.write_bytes(b"damaged")
+    with pytest.raises(HtmlAssetError) as caught:
+        produce_asset(original, service)
+    assert caught.value.code == "ASSET_HASH_MISMATCH" and len(calls) == 1
+
+
+def test_bad_design_identity_stops_before_provider(tmp_path):
+    service, calls = deps(tmp_path)
+    with pytest.raises(HtmlAssetError) as caught:
+        produce_asset({**request(), "accepted_design_sha256": "invalid"}, service)
+    assert caught.value.code == "ASSET_DESIGN_IDENTITY_INVALID" and not calls
+
+
 def test_produce_registers_manifest_entry_with_normalized_anchor(tmp_path) -> None:
     service, calls = deps(tmp_path, [png_bytes()])
     entry = produce_asset(request(), service)

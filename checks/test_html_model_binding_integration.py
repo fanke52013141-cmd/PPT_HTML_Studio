@@ -163,13 +163,16 @@ def test_worker_routes_planning_and_visual_to_frozen_independent_models(tmp_path
             common = dict(system_prompt="s", user_prompt="u", artifact_prefix="planning-test", schema_hint="{}", run_dir=str(run_dir))
             deps.planning_generator(**common)
             deps.json_generator(**{**common, "artifact_prefix":"visual-test"})
+            deps.json_generator(**{**common, "artifact_prefix":"design-endpoint-repair-test"})
             return {"saved":{"changed":False}}
         monkeypatch.setattr(jobs_module, "produce_scene", produce)
         args=executor.calls[0]; args[0](*args[1:])
         db.expire_all()
         job=db.query(LocalJob).filter(LocalJob.id == task["id"]).one()
         assert job.status == "succeeded", job.error
-        assert calls == ["glm-5.3", "glm-5.3-flash"]
+        assert calls == ["glm-5.3", "glm-5.3-flash", "glm-5.3-flash"]
+        from html_execution_metrics import execution_summary
+        assert "relation_point_repair" in execution_summary(job.get_payload()["production_stages"])["roles"]
         assert job.get_payload()["input"]["model_summary"]["planning"]["model"] == "glm-5.3"
     finally:
         db.close()

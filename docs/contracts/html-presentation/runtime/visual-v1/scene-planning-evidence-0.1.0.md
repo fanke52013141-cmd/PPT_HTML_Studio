@@ -12,4 +12,6 @@
 
 ## 实验边界
 
+2026-10-18：真实整课ec60bbd4_010236第一页在原两轮预算内分别返回错误焦点和文字目标，均被拒绝。Prompt 0.3.3明确annotation.targetId引用图片对象/槽位/素材，anchorId匹配该图片焦点（未填默认focus），labelId引用文字对象/槽位；不推断或自动改写模型输出。Schema、两轮预算、动作身份保护及批准门禁保持。更新后实际模型结果另验，不能用离线测试证明整课通过。
+
 旧真实请求在 `reasoning_effort=max` 下耗尽 64,000 completion tokens（其中 62,196 reasoning），约 813 秒未返回完整 JSON。新实验复用同一第一页讲稿和视觉合同；`low`、Prompt 0.3.2 的完整规划经过一次受控结构修复，在约 67 秒内通过严格结构校验。单页结果显示明显的耗时和用量改善，但不证明九页全流程、视觉美感、素材与后续 HTML 还原通过。实验产物见 `outputs/live-linxuan-runtime-20261016-131819/low-scene-plan-comparison-v4/`。

@@ -39,6 +39,49 @@ def fresh_hash(path):
     return h.hexdigest()
 
 
+def _capture_editor_sources(root, capture):
+    """Pin both independent product bundles; no npm runtime."""
+    for kind in ("canvas", "timeline"):
+        _capture_editor_bundle(root, capture, kind)
+
+
+def _capture_editor_bundle(root, capture, kind):
+    relative = f"static/editor_ui/{kind}-manifest.json"
+    manifest = json.loads(capture.read(root / relative, "tooling/" + relative))
+    if manifest.get("format") != f"hps.editor_{kind}.build" or manifest.get("version") != "0.1.0":
+        raise SnapshotError("EDITOR_BUILD_MANIFEST_INVALID")
+    allowed_static = {"static/html_editor_canvas.js", "static/html_scene_editor.js",
+                      "static/html_scene_edit.css", "static/index.html"}
+    allowed_assets = {"static/editor_ui/canvas.js", "static/editor_ui/canvas.js.LEGAL.txt",
+                      "static/editor_ui/CANVAS_THIRD_PARTY_NOTICES.txt"}
+    if kind == "timeline":
+        allowed_static.discard("static/html_editor_canvas.js")
+        allowed_static.add("static/html_editor_timeline_bridge.js")
+        allowed_assets = {"static/editor_ui/timeline.js", "static/editor_ui/timeline.css",
+                          "static/editor_ui/timeline.js.LEGAL.txt", "static/editor_ui/TIMELINE_THIRD_PARTY_NOTICES.txt"}
+    for section in ("sources", "files"):
+        records = manifest.get(section)
+        if not isinstance(records, dict) or not records or len(records) > 128:
+            raise SnapshotError("EDITOR_BUILD_MANIFEST_INVALID")
+        for relative, record in records.items():
+            if not isinstance(relative, str):
+                raise SnapshotError("EDITOR_BUILD_SOURCE_PATH_INVALID")
+            package_source = (relative in {"editor_ui/package.json", "editor_ui/package-lock.json", "editor_ui/build.mjs"}
+                              or relative.startswith("editor_ui/src/") and PurePosixPath(relative).suffix in {".js", ".jsx", ".mjs", ".css"}
+                              or relative.startswith("editor_ui/licenses/") and PurePosixPath(relative).suffix in {".LICENSE", ".NOTICE", ".json"})
+            if not (package_source or relative in allowed_static or relative in allowed_assets):
+                raise SnapshotError("EDITOR_BUILD_SOURCE_PATH_INVALID")
+            expected = record if section == "sources" else record.get("sha256") if isinstance(record, dict) else None
+            data = capture.read(safe_file(root, relative), "tooling/" + relative)
+            if not isinstance(expected, str) or digest(data) != expected:
+                raise SnapshotError("EDITOR_BUILD_SOURCE_CHANGED")
+    required_sources = allowed_static | {"editor_ui/package.json", "editor_ui/package-lock.json",
+        "editor_ui/build.mjs", f"editor_ui/src/{kind}-entry.js", "editor_ui/src/commands.mjs",
+        "editor_ui/src/canvas.js" if kind == "canvas" else "editor_ui/src/timeline.jsx"}
+    if set(manifest["files"]) != allowed_assets or not required_sources.issubset(manifest["sources"]):
+        raise SnapshotError("EDITOR_BUILD_MANIFEST_INCOMPLETE")
+
+
 def safe_file(root, relative):
     if not isinstance(relative, str) or "\\" in relative:
         raise SnapshotError("INVALID_SNAPSHOT_PATH")
@@ -173,15 +216,17 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
         if expected_revision is not None and expected_revision != revision:
             raise SnapshotError("SNAPSHOT_REVISION_CONFLICT")
         capture = _Capture()
+        _capture_editor_sources(root, capture)
         capture.add("input/contract.json", json_bytes(contract))
         capture.add("input/options.json", json_bytes(options))
         capture.add("input/model-identity.json", json_bytes(identities))
         # Pin the actual planner/runtime definitions; not just their IDs.
-        for name in ["html_semantic_qa.py", "html_semantic_qa_models.py", "html_semantic_review_service.py", "html_semantic_review_jobs.py", "config/html_semantic_qa_prompt.md", "html_engine/tools/semantic-frames.cjs", "project_model_binding_service.py", "html_storyboard_planning.py", "html_semantic_plan.py", "html_semantic_design.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_planning_context.py", "html_visual_review_service.py", "html_reference_package.py",
+        for name in ["html_build_snapshot.py", "html_semantic_qa.py", "html_semantic_qa_models.py", "html_semantic_review_service.py", "html_semantic_review_jobs.py", "config/html_semantic_qa_prompt.md", "html_engine/tools/semantic-frames.cjs", "project_model_binding_service.py", "html_storyboard_planning.py", "html_semantic_plan.py", "html_semantic_design.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_design_reference_reuse.py", "html_relation_point_recovery.py", "html_course_structure.py", "html_asset_service.py", "html_engine/tools/browser-runtime.cjs", "html_engine/visual/course-structures.cjs", "html_planning_context.py", "html_visual_review_service.py", "html_reference_package.py",
                      "html_production_service.py", "html_design_brief.py", "html_image_provider.py",
-                     "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_engine/visual/presentation-variants.json",
+                     "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_repair_models.py", "html_motion_activity.py", "html_engine/visual/presentation-variants.json", "html_engine/visual/presentation-structures.cjs",
                      "json_llm_service.py", "json_llm_transport.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
-                     "html_rebuild_plan.py", "html_scene_editing.py", "html_input_manifest.py", "invalidation_service.py", "project_impact_service.py",
+                     "html_rebuild_plan.py", "html_scene_editing.py", "tts_artifacts.py", "artifact_fingerprint.py", "project_storage.py", "html_input_manifest.py", "invalidation_service.py", "project_impact_service.py",
+                     "html_render_runner.py", "html_frozen_video.py", "html_export_snapshot.py",
                      "html_task_store.py", "html_execution_metrics.py", "html_design_policy.py", "html_review_evidence.py", "html_review_facts.py", "html_reference_localization.py", "html_text_edge_verification.py", "html_text_edge_report.py", "html_repair_progress.py", "html_engine/tools/temporal-review.cjs", "html_engine/tools/review-temporal.cjs", "html_engine/visual/qa/overlap-policy.json", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:
             capture.read(root / name, "source/" + name)
         from html_runtime_skills import runtime_source_files
@@ -251,6 +296,9 @@ def create_render_snapshot(run_dir, slide_id, *, repo_root=None, expected_revisi
         if expected_revision is not None and revision != expected_revision:
             raise SnapshotError("SNAPSHOT_REVISION_CONFLICT")
         capture = _Capture()
+        _capture_editor_sources(root, capture)
+        capture.read(root / "html_build_snapshot.py", "tooling/html_build_snapshot.py")
+        capture.read(root / "html_engine/tools/browser-runtime.cjs", "tooling/browser-runtime.cjs")
         scene = json.loads(capture.read(run / f"planning/html_visual/scene-{slide_id}.json", "input/scene.json"))
         if scene.get("id") != slide_id:
             raise SnapshotError("SNAPSHOT_SCENE_ID_MISMATCH")

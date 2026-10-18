@@ -166,7 +166,10 @@
     "object-left",
     "object-right",
     "process-stage-v1",
-    "science-explanation-v1"
+    "science-explanation-v1",
+    "science-relations-v1",
+    "chart-explanation-v1",
+    "process-three-stages-v1"
   ],
   "illustrationPolicy": "只用黑灰白；有限固定视角独立主体，清晰边缘、柔和光照；文字与关系由代码实现。",
   "gradients": {

@@ -1,6 +1,6 @@
 {
   "format": "hps.visual.presentation_variants",
-  "version": "0.4.0",
+  "version": "0.5.3",
   "variants": [
     {
       "id": "plain",
@@ -22,6 +22,21 @@
       "iconSize": 72,
       "gap": 20,
       "allowsIcon": true
+    },
+    {
+      "id": "text-card-outline-emphasis",
+      "nodeTypes": [
+        "text"
+      ],
+      "reference": "standard-library:C02",
+      "paddingX": 22,
+      "paddingY": 18,
+      "iconSize": 72,
+      "gap": 20,
+      "allowsIcon": true,
+      "emphasisWeight": 700,
+      "normalWeight": 400,
+      "emphasisGapEm": 0.25
     },
     {
       "id": "text-card-soft",
@@ -208,6 +223,113 @@
       "paddingY": 16,
       "minWidth": 900,
       "minHeight": 170
+    },
+    {
+      "id": "figure-frame-top",
+      "nodeTypes": [
+        "figure"
+      ],
+      "reference": "code-owned:framed-figure",
+      "minWidth": 360,
+      "minHeight": 240,
+      "captionInset": 24,
+      "tagTop": 18,
+      "noteTop": 64
+    },
+    {
+      "id": "annotation-dashed",
+      "nodeTypes": [
+        "annotation"
+      ],
+      "reference": "code-owned:anchored-dashed-relation",
+      "dashPattern": "6 5",
+      "ringDashed": true,
+      "leaderDashed": true,
+      "arrowHead": true
+    },
+    {
+      "id": "summary-strip-divided",
+      "nodeTypes": [
+        "summary"
+      ],
+      "reference": "code-owned:divided-relation-strip",
+      "minWidth": 1100,
+      "minHeight": 90,
+      "paddingX": 24,
+      "paddingY": 14,
+      "gap": 24,
+      "columns": [
+        0.35,
+        0.2,
+        0.45
+      ],
+      "headingAllowed": false
+    },
+    {
+      "id": "annotation-ring-dashed",
+      "nodeTypes": [
+        "annotation"
+      ],
+      "reference": "code-owned:anchored-stroke-relation",
+      "dashPattern": "6 5",
+      "ringDashed": true,
+      "leaderDashed": false,
+      "arrowHead": false
+    },
+    {
+      "id": "annotation-line-dashed",
+      "nodeTypes": [
+        "annotation"
+      ],
+      "reference": "code-owned:anchored-stroke-relation",
+      "dashPattern": "6 5",
+      "ringDashed": false,
+      "leaderDashed": true,
+      "arrowHead": false
+    },
+    {
+      "id": "annotation-solid",
+      "nodeTypes": [
+        "annotation"
+      ],
+      "reference": "code-owned:anchored-stroke-relation",
+      "dashPattern": "6 5",
+      "ringDashed": false,
+      "leaderDashed": false,
+      "arrowHead": false
+    },
+    {
+      "id": "card-outline",
+      "nodeTypes": [
+        "card"
+      ],
+      "reference": "code-owned:outlined-card",
+      "minWidth": 360,
+      "minHeight": 100
+    },
+    {
+      "id": "figure-frame-dashed",
+      "nodeTypes": [
+        "figure"
+      ],
+      "reference": "code-owned:framed-figure",
+      "minWidth": 360,
+      "minHeight": 240,
+      "captionInset": 24,
+      "tagTop": 18,
+      "noteTop": 64,
+      "frameDashed": true
+    },
+    {
+      "id": "annotation-dashed-no-arrow",
+      "nodeTypes": [
+        "annotation"
+      ],
+      "reference": "code-owned:anchored-dashed-relation",
+      "dashPattern": "6 5",
+      "ringDashed": true,
+      "leaderDashed": true,
+      "arrowHead": false
     }
   ]
 }

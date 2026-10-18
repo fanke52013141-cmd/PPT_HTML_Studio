@@ -28,7 +28,7 @@ DEFAULT_CATALOG_PATH = (
 )
 _ALLOWED_ACTIONS = {"enter", "emphasize"}
 _ALLOWED_RENDER_OWNERS = {"code", "image_asset"}
-_PLANNING_NODE_KINDS = {"text", "badge", "label", "image", "arrow", "annotation", "header", "card", "figure", "summary"}
+_PLANNING_NODE_KINDS = {"text", "badge", "label", "image", "arrow", "annotation", "header", "card", "figure", "summary", "chart"}
 
 
 class HtmlScenePlanError(ValueError):
@@ -74,7 +74,7 @@ def load_template_catalog(
         if not isinstance(template, dict):
             continue
         template_id = str(template.get("id") or "")
-        # The current plan compiler emits scene 0.3.0. Newly registered author
+        # Only kinds supported by the shared plan compiler may be offered. New author
         # templates must not become model choices before that compiler supports
         # their vocabulary/version. No template-id-specific exceptions.
         if any(set(rule.get("kinds", [])) - _PLANNING_NODE_KINDS for rule in template.get("slots", {}).values()):
@@ -238,6 +238,8 @@ def normalize_html_scene_plan(
             "icons": catalog["icons"],
         },
     }
+    if template.get("relationPolicy"):
+        plan["registered"]["relation_policy"] = template["relationPolicy"]
     if contract_slide is not None:
         plan["contract"] = {
             "slide_id": contract_id,
@@ -245,6 +247,16 @@ def normalize_html_scene_plan(
                 contract_slide.get("narration_beats") or []
             ),
         }
+    from html_semantic_plan import SemanticPlanError
+    from html_course_structure import validate_course_structure
+    try:
+        if 'visual_coverage' in plan_input:
+            plan['visual_coverage'] = plan_input['visual_coverage']
+        validate_course_structure(plan, contract_slide or {}, template)
+        if (contract_slide or {}).get('visual_requirements'):
+            plan['contract']['visual_requirements'] = contract_slide['visual_requirements']
+    except SemanticPlanError as exc:
+        raise HtmlScenePlanError(exc.code, str(exc)) from exc
     return plan
 
 

@@ -1,0 +1,116 @@
+{
+  "records": [
+    {
+      "package": "@cfcs/core",
+      "version": "0.0.6",
+      "metadata_license": "MIT",
+      "metadata_url": "https://registry.npmjs.org/@cfcs/core/0.0.6",
+      "published_git_head": "c81b40afa0f4fb9595512be7e431b1665e38f412",
+      "commit": "c70cd72d6378d162c2550bd98f9605d458ce719c",
+      "published_commit_available": false,
+      "evidence_kind": "upstream_license",
+      "source": "https://raw.githubusercontent.com/naver/cfcs/c70cd72d6378d162c2550bd98f9605d458ce719c/LICENSE",
+      "file": "cfcs--core.LICENSE",
+      "sha256": "03a23caffda8e43fdefcdce73b05ac9a75fcfb63776a7408bf5c8202ff3c8e2a",
+      "notice": {
+        "file": "cfcs.NOTICE",
+        "source": "https://raw.githubusercontent.com/naver/cfcs/c70cd72d6378d162c2550bd98f9605d458ce719c/NOTICE",
+        "sha256": "da87bce8a43e4e518f169b1c08521a770801e2efc73c23086c3c710c399127ff"
+      }
+    },
+    {
+      "package": "@egjs/component",
+      "version": "3.0.5",
+      "metadata_license": "MIT",
+      "metadata_url": "https://registry.npmjs.org/@egjs/component/3.0.5",
+      "published_git_head": "e3e38522aaaf13c7d759ab03f1c155be82249ef1",
+      "commit": "e3e38522aaaf13c7d759ab03f1c155be82249ef1",
+      "published_commit_available": true,
+      "evidence_kind": "published_readme_license",
+      "source": "https://registry.npmjs.org/@egjs/component/3.0.5 (published README.md, License section)",
+      "file": "egjs--component.LICENSE",
+      "sha256": "fd3cd1d05b9e05d8310eeeaba997140b2fdd21f237ff3afe1d94bfa64b3b96ed"
+    },
+    {
+      "package": "croact",
+      "version": "1.0.4",
+      "metadata_license": "MIT",
+      "metadata_url": "https://registry.npmjs.org/croact/1.0.4",
+      "published_git_head": "0a010f0c2f4bd820a6c4d590acec87b04986c687",
+      "commit": "0a010f0c2f4bd820a6c4d590acec87b04986c687",
+      "published_commit_available": true,
+      "evidence_kind": "mit_notice_from_declared_license_and_published_copyright",
+      "source": "https://registry.npmjs.org/croact/1.0.4 + published dist/croact.esm.js copyright",
+      "file": "croact.LICENSE",
+      "sha256": "340a74a957c585d626b1717c9d27ccde64116622a5b8b9726b896e7671d26b2e"
+    },
+    {
+      "package": "croact-css-styled",
+      "version": "1.1.9",
+      "metadata_license": "MIT",
+      "metadata_url": "https://registry.npmjs.org/croact-css-styled/1.1.9",
+      "published_git_head": "8b2cb322f05db9c5eed93702864a6fd62b99eeae",
+      "commit": "8b2cb322f05db9c5eed93702864a6fd62b99eeae",
+      "published_commit_available": true,
+      "evidence_kind": "upstream_license",
+      "source": "https://raw.githubusercontent.com/daybrush/css-styled/8b2cb322f05db9c5eed93702864a6fd62b99eeae/LICENSE",
+      "file": "croact-css-styled.LICENSE",
+      "sha256": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e"
+    },
+    {
+      "package": "css-styled",
+      "version": "1.0.8",
+      "metadata_license": "MIT",
+      "metadata_url": "https://registry.npmjs.org/css-styled/1.0.8",
+      "published_git_head": "8b2cb322f05db9c5eed93702864a6fd62b99eeae",
+      "commit": "8b2cb322f05db9c5eed93702864a6fd62b99eeae",
+      "published_commit_available": true,
+      "evidence_kind": "upstream_license",
+      "source": "https://raw.githubusercontent.com/daybrush/css-styled/8b2cb322f05db9c5eed93702864a6fd62b99eeae/LICENSE",
+      "file": "css-styled.LICENSE",
+      "sha256": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e"
+    },
+    {
+      "package": "keycon",
+      "version": "1.4.0",
+      "metadata_license": "MIT",
+      "metadata_url": "https://registry.npmjs.org/keycon/1.4.0",
+      "published_git_head": "ca3ec3be8df6ce9d0efb4adbdd01a9e273af3a05",
+      "commit": "99ce1caac667e6350efa0e9d53ae64ac9f5b90f5",
+      "published_commit_available": false,
+      "evidence_kind": "upstream_license",
+      "source": "https://raw.githubusercontent.com/daybrush/keycon/99ce1caac667e6350efa0e9d53ae64ac9f5b90f5/LICENSE",
+      "file": "keycon.LICENSE",
+      "sha256": "77f98221f8531e87aa227c0a8d63c17c903dd4d36daf24bdc48296b09e06a25e"
+    },
+    {
+      "package": "@xzdarcy/react-timeline-editor",
+      "version": "1.0.0",
+      "metadata_license": "MIT",
+      "metadata_url": "https://registry.npmjs.org/@xzdarcy/react-timeline-editor/1.0.0",
+      "published_git_head": "413a66ba3da4338a17529a6d7030d271013ec8dd",
+      "commit": "413a66ba3da4338a17529a6d7030d271013ec8dd",
+      "published_commit_available": true,
+      "evidence_kind": "upstream_license",
+      "source": "https://raw.githubusercontent.com/xzdarcy/react-timeline-editor/413a66ba3da4338a17529a6d7030d271013ec8dd/LICENSE",
+      "file": "xzdarcy--react-timeline-editor.LICENSE",
+      "sha256": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe"
+    },
+    {
+      "package": "@xzdarcy/timeline-engine",
+      "version": "1.0.0",
+      "metadata_license": "ISC",
+      "metadata_url": "https://registry.npmjs.org/@xzdarcy/timeline-engine/1.0.0",
+      "published_git_head": "413a66ba3da4338a17529a6d7030d271013ec8dd",
+      "commit": "413a66ba3da4338a17529a6d7030d271013ec8dd",
+      "published_commit_available": true,
+      "evidence_kind": "upstream_license",
+      "source": "https://raw.githubusercontent.com/xzdarcy/react-timeline-editor/413a66ba3da4338a17529a6d7030d271013ec8dd/LICENSE",
+      "file": "xzdarcy--timeline-engine.LICENSE",
+      "sha256": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe"
+    }
+  ],
+  "notes": [
+    "Timeline engine 1.0.0 npm metadata declares ISC; the published gitHead belongs to the editor monorepo whose root LICENSE is MIT. Preserve both facts; timeline is not loaded by the P1 product canvas."
+  ]
+}

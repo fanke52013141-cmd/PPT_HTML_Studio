@@ -671,7 +671,38 @@
             },
             "presentation": {
               "$ref": "#/$defs/presentation"
+            },
+            "from": {
+              "$ref": "#/$defs/relationEndpoint"
+            },
+            "to": {
+              "$ref": "#/$defs/relationEndpoint"
+            },
+            "head": {
+              "type": "boolean"
+            },
+            "lineStyle": {
+              "enum": [
+                "solid",
+                "dashed"
+              ]
             }
+          },
+          "dependentRequired": {
+            "from": [
+              "to"
+            ],
+            "to": [
+              "from"
+            ],
+            "head": [
+              "from",
+              "to"
+            ],
+            "lineStyle": [
+              "from",
+              "to"
+            ]
           }
         },
         {
@@ -709,6 +740,24 @@
             },
             "labelId": {
               "$ref": "#/$defs/id"
+            },
+            "presentation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "variant"
+              ],
+              "properties": {
+                "variant": {
+                  "enum": [
+                    "annotation-dashed",
+                    "annotation-ring-dashed",
+                    "annotation-line-dashed",
+                    "annotation-solid",
+                    "annotation-dashed-no-arrow"
+                  ]
+                }
+              }
             }
           }
         },
@@ -889,6 +938,90 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 40
+            },
+            "presentation": {
+              "$ref": "#/$defs/presentation"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "slot",
+            "type",
+            "points",
+            "xLabel",
+            "yLabel",
+            "min",
+            "max",
+            "unit"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "slot": {
+              "$ref": "#/$defs/id"
+            },
+            "type": {
+              "const": "chart"
+            },
+            "points": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 16,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              }
+            },
+            "xLabel": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 24
+            },
+            "yLabel": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 24
+            },
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "unit": {
+              "type": "string",
+              "maxLength": 12
+            },
+            "plateau": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 15
+              }
             },
             "presentation": {
               "$ref": "#/$defs/presentation"
@@ -1561,7 +1694,8 @@
                     "header",
                     "card",
                     "figure",
-                    "summary"
+                    "summary",
+                    "chart"
                   ]
                 }
               },
@@ -1570,6 +1704,9 @@
               }
             }
           }
+        },
+        "relationPolicy": {
+          "const": "explicit"
         }
       }
     },
@@ -1740,6 +1877,7 @@
           "enum": [
             "plain",
             "text-card-outline",
+            "text-card-outline-emphasis",
             "text-card-soft",
             "header-badge",
             "summary-panel",
@@ -1751,7 +1889,16 @@
             "text-emphasis-bold",
             "figure-caption-top",
             "summary-relationship-columns",
-            "arrow-up"
+            "arrow-up",
+            "figure-frame-top",
+            "annotation-dashed",
+            "summary-strip-divided",
+            "annotation-ring-dashed",
+            "annotation-line-dashed",
+            "annotation-solid",
+            "card-outline",
+            "figure-frame-dashed",
+            "annotation-dashed-no-arrow"
           ]
         },
         "icon": {
@@ -1781,6 +1928,61 @@
           ]
         }
       }
+    },
+    "relationEndpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objectId"
+      ],
+      "properties": {
+        "objectId": {
+          "$ref": "#/$defs/id"
+        },
+        "point": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "x",
+            "y"
+          ],
+          "properties": {
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "anchorId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "point"
+          ],
+          "properties": {
+            "point": {},
+            "anchorId": false
+          }
+        },
+        {
+          "required": [
+            "anchorId"
+          ],
+          "properties": {
+            "anchorId": {},
+            "point": false
+          }
+        }
+      ]
     }
   }
 }

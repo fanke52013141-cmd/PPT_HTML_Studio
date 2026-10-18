@@ -542,6 +542,7 @@ class HtmlEditorSaveRequest(BaseModel):
     scene: dict[str, Any]
     binding: dict[str, Any] | None
     expected_revision: StrictInt = Field(ge=0)
+    expected_audio_revision: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     anchor_overrides: dict[str, list[dict[str, Any]]] = Field(
         default_factory=dict,
         description="Image node ID → {id,x,y} source-image normalized anchors (0≤x,y<1). Service materializes integer-pixel resource anchors; player receives normalized anchors. No canvas-coordinate anchors.",
@@ -549,6 +550,7 @@ class HtmlEditorSaveRequest(BaseModel):
 
 
 class HtmlEditorDocumentResult(HtmlSceneDocumentResult):
+    audio_revision: str
     binding: dict[str, Any] | None
     anchor_overrides: dict[str, list[dict[str, Any]]]
     beats: list[dict[str, Any]]
@@ -561,10 +563,12 @@ class HtmlEditorDocumentResult(HtmlSceneDocumentResult):
 
 
 class HtmlEditorPreviewResult(BaseModel):
+    audio_revision: str
     project_id: str
     slide_id: str
     scene: dict[str, Any]
     resources: dict[str, Any]
     clock: Literal["author", "audio_timeline"]
     audio_status: str
+    timing: dict[str, Any] | None = None
     rebuild_plan: dict[str, Any] | None = None

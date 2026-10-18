@@ -263,6 +263,25 @@ def test_single_asset_retry_reuses_design_and_plan(case):
     assert before["scene"]["nodes"][0] == load_scene_with_revision(case.run, "e1")["scene"]["nodes"][0]
 
 
+def test_reconstruction_recovery_reuses_subject_with_changed_observation(case):
+    first = run(case)
+    key = first["design"]["key"]
+    initial = run(case, design_candidate_key=key)
+    original_generator = case.deps.json_generator
+
+    def generator(**kwargs):
+        result = original_generator(**kwargs)
+        if kwargs.get("artifact_prefix", "").startswith("design_understanding-"):
+            for obj in result["objects"]:
+                obj["appearance"] = "同一已接受画面的另一种观察措辞"
+        return result
+
+    case.deps = HtmlReviewDependencies(ROOT, generator)
+    recovered = run(case, design_candidate_key=key)
+    assert len(case.requests) == 2  # One design and one subject; no repeated paid image.
+    assert recovered["scene"] == initial["scene"]
+
+
 def test_reference_hashes_participate_in_approval_inputs(case):
     from html_input_manifest import resolved_scene_inputs
     first = run(case)
@@ -408,7 +427,14 @@ def test_web_agent_payload_parity_and_current_design(tmp_path, monkeypatch):
                 base = f"{prefix}/projects/{pid}/html-review/s1"
                 body = {"design_candidate_key": "a" * 64, "asset_instruction": "fixture retry"}
                 assert client.post(base + "/produce", json=body).status_code == 200
-                assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.1.0"}
+                assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.1.0", "repair_relation_points": ""}
+                reused = {"reuse_design_candidate_key": "b" * 64}
+                assert client.post(base + "/produce", json=reused).status_code == 200
+                assert requests[-1]["reuse_design_candidate_key"] == reused["reuse_design_candidate_key"]
+                assert requests[-1]["design_candidate_key"] is None
+                repaired = {**reused, "plan_version": "0.2.0", "repair_relation_points": "按原图修正端点"}
+                assert client.post(base + "/produce", json=repaired).status_code == 200
+                assert requests[-1]["repair_relation_points"] == repaired["repair_relation_points"]
                 assert client.post(base + "/produce", json={"plan_version":"0.2.0"}).status_code == 200
                 assert requests[-1]["plan_version"] == "0.2.0"
                 assert client.post(base + "/produce", json={"unknown": True}).status_code == 422

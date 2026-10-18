@@ -1,5 +1,25 @@
 # HTML Studio
 
+2026-10-18 源码试用更新：[课程闭环与外部Agent试用说明](docs/releases/2026-10-18-course-and-external-agent-testing.md)。目标分支codex/editor-adapter-p0-20261017、PR #2；本次仓库同步不包含公网部署，main尚未合入。发布前511项相关隔离回归及共享视觉检查通过。
+
+2026-10-18 当前开发：[动作诊断与外部Agent交接](docs/plans/html-backend-development/handoff-external-agent-2026-10-18.md)。契约0.9.96/API1.51；四页课程已正式导出并登记当前作品。新增客户端标准任务/结果交接、原修复报告的动作时间风险提示及音频版本保护；本地传输与回归通过，真实外部Agent能力和自动转交尚未验证。下方记录保留为阶段历史。
+
+2026-10-18 当前交接：[课程修复与整课输出](docs/plans/html-backend-development/handoff-capture-recovery-preflight-2026-10-18.md)。契约0.9.95/API1.50；四页已保存，整课原音频已确认且20个文件hash不变。第二、三、四页签收有效；第一页八方向程序修复及独立语义、核对视频通过，待当前画面与语义人工确认后正式导出整课。
+
+2026-10-18 离线结构补齐：[四页统一修复验证](docs/plans/html-backend-development/handoff-course-structures-offline-2026-10-18.md)。契约0.9.88/API1.47；显式关系、平台图表和三阶段模板已接入离线验证，默认GPU分数缩放像素限制、真实课程与发布仍待验。无新增付费调用。
+
+前一阶段交接：[编辑器与视频优化验收](docs/plans/html-backend-development/handoff-editor-validation-2026-10-18.md)。契约0.9.87/API1.46；原图复用仍需新候选接受，整课尚待签收。真实单页正式视频、AI协作固定对照和设备压力通过，修复AAC合成延迟。真实多页课程与全库架构门禁仍待完成，状态partial。
+
+2026-10-17 当前本地入口：[单页视频输出验证](docs/plans/html-backend-development/handoff-single-page-video-2026-10-17.md)。编辑后冻结导出/对应帧/过期批准阻断/重建缓存21项通过；真实旁白页音频已确认，当前缺视觉批准，已生成审阅图。无生产API变更，未发布。
+
+2026-10-17 最新本地增量：[真实旁白与音频新鲜度](docs/plans/html-backend-development/handoff-editor-audio-freshness-2026-10-17.md)。真实MP3隔离副本编辑/跳转/重开通过；增加音频指纹过期409、保留草稿刷新配音/时序。契约0.9.83、Agent API1.43；未提交或发布。
+
+2026-10-17 最新本地优化：[P3人工字段保护与保存边界](docs/plans/html-backend-development/handoff-editor-protection-p3-2026-10-17.md)。AI候选/最终保存共用叶字段保护，允许未保护兄弟字段，拒绝间接资源覆盖并定位冲突；契约0.9.82，未提交或发布。
+
+2026-10-17 最新本地开发：[P2动作时间轴交接](docs/plans/html-backend-development/handoff-editor-timeline-p2-2026-10-17.md)。正式编辑器接入已有动作偏移/拉伸、只读讲稿与同一音频时钟；合成音频浏览器通过，真实旁白/输出待验。契约0.9.81，尚未提交或发布。
+
+2026-10-17 本地开发：正式编辑器已接入 P1 布局编辑，支持移动、缩放、多选移动、撤销及原服务保存；工程与隔离浏览器通过范围、未验收项见[最新开发交接](docs/plans/html-backend-development/handoff-editor-layout-p1-2026-10-17.md)。契约0.9.80；尚未提交、推送或部署。
+
 2026-10-17 最新发布：[文字边缘报告与开源编辑交接备注](docs/releases/2026-10-17-edge-reports-editor-handoff.md)，契约0.9.78；本批5个相关测试文件98项通过。换机从[最新handoff](docs/plans/html-backend-development/handoff-open-source-editor-2026-10-17.md)继续，下一步P0开源组件适配、P1布局编辑。Moveable/Selecto/时间轴目前是已调研方案，尚未集成；人工逐行标注不作前置条件。
 
 2026-10-17 前一批发布：[流程优化与文字边缘核验发布备注](docs/releases/2026-10-17-review-and-handoff.md)。契约包0.9.76；本批相关隔离回归255项通过。换机继续步骤、已验证边界和数据迁移说明见[交接文档](docs/plans/html-backend-development/handoff-cross-machine-optimization-2026-10-17.md)。本机`data/`、`runs/`、`outputs/`及模型凭据不随Git同步；跨机代码与可重建控制组已纳入本次发布。

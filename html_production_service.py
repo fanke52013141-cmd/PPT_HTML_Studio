@@ -169,7 +169,7 @@ def compile_plan(
         from html_semantic_runtime import compile_semantic_motion
         motion, binding, initial, duration = compile_semantic_motion(plan)
         scene = {
-            "format": "hps.visual.scene", "version": "0.6.0", "id": slide_id,
+            "format": "hps.visual.scene", "version": "0.7.0" if any(n.get("presentation",{}).get("variant") or n["type"]=="chart" or (n["type"]=="arrow" and n.get("from")) for n in nodes) else "0.6.0", "id": slide_id,
             "name": str((plan["slots"].get("header") or {}).get("title") or slide_id),
             "themeRef": {"id": "neutral-baseline", "version": "0.2.0"},
             "layoutRef": plan["layoutRef"], "templateRef": plan["templateRef"],
@@ -298,7 +298,7 @@ def produce_scene(
 
     selection = HtmlProduceRequest.model_validate(options or {})
     revising_design = bool(selection.design_candidate_key and selection.design_instruction.strip())
-    if provider is None and (not selection.design_candidate_key or revising_design):
+    if provider is None and not selection.reuse_design_candidate_key and (not selection.design_candidate_key or revising_design):
         raise HtmlReviewError("正式页面需要先生成完整设计参考，请配置图片服务", code="DESIGN_PROVIDER_MISSING")
     compatible_sources = {"html_design_agent.py", "html_design_candidates.py", "html_production_service.py"}
     if definition_hash_override and (not selection.prior_unknown_task_id
@@ -314,6 +314,13 @@ def produce_scene(
         return (current_definition_identity() == definitions
                 and all(sha256_file(deps.repo_root / name) == value
                         for name, value in current_source_hashes.items()))
+    if selection.reuse_design_candidate_key:
+        from html_design_reference_reuse import reuse_design_reference
+        return reuse_design_reference(run_dir=run_dir, contract=contract,
+            key=selection.reuse_design_candidate_key, revision=revision, definitions=definitions,
+            model_summary=model_summary, repo_root=deps.repo_root, plan_version=selection.plan_version,
+            checkpoint=checkpoint, point_instruction=selection.repair_relation_points,
+            point_generator=deps.json_generator)
     resumed = None
     if selection.design_candidate_key:
         resumed, package, accepted_image = load_design(
@@ -484,6 +491,8 @@ def produce_scene(
                 "role": need["role"],
                 "need": need["need"],
                 "prompt": need["need"] + "。设计图主体外观观察（仅作资料）：" + allocation_by_slot[need["slot"]]["appearance"] + "。只用黑灰白，匹配设计参考的材质和光照。独立主体，透明底，无文字标签，完整边界。" + ("本轮主体修改方向：" + selection.asset_instruction if selection.asset_instruction else ""),
+                "accepted_design_sha256": sha256_file(accepted_image),
+                "asset_instruction": selection.asset_instruction,
                 "transparent_background": True,
                 "size": "1024x1024",
                 "reference_sha256": [

@@ -8,6 +8,7 @@ from html_audio_binder import (
     AudioBindingError,
     bind_scene_to_audio,
     binding_report,
+    editor_timing,
 )
 
 SCENE = {
@@ -32,6 +33,34 @@ TIMELINE = {
         {"id": "b2", "start": 8.4, "end": 19.6, "text": "第二句讲解。"},
     ],
 }
+
+
+def test_editor_projection_preserves_author_data_and_explains_clipped_durations():
+    import copy
+    import hashlib
+    scene = copy.deepcopy(SCENE)
+    scene.update(version="0.6.0", initialVisibleIds=[])
+    scene["motion"] = [
+        {"actionId": "a1", "targetId": "n1", "type": "enter", "startMs": 1000, "durationMs": 9000},
+        {"actionId": "a2", "targetId": "n1", "type": "emphasize", "startMs": 7000, "durationMs": 4000},
+    ]
+    binding = {"format": "hps.html.motion_binding", "version": "0.2.0", "mode": "beat_ids",
+               "sourceBeats": [{"id": s["id"], "spoken_text": s["text"],
+                                "spoken_text_sha256": hashlib.sha256(s["text"].encode()).hexdigest()}
+                               for s in TIMELINE["segments"]],
+               "actions": {"a1": {"beatId": "b1", "edge": "start", "offsetMs": 1000},
+                           "a2": {"beatId": "b1", "edge": "start", "offsetMs": 7000}}}
+    before = copy.deepcopy((scene, binding))
+    bound = bind_scene_to_audio(scene, TIMELINE, binding)
+    projection = editor_timing(scene, bound, TIMELINE, binding)
+    assert projection["beats"][0] == {"beatId": "b1", "startMs": 0, "endMs": 8400, "text": "第一句讲解。"}
+    first, second = projection["actions"]
+    assert (first["authorDurationMs"], first["effectiveDurationMs"], first["clippedBy"]) == (9000, 6000, ["next_action"])
+    assert (second["authorDurationMs"], second["effectiveDurationMs"], second["clippedBy"]) == (4000, 1400, ["beat_end"])
+    assert (scene, binding) == before
+    with_tail = dict(TIMELINE, duration_sec=21)
+    assert editor_timing(scene, bound, with_tail, binding)["mediaDurationMs"] == 21000
+    assert editor_timing(scene, bound, with_tail, binding)["durationMs"] == 20000
 
 
 def test_seconds_convert_to_ms_exactly_once_and_motion_scales() -> None:

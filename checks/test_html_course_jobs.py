@@ -197,7 +197,6 @@ def test_unknown_storyboard_not_reissued(course):
 
 
 def test_real_content_review_waits_corrects_and_resumes_same_parent_without_new_script(course, monkeypatch):
-    from fastapi import HTTPException
     from html_course_runtime import CourseActions
     import storyboard_service as service
     from test_script_qualifier_fidelity import SOURCE, plan

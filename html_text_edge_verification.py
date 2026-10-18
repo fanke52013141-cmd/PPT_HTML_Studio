@@ -8,7 +8,6 @@ from __future__ import annotations
 from collections import deque
 
 import numpy as np
-from PIL import Image
 
 POLICY = 'reference-text-edge/0.1.0'
 MAX_WINDOW_PIXELS = 500_000

@@ -4,6 +4,10 @@
 
 ## 唯一事实表
 
+2026-10-18兼容提示修复：运行片段design-fidelity-review/1.0.1显式列出requirement的九种合法值，并区分仅供dimension使用的content/structure；结构差异按真实原因选择registered_variant、theme_conflict或unsupported_presentation。真实请求曾完整返回六处非法structure分类，原响应保留并严格拒绝，不推断或自动重写。Schema、全对象覆盖、未知处理、调用预算和人工批准不变；新片段/注册哈希进入新快照，不能重签旧冻结任务为已执行新版审核。
+
+同图同负载1.0.1真实诊断的枚举合法、56项覆盖完整，但复合summary整体对齐被报告uncertain，原守卫停止。1.0.2说明reference_alignment仅适用于text_alignment_contract列出的普通text的typography事实，其余为null；复合部件的真实字体差异仍在evidence/differences，观察不确定仍须certainty=uncertain。消费者保持拒绝uncertain，不从复合组件猜整体对齐，不改写旧响应或把null当作整体视觉通过。实际1.0.2结果另验。
+
 默认审核受控片段1.0.0，输入design-review-input/0.3.0，输出design-review-facts/0.1.0。模型唯一顶层facts，每个review_checklist中的targetId+dimension恰好一项，包含certainty、一次evidence、适用的reference_alignment和differences。差异仅含requirement/severity/suggestion/variant_id/reference_detail，不重复对象ID、证据、对齐、状态、分类或问题下标。没有差异使用空列表；uncertain/缺/重/额外项/空证据/维度错绑一律停止，不自动补发。不能把旧status/issues/coverage响应悄悄转换成新请求事实。
 
 html_review_facts.py拥有严格解析与派生：同一事实产生问题和coverage，最终pass/changes_requested及分类/下标由程序决定。普通text参考对齐明确时，与准确layoutRef/编辑覆盖合同的当前值比较，差异自动产生typography问题；这是显式事实比较，不是程序识别参考图或补造视觉判断。参考不明确仍停止。其它语义/几何/字体/结构问题必须由模型difference提出，不猜测。纯装饰适配仍按原规则处理。

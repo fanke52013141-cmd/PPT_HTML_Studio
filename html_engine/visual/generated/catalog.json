@@ -1,7 +1,7 @@
 {
   "presentationVariants": {
     "format": "hps.visual.presentation_variants",
-    "version": "0.4.0",
+    "version": "0.5.3",
     "variants": [
       {
         "id": "plain",
@@ -23,6 +23,21 @@
         "iconSize": 72,
         "gap": 20,
         "allowsIcon": true
+      },
+      {
+        "id": "text-card-outline-emphasis",
+        "nodeTypes": [
+          "text"
+        ],
+        "reference": "standard-library:C02",
+        "paddingX": 22,
+        "paddingY": 18,
+        "iconSize": 72,
+        "gap": 20,
+        "allowsIcon": true,
+        "emphasisWeight": 700,
+        "normalWeight": 400,
+        "emphasisGapEm": 0.25
       },
       {
         "id": "text-card-soft",
@@ -209,6 +224,113 @@
         "paddingY": 16,
         "minWidth": 900,
         "minHeight": 170
+      },
+      {
+        "id": "figure-frame-top",
+        "nodeTypes": [
+          "figure"
+        ],
+        "reference": "code-owned:framed-figure",
+        "minWidth": 360,
+        "minHeight": 240,
+        "captionInset": 24,
+        "tagTop": 18,
+        "noteTop": 64
+      },
+      {
+        "id": "annotation-dashed",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-dashed-relation",
+        "dashPattern": "6 5",
+        "ringDashed": true,
+        "leaderDashed": true,
+        "arrowHead": true
+      },
+      {
+        "id": "summary-strip-divided",
+        "nodeTypes": [
+          "summary"
+        ],
+        "reference": "code-owned:divided-relation-strip",
+        "minWidth": 1100,
+        "minHeight": 90,
+        "paddingX": 24,
+        "paddingY": 14,
+        "gap": 24,
+        "columns": [
+          0.35,
+          0.2,
+          0.45
+        ],
+        "headingAllowed": false
+      },
+      {
+        "id": "annotation-ring-dashed",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-stroke-relation",
+        "dashPattern": "6 5",
+        "ringDashed": true,
+        "leaderDashed": false,
+        "arrowHead": false
+      },
+      {
+        "id": "annotation-line-dashed",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-stroke-relation",
+        "dashPattern": "6 5",
+        "ringDashed": false,
+        "leaderDashed": true,
+        "arrowHead": false
+      },
+      {
+        "id": "annotation-solid",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-stroke-relation",
+        "dashPattern": "6 5",
+        "ringDashed": false,
+        "leaderDashed": false,
+        "arrowHead": false
+      },
+      {
+        "id": "card-outline",
+        "nodeTypes": [
+          "card"
+        ],
+        "reference": "code-owned:outlined-card",
+        "minWidth": 360,
+        "minHeight": 100
+      },
+      {
+        "id": "figure-frame-dashed",
+        "nodeTypes": [
+          "figure"
+        ],
+        "reference": "code-owned:framed-figure",
+        "minWidth": 360,
+        "minHeight": 240,
+        "captionInset": 24,
+        "tagTop": 18,
+        "noteTop": 64,
+        "frameDashed": true
+      },
+      {
+        "id": "annotation-dashed-no-arrow",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-dashed-relation",
+        "dashPattern": "6 5",
+        "ringDashed": true,
+        "leaderDashed": true,
+        "arrowHead": false
       }
     ]
   },
@@ -765,7 +887,10 @@
         "object-left",
         "object-right",
         "process-stage-v1",
-        "science-explanation-v1"
+        "science-explanation-v1",
+        "science-relations-v1",
+        "chart-explanation-v1",
+        "process-three-stages-v1"
       ],
       "illustrationPolicy": "只用黑灰白；有限固定视角独立主体，清晰边缘、柔和光照；文字与关系由代码实现。",
       "gradients": {
@@ -1181,6 +1306,185 @@
     }
   ],
   "layouts": [
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "chart-explanation-v1",
+      "name": "chart-explanation-v1",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "headline": {
+          "box": {
+            "x": 58,
+            "y": 160,
+            "width": 680,
+            "height": 60
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "intro": {
+          "box": {
+            "x": 58,
+            "y": 230,
+            "width": 680,
+            "height": 110
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "card-1": {
+          "box": {
+            "x": 58,
+            "y": 390,
+            "width": 630,
+            "height": 130
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "card-2": {
+          "box": {
+            "x": 58,
+            "y": 540,
+            "width": 630,
+            "height": 130
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "chart": {
+          "box": {
+            "x": 770,
+            "y": 175,
+            "width": 760,
+            "height": 460
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 690,
+            "width": 1477,
+            "height": 90
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "relation-1": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-2": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-3": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-4": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-5": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-6": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-7": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-8": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        }
+      }
+    },
     {
       "format": "hps.visual.layout",
       "version": "0.2.0",
@@ -2232,6 +2536,196 @@
     },
     {
       "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "process-three-stages-v1",
+      "name": "process-three-stages-v1",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "stage-1": {
+          "box": {
+            "x": 58,
+            "y": 210,
+            "width": 440,
+            "height": 160
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "stage-2": {
+          "box": {
+            "x": 580,
+            "y": 210,
+            "width": 440,
+            "height": 160
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "stage-3": {
+          "box": {
+            "x": 1102,
+            "y": 210,
+            "width": 440,
+            "height": 160
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "label-1": {
+          "box": {
+            "x": 58,
+            "y": 420,
+            "width": 440,
+            "height": 130
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "label-2": {
+          "box": {
+            "x": 580,
+            "y": 420,
+            "width": 440,
+            "height": 130
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "label-3": {
+          "box": {
+            "x": 1102,
+            "y": 420,
+            "width": 440,
+            "height": 130
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 690,
+            "width": 1477,
+            "height": 90
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "relation-1": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-2": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-3": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-4": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-5": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-6": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-7": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-8": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
       "version": "0.3.0",
       "id": "science-explanation-v1",
       "name": "图文讲解 / 六个代码标签",
@@ -2598,9 +3092,402 @@
           "z": 5
         }
       }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "science-relations-v1",
+      "name": "Explicit relations with labeled illustration",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "headline": {
+          "box": {
+            "x": 58,
+            "y": 161,
+            "width": 860,
+            "height": 48
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "intro": {
+          "box": {
+            "x": 58,
+            "y": 220,
+            "width": 850,
+            "height": 78
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-1": {
+          "box": {
+            "x": 58,
+            "y": 310,
+            "width": 850,
+            "height": 102
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-2": {
+          "box": {
+            "x": 58,
+            "y": 427,
+            "width": 850,
+            "height": 102
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-3": {
+          "box": {
+            "x": 58,
+            "y": 544,
+            "width": 850,
+            "height": 102
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "figure": {
+          "box": {
+            "x": 954,
+            "y": 180,
+            "width": 581,
+            "height": 474
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        },
+        "subject": {
+          "box": {
+            "x": 1015,
+            "y": 300,
+            "width": 490,
+            "height": 340
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "anchor-label": {
+          "box": {
+            "x": 1438,
+            "y": 349,
+            "width": 126,
+            "height": 84
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 6
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 677,
+            "width": 1477,
+            "height": 110
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 2
+        },
+        "annotation": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 5
+        },
+        "marker-1": {
+          "box": {
+            "x": 1090,
+            "y": 340,
+            "width": 300,
+            "height": 36
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 7
+        },
+        "marker-2": {
+          "box": {
+            "x": 1125,
+            "y": 425,
+            "width": 230,
+            "height": 36
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 7
+        },
+        "marker-3": {
+          "box": {
+            "x": 1005,
+            "y": 556,
+            "width": 145,
+            "height": 36
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 7
+        },
+        "marker-4": {
+          "box": {
+            "x": 1180,
+            "y": 556,
+            "width": 145,
+            "height": 36
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 7
+        },
+        "marker-5": {
+          "box": {
+            "x": 1355,
+            "y": 556,
+            "width": 145,
+            "height": 36
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 7
+        },
+        "marker-6": {
+          "box": {
+            "x": 1125,
+            "y": 490,
+            "width": 230,
+            "height": 36
+          },
+          "maxLines": 1,
+          "align": "center",
+          "z": 7
+        },
+        "relation-1": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-2": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-3": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-4": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-5": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-6": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-7": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        },
+        "relation-8": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 4
+        }
+      }
     }
   ],
   "templates": [
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "chart-explanation-v1",
+      "name": "chart-explanation-v1",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "chart-explanation-v1",
+        "version": "0.2.0"
+      },
+      "relationPolicy": "explicit",
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "headline": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "intro": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "chart": {
+          "kinds": [
+            "chart"
+          ],
+          "required": true
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        },
+        "relation-1": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-2": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-3": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-4": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-5": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-6": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-7": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-8": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        }
+      }
+    },
     {
       "format": "hps.visual.template",
       "version": "0.1.0",
@@ -3145,6 +4032,280 @@
           "required": true
         }
       }
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "process-three-stages-v1",
+      "name": "process-three-stages-v1",
+      "structure": "process-stage",
+      "layoutRef": {
+        "id": "process-three-stages-v1",
+        "version": "0.2.0"
+      },
+      "relationPolicy": "explicit",
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "stage-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "stage-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "stage-3": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "label-1": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "label-2": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "label-3": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        },
+        "relation-1": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-2": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-3": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-4": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-5": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-6": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-7": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-8": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        }
+      }
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "science-relations-v1",
+      "name": "图文讲解与显式关系",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "science-relations-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "headline": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "intro": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "card-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-3": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "figure": {
+          "kinds": [
+            "figure"
+          ],
+          "required": true
+        },
+        "subject": {
+          "kinds": [
+            "image"
+          ],
+          "required": true
+        },
+        "anchor-label": {
+          "kinds": [
+            "text"
+          ],
+          "required": true
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        },
+        "annotation": {
+          "kinds": [
+            "annotation"
+          ],
+          "required": true
+        },
+        "marker-1": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "marker-2": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "marker-3": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "marker-4": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "marker-5": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "marker-6": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "relation-1": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-2": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-3": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-4": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-5": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-6": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-7": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        },
+        "relation-8": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        }
+      },
+      "relationPolicy": "explicit"
     }
   ],
   "assets": [

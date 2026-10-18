@@ -5,6 +5,7 @@ from math import isfinite
 def request_role(kind, kwargs):
     prefix = str(kwargs.get("artifact_prefix", ""))
     for marker, role in (("html_scene_plan_", "planning"),
+                         ("design-endpoint-repair-", "relation_point_repair"),
                          ("design_understanding-", "design_understanding"),
                          ("layout-agent-", "layout_repair"),
                          ("design-reconstruct-", "reconstruction"),
@@ -52,7 +53,7 @@ def execution_summary(stages):
             summary["unmeasured_requests"] += 1
         role = metrics.get("role")
         if role not in {"planning", "design_understanding", "layout_repair", "reconstruction",
-                        "fidelity_review", "asset_image", "design_image", "json", "image"}:
+                        "fidelity_review", "relation_point_repair", "asset_image", "design_image", "json", "image"}:
             role = "unknown"
         aggregate = roles.setdefault(role, {"adapter_calls": 0, "reuses": 0, "elapsed_ms": 0})
         for source, target in (("adapter_calls", "measured_adapter_calls"), ("reuses", "recorded_reuses"),

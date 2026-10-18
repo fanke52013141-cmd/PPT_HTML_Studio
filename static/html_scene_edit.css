@@ -1,5 +1,9 @@
+.hse-timeline{margin-top:12px;min-width:0;overflow:hidden}.hse-timeline audio{width:100%}.hse-timeline [data-timeline-action]{display:block;overflow:hidden;text-overflow:ellipsis;font-size:12px;white-space:nowrap;padding:0 5px}
+.hse-timeline .timeline-editor{background:#fafafa}.hse-timeline .timeline-editor-edit-row{background-image:linear-gradient(#fafafa,#fafafa),linear-gradient(90deg,#e1e4e8 1px,transparent 0)}.hse-timeline .timeline-editor-time-unit{border-right-color:#9ca3af}.hse-timeline .timeline-editor-time-unit-scale{color:#4b5563}.hse-timeline .timeline-editor-action{background:#e5e7eb;color:#202124;border:1px solid #64748b;box-sizing:border-box}.hse-timeline .timeline-editor-action-selected{background:#fff2e9;border-color:#ee5d36}
 .html-scene-editor{margin-top:16px;padding:16px;border:1px solid #e5e7eb;border-radius:16px;background:white;color:#202124;font-size:13px}
 .html-scene-editor .hse-toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.html-scene-editor .hse-snap{display:flex;align-items:center;gap:4px;margin:0;padding:0 4px}
+.html-scene-editor [data-layout-selection]{color:#6b7280;font-size:12px}
 .html-scene-editor button{min-height:30px;padding:4px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer}
 .html-scene-editor button:hover,.html-scene-editor button[aria-pressed=true]{background:#fff5f0;border-color:#ee5d36;color:#ee5d36}
 .html-scene-editor button:focus-visible,.html-scene-editor input:focus-visible,.html-scene-editor select:focus-visible{outline:2px solid #ee5d36;outline-offset:2px}

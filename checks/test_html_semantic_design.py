@@ -92,6 +92,30 @@ def test_planning_repairs_bad_annotation_before_design_image(tmp_path):
     assert record["attempts"][0]["diagnostic_code"] == "SEMANTIC_ANNOTATION_TARGET"
 
 
+def test_annotation_identity_rules_reach_both_provider_rounds(tmp_path):
+    bad, good = semantic_plan(), semantic_plan()
+    bad["slots"]["annotation"]["targetId"] = "anchor-label"
+    requests = []
+
+    def provider(**request):
+        requests.append(request)
+        return bad if len(requests) == 1 else good
+
+    generate_scene_plan(CONTRACT_SLIDE, run_dir=tmp_path, repo_root=ROOT,
+                        json_generator=provider, plan_version="0.2.0")
+    assert len(requests) == 2
+    for request in requests:
+        prompt = request["system_prompt"]
+        assert "html-semantic-plan/0.3.5" in prompt
+        assert "targetId 引用图片对象ID、图片槽位ID或该图片的素材ID" in prompt
+        assert "annotation.anchorId 必须等于所指图片槽位的 anchorId" in prompt
+        assert "labelId 单独引用 kind=text" in prompt
+        assert request["reasoning_effort_override"] == "low"
+    retry = json.loads(requests[1]["user_prompt"])
+    assert retry["invalid_plan"] == bad
+    assert retry["diagnostic"]["code"] == "SEMANTIC_ANNOTATION_TARGET"
+
+
 def test_image_internal_state_change_is_not_assumed_possible():
     plan = normalize(semantic_plan())
     for i, expression in enumerate(("完整未分词文本", "分离后的Token块")):
@@ -167,6 +191,38 @@ def test_bad_authority_is_rejected_before_provider(tmp_path):
         pytest.fail("Invalid source must not consume a provider request")
     with pytest.raises(HtmlReviewError) as caught:
         generate_scene_plan(contract, run_dir=tmp_path, repo_root=ROOT, json_generator=provider, plan_version="0.2.0")
+    assert caught.value.code == "PLAN_CONTEXT_INVALID"
+
+
+def test_authoritative_requirements_reach_real_planner_and_block_missing_coverage(tmp_path):
+    contract = copy.deepcopy(CONTRACT_SLIDE)
+    requirements = [{"id": "outward-heat", "kind": "relation", "minCount": 8}]
+    contract["visual_requirements"] = requirements
+    requests = []
+
+    def provider(**kwargs):
+        requests.append(kwargs)
+        payload = json.loads(kwargs["user_prompt"])
+        assert payload.get("task", payload)["slide"]["visual_requirements"] == requirements
+        return semantic_plan()
+
+    with pytest.raises(HtmlReviewError):
+        generate_scene_plan(contract, run_dir=tmp_path, repo_root=ROOT,
+                            json_generator=provider, plan_version="0.2.0")
+    assert requests
+    assert not list(tmp_path.rglob("*.png"))
+
+
+@pytest.mark.parametrize("requirements", [None, [{"id": "x", "kind": "relation", "minCount": True}],
+                                         [{"id": "x", "kind": "guess", "minCount": 1}]])
+def test_bad_requirements_do_not_consume_model_call(tmp_path, requirements):
+    contract = copy.deepcopy(CONTRACT_SLIDE)
+    contract["visual_requirements"] = requirements
+    def provider(**kwargs):
+        pytest.fail("Invalid requirements must stop before provider")
+    with pytest.raises(HtmlReviewError) as caught:
+        generate_scene_plan(contract, run_dir=tmp_path, repo_root=ROOT,
+                            json_generator=provider, plan_version="0.2.0")
     assert caught.value.code == "PLAN_CONTEXT_INVALID"
 
 

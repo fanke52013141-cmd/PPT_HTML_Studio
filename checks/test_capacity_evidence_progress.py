@@ -7,7 +7,7 @@ import pytest
 from html_repair_progress import RepairProgress
 from html_candidate_agent import repair_candidate
 from html_visual_review_service import HtmlReviewDependencies, HtmlReviewError
-from test_html_candidate_agent import draft
+from test_html_candidate_agent import draft as draft
 
 ROOT = Path(__file__).resolve().parents[1]
 

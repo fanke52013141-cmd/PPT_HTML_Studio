@@ -8,7 +8,7 @@ const [scenePath,specPath,outDir]=process.argv.slice(2);
   const policy=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../visual/qa/overlap-policy.json'),'utf8'));
   timeCoverage(scene,spec);overlapPolicy(scene,spec,policy);
   fs.mkdirSync(outDir,{recursive:true});
-  const browser=await chromium.launch({headless:true,executablePath:require('./browser-runtime.cjs').resolveBrowser(chromium)});
+  const browser=await chromium.launch(require("./browser-runtime.cjs").captureLaunchOptions(chromium));
   try {
     const page=await browser.newPage({viewport:{width:1648,height:1200}}),errors=[];
     page.on('pageerror',e=>errors.push(e.name));

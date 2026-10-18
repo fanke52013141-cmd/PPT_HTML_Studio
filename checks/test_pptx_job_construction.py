@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from sqlalchemy import create_engine
@@ -21,7 +22,7 @@ from pptx_service import PptxExportService, PptxServiceError, PptxServiceDepende
 
 
 @pytest.fixture()
-def service(tmp_path):
+def service(tmp_path, monkeypatch):
     engine = create_engine(
         f"sqlite:///{tmp_path / 'retry.db'}",
         connect_args={"check_same_thread": False},
@@ -62,6 +63,8 @@ def service(tmp_path):
     )
     # 就绪检查不属于本用例(本用例验证任务构造);显式替换为就绪
     svc._resolve_export_mode = lambda run_dir: ("image_only", {"ready": True, "issues": []})
+    # Inspect the queued payload before a background worker can mutate its state.
+    monkeypatch.setattr(svc, "submit", Mock())
     return svc, testing_session
 
 
@@ -103,6 +106,7 @@ def test_retry_job_inherits_project_account(service):
             "重试必须按当前状态重建影响快照(无待办时允许为空列表)"
         )
         assert new_job.status == "queued"
+        svc.submit.assert_called_once_with(new_job.id)
     finally:
         db.close()
 

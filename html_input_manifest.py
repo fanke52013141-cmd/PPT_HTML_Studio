@@ -30,6 +30,7 @@ def resolved_scene_inputs(
     run = Path(run_dir)
     visual = repo / "html_engine/visual"
     files: dict[str, str | None] = {}
+    files["tools/browser-runtime.cjs"] = _hash(repo / "html_engine/tools/browser-runtime.cjs")
     asset_ids = {n.get("assetRef", {}).get("id") for n in scene.get("nodes", [])}
     for ref_key, folder in (
         ("themeRef", "themes"),

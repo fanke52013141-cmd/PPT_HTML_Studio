@@ -181,6 +181,13 @@ class HtmlRenderRunner:
         self, segments: list[Path], output_path: Path, *, frame_counts=None, fps=30
     ) -> None:
         deps = self.dependencies
+        if frame_counts is not None and len(segments) == 1:
+            # Preserve the segment's AAC skip_samples/edit list. Demuxer concat
+            # followed by re-encoding can turn codec priming into leading silence.
+            import shutil
+
+            shutil.copyfile(segments[0], output_path)
+            return
         concat_list = output_path.with_suffix(".concat.txt")
         concat_list.write_text(
             "".join(
@@ -210,10 +217,17 @@ class HtmlRenderRunner:
                     ["-c", "copy"]
                     if frame_counts is None
                     else [
+                        *[arg for segment in segments for arg in ("-i", str(segment))],
+                        "-filter_complex",
+                        ";".join(
+                            f"[{index+1}:a]aresample=48000,asetpts=PTS-STARTPTS,"
+                            f"apad,atrim=duration={count/fps:.12f}[a{index}]"
+                            for index, count in enumerate(frame_counts)
+                        ) + ";" + "".join(f"[a{i}]" for i in range(len(segments)))
+                        + f"concat=n={len(segments)}:v=0:a=1[audio]",
+                        "-map", "0:v:0", "-map", "[audio]",
                         "-c:v",
                         "copy",
-                        "-af",
-                        "aresample=async=1:first_pts=0,apad",
                         "-c:a",
                         "aac",
                         "-b:a",

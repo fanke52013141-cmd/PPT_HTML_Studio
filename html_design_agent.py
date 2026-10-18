@@ -78,11 +78,11 @@ def review_checklist(scene):
     result = []
     for node in scene['nodes']:
         dimensions = ['geometry']
-        if node['type'] in ('text','header','card','summary','label','badge','figure'):
+        if node['type'] in ('text','header','card','summary','label','badge','figure','chart'):
             dimensions += ['content','typography']
         if node['type'] not in ('image','shape'):
             dimensions += ['structure']
-        if node['type'] in ('summary','arrow','annotation'):
+        if node['type'] in ('summary','arrow','annotation','chart'):
             dimensions += ['semantic_relation']
         if node['type'] == 'image':
             dimensions += ['asset_identity','asset_rendering']
@@ -132,11 +132,15 @@ def text_alignment_contract(scene, repo_root):
 
 def _applicable_variants(node, variants):
     """Mirror registered compiler preconditions before asking for allocation."""
+    if node["type"] == "arrow" and node.get("from"):
+        return []  # Bound relation geometry has no independent variants.
     relationship = {"summary-relationship-panel", "summary-relationship-compact",
                     "summary-relationship-columns"}
     result = []
     for variant in variants:
         if node["type"] not in variant["nodeTypes"]:
+            continue
+        if variant.get("headingAllowed") is False and node.get("heading"):
             continue
         if variant["id"] in relationship and not node.get("heading"):
             continue
@@ -161,7 +165,9 @@ def component_context(scene, repo_root, *, asset_modes=None):
         "capabilities": {n["id"]: {
             "owner": "image" if n["type"] == "image" else "code",
             "assetMode": (asset_modes or {}).get(n["id"], "reuse") if n["type"] == "image" else "none",
-            "currentRender": {"icon": n["icon"], "source": "scene_card"} if n["type"] == "card" else {},
+            "currentRender": ({"icon": n["icon"], "source": "scene_card"} if n["type"] == "card" else
+                              {part: {"icon": n[part]["icon"], "source": "scene_figure_" + part}
+                               for part in ("tag", "note") if n.get(part)} if n["type"] == "figure" else {}),
             "variants": (applicable := _applicable_variants(n, variants)),
             "currentPresentation": presentation_facts(n),
             "allowed_reference_details": allowed_reference_details(n),

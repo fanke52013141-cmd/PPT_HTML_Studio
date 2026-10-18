@@ -5,6 +5,8 @@ const { fail } = require("./compiler.cjs");
 const { icon } = require("./icons.browser.cjs");
 const variants = require("./presentation-variants.json").variants;
 const { capacityEvidence } = require("./capacity.cjs");
+const {frameFigure, dividedSummary, styleAnnotation, drawAnnotationLeader} = require("./presentation-structures.cjs");
+const {drawRelation,chartElements} = require("./course-structures.cjs");
 const SVG = "http://www.w3.org/2000/svg";
 const vector = (tag) => document.createElementNS(SVG, tag);
 const attributes = (el, values) =>
@@ -423,6 +425,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             span.textContent = text;
             if (run.emphasis) span.style.color = theme.colors.accent;
             if (variant?.emphasisWeight) span.style.fontWeight = String(run.emphasis ? variant.emphasisWeight : variant.normalWeight);
+            if (variant?.emphasisGapEm && run.emphasis && offset > 0 && !label)
+              span.style.marginInlineStart = `${variant.emphasisGapEm}em`;
             if (label !== null) { span.dataset.textRole = label ? "label" : "body"; span.style.fontWeight = label ? "700" : "400"; }
             (variant?.stackedLabel ? (label ? labelBox : bodyBox) : copy).append(span);
           }
@@ -464,6 +468,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         ]);
       } else if (node.type === "image") {
         el.classList.add("v-subject");
+        // Keep bitmap compositing stable across direct and animated seeks.
+        el.style.willChange = "transform, opacity";
         const asset = assetById.get(node.assetRef.id),
           p = imagePlacement(
             { ...node, box: layout.slots[node.slot].box },
@@ -497,6 +503,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         textNodes.push([title, layout.slots[node.slot], node.id]);
       } else if (node.type === "card") {
         el.classList.add("v-card");
+        if (node.presentation?.variant === "card-outline") Object.assign(el.style,{background:theme.colors.background,border:`1px solid ${theme.colors.line}`,boxShadow:"none"});
         const bubble = document.createElement("span");
         bubble.className = "v-icon-bubble";
         bubble.style.background = theme.id === "neutral-baseline"
@@ -504,6 +511,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           : theme.gradients[node.tone]
           ? `linear-gradient(135deg, ${theme.gradients[node.tone][0]}, ${theme.gradients[node.tone][1]})`
           : theme.colors[node.tone];
+        if (node.presentation?.variant === "card-outline") Object.assign(bubble.style,{borderRadius:"50%",background:theme.colors.blueWash});
         bubble.append(icon(node.icon, { width: theme.shapes.iconStroke }));
         const copy = document.createElement("div");
         copy.className = "v-card-copy";
@@ -526,8 +534,11 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           { ...slot, box: { ...slot.box, height: slot.box.height - 56 } },
           node.id,
         ]);
+      } else if (node.type === "chart") {
+        chartElements(el,node,layout.slots[node.slot].box,theme,textNodes);
       } else if (node.type === "figure") {
-        const captionsTop = node.presentation?.variant === "figure-caption-top";
+        const framed = ["figure-frame-top","figure-frame-dashed"].includes(node.presentation?.variant);
+        const captionsTop = framed || node.presentation?.variant === "figure-caption-top";
         const captionVariant = variants.find(v => v.id === node.presentation?.variant);
         el.classList.add("v-figure");
         el.append(
@@ -535,6 +546,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             className: "v-figure-halo",
           }),
         );
+        if (framed) {frameFigure(el, theme);if(node.presentation.variant === "figure-frame-dashed") el.style.borderStyle="dashed";}
         if (node.tag) {
           const tag = document.createElement("div");
           tag.className = "v-figure-tag";
@@ -545,7 +557,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             }),
           );
           el.append(tag);
-          if (captionsTop) Object.assign(tag.style, {top:px(captionVariant.tagTop),left:px(captionVariant.captionInset),maxWidth:px(layout.slots[node.slot].box.width-2*captionVariant.captionInset),boxSizing:"border-box",border:`1px solid ${theme.colors.line}`,background:theme.colors[captionVariant.tagBackgroundToken],borderRadius:"999px",fontSize:"18px",fontWeight:"700"});
+          if (captionsTop) Object.assign(tag.style, {top:px(captionVariant.tagTop),left:px(captionVariant.captionInset),maxWidth:px(layout.slots[node.slot].box.width-2*captionVariant.captionInset),boxSizing:"border-box",border:framed?"none":`1px solid ${theme.colors.line}`,background:framed?theme.colors.background:theme.colors[captionVariant.tagBackgroundToken],borderRadius:framed?"0":"999px",fontSize:framed?"24px":"18px",fontWeight:"700"});
           textNodes.push([
             tag.querySelector("span"),
             {
@@ -600,7 +612,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         to.textContent = node.to.text;
         const term = document.createElement("span");
         term.className = "v-term";
-        term.textContent = ["summary-arrow-overlay", "summary-panel", "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
+        term.textContent = ["summary-strip-divided", "summary-arrow-overlay", "summary-panel", "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant) ? node.term : `这个过程叫${node.term}`;
         flow.append(from, arrow, to, term);
         el.append(flow);
         const takeaway = document.createElement("strong");
@@ -619,7 +631,10 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           takeaway.style.whiteSpace="normal";
         }
         const slot = layout.slots[node.slot];
-        if (node.presentation?.variant === "summary-arrow-overlay") {
+        if (node.presentation?.variant === "summary-strip-divided") {
+          dividedSummary(el, {flow,from,to,arrow,term,takeaway}, slot, theme,
+            variants.find(v=>v.id === node.presentation.variant), textNodes);
+        } else if (node.presentation?.variant === "summary-arrow-overlay") {
           const width = slot.box.width - 48;
           Object.assign(el.style,{display:"flex",flexDirection:"column",justifyContent:"center",padding:"16px 24px",gap:"12px",border:`1px solid ${theme.colors.line}`,borderRadius:px(theme.shapes.cardRadius),background:theme.colors.panel});
           Object.assign(flow.style,{display:"grid",gridTemplateColumns:"1fr 2fr 1fr",width:"100%",gap:"0",alignItems:"center",justifyItems:"center",minHeight:"52px",flexShrink:"0"});
@@ -715,6 +730,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           leader.setAttribute("pathLength", "1");
           leader.style.strokeDasharray = "1";
           svg.append(ring, leader);
+          if (node.presentation?.variant) styleAnnotation(ring,leader,svg,theme,variants.find(v=>v.id===node.presentation.variant));
         }
         el.append(svg);
         if (node.type === "annotation") el.classList.add("v-annotation");
@@ -815,7 +831,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
     checkSubtitles(32);
     let time = 0,
       subtitleSize = 32;
-    function renderAt(ms, reduced = false) {
+    function renderAt(ms, reduced = false, editorLayout = false) {
       if (!Number.isFinite(ms) || ms < 0 || ms > scene.durationMs)
         fail("INVALID_TIME", "timeMs", String(ms));
       time = ms;
@@ -843,14 +859,16 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           }
         }
         const state = {
-          opacity,
-          x: reduced ? 0 : (enter?.offsetX || 0) * (1 - p),
-          y: reduced ? 0 : (enter?.offsetY || 0) * (1 - p) + lift,
-          lift,
+          opacity: editorLayout ? 1 : opacity,
+          x: reduced || editorLayout ? 0 : (enter?.offsetX || 0) * (1 - p),
+          y: editorLayout ? 0 : (reduced ? 0 : (enter?.offsetY || 0) * (1 - p)) + lift,
+          lift: editorLayout ? 0 : lift,
         };
         states.set(node.id, state);
         const el = elements.get(node.id);
-        el.style.opacity = String(opacity);
+        if (editorLayout && opacity === 0) el.setAttribute('data-editor-hidden', 'true');
+        else el.removeAttribute('data-editor-hidden');
+        el.style.opacity = String(state.opacity);
         el.style.transform = `translate3d(${state.x}px,${state.y}px,0)`;
         if (node.type === "image") {
           const asset = assetById.get(node.assetRef.id),
@@ -870,6 +888,12 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             ),
           };
         }
+      }
+      for (const node of scene.nodes.filter(n=>n.type==='arrow'&&n.from)) {
+        const enter=(motionsByTarget.get(node.id)||[]).find(a=>a.type==='enter');
+        const progress=enter&&!editorLayout?ease('smoothstep',(ms-enter.startMs)/enter.durationMs):1;
+        geometry[node.id]=drawRelation(elements.get(node.id).querySelector('svg'),node,scene,layout,states,geometry,progress);
+        elements.get(node.id).style.opacity=String(Math.min(states.get(node.id).opacity,states.get(node.from.objectId).opacity,states.get(node.to.objectId).opacity));
       }
       for (const node of scene.nodes.filter((n) => n.type === "annotation")) {
         const anchor = geometry[node.targetId].anchors[node.anchorId];
@@ -893,7 +917,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         const annotationEnter = (motionsByTarget.get(node.id) || []).find(
           (a) => a.type === "enter",
         );
-        const progress = annotationEnter ? ease(
+        const progress = annotationEnter && !editorLayout ? ease(
           "smoothstep",
           (ms - annotationEnter.startMs) / annotationEnter.durationMs,
         ) : 1;
@@ -901,6 +925,10 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           d: `M ${anchor.x - origin.x + towards * node.radius} ${anchor.y - origin.y} L ${endpoint.x - origin.x - towards * 14} ${endpoint.y - origin.y}`,
           "stroke-dashoffset": String(1 - progress),
         });
+        if (node.presentation?.variant) drawAnnotationLeader(elements.get(node.id).querySelector("svg"),
+          {x:anchor.x-origin.x+towards*node.radius,y:anchor.y-origin.y},
+          {x:endpoint.x-origin.x-towards*14,y:endpoint.y-origin.y},progress,
+          variants.find(v=>v.id===node.presentation.variant).arrowHead);
         elements.get(node.id).style.opacity = String(
           Math.min(
             states.get(node.id).opacity,
@@ -915,21 +943,9 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
       for (const node of scene.nodes) {
         const b = layout.slots[node.slot].box;
         const s = states.get(node.id);
-        if (geometry[node.id]) {
-          if (geometry[node.id].box === undefined) {
-            geometry[node.id] = {
-              ...geometry[node.id],
-              box: {
-                x: b.x + s.x,
-                y: b.y + s.y,
-                width: b.width,
-                height: b.height,
-              },
-            };
-          }
-          continue;
-        }
+        if (node.type === 'image') continue;
         geometry[node.id] = {
+          ...(['annotation','arrow'].includes(node.type) ? geometry[node.id] : {}),
           kind: node.type,
           box: { x: b.x + s.x, y: b.y + s.y, width: b.width, height: b.height },
         };
@@ -939,7 +955,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           b.startMs <= ms &&
           (ms < b.endMs || (ms === scene.durationMs && b.endMs === ms)),
       );
-      subtitleText.textContent = beat?.text || "";
+      subtitleText.textContent = editorLayout ? "" : beat?.text || "";
       return { timeMs: ms, geometry, measurements, capacityIssues, subtitleFont: subtitleSize };
     }
     const observer = new ResizeObserver(resize);

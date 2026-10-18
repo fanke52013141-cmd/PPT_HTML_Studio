@@ -303,6 +303,7 @@ function buildCatalog({ root = path.resolve(__dirname, "../..") } = {}) {
     `${lib}reference-input-v2/style-verification.json`,
     `${lib}samples/output/verification.json`,
     "html_engine/visual/schema.json",
+    "html_engine/visual/course-structures.cjs",
     "html_engine/visual/effects/registry.json",
     "html_engine/visual/catalog/neutral-style.json",
     "html_engine/visual/catalog/production-mapping.json",

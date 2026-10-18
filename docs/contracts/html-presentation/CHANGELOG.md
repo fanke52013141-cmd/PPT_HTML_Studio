@@ -1,5 +1,101 @@
 # HTML 演示契约变更记录
 
+## 0.9.96 — 2026-10-18
+
+新增外部页面局部修复的版本化客户端交换协议，复用原注册操作/AI保护预览和保存；非新队列或模型调用。增加音频绑定后动作时间只读诊断，不冒充语义/像素审核、不自动阻断。原repair请求可选expected_audio_revision、候选key及最终保存绑定当前音频；旧候选需重新预览，既有省略字段请求兼容。API1.51、preview/save1.7、evidence1.2、generate1.4。
+
+## 0.9.95 — 2026-10-18
+
+修正全课revision增加误伤未改动页的显式参考复用；当前revision与本页作者hash/人工覆盖共同核验。旧load_design接受、内容、模型、图像、原unknown与预算守卫保持。
+
+## 0.9.94 — 2026-10-18
+
+新增text-card-outline-emphasis，保留描边卡片及图标，仅按既有runs.emphasis选择400/700字重；复用set_variant，不改变旧变体、文本、动作或音频。实际候选修复与原生产任务状态分开。
+
+## 0.9.93 — 2026-10-18
+
+端点修复首次system消息包含changes/fromPoint/toPoint的严格Schema；schema_hint仍供共享JSON语法恢复使用，不修改全局适配器。原关系键映射响应继续拒绝，不自动转换、不重发原请求。仅离线验证，真实生产成功另验。
+
+## 0.9.92 — 2026-10-18
+
+视觉模型supports_images就绪门禁在付费边界前阻断；端点修复独立指标。显式复用允许保持图片模型身份的text/planning刷新，来源记录保留，新key仍待签收；原unknown异常不掩盖。
+
+## 0.9.91 — 2026-10-18
+
+显式repair_relation_points与原图复用配对，既有point关系坐标受控修正，保持图像/内容/动作和独立审批；无生图/TTS/作者写入。默认复用仍零模型调用，人工覆盖阻断，源闭包及Agent/Skill同步。
+
+## 0.9.90 — 2026-10-18
+
+修正实际规划输出示例漏列覆盖映射及端点坐标说明；不改API字段、预算或校验，不自动迁移旧计划。第一/三页原调用收齐后才更新。
+
+## 0.9.89 — 2026-10-18
+
+统一正式软件捕获策略并纳入指纹；素材缓存不再受同一已接受设计的观察措辞变化影响，损坏缓存停止而非自动付费；权威需求进入实际规划请求。旧无身份素材不猜测迁移，原未知任务/音轨/人工签收保留。
+
+## 0.9.88 — 2026-10-18
+
+新增课程结构、显式端点关系、平台图表、三阶段模板及权威需求覆盖校验；旧关系/变体保留。结构/像素/真实模型及批准分开记录，无迁移或付费调用。
+
+## 0.9.87 — 2026-10-18
+
+- 显式reuse_design_candidate_key将校验过的原计划/原图复制成新待审参考；不调用模型/生图/TTS、不存作者、不自动接受，不放宽旧key的stale检查。Agent API1.46、produce1.9。
+- 设计理解/还原片段0.7.1区分准确内容自带图标与可选装饰palette；补齐annotation圈/线分开虚实的注册变体。
+- 位图对象预留compositing层，消除随机seek的图层切换导致的1—2级RGB漂移；严格随机seek像素比较在1592/1600宿主宽度分别核验，不提高容差。
+
+## 0.9.86 — 2026-10-18
+
+- 新增独立注册变体figure-frame-top、annotation-dashed、summary-strip-divided，旧变体不变；annotation仅允许set_variant，无自由位置/字体/图标，不改变锚点关系或时间。
+- 设计理解/还原runtime片段0.7.0，Agent API1.45、repair.preview/save1.5；同一共享renderer用于预览和导出，源码/bundle进入闭包。真实模型、视觉、声音和A04批准仍独立。
+
+2026-10-18兼容提示修复：还原片段0.6.1明确set_variant.values使用variant而非variantId/variant_id；REPAIR_FIELDS诊断给出操作名、未知字段和允许字段，不接受别名、不改Schema、预算、保存与批准。来自真实首轮失败，离线拒绝及实际出站测试另验。
+
+2026-10-18能力事实补全：设计Agent的currentPresentation/variantFacts明确figure无容器边框、figure-caption-top仅为描边胶囊标签；annotation终态实线且无静态样式编辑；summary列出渲染前缀及分隔线数量。仅描述既有renderer，不新增能力、不消除审核差异、不改正文或原失败路由。相关43项通过，真实模型改善待验。
+
+2026-10-18兼容提示修复：保真审核运行片段1.0.2明确reference_alignment只适用当前text_alignment_contract列出的普通text；复合组件以null表示该字段不适用，实际字体差异和观察不确定仍须报告。原uncertain拒绝、全覆盖与批准要求保持，不自动修复旧响应。
+
+2026-10-18兼容提示修复：保真审核运行片段1.0.1明列既有requirement枚举，禁止混用dimension的content/structure；严格解析、覆盖和调用预算不变，旧失效响应不推断或改写。见review-facts-localization-0.1.0中的真实失败记录。
+
+2026-10-18兼容提示修复：语义规划Prompt 0.3.3显式区分标注图片目标、图片内部焦点及文字标签身份，落实既有A02校验；不改契约字段、两轮预算或批准要求。实际失败及验证边界见scene-planning-evidence-0.1.0。
+
+## 0.9.85 — 2026-10-17
+
+- 真实旁白输出信号检测发现concat将24kHz AAC priming转成42.7ms前导延迟。单页保留已验证分段字节，多页各自解码音轨后按页帧预算拼接；不硬编码延迟裁剪。
+- HTML MP4指纹固定合成源码，旧视频可恢复但不能复用为当前结果；不影响声音/视觉批准或PPTX，无新失效原因/公开字段。非静音单/三页回归及真实旁白对应帧独立验收。
+
+## 0.9.84 — 2026-10-17
+
+- 局部修复Prompt0.3.1/0.4.1提供scope相关受保护叶字段/祖先路径，冲突目标明确停止；候选/保存仍为权威，预算及unknown规则保持。
+- Agent API1.44、repair.generate1.3；操作Skill1.17更新，固定真实模型基线/工具/Skill效果分开测量，未知费用null。未新增生产模板容量，33槽注册模板与40代理压力分开验收。
+
+## 0.9.83 — 2026-10-17
+
+- 音频产物指纹进入editor.read/preview；preview/save可选expected_audio_revision，陈旧或验证期间变化返回409且不写入。旧调用兼容。
+- 播放核对实际加载媒体/当前文档/服务端指纹及有效音频状态；显式刷新保留草稿和原句偏移，隔离迟到响应。Agent API1.43、editor.read/write1.1、preview1.3。
+- 已有真实旁白仅在隔离副本验证；同长替换与×1.25时序变化使用合成回归，不执行TTS或自动批准。原源文件哈希/mtime不变，真实视频另验。
+
+## 0.9.82 — 2026-10-17
+
+- AI候选和最终save_editor使用同一人工保护检查；首次可选容器变更按叶字段保护，已有父级保护保持。锚点资源转换后的最终候选必须复核，失败无写入。
+- 保护冲突消息定位稳定字段路径；非法origin在no-op前拒绝。有效布局编辑继续复用素材/TTS。Agent API1.42、repair.preview/save1.4，无新请求字段或自动批准。
+
+## 0.9.81 — 2026-10-17
+
+- 正式动作时间轴：已有动作偏移/左右拉伸、原句窗口、作者/实际裁短时长、原子undo与原preview/save保护。
+- 音频currentTime驱动原播放器/游标；无音频只读并保留作者预览，不运行timeline第二播放引擎。preview附加timing，Agent同步至API1.41/preview1.2。
+- 独立timeline源/产物/运行依赖notice进入tooling快照；保留上游许可分歧。工程与合成音频浏览器通过，真实旁白/课程/视频另验，未发布。
+
+## 0.9.80 — 2026-10-17
+
+- 正式布局编辑接入单对象移动/缩放、20对象内群组移动及原子撤销；候选先preview校验，保存与人工保护继续原服务。共享layout求值保留语义/时钟，关闭与seek清理辅助层。
+- preview可选expected_revision，Web/Agent一致409；API1.40、能力1.1。canvas包独立于timeline，来源/调用方/锁文件/许可证/产物进入tooling快照，缺失或篡改拒绝。
+- P0遗漏许可证补存来源和重建证据；不将来源记录称为法律认证。工程及隔离浏览器覆盖见P1交接，真实课程、专项验收与发布待完成。
+
+## 0.9.79 — 2026-10-17
+
+- 新增 build-only editor_ui P0 适配：本地 Moveable/Selecto/React Timeline Editor，独立辅助层、作者坐标和相对 binding 修改，复用原 fixture preview/save 与播放器；正式产品入口及 P1—P5 不作为本批已完成功能。
+- 产物/源哈希与依赖 notice 登记；不复制 Scena/Theatre 代码。未带完整许可证的包保留缺项，生产发行前补核。
+- 修正 candidate-layout-repair、design-understanding、design-reconstruction、design-reference-localization 四个登记哈希；旧登记计算了 CRLF，仓库实际规范文件为 LF。拒绝哈希不匹配的逻辑保持，未修改 Prompt 或静默归一化运行时输入。
+
 ## 0.9.78 — 2026-10-17
 
 - 可选离线盲审工具隐藏算法预测，以原图/结果/区域身份hash绑定独立标注，提供人工拖框、前台计时和显式导出。空标注不计算真实误报、漏报或人工时间。

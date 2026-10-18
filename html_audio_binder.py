@@ -324,3 +324,41 @@ def binding_report(scenes: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "totalDurationMs": sum(int(s.get("durationMs", 0)) for s in items),
         "audioSource": "existing_audio",
     }
+
+
+def editor_timing(scene, bound, audio_timeline, binding):
+    """Read-only editor projection, called after the same binder validated input."""
+    from html_motion_binding import motion_identity
+
+    windows = {}
+    for segment in _segments(audio_timeline):
+        identity = segment.get("beat_id") or segment.get("id")
+        start, end = round(segment["start"] * 1000), round(segment["end"] * 1000)
+        item = windows.setdefault(identity, {"beatId": identity, "startMs": start, "endMs": end, "text": ""})
+        item["endMs"] = max(item["endMs"], end)
+        item["text"] += segment["text"]
+    effective = {motion_identity(a): a for a in bound["motion"]}
+    actions = []
+    for action in scene["motion"]:
+        identity = motion_identity(action)
+        resolved = effective[identity]
+        link = (binding or {}).get("actions", {}).get(identity)
+        window = windows.get(link["beatId"]) if link else None
+        reasons = []
+        if resolved["durationMs"] < action["durationMs"]:
+            end = resolved["startMs"] + resolved["durationMs"]
+            if window and end == window["endMs"]:
+                reasons.append("beat_end")
+            if end == bound["durationMs"]:
+                reasons.append("audio_end")
+            if any(a["targetId"] == action["targetId"] and a["startMs"] == end for a in bound["motion"]):
+                reasons.append("next_action")
+        actions.append({"id": identity, "targetId": action["targetId"], "type": action["type"],
+                        "authorDurationMs": action["durationMs"], "effectiveStartMs": resolved["startMs"],
+                        "effectiveDurationMs": resolved["durationMs"], "beatId": link["beatId"] if link else None,
+                        "offsetMs": link["offsetMs"] if link else None, "clippedBy": reasons,
+                        "editable": bool(window and resolved["durationMs"] >= 100)})
+    media_seconds = audio_timeline.get("duration_sec")
+    media_duration = round(media_seconds * 1000) if type(media_seconds) in (int, float) and math.isfinite(media_seconds) and media_seconds > 0 else bound["durationMs"]
+    return {"durationMs": bound["durationMs"], "mediaDurationMs": media_duration,
+            "beats": list(windows.values()), "actions": actions}

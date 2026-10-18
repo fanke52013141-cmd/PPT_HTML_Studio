@@ -18,6 +18,7 @@ import settings_service  # noqa: E402
 
 def main() -> int:
     stored = {
+        **{key: "test-only-secret" for key in settings_service.SETTINGS_SECRET_KEYS},
         "llm_api_key": "real-llm-key",
         "image_api_key": "real-image-key",
         "tts_api_key": "real-tts-key",

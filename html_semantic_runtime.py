@@ -23,7 +23,7 @@ def compile_semantic_motion(plan: dict) -> tuple[list, dict, list, int]:
                     "type": action["type"], "startMs": index * duration // len(plan["beats"]) + offset,
                     "durationMs": 500}
             if action["type"] == "enter":
-                item.update(offsetX=0, offsetY=0 if objects[target]["kind"] == "annotation" else 12)
+                item.update(offsetX=0, offsetY=0 if objects[target]["kind"] == "annotation" or (objects[target]["kind"] == "arrow" and "from" in plan["slots"][objects[target]["slot"]]) else 12)
             motion.append(item)
             links[action["actionId"]] = {"beatId": beat["id"], "edge": "start", "offsetMs": offset}
     binding = {"format": "hps.html.motion_binding", "version": "0.2.0", "mode": "beat_ids",

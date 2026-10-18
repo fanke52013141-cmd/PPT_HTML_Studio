@@ -919,88 +919,26 @@ except Exception as exc:
     )
     raise
 
-# Step 8 video rendering is source-owned by video_render_service.py and video_routes.py.
 
 
 static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
 os.makedirs(static_dir, exist_ok=True)
 
 try:
-    from database import SessionLocal as VideoSessionLocal
-    from remotion_runner import (
-        RemotionRunner,
-        RemotionRunnerDependencies,
-    )
-    from video_artifact_service import (
-        VideoArtifactDependencies,
-        VideoArtifactService,
-    )
-    from video_contracts import VideoRenderConfig
-    from video_render_service import (
-        VideoRenderDependencies,
-        configure_video_render_service,
-    )
-    from html_render_runner import (
-        HtmlRenderRunner,
-        HtmlRenderRunnerDependencies,
-    )
+    from video_runtime import configure_video_runtime
     from video_routes import router as video_router
 
-    video_render_config = VideoRenderConfig(
-        repo_root=Path(REPO_ROOT),
-        runs_root=Path(RUNS_DIR),
-        pipeline_version=REVEAL_PIPELINE_VERSION,
-        reveal_visual_lead_sec=REVEAL_VISUAL_LEAD_SEC,
-        bind_timeout_sec=STEP7_BIND_TIMEOUT_SEC,
-        build_props_timeout_sec=STEP8_BUILD_PROPS_TIMEOUT_SEC,
-        npm_install_timeout_sec=STEP8_NPM_INSTALL_TIMEOUT_SEC,
-        render_timeout_sec=STEP8_RENDER_TIMEOUT_SEC,
-        color_process_timeout_sec=STEP8_COLOR_PROCESS_TIMEOUT_SEC,
-        render_acceleration=os.environ.get("PPT_STUDIO_RENDER_ACCELERATION", "auto"),
-    )
-    video_artifact_service = VideoArtifactService(
-        VideoArtifactDependencies(
-            runs_root=video_render_config.runs_root,
-            pipeline_version=video_render_config.pipeline_version,
-            render_timeout_sec=video_render_config.render_timeout_sec,
-            read_visual_settings=read_project_visual_settings,
-            normalize_color=normalize_hex_color,
-            normalize_subtitle_style=normalize_subtitle_style,
-            resolve_media_tool=lambda name: shared_resolve_media_tool(
-                name,
-                repo_root=Path(REPO_ROOT),
-            ),
-        )
-    )
-    remotion_runner = RemotionRunner(
-        RemotionRunnerDependencies(
-            config=video_render_config,
-            build_reveal_assets=build_current_reveal_assets,
-            write_project_log=write_project_log,
-            # Remotion 渲染（npx -> node -> ffmpeg）是典型多层进程树，
-            # 超时必须杀掉整棵进程树，避免孙进程残留与管道死锁。
-            run_subprocess_bounded=run_subprocess_killable,
-            resolve_media_tool=lambda name: shared_resolve_media_tool(
-                name,
-                repo_root=Path(REPO_ROOT),
-            ),
-        )
-    )
-    # 跨项目渲染并发上限（1-3）：多余提交保留为持久 queued 任务排队。
-    video_render_service = configure_video_render_service(
-        VideoRenderDependencies(
-            session_factory=VideoSessionLocal,
-            artifact_service=video_artifact_service,
-            remotion_runner=remotion_runner,
-            html_runner=HtmlRenderRunner(
-                HtmlRenderRunnerDependencies(
-                    repo_root=Path(REPO_ROOT),
-                    read_slide_ids=read_contract_slide_ids,
-                )
-            ),
-            config=video_render_config,
-            max_concurrent_renders=get_bounded_int_setting("max_concurrent_renders", default=1, min_value=1, max_value=3),
-        )
+    video_render_service = configure_video_runtime(
+        repo_root=Path(REPO_ROOT), runs_root=Path(RUNS_DIR), pipeline_version=REVEAL_PIPELINE_VERSION,
+        visual_lead_sec=REVEAL_VISUAL_LEAD_SEC, bind_timeout_sec=STEP7_BIND_TIMEOUT_SEC,
+        build_props_timeout_sec=STEP8_BUILD_PROPS_TIMEOUT_SEC, npm_install_timeout_sec=STEP8_NPM_INSTALL_TIMEOUT_SEC,
+        render_timeout_sec=STEP8_RENDER_TIMEOUT_SEC, color_process_timeout_sec=STEP8_COLOR_PROCESS_TIMEOUT_SEC,
+        read_project_visual_settings=read_project_visual_settings, normalize_hex_color=normalize_hex_color,
+        normalize_subtitle_style=normalize_subtitle_style,
+        resolve_media_tool=lambda name: shared_resolve_media_tool(name, repo_root=Path(REPO_ROOT)),
+        build_current_reveal_assets=build_current_reveal_assets, write_project_log=write_project_log,
+        run_subprocess_killable=run_subprocess_killable, read_contract_slide_ids=read_contract_slide_ids,
+        max_concurrent_renders=get_bounded_int_setting("max_concurrent_renders", default=1, min_value=1, max_value=3),
     )
     app.include_router(video_router)
 except Exception as exc:
