@@ -64,3 +64,15 @@ ffed5df的远端Windows CI已实际成功：检查117525006980、run39076626748�
 1.0.1固定图复验位于outputs/real-course-acceptance/2026-10-18/review-101-fixed-case-v2：实际用户负载、Schema、图片hash、600秒预算及思考参数均与失败审核相同，模型冻结摘要也逐项匹配，只改系统提示。两次HTTP为已知400格式拒绝及原兼容入口的一次流式请求；407.38秒后完整返回。九种requirement枚举合法，56/56事实无缺漏/重复；obj-summary.typography的reference_alignment=uncertain使原守卫继续停止（DESIGN_REVIEW_COVERAGE_INCOMPLETE）。未保存、未生图/配音、未批准，费用null；前一单HTTP预算诊断因阻止原格式回退而停止，不能算有效模型对照，原记录保留。
 
 核查text_alignment_contract仅列headline/intro/anchor-label/marker-1普通text，summary是含多种对齐的复合模块，整体reference_alignment本来不适用。运行片段1.0.2明确只有所列普通text的typography需要该字段，其余null；复合组件真实字体差异仍须报告，certainty或reference_alignment为uncertain的原拒绝规则不变。旧响应不改写、不签发通过；新片段另验。源定义变化后旧候选不能自动重签为当前，后续应沿原生产入口生成当前版本候选与审阅，不能把该独立诊断当成正式恢复。
+
+## 五项优化的追加证据与当前停点
+
+Agent 固定案例采用三轮轮换顺序复测，每阶段12例，共36例。baseline/tools/skill均12/12成功、误改0、未知请求0、平均1轮，各12次HTTP；平均每例8.179/8.368/9.599秒，报告token76584/77050/78310，费用未知。原内容与旁白hash保持，无生图/TTS。样本中未观察到工具或Skill提速，不宣称成功率提升或成本下降。完整报告为outputs/editor-benchmark/2026-10-18/repeated/comparison.json；供应商延迟和同期生产影响计时，三轮不足以得出统计结论。
+
+只读视频比较脚本补齐逐页原声音轨、顺序、连接边界及丢失语音检查，不再将多页音轨标为未执行；保留单页报告兼容字段。16项回归覆盖实际单/三页AAC拼接、错序、整体/第二页延迟、静音、截断、预算外原声音频、静音连接杂音及非整数帧率。AAC测试参考按已知源呈现时长取样，避免把解码器暴露的尾部填充误判为原声音频被切掉；真实冻结输入仍直接解码voice.mp3核对。原正式单页视频再次32帧通过，相关系数0.999991、延迟0ms，证据outputs/single-page-video/2026-10-18/multipage-verifier-regression/report.json。该检查不代替听感、文字语义或视觉批准，也不宣称真实整课已通过。
+
+真实整课四页原服务TTS均生成，时长18.408/20.736/19.920/16.416秒。任务825b204662b44fee99783ad68bd47e0c最终因HTML尚未保存而绑定失败（HTML_AUDIO_BINDING_INVALID:FileNotFoundError）；已生成音轨保留，后续复用缓存绑定，不再次配音。audio-status显示四页完整且配置未过期，尚未声音签收。顺序试听WAV为outputs/real-course-acceptance/2026-10-18/audio-preview/course-narration-preview.wav（75.48秒、全量解码通过），仅供试听，不是正式整课视频音轨一致性证据。
+
+当前设计候选24ee8ed7203e608f101bae6b40b95e1ef7d20b9cb1342c26eb91de24fc9705b3已展示，用户随后明确要求直接完成五项，沿原produce入口继续html_1a8f68a0b8024d1fbe91。设计理解和独立素材返回；首轮还原因REPAIR_FIELDS停止，原预算内第二轮仍在运行。继续时首先查询原任务，不能因观察超时重发；此处未记录HTML或整课批准。
+
+9b557f3远端CI为2511 passed/1 failed/8 skipped，唯一失败为测试仍断言审核片段1.0.0；02761a3更新到1.0.2，相关32项本地通过。最新检查117537247752/run39080833949仍in_progress，不将前一版本通过结果冒充当前head结果。整课签收、main合并和部署仍未完成。

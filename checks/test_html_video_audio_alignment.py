@@ -7,7 +7,7 @@ import pytest
 
 from html_render_runner import HtmlRenderRunner, HtmlRenderRunnerDependencies
 from html_frozen_video import validate_video
-from scripts.verify_html_video_frames import decode_audio
+from scripts.verify_html_video_frames import compare_course_audio, decode_audio
 
 
 @pytest.mark.parametrize('page_count', [1, 3])
@@ -41,3 +41,12 @@ def test_concat_preserves_decoded_audio_zero_time_and_page_boundaries(tmp_path, 
         length = round(frames / 30 * 48000)
         assert float(np.corrcoef(reference[offset:offset+length], actual[offset:offset+length])[0,1]) > .99
         offset += length
+    receipts = [{'slide_id': f'page-{index}', 'frames': frames, 'offset_frames': sum(counts[:index])}
+                for index, frames in enumerate(counts)]
+    # The generated source lasts exactly its declared frame duration. AAC decoding
+    # may expose an extra codec frame of padding; that is not original speech.
+    # Use the presentation-duration reference already checked above, while the
+    # output remains fully decoded so join delays and truncation stay detectable.
+    comparison = compare_course_audio(expected, receipts, actual, 30)
+    assert comparison['status'] == 'passed', comparison
+    assert len(comparison['boundaries']) == page_count - 1
