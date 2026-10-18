@@ -1,6 +1,6 @@
 # HTML Studio
 
-2026-10-18 当前交接：[课程候选修复与音画验收](docs/plans/html-backend-development/handoff-capture-recovery-preflight-2026-10-18.md)。契约0.9.95/API1.50；第二、三、四页已保存并完成当前画面与逐句语义人工签收。第一页一次坐标请求格式通过但方向复核仅3/8；已补只读几何诊断与程序建议，未追加调用。整课尚未发布。
+2026-10-18 当前交接：[课程修复与整课输出](docs/plans/html-backend-development/handoff-capture-recovery-preflight-2026-10-18.md)。契约0.9.95/API1.50；四页已保存，整课原音频已确认且20个文件hash不变。第二、三、四页签收有效；第一页八方向程序修复及独立语义、核对视频通过，待当前画面与语义人工确认后正式导出整课。
 
 2026-10-18 离线结构补齐：[四页统一修复验证](docs/plans/html-backend-development/handoff-course-structures-offline-2026-10-18.md)。契约0.9.88/API1.47；显式关系、平台图表和三阶段模板已接入离线验证，默认GPU分数缩放像素限制、真实课程与发布仍待验。无新增付费调用。
 

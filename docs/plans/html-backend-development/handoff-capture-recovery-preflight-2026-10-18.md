@@ -95,3 +95,14 @@ outputs/capture-recovery-preflight/保存原合同备份、拟写需求和来源
 ## 第三页人工语义签收完成
 
 用户明确“接受第三页音画与逐句语义验收”。原semantic/decision以当前revision3和完整960e33fc报告key记录approved。随后复读002/003/004：valid=true、engineering/semantic passed、human/visual approved；三个原报告key保持。音频状态仍pending，因全课audio_confirmed尚未建立，不把旁白已接受等同于全课确认已完成。回执outputs/remaining-pages-20261018/page003-user-semantic-acceptance.json。下一阻断是001八方向坐标，原模型3/8、程序建议未写作者；未新增模型、生图或TTS调用。
+
+
+## 第一页程序坐标修复与四页音频确认
+
+用户要求修复001→验收→全课音频→四页正式视频与发布。用已明确八方向和通用几何函数生成point，不再请求模型；目标框顶部留80px标题区避开左上箭头穿字。normalize/A02/compile通过，八方向实际向量全部通过，只有point更改；正文/对象/动作/binding保持。显式选择已有无箭头透明水杯599363a681ea，原PNG字节不变，登记为water-cup-cooling的现有资源选择，不冒充旧生成缓存命中或模型任务成功。原设计图、历史失败与费用记录不动。
+
+通过原注册呈现操作统一外观，独立输出outputs/page001-closure-20261018。静态/音频绑定/250ms指定遮挡采样通过后，原scene_write保存001为revision4，未代画面批准。原A04任务html_ef23e6d89be54b31b06b完成，report a191c027c48fffb9232894d02d01355e355c83655a051aa46567ed41bad7a272 engineering/semantic passed，待用户画面及语义合并确认。
+
+复用用户此前接受四页旁白的原回执，调用原steps/7/confirm，audio_confirmed=true。确认前只读重演timeline写入，4页semantic/bytes均no-op；确认后20个原音频/文本/metadata/SRT/timeline hash全部不变。002/003/004当前valid=true、visual/human approved、audio confirmed，无需重签。
+
+001核对视频review_only为553帧/18.433秒，H264/AAC30fps完整解码通过，原音轨零滞后相关系数0.999919，4条字幕末尾18.408秒，3个抽样帧MAE0.155—0.629通过。已展示视频并请求第一页当前画面+报告合并决定；四页正式导出尚未启动，不绕过该决定。独立结果和原作者写入来源在save-receipt、direction-verification、audio-confirmation-receipt、closure-readiness等JSON。
