@@ -1,0 +1,156 @@
+"""Pure, explicit plan coverage checks before design/provider allocation.
+
+No NLP inference: required capabilities come from an authored contract manifest.
+"""
+
+import json
+import math
+from pathlib import Path
+
+from html_semantic_plan import SemanticPlanError
+
+
+def _validate_node(content, obj, code):
+    from jsonschema import Draft202012Validator
+
+    schema = json.loads(
+        (Path(__file__).parent / "html_engine/visual/schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    rule = next(
+        n
+        for n in schema["$defs"]["node"]["oneOf"]
+        if n["properties"]["type"]["const"] == obj["kind"]
+    )
+    node = {k: v for k, v in content.items() if k != "kind"}
+    node.update(id=obj["id"], slot=obj["slot"], type=obj["kind"])
+    if not Draft202012Validator({"$defs": schema["$defs"], **rule}).is_valid(node):
+        raise SemanticPlanError(code, obj["id"])
+
+
+def validate_course_structure(plan, contract, template):
+    def fail(code, message):
+        raise SemanticPlanError(code, message)
+
+    objects = {o["id"]: o for o in plan["objects"]}
+    slots = plan["slots"]
+    relation_ids = set()
+    for obj in objects.values():
+        content = slots[obj["slot"]]
+        if obj["kind"] == "chart":
+            _validate_node(content, obj, "PLAN_CHART_INVALID")
+            points = content["points"]
+            if (
+                not all(math.isfinite(p[k]) for p in points for k in ("x", "y"))
+                or not all(math.isfinite(content[k]) for k in ("min", "max"))
+                or content["max"] <= content["min"]
+                or any(p["x"] <= points[i - 1]["x"] for i, p in enumerate(points) if i)
+            ):
+                fail("PLAN_CHART_INVALID", obj["id"])
+            if "plateau" in content:
+                a, b = content["plateau"]
+                if (
+                    a >= b
+                    or b >= len(points)
+                    or any(p["y"] != points[a]["y"] for p in points[a : b + 1])
+                ):
+                    fail("PLAN_CHART_PLATEAU", obj["id"])
+        if obj["kind"] != "arrow":
+            continue
+        if (
+            template.get("relationPolicy") == "explicit"
+            or "from" in content
+            or "to" in content
+        ):
+            if "presentation" in content:
+                fail("PLAN_RELATION_GEOMETRY", obj["id"])
+            _validate_node(content, obj, "PLAN_RELATION_ENDPOINT")
+            for key in ("from", "to"):
+                endpoint = content.get(key, {})
+                if not isinstance(endpoint, dict) or not isinstance(
+                    endpoint.get("objectId"), str
+                ):
+                    fail("PLAN_RELATION_ENDPOINT", obj["id"])
+                target = objects.get(endpoint.get("objectId"))
+                if not target or target["kind"] in ("arrow", "annotation"):
+                    fail("PLAN_RELATION_ENDPOINT", obj["id"])
+                if set(endpoint) == {"objectId", "anchorId"}:
+                    target_content = slots[target["slot"]]
+                    if target["kind"] != "image" or endpoint[
+                        "anchorId"
+                    ] != target_content.get("anchorId", "focus"):
+                        fail("PLAN_RELATION_ENDPOINT", obj["id"])
+                elif set(endpoint) == {"objectId", "point"}:
+                    point = endpoint["point"]
+                    if (
+                        not isinstance(point, dict)
+                        or set(point) != {"x", "y"}
+                        or any(
+                            type(v) not in (int, float)
+                            or not math.isfinite(v)
+                            or not 0 <= v <= 1
+                            for v in point.values()
+                        )
+                    ):
+                        fail("PLAN_RELATION_ENDPOINT", obj["id"])
+                else:
+                    fail("PLAN_RELATION_ENDPOINT", obj["id"])
+            if content["from"] == content["to"]:
+                fail("PLAN_RELATION_ENDPOINT", obj["id"])
+            for beat in plan.get("beats", []):
+                if any(
+                    a.get("objectId") == obj["id"] and a.get("type") != "enter"
+                    for a in beat.get("actions", [])
+                ):
+                    fail("PLAN_RELATION_ACTION", obj["id"])
+            relation_ids.add(obj["id"])
+    requirements = contract.get("visual_requirements", [])
+    coverage = plan.get("visual_coverage", {})
+    if (
+        not isinstance(requirements, list)
+        or not isinstance(coverage, dict)
+        or any(
+            not isinstance(r, dict)
+            or not isinstance(r.get("id"), str)
+            or not r["id"].strip()
+            for r in requirements
+        )
+    ):
+        fail("PLAN_VISUAL_REQUIREMENTS", "Explicit manifest required")
+    if len({r.get("id") for r in requirements}) != len(requirements) or set(
+        coverage
+    ) != {r.get("id") for r in requirements}:
+        fail(
+            "PLAN_VISUAL_COVERAGE",
+            "Every authored requirement must be mapped exactly once",
+        )
+    for req in requirements:
+        ids = coverage[req["id"]]
+        if (
+            req.get("kind") not in ("relation", "chart", "stage")
+            or type(req.get("minCount")) is not int
+            or req["minCount"] < 1
+            or not isinstance(ids, list)
+            or any(not isinstance(i, str) for i in ids)
+            or len(ids) != len(set(ids))
+            or len(ids) < req["minCount"]
+            or any(i not in objects for i in ids)
+        ):
+            fail("PLAN_VISUAL_COVERAGE", str(req))
+        allowed = (
+            relation_ids
+            if req["kind"] == "relation"
+            else {
+                i
+                for i, o in objects.items()
+                if o["kind"] == ("chart" if req["kind"] == "chart" else "card")
+            }
+        )
+        if not set(ids) <= allowed:
+            fail("PLAN_VISUAL_COVERAGE", req["id"])
+    return {
+        "requirements": len(requirements),
+        "mapped": len(coverage),
+        "meaning": "pending_semantic_review",
+    }

@@ -16,3 +16,6 @@ onnxruntime>=1.17.0
 
 # Bounded HTML candidate layout agent
 langgraph==1.2.14
+
+# Shared JSON Schema validation for offline course-plan preflight
+jsonschema==4.23.0

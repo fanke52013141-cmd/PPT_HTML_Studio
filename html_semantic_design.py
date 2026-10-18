@@ -22,6 +22,8 @@ def build_semantic_design(plan: dict, *, asset_budget: int = 1) -> dict:
     # bound to the authority upstream. This does not establish new authority.
     source = {"narration_beats": [{"id": b.get("id"), "spoken_text": b.get("spoken_text")} for b in plan.get("beats", [])]}
     objects, beats = normalize_semantics(plan, plan["objects"], source)
+    from html_course_structure import validate_course_structure
+    validate_course_structure(plan, plan.get("contract", {}), {"relationPolicy": plan.get("registered", {}).get("relation_policy")})
     assets = plan.get("assets", [])
     asset_ids = [a["id"] for a in assets]
     if len(asset_ids) != len(set(asset_ids)):

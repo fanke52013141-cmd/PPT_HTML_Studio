@@ -1,0 +1,110 @@
+{
+  "format": "hps.visual.template",
+  "version": "0.1.0",
+  "id": "process-three-stages-v1",
+  "name": "process-three-stages-v1",
+  "structure": "process-stage",
+  "layoutRef": {
+    "id": "process-three-stages-v1",
+    "version": "0.2.0"
+  },
+  "relationPolicy": "explicit",
+  "slots": {
+    "header": {
+      "kinds": [
+        "header"
+      ],
+      "required": true
+    },
+    "stage-1": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "stage-2": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "stage-3": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "label-1": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "label-2": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "label-3": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "summary": {
+      "kinds": [
+        "summary"
+      ],
+      "required": true
+    },
+    "relation-1": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-2": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-3": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-4": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-5": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-6": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-7": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-8": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    }
+  }
+}

@@ -5,7 +5,7 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 
 # 可编辑HTML生产与修复
 
-版本1.19.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
+版本1.20.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
 
 ## 选择任务
 
@@ -40,3 +40,5 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 注册结构选择：figure-frame-top为带框顶部标题；annotation-dashed只改虚线外观，target/anchor/label及空间禁止变动；summary-strip-divided只适用无heading的三栏关系，不增加正文前缀。原set_variant、保护、容量与独立签收门禁继续执行。
 
 定义更新后保留原设计：显式reuse_design_candidate_key重新核验同页原计划/图片，返回新待审key，零规划/生图/TTS。不自动接受，不重签旧候选；新key仍需用户接受，旧设计接受不代替HTML/A04。图标先看对象自带tag/note及currentRender，icons只列可选装饰；标注圈/线虚实按注册混合变体分别选。
+
+课程结构离线补齐见course-structures-0.1.0：显式端点关系、chart与三阶段模板，card-outline/figure-frame-dashed/annotation-dashed-no-arrow。权威visual_requirements必须完整映射visual_coverage；没有清单不宣称自动理解全文。新模板必须通过normalize/A02/compile和真实共享渲染，不以手写离线夹具声称模型生产成功。像素、结构、语义和人审分别记录；未通过项不能因工程检查通过被隐去。

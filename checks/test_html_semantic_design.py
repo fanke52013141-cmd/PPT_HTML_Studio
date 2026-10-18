@@ -106,7 +106,7 @@ def test_annotation_identity_rules_reach_both_provider_rounds(tmp_path):
     assert len(requests) == 2
     for request in requests:
         prompt = request["system_prompt"]
-        assert "html-semantic-plan/0.3.3" in prompt
+        assert "html-semantic-plan/0.3.4" in prompt
         assert "targetId 引用图片对象ID、图片槽位ID或该图片的素材ID" in prompt
         assert "annotation.anchorId 必须等于所指图片槽位的 anchorId" in prompt
         assert "labelId 单独引用 kind=text" in prompt

@@ -1,0 +1,104 @@
+{
+  "format": "hps.visual.template",
+  "version": "0.1.0",
+  "id": "chart-explanation-v1",
+  "name": "chart-explanation-v1",
+  "structure": "explanation-cards",
+  "layoutRef": {
+    "id": "chart-explanation-v1",
+    "version": "0.2.0"
+  },
+  "relationPolicy": "explicit",
+  "slots": {
+    "header": {
+      "kinds": [
+        "header"
+      ],
+      "required": true
+    },
+    "headline": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "intro": {
+      "kinds": [
+        "text"
+      ],
+      "required": true
+    },
+    "card-1": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "card-2": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "chart": {
+      "kinds": [
+        "chart"
+      ],
+      "required": true
+    },
+    "summary": {
+      "kinds": [
+        "summary"
+      ],
+      "required": true
+    },
+    "relation-1": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-2": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-3": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-4": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-5": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-6": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-7": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    },
+    "relation-8": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    }
+  }
+}

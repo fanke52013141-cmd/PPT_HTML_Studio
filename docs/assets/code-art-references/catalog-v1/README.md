@@ -6,7 +6,7 @@ This catalog is generated from the current source manifests. The standard pages 
 
 - 24 static PNG pages at 1920×1080
 - 32 base and fixed-structure component references, 16 presentation variants, 28 static effects, 18 composition examples, 5 font specimens
-- Runtime registration is inventoried separately: 11 node types, 8 effects, 7 layouts, 5 templates, 5 themes. Registration does not imply visual approval.
+- Runtime registration is inventoried separately: 12 node types, 8 effects, 10 layouts, 8 templates, 5 themes. Registration does not imply visual approval.
 - 2 B sample pages are marked pending or experimental; neither is a default recommendation.
 
 ## Standard grayscale pages

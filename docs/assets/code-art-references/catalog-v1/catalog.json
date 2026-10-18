@@ -14,10 +14,10 @@
       "fonts": 5,
       "palettes": 3,
       "pendingOrExperimentalSamples": 2,
-      "runtimeNodeTypes": 11,
+      "runtimeNodeTypes": 12,
       "runtimeEffects": 8,
-      "runtimeLayouts": 7,
-      "runtimeTemplates": 5,
+      "runtimeLayouts": 10,
+      "runtimeTemplates": 8,
       "runtimeThemes": 5
     },
     "sourceOfCounts": "counted from standard-pages.json, components.json, components-extensions.json, presentation-variants.json, effects.json, static-catalog.json, and live V1 runtime sources"
@@ -243,8 +243,16 @@
       "sha256": "17743c9cb15ba6b74304cb264c6e19dde7dd847f2d4b2e9598c7d1c0ac0450cd"
     },
     {
+      "path": "html_engine/visual/course-structures.cjs",
+      "sha256": "00e6c217165eb39e12dc4e228ac495c57738a1fce2946d0ecec4fc962be4fa37"
+    },
+    {
       "path": "html_engine/visual/effects/registry.json",
       "sha256": "1f3c9653da038df1e966ea30b25500505a91d8b49f9f6f6dfdde24c828340a60"
+    },
+    {
+      "path": "html_engine/visual/layouts/chart-explanation-v1.json",
+      "sha256": "16a78e3eff5ad17d4b4f96982734ed384e02663acc377cc5b35cc654f4d5ff30"
     },
     {
       "path": "html_engine/visual/layouts/data-relation-v1.json",
@@ -267,6 +275,10 @@
       "sha256": "70b1f58f93e996e0f55f2144173194bdbcbe1418a55b46c95015e5b9f8dccd9a"
     },
     {
+      "path": "html_engine/visual/layouts/process-three-stages-v1.json",
+      "sha256": "5fe1e439d11431fd487a46bf8dcde305e9c23ab49fc811fb83c7f757a1581a83"
+    },
+    {
       "path": "html_engine/visual/layouts/science-explanation-labels-v1.json",
       "sha256": "81a3ae67963073594014fa47bb8054721fa4fa57dc3d14bc75f38153f606b45c"
     },
@@ -275,8 +287,16 @@
       "sha256": "ed9f1699d811f6c6ee99e8868465509928c4e368754e01e8e081c7423af9d88f"
     },
     {
+      "path": "html_engine/visual/layouts/science-relations-v1.json",
+      "sha256": "3a81c7e102edd702f9adc0a19e9566b13b28c4f58107e280b369ef5ae8cfa159"
+    },
+    {
       "path": "html_engine/visual/schema.json",
-      "sha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f"
+      "sha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3"
+    },
+    {
+      "path": "html_engine/visual/templates/chart-explanation-v1.json",
+      "sha256": "58c999a105969f086300e731802c2a91108540e39ebf7efe3250d064750d41c8"
     },
     {
       "path": "html_engine/visual/templates/data-relation-v1.json",
@@ -299,6 +319,14 @@
       "sha256": "186bd2ffab34901bd9864c667163e00d43e8e865bb4f9db38d98fd9c9234ca5b"
     },
     {
+      "path": "html_engine/visual/templates/process-three-stages-v1.json",
+      "sha256": "ca8d1dd7a947774ec8c41a5cfad3fd348d76e324314e9cab12a9727b48950939"
+    },
+    {
+      "path": "html_engine/visual/templates/science-relations-v1.json",
+      "sha256": "7c1f805dd96726a6659ea7943d7029ddf39c00cc782c3329b43499ff50047bad"
+    },
+    {
       "path": "html_engine/visual/themes/amber-editorial.json",
       "sha256": "81b48464ab20bb75a6763220b3e23f9355572431834729374f3213c2139e5a96"
     },
@@ -308,7 +336,7 @@
     },
     {
       "path": "html_engine/visual/themes/neutral-baseline.json",
-      "sha256": "5eab8312c19cc4a08dc048d76c1823b711470aca76e6fa29128396842944fc83"
+      "sha256": "92568b1176e82494f2fe8437a956d192d4226e5816f48493e757cf25e638f11a"
     },
     {
       "path": "html_engine/visual/themes/neutral-science.json",
@@ -6715,6 +6743,65 @@
       }
     },
     {
+      "id": "runtime-layout:chart-explanation-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "chart-explanation-v1",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 15,
+        "slots": [
+          "header",
+          "headline",
+          "intro",
+          "card-1",
+          "card-2",
+          "chart",
+          "summary",
+          "relation-1",
+          "relation-2",
+          "relation-3",
+          "relation-4",
+          "relation-5",
+          "relation-6",
+          "relation-7",
+          "relation-8"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/chart-explanation-v1.json",
+        "fileSha256": "16a78e3eff5ad17d4b4f96982734ed384e02663acc377cc5b35cc654f4d5ff30",
+        "recordSha256": "146cccdb1d65f890da5857782d01dca9120547f8b74fe7781186c381b32a678d"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:chart-explanation-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-layout:data-relation-v1",
       "version": "0.2.0",
       "type": "runtime-layout",
@@ -7024,6 +7111,66 @@
       }
     },
     {
+      "id": "runtime-layout:process-three-stages-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "process-three-stages-v1",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 16,
+        "slots": [
+          "header",
+          "stage-1",
+          "stage-2",
+          "stage-3",
+          "label-1",
+          "label-2",
+          "label-3",
+          "summary",
+          "relation-1",
+          "relation-2",
+          "relation-3",
+          "relation-4",
+          "relation-5",
+          "relation-6",
+          "relation-7",
+          "relation-8"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/process-three-stages-v1.json",
+        "fileSha256": "5fe1e439d11431fd487a46bf8dcde305e9c23ab49fc811fb83c7f757a1581a83",
+        "recordSha256": "4d64efade457896d2b29d063559e3e90e29d2f98380a5681b64ae6e06846189a"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:process-three-stages-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-layout:science-explanation-v1",
       "version": "0.2.0",
       "type": "runtime-layout",
@@ -7143,6 +7290,75 @@
       }
     },
     {
+      "id": "runtime-layout:science-relations-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "Explicit relations with labeled illustration",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 25,
+        "slots": [
+          "header",
+          "headline",
+          "intro",
+          "card-1",
+          "card-2",
+          "card-3",
+          "figure",
+          "subject",
+          "anchor-label",
+          "summary",
+          "annotation",
+          "marker-1",
+          "marker-2",
+          "marker-3",
+          "marker-4",
+          "marker-5",
+          "marker-6",
+          "relation-1",
+          "relation-2",
+          "relation-3",
+          "relation-4",
+          "relation-5",
+          "relation-6",
+          "relation-7",
+          "relation-8"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/science-relations-v1.json",
+        "fileSha256": "3a81c7e102edd702f9adc0a19e9566b13b28c4f58107e280b369ef5ae8cfa159",
+        "recordSha256": "a0bf4c53e59b196f2186a52109ad137f5163f9b08b7f9b6e12923356265a849f"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:science-relations-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-node:annotation",
       "version": "0.2.0",
       "type": "runtime-node",
@@ -7188,8 +7404,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
-        "recordSha256": "a2e80c6edddb5ca15849b4742a323f72d3752c070094da96d9e5a6c5f083e012"
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "recordSha256": "ebadc3bbf0ee94d66fb7304658ab9e1ac0729636fbbbdab96f255b92dd986e79"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7213,6 +7429,21 @@
         "schema": {
           "presentation": {
             "$ref": "#/$defs/presentation"
+          },
+          "from": {
+            "$ref": "#/$defs/relationEndpoint"
+          },
+          "to": {
+            "$ref": "#/$defs/relationEndpoint"
+          },
+          "head": {
+            "type": "boolean"
+          },
+          "lineStyle": {
+            "enum": [
+              "solid",
+              "dashed"
+            ]
           }
         }
       },
@@ -7228,8 +7459,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
-        "recordSha256": "4ef65f4f0a3c5139f19938ec757c80aa89d2c4549f89e98f2b54de76d662dd83"
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "recordSha256": "7237fd3ee1b13cba8cd961c5ad84eb49ed194d88bb92815ec370fdd82350f1c5"
       },
       "screenshot": null,
       "productionMapping": {
@@ -7283,7 +7514,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "7e1b9f2bafa1348e15f22906303fa47802527d6b5e69a41f772a529203a4f333"
       },
       "screenshot": null,
@@ -7344,7 +7575,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "f377c7d93d2770ed9c6138f13ad9321e23a8a60d8958bd4204221cf39f5208a4"
       },
       "screenshot": null,
@@ -7353,6 +7584,79 @@
         "directAdapter": true,
         "candidateRuntimeIds": [
           "runtime-node:card"
+        ],
+        "gap": "该条目本身是运行时 schema 节点定义，不是标准库截图或生成能力保证。"
+      }
+    },
+    {
+      "id": "runtime-node:chart",
+      "version": "0.2.0",
+      "type": "runtime-node",
+      "category": "production-runtime",
+      "name": "运行时节点 chart",
+      "purpose": "当前 V1 scene schema 接受的节点类型。",
+      "parameterRange": {
+        "required": [
+          "points",
+          "xLabel",
+          "yLabel",
+          "min",
+          "max",
+          "unit"
+        ],
+        "schema": {
+          "points": {
+            "type": "array"
+          },
+          "xLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "yLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "min": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 12
+          },
+          "plateau": {
+            "type": "array"
+          },
+          "presentation": {
+            "$ref": "#/$defs/presentation"
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "schema-bound; requires a compatible registered theme and layout",
+        "colors": "semantic roles only; no arbitrary CSS or reference-image mapping"
+      },
+      "technicalConclusion": "Registered in the current V1 node schema; the parameter schema is included verbatim as bounded summaries.",
+      "visualConclusion": "No user aesthetic approval is inferred from schema registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/schema.json",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "recordSha256": "0fe385d4dd79e7ef312c865d1c98cb788b37a3386103ab2ff0c0c514aaffc5bc"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-node:chart"
         ],
         "gap": "该条目本身是运行时 schema 节点定义，不是标准库截图或生成能力保证。"
       }
@@ -7390,7 +7694,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "55f087a49ca40a8f6530060286ea720be17193869359ac364e7042fd7d789af6"
       },
       "screenshot": null,
@@ -7443,7 +7747,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "b1057fbd41c4dc4ad70b6ef587db13f8246893f889561eea7f34314979aec704"
       },
       "screenshot": null,
@@ -7492,7 +7796,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "6ef8497635172c224efcd175dafe1cfa0cec22b66e9dc14d5a119a167fa4cd64"
       },
       "screenshot": null,
@@ -7555,7 +7859,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "d438e5306b2dabeb38f34d128eed867482e51ad80584ef285ace738c384587e0"
       },
       "screenshot": null,
@@ -7629,7 +7933,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "0587fb4992b4a6c6f04565e07bb14dce73066e7a8ce6a447a71cbaa205b05593"
       },
       "screenshot": null,
@@ -7693,7 +7997,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "992266d45945f11445294e59094ce43b251b76fa3b71c845d5f069d877af42b8"
       },
       "screenshot": null,
@@ -7742,7 +8046,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "19042f3cb56f8e834b129871d67bd872118e94cd30c1fd2cca5345b6fc937c8f",
+        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
         "recordSha256": "87c4f3d65f419df6fc952fea94ab74ff9a8ab5eddb12b4ae685281b8300d86d5"
       },
       "screenshot": null,
@@ -7753,6 +8057,137 @@
           "runtime-node:text"
         ],
         "gap": "该条目本身是运行时 schema 节点定义，不是标准库截图或生成能力保证。"
+      }
+    },
+    {
+      "id": "runtime-template:chart-explanation-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "chart-explanation-v1",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "chart-explanation-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "headline": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "chart": {
+            "kinds": [
+              "chart"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          },
+          "relation-1": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-2": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-3": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-4": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-5": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-6": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-7": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-8": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/chart-explanation-v1.json",
+        "fileSha256": "58c999a105969f086300e731802c2a91108540e39ebf7efe3250d064750d41c8",
+        "recordSha256": "1ee7c87137d29aa1df8727580a5d2e0551e96b6d41ad17f531111a797f19a202"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:chart-explanation-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
     },
     {
@@ -8441,6 +8876,334 @@
       }
     },
     {
+      "id": "runtime-template:process-three-stages-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "process-three-stages-v1",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "process-stage",
+        "layoutRef": {
+          "id": "process-three-stages-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "stage-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "stage-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "stage-3": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "label-1": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "label-2": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "label-3": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          },
+          "relation-1": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-2": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-3": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-4": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-5": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-6": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-7": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-8": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/process-three-stages-v1.json",
+        "fileSha256": "ca8d1dd7a947774ec8c41a5cfad3fd348d76e324314e9cab12a9727b48950939",
+        "recordSha256": "cc6ea32fd30a7d90631ce68fc3e503a2df1a038c9566e29bf8f1106819fc9b21"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:process-three-stages-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-template:science-relations-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "图文讲解与显式关系",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "science-relations-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "headline": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-3": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "figure": {
+            "kinds": [
+              "figure"
+            ],
+            "required": true
+          },
+          "subject": {
+            "kinds": [
+              "image"
+            ],
+            "required": true
+          },
+          "anchor-label": {
+            "kinds": [
+              "text"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          },
+          "annotation": {
+            "kinds": [
+              "annotation"
+            ],
+            "required": true
+          },
+          "marker-1": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-2": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-3": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-4": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-5": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "marker-6": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "relation-1": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-2": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-3": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-4": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-5": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-6": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-7": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          },
+          "relation-8": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/science-relations-v1.json",
+        "fileSha256": "7c1f805dd96726a6659ea7943d7029ddf39c00cc782c3329b43499ff50047bad",
+        "recordSha256": "e9813803b0a2cb61024ac2c75dcd0ac82a30d8cfff46e5c999f4fab5924fa232"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:science-relations-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-theme:amber-editorial",
       "version": "0.2.0",
       "type": "runtime-theme",
@@ -8728,7 +9491,10 @@
           "object-left",
           "object-right",
           "process-stage-v1",
-          "science-explanation-v1"
+          "science-explanation-v1",
+          "science-relations-v1",
+          "chart-explanation-v1",
+          "process-three-stages-v1"
         ],
         "shapeTokens": {
           "badgeRadius": 22,
@@ -8780,8 +9546,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/themes/neutral-baseline.json",
-        "fileSha256": "5eab8312c19cc4a08dc048d76c1823b711470aca76e6fa29128396842944fc83",
-        "recordSha256": "f4cb1af87aa01a905140f003894500e1aa67bb8ab3cbf486a36269f4151d1780"
+        "fileSha256": "92568b1176e82494f2fe8437a956d192d4226e5816f48493e757cf25e638f11a",
+        "recordSha256": "2536ba2b7a59d7d79c4a775bd28fc99e5f6fd5b1e51e659ab45d56961c97a761"
       },
       "screenshot": null,
       "productionMapping": {
@@ -9037,5 +9803,5 @@
     "providerCallMade": false,
     "note": "离线装配参考包；不调用生图供应商，不代表真实生图请求已接入。"
   },
-  "snapshotSha256": "a980b95224342e7d2357436c760ca94243e3e67d0f3f94361e31bd79efe4bcdc"
+  "snapshotSha256": "0f2ae053c4d99e7b4c8bfb737fb70e92127a0fdba4b2bc334133a787d728cd5a"
 }

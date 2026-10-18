@@ -78,11 +78,11 @@ def review_checklist(scene):
     result = []
     for node in scene['nodes']:
         dimensions = ['geometry']
-        if node['type'] in ('text','header','card','summary','label','badge','figure'):
+        if node['type'] in ('text','header','card','summary','label','badge','figure','chart'):
             dimensions += ['content','typography']
         if node['type'] not in ('image','shape'):
             dimensions += ['structure']
-        if node['type'] in ('summary','arrow','annotation'):
+        if node['type'] in ('summary','arrow','annotation','chart'):
             dimensions += ['semantic_relation']
         if node['type'] == 'image':
             dimensions += ['asset_identity','asset_rendering']
@@ -132,6 +132,8 @@ def text_alignment_contract(scene, repo_root):
 
 def _applicable_variants(node, variants):
     """Mirror registered compiler preconditions before asking for allocation."""
+    if node["type"] == "arrow" and node.get("from"):
+        return []  # Bound relation geometry has no independent variants.
     relationship = {"summary-relationship-panel", "summary-relationship-compact",
                     "summary-relationship-columns"}
     result = []

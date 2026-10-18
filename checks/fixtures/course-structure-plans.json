@@ -1,0 +1,2251 @@
+[
+  {
+    "contract": {
+      "slide_id": "slide_001",
+      "narration_beats": [
+        {
+          "id": "slide_001_beat_001",
+          "group_id": "slide_001_el_001",
+          "visible_anchor": "结冰的第一步是水向外界散热降温",
+          "spoken_intent": "结冰的第一步是水向外界散热降温",
+          "spoken_text": "要弄清楚水为什么会结冰，我们可以把整个过程拆成几步来看。",
+          "content_unit_id": "slide_001_unit_001"
+        },
+        {
+          "id": "slide_001_beat_002",
+          "group_id": "slide_001_el_002",
+          "visible_anchor": "一个独立的视觉岛，展示透明水杯中的水向周围低温环境散发热量，热量",
+          "spoken_intent": "一个独立的视觉岛，展示透明水杯中的水向周围低温环境散发热量，热量以向外的暖色箭头表示，旁边配有短标签“水温下降”，整体表达水散热降温的过程。",
+          "spoken_text": "首先最直观的就是降温，水会把热量传给温度更低的周围环境，自身温度逐渐下降，这是结冰发生的前提。",
+          "content_unit_id": "slide_001_unit_002"
+        }
+      ],
+      "visual_requirements": [
+        {
+          "id": "outward-heat",
+          "kind": "relation",
+          "minCount": 8
+        }
+      ]
+    },
+    "plan": {
+      "version": "0.2.0",
+      "slide_id": "slide_001",
+      "templateRef": {
+        "id": "science-relations-v1",
+        "version": "0.1.0"
+      },
+      "slots": {
+        "header": {
+          "kind": "header",
+          "number": "01",
+          "title": "水向外界散热降温"
+        },
+        "headline": {
+          "kind": "text",
+          "role": "headline",
+          "runs": [
+            {
+              "text": "首先最直观的变化是降温",
+              "emphasis": false
+            }
+          ]
+        },
+        "intro": {
+          "kind": "text",
+          "role": "intro",
+          "runs": [
+            {
+              "text": "要弄清楚水为什么会结冰，我们可以把整个过程拆成几步来看。",
+              "emphasis": false
+            }
+          ]
+        },
+        "card-1": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "arrow",
+          "title": "热量向外传递",
+          "body": "水将热量传给温度更低的周围环境",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "card-2": {
+          "kind": "card",
+          "tone": "green",
+          "icon": "thermometer",
+          "title": "自身温度下降",
+          "body": "水的温度随热量流失逐渐降低",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "card-3": {
+          "kind": "card",
+          "tone": "purple",
+          "icon": "check",
+          "title": "结冰必要前提",
+          "body": "降温是结冰过程发生的基础条件",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "figure": {
+          "kind": "figure",
+          "tag": {
+            "icon": "thermometer",
+            "text": "降温过程"
+          },
+          "presentation": {
+            "variant": "figure-caption-top"
+          }
+        },
+        "subject": {
+          "kind": "image",
+          "assetRef": {
+            "id": "condensation",
+            "version": "0.1.0"
+          },
+          "anchorId": "focus"
+        },
+        "anchor-label": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "水温下降",
+              "emphasis": true
+            }
+          ]
+        },
+        "annotation": {
+          "kind": "annotation",
+          "targetId": "subject",
+          "anchorId": "focus",
+          "radius": 24,
+          "labelId": "anchor-label",
+          "presentation": {
+            "variant": "annotation-ring-dashed"
+          }
+        },
+        "summary": {
+          "kind": "summary",
+          "from": {
+            "text": "常温",
+            "tone": "blue"
+          },
+          "to": {
+            "text": "低温",
+            "tone": "blue"
+          },
+          "term": "结冰第一步",
+          "takeaway": "水散热降温是结冰的必要前提",
+          "presentation": {
+            "variant": "summary-strip-divided"
+          }
+        },
+        "relation-1": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.8200000000000001,
+              "y": 0.5
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.98,
+              "y": 0.5
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-2": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.7262741699796953,
+              "y": 0.7262741699796953
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.8394112549695428,
+              "y": 0.8394112549695428
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-3": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.5,
+              "y": 0.8200000000000001
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.5,
+              "y": 0.98
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-4": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.2737258300203048,
+              "y": 0.7262741699796953
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.16058874503045723,
+              "y": 0.8394112549695428
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-5": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.18,
+              "y": 0.5
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.020000000000000018,
+              "y": 0.5000000000000001
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-6": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.2737258300203047,
+              "y": 0.2737258300203048
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.16058874503045711,
+              "y": 0.16058874503045723
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-7": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.49999999999999994,
+              "y": 0.18
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.4999999999999999,
+              "y": 0.020000000000000018
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-8": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.7262741699796952,
+              "y": 0.2737258300203047
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.8394112549695427,
+              "y": 0.16058874503045711
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        }
+      },
+      "objects": [
+        {
+          "id": "header",
+          "slot": "header",
+          "kind": "header",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "headline",
+          "slot": "headline",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "intro",
+          "slot": "intro",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-1",
+          "slot": "card-1",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-2",
+          "slot": "card-2",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-3",
+          "slot": "card-3",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "figure",
+          "slot": "figure",
+          "kind": "figure",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "subject",
+          "slot": "subject",
+          "kind": "image",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "anchor-label",
+          "slot": "anchor-label",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "annotation",
+          "slot": "annotation",
+          "kind": "annotation",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "summary",
+          "slot": "summary",
+          "kind": "summary",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-1",
+          "slot": "relation-1",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-2",
+          "slot": "relation-2",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-3",
+          "slot": "relation-3",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-4",
+          "slot": "relation-4",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-5",
+          "slot": "relation-5",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-6",
+          "slot": "relation-6",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-7",
+          "slot": "relation-7",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-8",
+          "slot": "relation-8",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        }
+      ],
+      "beats": [
+        {
+          "id": "slide_001_beat_001",
+          "visualIntent": "要弄清楚水为什么会结冰，我们可以把整个过程拆成几步来看。",
+          "targets": [
+            {
+              "objectId": "header",
+              "purpose": "Offline structure coverage"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "header",
+              "actionId": "header-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "header",
+              "visible": true,
+              "expression": "Registered code object visible"
+            }
+          ]
+        },
+        {
+          "id": "slide_001_beat_002",
+          "visualIntent": "首先最直观的就是降温，水会把热量传给温度更低的周围环境，自身温度逐渐下降，这是结冰发生的前提。",
+          "targets": [
+            {
+              "objectId": "headline",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "intro",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "card-1",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "card-2",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "card-3",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "figure",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "subject",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "anchor-label",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "annotation",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "summary",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-1",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-2",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-3",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-4",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-5",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-6",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-7",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-8",
+              "purpose": "Offline structure coverage"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "headline",
+              "actionId": "headline-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "intro",
+              "actionId": "intro-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-1",
+              "actionId": "card-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-2",
+              "actionId": "card-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-3",
+              "actionId": "card-3-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "figure",
+              "actionId": "figure-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "subject",
+              "actionId": "subject-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "anchor-label",
+              "actionId": "anchor-label-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "annotation",
+              "actionId": "annotation-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "summary",
+              "actionId": "summary-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-1",
+              "actionId": "relation-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-2",
+              "actionId": "relation-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-3",
+              "actionId": "relation-3-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-4",
+              "actionId": "relation-4-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-5",
+              "actionId": "relation-5-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-6",
+              "actionId": "relation-6-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-7",
+              "actionId": "relation-7-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-8",
+              "actionId": "relation-8-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "headline",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "intro",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "card-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "card-2",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "card-3",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "figure",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "subject",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "anchor-label",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "annotation",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "summary",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-2",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-3",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-4",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-5",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-6",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-7",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-8",
+              "visible": true,
+              "expression": "Registered code object visible"
+            }
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "id": "condensation",
+          "role": "offline-placeholder",
+          "render_owner": "image_asset",
+          "need": "Offline registered sample only; not the course artwork",
+          "slot": "subject"
+        }
+      ],
+      "visual_coverage": {
+        "outward-heat": [
+          "relation-1",
+          "relation-2",
+          "relation-3",
+          "relation-4",
+          "relation-5",
+          "relation-6",
+          "relation-7",
+          "relation-8"
+        ]
+      }
+    },
+    "scope": "hand-authored offline fixture; not model production or approval"
+  },
+  {
+    "contract": {
+      "slide_id": "slide_002",
+      "narration_beats": [
+        {
+          "id": "slide_002_beat_001",
+          "group_id": "slide_002_el_001",
+          "visible_anchor": "纯水0℃结冰的两个前提条件",
+          "spoken_intent": "纯水0℃结冰的两个前提条件",
+          "spoken_text": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。",
+          "content_unit_id": "slide_002_unit_001"
+        },
+        {
+          "id": "slide_002_beat_002",
+          "group_id": "slide_002_el_002",
+          "visible_anchor": "一个独立的视觉岛，展示圆形气压表图标，旁边配有短标签“标准大气压",
+          "spoken_intent": "一个独立的视觉岛，展示圆形气压表图标，旁边配有短标签“标准大气压”，代表结冰的第一个前提。",
+          "spoken_text": "一是在标准大气压下，",
+          "content_unit_id": "slide_002_unit_002"
+        },
+        {
+          "id": "slide_002_beat_003",
+          "group_id": "slide_002_el_003",
+          "visible_anchor": "一个独立的视觉岛，展示装有纯水的透明水杯图标，旁边配有短标签“纯",
+          "spoken_intent": "一个独立的视觉岛，展示装有纯水的透明水杯图标，旁边配有短标签“纯水”，代表结冰的第二个前提。",
+          "spoken_text": "二是必须是纯水，",
+          "content_unit_id": "slide_002_unit_003"
+        },
+        {
+          "id": "slide_002_beat_004",
+          "group_id": "slide_002_el_004",
+          "visible_anchor": "一个独立的视觉岛，展示气压表和水杯两个图标共同指向一块标注“0℃",
+          "spoken_intent": "一个独立的视觉岛，展示气压表和水杯两个图标共同指向一块标注“0℃ 冰点”的冰块，箭头表示两个前提共同作用达到冰点，表达满足条件后水开始结冰的结论。",
+          "spoken_text": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。",
+          "content_unit_id": "slide_002_unit_004"
+        }
+      ],
+      "visual_requirements": [
+        {
+          "id": "labels",
+          "kind": "relation",
+          "minCount": 2
+        },
+        {
+          "id": "conditions",
+          "kind": "relation",
+          "minCount": 2
+        }
+      ]
+    },
+    "plan": {
+      "version": "0.2.0",
+      "slide_id": "slide_002",
+      "templateRef": {
+        "id": "science-relations-v1",
+        "version": "0.1.0"
+      },
+      "slots": {
+        "header": {
+          "kind": "header",
+          "number": "02",
+          "title": "纯水0℃结冰的两个前提条件"
+        },
+        "headline": {
+          "kind": "text",
+          "role": "headline",
+          "runs": [
+            {
+              "text": "0℃结冰的两个前提",
+              "emphasis": false
+            }
+          ]
+        },
+        "intro": {
+          "kind": "text",
+          "role": "intro",
+          "runs": [
+            {
+              "text": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。",
+              "emphasis": false
+            }
+          ]
+        },
+        "card-1": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "air",
+          "title": "标准大气压",
+          "body": "第一个前提：在标准大气压下",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "card-2": {
+          "kind": "card",
+          "tone": "green",
+          "icon": "droplet",
+          "title": "纯水",
+          "body": "第二个前提：必须是纯水",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "card-3": {
+          "kind": "card",
+          "tone": "purple",
+          "icon": "thermometer",
+          "title": "0℃ 冰点",
+          "body": "满足两个条件时，冰点为0℃，水可开始结冰",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "subject": {
+          "kind": "image",
+          "assetRef": {
+            "id": "condensation",
+            "version": "0.1.0"
+          },
+          "anchorId": "focus"
+        },
+        "figure": {
+          "kind": "figure",
+          "tag": {
+            "icon": "thermometer",
+            "text": "冰点示意"
+          },
+          "presentation": {
+            "variant": "figure-frame-dashed"
+          }
+        },
+        "anchor-label": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "0℃冰点",
+              "emphasis": true
+            }
+          ]
+        },
+        "annotation": {
+          "kind": "annotation",
+          "targetId": "subject",
+          "anchorId": "focus",
+          "radius": 30,
+          "labelId": "anchor-label",
+          "presentation": {
+            "variant": "annotation-dashed-no-arrow"
+          }
+        },
+        "marker-1": {
+          "kind": "text",
+          "role": "body",
+          "runs": [
+            {
+              "text": "标准大气压",
+              "emphasis": false
+            }
+          ]
+        },
+        "marker-2": {
+          "kind": "text",
+          "role": "body",
+          "runs": [
+            {
+              "text": "纯水",
+              "emphasis": false
+            }
+          ]
+        },
+        "summary": {
+          "kind": "summary",
+          "from": {
+            "text": "水",
+            "tone": "blue"
+          },
+          "to": {
+            "text": "冰",
+            "tone": "purple"
+          },
+          "term": "冰点条件",
+          "takeaway": "满足两个前提时纯水的冰点为0℃",
+          "presentation": {
+            "variant": "summary-strip-divided"
+          }
+        },
+        "relation-1": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "marker-1",
+            "point": {
+              "x": 1,
+              "y": 0.5
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.5,
+              "y": 0.18
+            }
+          },
+          "head": false,
+          "lineStyle": "solid"
+        },
+        "relation-2": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "marker-2",
+            "point": {
+              "x": 1,
+              "y": 0.5
+            }
+          },
+          "to": {
+            "objectId": "subject",
+            "point": {
+              "x": 0.5,
+              "y": 0.48
+            }
+          },
+          "head": false,
+          "lineStyle": "solid"
+        },
+        "relation-3": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "card-1",
+            "point": {
+              "x": 1,
+              "y": 0.5
+            }
+          },
+          "to": {
+            "objectId": "anchor-label",
+            "point": {
+              "x": 0,
+              "y": 0.4
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-4": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "card-2",
+            "point": {
+              "x": 1,
+              "y": 0.5
+            }
+          },
+          "to": {
+            "objectId": "anchor-label",
+            "point": {
+              "x": 0,
+              "y": 0.6
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        }
+      },
+      "objects": [
+        {
+          "id": "header",
+          "slot": "header",
+          "kind": "header",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "headline",
+          "slot": "headline",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "intro",
+          "slot": "intro",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-1",
+          "slot": "card-1",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-2",
+          "slot": "card-2",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-3",
+          "slot": "card-3",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "subject",
+          "slot": "subject",
+          "kind": "image",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "figure",
+          "slot": "figure",
+          "kind": "figure",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "anchor-label",
+          "slot": "anchor-label",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "annotation",
+          "slot": "annotation",
+          "kind": "annotation",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "marker-1",
+          "slot": "marker-1",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "marker-2",
+          "slot": "marker-2",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "summary",
+          "slot": "summary",
+          "kind": "summary",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-1",
+          "slot": "relation-1",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-2",
+          "slot": "relation-2",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-3",
+          "slot": "relation-3",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-4",
+          "slot": "relation-4",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        }
+      ],
+      "beats": [
+        {
+          "id": "slide_002_beat_001",
+          "visualIntent": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。",
+          "targets": [
+            {
+              "objectId": "header",
+              "purpose": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            },
+            {
+              "objectId": "headline",
+              "purpose": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            },
+            {
+              "objectId": "intro",
+              "purpose": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            },
+            {
+              "objectId": "figure",
+              "purpose": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            },
+            {
+              "objectId": "subject",
+              "purpose": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "header",
+              "actionId": "header-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "headline",
+              "actionId": "headline-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "intro",
+              "actionId": "intro-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "figure",
+              "actionId": "figure-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "subject",
+              "actionId": "subject-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "header",
+              "visible": true,
+              "expression": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            },
+            {
+              "objectId": "headline",
+              "visible": true,
+              "expression": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            },
+            {
+              "objectId": "intro",
+              "visible": true,
+              "expression": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            },
+            {
+              "objectId": "figure",
+              "visible": true,
+              "expression": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            },
+            {
+              "objectId": "subject",
+              "visible": true,
+              "expression": "那温度降到多少才会开始结冰呢？很多人第一反应是零摄氏度，但这个结论有两个前提。"
+            }
+          ]
+        },
+        {
+          "id": "slide_002_beat_002",
+          "visualIntent": "一是在标准大气压下，",
+          "targets": [
+            {
+              "objectId": "card-1",
+              "purpose": "一是在标准大气压下，"
+            },
+            {
+              "objectId": "marker-1",
+              "purpose": "一是在标准大气压下，"
+            },
+            {
+              "objectId": "relation-1",
+              "purpose": "一是在标准大气压下，"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "card-1",
+              "actionId": "card-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "marker-1",
+              "actionId": "marker-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-1",
+              "actionId": "relation-1-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "card-1",
+              "visible": true,
+              "expression": "一是在标准大气压下，"
+            },
+            {
+              "objectId": "marker-1",
+              "visible": true,
+              "expression": "一是在标准大气压下，"
+            },
+            {
+              "objectId": "relation-1",
+              "visible": true,
+              "expression": "一是在标准大气压下，"
+            }
+          ]
+        },
+        {
+          "id": "slide_002_beat_003",
+          "visualIntent": "二是必须是纯水，",
+          "targets": [
+            {
+              "objectId": "card-2",
+              "purpose": "二是必须是纯水，"
+            },
+            {
+              "objectId": "marker-2",
+              "purpose": "二是必须是纯水，"
+            },
+            {
+              "objectId": "relation-2",
+              "purpose": "二是必须是纯水，"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "card-2",
+              "actionId": "card-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "marker-2",
+              "actionId": "marker-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-2",
+              "actionId": "relation-2-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "card-2",
+              "visible": true,
+              "expression": "二是必须是纯水，"
+            },
+            {
+              "objectId": "marker-2",
+              "visible": true,
+              "expression": "二是必须是纯水，"
+            },
+            {
+              "objectId": "relation-2",
+              "visible": true,
+              "expression": "二是必须是纯水，"
+            }
+          ]
+        },
+        {
+          "id": "slide_002_beat_004",
+          "visualIntent": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。",
+          "targets": [
+            {
+              "objectId": "card-3",
+              "purpose": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "anchor-label",
+              "purpose": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "annotation",
+              "purpose": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "summary",
+              "purpose": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "relation-3",
+              "purpose": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "relation-4",
+              "purpose": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "card-3",
+              "actionId": "card-3-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "anchor-label",
+              "actionId": "anchor-label-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "annotation",
+              "actionId": "annotation-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "summary",
+              "actionId": "summary-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-3",
+              "actionId": "relation-3-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-4",
+              "actionId": "relation-4-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "card-3",
+              "visible": true,
+              "expression": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "anchor-label",
+              "visible": true,
+              "expression": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "annotation",
+              "visible": true,
+              "expression": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "summary",
+              "visible": true,
+              "expression": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "relation-3",
+              "visible": true,
+              "expression": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            },
+            {
+              "objectId": "relation-4",
+              "visible": true,
+              "expression": "满足这两个条件时，冰点才是零摄氏度，温度达标后水就可以开始结冰。"
+            }
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "id": "condensation",
+          "role": "offline-placeholder",
+          "render_owner": "image_asset",
+          "need": "Offline registered sample only; not the course artwork",
+          "slot": "subject"
+        }
+      ],
+      "visual_coverage": {
+        "labels": [
+          "relation-1",
+          "relation-2"
+        ],
+        "conditions": [
+          "relation-3",
+          "relation-4"
+        ]
+      }
+    },
+    "scope": "hand-authored offline fixture; not model production or approval"
+  },
+  {
+    "contract": {
+      "slide_id": "slide_003",
+      "narration_beats": [
+        {
+          "id": "slide_003_beat_001",
+          "group_id": "slide_003_el_001",
+          "visible_anchor": "凝固过程中温度保持不变",
+          "spoken_intent": "凝固过程中温度保持不变",
+          "spoken_text": "水从液态变成固态冰的过程，叫做凝固。很多人以为结冰时温度会继续下降，其实不是这样，",
+          "content_unit_id": "slide_003_unit_001"
+        },
+        {
+          "id": "slide_003_beat_002",
+          "group_id": "slide_003_el_002",
+          "visible_anchor": "一个独立的视觉岛，左侧展示水逐渐凝固成冰的过程并伴随放热箭头，右",
+          "spoken_intent": "一个独立的视觉岛，左侧展示水逐渐凝固成冰的过程并伴随放热箭头，右侧是简化的温度-时间示意图，凝固阶段的温度线呈水平状，配有短标签“温度不变”，整体表达凝固过程放热但温度保持不变的特点。",
+          "spoken_text": "凝固过程中水会持续放出热量，逐渐从液态变成固态，但整个过程的温度会保持在冰点不变。",
+          "content_unit_id": "slide_003_unit_002"
+        }
+      ],
+      "visual_requirements": [
+        {
+          "id": "heat",
+          "kind": "relation",
+          "minCount": 1
+        },
+        {
+          "id": "temperature",
+          "kind": "chart",
+          "minCount": 1
+        }
+      ]
+    },
+    "plan": {
+      "version": "0.2.0",
+      "slide_id": "slide_003",
+      "templateRef": {
+        "id": "chart-explanation-v1",
+        "version": "0.1.0"
+      },
+      "slots": {
+        "header": {
+          "kind": "header",
+          "number": "03",
+          "title": "凝固过程中温度保持不变"
+        },
+        "headline": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "凝固放热，温度不变",
+              "emphasis": false
+            }
+          ]
+        },
+        "intro": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "水从液态变成固态冰的过程，叫做凝固。",
+              "emphasis": false
+            }
+          ]
+        },
+        "card-1": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "thermometer",
+          "title": "持续放热",
+          "body": "水持续向周围环境放出热量",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "card-2": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "thermometer",
+          "title": "冰点不变",
+          "body": "凝固阶段保持在冰点",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "chart": {
+          "kind": "chart",
+          "points": [
+            {
+              "x": 0,
+              "y": 0.85
+            },
+            {
+              "x": 0.25,
+              "y": 0.4
+            },
+            {
+              "x": 0.75,
+              "y": 0.4
+            },
+            {
+              "x": 1,
+              "y": 0.1
+            }
+          ],
+          "xLabel": "时间",
+          "yLabel": "温度",
+          "unit": "℃",
+          "min": -10,
+          "max": 15,
+          "plateau": [
+            1,
+            2
+          ]
+        },
+        "summary": {
+          "kind": "summary",
+          "from": {
+            "text": "液态水",
+            "tone": "blue"
+          },
+          "to": {
+            "text": "固态冰",
+            "tone": "blue"
+          },
+          "term": "凝固",
+          "takeaway": "凝固过程中继续放热，温度保持不变",
+          "presentation": {
+            "variant": "summary-strip-divided"
+          }
+        },
+        "relation-1": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "card-2",
+            "point": {
+              "x": 0.5,
+              "y": 0
+            }
+          },
+          "to": {
+            "objectId": "card-1",
+            "point": {
+              "x": 0.5,
+              "y": 1
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        }
+      },
+      "objects": [
+        {
+          "id": "header",
+          "slot": "header",
+          "kind": "header",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "headline",
+          "slot": "headline",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "intro",
+          "slot": "intro",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-1",
+          "slot": "card-1",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-2",
+          "slot": "card-2",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "chart",
+          "slot": "chart",
+          "kind": "chart",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "summary",
+          "slot": "summary",
+          "kind": "summary",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-1",
+          "slot": "relation-1",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        }
+      ],
+      "beats": [
+        {
+          "id": "slide_003_beat_001",
+          "visualIntent": "水从液态变成固态冰的过程，叫做凝固。很多人以为结冰时温度会继续下降，其实不是这样，",
+          "targets": [
+            {
+              "objectId": "header",
+              "purpose": "Offline structure coverage"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "header",
+              "actionId": "header-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "header",
+              "visible": true,
+              "expression": "Registered code object visible"
+            }
+          ]
+        },
+        {
+          "id": "slide_003_beat_002",
+          "visualIntent": "凝固过程中水会持续放出热量，逐渐从液态变成固态，但整个过程的温度会保持在冰点不变。",
+          "targets": [
+            {
+              "objectId": "headline",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "intro",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "card-1",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "card-2",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "chart",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "summary",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-1",
+              "purpose": "Offline structure coverage"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "headline",
+              "actionId": "headline-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "intro",
+              "actionId": "intro-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-1",
+              "actionId": "card-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-2",
+              "actionId": "card-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "chart",
+              "actionId": "chart-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "summary",
+              "actionId": "summary-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-1",
+              "actionId": "relation-1-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "headline",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "intro",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "card-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "card-2",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "chart",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "summary",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            }
+          ]
+        }
+      ],
+      "assets": [],
+      "visual_coverage": {
+        "heat": [
+          "relation-1"
+        ],
+        "temperature": [
+          "chart"
+        ]
+      }
+    },
+    "scope": "hand-authored offline fixture; not model production or approval"
+  },
+  {
+    "contract": {
+      "slide_id": "slide_004",
+      "narration_beats": [
+        {
+          "id": "slide_004_beat_001",
+          "group_id": "slide_004_el_001",
+          "visible_anchor": "水结冰的完整过程梳理",
+          "spoken_intent": "水结冰的完整过程梳理",
+          "spoken_text": "最后我们把整个过程串起来。",
+          "content_unit_id": "slide_004_unit_001"
+        },
+        {
+          "id": "slide_004_beat_002",
+          "group_id": "slide_004_el_002",
+          "visible_anchor": "一个独立的完整流程视觉岛，按从左到右的顺序排列三个环节：第一环节",
+          "spoken_intent": "一个独立的完整流程视觉岛，按从左到右的顺序排列三个环节：第一环节是向外散热的水杯（标签“散热降温”），第二环节是标注“0℃ 纯水 标准大气压”的冰点节点（标签“达到冰点”），第三环节是水变成冰的图示（标签“凝固放热 温度不变”），环节之间用箭头连接，整体呈现水结冰的完整过程。",
+          "spoken_text": "水先向外散热降温，达到标准大气压下纯水的冰点后，开始凝固成冰，凝固时继续放热但温度保持不变，这就是水结冰的完整逻辑。",
+          "content_unit_id": "slide_004_unit_002"
+        }
+      ],
+      "visual_requirements": [
+        {
+          "id": "stages",
+          "kind": "stage",
+          "minCount": 3
+        },
+        {
+          "id": "sequence",
+          "kind": "relation",
+          "minCount": 2
+        },
+        {
+          "id": "heat",
+          "kind": "relation",
+          "minCount": 1
+        }
+      ]
+    },
+    "plan": {
+      "version": "0.2.0",
+      "slide_id": "slide_004",
+      "templateRef": {
+        "id": "process-three-stages-v1",
+        "version": "0.1.0"
+      },
+      "slots": {
+        "header": {
+          "kind": "header",
+          "number": "04",
+          "title": "水结冰的完整过程梳理"
+        },
+        "stage-1": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "thermometer",
+          "title": "散热降温",
+          "body": "热量向温度更低的环境传递",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "stage-2": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "thermometer",
+          "title": "达到冰点",
+          "body": "纯水、标准大气压、0℃",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "stage-3": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "thermometer",
+          "title": "凝固成冰",
+          "body": "持续放热，温度保持不变",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "label-1": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "向外散热",
+              "emphasis": false
+            }
+          ]
+        },
+        "label-2": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "满足两个前提条件",
+              "emphasis": false
+            }
+          ]
+        },
+        "label-3": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "液态水变为固态冰",
+              "emphasis": false
+            }
+          ]
+        },
+        "summary": {
+          "kind": "summary",
+          "from": {
+            "text": "水",
+            "tone": "blue"
+          },
+          "to": {
+            "text": "冰",
+            "tone": "blue"
+          },
+          "term": "完整过程",
+          "takeaway": "降温、达到冰点、凝固放热且恒温",
+          "presentation": {
+            "variant": "summary-strip-divided"
+          }
+        },
+        "relation-1": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "stage-1",
+            "point": {
+              "x": 1,
+              "y": 0.5
+            }
+          },
+          "to": {
+            "objectId": "stage-2",
+            "point": {
+              "x": 0,
+              "y": 0.5
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-2": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "stage-2",
+            "point": {
+              "x": 1,
+              "y": 0.5
+            }
+          },
+          "to": {
+            "objectId": "stage-3",
+            "point": {
+              "x": 0,
+              "y": 0.5
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        },
+        "relation-3": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "stage-1",
+            "point": {
+              "x": 0.5,
+              "y": 1
+            }
+          },
+          "to": {
+            "objectId": "label-1",
+            "point": {
+              "x": 0.5,
+              "y": 0
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        }
+      },
+      "objects": [
+        {
+          "id": "header",
+          "slot": "header",
+          "kind": "header",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "stage-1",
+          "slot": "stage-1",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "stage-2",
+          "slot": "stage-2",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "stage-3",
+          "slot": "stage-3",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "label-1",
+          "slot": "label-1",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "label-2",
+          "slot": "label-2",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "label-3",
+          "slot": "label-3",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "summary",
+          "slot": "summary",
+          "kind": "summary",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-1",
+          "slot": "relation-1",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-2",
+          "slot": "relation-2",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-3",
+          "slot": "relation-3",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        }
+      ],
+      "beats": [
+        {
+          "id": "slide_004_beat_001",
+          "visualIntent": "最后我们把整个过程串起来。",
+          "targets": [
+            {
+              "objectId": "header",
+              "purpose": "Offline structure coverage"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "header",
+              "actionId": "header-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "header",
+              "visible": true,
+              "expression": "Registered code object visible"
+            }
+          ]
+        },
+        {
+          "id": "slide_004_beat_002",
+          "visualIntent": "水先向外散热降温，达到标准大气压下纯水的冰点后，开始凝固成冰，凝固时继续放热但温度保持不变，这就是水结冰的完整逻辑。",
+          "targets": [
+            {
+              "objectId": "stage-1",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "stage-2",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "stage-3",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "label-1",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "label-2",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "label-3",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "summary",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-1",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-2",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-3",
+              "purpose": "Offline structure coverage"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "stage-1",
+              "actionId": "stage-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "stage-2",
+              "actionId": "stage-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "stage-3",
+              "actionId": "stage-3-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "label-1",
+              "actionId": "label-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "label-2",
+              "actionId": "label-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "label-3",
+              "actionId": "label-3-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "summary",
+              "actionId": "summary-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-1",
+              "actionId": "relation-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-2",
+              "actionId": "relation-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-3",
+              "actionId": "relation-3-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "stage-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "stage-2",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "stage-3",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "label-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "label-2",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "label-3",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "summary",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-2",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-3",
+              "visible": true,
+              "expression": "Registered code object visible"
+            }
+          ]
+        }
+      ],
+      "assets": [],
+      "visual_coverage": {
+        "stages": [
+          "stage-1",
+          "stage-2",
+          "stage-3"
+        ],
+        "sequence": [
+          "relation-1",
+          "relation-2"
+        ],
+        "heat": [
+          "relation-3"
+        ]
+      }
+    },
+    "scope": "hand-authored offline fixture; not model production or approval"
+  }
+]

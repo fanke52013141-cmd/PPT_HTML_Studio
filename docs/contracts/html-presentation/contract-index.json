@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.87",
+  "contract_version": "0.9.88",
   "effective_date": "2026-10-18",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,7 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-18 HPS-007/010/011/013/015--017/023--030/035--037: explicit endpoint relations, code charts, three-stage layouts, registered surfaces and authored visual coverage. Offline fixtures only, separate pixel/structure/semantic approval. Agent API1.47. See runtime/visual-v1/course-structures-0.1.0.md.",
     "2026-10-18 HPS-011/013/015--017/023--030/037: explicit reuse_design_candidate_key copies a verified unchanged design/plan into a new unapproved current review checkpoint with no provider/TTS calls; strict original stale-key checks retained. Annotation mixed-stroke variants and existing figure-icon facts. Agent API1.46 produce1.9. See runtime/visual-v1/design-reference-reuse-0.1.0.md.",
     "2026-10-18 HPS-007/010/011/013/015--017/023--030/035--037: additive registered figure-frame-top, annotation-dashed (variant-only, original anchors), summary-strip-divided (without heading). Original content, timing, human protection and approvals preserved. Agent API1.45 repair.preview/save1.5; see runtime/visual-v1/framed-relations-0.1.0.md.",
     "2026-10-17 HPS-009/013/015--017: preserve AAC priming on single-page copy; decode each page before audio concatenation. HTML MP4 fingerprints include composition Python sources; no changes to TTS/visual approvals or PPTX. See runtime/visual-v1/video-audio-alignment-0.1.0.md.",

@@ -17,7 +17,7 @@ def definition_identity(repo_root, *, source_hash_overrides=None):
     paths = [visual / "preview/player.js", visual / "generated/catalog.json", visual / "effects/registry.json", visual / "presentation-variants.json",
              repo / "html_engine/tools/catalog-lib.cjs", repo / "html_engine/tools/catalog-assemble.cjs"]
     paths += [repo / name for name in ("html_production_service.py", "html_reference_package.py",
-                                      "html_design_candidates.py", "html_design_reference_reuse.py", "html_image_provider.py", "html_design_brief.py",
+                                      "html_design_candidates.py", "html_design_reference_reuse.py", "html_course_structure.py", "html_engine/visual/course-structures.cjs", "html_image_provider.py", "html_design_brief.py",
                                       "html_candidate_agent.py", "html_scene_repair.py", "html_scene_editing.py",
                                       "html_visual_review_service.py", "html_semantic_plan.py", "html_semantic_design.py",
                                       "html_planning_context.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_design_policy.py", "html_runtime_skills.py", "html_engine/tools/review-scene.cjs")]

@@ -1,6 +1,6 @@
 {
   "format": "hps.visual.presentation_variants",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "variants": [
     {
       "id": "plain",
@@ -281,6 +281,39 @@
       "dashPattern": "6 5",
       "ringDashed": false,
       "leaderDashed": false,
+      "arrowHead": false
+    },
+    {
+      "id": "card-outline",
+      "nodeTypes": [
+        "card"
+      ],
+      "reference": "code-owned:outlined-card",
+      "minWidth": 360,
+      "minHeight": 100
+    },
+    {
+      "id": "figure-frame-dashed",
+      "nodeTypes": [
+        "figure"
+      ],
+      "reference": "code-owned:framed-figure",
+      "minWidth": 360,
+      "minHeight": 240,
+      "captionInset": 24,
+      "tagTop": 18,
+      "noteTop": 64,
+      "frameDashed": true
+    },
+    {
+      "id": "annotation-dashed-no-arrow",
+      "nodeTypes": [
+        "annotation"
+      ],
+      "reference": "code-owned:anchored-dashed-relation",
+      "dashPattern": "6 5",
+      "ringDashed": true,
+      "leaderDashed": true,
       "arrowHead": false
     }
   ]

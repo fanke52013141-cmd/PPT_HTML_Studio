@@ -6,6 +6,7 @@ const { icon } = require("./icons.browser.cjs");
 const variants = require("./presentation-variants.json").variants;
 const { capacityEvidence } = require("./capacity.cjs");
 const {frameFigure, dividedSummary, styleAnnotation, drawAnnotationLeader} = require("./presentation-structures.cjs");
+const {drawRelation,chartElements} = require("./course-structures.cjs");
 const SVG = "http://www.w3.org/2000/svg";
 const vector = (tag) => document.createElementNS(SVG, tag);
 const attributes = (el, values) =>
@@ -500,6 +501,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         textNodes.push([title, layout.slots[node.slot], node.id]);
       } else if (node.type === "card") {
         el.classList.add("v-card");
+        if (node.presentation?.variant === "card-outline") Object.assign(el.style,{background:theme.colors.background,border:`1px solid ${theme.colors.line}`,boxShadow:"none"});
         const bubble = document.createElement("span");
         bubble.className = "v-icon-bubble";
         bubble.style.background = theme.id === "neutral-baseline"
@@ -507,6 +509,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           : theme.gradients[node.tone]
           ? `linear-gradient(135deg, ${theme.gradients[node.tone][0]}, ${theme.gradients[node.tone][1]})`
           : theme.colors[node.tone];
+        if (node.presentation?.variant === "card-outline") Object.assign(bubble.style,{borderRadius:"50%",background:theme.colors.blueWash});
         bubble.append(icon(node.icon, { width: theme.shapes.iconStroke }));
         const copy = document.createElement("div");
         copy.className = "v-card-copy";
@@ -529,8 +532,10 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           { ...slot, box: { ...slot.box, height: slot.box.height - 56 } },
           node.id,
         ]);
+      } else if (node.type === "chart") {
+        chartElements(el,node,layout.slots[node.slot].box,theme,textNodes);
       } else if (node.type === "figure") {
-        const framed = node.presentation?.variant === "figure-frame-top";
+        const framed = ["figure-frame-top","figure-frame-dashed"].includes(node.presentation?.variant);
         const captionsTop = framed || node.presentation?.variant === "figure-caption-top";
         const captionVariant = variants.find(v => v.id === node.presentation?.variant);
         el.classList.add("v-figure");
@@ -539,7 +544,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
             className: "v-figure-halo",
           }),
         );
-        if (framed) frameFigure(el, theme);
+        if (framed) {frameFigure(el, theme);if(node.presentation.variant === "figure-frame-dashed") el.style.borderStyle="dashed";}
         if (node.tag) {
           const tag = document.createElement("div");
           tag.className = "v-figure-tag";
@@ -882,6 +887,12 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           };
         }
       }
+      for (const node of scene.nodes.filter(n=>n.type==='arrow'&&n.from)) {
+        const enter=(motionsByTarget.get(node.id)||[]).find(a=>a.type==='enter');
+        const progress=enter&&!editorLayout?ease('smoothstep',(ms-enter.startMs)/enter.durationMs):1;
+        geometry[node.id]=drawRelation(elements.get(node.id).querySelector('svg'),node,scene,layout,states,geometry,progress);
+        elements.get(node.id).style.opacity=String(Math.min(states.get(node.id).opacity,states.get(node.from.objectId).opacity,states.get(node.to.objectId).opacity));
+      }
       for (const node of scene.nodes.filter((n) => n.type === "annotation")) {
         const anchor = geometry[node.targetId].anchors[node.anchorId];
         const label = scene.nodes.find((n) => n.id === node.labelId),
@@ -932,7 +943,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         const s = states.get(node.id);
         if (node.type === 'image') continue;
         geometry[node.id] = {
-          ...(node.type === 'annotation' ? geometry[node.id] : {}),
+          ...(['annotation','arrow'].includes(node.type) ? geometry[node.id] : {}),
           kind: node.type,
           box: { x: b.x + s.x, y: b.y + s.y, width: b.width, height: b.height },
         };

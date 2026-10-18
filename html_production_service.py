@@ -169,7 +169,7 @@ def compile_plan(
         from html_semantic_runtime import compile_semantic_motion
         motion, binding, initial, duration = compile_semantic_motion(plan)
         scene = {
-            "format": "hps.visual.scene", "version": "0.6.0", "id": slide_id,
+            "format": "hps.visual.scene", "version": "0.7.0" if any(n.get("presentation",{}).get("variant") or n["type"]=="chart" or (n["type"]=="arrow" and n.get("from")) for n in nodes) else "0.6.0", "id": slide_id,
             "name": str((plan["slots"].get("header") or {}).get("title") or slide_id),
             "themeRef": {"id": "neutral-baseline", "version": "0.2.0"},
             "layoutRef": plan["layoutRef"], "templateRef": plan["templateRef"],

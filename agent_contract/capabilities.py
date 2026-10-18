@@ -167,7 +167,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_model_binding_service.save_project_model_binding",
     ),
     AgentCapability(
-        id="html_repair.preview", version="1.5", status=CapabilityStatus.stable,
+        id="html_repair.preview", version="1.6", status=CapabilityStatus.stable,
         description="Bounded HTML local repair preview; shared leaf-field manual protection with conflict paths, registered instance styles/actions, frozen revision, sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.",
         request_model=RepairRequest, response_model=RepairResult,
         agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview",
@@ -175,7 +175,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_scene_repair.preview_repair",
     ),
     AgentCapability(
-        id="html_repair.save", version="1.5", status=CapabilityStatus.stable,
+        id="html_repair.save", version="1.6", status=CapabilityStatus.stable,
         description="Bounded HTML local repair save; shared leaf-field manual protection enforced again at final AI persistence with conflict paths, registered styles/actions, frozen revision and temporal checks. Does not approve aesthetics.",
         request_model=RepairSaveRequest, response_model=RepairResult,
         agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save",
@@ -263,8 +263,8 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_service.ProjectService.create",
     ),
     AgentCapability(
-        id="html_review.produce", version="1.9", status=CapabilityStatus.stable,
-        description="Bounded stagnation checks retain precise capacity triggers and effective limits, including saved report details, without increasing repair budgets. Generate a design first. Explicit reuse_design_candidate_key revalidates unchanged original image/plan into a new unapproved review checkpoint without provider calls; never accepts stale keys or carries approvals. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.",
+        id="html_review.produce", version="1.10", status=CapabilityStatus.stable,
+        description="Registered course structures support explicit endpoint relations, code charts, three-stage layouts and authored visual requirement coverage before design. Meaning and approval remain independent. Bounded stagnation checks retain precise capacity triggers and effective limits, including saved report details, without increasing repair budgets. Generate a design first. Explicit reuse_design_candidate_key revalidates unchanged original image/plan into a new unapproved review checkpoint without provider calls; never accepts stale keys or carries approvals. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.",
         request_model=HtmlProduceRequest, response_model=HtmlTaskResult,
         agent_api_method="POST",
         agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce",

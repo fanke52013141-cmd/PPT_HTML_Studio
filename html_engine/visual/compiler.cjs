@@ -144,6 +144,7 @@ function compile(input, catalog) {
     scene.nodes.some((node) => node?.type === "shape")
   )
     fail("UNSUPPORTED_NODE_VERSION", "/nodes", "shape requires scene 0.4.0");
+  if (scene.version !== "0.7.0" && scene.nodes.some(n=>n.type === "chart" || (n.type === "arrow" && n.from))) fail("UNSUPPORTED_NODE_VERSION", "/nodes", "Course structures require scene 0.7.0");
   validate("scene", scene);
   const theme = normalizeTheme(
     structuredClone(resolve(catalog.themes, scene.themeRef, "/themeRef")),
@@ -249,6 +250,7 @@ function compile(input, catalog) {
     )
       fail("UNRESOLVED_ANCHOR", "/nodes", n.anchorId);
   }
+  require("./course-structures.cjs").validateStructures(scene,layout,template,fail);
   const semantic = ["0.6.0", "0.7.0"].includes(scene.version);
   const initial = new Set(scene.initialVisibleIds || []);
   for (const id of initial) if (!ids.has(id)) fail("INVALID_INITIAL_TARGET", "/initialVisibleIds", id);

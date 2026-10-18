@@ -1,5 +1,7 @@
 # HTML 演示体系契约
 
+0.9.88（2026-10-18）：[课程结构与前置覆盖](runtime/visual-v1/course-structures-0.1.0.md)补齐显式关系、代码图表、三阶段模板与外观组合；仅离线验证，不自动签收或调用供应商。Agent API1.47、produce1.10、repair.preview/save1.6。
+
 0.9.87（2026-10-18）：[原图复用到新待审参考](runtime/visual-v1/design-reference-reuse-0.1.0.md)保留原计划/图片，当前定义下重新核验，无规划/生图/TTS调用；旧key仍stale，新key须重新接受。补齐混合标注线型及现有figure图标事实。Agent API1.46、produce1.9。
 
 0.9.86（2026-10-18）：[结构变体](runtime/visual-v1/framed-relations-0.1.0.md)增加带框顶部标题插图、只改外观的虚线锚点标注、无标题三栏底栏；原内容/关系/动作/人工保护保持。Agent API1.45、repair.preview/save1.5；工程、真实课程和人工批准分别验收。
