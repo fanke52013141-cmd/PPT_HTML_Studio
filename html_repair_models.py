@@ -17,6 +17,7 @@ class RepairOperation(BaseModel):
 class TemporalRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     expected_revision: StrictInt = Field(ge=0)
+    expected_audio_revision: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     time_range_ms: tuple[float, float] | None = None
     step_ms: StrictInt = Field(default=250, ge=16, le=1000)
     overlap_pairs: list[tuple[str, str]] = Field(default_factory=list, max_length=40)

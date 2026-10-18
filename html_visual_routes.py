@@ -282,7 +282,8 @@ def _repair_dispatch(mode, project_id, slide_id, payload, db):
     except store.HtmlVisualConflict as exc:
         raise HTTPException(409, detail={"code":"REVISION_CONFLICT","expected_revision":exc.expected,"current_revision":exc.current}) from exc
     except SceneEditError as exc:
-        raise HTTPException(422, detail={"code":exc.code,"message":str(exc)}) from exc
+        raise HTTPException(409 if exc.code == "AUDIO_REVISION_CONFLICT" else 422,
+                            detail={"code":exc.code,"message":str(exc)}) from exc
     except store.HtmlVisualError as exc:
         raise HTTPException(400, str(exc)) from exc
 

@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-18 当前开发：[动作诊断与外部Agent交接](docs/plans/html-backend-development/handoff-external-agent-2026-10-18.md)。契约0.9.96/API1.51；四页课程已正式导出并登记当前作品。新增客户端标准任务/结果交接、原修复报告的动作时间风险提示及音频版本保护；本地传输与回归通过，真实外部Agent能力和自动转交尚未验证。下方记录保留为阶段历史。
+
 2026-10-18 当前交接：[课程修复与整课输出](docs/plans/html-backend-development/handoff-capture-recovery-preflight-2026-10-18.md)。契约0.9.95/API1.50；四页已保存，整课原音频已确认且20个文件hash不变。第二、三、四页签收有效；第一页八方向程序修复及独立语义、核对视频通过，待当前画面与语义人工确认后正式导出整课。
 
 2026-10-18 离线结构补齐：[四页统一修复验证](docs/plans/html-backend-development/handoff-course-structures-offline-2026-10-18.md)。契约0.9.88/API1.47；显式关系、平台图表和三阶段模板已接入离线验证，默认GPU分数缩放像素限制、真实课程与发布仍待验。无新增付费调用。

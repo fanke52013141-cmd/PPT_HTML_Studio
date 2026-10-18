@@ -8,6 +8,50 @@ import html_visual_store as store
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_repair_rejects_stale_audio_before_candidate_or_evidence(page, monkeypatch):
+    run, scene = page
+    doc = edit.load_editor(run, scene['id'])
+    request = {'expected_revision': doc['revision'], 'expected_audio_revision': 'f'*64,
+               'operations': [{'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': 1}}]}
+    with pytest.raises(edit.SceneEditError) as caught:
+        repair.candidate(run, scene['id'], request)
+    assert caught.value.code == 'AUDIO_REVISION_CONFLICT'
+    with pytest.raises(edit.SceneEditError, match='配音产物已变化'):
+        repair.evidence(run, scene['id'], request)
+
+
+def test_audio_change_invalidates_candidate_key_without_scene_revision_change(page, monkeypatch):
+    run, scene = page
+    doc = edit.load_editor(run, scene['id'])
+    request = {'expected_revision': doc['revision'], 'operations': [
+        {'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': 1}}]}
+    before = repair.candidate(run, scene['id'], request)
+    original = edit.preview_editor
+    def changed(*args, **kwargs):
+        return {**original(*args, **kwargs), 'audio_revision': 'e'*64}
+    monkeypatch.setattr(edit, 'preview_editor', changed)
+    after = repair.candidate(run, scene['id'], request)
+    assert before['candidate_key'] != after['candidate_key']
+    assert edit.load_editor(run, scene['id'])['revision'] == doc['revision']
+
+
+def test_save_rechecks_audio_after_temporal_work(page, monkeypatch):
+    run, scene = page
+    doc = edit.load_editor(run, scene['id'])
+    request = {'expected_revision': doc['revision'], 'operations': [
+        {'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': 1}}]}
+    candidate = repair.candidate(run, scene['id'], request)
+    original_hash = edit.audio_revision
+    def evidence_with_audio_change(*args, **kwargs):
+        monkeypatch.setattr(edit, 'audio_revision', lambda *a: 'd'*64)
+        return {'passed': True}
+    monkeypatch.setattr(repair, 'evidence', evidence_with_audio_change)
+    with pytest.raises(edit.SceneEditError, match='配音产物已变化'):
+        repair.save_repair(run, scene['id'], {**request, 'candidate_key': candidate['candidate_key']})
+    monkeypatch.setattr(edit, 'audio_revision', original_hash)
+    assert edit.load_editor(run, scene['id']) == doc
+
+
 def test_unknown_operation_field_reports_exact_keys_without_accepting_alias(page):
     run, scene = page
     before = edit.load_editor(run, scene['id'])
@@ -75,13 +119,16 @@ def test_repair_model_gets_snapshot_frames_and_all_issues_not_full_trace(page):
     run, scene = page
     report = {"frames": [{"timeMs": i * 250, "geometry": {"id": "same"}} for i in range(71)],
               "screenshots": [{"timeMs": t, "file": "image.png"} for t in (0, 8750, 17500)],
-              "issues": [{"timeMs": 1500, "code": "OVERLAP"}], "passed": False}
+              "issues": [{"timeMs": 1500, "code": "OVERLAP"}], "passed": False,
+              "motion_activity": {"status": "warning", "limits": "schedule only"}}
     original = json.dumps(report)
     prompts = repair.build_repair_prompts(edit.load_editor(run, scene["id"]), "检查", ["headline"], report)
     value = json.loads(prompts["user_prompt"])["temporal_report"]
     assert value["sampledFrameCount"] == 71
     assert [f["timeMs"] for f in value["frames"]] == [0, 8750, 17500]
     assert value["issues"] == report["issues"]
+    assert value['motion_activity'] == report['motion_activity']
+    assert 'html-repair-0.3.2' in prompts['system_prompt']
     assert json.dumps(report) == original
     summary = {"frame_count": 80, "issues": [], "reference_geometry": {}}
     prompts = repair.build_repair_prompts(edit.load_editor(run, scene["id"]), "检查", ["headline"], summary)

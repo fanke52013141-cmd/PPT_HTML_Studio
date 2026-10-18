@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.50.0
-- **Contract Hash**: `3267f228ab0bf873`
+- **Agent API Version**: 1.51.0
+- **Contract Hash**: `0a4b61393bf4a5e0`
 - **Total Capabilities**: 65
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -23,10 +23,10 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_semantic.decision` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/decision` | `ppt_html_semantic_decision` | Yes | `html semantic-decision` | `html_semantic_review_service.decide` | No | No |
 | `project_model_binding.read` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
 | `project_model_binding.write` | 1.1 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
-| `html_repair.preview` | 1.6 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
-| `html_repair.save` | 1.6 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
-| `html_repair.evidence` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
-| `html_repair.generate` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_scene_repair.generate_repair` | No | No |
+| `html_repair.preview` | 1.7 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
+| `html_repair.save` | 1.7 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
+| `html_repair.evidence` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
+| `html_repair.generate` | 1.4 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_scene_repair.generate_repair` | No | No |
 | `html_editor.read` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
 | `html_editor.write` | 1.1 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_write` | Yes | `html editor-write` | `html_scene_editing.save_editor` | No | No |
 | `html_editor.preview` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor/preview` | `ppt_html_editor_preview` | Yes | `html editor-preview` | `html_scene_editing.preview_editor` | No | No |

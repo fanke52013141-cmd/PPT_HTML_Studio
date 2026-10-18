@@ -26,6 +26,22 @@ NEW_IDS = ("project_model_binding.read", "project_model_binding.write", "html_ed
            "html_editor.write", "html_editor.preview")
 
 
+def test_web_and_agent_repair_reject_stale_audio_with_409(api):
+    client, ids, run, scene = api
+    web = f"/api/projects/{ids['html']}/html-visual/condensation"
+    token = client.get(web + '/editor').json()['audio_revision']
+    audio = run / 'slides/condensation/voice.mp3'
+    audio.parent.mkdir(parents=True, exist_ok=True)
+    audio.write_bytes(b'replacement')
+    body = {'expected_revision': 1, 'expected_audio_revision': token, 'source': 'ai',
+            'operations': [{'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': 1}}]}
+    for base in [web, f"/api/agent/v1/projects/{ids['html']}/html-visual/condensation"]:
+        response = client.post(base + '/repair/preview', json=body)
+        assert response.status_code == 409, response.text
+        assert 'AUDIO_REVISION_CONFLICT' in response.text
+    assert client.get(web + '/editor').json()['revision'] == 1
+
+
 def test_web_and_agent_reject_changed_audio_with_409(api):
     client, ids, run, scene = api
     web = f"/api/projects/{ids['html']}/html-visual/condensation/editor"

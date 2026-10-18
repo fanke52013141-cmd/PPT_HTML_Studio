@@ -65,6 +65,7 @@ def candidate(run, slide, request):
 def candidate_from_document(run, slide, request, doc):
     """Shared validated operations for saved scenes and unsaved production drafts."""
     request = RepairRequest.model_validate(request)
+    editor._check_audio_revision(run, slide, request.expected_audio_revision)
     scene, binding = copy.deepcopy(doc["scene"]), copy.deepcopy(doc["binding"])
     nodes = {n["id"]: n for n in scene["nodes"]}
     scope = request.scope or list(dict.fromkeys(o.targetId for o in request.operations))
@@ -158,7 +159,8 @@ def candidate_from_document(run, slide, request, doc):
                 binding["actions"].setdefault(key, {}).update(values)
     if request.source == "ai":
         editor.assert_manual_fields_unmodified(doc, scene, binding)
-    preview = editor.preview_editor(run, slide, scene, binding, beats=doc.get("beats"))
+    preview = editor.preview_editor(run, slide, scene, binding, beats=doc.get("beats"),
+                                    expected_audio_revision=request.expected_audio_revision)
     runtime = {
         str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
         for p in [
@@ -176,6 +178,7 @@ def candidate_from_document(run, slide, request, doc):
             "binding": doc["binding"],
             "resources": doc["resources"],
             "manual": doc["manual"],
+            "audio_revision": preview["audio_revision"],
             "runtime": runtime,
         }
     )
@@ -199,7 +202,9 @@ def evidence(run, slide, request, preview=None):
         {k: v for k, v in request.items() if k in TemporalRequest.model_fields}
     )
     doc = _revision(run, slide, spec.expected_revision)
-    preview = preview or editor.preview_editor(run, slide, doc["scene"], doc["binding"])
+    editor._check_audio_revision(run, slide, spec.expected_audio_revision)
+    preview = preview or editor.preview_editor(run, slide, doc["scene"], doc["binding"],
+                                              expected_audio_revision=spec.expected_audio_revision)
     directory = Path(run) / store.SCENE_DIR / "repair-evidence" / uuid.uuid4().hex
     directory.mkdir(parents=True)
     (directory / "scene.json").write_text(
@@ -251,6 +256,9 @@ def evidence(run, slide, request, preview=None):
     report["reference_geometry"] = frames[-1].get("geometry", {}) if frames else {}
     report["text_measurements"] = frames[-1].get("measurements", {}) if frames else {}
     report["measurements_path"] = report["evidence_dir"] + "/report.json"
+    from html_motion_activity import motion_activity
+    report["motion_activity"] = motion_activity(preview["scene"])
+    editor._check_audio_revision(run, slide, preview["audio_revision"])
     return report
 
 
@@ -281,6 +289,7 @@ def save_repair(run, slide, request):
         c["binding"],
         body["expected_revision"],
         origin=body.get("source", "ai"),
+        expected_audio_revision=c["preview"]["audio_revision"],
     )
     return {**result, "review": report, "diff": c["diff"]}
 
@@ -310,7 +319,7 @@ def build_repair_prompts(doc, instruction, scope, report):
             if frame.get("timeMs") in snapshot_times
         ][:4]
     system = (
-        "PromptVersion:html-repair-0.3.1。你只提出局部修改。只返回JSON："
+        "PromptVersion:html-repair-0.3.2。你只提出局部修改。只返回JSON："
         '{status:"candidate",operations:[{targetId,kind,part?,action?,values}]}，'
         '或{status:"needs_input"|"unsupported",message:"简短原因"}。'
         "仅使用scope内已有对象、公开文字部位与已存在动作。保持文字语义与其他对象。"
