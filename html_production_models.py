@@ -7,12 +7,16 @@ class HtmlProduceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     plan_version: Literal["0.1.0", "0.2.0"] = "0.1.0"
     design_candidate_key: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    reuse_design_candidate_key: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     prior_unknown_task_id: str | None = Field(default=None, pattern=r"^html_[0-9a-f]{20}$")
     design_instruction: str = Field(default="", max_length=2000)
     asset_instruction: str = Field(default="", max_length=2000)
 
     @model_validator(mode="after")
     def exclusive(self):
+        if self.reuse_design_candidate_key and (self.design_candidate_key or self.design_instruction
+                                                or self.asset_instruction or self.prior_unknown_task_id):
+            raise ValueError("原图复用仅创建新待审参考，不能与接受、修订、素材返工或未知请求实验混用")
         if self.design_instruction and not self.design_instruction.strip():
             raise ValueError("设计修改方向不能只包含空白")
         if self.asset_instruction and self.design_instruction:

@@ -163,7 +163,9 @@ def component_context(scene, repo_root, *, asset_modes=None):
         "capabilities": {n["id"]: {
             "owner": "image" if n["type"] == "image" else "code",
             "assetMode": (asset_modes or {}).get(n["id"], "reuse") if n["type"] == "image" else "none",
-            "currentRender": {"icon": n["icon"], "source": "scene_card"} if n["type"] == "card" else {},
+            "currentRender": ({"icon": n["icon"], "source": "scene_card"} if n["type"] == "card" else
+                              {part: {"icon": n[part]["icon"], "source": "scene_figure_" + part}
+                               for part in ("tag", "note") if n.get(part)} if n["type"] == "figure" else {}),
             "variants": (applicable := _applicable_variants(n, variants)),
             "currentPresentation": presentation_facts(n),
             "allowed_reference_details": allowed_reference_details(n),

@@ -1,7 +1,7 @@
 {
   "presentationVariants": {
     "format": "hps.visual.presentation_variants",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "variants": [
       {
         "id": "plain",
@@ -228,7 +228,10 @@
           "annotation"
         ],
         "reference": "code-owned:anchored-dashed-relation",
-        "dashPattern": "6 5"
+        "dashPattern": "6 5",
+        "ringDashed": true,
+        "leaderDashed": true,
+        "arrowHead": true
       },
       {
         "id": "summary-strip-divided",
@@ -247,6 +250,39 @@
           0.45
         ],
         "headingAllowed": false
+      },
+      {
+        "id": "annotation-ring-dashed",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-stroke-relation",
+        "dashPattern": "6 5",
+        "ringDashed": true,
+        "leaderDashed": false,
+        "arrowHead": false
+      },
+      {
+        "id": "annotation-line-dashed",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-stroke-relation",
+        "dashPattern": "6 5",
+        "ringDashed": false,
+        "leaderDashed": true,
+        "arrowHead": false
+      },
+      {
+        "id": "annotation-solid",
+        "nodeTypes": [
+          "annotation"
+        ],
+        "reference": "code-owned:anchored-stroke-relation",
+        "dashPattern": "6 5",
+        "ringDashed": false,
+        "leaderDashed": false,
+        "arrowHead": false
       }
     ]
   },

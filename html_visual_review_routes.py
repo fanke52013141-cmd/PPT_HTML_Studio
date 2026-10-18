@@ -216,7 +216,8 @@ def produce(project_id: str, slide_id: str, db: Any = Depends(_get_db), payload:
     from html_task_store import HtmlTaskError
 
     try:
-        options = (payload.model_dump(exclude={"prior_unknown_task_id"} if payload.prior_unknown_task_id is None else None)
+        options = (payload.model_dump(exclude={name for name in ("prior_unknown_task_id", "reuse_design_candidate_key")
+                                             if getattr(payload, name) is None})
                    if payload else None)
         task = _jobs.submit(db, project, _contract_slide(run_dir, slide_id), options=options)
     except HtmlTaskError as exc:

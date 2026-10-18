@@ -37,6 +37,15 @@ def ready(context):
     return response_for({"artifact_prefix":"design_understanding-case","user_prompt":json.dumps(context)})
 
 
+def test_existing_figure_icons_are_distinct_from_optional_decoration_palette(case):
+    scene = copy.deepcopy(case[1])
+    scene['nodes'].append({'id':'existing-caption', 'type':'figure',
+                           'tag':{'icon':'thermometer','text':'Current caption'}})
+    cap = component_context(scene, ROOT)['capabilities']['existing-caption']
+    assert cap['currentRender']['tag'] == {'icon':'thermometer','source':'scene_figure_tag'}
+    assert cap['icons'] == []
+
+
 def test_design_stages_use_low_effort_with_existing_deadline(case):
     from html_design_agent import decision
     run, scene, _, reference, _ = case

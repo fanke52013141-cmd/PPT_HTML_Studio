@@ -409,6 +409,10 @@ def test_web_agent_payload_parity_and_current_design(tmp_path, monkeypatch):
                 body = {"design_candidate_key": "a" * 64, "asset_instruction": "fixture retry"}
                 assert client.post(base + "/produce", json=body).status_code == 200
                 assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.1.0"}
+                reused = {"reuse_design_candidate_key": "b" * 64}
+                assert client.post(base + "/produce", json=reused).status_code == 200
+                assert requests[-1]["reuse_design_candidate_key"] == reused["reuse_design_candidate_key"]
+                assert requests[-1]["design_candidate_key"] is None
                 assert client.post(base + "/produce", json={"plan_version":"0.2.0"}).status_code == 200
                 assert requests[-1]["plan_version"] == "0.2.0"
                 assert client.post(base + "/produce", json={"unknown": True}).status_code == 422

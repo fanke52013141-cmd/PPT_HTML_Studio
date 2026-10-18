@@ -1,5 +1,7 @@
 # HTML 演示体系契约
 
+0.9.87（2026-10-18）：[原图复用到新待审参考](runtime/visual-v1/design-reference-reuse-0.1.0.md)保留原计划/图片，当前定义下重新核验，无规划/生图/TTS调用；旧key仍stale，新key须重新接受。补齐混合标注线型及现有figure图标事实。Agent API1.46、produce1.9。
+
 0.9.86（2026-10-18）：[结构变体](runtime/visual-v1/framed-relations-0.1.0.md)增加带框顶部标题插图、只改外观的虚线锚点标注、无标题三栏底栏；原内容/关系/动作/人工保护保持。Agent API1.45、repair.preview/save1.5；工程、真实课程和人工批准分别验收。
 
 0.9.85（2026-10-17）：[视频音轨对齐](runtime/visual-v1/video-audio-alignment-0.1.0.md)修复AAC priming在concat阶段形成前导静音；单页保留分段，多页独立解码后按页拼接。合成源码进入HTML视频指纹，不影响声音/视觉批准及PPTX，无公开Schema变更。

@@ -263,8 +263,8 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_service.ProjectService.create",
     ),
     AgentCapability(
-        id="html_review.produce", version="1.8", status=CapabilityStatus.stable,
-        description="Bounded stagnation checks retain precise capacity triggers and effective limits, including saved report details, without increasing repair budgets. Generate a design first. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.",
+        id="html_review.produce", version="1.9", status=CapabilityStatus.stable,
+        description="Bounded stagnation checks retain precise capacity triggers and effective limits, including saved report details, without increasing repair budgets. Generate a design first. Explicit reuse_design_candidate_key revalidates unchanged original image/plan into a new unapproved review checkpoint without provider calls; never accepts stale keys or carries approvals. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.",
         request_model=HtmlProduceRequest, response_model=HtmlTaskResult,
         agent_api_method="POST",
         agent_api_path="/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce",

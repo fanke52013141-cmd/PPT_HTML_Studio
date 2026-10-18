@@ -34,3 +34,5 @@ manual_candidate只读重演未保存证据，真实评审者可沿manual_candid
 定位0.5.0按内容路径核对number/title/正文/关系词的逐片段转录与像素区域，程序派生文字包围盒；见reference-part-mapping-0.1.0定义卡。缺字/异文不照抄输入伪造定位。结构完整不代表像素正确；跨版式夹具与真实页、重复稳定性分别报告，不自动接入正式审核。
 
 文字边缘核验见reference-text-edges-0.1.0：定位结果edge_verification是本地像素诊断。possible_clip需复核，uncertain不能当通过；no_detected_clip也不证明OCR/完整性。保留原框/转录，不自动扩框或触发新提供者请求；旧响应另存诊断，正式审核准入仍关闭。
+
+定义扩展后可显式reuse_design_candidate_key：只复用内容、模型和作者输入仍匹配的原计划/图，生成当前定义下的新待审key，零规划/生图/TTS。旧key继续过期，原失败不改写；新key须独立接受，不能自动继承设计、HTML或A04批准。见design-reference-reuse-0.1.0定义卡。

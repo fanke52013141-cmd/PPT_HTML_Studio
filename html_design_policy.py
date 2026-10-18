@@ -50,8 +50,9 @@ def presentation_facts(node, variant=None):
         facts.update(container_frame=variant == "figure-frame-top",
                      tag_treatment="inset_top_caption" if variant == "figure-frame-top" else "outlined_pill" if variant == "figure-caption-top" else "floating_tag")
     if node["type"] == "annotation":
-        dashed = variant == "annotation-dashed"
-        facts.update(anchor_stroke="dashed" if dashed else "solid", leader_stroke="dashed" if dashed else "solid",
+        facts.update(anchor_stroke="dashed" if variant in {"annotation-dashed", "annotation-ring-dashed"} else "solid",
+                     leader_stroke="dashed" if variant in {"annotation-dashed", "annotation-line-dashed"} else "solid",
+                     leader_arrow=variant == "annotation-dashed",
                      leader_geometry="anchor_to_label_edge", static_style_editable="variant_only")
     return facts
 

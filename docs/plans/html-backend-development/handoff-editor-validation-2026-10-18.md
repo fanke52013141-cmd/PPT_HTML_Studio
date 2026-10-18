@@ -94,3 +94,13 @@ html_1a8f68a0b8024d1fbe91随后明确failed：第二轮还原工程检查通过�
 用户明确回复“接受当前四页旁白”。已把该决定与试听时原始四页产物hash写入outputs/real-course-acceptance/2026-10-18/audio-preview/user-audio-acceptance.json；原确认API需等四页HTML绑定校验通过再调用。未重配音、未用此决定代签画面/A04。
 
 旧快照任务已完整返回规划（175.17秒、报告17509 tokens），随后按原checkpoint明确failed“快照依赖已变化”；没有进入生图或作者保存。不是unknown或取消。参考目录重建且检查41件通过后，原produce入口提交html_e42edd172e9a4b1db05b，快照5bcad9d55102681d881b129a894175f80044ce0cf639f43e2b54114d8f031c55，实际记录structures-086-complete-design-submission.json。继续查询此ID，不再次提交。
+
+## 当前结构补齐与原图复用（0.9.87）
+
+0.9.86完整本地pytest为2529 passed/8 skipped；该结果不代表后续0.9.87。第一页44f05c66设计已由用户接受，原还原html_566ee18f79954fb89922明确失败：图标事实错误判读，以及虚线圈/实线引线缺少注册变体，未保存HTML。
+
+0.9.87补齐三种圈/线混合变体，准确暴露figure自带tag/note图标；原可选icons列表为空不表示内容图标不存在。修复图片compositing层随seek变化造成的像素抖动，1592/1600两种宽度解码RGBA严格相等通过。新增reuse_design_candidate_key只把未改变的模型计划与原图复制为新待审参考，零模型、生图、TTS；旧key仍stale，新key不得自动接受。契约卡design-reference-reuse-0.1.0、API1.46、produce1.9、Skill1.19与运行片段0.7.1同步。修复后的两个旧回归与新增用例组合16项通过，设计相关组合92项通过（有重叠），当前全库尚未复跑。
+
+用户明确“授权第二页新实验”；独立新规划/设计允许另计调用费用，旧取消任务html_71bbfc95a27947df8a2f供应商终态和费用仍未知，原记录保持。授权证据保存在ignored outputs，不自动恢复旧任务。须先保存第一页再新建第二页候选，避免全局作者revision使候选失效。当前整课视频、HTML/A04签收与发布仍未完成。
+
+0.9.87 canonical quick及完整pytest通过：2544 passed、8 skipped、4 warnings，669.62秒，日志outputs/reference-reuse-087-full-pytest.txt。原图复用html_f353501d78b34793ac00成功，模型调用0，图片hash不变；新key1ea58fbd由用户明确接受。还原html_362b08a75afb453b862c设计理解和主体素材均返回，布局请求超时为unknown（供应商不支持查询、费用未知），没有保存HTML。用户随后明确授权一次独立新还原实验，原入口携带prior_unknown_task_id提交html_909008f5e0f44cb08a6c；第二页独立规划html_895eddb52ced47678ab7亦在运行。原unknown不改写；不把提交当成功。当前服务恢复为隐藏独立进程9688，同一8010/DB/runs，避免执行会话关闭连带停止服务。新候选及第一页面都尚无HTML/A04或整课批准。

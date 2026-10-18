@@ -33,6 +33,9 @@ assert.throws(()=>compile(bad,catalog),/PRESENTATION_HEADING_UNSUPPORTED/);
   page.on("pageerror",e=>errors.push(e.message));
   await page.goto(pathToFileURL(path.join(root,"html_engine/visual/preview/index.html")).href);
   await page.waitForFunction(()=>window.visualPlayer?.ready);
+  const authorWidth=Number(process.env.HPS_TEST_AUTHOR_WIDTH||1600);
+  assert([1592,1600].includes(authorWidth));
+  await page.addStyleTag({content:`#viewport {width:${authorWidth}px;max-width:none;} main {max-width:none;}`});
   assert.equal(await page.evaluate(s=>window.visualPlayer.apply(s),scene),true,await page.locator("#status").innerText());
   await page.evaluate(t=>window.visualPlayer.seek(t),scene.durationMs);
   const facts=await page.evaluate(()=>{
@@ -45,9 +48,24 @@ assert.throws(()=>compile(bad,catalog),/PRESENTATION_HEADING_UNSUPPORTED/);
   assert.equal(facts.frame,"1px");assert.equal(facts.tag,"18px");assert.equal(facts.ring,"6 5");assert.deepEqual(facts.leader.match(/\d+/g),["6","5"]);
   assert.match(facts.head,/L/);assert.equal(facts.left,"1px");assert.equal(facts.right,"1px");
   assert.equal(facts.term,node("summary").term);assert.equal(facts.child,"summary");
+  for(const [variant,ringDashed,leaderDashed] of [["annotation-ring-dashed",true,false],["annotation-line-dashed",false,true],["annotation-solid",false,false]]) {
+   const styled=structuredClone(scene);styled.nodes.find(n=>n.type==="annotation").presentation.variant=variant;
+   assert.equal(await page.evaluate(s=>window.visualPlayer.apply(s),styled),true);
+   await page.evaluate(t=>window.visualPlayer.seek(t),scene.durationMs);
+   const strokes=await page.evaluate(()=>{const a=document.querySelector('[data-object-id="annotation"] svg');return [a.children[0].hasAttribute("stroke-dasharray"),a.children[1].style.strokeDasharray!=="none",a.children[2].getAttribute("d")];});
+   assert.deepEqual(strokes,[ringDashed,leaderDashed,""]);
+  }
+  assert.equal(await page.evaluate(s=>window.visualPlayer.apply(s),scene),true);
+  await page.evaluate(t=>window.visualPlayer.seek(t),scene.durationMs);
   const first=await page.locator(".visual-stage").screenshot();
   for(const t of [12400,300,12700,9000,scene.durationMs]) await page.evaluate(t=>window.visualPlayer.seek(t),t);
-  assert(first.equals(await page.locator(".visual-stage").screenshot()));
+  const last=await page.locator(".visual-stage").screenshot();
+  const {PNG}=require("../html_engine/node_modules/pngjs"),a=PNG.sync.read(first),b=PNG.sync.read(last);
+  if (!a.data.equals(b.data)) {
+   const debug=process.env.HPS_TEST_OUTPUT_DIR||path.join(root,"outputs/framed-relations-2026-10-18");fs.mkdirSync(debug,{recursive:true});
+   fs.writeFileSync(path.join(debug,"seek-before.png"),first);fs.writeFileSync(path.join(debug,"seek-after.png"),last);
+  }
+  assert.equal(a.width,b.width);assert.equal(a.height,b.height);assert(a.data.equals(b.data),"Random seek changed decoded pixels");
   const small=structuredClone(scene);small.nodes.find(n=>n.type==="summary").presentation.height=89;
   assert.equal(await page.evaluate(s=>window.visualPlayer.apply(s),small),false);
   const overflow=structuredClone(scene);overflow.nodes.find(n=>n.type==="summary").takeaway="W".repeat(40);

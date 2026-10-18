@@ -1,5 +1,11 @@
 # HTML 演示契约变更记录
 
+## 0.9.87 — 2026-10-18
+
+- 显式reuse_design_candidate_key将校验过的原计划/原图复制成新待审参考；不调用模型/生图/TTS、不存作者、不自动接受，不放宽旧key的stale检查。Agent API1.46、produce1.9。
+- 设计理解/还原片段0.7.1区分准确内容自带图标与可选装饰palette；补齐annotation圈/线分开虚实的注册变体。
+- 位图对象预留compositing层，消除随机seek的图层切换导致的1—2级RGB漂移；严格随机seek像素比较在1592/1600宿主宽度分别核验，不提高容差。
+
 ## 0.9.86 — 2026-10-18
 
 - 新增独立注册变体figure-frame-top、annotation-dashed、summary-strip-divided，旧变体不变；annotation仅允许set_variant，无自由位置/字体/图标，不改变锚点关系或时间。

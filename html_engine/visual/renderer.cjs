@@ -5,7 +5,7 @@ const { fail } = require("./compiler.cjs");
 const { icon } = require("./icons.browser.cjs");
 const variants = require("./presentation-variants.json").variants;
 const { capacityEvidence } = require("./capacity.cjs");
-const {frameFigure, dividedSummary, dashedAnnotation, drawDashedLeader} = require("./presentation-structures.cjs");
+const {frameFigure, dividedSummary, styleAnnotation, drawAnnotationLeader} = require("./presentation-structures.cjs");
 const SVG = "http://www.w3.org/2000/svg";
 const vector = (tag) => document.createElementNS(SVG, tag);
 const attributes = (el, values) =>
@@ -465,6 +465,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         ]);
       } else if (node.type === "image") {
         el.classList.add("v-subject");
+        // Keep bitmap compositing stable across direct and animated seeks.
+        el.style.willChange = "transform, opacity";
         const asset = assetById.get(node.assetRef.id),
           p = imagePlacement(
             { ...node, box: layout.slots[node.slot].box },
@@ -721,7 +723,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           leader.setAttribute("pathLength", "1");
           leader.style.strokeDasharray = "1";
           svg.append(ring, leader);
-          if (node.presentation?.variant === "annotation-dashed") dashedAnnotation(ring,leader,svg,theme);
+          if (node.presentation?.variant) styleAnnotation(ring,leader,svg,theme,variants.find(v=>v.id===node.presentation.variant));
         }
         el.append(svg);
         if (node.type === "annotation") el.classList.add("v-annotation");
@@ -910,9 +912,10 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           d: `M ${anchor.x - origin.x + towards * node.radius} ${anchor.y - origin.y} L ${endpoint.x - origin.x - towards * 14} ${endpoint.y - origin.y}`,
           "stroke-dashoffset": String(1 - progress),
         });
-        if (node.presentation?.variant === "annotation-dashed") drawDashedLeader(elements.get(node.id).querySelector("svg"),
+        if (node.presentation?.variant) drawAnnotationLeader(elements.get(node.id).querySelector("svg"),
           {x:anchor.x-origin.x+towards*node.radius,y:anchor.y-origin.y},
-          {x:endpoint.x-origin.x-towards*14,y:endpoint.y-origin.y},progress);
+          {x:endpoint.x-origin.x-towards*14,y:endpoint.y-origin.y},progress,
+          variants.find(v=>v.id===node.presentation.variant).arrowHead);
         elements.get(node.id).style.opacity = String(
           Math.min(
             states.get(node.id).opacity,

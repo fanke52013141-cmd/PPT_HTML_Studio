@@ -718,7 +718,12 @@
               ],
               "properties": {
                 "variant": {
-                  "const": "annotation-dashed"
+                  "enum": [
+                    "annotation-dashed",
+                    "annotation-ring-dashed",
+                    "annotation-line-dashed",
+                    "annotation-solid"
+                  ]
                 }
               }
             }
@@ -1766,7 +1771,10 @@
             "arrow-up",
             "figure-frame-top",
             "annotation-dashed",
-            "summary-strip-divided"
+            "summary-strip-divided",
+            "annotation-ring-dashed",
+            "annotation-line-dashed",
+            "annotation-solid"
           ]
         },
         "icon": {

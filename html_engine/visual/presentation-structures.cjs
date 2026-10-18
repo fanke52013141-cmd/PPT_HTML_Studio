@@ -38,25 +38,25 @@ function dividedSummary(el, parts, slot, theme, variant, textNodes) {
   textNodes.push([el,{...slot,maxLines:4},`${el.dataset.objectId}:container`]);
 }
 
-function dashedAnnotation(ring, leader, svg, theme) {
-  ring.setAttribute("stroke-dasharray", "6 5");
+function styleAnnotation(ring, leader, svg, theme, variant) {
+  if (variant.ringDashed) ring.setAttribute("stroke-dasharray", variant.dashPattern);
   leader.removeAttribute("pathLength");
-  leader.style.strokeDasharray = "6 5";
+  leader.style.strokeDasharray = variant.leaderDashed ? variant.dashPattern : "none";
   const head = document.createElementNS("http://www.w3.org/2000/svg", "path");
   for (const [key,value] of Object.entries({fill:"none",stroke:theme.colors.accent,
     "stroke-width":theme.shapes.strokeWidth,"stroke-linecap":"round","stroke-linejoin":"round"})) head.setAttribute(key,value);
   svg.append(head);
 }
 
-function drawDashedLeader(svg, start, end, progress) {
+function drawAnnotationLeader(svg, start, end, progress, arrowHead) {
   const [,leader,head] = svg.children;
   const dx=end.x-start.x, dy=end.y-start.y, length=Math.hypot(dx,dy);
   const tip={x:start.x+dx*progress,y:start.y+dy*progress};
   leader.setAttribute("d",`M ${start.x} ${start.y} L ${tip.x} ${tip.y}`);
   leader.removeAttribute("stroke-dashoffset");
-  if (length < 1 || progress < .95) {head.setAttribute("d","");return;}
+  if (!arrowHead || length < 1 || progress < .95) {head.setAttribute("d","");return;}
   const ux=dx/length,uy=dy/length;
   head.setAttribute("d",`M ${tip.x-ux*9-uy*4} ${tip.y-uy*9+ux*4} L ${tip.x} ${tip.y} L ${tip.x-ux*9+uy*4} ${tip.y-uy*9-ux*4}`);
 }
 
-module.exports = {frameFigure, dividedSummary, dashedAnnotation, drawDashedLeader};
+module.exports = {frameFigure, dividedSummary, styleAnnotation, drawAnnotationLeader};

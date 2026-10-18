@@ -5,7 +5,7 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 
 # 可编辑HTML生产与修复
 
-版本1.18.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
+版本1.19.0，2026-10-18。先读 [共用边界](../workflow-contracts.md) 和仓库docs/contracts/html-presentation/README.md；从agent_contract.capabilities读取当前能力，不把此操作说明整篇传模型。
 
 ## 选择任务
 
@@ -38,3 +38,5 @@ description: Produce and verify editable HTML in PPT Studio using registered sce
 本Skill演进读 [references/evolution.md](references/evolution.md)，案例在 [evaluation/cases.json](evaluation/cases.json)。历史案例声明需与当前合同核对，不能当作新能力或签收。
 
 注册结构选择：figure-frame-top为带框顶部标题；annotation-dashed只改虚线外观，target/anchor/label及空间禁止变动；summary-strip-divided只适用无heading的三栏关系，不增加正文前缀。原set_variant、保护、容量与独立签收门禁继续执行。
+
+定义更新后保留原设计：显式reuse_design_candidate_key重新核验同页原计划/图片，返回新待审key，零规划/生图/TTS。不自动接受，不重签旧候选；新key仍需用户接受，旧设计接受不代替HTML/A04。图标先看对象自带tag/note及currentRender，icons只列可选装饰；标注圈/线虚实按注册混合变体分别选。
