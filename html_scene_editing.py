@@ -77,9 +77,11 @@ def _node(script, payload):
 
 
 def capabilities():
+    from html_repair_static import PARTS
     schema = read_json(ROOT / "html_engine/visual/schema.json")
     return {
         "schema": schema,
+        "public_parts": PARTS,
         "actions": [
             s["properties"]["type"]["const"] for s in schema["$defs"]["motion"]["oneOf"]
         ],
@@ -444,7 +446,7 @@ def assert_manual_fields_unmodified(document, scene, binding):
         raise SceneEditError("MANUAL_FIELD_PROTECTED", f"AI不能覆盖已有人工字段：{paths}；请人工明确修改该字段")
 
 
-def save_editor(run, slide, scene, binding, expected_revision, anchor_overrides=None, *, origin="human", expected_audio_revision=None):
+def save_editor(run, slide, scene, binding, expected_revision, anchor_overrides=None, *, origin="human", expected_audio_revision=None, _human_base_scene=None):
     """Caller must hold project_artifact_lock across this operation."""
     document = store.load_scene_with_revision(run, slide)
     if not document:
@@ -519,10 +521,13 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
         }
     protected = manual_protected_paths(previous)
     if origin == "human":
-        protected += protected_edit_paths(document["scene"], scene, "scene") + protected_edit_paths(existing_binding, binding, "binding")
+        touched = protected_edit_paths(_human_base_scene if _human_base_scene is not None else document["scene"], scene, "scene")
+        final_changed = protected_edit_paths(document["scene"], scene, "scene")
+        protected += [p for p in touched if any(p[:len(q)] == q or q[:len(p)] == p for q in final_changed)]
+        protected += protected_edit_paths(existing_binding, binding, "binding")
     manual = {
         "protected_paths": sorted(set(tuple(p) for p in protected)),
-        "last_origin": origin,
+        "last_origin": "mixed" if _human_base_scene is not None else origin,
         "format": "hps.html.scene_edits",
         "version": "0.1.0",
         "slide_id": slide,

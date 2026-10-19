@@ -61,7 +61,7 @@ def evaluate_pairs(
         "html_runtime_skills.py",
         "html_skill_evaluation.py",
         "html_scene_editing.py",
-        "html_scene_repair.py",
+        "html_scene_repair.py", "html_repair_static.py", "html_engine/visual/relationship-capacity.cjs",
         "html_visual_review_service.py",
         "html_engine/visual/preview/player.js",
         "html_engine/tools/review-scene.cjs",

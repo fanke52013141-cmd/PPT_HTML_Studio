@@ -471,3 +471,20 @@ body.html-workspace #step-panel-1 .step1-content-card:focus-within {
 /* 10b. 就绪清单去原生 marker（避免与圆点重复） */
 body.html-workspace #html-output-readiness :is(ul, ol) { list-style: none; margin: 0; padding: 0; }
 body.html-workspace #html-output-readiness li { list-style: none; }
+/* External exchange owns its panel; slides continue using their resolved themes. */
+[data-external-handoff] { margin: 16px 0; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; }
+[data-external-handoff] label { display: block; margin: 8px 0; }
+[data-external-handoff] [hidden] { display: none !important; }
+[data-external-handoff] textarea { width: 100%; min-height: 72px; }
+[data-external-handoff] pre { max-height: 320px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.html-external-comparison { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.html-external-comparison figure { margin: 0; }
+.html-external-comparison img { width: 100%; }
+.html-external-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+[data-external-report] { margin: 12px 0; padding: 10px; background: #f8f9fb; border-radius: 8px; }
+
+/* External candidate amendments reuse workspace cards and controls. */
+[data-external-handoff] img { max-width:100%; height:auto; }
+[data-handoff-workbench] { margin-top:16px; padding:16px; border:1px solid #e5e7eb; border-radius:12px; }
+[data-handoff-workbench] select,[data-handoff-workbench] input { max-width:100%; margin:4px; }
+[data-handoff-workbench] pre { white-space:pre-wrap; max-height:320px; overflow:auto; }

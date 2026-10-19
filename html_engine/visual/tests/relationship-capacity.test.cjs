@@ -1,0 +1,21 @@
+"use strict";
+const assert=require('node:assert/strict');
+const {relationshipCapacity,declaredLineChecks}=require('../relationship-capacity.cjs');
+const variants=require('../presentation-variants.json').variants;
+const panel=variants.find(v=>v.id==='summary-relationship-panel');
+const box={x:58,y:645,width:1477,height:140};
+assert.equal(relationshipCapacity(panel,box).parts.from.height,44);
+assert.equal(relationshipCapacity(panel,box).parts.to.height,44);
+const node={id:'summary',type:'summary',slot:'summary',presentation:{variant:panel.id,typography:{from:{fontSizePx:22,lineHeight:1},to:{fontSizePx:22,lineHeight:1}}}};
+const scene={nodes:[node]},layout={slots:{summary:{box}}};
+const failed=declaredLineChecks(scene,layout,variants);
+assert.equal(failed.length,2);
+assert.ok(failed.every(c=>c.status==='failed'&&c.minimum_outer_height===48&&c.limit===44));
+const larger={slots:{summary:{box:{...box,height:150}}}};
+assert.ok(declaredLineChecks(scene,larger,variants).every(c=>c.status==='preflight_passed'&&c.limit===54));
+node.presentation.variant='summary-relationship-compact';
+assert.ok(declaredLineChecks(scene,layout,variants).every(c=>c.status==='preflight_passed'));
+delete node.presentation.typography;
+assert.deepEqual(declaredLineChecks(scene,layout,variants),[]); // Unknown inherited metrics stay unclaimed.
+assert.equal(relationshipCapacity({id:'plain'},box),null);
+console.log('relationship capacity: shared budget, retained legacy limits, declared negative, dependency recomputation and unknown coverage passed');

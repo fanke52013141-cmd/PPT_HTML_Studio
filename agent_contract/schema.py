@@ -26,6 +26,7 @@ def path_parameters_schema(cap: AgentCapability) -> dict[str, Any]:
         "artifact_id": "The artifact ID.",
         "sheet_id": "The asset sheet ID.",
         "request_key": "The immutable sheet extraction SHA256 request key.",
+        "task_id": "The immutable external handoff SHA256 task ID.",
         "asset_id": "The candidate asset ID within the sheet.",
     }
     properties: dict[str, Any] = {}

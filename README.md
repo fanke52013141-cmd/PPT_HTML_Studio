@@ -1,5 +1,25 @@
 # HTML Studio
 
+2026-10-19 本批源码更新：[外部Agent真实交接与二次编辑handoff](docs/plans/html-backend-development/handoff-external-agent-and-secondary-editing-2026-10-19.md)，[发布备注](docs/releases/2026-10-19-external-agent-handoff-and-editing.md)。契约0.9.102/API1.55.1；真实外部首轮已通过严格导入和原预览，尚未保存/批准。下一批优先候选画布编辑、易懂属性与恢复能力，当前仍为参数接手。Git更新不含课程数据或应用部署；下方“待回传/本地未发布”为历史阶段记录。
+
+2026-10-19 本地勘误：[执行2.1.1能力与交付修订](docs/plans/html-backend-development/handoff-execution211-2026-10-19.md)，契约0.9.102/API1.55.1。缺必需能力须停止、要求看图的候选须记录原图审阅；原播放器/after接续另列。旧输入2.1试验包保持历史，重试须重新导出；本地未发布。
+
+2026-10-19 本地增量：[输入2.1与人工接手](docs/contracts/html-presentation/runtime/visual-v1/external-agent-workbench-0.1.0.md)，契约0.9.101/API1.55；同源容量/结构化目标、持久工作草稿、原检查/混合来源保存。本地源码未发布，正式验收与P2扩展单列。
+
+2026-10-19：[外部执行合同2.0](docs/contracts/html-presentation/runtime/visual-v1/external-agent-execution-2.0.0.md)，
+契约0.9.100/API1.54；每包带同源静态预检、硬约束/覆盖、能力及逐项验收模板，严格候选经原系统复核后采用。
+已针对实际Token页面准备新Agent独立测试；本地源码未推送或切换真实服务。
+
+2026-10-19 外部结果接入：[交接说明](docs/agent/external-page-handoff.md)，契约0.9.99/API1.53。
+页面接收delivery.zip或result.json、保留交付报告/证据并导出系统检查反馈，通过后单独保存。
+真实首轮结果格式合规，原编译器因底栏入场安全区拒绝；未保存、未批准，第二轮需带反馈修订。
+
+2026-10-19 真实试验输入：[Token 第3页外部 Agent 任务](docs/agent/real-trial-token-2026-10-19.md)。
+契约0.9.98新增随包[执行/验收/交付规范](docs/agent/external-agent-execution.md)；真实历史候选和原素材在隔离副本试验，
+输出 result.json + report.md 后用原服务核验，实际外部效果待回传。本地源码未推送或切换真实服务。
+
+2026-10-19 本地开发：[外部 Agent 完整任务包与导入交接](docs/plans/html-backend-development/handoff-external-bundle-2026-10-19.md)，契约0.9.97/API1.52。新增实际截图/素材/解析风格及严格操作Schema的ZIP、设计材料导出与局部修复结果导入预览/显式保存；真实外部Agent质量待验，未推送或切换真实服务。接入见[使用说明](docs/agent/external-page-handoff.md)。
+
 2026-10-18 主分支合并完成：[PR #2](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/pull/2)已合入main，合并提交23c7019。合并前完整GitHub CI通过（[运行60](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/actions/runs/39140034104)），含全量检查、编辑器构建及Remotion TypeScript。下方“开发分支/未合入”描述为此前阶段记录；当前从main获取代码。源码合并不包含公网部署或课程数据迁移。
 
 2026-10-18 源码试用更新：[课程闭环与外部Agent试用说明](docs/releases/2026-10-18-course-and-external-agent-testing.md)。目标分支codex/editor-adapter-p0-20261017、PR #2；本次仓库同步不包含公网部署，main尚未合入。发布前511项相关隔离回归及共享视觉检查通过。

@@ -1,5 +1,23 @@
 # HTML Studio
 
+2026-10-19 当前换机入口：[外部Agent交接与二次编辑handoff](docs/plans/html-backend-development/handoff-external-agent-and-secondary-editing-2026-10-19.md)，[发布备注](docs/releases/2026-10-19-external-agent-handoff-and-editing.md)。源码0.9.102/API1.55.1；实际首轮严格导入/原预览通过，保存和人工批准另验。候选画布编辑/完整版本恢复尚待实施；本批不部署应用或迁移数据，下方旧状态保留为历史。
+
+2026-10-19 本地勘误：[执行2.1.1能力与交付修订](docs/plans/html-backend-development/handoff-execution211-2026-10-19.md)，契约0.9.102/API1.55.1；必需能力、原图审阅与原播放器接续明确分开。旧签名包保持历史，重试需重导出；本地未发布。
+
+2026-10-19 本地增量：[输入2.1与人工接手](docs/contracts/html-presentation/runtime/visual-v1/external-agent-workbench-0.1.0.md)，契约0.9.101/API1.55；同源容量/结构化目标、持久工作草稿、原检查/混合来源保存。本地源码未发布，正式验收与P2扩展单列。
+
+2026-10-19：[外部执行合同2.0](docs/contracts/html-presentation/runtime/visual-v1/external-agent-execution-2.0.0.md)，
+契约0.9.100/API1.54；逐对象硬约束、官方静态预检、能力/逐项验收与严格采用已接入本地源码。
+新Agent独立输入包及原材料验证见最新handoff，尚未推送或切换真实服务。
+
+2026-10-19：[外部输入导出/输出导入闭环](docs/agent/external-page-handoff.md)，契约0.9.99/API1.53，
+兼容原JSON并接收交付ZIP，报告留档和系统反馈分开；实际首轮候选安全区失败，未采用。
+
+2026-10-19 试验入口：[真实 Token 外部 Agent 任务](docs/agent/real-trial-token-2026-10-19.md)，契约0.9.98。
+每包附执行规范/验收标准/报告模板；等值隔离历史候选，外部效果待回传，不写原项目或切换服务。
+
+2026-10-19 本地入口：[外部 Agent 完整材料包与受控导入](docs/plans/html-backend-development/handoff-external-bundle-2026-10-19.md)，契约0.9.97/API1.52。已有页可导出、导入预览后显式保存；设计包只作材料交接。未推送、未换真实服务或进行付费调用；外部Agent实际效果待验。
+
 当前交接：[编辑器与视频优化验收](docs/plans/html-backend-development/handoff-editor-validation-2026-10-18.md)，契约0.9.85/API1.44。真实单页视频及模型/设备验证通过；真实整课与全库门禁pending。
 
 2026-10-17 当前本地入口：[单页视频输出验证](docs/plans/html-backend-development/handoff-single-page-video-2026-10-17.md)。工程对应帧及编辑后批准/重建检查通过；真实页面待视觉批准，未发布。

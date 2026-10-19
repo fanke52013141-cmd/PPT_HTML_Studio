@@ -1,0 +1,224 @@
+{
+  "format": "hps.validation.external_agent_summary",
+  "version": "0.1.0",
+  "date": "2026-10-19",
+  "evidence_kind": "actual_external_delivery_independently_checked_in_isolated_copy",
+  "task_type": "static_repair",
+  "task_id": "054a3371b97282ea48dd5def1d807f775df26245614ee547f0e9c93eec54ad03",
+  "contract_package": "0.9.102",
+  "execution_version": "2.1.1",
+  "agent_api_version": "1.55.1",
+  "contract_hash": "1955ba5626df4f5b",
+  "input_zip_sha256": "19d80b37a9622b0527125a7947b50f8dfc5f4f7f2212dbd48d07d8d70e76a6b9",
+  "delivery_zip_sha256": "543076070004c601643d0ee55f299fb13b737323b8e94df33605b4304f3d2633",
+  "result_file_sha256": "3112c316ed51eb3c04c400ab2d3b2e1348e6295401b2eac38ee29922e7ba363b",
+  "source_scene_sha256": "158a3d606e5ac0d9c0afcbb6df2aa735137a468b076b6aac20fe6df33a72b675",
+  "source_binding_sha256": "d067f120f8adcb6bb4f3e41e5ba3c30859c02a5514d0fa36c89fbfbed0313b5f",
+  "baseline_revision": 1,
+  "verification": {
+    "strict_import_passed": true,
+    "independent_preflight_passed": true,
+    "original_review_passed": true,
+    "baseline_visual_observations_independently_consistent": true,
+    "ability_and_vision_record_are_external_declarations": true,
+    "author_unchanged": true,
+    "saved": false,
+    "motion_preserved": true,
+    "binding_preserved": true,
+    "frame_count": 80,
+    "overlap_pairs": [
+      [
+        "obj-intro",
+        "obj-card-1"
+      ],
+      [
+        "obj-card-1",
+        "obj-card-2"
+      ],
+      [
+        "obj-card-2",
+        "obj-card-3"
+      ],
+      [
+        "obj-card-3",
+        "obj-summary"
+      ]
+    ],
+    "acceptance": [
+      {
+        "criterion_id": "summary-from-min-font",
+        "status": "system_passed",
+        "actual": 22,
+        "minimum": 22.0
+      },
+      {
+        "criterion_id": "summary-to-min-font",
+        "status": "system_passed",
+        "actual": 22,
+        "minimum": 22.0
+      },
+      {
+        "criterion_id": "summary-takeaway-min-font",
+        "status": "system_passed",
+        "actual": 22,
+        "minimum": 22.0
+      }
+    ],
+    "leaf_changes": [
+      {
+        "path": "obj-summary/presentation/height",
+        "before": 140,
+        "after": 144
+      },
+      {
+        "path": "obj-summary/presentation/offsetY",
+        "before": -32,
+        "after": -33
+      },
+      {
+        "path": "obj-summary/presentation/typography/from/fontSizePx",
+        "before": 17,
+        "after": 22
+      },
+      {
+        "path": "obj-summary/presentation/typography/to/fontSizePx",
+        "before": 17,
+        "after": 22
+      }
+    ]
+  },
+  "capacity": {
+    "obj-summary": {
+      "measured": {
+        "width": 1476.9999901853016,
+        "height": 143.9999681022299
+      },
+      "effective_limits": {
+        "width": 1477
+      },
+      "tolerance": {
+        "width": 1,
+        "height": 1
+      },
+      "units": "logical_canvas_px",
+      "status": "passed"
+    },
+    "obj-summary:heading": {
+      "measured": {
+        "width": 125.0000153354664,
+        "height": 33.000022083071606
+      },
+      "effective_limits": {
+        "x": 58,
+        "y": 644,
+        "width": 225.65714285714284,
+        "height": 104,
+        "maxLines": 2
+      },
+      "tolerance": {
+        "width": 1,
+        "height": 1
+      },
+      "units": "logical_canvas_px",
+      "status": "passed"
+    },
+    "obj-summary:from": {
+      "measured": {
+        "width": 114.00002330990893,
+        "height": 48.000009814698494
+      },
+      "effective_limits": {
+        "x": 58,
+        "y": 644,
+        "width": 145.04761904761907,
+        "height": 48,
+        "maxLines": 1
+      },
+      "tolerance": {
+        "width": 1,
+        "height": 1
+      },
+      "units": "logical_canvas_px",
+      "status": "passed"
+    },
+    "obj-summary:to": {
+      "measured": {
+        "width": 130.75000245367463,
+        "height": 48.000009814698494
+      },
+      "effective_limits": {
+        "x": 58,
+        "y": 644,
+        "width": 145.04761904761907,
+        "height": 48,
+        "maxLines": 1
+      },
+      "tolerance": {
+        "width": 1,
+        "height": 1
+      },
+      "units": "logical_canvas_px",
+      "status": "passed"
+    },
+    "obj-summary:term": {
+      "measured": {
+        "width": 87.99999754632537,
+        "height": 29.000041712468594
+      },
+      "effective_limits": {
+        "x": 58,
+        "y": 644,
+        "width": 573.8571428571429,
+        "height": 32,
+        "maxLines": 1
+      },
+      "tolerance": {
+        "width": 1,
+        "height": 1
+      },
+      "units": "logical_canvas_px",
+      "status": "passed"
+    },
+    "obj-summary:takeaway": {
+      "measured": {
+        "width": 473.4843651853015,
+        "height": 33.000022083071606
+      },
+      "effective_limits": {
+        "x": 58,
+        "y": 644,
+        "width": 473.4857142857143,
+        "height": 104,
+        "maxLines": 2
+      },
+      "tolerance": {
+        "width": 1,
+        "height": 1
+      },
+      "units": "logical_canvas_px",
+      "status": "passed"
+    }
+  },
+  "summary_box": {
+    "kind": "summary",
+    "box": {
+      "x": 58,
+      "y": 644,
+      "width": 1477,
+      "height": 144
+    }
+  },
+  "issues": [],
+  "limits": {
+    "continuous_time_verified": false,
+    "all_object_pairs_verified": false,
+    "real_audio_available": false,
+    "human_visual_approval": "not_requested",
+    "semantic_approval": "not_requested",
+    "author_save": "not_run",
+    "formal_video_export": "not_run",
+    "model_internal_vision_execution": "not_auditable_from_delivery",
+    "cross_course_stability": "not_tested"
+  },
+  "raw_evidence_publication": "Excluded: original project media, task/delivery ZIPs, local run/database and credentials remain local. Hashes identify historical evidence and cannot make an old task current on another machine."
+}

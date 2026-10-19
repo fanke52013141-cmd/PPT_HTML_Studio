@@ -44,7 +44,7 @@ def main():
     from html_storyboard_planning import load_template_catalog
     from html_design_reconstruction import reconstruct_design
     from html_visual_review_service import HtmlReviewDependencies
-    source_names=["html_design_reconstruction.py","html_design_agent.py","html_runtime_skills.py","html_production_service.py","html_scene_repair.py","html_scene_editing.py",
+    source_names=["html_design_reconstruction.py","html_design_agent.py","html_runtime_skills.py","html_production_service.py","html_scene_repair.py", "html_repair_static.py", "html_engine/visual/relationship-capacity.cjs","html_scene_editing.py",
                   "html_motion_binding.py","html_audio_binder.py","html_engine/visual/schema.json","html_engine/visual/compiler.cjs",
                   "html_engine/visual/renderer.cjs","html_engine/visual/presentation-variants.json","html_engine/visual/preview/player.js"]
     from html_runtime_skills import runtime_source_files

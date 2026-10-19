@@ -37,8 +37,8 @@
     "editor_ui/licenses/xzdarcy--react-timeline-editor.LICENSE": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe",
     "editor_ui/licenses/xzdarcy--timeline-engine.LICENSE": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe",
     "static/html_editor_timeline_bridge.js": "cd1f1bdf358bb811de942820f42ecc891787952e55cfa7635a4570e602efb528",
-    "static/html_scene_editor.js": "84c1e562a68c355672c6d285511bae0d9be8504839e4e9e50fd9e9d5f743edcb",
+    "static/html_scene_editor.js": "47c7eee2ada2c5263bc270347baefe5e05737c27ea53486b893f70ac390f1915",
     "static/html_scene_edit.css": "40ea37147f95fb6f902ccc6307ddf6780f4dea964d6798f13f7e88d6746cb1d5",
-    "static/index.html": "51c9f454f4423157c27b8b73ab62e8ea440d0d4ccb2eff7e8eb89c406dc99fa3"
+    "static/index.html": "dca5213eb849d30b4b99d8552859197d7611ec75791d805e84bbbb8323ea24fd"
   }
 }

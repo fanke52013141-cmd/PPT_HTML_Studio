@@ -12,17 +12,10 @@ import html_scene_editing as editor
 import html_visual_store as store
 from html_motion_binding import motion_identity
 from html_repair_models import RepairRequest, TemporalRequest
+from html_repair_static import PARTS, StaticRepairError, apply_static
 
 ROOT = Path(__file__).resolve().parent
-PARTS = {
-    "text": ["text"],
-    "label": ["text"],
-    "badge": ["text"],
-    "header": ["title"],
-    "card": ["title", "body"],
-    "figure": ["tag", "note"],
-    "summary": ["heading", "from", "to", "term", "takeaway"],
-}
+
 STYLE_KEYS = {"fontSizePx", "weight", "lineHeight", "align"}
 KINDS = {
     "set_presentation": ["offsetX", "offsetY", "width", "height"],
@@ -85,35 +78,10 @@ def candidate_from_document(run, slide, request, doc):
                 f"允许字段: {', '.join(KINDS[op.kind])}",
             )
         if op.kind in ("set_presentation", "set_text_style", "set_variant"):
-            if node["type"] == "arrow" and node.get("from"):
-                raise editor.SceneEditError("RELATION_GEOMETRY_OWNED", "Change endpoint objects or replan")
-            if node["type"] == "annotation" and op.kind != "set_variant":
-                raise editor.SceneEditError("REPAIR_FIELDS", "圈注空间不能单独覆盖")
-            if op.action is not None or op.actionId is not None:
-                raise editor.SceneEditError("REPAIR_FIELDS", "基础样式不接受action")
-            p = node.setdefault("presentation", {})
-            if op.kind == "set_variant":
-                if scene["version"] not in ("0.6.0", "0.7.0") or op.part is not None or "variant" not in values:
-                    raise editor.SceneEditError("VARIANT_VERSION", "注册呈现变体需语义场景，且指定variant")
-                p["variant"] = values["variant"]
-                p.pop("icon", None)
-                if "icon" in values:
-                    p["icon"] = values["icon"]
-                scene["version"] = "0.7.0"
-            elif op.kind == "set_text_style":
-                if op.part not in PARTS.get(node["type"], []) or (
-                    op.part in ("tag", "note", "heading") and not node.get(op.part)
-                ):
-                    raise editor.SceneEditError(
-                        "UNSUPPORTED_TEXT_PART", "不存在该公开文字部位"
-                    )
-                p.setdefault("typography", {}).setdefault(op.part, {}).update(values)
-            else:
-                if op.part is not None:
-                    raise editor.SceneEditError("REPAIR_FIELDS", "布局操作不接受part")
-                p.update(values)
-            if scene["version"] not in ("0.6.0", "0.7.0"):
-                scene["version"] = "0.5.0"
+            try:
+                apply_static(scene, node, op.model_dump(exclude_none=True))
+            except StaticRepairError as exc:
+                raise editor.SceneEditError(exc.code, str(exc)) from exc
         else:
             if op.part is not None or op.action is None:
                 raise editor.SceneEditError(
@@ -255,6 +223,7 @@ def evidence(run, slide, request, preview=None):
     report["frame_count"] = len(frames)
     report["reference_geometry"] = frames[-1].get("geometry", {}) if frames else {}
     report["text_measurements"] = frames[-1].get("measurements", {}) if frames else {}
+    report["capacity_measurements"] = frames[-1].get("capacityMeasurements", {}) if frames else {}
     report["measurements_path"] = report["evidence_dir"] + "/report.json"
     from html_motion_activity import motion_activity
     report["motion_activity"] = motion_activity(preview["scene"])

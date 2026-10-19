@@ -306,3 +306,8 @@ def html_repair_evidence(project_id: str, slide_id: str, payload: TemporalReques
 @router.post("/api/projects/{project_id}/html-visual/{slide_id}/repair/generate")
 def html_repair_generate(project_id: str, slide_id: str, payload: RepairGenerateRequest, db: Any = Depends(_get_db)):
     return _repair_dispatch("generate", project_id, slide_id, payload, db)
+
+
+from html_handoff_routes import router as handoff_router
+
+router.include_router(handoff_router)

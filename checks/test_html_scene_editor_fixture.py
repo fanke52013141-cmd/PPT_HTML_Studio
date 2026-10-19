@@ -184,7 +184,7 @@ def main():
                 return self.send(data, mime=audio_mime, headers={"Accept-Ranges": "bytes"})
             if self.path == "/":
                 return self.send(
-                    b'<link rel="stylesheet" href="/static/html_scene_edit.css"><div id="host"></div><script>function showToast() {}</script><script src="/static/api_client.js"></script><script src="/static/html_editor_canvas.js"></script><script src="/static/html_editor_timeline_bridge.js"></script><script src="/static/html_scene_editor.js"></script><script src="/fixtures/editor-layout-controls.js"></script><script>HtmlSceneEditor.open(document.getElementById("host"),"isolated","condensation")</script>',
+                    b'<link rel="stylesheet" href="/static/html_scene_edit.css"><link rel="stylesheet" href="/static/html_workflow.css"><div id="host"></div><script>function showToast() {}</script><script src="/static/api_client.js"></script><script src="/static/html_editor_canvas.js"></script><script src="/static/html_editor_timeline_bridge.js"></script><script src="/static/html_handoff_workbench.js"></script><script src="/static/html_external_handoff.js"></script><script src="/static/html_scene_editor.js"></script><script src="/fixtures/editor-layout-controls.js"></script><script>HtmlSceneEditor.open(document.getElementById("host"),"isolated","condensation")</script>',
                     mime="text/html; charset=utf-8",
                 )
             files = {
@@ -196,6 +196,9 @@ def main():
                     "html_editor_timeline_bridge.js",
                     "html_scene_edit.css",
                     "html_audio_review.js",
+                    "html_external_handoff.js",
+                    "html_handoff_workbench.js",
+                    "html_workflow.css",
                 ]
             }
             files.update(
@@ -221,12 +224,33 @@ def main():
             if self.path.endswith("/editor"):
                 with project_artifact_lock(run):
                     return self.send(edit.load_editor(run, "condensation"))
+            if "/handoff/" in self.path and self.path.endswith("/bundle"):
+                import html_external_handoff as handoff
+                path = handoff.bundle_path(run, "isolated", "condensation", self.path.split("/")[-2])
+                return self.send(path.read_bytes(), mime="application/zip")
             self.send({}, 404)
 
         def do_PUT(self):
             self.mutate(False)
 
         def do_POST(self):
+            if "/handoff/" in self.path:
+                import html_external_handoff as handoff
+                payload = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                try:
+                    with project_artifact_lock(run):
+                        mode = self.path.rsplit("/", 1)[-1]
+                        if mode == "export":
+                            result = handoff.export_bundle(run, "isolated", "condensation", payload)
+                            result["download_url"] = f"/api/projects/isolated/html-visual/condensation/handoff/{result['task']['task_id']}/bundle"
+                        elif mode == "preview":
+                            result = handoff.import_preview(run, "isolated", "condensation", payload)
+                        else:
+                            result = handoff.save_result(run, "isolated", "condensation", payload)
+                    return self.send(result)
+                except Exception as error:
+                    return self.send({"detail": {"message": str(error), "code": getattr(error, "code", "INVALID")}},
+                                     getattr(error, "status_code", 422))
             if self.path == "/fixture/retime-audio" and not real_audio:
                 current = json.loads(timeline.read_text(encoding="utf-8"))
                 for segment in current["segments"]:

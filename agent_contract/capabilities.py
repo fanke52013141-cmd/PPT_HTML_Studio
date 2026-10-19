@@ -23,6 +23,8 @@ from pydantic import BaseModel
 from html_semantic_qa_models import SemanticSubmitRequest, SemanticDecisionRequest, SemanticReadRequest, SemanticResult
 from html_production_models import HtmlProduceRequest
 from html_repair_models import RepairRequest, RepairSaveRequest, TemporalRequest, RepairGenerateRequest, RepairResult
+from html_handoff_models import ExportRequest as HandoffExportRequest, ImportRequest as HandoffImportRequest
+from html_handoff_models import SaveRequest as HandoffSaveRequest, HandoffResult, BundleReadRequest, WorkReadRequest
 from agent_contract.models import HtmlDesignCandidateResult
 from agent_contract.models import HtmlManualCandidateDecisionRequest, HtmlManualCandidateResult
 from html_asset_sheet_models import (HtmlSheetReadRequest, HtmlSheetGenerateRequest,
@@ -123,6 +125,26 @@ class AgentCapability:
 CAPABILITIES: list[AgentCapability] = [
     *[
         AgentCapability(
+            id=f"html_handoff.{name}", version={"export": "0.4.1", "preview": "0.5.1", "save": "0.3", "work_read": "0.1"}.get(name, "0.2"), status=CapabilityStatus.stable,
+            description=description, request_model=request, response_model=HandoffResult,
+            agent_api_method=method,
+            agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/" + suffix,
+            mcp_tool_name=f"ppt_html_handoff_{name}", cli_command=f"html handoff-{name.replace(chr(95), chr(45))}",
+            service_ref=f"html_external_handoff.{function}", mcp_enabled=name != "bundle",
+        ) for name, method, suffix, request, function, description in [
+            ("work_read", "POST", "work/read", WorkReadRequest, "workbench_read", "Read persisted human work and original feedback; does not edit or save."),
+            ("export", "POST", "export", HandoffExportRequest, "export_bundle",
+             "Export a 0.2 portable page task: exact content, resolved style/layout, images/assets, operation schema and original timing. No provider, author or approval writes. Design-only packets cannot save operations."),
+            ("bundle", "GET", "{task_id}/bundle", BundleReadRequest, "bundle_path",
+             "Download the account-scoped verified external task ZIP as binary application/zip; not an MCP JSON result."),
+            ("preview", "POST", "preview", HandoffImportRequest, "import_preview",
+             "Import result JSON or bounded base64 delivery ZIP with report/evidence. Recheck server task, scope and source identity; archive external report as unverified, return original repair checks, comparison and portable feedback. No author write."),
+            ("save", "POST", "save", HandoffSaveRequest, "save_result",
+             "Explicitly save the same checked external result with result hash and candidate key through original AI repair guards. Existing human/semantic/output gates remain."),
+        ]
+    ],
+    *[
+        AgentCapability(
             id=f'html_sheet.{name}', version='1.0', status=CapabilityStatus.stable,
             description=description, request_model=request, response_model=HtmlSheetResult,
             agent_api_method=method, agent_api_path='/api/agent/v1/projects/{project_id}/html-asset-sheets' + suffix,
@@ -199,7 +221,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_scene_repair.generate_repair",
     ),
     AgentCapability(
-        id="html_editor.read", version="1.1", status=CapabilityStatus.stable,
+        id="html_editor.read", version="1.2", status=CapabilityStatus.stable,
         description="Read stored HTML author scene, motion binding, capabilities, validated resources, manual overrides and audio artifact revision under the project lock.",
         request_model=HtmlEditorReadRequest, response_model=HtmlEditorDocumentResult,
         agent_api_method="GET", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor",

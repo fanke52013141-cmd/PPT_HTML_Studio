@@ -5,6 +5,7 @@ const { fail } = require("./compiler.cjs");
 const { icon } = require("./icons.browser.cjs");
 const variants = require("./presentation-variants.json").variants;
 const { capacityEvidence } = require("./capacity.cjs");
+const {relationshipCapacity} = require("./relationship-capacity.cjs");
 const {frameFigure, dividedSummary, styleAnnotation, drawAnnotationLeader} = require("./presentation-structures.cjs");
 const {drawRelation,chartElements} = require("./course-structures.cjs");
 const SVG = "http://www.w3.org/2000/svg";
@@ -315,12 +316,17 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
     states = new Map(),
     geometry = {},
     measurements = {},
-    capacityIssues = [];
+    capacityIssues = [], capacityMeasurements = {};
   // Candidate diagnosis only: all schema/font/resource gates still execute.
   // Production callers retain strict capacity failure by default.
   function checkedMeasure(fn, el, limit, id) {
     try {
-      return fn(el, limit, id, stage);
+      const result = fn(el, limit, id, stage);
+      const box = el.getBoundingClientRect(), scale = stage.getBoundingClientRect().width / 1600;
+      capacityMeasurements[id] = {measured:{width:box.width/scale,height:box.height/scale},
+        effective_limits:typeof limit === "number"?{width:limit}:{...limit.box,maxLines:limit.maxLines},
+        tolerance:{width:1,height:1},units:"logical_canvas_px",status:"passed"};
+      return result;
     } catch (error) {
       if (!diagnostic || error.code !== "CONTENT_CAPACITY_EXCEEDED") throw error;
       const style = getComputedStyle(el);
@@ -349,6 +355,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         issue.flowColumns = getComputedStyle(summary.querySelector('.v-flow')).gridTemplateColumns;
       }
       capacityIssues.push(issue);
+      capacityMeasurements[id] = {measured:issue.measured,effective_limits:issue.effectiveLimits,tolerance:{width:1,height:1},units:"logical_canvas_px",status:"failed"};
       return { ...issue.measured, failed: true };
     }
   }
@@ -657,18 +664,15 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
         } else if (["summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns"].includes(node.presentation?.variant)) {
           const variant = variants.find(v => v.id === node.presentation.variant);
           const columnsResult = variant.termPosition === "takeaway_column";
-          const compact = node.presentation.variant !== "summary-relationship-panel";
-          const width = slot.box.width - variant.paddingX * 2;
-          const height = slot.box.height - variant.paddingY * 2;
+          const metrics = relationshipCapacity(variant, slot.box);
+          const {compact, height, columns} = metrics;
           const heading = el.querySelector(".v-summary-heading");
-          const fractions = variant.columns.reduce((a, b) => a + b, 0);
-          const columns = variant.columns.map(f => (width - variant.gap * 2) * f / fractions);
           Object.assign(el.style, {display:"grid",gridTemplateColumns:columns.map(px).join(" "),gap:px(variant.gap),padding:`${variant.paddingY}px ${variant.paddingX}px`,background:theme.colors[variant.backgroundToken],border:"none",borderRadius:px(theme.shapes.cardRadius),boxShadow:"none"});
           Object.assign(heading.style, {minWidth:"0",height:"100%",borderRight:`1px solid ${theme.colors.line}`,paddingRight:compact?"12px":"18px",boxSizing:"border-box",whiteSpace:"normal",gap:compact?"10px":"14px"});
           const mark = heading.querySelector("svg");
           Object.assign(mark.style, {width:compact?"42px":"58px",height:compact?"42px":"58px",padding:compact?"9px":"13px",boxSizing:"border-box",flexShrink:"0",borderRadius:"50%",background:theme.colors.ink,color:theme.colors.background});
           Object.assign(flow.style, {minWidth:"0",height:"100%",display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(80px,1.3fr) minmax(0,1fr)",gridTemplateRows:"1fr auto",gap:compact?"3px 7px":"6px 8px",borderRight:`1px solid ${theme.colors.line}`,paddingRight:compact?"12px":"18px",boxSizing:"border-box",alignItems:"center",justifyItems:"center"});
-          for (const state of [from,to]) Object.assign(state.style,{minWidth:"0",maxWidth:"100%",boxSizing:"border-box",padding:compact?"6px":"12px",border:`1px solid ${theme.colors.line}`,background:theme.colors.background,fontSize:compact?"20px":"26px"});
+          for (const state of [from,to]) Object.assign(state.style,{minWidth:"0",maxWidth:"100%",boxSizing:"border-box",padding:px(metrics.stateBox.paddingY),border:`1px solid ${theme.colors.line}`,background:theme.colors.background,fontSize:compact?"20px":"26px"});
           const connector = vector("svg");
           attributes(connector, {viewBox:"0 0 160 28",preserveAspectRatio:"none",width:"100%",height:28});
           connector.dataset.connector = "relationship";
@@ -688,9 +692,8 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           }
           const parts = {heading:heading.querySelector("span"),from,to,term,takeaway};
           for (const [part, text] of Object.entries(parts)) {
-            const available = part === "heading" ? columns[0]-(compact?12+42+10:18+58+14) : part === "takeaway" ? columns[2]-(columnsResult?22:0) : part === "term" ? (columnsResult?columns[2]:columns[1]-(compact?12:18)) : (columns[1]-(compact?12:18)-16)*1/3.3-(compact?12:24);
-            const partHeight = part === "from" || part === "to" ? height-(compact?12+20:32+24) : part === "term" ? (columnsResult?30:compact?24:32) : columnsResult && part === "takeaway" ? height-48 : height;
-            textNodes.push([text,{...slot,maxLines:variant.textBudgets[part],box:{...slot.box,width:available,height:partHeight}},node.id+":"+part]);
+            const limits = metrics.parts[part];
+            textNodes.push([text,{...slot,maxLines:limits.maxLines,box:{...slot.box,width:limits.width,height:limits.height}},node.id+":"+part]);
           }
           overflowChecks.push([el,slot.box.width,node.id]);
         } else {
@@ -956,7 +959,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           (ms < b.endMs || (ms === scene.durationMs && b.endMs === ms)),
       );
       subtitleText.textContent = editorLayout ? "" : beat?.text || "";
-      return { timeMs: ms, geometry, measurements, capacityIssues, subtitleFont: subtitleSize };
+      return { timeMs: ms, geometry, measurements, capacityMeasurements, capacityIssues, subtitleFont: subtitleSize };
     }
     const observer = new ResizeObserver(resize);
     observer.observe(host);

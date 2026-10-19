@@ -1849,3 +1849,8 @@ def agent_semantic_decision(project_id:str,slide_id:str,payload:SemanticDecision
     from html_visual_review_routes import _semantic_dispatch
     _html_project_or_404(project_id,db)
     return _semantic_dispatch("decision",project_id,slide_id,payload,db)
+
+
+from agent_api.html_handoff_routes import router as handoff_router
+
+router.include_router(handoff_router)

@@ -34,6 +34,7 @@ const { chromium } = require("../html_engine/node_modules/playwright");
     assert.equal((await page.evaluate(() => requests[1])).body.asset_instruction,'简化主体轮廓');
     await page.locator('[data-action="produce"]').click();
     await page.waitForFunction(() => !document.querySelector('[data-html-design]').hidden);
+    await page.locator('.html-design-revision summary').click();
     await page.locator('[data-design-instruction]').fill('增强标题层级');
     await page.locator('[data-action="revise-design"]').click();
     await page.waitForFunction(() => requests.length === 4);

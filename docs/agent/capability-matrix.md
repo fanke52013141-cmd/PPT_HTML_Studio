@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.51.0
-- **Contract Hash**: `0a4b61393bf4a5e0`
-- **Total Capabilities**: 65
+- **Agent API Version**: 1.55.1
+- **Contract Hash**: `1955ba5626df4f5b`
+- **Total Capabilities**: 70
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -11,6 +11,11 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 | Capability ID | Version | Status | Method | Agent API Path | MCP Tool | MCP enabled | CLI Command | Service Ref | Long-running | Destructive |
 |---|---|---|---|---|---|---|---|---|---|---|
+| `html_handoff.work_read` | 0.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/work/read` | `ppt_html_handoff_work_read` | Yes | `html handoff-work-read` | `html_external_handoff.workbench_read` | No | No |
+| `html_handoff.export` | 0.4.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/export` | `ppt_html_handoff_export` | Yes | `html handoff-export` | `html_external_handoff.export_bundle` | No | No |
+| `html_handoff.bundle` | 0.2 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/{task_id}/bundle` | `ppt_html_handoff_bundle` | No | `html handoff-bundle` | `html_external_handoff.bundle_path` | No | No |
+| `html_handoff.preview` | 0.5.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/preview` | `ppt_html_handoff_preview` | Yes | `html handoff-preview` | `html_external_handoff.import_preview` | No | No |
+| `html_handoff.save` | 0.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/save` | `ppt_html_handoff_save` | Yes | `html handoff-save` | `html_external_handoff.save_result` | No | No |
 | `html_sheet.list` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-asset-sheets` | `ppt_html_sheet_list` | Yes | `html sheet-list` | `html_asset_sheet_routes.sheet_list` | No | No |
 | `html_sheet.generate` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-asset-sheets/generate` | `ppt_html_sheet_generate` | Yes | `html sheet-generate` | `html_asset_sheet_routes.sheet_generate` | Yes | No |
 | `html_sheet.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-asset-sheets/{sheet_id}/{request_key}` | `ppt_html_sheet_read` | Yes | `html sheet-read` | `html_asset_sheet_routes.sheet_read` | No | No |
@@ -27,7 +32,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_repair.save` | 1.7 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
 | `html_repair.evidence` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
 | `html_repair.generate` | 1.4 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_scene_repair.generate_repair` | No | No |
-| `html_editor.read` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
+| `html_editor.read` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
 | `html_editor.write` | 1.1 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_write` | Yes | `html editor-write` | `html_scene_editing.save_editor` | No | No |
 | `html_editor.preview` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor/preview` | `ppt_html_editor_preview` | Yes | `html editor-preview` | `html_scene_editing.preview_editor` | No | No |
 | `generation.status` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/generation/{stage}/status` | `ppt_generation_status` | Yes | `generation status` | `generation_control.status` | No | No |
@@ -90,8 +95,12 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **60** stable tools:
+The MCP server exposes **64** stable tools:
 
+- `ppt_html_handoff_work_read` — Read persisted human work and original feedback; does not edit or save.
+- `ppt_html_handoff_export` — Export a 0.2 portable page task: exact content, resolved style/layout, images/assets, operation schema and original timing. No provider, author or approval writes. Design-only packets cannot save operations.
+- `ppt_html_handoff_preview` — Import result JSON or bounded base64 delivery ZIP with report/evidence. Recheck server task, scope and source identity; archive external report as unverified, return original repair checks, comparison and portable feedback. No author write.
+- `ppt_html_handoff_save` — Explicitly save the same checked external result with result hash and candidate key through original AI repair guards. Existing human/semantic/output gates remain.
 - `ppt_html_sheet_list` — List account-scoped HTML sheet candidates and latest persisted task for recovery.
 - `ppt_html_sheet_generate` — Submit a bounded HTML sheet task; freeze image model at submission, keep credentials only in memory. Mask requires configured exact segmentation. Query/stop using HTML task APIs.
 - `ppt_html_sheet_read` — Verify source/spec/mask/output hashes and read per-object reviews, revision and acceptance. No automatic identity approval.

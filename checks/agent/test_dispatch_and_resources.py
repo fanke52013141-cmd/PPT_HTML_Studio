@@ -121,7 +121,13 @@ class TestDispatchRouting:
 
     def test_every_advertised_mcp_capability_has_a_dispatch_path(self, mock_client):
         """Adding a tool to the registry must not leave it uncallable."""
+        handoff_result = {"task_id": "a" * 64, "status": "proposed", "message": "candidate",
+                          "operations": [{"targetId": "title", "kind": "set_text_style", "part": "text", "values": {"fontSizePx": 28}}]}
         strict_arguments = {
+            "html_handoff.work_read": {"project_id": "p1", "slide_id": "s1", "task_id": "a" * 64, "result_hash": "b" * 64},
+            "html_handoff.export": {"project_id": "p1", "slide_id": "s1", "task_type": "static_repair", "goal": "repair", "scope": ["title"], "expected_revision": 1},
+            "html_handoff.preview": {"project_id": "p1", "slide_id": "s1", "result": handoff_result},
+            "html_handoff.save": {"project_id": "p1", "slide_id": "s1", "result": handoff_result, "candidate_key": "a" * 64, "result_hash": "b" * 64},
             'html_sheet.list': {'project_id': 'p1'},
             'html_sheet.generate': {'project_id': 'p1', 'plan': {}},
             'html_sheet.assess': {'project_id': 'p1', 'sheet_id': 'board', 'request_key': 'a'*64},

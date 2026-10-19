@@ -125,6 +125,7 @@ const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
           passed: !process.env.HPS_CANDIDATE_DIAGNOSTIC && pageErrors.length === 0,
           diagnosticOnly: Boolean(process.env.HPS_CANDIDATE_DIAGNOSTIC),
           capacityIssues: result.capacityIssues,
+          capacityMeasurements: result.capacityMeasurements,
           sceneId: scene.id || null,
           durationMs: result.timeMs,
           measuredObjects: Object.keys(result.measurements || {}).length,

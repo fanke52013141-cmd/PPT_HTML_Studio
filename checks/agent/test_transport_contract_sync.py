@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from agent_contract.capabilities import CAPABILITIES, CapabilityStatus
+from route_inventory import iter_effective_routes
 
 
 def test_every_capability_has_a_matching_agent_api_route():
@@ -10,7 +11,7 @@ def test_every_capability_has_a_matching_agent_api_route():
 
     routes = {
         (method, route.path)
-        for route in router.routes
+        for route in iter_effective_routes(router)
         for method in route.methods or set()
         if method not in {"HEAD", "OPTIONS"}
     }
@@ -54,7 +55,7 @@ def test_every_agent_route_is_a_registered_capability():
         if cap.status != CapabilityStatus.removed
     }
     missing = []
-    for route in router.routes:
+    for route in iter_effective_routes(router):
         path = getattr(route, "path", "")
         if not path.startswith("/api/agent/v1"):
             continue

@@ -721,7 +721,7 @@
       bar.append(b);
       b.onclick = async () => {
         try {
-          if (s.previewing || s.saving || s.refreshing || active !== s) return;
+          if (s.previewing || s.saving || s.refreshing || s.handoffBusy || active !== s) return;
           await action();
         } catch (e) {
           notify(s, e.message);
@@ -759,6 +759,17 @@
     snapLabel.className = 'hse-snap'; snapLabel.prepend(snap); bar.append(snapLabel);
     snap.onchange = () => s.canvas?.setSnap(snap.checked);
     s.save = button("保存修改", () => save(s));
+    s.handoff = window.HtmlExternalHandoff?.mount(root, {
+      isCurrent: () => active === s,
+      canStart: () => !s.previewing && !s.saving && !s.refreshing && !s.handoffBusy,
+      getContext: () => ({ projectId, slideId, doc: s.doc, scope: [...s.selectedIds], saved: !s.dirty }),
+      setBusy: busy => { if (busy) s.timeline?.pause(); s.handoffBusy = busy; s.root.inert = busy; },
+      selectObject: id => selection(s, id),
+      onSaved: async () => {
+        drafts.delete(s.key);
+        await open(host, projectId, slideId);
+      },
+    });
     button("撤销", () => history(s, "undo", "redo"));
     button("重做", () => history(s, "redo", "undo"));
     button("播放 / 暂停", () => {
@@ -916,6 +927,7 @@
       active.root.inert = true;
       active.canvas?.destroy();
       active.timeline?.destroy();
+      active.handoff?.destroy();
       active.previewGeneration++;
       active.frame.contentWindow.visualPlayer?.pause();
     }

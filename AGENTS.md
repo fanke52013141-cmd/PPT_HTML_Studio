@@ -245,6 +245,12 @@ Stitch layers.
 
 ## Frontend Module Boundaries
 
+- `html_external_handoff.py` owns portable external-Agent task material/identity and original repair preview/save composition; `html_handoff_contract.py` derives allowed operations from registered schemas/capabilities, and `html_handoff_models.py` owns exchange models. Web/Agent adapters stay thin. No provider or approval writes; preserve the 0.1 SDK.
+- `html_handoff_delivery.py` owns bounded external delivery ZIP/JSON parsing only. Reports/evidence are untrusted data; never execute HTML, extract unchecked paths, or promote external claims into system/human approval. Import preview composes original protected repair and separate feedback; only explicit save changes authors.
+- `html_handoff_execution.py` owns derived execution facts, typed acceptance and portable checker composition. `html_repair_static.py` is the pure static mutation owner shared by production repair and the shipped checker; do not duplicate its semantics. Official preflight is structural only, not DOM/visual/audio approval.
+- `static/html_external_handoff.js` owns external task ZIP export, result import/preview and explicit save presentation. `html_scene_editor.js` supplies lifecycle/draft/selection bridges; `html_review_panel.js` supplies the design-only export entry. Do not move transport or escaping into this module or add a second renderer.
+- `static/html_handoff_workbench.js` owns the human parameter work UI and local undo/redo over server work versions. It reuses transport from the handoff owner and never renders slide bodies. `html_handoff_workbench.py` owns persisted human static amendments and mixed-source save composition; original repair/editor guards and invalidation remain authoritative.
+
 - `static/workflow_state.js` is the only shared workflow-state entry. It owns
   flow imports, state construction, `projectFlowContext`, and the explicit
   `window.PPTStudio.runtime` bridge. Do not recreate `static/app.js`.

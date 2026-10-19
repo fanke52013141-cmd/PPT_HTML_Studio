@@ -338,6 +338,7 @@
           <img alt="本页设计参考"></figure>
           <aside class="html-design-inspector"><h3>审阅与确认</h3>
           <p data-design-state></p>
+          <button type="button" data-action="export-design-handoff">导出设计交接包</button>
           <button class="success" type="button" data-action="accept-design">确认设计，开始 HTML 还原</button>
           <details class="html-design-revision"><summary>需要调整设计</summary>
           <label>设计修改方向 <textarea data-design-instruction maxlength="2000" placeholder="例如：加强标题层级，减少卡片边框"></textarea></label>
@@ -367,6 +368,20 @@
         refresh();
       });
       section.addEventListener('click', async event => {
+        if (event.target.closest('[data-action="export-design-handoff"]')) {
+          const current = context();
+          if (!current || operationInFlight) return;
+          const exportGeneration = generation;
+          const exportOperation = {};
+          operationInFlight = exportOperation;
+          try {
+            await window.HtmlExternalHandoff.exportDesign(current.project.id, current.slideId, designCandidate,
+              () => exportGeneration === generation);
+            if (exportGeneration === generation) status(section, '已导出设计图、权威规划及风格材料；设计包不直接保存页面。');
+          } catch (error) { if (exportGeneration === generation) status(section, error.message); }
+          finally { if (operationInFlight === exportOperation) operationInFlight = false; }
+          return;
+        }
         const manualButton = event.target.closest('button[data-manual-action]');
         if (manualButton) {
           if (!manualCandidate) return;

@@ -582,11 +582,19 @@ def cmd_html(args: argparse.Namespace) -> None:
     values = {"project_id": args.project}
     if getattr(args,"slide",None): values["slide_id"] = args.slide
     if getattr(args,"job",None): values["job_id"] = args.job
-    for field in ('sheet_id', 'request_key', 'asset_id'):
+    for field in ('sheet_id', 'request_key', 'asset_id', 'task_id'):
         if getattr(args, field, None): values[field] = getattr(args, field)
     if getattr(args,"file",None):
         values.update(json.loads(Path(args.file).read_text(encoding="utf-8")))
     try:
+        if args.capability_id == 'html_handoff.bundle':
+            from urllib.parse import quote
+            cap = next(c for c in CAPABILITIES if c.id == args.capability_id)
+            path = cap.agent_api_path.format(**{key: quote(value, safe='') for key, value in values.items()})
+            data, _ = client.get_bytes(path)
+            Path(args.out).write_bytes(data)
+            _print_json({'saved': args.out})
+            return
         _print_json(_dispatch(args.capability_id, values, client))
     except AgentClientError as error:
         _print_error(str(error)); sys.exit(1)
@@ -624,10 +632,12 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--project",required=True)
         if "{slide_id}" in cap.agent_api_path: command.add_argument("--slide",required=True)
         if "{job_id}" in cap.agent_api_path: command.add_argument("--job",required=True)
-        for field in ('sheet_id', 'request_key', 'asset_id'):
+        for field in ('sheet_id', 'request_key', 'asset_id', 'task_id'):
             if '{' + field + '}' in cap.agent_api_path:
                 command.add_argument('--' + field.replace('_', '-'), required=True)
-        if cap.id.startswith("html_repair.") or cap.id in ("html_semantic.submit", "html_semantic.decision", "html_review.manual_candidate_decision") or cap.id in ("html_visual.scene_write", "project_model_binding.write", "html_editor.write", "html_editor.preview", 'html_sheet.generate', 'html_sheet.review', 'html_sheet.accept', 'html_sheet.assess', 'html_sheet.retry'):
+        if cap.id == 'html_handoff.bundle':
+            command.add_argument('--out', required=True, help='Output ZIP path')
+        elif cap.id.startswith(("html_repair.", "html_handoff.")) or cap.id in ("html_semantic.submit", "html_semantic.decision", "html_review.manual_candidate_decision") or cap.id in ("html_visual.scene_write", "project_model_binding.write", "html_editor.write", "html_editor.preview", 'html_sheet.generate', 'html_sheet.review', 'html_sheet.accept', 'html_sheet.assess', 'html_sheet.retry'):
             command.add_argument("--file", required=True, help="JSON request matching the registered capability schema")
         elif cap.id in ("html_review.review","html_review.approve", "html_review.produce", "html_review.plan_generate"): command.add_argument("--file",help="Optional JSON request matching the capability schema")
         command.set_defaults(func=cmd_html,capability_id=cap.id)

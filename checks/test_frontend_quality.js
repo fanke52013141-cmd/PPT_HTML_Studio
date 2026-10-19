@@ -1365,6 +1365,12 @@ for (const token of ['design_candidate_key', 'design_instruction', 'accept-desig
   if (!htmlReviewPanel.includes(token)) throw new Error(`HTML design checkpoint missing: ${token}`);
 }
 const sceneEditor = fs.readFileSync(path.join(root,'static/html_scene_editor.js'),'utf8');
+const externalHandoff = fs.readFileSync(path.join(root,'static/html_external_handoff.js'),'utf8');
+if (!html.includes('src="html_external_handoff.js?') || html.indexOf('src="html_external_handoff.js?') > html.indexOf('src="html_scene_editor.js?')) throw Error('External handoff owner must load before scene editor');
+for (const owner of ['window.HtmlExternalHandoff =', '导出输入包', '导入 Agent 输出', '导出检查反馈', 'delivery_base64', 'reportBody.textContent', '保存本次候选', '/preview', '/save']) {
+  if (!externalHandoff.includes(owner) || app.includes(owner)) throw Error(`External handoff ownership is missing or misplaced: ${owner}`);
+}
+if (!sceneEditor.includes('HtmlExternalHandoff?.mount')) throw Error('Editor external handoff bridge missing');
 const editorCanvas = fs.readFileSync(path.join(root,'static/html_editor_canvas.js'),'utf8');
 const editorTimeline = fs.readFileSync(path.join(root,'static/html_editor_timeline_bridge.js'),'utf8');
 if (!html.includes('src="html_editor_timeline_bridge.js?') || html.indexOf('src="html_editor_timeline_bridge.js?') > html.indexOf('src="html_scene_editor.js?')) throw Error('Timeline bridge must load before editor');
@@ -1396,3 +1402,7 @@ if(!html.includes('src="html_semantic_qa.js?')||html.indexOf('src="html_semantic
 if(/\bfetch\s*\(/.test(semanticQaUi)||semanticQaUi.includes('MutationObserver'))throw Error('Semantic QA must use shared API and explicit lifecycle');
 const htmlAudioReview=fs.readFileSync(path.join(root,'static/html_audio_review.js'),'utf8');
 if(!htmlAudioReview.includes('HtmlSemanticQA?.mount')||htmlReviewPanel.includes('HtmlSemanticQA?.mount')||app.includes('HtmlSemanticQA'))throw Error('Semantic QA mounting belongs to HTML audio review module');
+
+const handoffWork = fs.readFileSync(path.join(root,'static/html_handoff_workbench.js'),'utf8');
+if (!html.includes('src="html_handoff_workbench.js?') || html.indexOf('src="html_handoff_workbench.js?') > html.indexOf('src="html_external_handoff.js?')) throw Error('Human work owner must load before external handoff');
+if (/visualPlayer|innerHTML|fetch\(/.test(handoffWork)) throw Error('Human work UI must reuse transport and original renderer services');

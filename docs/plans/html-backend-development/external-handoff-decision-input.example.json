@@ -1,0 +1,448 @@
+{
+  "format": "hps.html.decision_input.proposal",
+  "status": "design_only_not_importable",
+  "notice": "拟议决策视图示例，未注册为API/Schema，不能替换现有task.json或导入当前接口；不含修复答案。",
+  "provenance": {
+    "source_task_id_for_reference_only": "dbe7bc1c71f984822c959f8a38b84486b61eeda7536cf517e9b20df404faa4b0",
+    "new_task_id": null,
+    "source": "real Token course slide_003 isolated baseline; unchanged author revision 1",
+    "original_content_ref": "content.json",
+    "canonical_input_ref": "task.json"
+  },
+  "task": {
+    "type": "static_repair",
+    "goal": "提升底栏关系标签可读性，保持原文和现有风格/关系/动作；允许在已确认范围内联动必要的注册尺寸/位移。",
+    "goals": [
+      {
+        "id": "summary-from-min-font",
+        "targetId": "obj-summary",
+        "part": "from",
+        "minimum_px": 22.0
+      },
+      {
+        "id": "summary-to-min-font",
+        "targetId": "obj-summary",
+        "part": "to",
+        "minimum_px": 22.0
+      },
+      {
+        "id": "summary-takeaway-min-font",
+        "targetId": "obj-summary",
+        "part": "takeaway",
+        "minimum_px": 22.0
+      }
+    ],
+    "preferences": [
+      "保留现有呈现，优先满足全部约束的最小变更",
+      "不要为减少操作数保留一个已知不满足容量的方案"
+    ]
+  },
+  "scope": {
+    "primary_editable": [
+      "obj-summary"
+    ],
+    "spacing_editable": [
+      "obj-card-1",
+      "obj-card-2",
+      "obj-card-3"
+    ],
+    "readonly_context": [
+      "obj-intro",
+      "obj-figure",
+      "obj-subject",
+      "obj-anchor-label",
+      "obj-annotation"
+    ],
+    "allowed_ops_ref": "task.json#/operation_schema",
+    "protected_paths_ref": "task.json#/context/protected_paths",
+    "scope_changes_require_new_task": true
+  },
+  "must_preserve": [
+    "准确文字、数值、方向关系、heading可见性和强调",
+    "neutral-baseline@0.2.0与science-explanation-v1@0.2.0",
+    "原独立PNG字节及原讲稿",
+    "全部motion/binding/actionId/beatId",
+    "非scope对象及已有人工保护",
+    "不缩小其他正文"
+  ],
+  "style": {
+    "theme": {
+      "id": "neutral-baseline",
+      "version": "0.2.0"
+    },
+    "layout": {
+      "id": "science-explanation-v1",
+      "version": "0.2.0"
+    },
+    "font_family": "Microsoft YaHei",
+    "font_files_distributed": false,
+    "font_readiness": "host-check required; portable structural tool does not measure DOM"
+  },
+  "baseline": {
+    "node": {
+      "from": {
+        "text": "只看字数",
+        "tone": "pink"
+      },
+      "heading": {
+        "icon": "coins",
+        "text": "费用怎么算"
+      },
+      "id": "obj-summary",
+      "presentation": {
+        "height": 140,
+        "icon": "coins",
+        "offsetY": -32,
+        "typography": {
+          "from": {
+            "fontSizePx": 17,
+            "lineHeight": 1.0,
+            "weight": 700
+          },
+          "takeaway": {
+            "fontSizePx": 22,
+            "lineHeight": 1.5
+          },
+          "to": {
+            "fontSizePx": 17,
+            "lineHeight": 1.0,
+            "weight": 700
+          }
+        },
+        "variant": "summary-relationship-panel"
+      },
+      "slot": "summary",
+      "takeaway": "结合实际用量和该模型价目表，不能只看字数",
+      "term": "计费依据",
+      "to": {
+        "text": "用量+价目",
+        "tone": "green"
+      },
+      "type": "summary"
+    },
+    "slot_and_author_boxes": {
+      "targetId": "obj-summary",
+      "slot_box": {
+        "x": 58,
+        "y": 677,
+        "width": 1477,
+        "height": 91
+      },
+      "current_author_box": {
+        "x": 58,
+        "y": 645,
+        "width": 1477,
+        "height": 140
+      },
+      "retained_actions": [
+        {
+          "actionId": "act-b5-summary-enter",
+          "durationMs": 500,
+          "offsetX": 0,
+          "offsetY": 12,
+          "startMs": 14000,
+          "targetId": "obj-summary",
+          "type": "enter"
+        }
+      ],
+      "rule": "base x/y >=0; right<=1600; bottom<=800; enter offset endpoint must also stay inside; static repair keeps all action/binding data"
+    },
+    "actual_render_ref": "evidence/frame-2.png",
+    "image_time_ms": 17500,
+    "image_role": "baseline_actual_shared_player_frame",
+    "image_pixels_are_author_coordinates": false
+  },
+  "part_constraints": [
+    {
+      "targetId": "obj-summary",
+      "part": "from",
+      "current_font_px": 17,
+      "current_line_height": 1.0,
+      "measured": {
+        "outer_height_px": null
+      },
+      "measurement_status": "legacy_baseline_actual_box_not_exported",
+      "effective_limits": {
+        "outer_height_px": 44,
+        "max_lines": 1,
+        "tolerance_px": 1
+      },
+      "box_model": {
+        "part_padding_y_each_px": 12,
+        "part_border_y_each_px": 1,
+        "applies_to": "outer border box, not text glyph height",
+        "status": "source-confirmed constants; automatic same-source export proposed, not implemented"
+      },
+      "depends_on": [
+        "obj-summary.presentation.height",
+        "obj-summary.presentation.variant",
+        "obj-summary.presentation.typography.from.fontSizePx",
+        "obj-summary.presentation.typography.from.lineHeight",
+        "production renderer and actual font bytes"
+      ],
+      "stale_when_dependencies_change": true,
+      "units": "logical_canvas_px",
+      "source_refs": [
+        "task.json#/context/evidence/text_measurements/obj-summary:from",
+        "html_engine/visual/renderer.cjs measure and registered relationship capacity branch"
+      ],
+      "warning": "44是当前有效预算，旧字段text_measurements.height不是实际外框；改高度/变体后不得继续用旧44。"
+    },
+    {
+      "targetId": "obj-summary",
+      "part": "to",
+      "current_font_px": 17,
+      "current_line_height": 1.0,
+      "measured": {
+        "outer_height_px": null
+      },
+      "measurement_status": "legacy_baseline_actual_box_not_exported",
+      "effective_limits": {
+        "outer_height_px": 44,
+        "max_lines": 1,
+        "tolerance_px": 1
+      },
+      "box_model": {
+        "part_padding_y_each_px": 12,
+        "part_border_y_each_px": 1,
+        "applies_to": "outer border box, not text glyph height",
+        "status": "source-confirmed constants; automatic same-source export proposed, not implemented"
+      },
+      "depends_on": [
+        "obj-summary.presentation.height",
+        "obj-summary.presentation.variant",
+        "obj-summary.presentation.typography.to.fontSizePx",
+        "obj-summary.presentation.typography.to.lineHeight",
+        "production renderer and actual font bytes"
+      ],
+      "stale_when_dependencies_change": true,
+      "units": "logical_canvas_px",
+      "source_refs": [
+        "task.json#/context/evidence/text_measurements/obj-summary:to",
+        "html_engine/visual/renderer.cjs measure and registered relationship capacity branch"
+      ],
+      "warning": "44是当前有效预算，旧字段text_measurements.height不是实际外框；改高度/变体后不得继续用旧44。"
+    }
+  ],
+  "geometry_constraints": {
+    "canvas": {
+      "width": 1600,
+      "height": 900,
+      "contentBottom": 800,
+      "subtitleHeight": 100
+    },
+    "objects": [
+      {
+        "targetId": "obj-summary",
+        "slot_box": {
+          "x": 58,
+          "y": 677,
+          "width": 1477,
+          "height": 91
+        },
+        "current_author_box": {
+          "x": 58,
+          "y": 645,
+          "width": 1477,
+          "height": 140
+        },
+        "retained_actions": [
+          {
+            "actionId": "act-b5-summary-enter",
+            "durationMs": 500,
+            "offsetX": 0,
+            "offsetY": 12,
+            "startMs": 14000,
+            "targetId": "obj-summary",
+            "type": "enter"
+          }
+        ],
+        "rule": "base x/y >=0; right<=1600; bottom<=800; enter offset endpoint must also stay inside; static repair keeps all action/binding data"
+      },
+      {
+        "targetId": "obj-card-1",
+        "slot_box": {
+          "x": 58,
+          "y": 294,
+          "width": 850,
+          "height": 102
+        },
+        "current_author_box": {
+          "x": 58,
+          "y": 294,
+          "width": 850,
+          "height": 102
+        },
+        "retained_actions": [
+          {
+            "actionId": "act-b2-card-1-enter",
+            "durationMs": 500,
+            "offsetX": 0,
+            "offsetY": 12,
+            "startMs": 3500,
+            "targetId": "obj-card-1",
+            "type": "enter"
+          },
+          {
+            "actionId": "act-b4-card-1-emphasize",
+            "durationMs": 500,
+            "startMs": 10500,
+            "targetId": "obj-card-1",
+            "type": "emphasize"
+          }
+        ],
+        "rule": "base x/y >=0; right<=1600; bottom<=800; enter offset endpoint must also stay inside; static repair keeps all action/binding data"
+      },
+      {
+        "targetId": "obj-card-2",
+        "slot_box": {
+          "x": 58,
+          "y": 411,
+          "width": 850,
+          "height": 102
+        },
+        "current_author_box": {
+          "x": 58,
+          "y": 411,
+          "width": 850,
+          "height": 102
+        },
+        "retained_actions": [
+          {
+            "actionId": "act-b3-card-2-enter",
+            "durationMs": 500,
+            "offsetX": 0,
+            "offsetY": 12,
+            "startMs": 7000,
+            "targetId": "obj-card-2",
+            "type": "enter"
+          },
+          {
+            "actionId": "act-b4-card-2-emphasize",
+            "durationMs": 500,
+            "startMs": 10500,
+            "targetId": "obj-card-2",
+            "type": "emphasize"
+          }
+        ],
+        "rule": "base x/y >=0; right<=1600; bottom<=800; enter offset endpoint must also stay inside; static repair keeps all action/binding data"
+      },
+      {
+        "targetId": "obj-card-3",
+        "slot_box": {
+          "x": 58,
+          "y": 528,
+          "width": 850,
+          "height": 102
+        },
+        "current_author_box": {
+          "x": 58,
+          "y": 528,
+          "width": 850,
+          "height": 102
+        },
+        "retained_actions": [
+          {
+            "actionId": "act-b4-card-3-enter",
+            "durationMs": 500,
+            "offsetX": 0,
+            "offsetY": 12,
+            "startMs": 10500,
+            "targetId": "obj-card-3",
+            "type": "enter"
+          }
+        ],
+        "rule": "base x/y >=0; right<=1600; bottom<=800; enter offset endpoint must also stay inside; static repair keeps all action/binding data"
+      }
+    ],
+    "overlap_coverage": {
+      "pairs": [
+        [
+          "obj-intro",
+          "obj-card-1"
+        ],
+        [
+          "obj-card-1",
+          "obj-card-2"
+        ],
+        [
+          "obj-card-2",
+          "obj-card-3"
+        ],
+        [
+          "obj-card-3",
+          "obj-summary"
+        ]
+      ],
+      "exclusions": [],
+      "scope": "explicit",
+      "limit": "Only listed pairs tested; no claim about omitted pairs, alpha-content occlusion or continuous time. Human review covers remaining visual conflicts."
+    },
+    "warning": "内部容量、作者框、保留enter端点和指定对象对均需检查；任何一项通过都不能替代其他项。"
+  },
+  "tool_coverage": {
+    "portable_structural": {
+      "available_in_current_bundle": true,
+      "command": "python tools/check_task.py --task task.json --result result.json --out preflight.json",
+      "checks": [
+        "identity",
+        "scope and operation schema",
+        "static mutation",
+        "author font minimum",
+        "production compile and enter endpoint"
+      ],
+      "not_checked": [
+        "actual DOM capacity",
+        "sampled overlap",
+        "human visual quality",
+        "audio sync"
+      ]
+    },
+    "original_preview": {
+      "agent_endpoint_provided": false,
+      "route": "交接方导入后用原repair/播放器复核并回传反馈",
+      "proposed_improvement": "机器化有效预算和完整反馈ZIP；原预览访问作为可选后续能力"
+    },
+    "extra_paid_visual_tools": {
+      "authorization": "must be explicitly stated by the issuing task, separate from capability and offline-tool requirements",
+      "no_authorization_is_not_free_budget": true
+    }
+  },
+  "verification_proposal": {
+    "status": "unregistered_design_only",
+    "split_visual_items": [
+      "baseline_visual_review",
+      "candidate_visual_review",
+      "human_visual_decision"
+    ],
+    "host_owns": [
+      "system receipts",
+      "human approval",
+      "save permission"
+    ],
+    "legacy_rule": "当前旧task仍使用原verification.schema/criterion_id，不能直接加入这些新项。"
+  },
+  "delivery": {
+    "result_version": "use actual issued schema; current baseline is 0.2.0",
+    "root_files": [
+      "result.json",
+      "report.md",
+      "verification.json",
+      "preflight.json for static proposed"
+    ],
+    "rounds": 2,
+    "stop_after_each_delivery": true,
+    "save_or_approve": false
+  },
+  "human_handoff_proposal": {
+    "status": "not_implemented",
+    "copies": [
+      "formal baseline B",
+      "original external candidate A",
+      "working draft W"
+    ],
+    "on_check_failure": "keep original B and candidate A; allow legal diagnostic working draft W",
+    "on_human_change": "invalidate prior receipt, record human-touched leaves, recheck final W",
+    "on_save": "current source/working hash/identity/protection and full original checks required"
+  }
+}

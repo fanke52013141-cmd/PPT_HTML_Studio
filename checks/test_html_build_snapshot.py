@@ -32,7 +32,7 @@ def test_generation_pins_contract_and_reuses_identity(page):
     assert manifest["kind"] == "generation" and manifest["provider_called"] is False
     assert any("browser-runtime.cjs" in item["path"] for item in manifest["files"])
     paths = {item['path'] for item in manifest['files']}
-    assert {'source/html_motion_activity.py', 'source/html_repair_models.py'} <= paths
+    assert {'source/html_motion_activity.py', 'source/html_repair_models.py', 'source/html_repair_static.py'} <= paths
     stored = json.loads((Path(one["path"]) / "input/contract.json").read_text(encoding="utf-8"))
     contract["narration"] = "changed"
     assert stored["narration"] == "测试内容"

@@ -74,7 +74,7 @@ def main():
     skill_source = ROOT / '.agents/skills/produce-editable-html/SKILL.md'
     skill_excerpt = next(line for line in skill_source.read_text(encoding='utf-8').splitlines()
                          if line.startswith('按局部编辑Skill执行：'))
-    tool_hash = hashlib.sha256((ROOT/'html_scene_repair.py').read_bytes()).hexdigest()
+    tool_hash = hashlib.sha256(b''.join((ROOT/name).read_bytes() for name in ('html_scene_repair.py', 'html_repair_static.py', 'html_engine/visual/relationship-capacity.cjs'))).hexdigest()
     try:
         for case in ('layout', 'timing', 'protected', 'unsupported'):
             run = output / case
