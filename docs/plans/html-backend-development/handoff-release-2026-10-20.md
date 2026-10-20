@@ -75,3 +75,14 @@ $env:PPT_STUDIO_RUNS_DIR = Join-Path $studioCheckout 'runs'
 发布全量检查发现已有新增能力与传输分发不一致：MCP未将html_agent/agent_workflow纳入原严格通用分发；CLI缺项目工作流命令及局部任务创建JSON参数。补丁沿原capability Schema校验、路径编码及AgentClient._request修复，不新增业务存储/批准/模型调用。实际CLI解析并执行8种动作的回归覆盖POST/GET、参数文件、URL编码与精确请求体；MCP全能力可达性原断言保留。传输及合同回归97 passed、Ruff通过。API和合同版本保持。
 
 canonical full中的首轮pytest已经加载修正前的MCP模块，会保留该历史失败；不得覆盖日志伪造全绿。最终全量结果及后续修订提交在最终回执记录。GitHub网页CI与本机全量状态分开；无法读取远端状态时不能报告CI已通过。
+
+## 线上源码核对与验证状态
+
+- 主功能提交：`1578d32c78e099e2d6f782b414aa55e94e87a0a5`。
+- MCP/CLI修正提交：`7ea5e442ab79bf05f61ffe57a51f8bcb305704f5`。两次git push origin main成功，git ls-remote核对该提交与本地HEAD一致；后续只追加本文等发布备注。
+- 本次canonical quick及独立脚本检查：通过（由full入口先执行）。编辑器16项通过；Remotion TypeScript退出0；传输/合同97项通过；暂存空白/路径及凭据模式检查通过。
+- 本次canonical full的全量pytest仍在执行，已观察到修正前MCP分发遗漏的首轮失败；不能称全量通过。最终进程结果需读取本机outputs/publish-20261020-full.log。最先失败单独复现为1 failed/137 passed；修正后97项包含原失败用例和8种CLI实际分发回归，均通过。
+- 远端GitHub工作流查询未返回本次run，未取得CI通过证据；不要用本机quick或推送成功代替远端CI通过。
+- 本次是源码/规范/备注发布，正式应用未重启、未部署，课程/数据库/凭据/生成媒体未上传。运行状态和供应商unknown的处理以上文终态为准。
+
+接手后先收齐全量日志或GitHub新CI结果；若有新失败，保持日志原样，针对原因修正并另加提交，不改写已发布历史或放宽来源/批准守卫。
