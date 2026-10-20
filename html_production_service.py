@@ -683,6 +683,7 @@ def produce_scene(
             if not definitions_unchanged():
                 raise HtmlReviewError("修复期间定义已变化，请重新提交", code="DESIGN_STALE", status_code=409)
             provenance = {"format": "hps.html.production_provenance", "version": "0.1.0",
+                          "runner": selection.runner, "origin": "ai",
                           "model_summary": model_summary, "themeRef": scene["themeRef"],
                           "design_candidate_key": selection.design_candidate_key,
                           "files": [], "supplied_asset_ids": sorted(reused_assets),
@@ -738,8 +739,17 @@ def produce_scene(
                 "rebuild_plan": rebuild_plan,
                 "message": "已生成实际场景；请查看截图后批准。",
             }
+            history = {}
+            if changed and selection.runner == "pi":
+                from html_scene_editing import history_checkpoint_files
+                history = history_checkpoint_files(run_dir, slide_id, (
+                    (revision, original_scene, original_binding), (result["revision"], scene, binding)))
+                for path, data in history.items():
+                    previous[path] = path.read_bytes() if path.exists() else None
+                    pending[path] = data
             # Receipt seals all author files while the author lock is held.
             commit_paths = list(rollback_paths)
+            commit_paths.extend(history)
             if report.get("screenshot"):
                 from html_build_snapshot import safe_file
                 commit_paths.append(safe_file(run_dir, report["screenshot"].replace("\\", "/")))
@@ -761,6 +771,8 @@ def produce_scene(
                 _atomic_write_bytes(revision_path(run_dir), pending[revision_path(run_dir)])
             if resumed:
                 _atomic_write_bytes(candidate_dir / "design-acceptance.json", pending[candidate_dir / "design-acceptance.json"])
+            for path, data in history.items():
+                _atomic_write_bytes(path, data)
             commit_record(output, commit_paths)
             committed = True
         finally:

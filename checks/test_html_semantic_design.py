@@ -33,12 +33,48 @@ def test_allocation_and_ordered_state_reach_actual_reference_package(tmp_path):
     assert next(o for o in design["allocations"] if o["id"] == "card-1")["render_owner"] == "code"
     package = assemble_reference(plan, brief, repo_root=ROOT, directory=tmp_path / "package", runner=run_subprocess_killable)
     prompt = design_prompt(package)
-    assert "html-design-reference/0.4.0" in prompt and "semanticDesign" in prompt
+    assert "html-design-reference/0.4.1" in prompt and "semanticDesign" in prompt
     assert "instructional" in prompt and "whole_asset_only" in prompt
     assert "plan_sha256" not in prompt and "spoken_text_sha256" not in prompt
     assert "actionId" not in json.dumps(package["content"]["semanticDesign"])
     assert package["references"] and all(Path(p).is_file() for p in package["references"])
     assert [f["stage"] for f in required_keyframes(plan)] == ["start"] + ["relation_change"] * 5 + ["end"]
+
+
+def test_visible_copy_sources_preserve_occurrences_and_exclude_semantic_metadata():
+    from html_reference_package import screen_text_sources
+    slots = {
+        "header": {"kind": "header", "number": "03", "title": "相同文字"},
+        "copy": {"kind": "text", "runs": [{"text": "相同文字", "emphasis": True},
+                                               {"text": "：解释", "emphasis": False}]},
+        "summary": {"kind": "summary", "from": {"text": "字数"},
+                    "to": {"text": "用量"}, "term": "计费依据", "takeaway": "按价目表"},
+        "relation": {"kind": "annotation", "labelId": "do-not-print", "targetId": "copy"},
+        "subject": {"kind": "image", "assetRef": {"id": "do-not-print"}},
+        "figure": {"kind": "figure", "tag": {"text": "已有标签", "icon": "lightbulb"}},
+        "chart": {"kind": "chart", "xLabel": "时间", "yLabel": "用量", "unit": "次"},
+    }
+    sources = screen_text_sources(slots)
+    assert sources == ["slots.header.number", "slots.header.title", "slots.copy.runs",
+        "slots.summary.from.text", "slots.summary.to.text", "slots.summary.term",
+        "slots.summary.takeaway", "slots.figure.tag.text", "slots.chart.xLabel",
+        "slots.chart.yLabel", "slots.chart.unit"]
+    content = design_content({"slide_id": "test", "templateRef": {}, "layoutRef": {},
+                             "slots": slots}, {"asset_needs": []})
+    prompt = design_prompt({"content": content, "guidance": {"style": {}}})
+    assert content["screenTextSources"] == sources
+    assert "html-design-reference/0.3.1" in prompt
+    assert "未定义的heading/tag/note保持缺席" in prompt
+    assert "相同文字在不同来源路径出现时各保留一次" in prompt
+    assert "只画计划已有arrow/annotation" in prompt
+    legacy_content = copy.deepcopy(content)
+    legacy_content.pop("screenTextSources")
+    legacy_package = {"content": legacy_content, "guidance": {"style": {}}}
+    before = copy.deepcopy(legacy_package)
+    revised = design_prompt(legacy_package, instruction="只修正多余文字", revise_existing=True)
+    assert legacy_package == before
+    assert json.dumps(sources, ensure_ascii=False) in revised
+    assert "最后一张附件" in revised
 
 
 @pytest.mark.parametrize("change,code", [

@@ -1,5 +1,17 @@
 # HTML Studio
 
+2026-10-20源码同步：[最新发布与跨机handoff](docs/plans/html-backend-development/handoff-release-2026-10-20.md)；契约0.9.108/API1.59.0。候选编辑、关联修复、Pi M0–M5和设计对应约束；真实新页尚未验收，Legacy默认保持。提交/检查终态以发布回执为准。
+
+2026-10-20：[设计图与计划对应修复、新对照任务](docs/plans/html-backend-development/handoff-design-plan-alignment-2026-10-20.md)，契约0.9.108；实际新图已核对，原计划不改，Legacy/Pi同输入重测；正式视觉批准独立。
+
+2026-10-20：[Pi Agent M4–M5工程交付](docs/plans/html-backend-development/handoff-pi-agent-m4-m5-2026-10-20.md)，契约0.9.106/API1.59.0。新页选择Pi、预授权修复另存AI版本，文章/讲稿/可视化与批量候选固定API；保留旧默认，真实重复质量与默认切换另验。源码未发布，正式服务未重启。
+
+前序：[M0–M3交付与真实验证](docs/plans/html-backend-development/handoff-pi-agent-m0-m3-2026-10-20.md)，真实简单任务通过，复杂任务失败分别留证。
+
+2026-10-20：[中文联动修复、关联组采用与四类评测](docs/plans/html-backend-development/handoff-repair-assistance-2026-10-20.md)，契约0.9.104/API1.57.0；外部真实自主效果与离线流程验证分别记录。
+
+2026-10-20：[候选画布、中文属性与保存版本恢复交接](docs/plans/html-backend-development/handoff-candidate-canvas-history-2026-10-20.md)，契约0.9.103/API1.56.0。新功能与验证边界以该交接为准。
+
 2026-10-19 本批源码更新：[外部Agent真实交接与二次编辑handoff](docs/plans/html-backend-development/handoff-external-agent-and-secondary-editing-2026-10-19.md)，[发布备注](docs/releases/2026-10-19-external-agent-handoff-and-editing.md)。契约0.9.102/API1.55.1；真实外部首轮已通过严格导入和原预览，尚未保存/批准。下一批优先候选画布编辑、易懂属性与恢复能力，当前仍为参数接手。Git更新不含课程数据或应用部署；下方“待回传/本地未发布”为历史阶段记录。
 
 2026-10-19 本地勘误：[执行2.1.1能力与交付修订](docs/plans/html-backend-development/handoff-execution211-2026-10-19.md)，契约0.9.102/API1.55.1。缺必需能力须停止、要求看图的候选须记录原图审阅；原播放器/after接续另列。旧输入2.1试验包保持历史，重试须重新导出；本地未发布。

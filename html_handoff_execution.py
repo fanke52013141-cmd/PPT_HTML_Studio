@@ -31,13 +31,14 @@ console.log(JSON.stringify({source:build.outputFiles[0].text}));
 
 
 def definition_files():
-    return ["html_handoff_execution.py", "html_repair_static.py", "html_handoff_diagnostics.py", "html_handoff_workbench.py", "scripts/check_external_task.py",
+    return ["html_handoff_execution.py", "html_handoff_assistance.py", "html_repair_static.py", "html_handoff_diagnostics.py", "html_handoff_workbench.py", "scripts/check_external_task.py",
             "html_engine/tools/handoff-preflight.cjs", "html_engine/visual/compiler.cjs",
             "html_engine/visual/generated/validators.cjs", "html_engine/package-lock.json",
             "html_engine/src/registry.cjs", "html_engine/src/timeline.cjs", "html_engine/visual/icons.cjs",
             "html_engine/visual/presentation-variants.json", "html_engine/visual/course-structures.cjs", "html_engine/visual/relationship-capacity.cjs",
             "docs/contracts/html-presentation/runtime/visual-v1/external-agent-execution-2.0.0.md",
-            "docs/contracts/html-presentation/runtime/visual-v1/external-agent-workbench-0.1.0.md", "docs/agent/external-agent-entry.md"]
+            "docs/contracts/html-presentation/runtime/visual-v1/external-agent-workbench-0.1.0.md",
+            "docs/contracts/html-presentation/runtime/visual-v1/repair-assistance-0.1.0.md", "docs/agent/external-agent-entry.md"]
 
 
 def create_execution(doc, request):

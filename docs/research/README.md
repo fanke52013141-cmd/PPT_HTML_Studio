@@ -1,5 +1,11 @@
 # 调研与借鉴档案
 
+RES-20261020-PI-01追加：M4原新页生产的Pi SDK阶段适配、预授权修复另存、M5文章/讲稿/可视化与批量候选已实现，[工程交付](../plans/html-backend-development/handoff-pi-agent-m4-m5-2026-10-20.md)单列工程证据和真实门槛。保留legacy默认和仍在用的旧编排，尚未据此宣称复杂课程真实质量或替换图像/TTS。
+
+RES-20261020-PI-01：[Pi Agent 无人交互 API 实施方案](../plans/html-backend-development/pi-agent-api-implementation-plan-2026-10-20.md)。已安装锁定Pi SDK1.3.0并实施M0–M3，使用现有任务/原检查/候选工作台；工程与真实模型质量分别验收，见[执行器](../../agent_runner/README.md)。真实模型评测结果以本批handoff为准。
+
+2026-10-20：复用既有Moveable/Selecto桥完成候选工作画布，补持久撤销和保存检查点恢复；[实施记录](../plans/html-backend-development/handoff-candidate-canvas-history-2026-10-20.md)。下方为历史时点。
+
 2026-10-19实施进展：Moveable/Selecto和React Timeline Editor已接入正式编辑器，见[实现与验收](../../editor_ui/README.md)及[当前二次编辑handoff](../plans/html-backend-development/handoff-external-agent-and-secondary-editing-2026-10-19.md)。外部候选接手仍为参数面板，候选画布贯通/版本恢复待开发；下方“尚未安装/集成”是原调研时点，不代表当前实现状态。
 
 RES-20261017-01：[开源画布与动画编辑器借鉴](2026-10-17-open-source-scene-editor/README.md)。已核对Moveable、Selecto、React Timeline Editor、Scena及Theatre官方来源/包版本；[详细优化方案](../plans/html-backend-development/open-source-editor-optimization-2026-10-17.md)明确直接集成、适配、分阶段验收。依赖未安装，集成尚未验证，不作为已实现能力。

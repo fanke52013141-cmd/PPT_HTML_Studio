@@ -316,6 +316,8 @@
         <button class="success" type="button" data-action="approve" data-page-only>确认本页画面</button>
         <button type="button" data-action="edit" data-page-only>调整页面与动画</button>
         <button type="button" data-action="models">项目生成模型</button>
+        <label data-design-only>还原执行器 <select data-production-runner><option value="legacy">现有执行器</option><option value="pi">Pi Agent</option></select></label>
+        <label data-design-only>独立配图调用额度 <select data-pi-images><option value="0">0 次</option><option value="1">最多 1 次</option><option value="2">最多 2 次</option></select></label>
         </div>
         <p class="html-stage-note" data-page-only>文字、图形和箭头由代码还原，配图作为独立素材。先确认设计，再检查实际画面；逐句音画核验在“配音与同步”完成。</p>
         <button type="button" data-action="cancel" hidden>停止生产任务</button>
@@ -444,6 +446,10 @@
           if (action === 'accept-design') {
             if (!designCandidate || designCandidate.stale) throw new Error('请先生成并审阅当前设计。');
             payload = {design_candidate_key: designCandidate.key}; action = 'produce';
+            if(section.querySelector('[data-production-runner]').value === 'pi') {
+              payload.runner='pi'; payload.pi_limits={max_model_calls:12,max_tool_calls:24,timeout_seconds:900,max_candidate_rounds:2};
+              payload.max_image_calls=Number(section.querySelector('[data-pi-images]').value);
+            }
             await window.navigateToStep?.(5);
           } else if (action === 'revise-design') {
             const instruction = section.querySelector('[data-design-instruction]').value.trim();

@@ -553,6 +553,11 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
     )
     if anchor_overrides:
         files[directory / "resources.json"] = store._document_bytes(manifest)
+    # Checkpoints share the author transaction and rollback, never contain media.
+    files.update(history_checkpoint_files(run, slide, (
+        (expected_revision, document["scene"], existing_binding),
+        (expected_revision + 1, scene, binding),
+    )))
     backups = {p: p.read_bytes() if p.exists() else None for p in files}
     try:
         for path, data in files.items():
@@ -573,3 +578,44 @@ catch(e){process.stderr.write(e.message);process.exitCode=1;}
         "sha256": _digest(scene),
         "rebuild_plan": rebuild_plan,
     }
+
+
+def history_checkpoint_files(run, slide, entries):
+    """Pure author transaction preparation shared by editing and production."""
+    files = {}
+    directory = Path(run) / store.SCENE_DIR
+    for revision, checkpoint_scene, checkpoint_binding in entries:
+        if checkpoint_scene is None:
+            continue
+        checkpoint = {"revision": revision, "scene": checkpoint_scene, "binding": checkpoint_binding,
+                      "source_hash": _digest(read_json(Path(run) / "planning/visual_contract.json"))}
+        checkpoint["sha256"] = _digest(checkpoint)
+        data = store._document_bytes(checkpoint)
+        if len(data) > 2 * 1024 * 1024:
+            raise SceneEditError("HISTORY_TOO_LARGE", "版本记录超过2MB；页面尚未保存")
+        path = directory / "editor-history" / store.validate_slide_id(slide) / f"{revision}.json"
+        if not path.exists():
+            files[path] = data
+    return files
+
+
+def saved_versions(run, slide, revision=None):
+    """Read-only checkpoints; restore via current human draft, never roll back state."""
+    directory = Path(run) / store.SCENE_DIR / "editor-history" / store.validate_slide_id(slide)
+    if revision is None:
+        paths = [p for p in directory.glob("*.json") if p.stem.isdecimal()]
+        return [{"revision": int(p.stem)} for p in sorted(paths, key=lambda p: int(p.stem), reverse=True)[:100]]
+    if type(revision) is not int or revision < 0:
+        raise SceneEditError("REVISION_INVALID", "版本必须为非负整数")
+    path = directory / f"{revision}.json"
+    if not path.is_file() or path.stat().st_size > 2 * 1024 * 1024:
+        raise SceneEditError("HISTORY_MISSING", "该版本不存在或不可读取")
+    checkpoint = read_json(path)
+    if not isinstance(checkpoint, dict):
+        raise SceneEditError("HISTORY_CHANGED", "版本记录格式不合法")
+    expected = checkpoint.pop("sha256", None)
+    if checkpoint.get("revision") != revision or _digest(checkpoint) != expected:
+        raise SceneEditError("HISTORY_CHANGED", "版本记录完整性检查失败")
+    if checkpoint.get("source_hash") != _digest(read_json(Path(run) / "planning/visual_contract.json")):
+        raise SceneEditError("HISTORY_SOURCE_CHANGED", "原文或规划已变化；不能直接恢复旧页，请从当前页编辑")
+    return checkpoint

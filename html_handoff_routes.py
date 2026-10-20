@@ -40,7 +40,7 @@ def dispatch(mode, project_id, slide_id, payload, db, task_id=None):
             elif mode.startswith("work_"):
                 import html_handoff_workbench as workbench
                 functions = {"work_open": workbench.open_work, "work_read": workbench.read_work,
-                    "work_update": workbench.update_work, "work_check": workbench.check_work, "work_save": workbench.save_work}
+                    "work_propose": workbench.preview_proposal, "work_update": workbench.update_work, "work_check": workbench.check_work, "work_save": workbench.save_work}
                 result = functions[mode](run, project_id, slide_id, payload)
                 if mode == "work_save" and result["changed"]:
                     from invalidation_service import html_scene_changed
@@ -112,3 +112,8 @@ def work_check(project_id: str, slide_id: str, payload: WorkRequest, db: Any = D
 @router.post("/api/projects/{project_id}/html-visual/{slide_id}/handoff/work/save")
 def work_save(project_id: str, slide_id: str, payload: WorkRequest, db: Any = Depends(_db)):
     return dispatch("work_save", project_id, slide_id, payload, db)
+
+
+@router.post("/api/projects/{project_id}/html-visual/{slide_id}/handoff/work/propose")
+def work_propose(project_id: str, slide_id: str, payload: WorkRequest, db: Any = Depends(_db)):
+    return dispatch("work_propose", project_id, slide_id, payload, db)

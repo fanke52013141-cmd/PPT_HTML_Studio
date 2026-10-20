@@ -10,8 +10,8 @@
   }
   function mount(host, options) {
     const box = el('details'); box.dataset.externalHandoff = '';
-    box.append(el('summary', '外部 Agent · 导出输入 / 导入输出'));
-    box.append(el('p', '导出输入包 → 外部 Agent 处理 → 导入结果并检查 → 核对画面后保存。'));
+    box.append(el('summary', 'AI 自动修改 / 外部 Agent 交接'));
+    box.append(el('p', '填写目标后可直接运行 AI 自动修改；也可导出输入包，交给外部 Agent 后导入结果。'));
     const goalLabel = el('label', '任务目标'), goal = el('textarea', '', { maxLength: 4000 });
     goal.placeholder = '说明当前问题、希望达到的效果及必须保留的内容';
     goalLabel.append(goal); box.append(goalLabel);
@@ -92,8 +92,8 @@
       busy = true; const token = ++serial; save.disabled = true;
       exportButton.disabled = importButton.disabled = feedbackButton.disabled = true;
       options.setBusy?.(true);
-      try { await action(token); }
-      catch (error) { if (current()) { receipt = null; status.textContent = error.message; } }
+      try { await action(token); return true; }
+      catch (error) { if (current()) { receipt = null; status.textContent = error.message; } return false; }
       finally {
         busy = false;
         if (current()) {
@@ -120,6 +120,33 @@
       if(response.diagnostic){const label=el('p','以下为原Agent候选的播放器诊断图，未通过验收；指定遮挡检查可能尚未运行。');problems.append(label);
         for(const shot of response.diagnostic_pictures||[]){if(shot.image?.startsWith('data:image/png;base64,'))problems.append(el('img','',{src:shot.image,alt:'未通过验收的候选诊断图'}));}}
     }
+    function taskInput() {
+      const ctx = context();
+      if (!goal.value.trim()) throw Error('请填写任务目标。');
+      if (!ctx.scope.length) throw Error('请先选择需要修改的对象。');
+      return { task_type: mode.value, goal: goal.value.trim(), scope: ctx.scope,
+        font_requirements:fontRows.map(r=>({id:r.id,targetId:r.target.value,part:r.part.value,minimum_px:Number(r.minimum.value)})),
+        overlap_pairs:pairRows.map(r=>[r.a.value,r.b.value]), expected_revision:ctx.doc.revision,
+        expected_audio_revision:ctx.doc.audio_revision, require_verification:true,require_image_understanding:true,
+        allow_diagnostic_baseline:diagnosticBaseline.checked };
+    }
+    function acceptResponse(response) {
+      result = response.result; feedback = response.feedback; feedbackZip=response.feedback_bundle_base64;fullFeedback.disabled=!feedbackZip;
+      reference=null;takeover.disabled=true;
+      if(result?.status==='proposed'&&mode.value==='static_repair'&&response.result_hash){reference={task_id:result.task_id,result_hash:response.result_hash};takeover.disabled=!workbench;}
+      showProblems(response);
+      if (response.delivery?.report_markdown != null) {
+        reportBody.textContent = response.delivery.report_markdown;
+        deliveryReport.hidden = false; deliveryReport.open = true;
+      }
+      report.textContent = JSON.stringify({ message: response.message, diff: response.diff, review: response.review,
+        validation:response.validation,acceptance:response.acceptance,external_verification:response.external_verification },null,2);
+      showComparison(response.comparison);
+      receipt = response.status === 'candidate' && response.passed ? response : null;
+      save.disabled=!receipt;
+    }
+    const piAgent=window.HtmlPiAgent?.mount(box,{before:scope,getContext:options.getContext,isCurrent:current,getTask:taskInput,onSaved:options.onSaved,
+      onResult:async response=>{if(!await run(async()=>{context();acceptResponse(response);}))throw Error('页面忙或有未保存修改，请稍后恢复任务结果');}});
     exportButton.onclick = () => run(async token => {
       const ctx = context();
       receipt = null; feedback = null; result = null;
@@ -203,7 +230,7 @@
         scope.textContent = `当前范围：${ctx.scope.join('、') || '尚未选择对象'}。导出包含实际截图、素材、原文和风格；未保存草稿请先处理。`;
       }
     });
-    return { destroy() { serial++; receipt = null; feedback = null; workbench?.destroy();box.remove(); } };
+    return { destroy() { serial++; receipt = null; feedback = null; piAgent?.destroy();workbench?.destroy();box.remove(); } };
   }
   async function exportDesign(projectId, slideId, design, isCurrent = () => true) {
     if (!design) throw Error('请先生成当前页设计图。');

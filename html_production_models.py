@@ -1,11 +1,20 @@
 """One strict request contract shared by Web, Agent and MCP."""
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing import Literal
+from html_agent_models import AgentLimits
+
+
+class PiProductionLimits(AgentLimits):
+    # Original production owners have fixed two-round stage validators.
+    max_candidate_rounds: Literal[2] = 2
 
 
 class HtmlProduceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     plan_version: Literal["0.1.0", "0.2.0"] = "0.1.0"
+    runner: Literal["legacy", "pi"] = "legacy"
+    pi_limits: PiProductionLimits | None = None
+    max_image_calls: int = Field(default=0, ge=0, le=2, strict=True)
     design_candidate_key: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     reuse_design_candidate_key: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     repair_relation_points: str = Field(default="", max_length=1000)
@@ -15,6 +24,12 @@ class HtmlProduceRequest(BaseModel):
 
     @model_validator(mode="after")
     def exclusive(self):
+        if self.runner == "pi":
+            self.pi_limits = self.pi_limits or PiProductionLimits()
+            if not self.design_candidate_key or self.design_instruction or self.reuse_design_candidate_key:
+                raise ValueError("Pi新页还原需要事先选定当前设计key；保存作者已由提交动作授权")
+        elif self.pi_limits is not None:
+            raise ValueError("pi_limits仅用于Pi执行器")
         if self.reuse_design_candidate_key and (self.design_candidate_key or self.design_instruction
                                                 or self.asset_instruction or self.prior_unknown_task_id):
             raise ValueError("原图复用仅创建新待审参考，不能与接受、修订、素材返工或未知请求实验混用")

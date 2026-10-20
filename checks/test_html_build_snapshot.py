@@ -201,6 +201,7 @@ def test_product_editor_sources_pin_independent_canvas_and_timeline_bundles(page
 
 def test_editor_build_rejects_changed_bundle_and_unrelated_paths(tmp_path):
     manifest = json.loads((ROOT/"static/editor_ui/canvas-manifest.json").read_text(encoding="utf-8"))
+    assert "static/html_handoff_workbench.js" in manifest["sources"]
     target = tmp_path/"static/editor_ui/canvas-manifest.json"
     target.parent.mkdir(parents=True)
     for relative in set(manifest["files"]) | set(manifest["sources"]):

@@ -1,14 +1,20 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.102",
-  "effective_date": "2026-10-19",
+  "contract_version": "0.9.108",
+  "effective_date": "2026-10-20",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-20 HPS-010/011/013/015--018/023--030/037: frozen slot screenTextSources govern design generation and revisions; no extra labels, copy or relations. Prompt0.3.1/0.4.1. Original semantic guards and API1.59.0 remain. See runtime/visual-v1/design-plan-correspondence-0.1.0.md; real image and paired results require separate evidence.",
+    "2026-10-20 HPS-015/017/018: GLM-5.3 native thinking enabled, frozen max_tokens up to 65536, temperature 1.0. Pi JSON and tool paths share actual payload controls; other models retain 8192/off. API1.59.0 unchanged. Prior unknown jobs are preserved; new parameter trials use new identities.",
+    "2026-10-20 HPS-007/009/010/013/015--018/023--030/037: Pi production selection via original produce1.14; preauthorized repair AI revision save with receipts/cancel fence; article/script/visual and bounded batch candidates. API1.59.0. See runtime/visual-v1/pi-production-api-0.1.0.md. No approval, migration or default runner replacement; real quality gate remains separate.",
+    "2026-10-20 HPS-007/009/010/013/015--018: unattended Pi SDK jobs, fixed agent-job/1.0 envelope, strict original candidate checks, durable local_jobs, scoped idempotency/cancel/recovery and bounded model/tool/time budgets. API1.58.0. See runtime/visual-v1/pi-agent-api-0.1.0.md. No author save or approval; real model autonomy independently measured.",
+    "2026-10-20 HPS-007/009/010/013--018: current-hash Chinese diagnostics, same-source capacity estimates and full-check proposal preview/explicit confirmation; server conservative dependency groups with partial AI provenance and whole-page revalidation; fixed four-case external file evaluation separates offline protocol evidence from real autonomy. API1.57.0/work_read0.3. See runtime/visual-v1/repair-assistance-0.1.0.md.",
+    "2026-10-20 HPS-007/009/010/013--018: candidate canvas reuses shared player/Moveable, Chinese property labels, persisted 50-step work undo/redo, transactional editor checkpoints and restore into a current draft. API1.56.0/work_read0.2; human writes remain Web-only. See runtime/visual-v1/candidate-canvas-history-0.1.0.md.",
     "2026-10-19 HPS-001/007/009/010/013--018/023--030/035--037: execution2.1.1 resolves required-ability versus deferred-preview ambiguity; required visual baseline needs self_checked evidence, honest stop has no operations or adoption, manifests are current-trial integrity input. API1.55.1; task/result JSON0.2 unchanged, old signed packages remain historical and require re-export. See runtime/visual-v1/external-agent-workbench-0.1.0.md.",
     "2026-10-19 HPS-001/007/009/010/013--018/023--030/035--037: execution2.1, same-source capacity/actual measurements, explicit export goals, bounded persisted human amendments and leaf provenance. API1.55. See runtime/visual-v1/external-agent-workbench-0.1.0.md.",
     "2026-10-19 HPS-001/007/009/010/013--018/023--030/035--037: execution contract2.0, same-source static preflight and production compiler in each bundle, explicit constraints/font goals/overlap coverage, typed abilities and verification matrix; strict adoption requires complete delivery and server recheck. API1.54; legacy JSON compatibility retained. New independent-agent test uses actual archived course with no previous answer.",
@@ -236,6 +242,12 @@
     },
     {
       "path": "runtime/visual-v1/input-snapshot-0.1.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/candidate-canvas-history-0.1.0.md"
+    },
+    {
+      "path": "runtime/visual-v1/repair-assistance-0.1.0.md"
     }
   ],
   "rules": [

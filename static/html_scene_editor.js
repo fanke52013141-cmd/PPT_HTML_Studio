@@ -51,11 +51,13 @@
       ? schema(s, s.doc.capabilities.schema.$defs[spec.$ref.split("/").at(-1)])
       : spec;
   }
+  const propertyNames={presentation:'位置、尺寸与样式',typography:'文字样式',fontSizePx:'字号（像素）',fontWeight:'字重',lineHeight:'行高',letterSpacingPx:'字间距（像素）',offsetX:'水平偏移（向右为正）',offsetY:'垂直偏移（向下为正）',width:'宽度',height:'高度',runs:'文字片段',text:'正文',heading:'标题',label:'标签',from:'左侧标签',to:'右侧标签',note:'说明',tag:'标记',align:'对齐',color:'颜色',emphasis:'强调',variant:'呈现样式',icon:'图标',assetRef:'素材引用',fit:'适配方式',opacity:'不透明度',padding:'内边距',stroke:'描边',fill:'填充',x:'横坐标',y:'纵坐标'};
+  function propertyLabel(key){return typeof key==='number'?`第 ${key+1} 项`:propertyNames[key]||key;}
   function control(s, parent, spec, value, path, update) {
     spec = schema(s, spec);
     if (spec.type === "object" || spec.properties) {
       const box = el("fieldset", ""),
-        title = el("legend", path.at(-1));
+        title = el("legend", propertyLabel(path.at(-1)));
       box.append(title);
       parent.append(box);
       for (const [key, child] of Object.entries(spec.properties || {})) {
@@ -67,7 +69,7 @@
         if (value[key] !== undefined)
           control(s, box, child, value[key], [...path, key], update);
         else {
-          const add = el("button", `添加 ${key}`, { type: "button" });
+          const add = el("button", `添加 ${propertyLabel(key)}`, { type: "button" });
           box.append(add);
           add.onclick = () => {
             change(s, () => update([...path, key], defaults(s, child)));
@@ -79,7 +81,7 @@
     }
     if (spec.type === "array") {
       const box = el("fieldset", "");
-      box.append(el("legend", path.at(-1)));
+      box.append(el("legend", propertyLabel(path.at(-1))));
       parent.append(box);
       value.forEach((item, index) => {
         control(s, box, spec.items, item, [...path, index], update);
@@ -109,7 +111,7 @@
       }
       return;
     }
-    const label = el("label", path.join("."));
+    const label = el("label", path.map(propertyLabel).join(" · "));
     let input;
     if (spec.enum) {
       input = el("select", "");
@@ -759,6 +761,24 @@
     snapLabel.className = 'hse-snap'; snapLabel.prepend(snap); bar.append(snapLabel);
     snap.onchange = () => s.canvas?.setSnap(snap.checked);
     s.save = button("保存修改", () => save(s));
+    const versions=el('select','');versions.setAttribute('aria-label','已保存版本');bar.append(versions);
+    button('读取保存版本',async()=>{
+      const response=await API.get(`${s.url}/versions`);if(active!==s)return;
+      versions.replaceChildren();for(const item of response.versions)versions.append(el('option',`修订 ${item.revision}`,{value:String(item.revision)}));
+      notify(s,response.versions.length?'选择版本并预览恢复；当前未保存修改会保留在撤销历史。':'尚无保存版本；今后实际保存会自动记录检查点。');
+    });
+    button('预览恢复所选版本',async()=>{
+      if(!versions.value)throw Error('请先读取并选择已保存版本');
+      const checkpoint=await API.get(`${s.url}/versions/${versions.value}`);if(active!==s)return;
+      const restored=structuredClone(checkpoint.scene);
+      if(['0.3.0','0.4.0'].includes(restored.version)&&s.doc.scene.version==='0.5.0')restored.version='0.5.0';
+      if(restored.version==='0.6.0'&&s.doc.scene.version==='0.7.0')restored.version='0.7.0';
+      const candidate={scene:restored,binding:checkpoint.binding,anchor_overrides:{}};
+      if(await preview(s,candidate,()=>change(s,()=>{s.doc.scene=restored;s.doc.binding=checkpoint.binding;s.doc.anchor_overrides={};}))){
+        nodeList(s);properties(s);notify(s,'历史版本已进入当前草稿；核对后点击保存修改，产生新修订。');
+      }
+    });
+
     s.handoff = window.HtmlExternalHandoff?.mount(root, {
       isCurrent: () => active === s,
       canStart: () => !s.previewing && !s.saving && !s.refreshing && !s.handoffBusy,

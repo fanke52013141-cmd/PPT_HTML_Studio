@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="annotations.css?v=20261006.25">
   <link rel="stylesheet" href="workspace_content.css?v=20261006.5">
   <link rel="stylesheet" href="html_scene_edit.css?v=20261008.1">
+  <link rel="stylesheet" href="html_pi_workflows.css?v=20261020.1">
   <link rel="stylesheet" href="html_workflow.css?v=20261019.2">
   <link rel="stylesheet" href="project_model_binding.css?v=20261008.1">
     <link rel="stylesheet" href="html_asset_sheets.css?v=20261008.1">
@@ -202,6 +203,7 @@
                   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z"></path></svg>
                   AI 生成文章
                 </button>
+                <button type="button" class="secondary" data-pi-workflow="article">Pi 文章候选</button>
               </div>
             </div>
               <div id="step1-topic-result-header" class="step1-topic-result-header">
@@ -253,6 +255,8 @@
                   <span class="btn-label">内容可视化</span>
                 </button>
                 <span id="step2-autosave-status" class="step2-autosave-status"></span>
+                <button type="button" class="secondary" data-pi-workflow="script">Pi 讲稿候选</button>
+                <button type="button" class="secondary" data-pi-workflow="visual">Pi 可视化候选</button>
               </div>
               <button class="btn-next-step success ws-primary" id="step2-btn-next" style="display: none;" title="完成每页演讲稿与画面可视化后，可进入图片生成">
                 进入图片生成
@@ -1848,7 +1852,9 @@
   <script src="html_editor_canvas.js?v=20261017.1"></script>
   <script src="html_editor_timeline_bridge.js?v=20261017.1"></script>
   <script src="html_handoff_workbench.js?v=20261019.1"></script>
-  <script src="html_external_handoff.js?v=20261019.3"></script>
+  <script src="html_pi_agent.js?v=20261020.1"></script>
+  <script src="html_pi_workflows.js?v=20261020.1"></script>
+  <script src="html_external_handoff.js?v=20261020.1"></script>
   <script src="html_scene_editor.js?v=20261019.1"></script>
     <script src="html_asset_sheets.js?v=20261008.1"></script>
   <script src="html_semantic_qa.js?v=20261014.1"></script>

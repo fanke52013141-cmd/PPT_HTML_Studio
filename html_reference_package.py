@@ -10,8 +10,32 @@ from artifact_fingerprint import sha256_json
 from pipeline_lifecycle import write_json_atomic
 from html_visual_review_service import HtmlReviewError
 
-PROMPT_VERSION = "html-design-reference/0.3.0"
-SEMANTIC_PROMPT_VERSION = "html-design-reference/0.4.0"
+PROMPT_VERSION = "html-design-reference/0.3.1"
+SEMANTIC_PROMPT_VERSION = "html-design-reference/0.4.1"
+
+
+def screen_text_sources(slots: dict) -> list[str]:
+    """Visible author fields only; identity, narration and style are not copy.
+
+    Runs form one text block. Keep paths (including equal-valued fields) rather
+    than deduplicating text and losing its owning slot or occurrence.
+    """
+    fields = {
+        "header": ("number", "title"), "text": ("runs",),
+        "label": ("text",), "badge": ("text",),
+        "card": ("title", "body"), "figure": ("tag.text", "note.text"),
+        "summary": ("heading.text", "from.text", "to.text", "term", "takeaway"),
+        "chart": ("xLabel", "yLabel", "unit"),
+    }
+    result = []
+    for slot, node in slots.items():
+        for field in fields.get(node["kind"], ()):
+            value = node
+            for part in field.split("."):
+                value = value.get(part) if isinstance(value, dict) else None
+            if value:
+                result.append(f"slots.{slot}.{field}")
+    return result
 
 
 def _fail(message):
@@ -93,7 +117,8 @@ def design_content(plan: dict, brief: dict) -> dict:
     title = str((slots.get("header") or {}).get("title") or (slots.get("headline") or {}).get("text") or plan["slide_id"])
     result = {"title": title, "exactText": list(dict.fromkeys(texts)) or [title],
             "templateRef": plan["templateRef"], "layoutRef": plan["layoutRef"],
-            "slots": slots, "asset_needs": brief["asset_needs"]}
+            "slots": slots, "asset_needs": brief["asset_needs"],
+            "screenTextSources": screen_text_sources(slots)}
     if plan.get("version") == "0.2.0":
         from html_semantic_design import build_semantic_design, semantic_design_context
         from html_semantic_plan import SemanticPlanError
@@ -141,6 +166,10 @@ def design_prompt(package, *, instruction="", revise_existing=False):
     # Accurate slot content appears once; hashes, sample IDs and audit metadata
     # stay outside the model input. Reference examples never become new content.
     semantic = "semanticDesign" in package["content"]
+    # Revisions may use a verified older package: derive the inventory from its
+    # frozen slots too, without rewriting that historical package's bytes.
+    content = {k: v for k, v in package["content"].items() if k != "exactText"}
+    content["screenTextSources"] = screen_text_sources(content["slots"])
     version = SEMANTIC_PROMPT_VERSION if semantic else PROMPT_VERSION
     state_rule = (
         "semanticDesign说明代码/主体分工及逐句状态。生成一张最终页面设计参考；不要画分镜格或把动作ID印在页面上。"
@@ -159,12 +188,17 @@ def design_prompt(package, *, instruction="", revise_existing=False):
         + "只使用黑、灰、白；白色背景。精细字阶、充足留白、清晰线条、柔和灰阶阴影和渐变。"
         "附件分类图只供美感与组件外观参考，不复制其样例文字、数字、编号或栏目。"
         "准确文字和结构以下面的内容为准，注册槽位不改变；文字、卡片和关系由代码复刻，独立主体为图片。"
+        "screenTextSources逐项指定可见文字的唯一来源：按路径读取slots，每项只呈现一次；runs按顺序合为一个文字块，允许分行但不改字。"
+        "相同文字在不同来源路径出现时各保留一次，不能去重漏掉原定内容。title是检索元数据，不另画一份标题。"
+        "禁止从正文拆出或另加药丸标签、小标题、图例、改述、重复结论；未定义的heading/tag/note保持缺席。"
+        "图标不得含字、数字或引导箭头；只画计划已有arrow/annotation及summary固有from到to关系，不新增关系。"
+        "chart轴刻度仅按已有min/max/points派生。需要新增语义内容时先返回规划，不在设计图中自行补齐。"
         "layoutGeometry是代码布局真值：坐标相对于canvas，按比例适配输出尺寸。"
         "每个槽位保持给定位置与范围，不重排、不新增关系；全部正文、标签、说明和结论完整呈现。"
         "canvas.contentBottom以下完全留白，容器、阴影和主体不得侵入字幕区。"
         "16:9，底部1/9留白给字幕，不添加品牌或来源页脚。"
         "主体图片与代码采用统一的灰阶材质与光照。风格指导："
         + json.dumps(package["guidance"]["style"], ensure_ascii=False)
-        + "。准确内容：" + json.dumps({k: v for k, v in package["content"].items() if k != "exactText"}, ensure_ascii=False)
+        + "。准确内容：" + json.dumps(content, ensure_ascii=False)
         + ("。本轮修改方向：" + instruction if instruction else "")
     )

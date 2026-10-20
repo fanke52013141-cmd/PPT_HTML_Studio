@@ -159,3 +159,78 @@ def test_diagnostic_baseline_export_is_explicit_and_does_not_claim_pass(page, mo
     assert not task["context"]["evidence"]["passed"]
     assert any(item["role"] == "diagnostic_render" for item in task["files"])
     assert store._read_revision(run)["revision"] == 1
+
+
+def test_server_history_survives_reopen_and_invalidates_checks(page):
+    run, scene = page
+    ref, _ = imported(page)
+    opened = workbench.open_work(run, "project-a", scene["id"], ref)
+    op = {"targetId": "headline", "kind": "set_presentation", "values": {"offsetY": 4}}
+    first = workbench.update_work(run, "project-a", scene["id"], request(opened, [op]))
+    reopened = workbench.read_work(run, "project-a", scene["id"], ref)
+    assert reopened["work"]["undo"] == [{"operations": [], "selected_group_ids": None}]
+    undone = workbench.update_work(run, "project-a", scene["id"], {**request(reopened), "history_action": "undo"})
+    assert undone["work"]["operations"] == [] and undone["work"]["redo"] == [{"operations": [op], "selected_group_ids": None}]
+    redone = workbench.update_work(run, "project-a", scene["id"], {**request(undone), "history_action": "redo"})
+    assert redone["work"]["operations"] == [op] and redone["work"]["check"] is None
+    with pytest.raises(exchange.HandoffError, match="已变化"):
+        workbench.update_work(run, "project-a", scene["id"], {**request(first), "history_action": "undo"})
+    assert set(redone["views"]) == {"baseline", "agent", "work"}
+
+
+def test_editor_checkpoints_restore_as_new_revision_and_preserve_protection(page):
+    run, scene = page
+    before = editor.load_editor(run, scene["id"])
+    modified = copy.deepcopy(scene)
+    modified["version"] = "0.5.0"
+    modified["nodes"][0]["presentation"] = {"offsetY": 2}
+    saved = editor.save_editor(run, scene["id"], modified, before["binding"], before["revision"])
+    assert editor.saved_versions(run, scene["id"]) == [{"revision": 2}, {"revision": 1}]
+    checkpoint = editor.saved_versions(run, scene["id"], 1)
+    editor.save_editor(run, scene["id"], modified, before["binding"], saved["revision"])
+    assert len(editor.saved_versions(run, scene["id"])) == 2  # no-op
+    # Normal current validation decides compatibility, not an unchecked history write.
+    checkpoint["scene"]["version"] = modified["version"]
+    editor.preview_editor(run, scene["id"], checkpoint["scene"], checkpoint["binding"], expected_revision=2)
+    restored = editor.save_editor(run, scene["id"], checkpoint["scene"], checkpoint["binding"], 2)
+    assert restored["revision"] == 3
+    assert editor.manual_protected_paths(editor.load_editor(run, scene["id"])["manual"])
+    assert editor.saved_versions(run, scene["id"], 2)["scene"] == modified
+    path = run / store.SCENE_DIR / "editor-history" / scene["id"] / "1.json"
+    data = json.loads(path.read_text(encoding="utf-8")); data["scene"]["name"] = "corrupted"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(editor.SceneEditError, match="完整性"):
+        editor.saved_versions(run, scene["id"], 1)
+
+
+def test_checkpoint_cannot_restore_after_authoritative_plan_changes(page):
+    run, scene = page
+    changed = copy.deepcopy(scene)
+    changed["version"] = "0.5.0"
+    changed["nodes"][0]["presentation"] = {"offsetY": 1}
+    editor.save_editor(run, scene["id"], changed, None, 1)
+    plan = run / "planning/visual_contract.json"
+    document = json.loads(plan.read_text(encoding="utf-8"))
+    document["slides"][0]["narration_beats"][0]["text"] = "new authoritative wording"
+    plan.write_text(json.dumps(document), encoding="utf-8")
+    with pytest.raises(editor.SceneEditError, match="原文或规划"):
+        editor.saved_versions(run, scene["id"], 1)
+    assert store._read_revision(run)["revision"] == 2
+
+
+def test_checkpoint_failure_rolls_back_author_and_revision(page, monkeypatch):
+    run, scene = page
+    before = editor.load_editor(run, scene["id"])
+    changed = copy.deepcopy(scene)
+    changed["version"] = "0.5.0"
+    changed["nodes"][0]["presentation"] = {"offsetY": 1}
+    original = store._atomic_write_bytes
+    def fail_checkpoint(path, data):
+        if "editor-history" in str(path):
+            raise OSError("checkpoint write failed")
+        return original(path, data)
+    monkeypatch.setattr(store, "_atomic_write_bytes", fail_checkpoint)
+    with pytest.raises(OSError, match="checkpoint"):
+        editor.save_editor(run, scene["id"], changed, None, 1)
+    assert editor.load_editor(run, scene["id"]) == before
+    assert editor.saved_versions(run, scene["id"]) == []

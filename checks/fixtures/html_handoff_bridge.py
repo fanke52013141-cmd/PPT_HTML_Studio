@@ -3,9 +3,16 @@ import base64
 import json
 from pathlib import Path
 import sys
+import os
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
+if "--pi" in sys.argv:
+    fixture_run = Path(sys.argv[1]).resolve()
+    if not fixture_run.name.startswith("hps-editor-browser-"):
+        raise ValueError("isolated fixture required")
+    os.environ["PPT_STUDIO_DB_PATH"] = str(fixture_run / "pi-fixture.db")
+    os.environ["PPT_STUDIO_RUNS_DIR"] = str(fixture_run / "runs")
 sys.stdin.reconfigure(encoding="utf-8")
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, str(ROOT))
@@ -32,10 +39,27 @@ binding = {"format": "hps.html.motion_binding", "version": "0.2.0", "mode": "bea
            "actions": {a["actionId"]: {"beatId": "b1", "edge": "start", "offsetMs": int(a["startMs"])} for a in scene["motion"]}}
 (run / "planning/html_visual/binding-condensation.json").write_text(json.dumps(binding), encoding="utf-8")
 
+if "--pi" in sys.argv:
+    from database import init_db, SessionLocal
+    from html_agent_store import AgentJobStore
+    from checks.test_html_pi_agent import ScriptedProvider
+    import html_agent_jobs as pi_jobs
+    from html_agent_models import AgentJobRequest
+    init_db()
+    pi_store = AgentJobStore(SessionLocal)
+    provider = ScriptedProvider(bad_first=False).__enter__()
+
 
 def dispatch(method, path, payload):
+    if "--pi" in sys.argv and "/agent/jobs" in path:
+        if method == "POST" and path.endswith("/jobs"):
+            return pi_jobs.submit(run, "isolated", "condensation", AgentJobRequest.model_validate(payload), provider.model(), store=pi_store), None
+        job_id = path.split("/agent/jobs/")[1].split("/")[0]
+        if path.endswith("/cancel"):
+            return pi_store.update("isolated", "condensation", job_id, cancel_requested=True), None
+        return pi_store.read("isolated", "condensation", job_id), None
     if method == "GET" and path == "/":
-        scripts = ["api_client.js", "html_editor_canvas.js", "html_editor_timeline_bridge.js", "html_handoff_workbench.js", "html_external_handoff.js", "html_scene_editor.js"]
+        scripts = ["api_client.js", "html_editor_canvas.js", "html_editor_timeline_bridge.js", "html_handoff_workbench.js", "html_pi_agent.js", "html_external_handoff.js", "html_scene_editor.js"]
         html = ('<meta charset="utf-8"><link rel="stylesheet" href="/static/html_scene_edit.css"><link rel="stylesheet" href="/static/html_workflow.css">'
                 '<div id="host"></div><script>function showToast(){}</script>'
                 + ''.join(f'<script src="/static/{name}"></script>' for name in scripts)
@@ -54,7 +78,13 @@ def dispatch(method, path, payload):
     if path.endswith("/steps/7/audio-status"):
         return {"slides": [{"slide_id": "condensation", "audio_exists": False}]}, None
     with project_artifact_lock(run):
+        if "/editor/versions/" in path:
+            return editor.saved_versions(run, "condensation", int(path.rsplit("/", 1)[-1])), None
+        if path.endswith("/editor/versions"):
+            return {"versions": editor.saved_versions(run, "condensation")}, None
         if path.endswith("/editor"):
+            if method == "PUT":
+                return editor.save_editor(run, "condensation", **payload), None
             return editor.load_editor(run, "condensation"), None
         if path.endswith("/editor/preview"):
             return editor.preview_editor(run, "condensation", payload["scene"], payload["binding"],
@@ -62,7 +92,7 @@ def dispatch(method, path, payload):
         if "/handoff/work/" in path:
             import html_handoff_workbench as workbench
             name = path.rsplit("/", 1)[-1]
-            return {"open": workbench.open_work, "read": workbench.read_work, "update": workbench.update_work,
+            return {"propose": workbench.preview_proposal, "open": workbench.open_work, "read": workbench.read_work, "update": workbench.update_work,
                     "check": workbench.check_work, "save": workbench.save_work}[name](run, "isolated", "condensation", payload), None
         if path.endswith("/handoff/export"):
             result = handoff.export_bundle(run, "isolated", "condensation", payload)

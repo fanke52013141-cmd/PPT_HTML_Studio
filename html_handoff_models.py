@@ -141,6 +141,9 @@ class WorkReadRequest(BaseModel):
 class WorkRequest(WorkReadRequest):
     work_revision: StrictInt = Field(ge=0)
     operations: list[RepairOperation] = Field(default_factory=list, max_length=20)
+    history_action: Literal["undo", "redo"] | None = None
+    selected_group_ids: list[str] | None = Field(default=None, max_length=20)
+    proposal_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 class BundleReadRequest(BaseModel):

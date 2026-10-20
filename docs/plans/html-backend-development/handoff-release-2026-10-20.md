@@ -1,0 +1,69 @@
+# 2026-10-20 源码发布与跨机 handoff
+
+## 仓库与交付范围
+
+目标仓库：https://github.com/fanke52013141-cmd/PPT_HTML_Studio，main分支。发布基线5964561（2026-10-19外部交接/工作区）；本次提交包含其后已授权的应用、规范、测试及文档。发布提交可从Git日志中的`feat: publish candidate editing and Pi agent workflows`定位，随后的备注提交记录实际源码提交及远端状态。
+
+契约0.9.108、Agent API1.59.0、produce1.14、外部任务/结果0.2.0、执行合同2.1.1。无数据库迁移；原应用单进程、图像/TTS/音频与批准门禁保持。
+
+- 候选画布直接编辑、中文属性、持久撤销/重做；正式保存检查点与旧版本恢复为新修订。
+- 实际容量/安全区中文说明、可预览后确认的联动调整、保守关联组局部采用与整页复验。
+- Pi完整SDK1.3.0固定输入输出和白名单工具；幂等/恢复/取消/预算；局部修复可预授权另存AI版本；新页显式runner=pi；文章/讲稿/可视化和共享预算批量只交候选。
+- GLM-5.3系列按用户配置启用原生thinking、65536上限与温度1.0；文章/讲稿使用planning连接，视觉修复使用明确支持图像的text连接。其他模型保持原兼容参数。
+- 生图Prompt0.3.1/0.4.1按冻结slots登记文字来源，约束计划外标签、结论与箭头；历史包修订同源派生，不改历史文件。
+- CI使用Node22.19.0并安装锁定agent_runner依赖；没有运行时自动安装、全局Pi或额外账号要求。
+
+更早文档的“未提交/未发布”、初版8192/off及“试验运行中”均是对应阶段的历史状态；本交接和后续发布回执优先。Git源码同步不代表运行服务已重启或已部署。
+
+## 入口与职责
+
+人工候选接手见[画布与历史](handoff-candidate-canvas-history-2026-10-20.md)、[联动与关联组](handoff-repair-assistance-2026-10-20.md)。Pi接口、原请求样例、候选交付与恢复见[M0–M3](handoff-pi-agent-m0-m3-2026-10-20.md)、[M4–M5](handoff-pi-agent-m4-m5-2026-10-20.md)、[原生参数修复](handoff-glm-native-parameters-2026-10-20.md)。
+
+`html_handoff_workbench.py`持有人工作草稿，`html_scene_editing.py`持有作者版本/保护；`html_handoff_assistance.py`只派生有限建议，原检查器始终权威。`html_agent_jobs.py`/`html_agent_workflows.py`持有任务；`agent_runner`无shell、作者写入或批准权限；`html_pi_json.py`仅适配原生产JSON阶段。不要复制第二套renderer或把人工接手来源冒充AI自主成功。
+
+## 真实验证状态
+
+[设计图与计划修复](handoff-design-plan-alignment-2026-10-20.md)：真实Token第三页原计划5句/6对象/8动作完整覆盖；设计图额外语义已由原生图修订入口移除并实际看图核对。新图key `e03846936666898de72b031f6581235dc9ea99992bb0adebe66c065be61b54cd`。
+
+Legacy新任务`html_ffc19da60288495f9a70`设计理解ready；随后容量修复180秒超时，供应商结果未知，双方作者未改。对照脚本停止，Pi未启动。本轮未完成公平双边对照。旧Pi600秒未知结果同样保留；不得重发原未知输入，不把原HTTP200、结构通过或本地脚本供应商当作课程验收。
+
+M5此前Pi讲稿/可视化候选覆盖五页；文章和复杂新页仍有超时或质量失败，批量无完整Legacy基线。Legacy保持默认，不移除旧编排。人工视觉、逐句听审、正式音频与成片验收独立，当前不签发通过。
+
+## 换机安装与启动
+
+在实际checkout内操作，先正常停止旧服务、核实无进行中任务并备份本机data/runs，再拉取main。不要重置他人的未提交修改或创建第二个桌面副本；数据和凭据不在仓库，需用现有安全配置方式在本机设置。
+
+```powershell
+# 当前所在目录应为本机实际checkout
+$studioCheckout = (Get-Location).Path
+python -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+npm ci --prefix html_engine
+npm ci --prefix editor_ui
+npm ci --prefix scripts/remotion
+npm ci --prefix agent_runner --ignore-scripts --no-audit --no-fund
+npm exec --prefix html_engine playwright install chromium
+npm test --prefix editor_ui
+$env:PPT_STUDIO_HOST = '127.0.0.1'
+$env:PPT_STUDIO_PORT = '8010'
+$env:PPT_STUDIO_DB_PATH = Join-Path $studioCheckout 'data/projects.db'
+$env:PPT_STUDIO_RUNS_DIR = Join-Path $studioCheckout 'runs'
+& .\.venv\Scripts\python.exe start_server.py
+```
+
+需要Node>=22.19.0、已有FFmpeg/ffprobe及生产Windows微软雅黑字体；服务运行使用原启动器和本checkout目录，不能指向图片项目数据或同数据启动第二进程。新机先配置planning/text/image连接及本机凭据，text视觉连接显式supports_images=true；不从日志或文档复制密钥。程序启动只做原迁移/遗留作业中断恢复，不恢复未知付费请求。
+
+旧设计key和外部签名包因源码/能力身份变化会过期，按原显式复用/重新导出和审阅入口处理，不改task_id、hash或批准伪造当前性。历史手工字段和音频仍受原hash/保护守卫约束。
+
+## 后续优先顺序
+
+1. 查明原容量失败的实际字段、DOM测量与模型请求预算/时限；原未知结果先核实，不靠盲目延时重发掩盖。
+2. 在实质修正输入后重新冻结同一计划/图/模型，分别验证Legacy/Pi的理解、工程、真实截图及有界修复；调用、token未知值和人工介入分别统计。
+3. 获得真正可保存新页后，在原编辑器验证拖动/中文参数/局部采用/保存恢复，再做逐句听审和原正式输出。
+4. 达成真实课程重复质量门槛后，再讨论默认切换与旧编排清理；网页批量向导尚未实现。
+
+## 本次发布前验证
+
+设计对应相关63项、Pi原生参数和路由34项此前已通过；这些是不同批次，不冒充本次全量结果。编辑器16项、Remotion TypeScript在本次发布检查通过。canonical full检查正在本机执行，最终结果与发布提交由后续发布回执明确记录。
+
+本地验证日志位于outputs/publish-20261020-*.log，运行证据和媒体只在本机，不随Git上传。仓库不会包含data、runs、outputs、node_modules、凭据或付费生成图片。

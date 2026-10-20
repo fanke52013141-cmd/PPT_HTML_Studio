@@ -3,9 +3,10 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { chromium } = require("../html_engine/node_modules/playwright");
+const { captureLaunchOptions } = require("../html_engine/tools/browser-runtime.cjs");
 
 (async () => {
-  const browser = await chromium.launch({headless:true, executablePath:process.env.HPS_CHROME});
+  const browser = await chromium.launch(captureLaunchOptions(chromium));
   try {
     const page = await browser.newPage();
     await page.setContent('<div id="step-panel-3"></div>');
@@ -25,9 +26,13 @@ const { chromium } = require("../html_engine/node_modules/playwright");
     await page.addScriptTag({path:path.resolve(__dirname,'../static/html_review_panel.js')});
     await page.evaluate(() => window.HtmlReviewPanel.refresh());
     await page.waitForFunction(() => !document.querySelector('[data-html-design]').hidden);
+    await page.locator('[data-production-runner]').selectOption('pi');
+    await page.locator('[data-pi-images]').selectOption('1');
     await page.locator('[data-action="accept-design"]').click();
     await page.waitForFunction(() => requests.length === 1 && document.querySelector('[data-html-design]').hidden);
     assert.equal((await page.evaluate(() => requests[0])).body.design_candidate_key, 'a'.repeat(64));
+    assert.equal((await page.evaluate(() => requests[0])).body.runner,'pi');
+    assert.equal((await page.evaluate(() => requests[0])).body.max_image_calls,1);
     await page.locator('[data-asset-instruction]').fill('简化主体轮廓');
     await page.locator('[data-action="retry-asset"]').click();
     await page.waitForFunction(() => requests.length === 2);

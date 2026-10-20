@@ -33,7 +33,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22.19.0"
           cache: npm
           cache-dependency-path: scripts/remotion/package-lock.json
 
@@ -45,6 +45,7 @@ jobs:
           npm ci --prefix html_engine
           npm ci --prefix editor_ui
           npm ci --prefix scripts/remotion
+          npm ci --prefix agent_runner --ignore-scripts --no-audit --no-fund
 
       - name: Install rendering browser
         working-directory: html_engine

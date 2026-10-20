@@ -45,6 +45,9 @@ const {chromium}=require('../html_engine/node_modules/playwright');
    anchorErrors.push(Math.max(Math.abs(x-.55)*300,Math.abs(y-.6)*400));
   }
   assert(anchorErrors.every(e=>e<=1),JSON.stringify(anchorErrors));
+  await page.getByRole('button',{name:'校验预览',exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('[data-editor-status]').textContent.includes('修订 2'));
+
   await page.getByRole('button',{name:'保存修改',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('[data-editor-status]').textContent.includes('已保存'));
   const saved=await (await page.request.get(url+'/api/projects/isolated/html-visual/condensation/editor')).json();
@@ -53,7 +56,7 @@ const {chromium}=require('../html_engine/node_modules/playwright');
   assert(saved.scene.nodes.find(n=>n.type==='image').assetRef.id.startsWith('edit-'));
   assert(saved.resources.assets.some(a=>a.id==='test-green'));
   await page.setViewportSize({width:1500,height:1100});
-  await page.screenshot({path:path.join(root,'docs/plans/html-backend-development/scene-editor-evidence.png'),fullPage:true});
+  await page.screenshot({path:path.join(root,'outputs','scene-editor-evidence.png'),fullPage:true});
   await page.reload();await page.waitForFunction(()=>document.querySelector('[data-editor-status]')?.textContent.includes('修订 3'));
   await page.locator('[data-object="header"]').click();assert.equal(await page.locator('[data-field="title"]').inputValue(),'浏览器人工标题');
   // Pixel reproducibility at the export canvas scale avoids fractional CSS
@@ -90,7 +93,7 @@ const {chromium}=require('../html_engine/node_modules/playwright');
   assert.equal(await page.locator('[data-field="title"]').inputValue(),'保留冲突草稿');
   assert.deepEqual(errors,[]);
   const evidence={passed:true,realBrowser:true,isolatedFixture:true,realSharedPlayer:true,saveReopen:true,conflictDraftRetained:true,anchorErrors,seekDeterministic:true,seekPixelScale:1600,errors};
-  fs.writeFileSync(path.join(root,'docs/plans/html-backend-development/scene-editor-browser-evidence.json'),JSON.stringify(evidence,null,2));
+  fs.writeFileSync(path.join(root,'outputs','scene-editor-browser-evidence.json'),JSON.stringify(evidence,null,2));
   console.log(JSON.stringify(evidence));
  }finally{if(browser)await browser.close();child.kill();await new Promise(r=>child.once('exit',r));fs.rmSync(run,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});

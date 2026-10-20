@@ -158,7 +158,7 @@ def test_stop_resume_real_package_and_no_duplicate_planning(case):
     assert all(a["role"] == "classification" for a in pack["manifest"]["attachments"])
     assert pack["references"] == case.requests[0]["reference_paths"]
     assert "黑、灰、白" in case.requests[0]["prompt"]
-    assert "html-design-reference/0.3.0" in case.requests[0]["prompt"]
+    assert "html-design-reference/0.3.1" in case.requests[0]["prompt"]
     catalog = json.loads((ROOT / "html_engine/visual/generated/catalog.json").read_text(encoding="utf-8"))
     layout = next(value for value in catalog["layouts"] if {"id": value["id"], "version": value["version"]} == record["plan"]["layoutRef"])
     geometry = pack["content"]["layoutGeometry"]
@@ -427,7 +427,8 @@ def test_web_agent_payload_parity_and_current_design(tmp_path, monkeypatch):
                 base = f"{prefix}/projects/{pid}/html-review/s1"
                 body = {"design_candidate_key": "a" * 64, "asset_instruction": "fixture retry"}
                 assert client.post(base + "/produce", json=body).status_code == 200
-                assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.1.0", "repair_relation_points": ""}
+                assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.1.0", "repair_relation_points": "",
+                                       "runner": "legacy", "pi_limits": None, "max_image_calls": 0}
                 reused = {"reuse_design_candidate_key": "b" * 64}
                 assert client.post(base + "/produce", json=reused).status_code == 200
                 assert requests[-1]["reuse_design_candidate_key"] == reused["reuse_design_candidate_key"]

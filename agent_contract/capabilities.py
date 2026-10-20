@@ -25,6 +25,8 @@ from html_production_models import HtmlProduceRequest
 from html_repair_models import RepairRequest, RepairSaveRequest, TemporalRequest, RepairGenerateRequest, RepairResult
 from html_handoff_models import ExportRequest as HandoffExportRequest, ImportRequest as HandoffImportRequest
 from html_handoff_models import SaveRequest as HandoffSaveRequest, HandoffResult, BundleReadRequest, WorkReadRequest
+from html_agent_models import AgentJobRequest, AgentJobRead, AgentJobResult
+from html_agent_workflow_models import WorkflowRequest
 from agent_contract.models import HtmlDesignCandidateResult
 from agent_contract.models import HtmlManualCandidateDecisionRequest, HtmlManualCandidateResult
 from html_asset_sheet_models import (HtmlSheetReadRequest, HtmlSheetGenerateRequest,
@@ -124,8 +126,34 @@ class AgentCapability:
 
 CAPABILITIES: list[AgentCapability] = [
     *[
+        AgentCapability(id=f"agent_workflow.{name}", version="0.1", status=CapabilityStatus.stable,
+            description=description, request_model=request, response_model=AgentJobResult,
+            agent_api_method=method, agent_api_path="/api/agent/v1/projects/{project_id}/agent/jobs"+suffix,
+            mcp_tool_name=f"ppt_agent_workflow_{name}", cli_command=f"agent-workflow {name}",
+            service_ref="html_agent_routes.workflow_"+name, long_running=name == "create")
+        for name, method, suffix, request, description in [
+            ("create", "POST", "", WorkflowRequest, "Run Pi article, script/visual storyboard or up to five page repairs with shared bounded budgets. Candidates only; partial batch outcomes remain explicit. No approval or automatic overwrite."),
+            ("read", "GET", "/{job_id}", AgentJobRead, "Read durable project candidate job and individual batch outcomes."),
+            ("result", "GET", "/{job_id}/result", AgentJobRead, "Read validated candidate result and original source identity."),
+            ("cancel", "POST", "/{job_id}/cancel", AgentJobRead, "Cancel project job at safe boundaries; remote requests may already have been submitted."),
+        ]
+    ],
+    *[
+        AgentCapability(id=f"html_agent.{name}", version="0.1", status=CapabilityStatus.stable,
+            description=description, request_model=request, response_model=AgentJobResult,
+            agent_api_method=method, agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/agent/jobs"+suffix,
+            mcp_tool_name=f"ppt_html_agent_{name}", cli_command=f"html agent-{name}",
+            service_ref="html_agent_routes."+name, long_running=name == "create")
+        for name, method, suffix, request, description in [
+            ("create", "POST", "", AgentJobRequest, "Submit idempotent unattended Pi repair job with bounded budgets. Candidate by default; save_revision preauthorizes original guarded AI version save. Never grants human approval."),
+            ("read", "GET", "/{job_id}", AgentJobRead, "Read account-scoped durable Pi job state and server-validated candidate result; missing costs remain null."),
+            ("result", "GET", "/{job_id}/result", AgentJobRead, "Read the fixed terminal result envelope; failed or active jobs have no adoptable delivery."),
+            ("cancel", "POST", "/{job_id}/cancel", AgentJobRead, "Request cooperative stop; does not claim cancellation of already submitted remote requests."),
+        ]
+    ],
+    *[
         AgentCapability(
-            id=f"html_handoff.{name}", version={"export": "0.4.1", "preview": "0.5.1", "save": "0.3", "work_read": "0.1"}.get(name, "0.2"), status=CapabilityStatus.stable,
+            id=f"html_handoff.{name}", version={"export": "0.4.1", "preview": "0.5.1", "save": "0.3", "work_read": "0.3"}.get(name, "0.2"), status=CapabilityStatus.stable,
             description=description, request_model=request, response_model=HandoffResult,
             agent_api_method=method,
             agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/" + suffix,
@@ -285,7 +313,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_service.ProjectService.create",
     ),
     AgentCapability(
-        id="html_review.produce", version="1.13", status=CapabilityStatus.stable,
+        id="html_review.produce", version="1.14", status=CapabilityStatus.stable,
         description="Point repair requires plan_version=0.2.0 and an explicitly image-capable project text model before any provider call. Explicit reference reuse may refresh text/planning bindings only when the image-owner summary is identical, retaining source provenance and requiring new approval. Optional repair_relation_points with reuse_design_candidate_key makes one bounded model correction to existing point coordinates only, preserving original image bytes, content and actions; returns a new unapproved reference without image/TTS or author writes. Default reference reuse stays model-free. Formal captures use a shared software composition policy. Accepted-design assets reuse verified bytes despite observation wording changes; changed design/model/need invalidates reuse, damaged cache stops before a new paid request. Authored visual requirements reach the actual planning context and missing coverage stops before design. Registered course structures support explicit endpoint relations, code charts, three-stage layouts and authored visual requirement coverage before design. Meaning and approval remain independent. Bounded stagnation checks retain precise capacity triggers and effective limits, including saved report details, without increasing repair budgets. Generate a design first. Explicit reuse_design_candidate_key revalidates unchanged original image/plan into a new unapproved review checkpoint without provider calls; never accepts stale keys or carries approvals. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.",
         request_model=HtmlProduceRequest, response_model=HtmlTaskResult,
         agent_api_method="POST",

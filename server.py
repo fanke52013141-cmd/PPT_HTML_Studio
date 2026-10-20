@@ -662,12 +662,11 @@ try:
     )
     from pipeline_lifecycle import project_artifact_lock
 
-    configure_html_visual_service(
-        HtmlVisualDependencies(
-            artifact_lock=project_artifact_lock,
-        )
-    )
+    configure_html_visual_service(HtmlVisualDependencies(artifact_lock=project_artifact_lock))
     app.include_router(html_visual_router)
+    # Recover only this runner's jobs once at startup; never replay unknown model calls.
+    from html_agent_jobs import configure as configure_pi_agent_jobs
+    configure_pi_agent_jobs()
 except Exception as exc:
     logger.exception(
         "Explicit html-visual route registration failed: %s",

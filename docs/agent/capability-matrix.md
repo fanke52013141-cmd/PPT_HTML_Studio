@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.55.1
-- **Contract Hash**: `1955ba5626df4f5b`
-- **Total Capabilities**: 70
+- **Agent API Version**: 1.59.0
+- **Contract Hash**: `22b7055a05b7cf0c`
+- **Total Capabilities**: 78
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -11,7 +11,15 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 | Capability ID | Version | Status | Method | Agent API Path | MCP Tool | MCP enabled | CLI Command | Service Ref | Long-running | Destructive |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `html_handoff.work_read` | 0.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/work/read` | `ppt_html_handoff_work_read` | Yes | `html handoff-work-read` | `html_external_handoff.workbench_read` | No | No |
+| `agent_workflow.create` | 0.1 | stable | POST | `/api/agent/v1/projects/{project_id}/agent/jobs` | `ppt_agent_workflow_create` | Yes | `agent-workflow create` | `html_agent_routes.workflow_create` | Yes | No |
+| `agent_workflow.read` | 0.1 | stable | GET | `/api/agent/v1/projects/{project_id}/agent/jobs/{job_id}` | `ppt_agent_workflow_read` | Yes | `agent-workflow read` | `html_agent_routes.workflow_read` | No | No |
+| `agent_workflow.result` | 0.1 | stable | GET | `/api/agent/v1/projects/{project_id}/agent/jobs/{job_id}/result` | `ppt_agent_workflow_result` | Yes | `agent-workflow result` | `html_agent_routes.workflow_result` | No | No |
+| `agent_workflow.cancel` | 0.1 | stable | POST | `/api/agent/v1/projects/{project_id}/agent/jobs/{job_id}/cancel` | `ppt_agent_workflow_cancel` | Yes | `agent-workflow cancel` | `html_agent_routes.workflow_cancel` | No | No |
+| `html_agent.create` | 0.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/agent/jobs` | `ppt_html_agent_create` | Yes | `html agent-create` | `html_agent_routes.create` | Yes | No |
+| `html_agent.read` | 0.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/agent/jobs/{job_id}` | `ppt_html_agent_read` | Yes | `html agent-read` | `html_agent_routes.read` | No | No |
+| `html_agent.result` | 0.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/agent/jobs/{job_id}/result` | `ppt_html_agent_result` | Yes | `html agent-result` | `html_agent_routes.result` | No | No |
+| `html_agent.cancel` | 0.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/agent/jobs/{job_id}/cancel` | `ppt_html_agent_cancel` | Yes | `html agent-cancel` | `html_agent_routes.cancel` | No | No |
+| `html_handoff.work_read` | 0.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/work/read` | `ppt_html_handoff_work_read` | Yes | `html handoff-work-read` | `html_external_handoff.workbench_read` | No | No |
 | `html_handoff.export` | 0.4.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/export` | `ppt_html_handoff_export` | Yes | `html handoff-export` | `html_external_handoff.export_bundle` | No | No |
 | `html_handoff.bundle` | 0.2 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/{task_id}/bundle` | `ppt_html_handoff_bundle` | No | `html handoff-bundle` | `html_external_handoff.bundle_path` | No | No |
 | `html_handoff.preview` | 0.5.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/handoff/preview` | `ppt_html_handoff_preview` | Yes | `html handoff-preview` | `html_external_handoff.import_preview` | No | No |
@@ -39,7 +47,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `generation.stop` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/generation/{stage}/stop` | `ppt_generation_stop` | Yes | `generation stop` | `generation_control.request_stop` | No | No |
 | `identity.get` | 1.0 | stable | GET | `/api/agent/v1/identity` | `ppt_identity_get` | Yes | `identity` | `agent_api.auth / account_service` | No | No |
 | `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
-| `html_review.produce` | 1.13 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
+| `html_review.produce` | 1.14 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
 | `html_review.design_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/design/current` | `ppt_html_design_current` | Yes | `html design-current` | `html_design_candidates.current_design` | No | No |
 | `html_review.manual_candidate` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}` | `ppt_html_manual_candidate` | Yes | `html manual-candidate` | `html_manual_candidate_review.inspect_candidate` | No | No |
 | `html_review.manual_candidate_decision` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision` | `ppt_html_manual_candidate_decision` | Yes | `html manual-candidate-decision` | `html_manual_candidate_review.decide_candidate` | No | No |
@@ -95,8 +103,16 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **64** stable tools:
+The MCP server exposes **72** stable tools:
 
+- `ppt_agent_workflow_create` — Run Pi article, script/visual storyboard or up to five page repairs with shared bounded budgets. Candidates only; partial batch outcomes remain explicit. No approval or automatic overwrite.
+- `ppt_agent_workflow_read` — Read durable project candidate job and individual batch outcomes.
+- `ppt_agent_workflow_result` — Read validated candidate result and original source identity.
+- `ppt_agent_workflow_cancel` — Cancel project job at safe boundaries; remote requests may already have been submitted.
+- `ppt_html_agent_create` — Submit idempotent unattended Pi repair job with bounded budgets. Candidate by default; save_revision preauthorizes original guarded AI version save. Never grants human approval.
+- `ppt_html_agent_read` — Read account-scoped durable Pi job state and server-validated candidate result; missing costs remain null.
+- `ppt_html_agent_result` — Read the fixed terminal result envelope; failed or active jobs have no adoptable delivery.
+- `ppt_html_agent_cancel` — Request cooperative stop; does not claim cancellation of already submitted remote requests.
 - `ppt_html_handoff_work_read` — Read persisted human work and original feedback; does not edit or save.
 - `ppt_html_handoff_export` — Export a 0.2 portable page task: exact content, resolved style/layout, images/assets, operation schema and original timing. No provider, author or approval writes. Design-only packets cannot save operations.
 - `ppt_html_handoff_preview` — Import result JSON or bounded base64 delivery ZIP with report/evidence. Recheck server task, scope and source identity; archive external report as unverified, return original repair checks, comparison and portable feedback. No author write.

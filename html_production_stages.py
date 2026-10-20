@@ -168,6 +168,10 @@ class ProductionStages:
                 self.progress({"next_action": {"stage": "production", "reason": "external_call_budget_exhausted",
                     "routes": ["manual_review"], "automatic_retry": False}})
                 raise store.HtmlTaskError("阶段模型调用预算已耗尽", 409)
+            if kind == "image" and getattr(self, "image_limit", None) is not None:
+                if sum(k.startswith("image:") for k in records) >= self.image_limit:
+                    raise store.HtmlTaskError("IMAGE_BUDGET_EXCEEDED：独立素材预算已用完；请显式授权额度", 409)
+            getattr(self, "external_guard", lambda: None)()
             request_id = digest(json_bytes({"job": self.job_id, "snapshot": self.snapshot_id,
                                             "key": key, "attempt": self.attempt}))
             lookup_supported = callable(getattr(function, "lookup", None)) and callable(getattr(function, "invoke_with_request_id", None))

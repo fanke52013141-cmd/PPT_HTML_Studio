@@ -64,6 +64,9 @@ class HtmlWorkflowJobs:
             return {**recovered, "reused": True, "reconciled": True}
         if frozen is not None:
             frozen.text.require_ready()
+            if options.get("runner") == "pi":
+                from html_agent_jobs import ready
+                ready(frozen.text)
             if options.get("repair_relation_points") and frozen.text.supports_images is not True:
                 raise store.HtmlTaskError("HTML_VISUAL_MODEL_REQUIRED：关系坐标修复需要项目明确支持图像的视觉模型，尚未调用供应商", 409)
             (frozen.planning or frozen.text).require_ready()
@@ -258,6 +261,18 @@ class HtmlWorkflowJobs:
                     ))
                     provider = partial(self.provider, model_binding=frozen.image)
                     extra["model_summary"] = frozen.summary()
+                if options.get("runner") == "pi":
+                    from html_pi_json import PiJSON
+                    from html_agent_models import AgentLimits
+                    if frozen is None:
+                        raise ValueError("Pi生产需要冻结的项目模型")
+                    pi = PiJSON(frozen.text, stages.folder / "pi-runtime",
+                        limits=AgentLimits.model_validate(options["pi_limits"]),
+                        checkpoint=stages.checkpoint,
+                        record=lambda usage: stages.progress({"runner": "pi", "usage": usage}))
+                    deps = replace(deps, json_generator=pi, planning_generator=pi)
+                    stages.image_limit = options["max_image_calls"]
+                    stages.external_guard = pi.guard
                 deps = replace(deps, json_generator=stages.wrap(deps.json_generator, "json"))
                 if deps.planning_generator is not None:
                     deps = replace(deps, planning_generator=stages.wrap(deps.planning_generator, "json"))

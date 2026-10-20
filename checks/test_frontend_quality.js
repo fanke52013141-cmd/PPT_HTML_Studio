@@ -1404,5 +1404,13 @@ const htmlAudioReview=fs.readFileSync(path.join(root,'static/html_audio_review.j
 if(!htmlAudioReview.includes('HtmlSemanticQA?.mount')||htmlReviewPanel.includes('HtmlSemanticQA?.mount')||app.includes('HtmlSemanticQA'))throw Error('Semantic QA mounting belongs to HTML audio review module');
 
 const handoffWork = fs.readFileSync(path.join(root,'static/html_handoff_workbench.js'),'utf8');
+const piAgent = fs.readFileSync(path.join(root,'static/html_pi_agent.js'),'utf8');
+const piWorkflows = fs.readFileSync(path.join(root,'static/html_pi_workflows.js'),'utf8');
+if (!html.includes('src="html_pi_workflows.js?') || piWorkflows.includes('fetch(') || !piWorkflows.includes('localStorage') || !piWorkflows.includes('textContent') || piWorkflows.includes('iframe')) throw Error('Pi project workflow owner must reuse transport, retain pending identity and avoid slide rendering');
+if (!html.includes('src="html_pi_agent.js?') || !piAgent.includes('/agent/jobs') || piAgent.includes('innerHTML') || piAgent.includes('fetch(')) throw Error('Pi jobs must reuse transport and text-safe UI; no renderer');
 if (!html.includes('src="html_handoff_workbench.js?') || html.indexOf('src="html_handoff_workbench.js?') > html.indexOf('src="html_external_handoff.js?')) throw Error('Human work owner must load before external handoff');
 if (/visualPlayer|innerHTML|fetch\(/.test(handoffWork)) throw Error('Human work UI must reuse transport and original renderer services');
+
+if (!handoffWork.includes("createWorkView") || !handoffWork.includes("history_action")) throw Error("Candidate canvas/history bridge missing");
+
+for (const token of ["预览联动修复方案", "确认应用此联动方案", "采用所选组到工作草稿", "selected_group_ids", "proposal_id"]) if (!handoffWork.includes(token)) throw Error(`Repair assistance bridge missing: ${token}`);

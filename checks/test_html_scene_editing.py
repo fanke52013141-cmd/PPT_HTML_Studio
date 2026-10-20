@@ -310,3 +310,7 @@ def test_http_revision_and_smallest_invalidation(scene_run, monkeypatch):
     assert client.put(url, json=payload).status_code == 409
     assert client.get(url).json()["scene"]["nodes"][0]["title"] == "HTTP 保存"
     assert client.get("/api/html-scene-editor/runtime/unknown").status_code == 404
+    assert client.get(url + "/versions").json()["versions"] == [{"revision": 2}, {"revision": 1}]
+    assert client.get(url + "/versions/1").json()["scene"]["nodes"][0]["title"] != "HTTP 保存"
+    assert client.get(url + "/versions/999").status_code == 422
+    assert len(commits) == 1  # version reads never save or invalidate

@@ -1854,3 +1854,7 @@ def agent_semantic_decision(project_id:str,slide_id:str,payload:SemanticDecision
 from agent_api.html_handoff_routes import router as handoff_router
 
 router.include_router(handoff_router)
+
+from agent_api.html_agent_routes import router as pi_agent_router
+
+router.include_router(pi_agent_router)

@@ -59,6 +59,8 @@ def _capture_editor_bundle(root, capture, kind):
         allowed_static.add("static/html_editor_timeline_bridge.js")
         allowed_assets = {"static/editor_ui/timeline.js", "static/editor_ui/timeline.css",
                           "static/editor_ui/timeline.js.LEGAL.txt", "static/editor_ui/TIMELINE_THIRD_PARTY_NOTICES.txt"}
+    if kind == "canvas":
+        allowed_static.add("static/html_handoff_workbench.js")
     for section in ("sources", "files"):
         records = manifest.get(section)
         if not isinstance(records, dict) or not records or len(records) > 128:
@@ -225,6 +227,8 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
                      "html_production_service.py", "html_design_brief.py", "html_image_provider.py",
                      "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_repair_static.py", "html_engine/visual/relationship-capacity.cjs", "html_repair_models.py", "html_motion_activity.py", "html_engine/visual/presentation-variants.json", "html_engine/visual/presentation-structures.cjs",
                      "json_llm_service.py", "json_llm_transport.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
+                     "html_pi_json.py", "html_agent_jobs.py", "html_agent_models.py", "html_agent_store.py", "html_agent_execution.py", "html_agent_publication.py",
+                     "agent_runner/runner.mjs", "agent_runner/package.json", "agent_runner/package-lock.json",
                      "html_rebuild_plan.py", "html_scene_editing.py", "tts_artifacts.py", "artifact_fingerprint.py", "project_storage.py", "html_input_manifest.py", "invalidation_service.py", "project_impact_service.py",
                      "html_render_runner.py", "html_frozen_video.py", "html_export_snapshot.py",
                      "html_task_store.py", "html_execution_metrics.py", "html_design_policy.py", "html_review_evidence.py", "html_review_facts.py", "html_reference_localization.py", "html_text_edge_verification.py", "html_text_edge_report.py", "html_repair_progress.py", "html_engine/tools/temporal-review.cjs", "html_engine/tools/review-temporal.cjs", "html_engine/visual/qa/overlap-policy.json", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:

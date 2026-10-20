@@ -27,6 +27,7 @@ def test_human_work_http_models_save_and_read_only_agent_route(exchange_api):
         assert opened.status_code == 200, opened.text
         assert client.post(agent_base + "/work/read", json=ref).status_code == 200
         assert client.post(agent_base + "/work/update", json=ref).status_code == 404
+        assert client.post(agent_base + "/work/propose", json=ref).status_code == 404
         operation = {"targetId": "headline", "kind": "set_presentation", "values": {"offsetY": 1}}
         payload = {**ref, "work_revision": 0, "operations": [operation]}
         updated = client.post(base + "/work/update", json=payload)
@@ -36,9 +37,17 @@ def test_human_work_http_models_save_and_read_only_agent_route(exchange_api):
         assert client.post(base + "/work/check", json={**payload, "source": "human"}).status_code == 422
         checked = client.post(base + "/work/check", json=payload)
         assert checked.status_code == 200 and checked.json()["work"]["check"]["passed"], checked.text
+        denied_plan = client.post(base + "/work/propose", json={**payload, "proposal_id": "f"*64})
+        assert denied_plan.status_code == 409
+        assert client.post(base + "/work/propose", json={**payload, "source": "human"}).status_code == 422
+        assert client.post(base + "/work/update", json={**payload, "selected_group_ids": ["invented"]}).status_code == 409
+        assert client.post(agent_base + "/work/read", json=ref).json()["work"]["work_revision"] == 1
+
         saved = client.post(base + "/work/save", json=payload)
         assert saved.status_code == 200 and saved.json()["saved"] and saved.json()["revision"] == 2, saved.text
         assert client.post(agent_base + "/work/read", json=ref).json()["saved"]
         for kind in ("image", "foreign"):
             denied = client.post(f"/api/projects/{ids[kind]}/html-visual/condensation/handoff/work/read", json=ref)
             assert denied.status_code in (400, 404), denied.text
+            denied_plan = client.post(f"/api/projects/{ids[kind]}/html-visual/condensation/handoff/work/propose", json={**payload, "proposal_id": "f"*64})
+            assert denied_plan.status_code in (400, 404), denied_plan.text

@@ -311,3 +311,28 @@ def html_repair_generate(project_id: str, slide_id: str, payload: RepairGenerate
 from html_handoff_routes import router as handoff_router
 
 router.include_router(handoff_router)
+
+from html_agent_routes import router as pi_agent_router
+
+router.include_router(pi_agent_router)
+
+
+@router.get("/api/projects/{project_id}/html-visual/{slide_id}/editor/versions")
+def html_editor_versions(project_id: str, slide_id: str, db: Any = Depends(_get_db)):
+    from html_scene_editing import saved_versions
+    from pipeline_lifecycle import project_artifact_lock
+    run = project_run_dir_or_500(_html_project(project_id, db))
+    with project_artifact_lock(run):
+        return {"success": True, "versions": saved_versions(run, slide_id)}
+
+
+@router.get("/api/projects/{project_id}/html-visual/{slide_id}/editor/versions/{revision}")
+def html_editor_version(project_id: str, slide_id: str, revision: int, db: Any = Depends(_get_db)):
+    from html_scene_editing import saved_versions, SceneEditError
+    from pipeline_lifecycle import project_artifact_lock
+    run = project_run_dir_or_500(_html_project(project_id, db))
+    try:
+        with project_artifact_lock(run):
+            return {"success": True, **saved_versions(run, slide_id, revision)}
+    except SceneEditError as exc:
+        raise HTTPException(422, detail={"code": exc.code, "message": str(exc)}) from exc
