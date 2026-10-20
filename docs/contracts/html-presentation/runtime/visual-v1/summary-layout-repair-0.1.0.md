@@ -13,3 +13,5 @@ runtime片段candidate-layout-repair升级0.2.0并登记真实hash；旧0.1.0保
 实际同候选诊断：原生产3次排版决策累计674.95秒后summary宽404>400+1失败；修复后原末轮场景去掉摘要缩字号，严格重放通过。完整原初态、原binding和visual_contract在隔离目录进行系统Agent诊断，2次决策、包含浏览器检查共21.05秒通过；不保存作者，不重置原任务，不宣称完整HTML还原/视觉验收通过。模型随机性、组件修复、输入变化与low配置共同变化，不能单独归因或推断长期成功率/费用。
 
 诊断准备中两次缺绑定/讲稿合同，第三次模型停止、第四次无进展停止均保留为失败证据；最终第五次通过，不以最后成功覆盖之前调用。详细运行证据在忽略目录outputs/summary-agent-low-replay*-20261017。另一条独立回归neutral-science seek连续两次失败保持待定位。
+
+2026-10-20诊断补充：每次实际容量适配调用在原request旁记录request-outcome.json，包含同一request_id、180秒请求预算、实际耗时、returned/exception及异常类型；不复制异常正文，不从本地异常推断供应商终态。usage/cost未知保持null；submission_state为unverified。该记录不授予恢复/重发权限，原ProductionStages回执及unknown处理仍权威。返回JSON还需原操作/保护/浏览器重验，returned不等于修复成功。

@@ -1414,3 +1414,7 @@ if (/visualPlayer|innerHTML|fetch\(/.test(handoffWork)) throw Error('Human work 
 if (!handoffWork.includes("createWorkView") || !handoffWork.includes("history_action")) throw Error("Candidate canvas/history bridge missing");
 
 for (const token of ["预览联动修复方案", "确认应用此联动方案", "采用所选组到工作草稿", "selected_group_ids", "proposal_id"]) if (!handoffWork.includes(token)) throw Error(`Repair assistance bridge missing: ${token}`);
+
+const localRepair = fs.readFileSync(path.join(root,'static/html_local_repair.js'),'utf8');
+if (!html.includes('src="html_local_repair.js?') || html.indexOf('src="html_local_repair.js?') > html.indexOf('src="html_scene_editor.js?')) throw Error('Local repair owner must load before editor');
+if (/visualPlayer|innerHTML|fetch\(/.test(localRepair) || !sceneEditor.includes('HtmlLocalRepair?.mount')) throw Error('Local repair must reuse shared transport and renderer with explicit lifecycle');

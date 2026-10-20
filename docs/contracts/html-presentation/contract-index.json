@@ -1,7 +1,7 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.108",
+  "contract_version": "0.9.113",
   "effective_date": "2026-10-20",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
@@ -9,6 +9,13 @@
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-20 HPS-007/009/010/013/015--018/023--025: explicit geometry_first fixed overlap task, lazy original model fallback, full registered checks, original candidate/save and preview evidence UI. API1.60.0 / html_repair.generate1.5. See runtime/visual-v1/geometry-repair-entry-0.1.0.md.",
+    "2026-10-20 HPS-007/009/010/013/015--018/023--025: bounded deterministic geometry proposals, original scope/manual guards, six sampled checks and up to three full 30fps checks, no provider/author save. Original versus derived/control evaluation separated. API1.59.0 unchanged. See runtime/visual-v1/geometry-repair-0.1.0.md.",
+    "2026-10-20 HPS-007/009/010/013/015--018: scoped repair evidence with complete neighbour bounds, streaming local repair and private Pi SDK progress; native parameters, full checks and unknown no-replay preserved. Prompt0.3.4/0.4.3; API1.59.0 unchanged. See runtime/visual-v1/repair-stream-context-0.1.0.md.",
+    "2026-10-20 HPS-007/009/010/013/015--018: repair feedback refreshes actual candidate measurements/images, groups repeated time conflicts and preserves original full-patch scope; per-round receipts and unverified exception stop. Prompt0.3.3/0.4.2, API1.59.0 unchanged. See runtime/visual-v1/editor-repair-context-0.1.0.md.",
+    "2026-10-20 HPS-009/010/011/013/014/016/017/023--025: actual linear SVG stroke/text intersections, provenance-checked nontext endpoint contacts, stroke safety bounds and helper source/QA fingerprints. Original pairs, unsupported conservative fallback and API1.59.0 remain. See runtime/visual-v1/vector-overlap-0.1.0.md.",
+    "2026-10-20 HPS-009/010/011/013/014/016/017: three production template overlap policies registered; vector DOM bounds replace transparent arrow carriers. Capacity adapter outcomes record elapsed time and exception class without provider-status inference or retry authority. Compatibility fixes, API/package unchanged. See temporal-qa-0.1.0.md and summary-layout-repair-0.1.0.md.",
+    "2026-10-20 HPS-010/013/015/017: capacity size hints aggregate maximum canvas-pixel requirements; geometry suggestions share those dimensions and intersect existing public operation bounds. Compatibility bug fix, package/API/repair budgets unchanged; see runtime/visual-v1/stacked-relation-0.1.0.md.",
     "2026-10-20 HPS-010/011/013/015--018/023--030/037: frozen slot screenTextSources govern design generation and revisions; no extra labels, copy or relations. Prompt0.3.1/0.4.1. Original semantic guards and API1.59.0 remain. See runtime/visual-v1/design-plan-correspondence-0.1.0.md; real image and paired results require separate evidence.",
     "2026-10-20 HPS-015/017/018: GLM-5.3 native thinking enabled, frozen max_tokens up to 65536, temperature 1.0. Pi JSON and tool paths share actual payload controls; other models retain 8192/off. API1.59.0 unchanged. Prior unknown jobs are preserved; new parameter trials use new identities.",
     "2026-10-20 HPS-007/009/010/013/015--018/023--030/037: Pi production selection via original produce1.14; preauthorized repair AI revision save with receipts/cancel fence; article/script/visual and bounded batch candidates. API1.59.0. See runtime/visual-v1/pi-production-api-0.1.0.md. No approval, migration or default runner replacement; real quality gate remains separate.",

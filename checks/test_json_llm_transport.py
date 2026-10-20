@@ -50,6 +50,17 @@ def test_aggregates_only_content_and_keeps_reasoning_private(tmp_path):
     assert "private reasoning" not in path.read_text() + str(progress)
 
 
+def test_stream_headers_id_and_safe_usage_are_available_without_raw_headers(tmp_path):
+    client, stream = client_for([NS(choices=[NS(index=0, delta=NS(content='{}', reasoning_content=''), finish_reason='stop')],
+                                    usage=NS(model_dump=lambda: {'total_tokens': 12, 'secret': 'opaque'}))], [])
+    stream.response = NS(headers={'x-request-id': 'request_123', 'authorization': 'secret'})
+    events = []
+    result = receive_completion(client, {}, streaming=True, evidence_path=tmp_path / 'trace.json', progress=events.append)
+    assert result.usage.model_dump()['total_tokens'] == 12
+    assert events[-1]['request_id'] == 'request_123' and events[-1]['headers_seconds'] is not None
+    assert 'secret' not in (tmp_path / 'trace.json').read_text() + str(events)
+
+
 @pytest.mark.parametrize("finish", [None, "length", "content_filter"])
 def test_partial_stream_never_enters_json_repair(tmp_path, monkeypatch, finish):
     calls = []

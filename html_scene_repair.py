@@ -13,6 +13,7 @@ import html_visual_store as store
 from html_motion_binding import motion_identity
 from html_repair_models import RepairRequest, TemporalRequest
 from html_repair_static import PARTS, StaticRepairError, apply_static
+from html_repair_feedback import repair_report, repair_screenshots
 
 ROOT = Path(__file__).resolve().parent
 
@@ -136,6 +137,7 @@ def candidate_from_document(run, slide, request, doc):
             ROOT / "html_engine/visual/schema.json",
             ROOT / "html_engine/tools/review-temporal.cjs",
             ROOT / "html_engine/tools/temporal-review.cjs",
+            ROOT / "html_engine/tools/vector-overlap.cjs",
             ROOT / "html_engine/visual/qa/overlap-policy.json",
         ]
     }
@@ -224,6 +226,9 @@ def evidence(run, slide, request, preview=None):
     report["reference_geometry"] = frames[-1].get("geometry", {}) if frames else {}
     report["text_measurements"] = frames[-1].get("measurements", {}) if frames else {}
     report["capacity_measurements"] = frames[-1].get("capacityMeasurements", {}) if frames else {}
+    shot_times = {s["timeMs"] for s in repair_screenshots(report)}
+    report["frames"] = [{k: frame[k] for k in ("timeMs", "geometry", "boxes", "textRects") if k in frame}
+                        for frame in frames if frame.get("timeMs") in shot_times]
     report["measurements_path"] = report["evidence_dir"] + "/report.json"
     from html_motion_activity import motion_activity
     report["motion_activity"] = motion_activity(preview["scene"])
@@ -276,24 +281,21 @@ def build_repair_prompts(doc, instruction, scope, report):
                               or prefix[:len(path)] == tuple(path) for prefix in prefixes)]
     # Keep full finite-sampling evidence on disk, but only send geometry at the
     # attached screenshot times. Repeated identical frames are not model input.
-    snapshot_times = {s["timeMs"] for s in report.get("screenshots", [])[:4]}
-    temporal_report = {
-        k: v for k, v in report.items()
-        if k not in ("screenshots", "evidence_dir", "measurements_path", "frames")
-    }
-    temporal_report["sampledFrameCount"] = report.get("frame_count", len(report.get("frames", [])))
-    if "frames" in report:
-        temporal_report["frames"] = [
-            frame for frame in report["frames"]
-            if frame.get("timeMs") in snapshot_times
-        ][:4]
+    relevant_ids = set(scope) | {target for issue in report.get('issues', []) for target in issue.get('targets', [])}
+    for node in doc['scene']['nodes']:
+        if node['id'] in relevant_ids and node['type'] == 'arrow':
+            relevant_ids.update(node.get(edge, {}).get('objectId') for edge in ('from', 'to'))
+    temporal_report = repair_report(report, relevant_ids, scope)
     system = (
-        "PromptVersion:html-repair-0.3.2。你只提出局部修改。只返回JSON："
+        "PromptVersion:html-repair-0.3.4。你只提出局部修改。只返回JSON："
         '{status:"candidate",operations:[{targetId,kind,part?,action?,values}]}，'
         '或{status:"needs_input"|"unsupported",message:"简短原因"}。'
         "仅使用scope内已有对象、公开文字部位与已存在动作。保持文字语义与其他对象。"
         "位置/字号是基础覆盖；时间使用set_motion或set_binding。已绑定动作不得修改startMs。"
         "所有值为绝对赋值；不输出代码、版本、key、scope、source或成功声明。"
+        "每轮操作都是对原始targets的完整补丁，不累积上一轮操作。"
+        "evaluation_basis说明当前证据对应原稿还是上一轮候选；read_only_context只供判断，不能扩大scope。"
+        "frames.boxes保留全部邻居边界；文字测量只列相关对象，检查仍覆盖原整页。"
         "kind必须为set_presentation、set_text_style、set_motion或set_binding，"
         "不能缩写为presentation/text_style/motion。set_text_style必须提供part，"
         "从该对象public_parts中选择，例如headline的part为text；"
@@ -311,10 +313,14 @@ def build_repair_prompts(doc, instruction, scope, report):
         "instruction": instruction,
         "scope": scope,
         "targets": targets,
+        "evaluation_basis": "original",
+        "read_only_context": [n for n in doc["scene"]["nodes"]
+                              if n["id"] not in scope and n["id"] in relevant_ids],
         "public_parts": {n["id"]: PARTS.get(n["type"], []) for n in targets},
         "durationMs": doc["scene"]["durationMs"],
         "motion": [a for a in doc["scene"]["motion"] if a["targetId"] in scope],
-        "binding": doc["binding"],
+        "binding": ({**doc["binding"], "actions": {k: v for k, v in doc["binding"].get("actions", {}).items()
+                                                   if k in action_ids}} if doc["binding"] else None),
         "beats": doc["beats"],
         "operations": {k:v for k,v in KINDS.items() if k != "set_variant" or doc["scene"].get("version") in ("0.6.0","0.7.0")},
         "operation_examples": [
@@ -340,14 +346,16 @@ def build_repair_prompts(doc, instruction, scope, report):
         "manual_protection": doc["manual"] is not None,
         "protected_paths": protected_paths,
         "image_context": [
-            {"timeMs": s["timeMs"]} for s in report.get("screenshots", [])[:4]
+            {"timeMs": s["timeMs"]} for s in repair_screenshots(report)
         ],
     }
     if doc["scene"].get("version") in ("0.6.0","0.7.0"):
-        system = system.replace("PromptVersion:html-repair-0.3.1", "PromptVersion:html-repair-0.4.1")
+        system = system.replace("PromptVersion:html-repair-0.3.4", "PromptVersion:html-repair-0.4.3")
         system += "动态操作必须附 actionId，严格选取 motion 中的现有稳定身份；不得更名、增删或改变原句。"
         system += "另允许set_variant，values为明确的variant及可选icon；只选输入注册且适用的呈现，不改节点类型。"
-        user["presentation_variants"] = json.loads((ROOT/"html_engine/visual/presentation-variants.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT/"html_engine/visual/presentation-variants.json").read_text(encoding="utf-8"))
+        types = {n['type'] for n in targets}
+        user["presentation_variants"] = {**catalog, "variants": [v for v in catalog['variants'] if set(v['nodeTypes']) & types]}
     return {
         "system_prompt": system,
         "user_prompt": json.dumps(user, ensure_ascii=False),
@@ -369,9 +377,15 @@ def generate_repair(run, slide, request, json_generator):
         doc, request["instruction"], request["scope"], report
     )
     attempts = []
-    base_user = json.loads(prompts["user_prompt"])
+    evaluation_basis = "original"
     directory = Path(run) / store.SCENE_DIR / "records"
     directory.mkdir(parents=True, exist_ok=True)
+    def record():
+        (directory / f"repair-{slide}.json").write_text(
+            json.dumps({"prompts": prompts, "attempts": attempts}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
     def stopped(reason, message):
         result = {"status": "needs_revision", "message": message, "stop_reason": reason}
         (directory / f"repair-{slide}-stop.json").write_text(
@@ -381,22 +395,34 @@ def generate_repair(run, slide, request, json_generator):
         )
         return result
     for index in range(2):
-        response = json_generator(
-            **prompts,
-            run_dir=str(run),
-            artifact_prefix=f"html-repair-{slide}-{index}",
-            image_paths=[
-                str((Path(run) / s["file"]).resolve())
-                for s in report.get("screenshots", [])[:4]
-            ],
-        )
-        attempts.append({"response": response})
-        (directory / f"repair-{slide}.json").write_text(
-            json.dumps(
-                {"prompts": prompts, "attempts": attempts}, ensure_ascii=False, indent=2
-            ),
-            encoding="utf-8",
-        )
+        attempt = {"prompts": copy.deepcopy(prompts), "evaluation_basis": evaluation_basis,
+                   "screenshots": repair_screenshots(report)}
+        attempts.append(attempt)
+        try:
+            from functools import partial
+            original = json_generator
+            while isinstance(original, partial):
+                original = original.func
+            stream_options = {}
+            if getattr(original, 'supports_stream_progress', False):
+                def stream_progress(value):
+                    from pipeline_lifecycle import write_json_atomic
+                    write_json_atomic(directory / f'repair-{slide}-stream-{index}.json', value)
+                stream_options = {'stream_output': True, 'on_stream_progress': stream_progress}
+            response = json_generator(
+                **prompts,
+                run_dir=str(run),
+                artifact_prefix=f"html-repair-{slide}-{index}",
+                image_paths=[str((Path(run) / s["file"]).resolve()) for s in repair_screenshots(report)],
+                **stream_options,
+            )
+        except Exception as exc:
+            attempt["outcome"] = {"state": "exception", "exception_type": type(exc).__name__,
+                                  "submission_state": "unverified"}
+            record()
+            raise
+        attempt["response"] = response
+        record()
         if isinstance(response, dict) and response.get("status") in (
             "needs_input",
             "unsupported",
@@ -419,23 +445,38 @@ def generate_repair(run, slide, request, json_generator):
             body.update(
                 operations=response["operations"], source="ai", scope=request["scope"]
             )
+            if request.get("strategy") == "geometry_first" and any(
+                not isinstance(op, dict) or op.get("kind") != "set_presentation"
+                for op in response["operations"]
+            ):
+                raise editor.SceneEditError("REPAIR_GEOMETRY_ONLY", "避让修复只允许调整位置与尺寸")
             stop_reason = tracker.check_operations(response["operations"])
             if stop_reason:
                 return stopped(stop_reason, "重复补丁无法继续改善；原作品未修改")
             result = preview_repair(run, slide, body)
+            attempt["review"] = {"passed": result["review"]["passed"],
+                                 "candidate_key": result["candidate_key"],
+                                 "evidence_dir": result["review"].get("evidence_dir"),
+                                 "issues": repair_report(result["review"]).get("issues", [])}
+            record()
             if result["review"]["passed"]:
                 return result
             stop_reason = tracker.observe(result["scene"], result["binding"], result["review"])
             if stop_reason:
                 return stopped(stop_reason, "实际检查没有改善；需重新规划，原作品未修改")
-            diagnostic = result["review"]["issues"]
+            report = result["review"]
+            evaluation_basis = "previous_candidate"
+            prompts = build_repair_prompts(doc, request["instruction"], request["scope"], report)
+            diagnostic = repair_report(report).get("issues", [])
         except (editor.SceneEditError, ValueError) as exc:
             diagnostic = {
                 "code": getattr(exc, "code", "INVALID_REPAIR"),
                 "message": str(exc),
             }
         prompts["user_prompt"] = json.dumps(
-            {**base_user, "previous_output": response, "diagnostic": diagnostic},
+            {**json.loads(prompts["user_prompt"]), "previous_output": response,
+             "evaluation_basis": evaluation_basis,
+             "diagnostic": diagnostic},
             ensure_ascii=False,
         )
     raise editor.SceneEditError(

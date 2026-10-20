@@ -50,7 +50,7 @@ def _capture_editor_bundle(root, capture, kind):
     manifest = json.loads(capture.read(root / relative, "tooling/" + relative))
     if manifest.get("format") != f"hps.editor_{kind}.build" or manifest.get("version") != "0.1.0":
         raise SnapshotError("EDITOR_BUILD_MANIFEST_INVALID")
-    allowed_static = {"static/html_editor_canvas.js", "static/html_scene_editor.js",
+    allowed_static = {"static/html_editor_canvas.js", "static/html_scene_editor.js", "static/html_local_repair.js",
                       "static/html_scene_edit.css", "static/index.html"}
     allowed_assets = {"static/editor_ui/canvas.js", "static/editor_ui/canvas.js.LEGAL.txt",
                       "static/editor_ui/CANVAS_THIRD_PARTY_NOTICES.txt"}
@@ -225,13 +225,13 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
         # Pin the actual planner/runtime definitions; not just their IDs.
         for name in ["html_build_snapshot.py", "html_semantic_qa.py", "html_semantic_qa_models.py", "html_semantic_review_service.py", "html_semantic_review_jobs.py", "config/html_semantic_qa_prompt.md", "html_engine/tools/semantic-frames.cjs", "project_model_binding_service.py", "html_storyboard_planning.py", "html_semantic_plan.py", "html_semantic_design.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_design_reference_reuse.py", "html_relation_point_recovery.py", "html_course_structure.py", "html_asset_service.py", "html_engine/tools/browser-runtime.cjs", "html_engine/visual/course-structures.cjs", "html_planning_context.py", "html_visual_review_service.py", "html_reference_package.py",
                      "html_production_service.py", "html_design_brief.py", "html_image_provider.py",
-                     "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_repair_static.py", "html_engine/visual/relationship-capacity.cjs", "html_repair_models.py", "html_motion_activity.py", "html_engine/visual/presentation-variants.json", "html_engine/visual/presentation-structures.cjs",
+                     "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_geometry_repair.py", "html_repair_orchestration.py", "html_repair_feedback.py", "html_repair_static.py", "html_engine/visual/relationship-capacity.cjs", "html_repair_models.py", "html_motion_activity.py", "html_engine/visual/presentation-variants.json", "html_engine/visual/presentation-structures.cjs",
                      "json_llm_service.py", "json_llm_transport.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
                      "html_pi_json.py", "html_agent_jobs.py", "html_agent_models.py", "html_agent_store.py", "html_agent_execution.py", "html_agent_publication.py",
-                     "agent_runner/runner.mjs", "agent_runner/package.json", "agent_runner/package-lock.json",
+                     "agent_runner/runner.mjs", "agent_runner/progress.mjs", "agent_runner/package.json", "agent_runner/package-lock.json",
                      "html_rebuild_plan.py", "html_scene_editing.py", "tts_artifacts.py", "artifact_fingerprint.py", "project_storage.py", "html_input_manifest.py", "invalidation_service.py", "project_impact_service.py",
                      "html_render_runner.py", "html_frozen_video.py", "html_export_snapshot.py",
-                     "html_task_store.py", "html_execution_metrics.py", "html_design_policy.py", "html_review_evidence.py", "html_review_facts.py", "html_reference_localization.py", "html_text_edge_verification.py", "html_text_edge_report.py", "html_repair_progress.py", "html_engine/tools/temporal-review.cjs", "html_engine/tools/review-temporal.cjs", "html_engine/visual/qa/overlap-policy.json", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:
+                     "html_task_store.py", "html_execution_metrics.py", "html_design_policy.py", "html_review_evidence.py", "html_review_facts.py", "html_reference_localization.py", "html_text_edge_verification.py", "html_text_edge_report.py", "html_repair_progress.py", "html_engine/tools/temporal-review.cjs", "html_engine/tools/vector-overlap.cjs", "html_engine/tools/review-temporal.cjs", "html_engine/visual/qa/overlap-policy.json", "html_engine/tools/catalog-lib.cjs", "html_engine/tools/catalog-assemble.cjs"]:
             capture.read(root / name, "source/" + name)
         from html_runtime_skills import runtime_source_files
         for record in runtime_source_files(root):

@@ -779,7 +779,7 @@
       }
     });
 
-    s.handoff = window.HtmlExternalHandoff?.mount(root, {
+    const repairOptions = {
       isCurrent: () => active === s,
       canStart: () => !s.previewing && !s.saving && !s.refreshing && !s.handoffBusy,
       getContext: () => ({ projectId, slideId, doc: s.doc, scope: [...s.selectedIds], saved: !s.dirty }),
@@ -789,7 +789,9 @@
         drafts.delete(s.key);
         await open(host, projectId, slideId);
       },
-    });
+    };
+    s.localRepair = window.HtmlLocalRepair?.mount(root, repairOptions);
+    s.handoff = window.HtmlExternalHandoff?.mount(root, repairOptions);
     button("撤销", () => history(s, "undo", "redo"));
     button("重做", () => history(s, "redo", "undo"));
     button("播放 / 暂停", () => {
@@ -948,6 +950,7 @@
       active.canvas?.destroy();
       active.timeline?.destroy();
       active.handoff?.destroy();
+      active.localRepair?.destroy();
       active.previewGeneration++;
       active.frame.contentWindow.visualPlayer?.pause();
     }

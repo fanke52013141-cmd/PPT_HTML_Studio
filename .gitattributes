@@ -1,2 +1,20 @@
 config/html_runtime_skills/*.md text eol=lf
 config/html_runtime_skills.json text eol=lf
+.gitattributes text eol=lf
+# Capacity fixtures pin scene bytes in their manifest across Windows checkouts.
+checks/fixtures/capacity-baseline/*.json text eol=lf
+
+# Editor manifests hash exact source, license and output bytes on every host.
+editor_ui/** text eol=lf
+# Archived upstream license hashes cover original bytes, including CRLF.
+editor_ui/licenses/*.LICENSE -text
+editor_ui/licenses/*.NOTICE -text
+# Generated bundles/notices/manifests must retain the exact bytes hashed by build.mjs.
+static/editor_ui/** -text
+static/html_handoff_workbench.js text eol=lf
+static/html_editor_canvas.js text eol=lf
+static/html_editor_timeline_bridge.js text eol=lf
+static/html_scene_editor.js text eol=lf
+static/html_local_repair.js text eol=lf
+static/html_scene_edit.css text eol=lf
+static/index.html text eol=lf

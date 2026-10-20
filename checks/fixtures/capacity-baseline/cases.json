@@ -1,0 +1,158 @@
+{
+  "format": "hps.capacity.baseline",
+  "version": "0.1.0",
+  "provenance": "Versioned condensation teaching fixture; synthetic stress variants, not a real-provider course or original Token incident",
+  "max_rounds": 2,
+  "cases": [
+    {
+      "id": "ordinary",
+      "scene": "ordinary.json",
+      "scene_sha256": "9aabb160c7cbf389acaa2d6fc96bc89aa6a0c63dca3b9bfc89a66e20186e31af",
+      "expected_initial_pass": true,
+      "offline_operations": []
+    },
+    {
+      "id": "dense",
+      "scene": "dense.json",
+      "scene_sha256": "bf6b5ff451314d1b9774d575acf86272633f320c3629c24807689aafb17a6d65",
+      "expected_initial_pass": false,
+      "offline_operations": [
+        {
+          "targetId": "headline",
+          "kind": "set_text_style",
+          "part": "text",
+          "values": {
+            "fontSizePx": 28
+          }
+        }
+      ]
+    },
+    {
+      "id": "relation",
+      "scene": "relation.json",
+      "scene_sha256": "6e4ca5471f6f146ba10c4950a34ddbe13001f801ee07471c33f722a9f595ade1",
+      "expected_initial_pass": false,
+      "offline_operations": [
+        {
+          "targetId": "summary",
+          "kind": "set_text_style",
+          "part": "term",
+          "values": {
+            "fontSizePx": 16
+          }
+        }
+      ],
+      "binding": {
+        "format": "hps.html.motion_binding",
+        "version": "0.2.0",
+        "mode": "beat_ids",
+        "actions": {
+          "action-0": {
+            "beatId": "beat-0",
+            "edge": "start",
+            "offsetMs": 0
+          },
+          "action-1": {
+            "beatId": "beat-0",
+            "edge": "start",
+            "offsetMs": 350
+          },
+          "action-2": {
+            "beatId": "beat-0",
+            "edge": "start",
+            "offsetMs": 600
+          },
+          "action-3": {
+            "beatId": "beat-0",
+            "edge": "start",
+            "offsetMs": 2000
+          },
+          "action-4": {
+            "beatId": "beat-1",
+            "edge": "start",
+            "offsetMs": 1500
+          },
+          "action-5": {
+            "beatId": "beat-2",
+            "edge": "start",
+            "offsetMs": 1500
+          },
+          "action-6": {
+            "beatId": "beat-0",
+            "edge": "start",
+            "offsetMs": 700
+          },
+          "action-7": {
+            "beatId": "beat-0",
+            "edge": "start",
+            "offsetMs": 700
+          },
+          "action-8": {
+            "beatId": "beat-4",
+            "edge": "start",
+            "offsetMs": 0
+          },
+          "action-9": {
+            "beatId": "beat-3",
+            "edge": "start",
+            "offsetMs": 1800
+          },
+          "action-10": {
+            "beatId": "beat-3",
+            "edge": "start",
+            "offsetMs": 1500
+          }
+        },
+        "sourceBeats": [
+          {
+            "id": "beat-0",
+            "spoken_text": "冷杯外的小水滴，并不是杯里的水漏出来了。",
+            "spoken_text_sha256": "9d7bc09e85d9807a9a8368cba0ccf6e60d725d7fd4a050685d41602199fc067f"
+          },
+          {
+            "id": "beat-1",
+            "spoken_text": "空气中含有通常看不见的水蒸气。",
+            "spoken_text_sha256": "63f0e9ddab0fd72a3b23bd371e9ad0221a30d78714e68a8b4486d024ba0d6d08"
+          },
+          {
+            "id": "beat-2",
+            "spoken_text": "水蒸气遇到冷杯表面，冷却并凝结成小水滴。",
+            "spoken_text_sha256": "6d0d4b6b4e7209aec6c68a1ad4605fa42410b16a5f93a452b668fd92d10349fd"
+          },
+          {
+            "id": "beat-3",
+            "spoken_text": "从气态变成液态，这个过程叫凝结。",
+            "spoken_text_sha256": "fc30cb9e51ac91d5b5bc663b2d2cc64a38d9e1c3381880a06736e5578396a6cd"
+          },
+          {
+            "id": "beat-4",
+            "spoken_text": "所以，冷杯外的水滴来自空气中的水蒸气。",
+            "spoken_text_sha256": "d0d3f584018666cad43eb11e57226c17209bc506a169bed8351e55f1417cae90"
+          }
+        ]
+      },
+      "narration_beats": [
+        {
+          "id": "beat-0",
+          "spoken_text": "冷杯外的小水滴，并不是杯里的水漏出来了。"
+        },
+        {
+          "id": "beat-1",
+          "spoken_text": "空气中含有通常看不见的水蒸气。"
+        },
+        {
+          "id": "beat-2",
+          "spoken_text": "水蒸气遇到冷杯表面，冷却并凝结成小水滴。"
+        },
+        {
+          "id": "beat-3",
+          "spoken_text": "从气态变成液态，这个过程叫凝结。"
+        },
+        {
+          "id": "beat-4",
+          "spoken_text": "所以，冷杯外的水滴来自空气中的水蒸气。"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,25 @@
 # HTML Studio
 
+2026-10-20 几何入口：[几何优先修复、候选对照与显式保存](docs/plans/html-backend-development/handoff-geometry-entry-2026-10-20.md)，包0.9.113/API1.60.0。两张真实原页经新入口通过633/606时刻检查、0模型调用；浏览器保存/恢复及切页保护通过。真实模型回退质量另验，未发布。
+
+2026-10-20 几何避让：[候选与扩样验证](docs/plans/html-backend-development/handoff-geometry-repair-2026-10-20.md)，包0.9.112/API1.59.0；有限布局试算＋原检查器，原页/受控扰动/正常与能力反例分别统计，候选不保存。
+
+2026-10-20 分级真实测试：[JSON→单图→整页结果](docs/plans/html-backend-development/handoff-staged-live-diagnostics-2026-10-20.md)。两侧三层全部通过，6次真实调用；整页Legacy224秒/Pi272秒且都通过606时点检查，主要长等待伴随持续推理，单次结果不用于默认切换。
+
+2026-10-20 本地优化：[修复输入与流式观测记录](docs/plans/html-backend-development/handoff-repair-stream-context-2026-10-20.md)，包0.9.111/API1.59.0。真实页输入字节减少45%/52%，接通两侧进度；未追加模型请求，实际延迟改善待验。
+
+2026-10-20 真实模型评测：[Legacy / Pi 评测记录](docs/plans/html-backend-development/handoff-real-runner-evaluation-2026-10-20.md)。两次新请求均超时，尚无完整配对，不能判定优劣；保留unknown与not_run，保持Legacy默认。
+
+2026-10-20 本地增量：[真实重叠修复与反馈闭环](docs/plans/html-backend-development/handoff-overlap-repair-feedback-2026-10-20.md)，包0.9.110/API1.59.0；两页候选及原检查/显式保存流程在隔离课程验证，真实模型接受另列。
+
+2026-10-20重叠判定：[实际线段、文字区域与合法端点接触复验](docs/plans/html-backend-development/handoff-vector-overlap-2026-10-20.md)。合同0.9.109/API1.59.0；两组实际穿字继续阻断，原课程未修改；未发布。
+
+2026-10-20动态优化：[模板策略补齐、箭头几何误报修复及容量请求留证](docs/plans/html-backend-development/handoff-temporal-capacity-2026-10-20.md)。真实三阶段页30fps检查通过，其他页保留重叠待核查项；未发布。
+
+2026-10-20本机容量优化：[三类固定案例、真实课程取证与容量输入修复](docs/plans/html-backend-development/handoff-capacity-baseline-2026-10-20.md)。离线工程与真实模型验收分别记录；未发布。
+
+2026-10-20本机接手：[跨机编辑器指纹修复与验证](docs/plans/html-backend-development/handoff-local-checks-2026-10-20.md)。已同步main；本地修复尚未发布，原课程运行数据在另一台电脑。
+
 2026-10-20源码同步：[最新发布与跨机handoff](docs/plans/html-backend-development/handoff-release-2026-10-20.md)；契约0.9.108/API1.59.0。候选编辑、关联修复、Pi M0–M5和设计对应约束；真实新页尚未验收，Legacy默认保持。提交/检查终态以发布回执为准。
 
 2026-10-20：[设计图与计划对应修复、新对照任务](docs/plans/html-backend-development/handoff-design-plan-alignment-2026-10-20.md)，契约0.9.108；实际新图已核对，原计划不改，Legacy/Pi同输入重测；正式视觉批准独立。

@@ -1,6 +1,7 @@
 "use strict";
 // Shared deterministic time/pair policy and actual DOM evidence, no alternate renderer.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const vectorOverlap=require('./vector-overlap.cjs');
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
 function timeCoverage(scene,spec) {
   const range=spec.time_range_ms || [0,scene.durationMs];
@@ -32,15 +33,16 @@ function overlapPolicy(scene,spec,policy) {
   return {pairs:[...new Map(pairs.filter(p=>!excluded.has(key(p))).map(p=>[key(p),p])).values()],exclusions:[...excluded.values()],scope:spec.overlap_policy || 'explicit'};
 }
 async function checkTemporalPage(page,scene,spec,dir,policy) {
-  const coverage=timeCoverage(scene,spec),scope=overlapPolicy(scene,spec,policy),frames=[],issues=[],screenshots=[];
+  const coverage=timeCoverage(scene,spec),scope=overlapPolicy(scene,spec,policy),frames=[],issues=[],screenshots=[],relationContacts=[];
   const shotTimes=new Set([coverage.times[0],coverage.times[Math.floor(coverage.times.length/2)],coverage.times.at(-1)]);
   for(const t of coverage.times) {
-    const frame=await page.evaluate(({t,annotationIds})=>{
-      const result=window.visualPlayer.seek(t),stage=document.querySelector('.visual-stage').getBoundingClientRect(),scale=stage.width/1600,visible={},boxes={};
+    const frame=await page.evaluate(({t,vectorIds,arrowIds})=>{
+      const result=window.visualPlayer.seek(t),stage=document.querySelector('.visual-stage').getBoundingClientRect(),scale=stage.width/1600,visible={},boxes={},textRects={},vectorPaths={},strokeBoxes={};
+      const normal=r=>({x:(r.x-stage.x)/scale,y:(r.y-stage.y)/scale,width:r.width/scale,height:r.height/scale});
       for(const el of document.querySelectorAll('[data-object-id]')) {
         const id=el.dataset.objectId,style=getComputedStyle(el);
         let r=el.getBoundingClientRect();
-        if(annotationIds.includes(id)) {
+        if(vectorIds.includes(id)) {
           const parts=[...el.querySelectorAll('svg circle,svg path,svg line')].map(p=>p.getBoundingClientRect()).filter(b=>b.width || b.height);
           if(parts.length) {
             const x=Math.min(...parts.map(b=>b.x)),y=Math.min(...parts.map(b=>b.y));
@@ -48,20 +50,60 @@ async function checkTemporalPage(page,scene,spec,dir,policy) {
           }
         }
         visible[id]=style.display==='none'||style.visibility==='hidden'?0:Number(style.opacity);
-        boxes[id]={x:(r.x-stage.x)/scale,y:(r.y-stage.y)/scale,width:r.width/scale,height:r.height/scale};
+        boxes[id]=normal(r);
+        textRects[id]=[];
+        const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+        let text;
+        while((text=walker.nextNode())) {
+          if(!text.textContent.trim() || text.parentElement.closest('[data-object-id]')!==el) continue;
+          const parentStyle=getComputedStyle(text.parentElement);
+          if(parentStyle.display==='none' || parentStyle.visibility==='hidden' || Number(parentStyle.opacity)<=0.01) continue;
+          const range=document.createRange();range.selectNodeContents(text);
+          const chartLabel=text.parentElement.closest('[data-chart-label]');
+          for(const rect of range.getClientRects()) if(rect.width>0 && rect.height>0)
+            textRects[id].push({...normal(rect),...(chartLabel?{part:'chart:'+chartLabel.dataset.chartLabel}:{})});
+          if(textRects[id].length>512) throw Error('TEMPORAL_TEXT_GEOMETRY_BUDGET');
+        }
+        if(arrowIds.includes(id)) {
+          vectorPaths[id]=[];
+          for(const primitive of el.querySelectorAll('svg path')) {
+            const matrix=primitive.getScreenCTM(),paint=getComputedStyle(primitive);
+            if(!matrix) continue;
+            const values=[matrix.a/scale,matrix.b/scale,matrix.c/scale,matrix.d/scale,(matrix.e-stage.x)/scale,(matrix.f-stage.y)/scale];
+            const [a,b,c,d]=values,s=a*a+b*b+c*c+d*d,det=a*d-b*c;
+            const maxScale=Math.sqrt((s+Math.sqrt(Math.max(0,s*s-4*det*det)))/2);
+            const radius=Number.parseFloat(paint.strokeWidth)/2*maxScale*(paint.strokeLinejoin==='miter'?Number.parseFloat(paint.strokeMiterlimit):1);
+            const supported=Number.isFinite(radius) && radius>=0 && paint.fill==='none' && paint.stroke!=='none' && paint.vectorEffect==='none' &&
+              paint.markerStart==='none' && paint.markerMid==='none' && paint.markerEnd==='none';
+            vectorPaths[id].push({d:primitive.getAttribute('d'),matrix:values,radius,supported});
+            if(!Number.isFinite(radius) || radius<0) continue;
+            const bounds=normal(primitive.getBoundingClientRect());
+            const expanded={x:bounds.x-radius,y:bounds.y-radius,width:bounds.width+2*radius,height:bounds.height+2*radius};
+            const prior=strokeBoxes[id];
+            strokeBoxes[id]=prior?{x:Math.min(prior.x,expanded.x),y:Math.min(prior.y,expanded.y),
+              width:Math.max(prior.x+prior.width,expanded.x+expanded.width)-Math.min(prior.x,expanded.x),
+              height:Math.max(prior.y+prior.height,expanded.y+expanded.height)-Math.min(prior.y,expanded.y)}:expanded;
+          }
+        }
       }
-      return {...result,visible,boxes};
-    },{t,annotationIds:scene.nodes.filter(n=>n.type==='annotation').map(n=>n.id)});
+      return {...result,visible,boxes,textRects,vectorPaths,strokeBoxes};
+    },{t,vectorIds:scene.nodes.filter(n=>n.type==='annotation' || n.type==='arrow').map(n=>n.id),arrowIds:scene.nodes.filter(n=>n.type==='arrow').map(n=>n.id)});
     for(const [a,b] of scope.pairs) {
       if(frame.visible[a]<=0.01 || frame.visible[b]<=0.01) continue;
       const x=frame.boxes[a],y=frame.boxes[b];
       if(!x || !y) throw Error('UNSUPPORTED_PAIR_GEOMETRY');
       const width=Math.min(x.x+x.width,y.x+y.width)-Math.max(x.x,y.x),height=Math.min(x.y+x.height,y.y+y.height)-Math.max(x.y,y.y);
+      const vector=vectorOverlap.vectorPair(frame,a,b,scene.nodes);
+      if(vector) {
+        if(vector.contact) relationContacts.push({timeMs:t,targets:[a,b],method:vector.method,reason:vector.reason});
+        if(vector.overlap) issues.push({code:'TEMPORAL_OVERLAP',timeMs:t,targets:[a,b],measured:vector,allowed_repairs:['layout_or_motion']});
+        continue;
+      }
       if(width>1 && height>1) issues.push({code:'TEMPORAL_OVERLAP',timeMs:t,targets:[a,b],measured:{overlapWidth:width,overlapHeight:height},allowed_repairs:['layout_or_motion']});
     }
     for(const n of scene.nodes) {
       if(frame.visible[n.id]<=0.01) continue;
-      const b=frame.boxes[n.id];
+      const b=frame.strokeBoxes[n.id] || frame.boxes[n.id];
       if(b && (b.x < -1 || b.y < -1 || b.x+b.width>1601 || b.y+b.height>801)) issues.push({code:'TEMPORAL_SAFE_ZONE',timeMs:t,targets:[n.id],measured:b,allowed_repairs:['layout_or_motion']});
     }
     frames.push(frame);
@@ -71,6 +113,6 @@ async function checkTemporalPage(page,scene,spec,dir,policy) {
       screenshots.push({timeMs:t,file});
     }
   }
-  return {passed:issues.length===0,clock:spec.clock,rangeMs:coverage.rangeMs,stepMs:coverage.stepMs,finiteSampling:true,coverage,overlapPairs:scope.pairs,overlapExclusions:scope.exclusions,overlapScope:scope.scope,frames,issues,screenshots,browserVersion:page.context().browser().version()};
+  return {passed:issues.length===0,clock:spec.clock,rangeMs:coverage.rangeMs,stepMs:coverage.stepMs,finiteSampling:true,coverage,overlapPairs:scope.pairs,overlapExclusions:scope.exclusions,overlapScope:scope.scope,overlapGeometry:vectorOverlap.VERSION,relationContacts,frames,issues,screenshots,browserVersion:page.context().browser().version()};
 }
 module.exports={timeCoverage,overlapPolicy,checkTemporalPage};

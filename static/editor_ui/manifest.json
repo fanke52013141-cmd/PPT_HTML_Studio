@@ -4,7 +4,7 @@
   "sources": {
     "package.json": "2abe956196d36b003742449625fa100ef089e12140b7432c954d35146e5bc1f7",
     "package-lock.json": "47ee07dd5e910b7780d53591fef1226a4b218262e21263ba472bea72f7f4cf93",
-    "build.mjs": "1961a4e42c16b08326f7874f5820d43170ef65cbf95545d67b7f96a6ad71f3e8",
+    "build.mjs": "6d60db7e62143cd52a6c0a4f62ab0e9e4a48db5544ef8aeb9b59e27b65d7fa66",
     "src/canvas-entry.js": "47a9251eabec4eb866ea8eb20444686b9db0c6aab6e46b342885d0eac3b38f33",
     "src/canvas.js": "45cf76b337a6acd0fc1bec0953dfe3078481768f58b205421bf00bd25ce39d22",
     "src/commands.mjs": "082b38f62a6036280ac94fbc8701513b45d3aa7490c13cf86c93b8d69e9fe248",

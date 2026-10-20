@@ -18,7 +18,7 @@
   "sources": {
     "editor_ui/package.json": "2abe956196d36b003742449625fa100ef089e12140b7432c954d35146e5bc1f7",
     "editor_ui/package-lock.json": "47ee07dd5e910b7780d53591fef1226a4b218262e21263ba472bea72f7f4cf93",
-    "editor_ui/build.mjs": "1961a4e42c16b08326f7874f5820d43170ef65cbf95545d67b7f96a6ad71f3e8",
+    "editor_ui/build.mjs": "6d60db7e62143cd52a6c0a4f62ab0e9e4a48db5544ef8aeb9b59e27b65d7fa66",
     "editor_ui/src/commands.mjs": "082b38f62a6036280ac94fbc8701513b45d3aa7490c13cf86c93b8d69e9fe248",
     "editor_ui/src/canvas.js": "45cf76b337a6acd0fc1bec0953dfe3078481768f58b205421bf00bd25ce39d22",
     "editor_ui/src/canvas-entry.js": "47a9251eabec4eb866ea8eb20444686b9db0c6aab6e46b342885d0eac3b38f33",
@@ -32,10 +32,11 @@
     "editor_ui/licenses/records.json": "33eee8e7636ee17447fe292e9745ae75409981af6a08cf690ee90e020cd6051a",
     "editor_ui/licenses/xzdarcy--react-timeline-editor.LICENSE": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe",
     "editor_ui/licenses/xzdarcy--timeline-engine.LICENSE": "31dcc73686e94c5e166e6c82cba8a417c3b81720e77d43c8064a19e9f5476bbe",
-    "static/html_handoff_workbench.js": "b13a2bce0255d45066a785041c8222d9f8b23b6d1d86862e9c8f3cfadd934764",
-    "static/html_editor_canvas.js": "f3288e425ea18bfc973beaae305abd3fbcad7bc1427da4c84b761413fe626f22",
-    "static/html_scene_editor.js": "065e219afaf65d4e3c95698f7c2f66a1874fb19b7890605ce4db2520ed9a2f1f",
-    "static/html_scene_edit.css": "40ea37147f95fb6f902ccc6307ddf6780f4dea964d6798f13f7e88d6746cb1d5",
-    "static/index.html": "8d70dd02b0c51e7d027295f13dbf210e45f2a42f4679fb65a19ef126c4624577"
+    "static/html_handoff_workbench.js": "7523952fecf68b8cdbb0e324a5f84185ff699db7dba8a2f15ac170c2f62a45b6",
+    "static/html_editor_canvas.js": "bb674bc20cdf33c37a0dad8c9cc49abe871f8fb15aeb398445f8fd7f253c603e",
+    "static/html_scene_editor.js": "a4677b7a92f643b529d5157c06bbf326ff277fda605d3951d6bd668057f11b23",
+    "static/html_local_repair.js": "6dbe32400749fa291049218d9d1eb538758ee379020ff8cd4c4d094f67db4504",
+    "static/html_scene_edit.css": "4c413c73431d17ffb3dce32de40416cabdb32839a5f6ca7b57a79db3aafe4bae",
+    "static/index.html": "0c3e700dc7d1bd4c5c73046168972b576166ad45f50d7e4e4f79cf35d29cf26f"
   }
 }

@@ -245,6 +245,8 @@ Stitch layers.
 
 ## Frontend Module Boundaries
 
+- `html_repair_orchestration.py` composes explicit geometry-first overlap repair and lazy original model fallback; `html_geometry_repair.py` owns bounded numeric proposals. Original `html_scene_repair.py` owns candidate keys, protected preview/check/save. `static/html_local_repair.js` owns local candidate evidence and explicit save; the editor supplies lifecycle/selection/draft bridges. No second renderer or automatic approval.
+
 - `html_external_handoff.py` owns portable external-Agent task material/identity and original repair preview/save composition; `html_handoff_contract.py` derives allowed operations from registered schemas/capabilities, and `html_handoff_models.py` owns exchange models. Web/Agent adapters stay thin. No provider or approval writes; preserve the 0.1 SDK.
 - `html_handoff_delivery.py` owns bounded external delivery ZIP/JSON parsing only. Reports/evidence are untrusted data; never execute HTML, extract unchecked paths, or promote external claims into system/human approval. Import preview composes original protected repair and separate feedback; only explicit save changes authors.
 - `html_handoff_execution.py` owns derived execution facts, typed acceptance and portable checker composition. `html_repair_static.py` is the pure static mutation owner shared by production repair and the shipped checker; do not duplicate its semantics. Official preflight is structural only, not DOM/visual/audio approval.

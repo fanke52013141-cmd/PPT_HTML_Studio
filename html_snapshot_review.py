@@ -35,6 +35,7 @@ def review_snapshot(snapshot, *, repo_root=None, output_dir=None, temporal=None)
         request = folder / "temporal-request.json"
         request.write_bytes(json_bytes(spec.model_dump(mode="json")))
         checker["temporal_core_sha256"] = fresh_hash(tool.parent / "temporal-review.cjs")
+        checker["vector_overlap_sha256"] = fresh_hash(tool.parent / "vector-overlap.cjs")
         checker["overlap_policy_sha256"] = fresh_hash(snapshot / "source/qa-policy.json")
     raw_path = folder / "raw-report.json"
     try:
@@ -53,6 +54,8 @@ def review_snapshot(snapshot, *, repo_root=None, output_dir=None, temporal=None)
     if verify_snapshot(snapshot)["snapshot_id"] != manifest["snapshot_id"] or fresh_hash(tool) != checker["tool_sha256"] or fresh_hash(tool.parent / "browser-runtime.cjs") != checker["browser_resolver_sha256"] or fresh_hash(root / "html_snapshot_review.py") != checker["runner_sha256"] or fresh_hash(root / "html_quality_report.py") != checker["normalizer_sha256"]:
         raise SnapshotError("SNAPSHOT_OR_CHECKER_CHANGED")
     if dynamic and fresh_hash(tool.parent / "temporal-review.cjs") != checker["temporal_core_sha256"]:
+        raise SnapshotError("SNAPSHOT_OR_CHECKER_CHANGED")
+    if dynamic and fresh_hash(tool.parent / "vector-overlap.cjs") != checker["vector_overlap_sha256"]:
         raise SnapshotError("SNAPSHOT_OR_CHECKER_CHANGED")
     raw = json.loads((folder / "raw-report.json").read_text(encoding="utf-8"))
     checker["browser_version"] = raw.get("browserVersion")

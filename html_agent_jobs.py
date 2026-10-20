@@ -31,7 +31,7 @@ def execution_profile(model):
 def runner_identity():
     files = ["html_agent_jobs.py", "html_agent_execution.py", "html_agent_store.py", "html_agent_models.py", "html_agent_publication.py", "html_pi_json.py", "html_agent_workflows.py", "html_agent_workflow_models.py",
              "article_service.py", "storyboard_planning.py", "storyboard_prompt_templates.py", "storyboard_plan_store.py",
-             "agent_runner/runner.mjs", "agent_runner/package.json", "agent_runner/package-lock.json"]
+             "agent_runner/runner.mjs", "agent_runner/progress.mjs", "agent_runner/package.json", "agent_runner/package-lock.json"]
     return digest({name: sha256((ROOT / name).read_bytes()).hexdigest() for name in files})
 
 

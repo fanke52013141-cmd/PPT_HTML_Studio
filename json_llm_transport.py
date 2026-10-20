@@ -49,6 +49,7 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
     started = time.monotonic()
     content = []
     record = {"stream": True, "first_chunk_seconds": None, "first_content_seconds": None,
+              "request_id": None, "headers_seconds": None,
               "chunks": 0, "content_chars": 0, "reasoning_chars": 0,
               "finish_reason": None, "usage": None, "state": "waiting",
               "total_timeout_seconds": timeout, "read_timeout_seconds": read_timeout,
@@ -71,12 +72,20 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
             progress({k: record[k] for k in ("state", "elapsed_seconds", "content_chars",
                                             "reasoning_chars", "first_chunk_seconds", "last_chunk_seconds",
                                             "silence_seconds", "total_timeout_seconds", "read_timeout_seconds",
-                                            "reasoning_effort", "failure_reason", "finish_reason", "usage")})
+                                            "reasoning_effort", "failure_reason", "finish_reason", "usage",
+                                            "request_id", "headers_seconds")})
 
     try:
         emit(True)
         with client.chat.completions.create(**params, stream=True,
                                             stream_options={"include_usage": True}) as stream:
+            import re
+            headers = getattr(getattr(stream, 'response', None), 'headers', {})
+            record['headers_seconds'] = round(time.monotonic() - started, 3)
+            request_id = headers.get('x-request-id')
+            if isinstance(request_id, str) and re.fullmatch(r'[A-Za-z0-9_.:-]{1,256}', request_id):
+                record['request_id'] = request_id
+            emit(True)
             for chunk in stream:
                 elapsed = time.monotonic() - started
                 if elapsed > timeout:
@@ -113,7 +122,8 @@ def receive_completion(client, params, *, streaming=False, timeout=1800,
             raise ValueError("JSON_STREAM_INCOMPLETE")
         record["state"] = "completed"
         emit(True)
-        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="".join(content)))])
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="".join(content)))],
+                               usage=SimpleNamespace(model_dump=lambda: record['usage']) if record['usage'] else None)
     except Exception as error:
         record.update(state="failed", error_class=type(error).__name__,
                       status_code=getattr(error, "status_code", None), failure_reason=failure_reason(error))

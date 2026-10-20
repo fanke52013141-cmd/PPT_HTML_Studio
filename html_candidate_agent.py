@@ -9,6 +9,7 @@ import math
 import json
 import shutil
 import uuid
+import time
 from pathlib import Path
 from typing import TypedDict
 
@@ -55,27 +56,48 @@ def _registered_reference(entries, reference):
     return matches[0]
 
 
-def _geometry_constraints(node, scene, layout, variants):
+def _capacity_size_hint(node, layout, issues):
+    """Keep the largest measured requirement, independent of diagnostic order."""
+    box = layout["slots"][node["slot"]]["box"]
+    presentation = node.get("presentation", {})
+    hints = {}
+    for issue in issues:
+        if issue.get("target") != node["id"]:
+            continue
+        for trigger in issue.get("triggers", []):
+            dimension = {"box_height": "height", "box_width": "width"}.get(trigger.get("dimension"))
+            if not dimension or trigger.get("unit") != "canvas_px":
+                continue
+            outer = presentation.get(dimension, box[dimension])
+            inset = max(0, outer - trigger["limit"])
+            hint = {"currentOuter": outer, "currentEffective": trigger["limit"],
+                    "insets": inset, "suggestedOuter": math.ceil(trigger["actual"] + inset)}
+            if hint["suggestedOuter"] > hints.get(dimension, {}).get("suggestedOuter", -1):
+                hints[dimension] = hint
+    return hints
+
+
+def _geometry_constraints(node, scene, layout, variants, size_hint=None):
     """Expose the compiler's base + presentation + motion envelope, not just CSS size."""
     box = layout['slots'][node['slot']]['box']
     p = node.get('presentation', {})
     variant = next((v for v in variants if v['id'] == p.get('variant')), {})
-    width = max(p.get('width', box['width']), variant.get('minWidth', 0))
-    height = max(p.get('height', box['height']), variant.get('minHeight', 0))
+    width = max(p.get('width', box['width']), variant.get('minWidth', 0), (size_hint or {}).get('width', {}).get('suggestedOuter', 0))
+    height = max(p.get('height', box['height']), variant.get('minHeight', 0), (size_hint or {}).get('height', {}).get('suggestedOuter', 0))
     motions = [a for a in scene['motion'] if a['targetId'] == node['id']]
     max_x = max([0]+[a.get('offsetX',0) for a in motions])
     max_y = max([0]+[a.get('offsetY',0) for a in motions])
     min_x = min([0]+[a.get('offsetX',0) for a in motions])
     min_y = min([0]+[a.get('offsetY',0) for a in motions])
-    limits = {'minOffsetX': -box['x']-min_x, 'maxOffsetX':1600-box['x']-width-max_x,
-              'minOffsetY': -box['y']-min_y, 'maxOffsetY':800-box['y']-height-max_y}
+    limits = {'minOffsetX': max(-400, -box['x']-min_x), 'maxOffsetX': min(400, 1600-box['x']-width-max_x),
+              'minOffsetY': max(-400, -box['y']-min_y), 'maxOffsetY': min(400, 800-box['y']-height-max_y)}
     return {'registeredMinimum':{'width':variant.get('minWidth',0),'height':variant.get('minHeight',0)},
             'motionEnvelope':{'minX':min_x,'maxX':max_x,'minY':min_y,'maxY':max_y},
             'offsetLimitsAtSuggestedSize':limits,
             'suggestedPresentation':{'width':width,'height':height,
                 'offsetX':max(limits['minOffsetX'],min(p.get('offsetX',0),limits['maxOffsetX'])),
                 'offsetY':max(limits['minOffsetY'],min(p.get('offsetY',0),limits['maxOffsetY']))},
-            'feasible':limits['minOffsetX']<=limits['maxOffsetX'] and limits['minOffsetY']<=limits['maxOffsetY']}
+            'feasible':20 <= width <= 1600 and 20 <= height <= 800 and limits['minOffsetX']<=limits['maxOffsetX'] and limits['minOffsetY']<=limits['maxOffsetY']}
 
 
 def repair_candidate(
@@ -164,29 +186,16 @@ def repair_candidate(
     def decide(state):
         checkpoint()
         selection.verify()
-        def size_hint(node):
-            box = layout["slots"][node["slot"]]["box"]
-            presentation = node.get("presentation", {})
-            hints = {}
-            for issue in state["report"]["diagnostic"].get("capacityIssues", []):
-                if issue.get("target") != node["id"]:
-                    continue
-                for trigger in issue.get("triggers", []):
-                    dimension = {"box_height":"height", "box_width":"width"}.get(trigger.get("dimension"))
-                    if dimension and trigger.get("unit") == "canvas_px":
-                        outer = presentation.get(dimension, box[dimension])
-                        inset = max(0, outer - trigger["limit"])
-                        hints[dimension] = {"currentOuter": outer, "currentEffective": trigger["limit"],
-                                            "insets": inset, "suggestedOuter": math.ceil(trigger["actual"] + inset)}
-            return hints
+        hints = {n["id"]: _capacity_size_hint(n, layout, state["report"]["diagnostic"].get("capacityIssues", []))
+                 for n in state["scene"]["nodes"]}
         payload = {
             "nodes": [
                 {
                     **n,
                     "presentationSizeEditable": n["type"] != "annotation",
-                    "capacitySizeHint": size_hint(n),
+                    "capacitySizeHint": hints[n["id"]],
                     "geometryConstraints": _geometry_constraints(n, state['scene'], layout,
-                        catalog.get('presentationVariants', {}).get('variants', [])),
+                        catalog.get('presentationVariants', {}).get('variants', []), hints[n['id']]),
                     "publicParts": [
                         p
                         for p in PARTS.get(n["type"], [])
@@ -236,14 +245,26 @@ def repair_candidate(
             json_bytes({**request_identity, **prompts})
         )
         write_json_atomic(folder / "request.json", {**request_identity, **prompts})
-        response = deps.json_generator(
-            **prompts,
-            run_dir=str(run),
-            artifact_prefix=f"layout-agent-{scene['id']}-{state['round']}",
-            image_paths=image_paths,
-            request_timeout=180,
-            reasoning_effort_override="low",
-        )
+        started = time.monotonic()
+        outcome = {"request_id": request_identity["request_id"], "state": "exception",
+                   "request_timeout_seconds": 180, "submission_state": "unverified",
+                   "usage": None, "cost": None}
+        try:
+            response = deps.json_generator(
+                **prompts,
+                run_dir=str(run),
+                artifact_prefix=f"layout-agent-{scene['id']}-{state['round']}",
+                image_paths=image_paths,
+                request_timeout=180,
+                reasoning_effort_override="low",
+            )
+            outcome["state"] = "returned"  # Returned JSON still needs original operation validation.
+        except Exception as exc:
+            outcome["error_class"] = type(exc).__name__
+            raise
+        finally:
+            outcome["elapsed_ms"] = round((time.monotonic() - started) * 1000, 3)
+            write_json_atomic(folder / "request-outcome.json", outcome)
         write_json_atomic(folder / "response.json", response)
         history.append({"round": state["round"], "response": response})
         stopped = (

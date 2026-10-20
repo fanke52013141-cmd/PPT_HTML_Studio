@@ -12,6 +12,13 @@ npm.cmd run build --prefix editor_ui
 npm.cmd test --prefix editor_ui
 ```
 
+Editor source and consumer files use the LF rules in `.gitattributes` because
+the manifests hash exact bytes. Archived license files and generated outputs
+retain their original bytes; some upstream licenses contain CRLF. Rebuild with
+`build.mjs` after changing a consumer, and commit the regenerated manifests with
+the source. Do not rewrite hashes by hand or normalize archived licenses.
+The build tests exercise Git checkout with `core.autocrlf` both enabled and disabled.
+
 Run `checks/test_html_scene_editor_fixture.py <temporary-directory>` with the
 repository Python environment. Open the printed localhost root for the production
 editor fixture; `/adapter-test` is P0. Add `--semantic` for synthetic 0.6 beats,

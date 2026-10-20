@@ -241,12 +241,12 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_scene_repair.evidence",
     ),
     AgentCapability(
-        id="html_repair.generate", version="1.4", status=CapabilityStatus.stable,
-        description="Bounded HTML local repair with scope-specific protected leaf and ancestor paths in model context; retain precise capacity triggers, original budgets, frozen revision, shared candidate/save protection and sampled/output-frame checks. Conflicting protected goals stop without overwriting; no automatic aesthetic approval.",
+        id="html_repair.generate", version="1.5", status=CapabilityStatus.stable,
+        description="Optional geometry_first fixed arrow/text placement repair with lazy model fallback and before/after evidence; default model remains compatible. Bounded HTML local repair with scope-specific protected leaf and ancestor paths in model context; retain precise capacity triggers, original budgets, frozen revision, shared candidate/save protection and sampled/output-frame checks. Conflicting protected goals stop without overwriting; no automatic aesthetic approval.",
         request_model=RepairGenerateRequest, response_model=RepairResult,
         agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate",
         mcp_tool_name="ppt_html_repair_generate", cli_command="html repair-generate",
-        service_ref="html_scene_repair.generate_repair",
+        service_ref="html_repair_orchestration.generate_repair",
     ),
     AgentCapability(
         id="html_editor.read", version="1.2", status=CapabilityStatus.stable,

@@ -125,6 +125,33 @@
           "reason": "registered_container_or_decoration"
         }
       ]
+    },
+    "science-relations-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": [
+        {
+          "slots": [
+            "figure",
+            "subject"
+          ],
+          "reason": "registered_container_or_decoration"
+        },
+        {
+          "slots": [
+            "figure",
+            "anchor-label"
+          ],
+          "reason": "registered_container_or_decoration"
+        }
+      ]
+    },
+    "chart-explanation-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": []
+    },
+    "process-three-stages-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": []
     }
   }
 }

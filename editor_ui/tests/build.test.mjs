@@ -1,10 +1,48 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, mkdirSync, copyFileSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 const json = url => JSON.parse(readFileSync(url));
 const root = new URL('../', import.meta.url), output = new URL('../../static/editor_ui/', import.meta.url);
 const manifest = json(new URL('manifest.json', output));
+
+test('Git checkout preserves editor closure bytes with autocrlf on and off', () => {
+  const repository = fileURLToPath(new URL('../', root));
+  const temporary = mkdtempSync(path.join(tmpdir(), 'html-editor-checkout-'));
+  const manifests = ['manifest.json', 'canvas-manifest.json', 'timeline-manifest.json'];
+  const files = new Set(['.gitattributes']);
+  for (const name of manifests) {
+    const record = json(new URL(name, output));
+    files.add(`static/editor_ui/${name}`);
+    for (const file of Object.keys(record.sources))
+      files.add(name === 'manifest.json' ? `editor_ui/${file}` : file);
+    for (const file of Object.keys(record.files))
+      files.add(name === 'manifest.json' ? `static/editor_ui/${file}` : file);
+  }
+  const git = (...args) => execFileSync('git', ['-C', temporary, ...args], { stdio: 'pipe' });
+  try {
+    for (const file of files) {
+      const destination = path.join(temporary, file);
+      mkdirSync(path.dirname(destination), { recursive: true });
+      copyFileSync(path.join(repository, file), destination);
+    }
+    git('init', '-q');
+    git('config', 'core.autocrlf', 'false');
+    git('add', '--', '.');
+    for (const autocrlf of ['true', 'false']) {
+      const checkout = path.join(temporary, `checkout-${autocrlf}`);
+      git('-c', `core.autocrlf=${autocrlf}`, 'checkout-index', '--all', `--prefix=${checkout.replaceAll('\\', '/')}/`);
+      for (const file of files)
+        assert.deepEqual(readFileSync(path.join(checkout, file)), readFileSync(path.join(repository, file)), `${autocrlf}: ${file}`);
+    }
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
 test('generated output matches every source and output fingerprint', () => {
   for (const [file, expected] of Object.entries(manifest.sources))
     assert.equal(createHash('sha256').update(readFileSync(new URL(file, root))).digest('hex'), expected, file);

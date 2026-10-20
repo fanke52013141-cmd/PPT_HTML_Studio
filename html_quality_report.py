@@ -81,6 +81,8 @@ def validate_quality_report(report, snapshot, *, evidence_dir):
             core = root / "html_engine/tools/temporal-review.cjs"
             if report["checker"].get("temporal_core_sha256") != fresh_hash(core):
                 return {"valid": False, "reason": "checker_changed"}
+            if report["checker"].get("vector_overlap_sha256") != fresh_hash(root / "html_engine/tools/vector-overlap.cjs"):
+                return {"valid": False, "reason": "checker_changed"}
             from html_repair_models import TemporalRequest
             request = TemporalRequest.model_validate(json.loads(safe_file(evidence_dir, "temporal-request.json").read_text(encoding="utf-8")))
             if request.expected_revision != manifest["source_revision"]:

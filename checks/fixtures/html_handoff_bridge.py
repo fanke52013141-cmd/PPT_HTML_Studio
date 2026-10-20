@@ -59,7 +59,7 @@ def dispatch(method, path, payload):
             return pi_store.update("isolated", "condensation", job_id, cancel_requested=True), None
         return pi_store.read("isolated", "condensation", job_id), None
     if method == "GET" and path == "/":
-        scripts = ["api_client.js", "html_editor_canvas.js", "html_editor_timeline_bridge.js", "html_handoff_workbench.js", "html_pi_agent.js", "html_external_handoff.js", "html_scene_editor.js"]
+        scripts = ["api_client.js", "html_editor_canvas.js", "html_editor_timeline_bridge.js", "html_handoff_workbench.js", "html_pi_agent.js", "html_external_handoff.js", "html_local_repair.js", "html_scene_editor.js"]
         html = ('<meta charset="utf-8"><link rel="stylesheet" href="/static/html_scene_edit.css"><link rel="stylesheet" href="/static/html_workflow.css">'
                 '<div id="host"></div><script>function showToast(){}</script>'
                 + ''.join(f'<script src="/static/{name}"></script>' for name in scripts)
@@ -78,6 +78,25 @@ def dispatch(method, path, payload):
     if path.endswith("/steps/7/audio-status"):
         return {"slides": [{"slide_id": "condensation", "audio_exists": False}]}, None
     with project_artifact_lock(run):
+        if '--local-repair' in sys.argv and '/repair/' in path:
+            import html_repair_orchestration as flow
+            import html_scene_repair as repair
+            if path.endswith('/repair/save'):
+                return repair.save_repair(run, 'condensation', payload), None
+            if path.endswith('/repair/generate'):
+                # Script only the proposal choice. Original compiler/player/checks/key/save remain real.
+                def scripted_geometry(run, slide, request):
+                    baseline = repair.evidence(run, slide, request)
+                    body = {k:v for k,v in request.items() if k in repair.TemporalRequest.model_fields}
+                    body.update(scope=request['scope'], source='ai', operations=[{'targetId': 'headline',
+                        'kind': 'set_presentation', 'values': {'offsetX': 8}}])
+                    candidate = repair.preview_repair(run, slide, body)
+                    return {'status': 'candidate', 'candidate': candidate, 'baseline': baseline,
+                            'attempts': [{}], 'elapsed_seconds': 1}
+                flow.geometry.geometry_repair = scripted_geometry
+                def forbidden():
+                    raise AssertionError('Browser fixture must never call a provider')
+                return flow.generate_repair(run, 'condensation', payload, forbidden), None
         if "/editor/versions/" in path:
             return editor.saved_versions(run, "condensation", int(path.rsplit("/", 1)[-1])), None
         if path.endswith("/editor/versions"):

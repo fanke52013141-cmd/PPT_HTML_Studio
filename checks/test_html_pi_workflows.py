@@ -74,6 +74,37 @@ def test_json_sdk_attaches_real_image_and_shares_calls_across_stages(tmp_path):
         assert client.usage["model_calls"] == 2 and client.usage["tokens"] == 30
 
 
+def test_sdk_stream_progress_counts_arguments_without_saving_their_contents(tmp_path):
+    events = []
+    with JSONProvider({'answer': 'private-result-do-not-log'}) as provider:
+        client = PiJSON(provider.model(), tmp_path)
+        assert client(system_prompt='返回JSON', user_prompt='固定', on_stream_progress=events.append) == {'answer': 'private-result-do-not-log'}
+    trace = json.loads((tmp_path / 'stream-1.json').read_text(encoding='utf-8'))
+    assert trace['state'] == 'completed'
+    assert trace['first_event_seconds'] is not None and trace['first_content_seconds'] is not None
+    assert trace['tool_argument_chars'] > 0
+    assert 'private-result-do-not-log' not in json.dumps(events) + json.dumps(trace)
+
+
+def test_stream_progress_callback_failure_still_reaps_sdk_process(tmp_path, monkeypatch):
+    import html_pi_json as adapter
+    processes = []
+    original = adapter.subprocess.Popen
+    def capture(*args, **kwargs):
+        process = original(*args, **kwargs)
+        processes.append(process)
+        return process
+    monkeypatch.setattr(adapter.subprocess, 'Popen', capture)
+    def stop_on_output(value):
+        if value['state'] == 'outputting':
+            raise RuntimeError('local stop')
+    with JSONProvider({'answer': 'complete'}) as provider:
+        with pytest.raises(RuntimeError, match='local stop'):
+            PiJSON(provider.model(), tmp_path)(system_prompt='返回JSON', user_prompt='固定', on_stream_progress=stop_on_output)
+        assert len(provider.requests) == 1
+    assert processes and all(p.poll() is not None and p.stdin.closed and p.stdout.closed for p in processes)
+
+
 def test_json_provider_failure_has_no_automatic_retry(tmp_path):
     with JSONProvider({}, fail=True) as provider:
         with pytest.raises(ExecutionError):
@@ -107,6 +138,9 @@ def test_json_stage_deadline_is_stricter_than_whole_job_without_retry(tmp_path):
             client(system_prompt="返回JSON", user_prompt="固定输入", request_timeout=2)
         assert time.monotonic() - started < 6
         assert len(provider.requests) <= 1
+        trace = json.loads((tmp_path / 'stream-1.json').read_text(encoding='utf-8'))
+        assert trace['state'] == 'failed' and trace['failure_reason'] == 'timeout'
+        assert trace['submission_state'] == 'unverified'
 
 
 def test_preauthorized_repair_saves_ai_version_and_receipt(page):

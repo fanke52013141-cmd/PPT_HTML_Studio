@@ -192,6 +192,7 @@ def test_product_editor_sources_pin_independent_canvas_and_timeline_bundles(page
     result = snapshots.create_render_snapshot(run, scene["id"])
     files = {entry["path"] for entry in snapshots.verify_snapshot(result["path"])["files"]}
     assert "tooling/static/html_scene_editor.js" in files
+    assert "tooling/static/html_local_repair.js" in files
     assert "tooling/static/editor_ui/canvas.js" in files
     assert "tooling/static/editor_ui/editor.js" not in files
     assert "tooling/editor_ui/src/timeline.jsx" in files

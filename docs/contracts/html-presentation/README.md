@@ -1,5 +1,19 @@
 # HTML 演示体系契约
 
+0.9.113（2026-10-20）：[几何优先避让入口与候选预览](runtime/visual-v1/geometry-repair-entry-0.1.0.md)接通原generate/preview/save，几何无解后惰性回退模型；前后截图、参数和整页检查待审，显式保存与历史恢复。API1.60.0 / generate1.5；默认model兼容。
+
+0.9.112（2026-10-20）：[有界几何避让候选](runtime/visual-v1/geometry-repair-0.1.0.md)用有限布局试算和原sampled/30fps检查生成待审候选，保留scope/人工保护；不调用模型、不保存作者，API1.59.0保持。
+
+0.9.111（2026-10-20）：[局部修复输入与流式观测](runtime/visual-v1/repair-stream-context-0.1.0.md)按scope裁减测量/目录并保留邻居边界，接通Legacy流式与Pi SDK进度；模型参数、全页检查及unknown规则保持。Prompt0.3.4/0.4.3，API1.59.0保持。
+
+0.9.110（2026-10-20）：[修复反馈上下文](runtime/visual-v1/editor-repair-context-0.1.0.md)更新候选实测/截图、跨时问题分组及逐轮记录，原完整补丁/scope/保存/音频保护保持。Prompt0.3.3/0.4.2，API1.59.0不变。
+
+0.9.109（2026-10-20）：[SVG线条重叠判定](runtime/visual-v1/vector-overlap-0.1.0.md)采用实际线段、线宽及文字Range；合法端点非文字接触单独留证，穿字及非端点穿越仍阻断；helper进入源码及QA身份闭包。API1.59.0保持。
+
+2026-10-20动态检查兼容修复：补齐三类生产模板的registered策略，箭头按实际SVG图元测量，保留真实交叉检查；容量请求增加脱敏耗时/异常留证。版本与门禁保持，见[动态QA](runtime/visual-v1/temporal-qa-0.1.0.md)及[容量修复](runtime/visual-v1/summary-layout-repair-0.1.0.md)。
+
+2026-10-20兼容修复：容量多测量提示取最大要求，建议尺寸与动作/公开工具范围联合计算；版本与门禁保持。见[关系摘要容量修复](runtime/visual-v1/stacked-relation-0.1.0.md)及本机容量基准记录。
+
 0.9.108（2026-10-20）：[设计图与计划对应](runtime/visual-v1/design-plan-correspondence-0.1.0.md)由冻结slots派生屏幕文字来源，限制计划外标签、重复结论与关系；生图Prompt0.3.1/0.4.1，历史参考修订同源派生，原必要语义阻断及API1.59.0保持。真实新图与对照单独验收。
 
 0.9.107（2026-10-20）：[GLM原生推理参数](runtime/visual-v1/pi-production-api-0.1.0.md)按用户指定启用thinking、65536输出额度、温度1.0；Pi出站负载校验，其他模型兼容保持。API1.59.0不变，旧真实试验独立留存。

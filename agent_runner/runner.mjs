@@ -2,6 +2,7 @@
 import readline from 'node:readline';
 import { createAgentSession, createExtensionRuntime, ModelRuntime, SessionManager, SettingsManager } from '@earendil-works/pi-coding-agent';
 import { InMemoryCredentialStore } from '@earendil-works/pi-ai';
+import { streamProgress } from './progress.mjs';
 
 const lines = readline.createInterface({ input: process.stdin });
 const send = value => process.stdout.write(`${JSON.stringify(value)}\n`);
@@ -74,7 +75,9 @@ try {
     thinkingLevel: 'off', resourceLoader, sessionManager: SessionManager.inMemory(process.cwd()),
     settingsManager: SettingsManager.inMemory({ compaction: { enabled: false }, cacheWarming: 'off',
       retry: { enabled: false, provider: { maxRetries: 0, timeoutMs: input.limits.timeout_seconds * 1000 } } }) }));
+  const progress = streamProgress(send);
   session.subscribe(event => {
+    progress(event);
     if (event.type === 'message_end' && event.message?.role === 'assistant') {
       send({ type: 'turn', stop_reason: event.message.stopReason,
         tokens: event.message.usage?.totalTokens ?? null });

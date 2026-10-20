@@ -31,3 +31,10 @@
   border: 1px solid var(--border-color, #d8dde5);
   border-radius: 8px;
 }
+/* Candidate evidence uses original-renderer screenshots, never a second scene renderer. */
+[data-local-repair] { margin:16px 0; padding:12px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+.html-local-repair-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.html-local-repair-comparison figure { margin:8px 0; }
+.html-local-repair-comparison img { display:block; width:100%; height:auto; }
+.html-local-repair-comparison figcaption { font-size:12px; color:#666; }
+@media(max-width:720px) { .html-local-repair-comparison { grid-template-columns:1fr; } }

@@ -265,12 +265,15 @@ def _repair_dispatch(mode, project_id, slide_id, payload, db):
                 from functools import partial
                 from project_model_binding_service import freeze_project_models, ModelBindingError
                 from html_visual_review_routes import _service_deps
-                try:
-                    frozen = freeze_project_models(project, required=("text",))
-                except ModelBindingError as exc:
-                    raise HTTPException(400, "文字模型连接不可用，请检查项目模型配置") from exc
-                result = repair.generate_repair(run_dir, slide_id, body,
-                    partial(_service_deps().json_generator, model_binding=frozen.text))
+                from html_repair_orchestration import generate_repair
+                def generator_factory():
+                    try:
+                        frozen = freeze_project_models(project, required=("text",))
+                    except ModelBindingError as exc:
+                        prefix = "几何试算未产生候选；" if body.get("strategy") == "geometry_first" else ""
+                        raise HTTPException(400, prefix + "文字模型连接不可用，请检查项目模型配置") from exc
+                    return partial(_service_deps().json_generator, model_binding=frozen.text)
+                result = generate_repair(run_dir, slide_id, body, generator_factory)
             else:
                 function = {"preview":repair.preview_repair,"save":repair.save_repair,"evidence":repair.evidence}[mode]
                 result = function(run_dir, slide_id, body)

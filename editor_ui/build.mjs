@@ -97,7 +97,7 @@ for (const file of ['canvas.js', 'canvas.js.LEGAL.txt', 'CANVAS_THIRD_PARTY_NOTI
 const ownSources = Object.keys(canvasBuild.metafile.inputs).filter(name => !name.startsWith('node_modules/'));
 for (const file of ['package.json', 'package-lock.json', 'build.mjs', ...ownSources, ...[...licenseSources].sort()])
   production.sources[`editor_ui/${file}`] = hash(await readFile(path.join(root, file)));
-for (const file of ['static/html_handoff_workbench.js', 'static/html_editor_canvas.js', 'static/html_scene_editor.js', 'static/html_scene_edit.css', 'static/index.html'])
+for (const file of ['static/html_handoff_workbench.js', 'static/html_editor_canvas.js', 'static/html_scene_editor.js', 'static/html_local_repair.js', 'static/html_scene_edit.css', 'static/index.html'])
   production.sources[file] = hash(await readFile(path.join(root, '..', file)));
 await writeFile(path.join(output, 'canvas-manifest.json'), JSON.stringify(production, null, 2) + '\n');
 const timeline = { format: 'hps.editor_timeline.build', version: '0.1.0', files: {}, sources: {} };
@@ -106,7 +106,7 @@ for (const file of ['timeline.js', 'timeline.css', 'timeline.js.LEGAL.txt', 'TIM
 const timelineSources = Object.keys(timelineBuild.metafile.inputs).filter(name => !name.startsWith('node_modules/'));
 for (const file of ['package.json', 'package-lock.json', 'build.mjs', ...timelineSources, ...[...licenseSources].sort()])
   timeline.sources[`editor_ui/${file}`] = hash(await readFile(path.join(root, file)));
-for (const file of ['static/html_editor_timeline_bridge.js', 'static/html_scene_editor.js', 'static/html_scene_edit.css', 'static/index.html'])
+for (const file of ['static/html_editor_timeline_bridge.js', 'static/html_scene_editor.js', 'static/html_local_repair.js', 'static/html_scene_edit.css', 'static/index.html'])
   timeline.sources[file] = hash(await readFile(path.join(root, '..', file)));
 await writeFile(path.join(output, 'timeline-manifest.json'), JSON.stringify(timeline, null, 2) + '\n');
 console.log(JSON.stringify(files));

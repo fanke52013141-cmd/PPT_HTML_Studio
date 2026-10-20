@@ -39,6 +39,17 @@ def test_all_output_frames_and_registered_exclusions_are_bound(frozen):
     assert validate_quality_report(report,snapshot,evidence_dir=folder)['reason']=='evidence_changed'
 
 
+def test_vector_helper_identity_cannot_be_rehashed_into_current_qa(frozen):
+    _, _, snapshot = frozen
+    result = review_snapshot(snapshot, temporal={'time_range_ms': [0, 500]})
+    report = copy.deepcopy(result['report'])
+    assert report['checker']['vector_overlap_sha256']
+    report['checker']['vector_overlap_sha256'] = '0' * 64
+    report.pop('report_digest')
+    report['report_digest'] = digest(json_bytes(report))
+    assert validate_quality_report(report, snapshot, evidence_dir=Path(result['report_path']).parent)['reason'] == 'checker_changed'
+
+
 def test_missing_frame_cannot_be_rehashed_into_a_pass(frozen):
     _,_,snapshot=frozen
     result=review_snapshot(snapshot,temporal={'sampling_mode':'output_frames','fps':30,'time_range_ms':[0,1000]})

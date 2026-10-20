@@ -128,7 +128,7 @@ def test_repair_model_gets_snapshot_frames_and_all_issues_not_full_trace(page):
     assert [f["timeMs"] for f in value["frames"]] == [0, 8750, 17500]
     assert value["issues"] == report["issues"]
     assert value['motion_activity'] == report['motion_activity']
-    assert 'html-repair-0.3.2' in prompts['system_prompt']
+    assert 'html-repair-0.3.4' in prompts['system_prompt']
     assert json.dumps(report) == original
     summary = {"frame_count": 80, "issues": [], "reference_geometry": {}}
     prompts = repair.build_repair_prompts(edit.load_editor(run, scene["id"]), "检查", ["headline"], summary)
@@ -354,6 +354,84 @@ def test_bounded_model_uses_actual_screenshots_and_retries(page):
     assert r["review"]["passed"] and len(calls) == 2
     assert "previous_output" in json.loads(calls[1]["user_prompt"])
     assert store.load_scene(run, scene["id"]) == scene
+
+
+def test_feedback_refreshes_candidate_measurements_images_and_preserves_original_targets(page, monkeypatch):
+    run, scene = page
+    before = edit.load_editor(run, scene['id'])
+    for name in ('original.png', 'candidate.png'):
+        (run / name).write_bytes(b'isolated attachment')
+
+    def report(file, time, measured):
+        return {'passed': False, 'screenshots': [{'timeMs': time, 'file': file}],
+                'reference_geometry': {'headline': {'x': measured}},
+                'issues': [{'code': 'TEMPORAL_OVERLAP', 'targets': ['headline', 'card-1'],
+                            'timeMs': time, 'measured': {'reason': 'stroke_crosses_text', 'distance': measured}}]}
+
+    monkeypatch.setattr(repair, 'evidence', lambda *a, **kw: report('original.png', 100, 10))
+    calls = []
+
+    def preview(*args):
+        result = repair.candidate(*args)
+        result['review'] = report('candidate.png', 200, 20) if len(calls) == 1 else {'passed': True, 'issues': []}
+        return result
+
+    monkeypatch.setattr(repair, 'preview_repair', preview)
+
+    def generate(**kw):
+        assert kw['stream_output'] is True
+        kw['on_stream_progress']({'state': 'thinking', 'reasoning_chars': 10})
+        payload = json.loads(kw['user_prompt'])
+        calls.append(payload)
+        if len(calls) == 2:
+            assert payload['evaluation_basis'] == 'previous_candidate'
+            assert payload['temporal_report']['reference_geometry']['headline']['x'] == 20
+            assert payload['image_context'] == [{'timeMs': 200}]
+            assert kw['image_paths'] == [str((run / 'candidate.png').resolve())]
+            assert payload['targets'] == [n for n in scene['nodes'] if n['id'] == 'headline']
+            assert [n['id'] for n in payload['read_only_context']] == ['card-1']
+        return {'status': 'candidate', 'operations': [
+            {'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': len(calls)}}]}
+
+    generate.supports_stream_progress = True
+
+    result = repair.generate_repair(run, scene['id'], {
+        'expected_revision': before['revision'], 'scope': ['headline'], 'instruction': '局部修复'}, generate)
+    assert result['review']['passed'] and len(calls) == 2
+    assert edit.load_editor(run, scene['id']) == before
+    records = json.loads((run / store.SCENE_DIR / 'records' / f"repair-{scene['id']}.json").read_text(encoding='utf-8'))
+    assert [a['evaluation_basis'] for a in records['attempts']] == ['original', 'previous_candidate']
+
+
+@pytest.mark.parametrize('mode', ['unchanged', 'timeout', 'unsupported'])
+def test_feedback_stops_without_save_or_unknown_request_replay(page, monkeypatch, mode):
+    run, scene = page
+    before = edit.load_editor(run, scene['id'])
+    report = {'passed': False, 'issues': [{'code': 'TEMPORAL_OVERLAP', 'targets': ['headline', 'card-1'],
+                                          'timeMs': 100, 'measured': {'overlap': True}}]}
+    monkeypatch.setattr(repair, 'evidence', lambda *a, **kw: report)
+    def preview(*args):
+        return {**repair.candidate(*args), 'review': report}
+    monkeypatch.setattr(repair, 'preview_repair', preview)
+    calls = []
+    def generate(**kw):
+        calls.append(kw)
+        if mode == 'timeout':
+            raise TimeoutError('secret-provider-message')
+        if mode == 'unsupported':
+            return {'status': 'unsupported', 'message': '需要重新规划'}
+        return {'status': 'candidate', 'operations': [
+            {'targetId': 'headline', 'kind': 'set_presentation', 'values': {'offsetX': 1}}]}
+    request = {'expected_revision': before['revision'], 'scope': ['headline'], 'instruction': '局部修复'}
+    if mode == 'timeout':
+        with pytest.raises(TimeoutError):
+            repair.generate_repair(run, scene['id'], request, generate)
+        records = (run / store.SCENE_DIR / 'records' / f"repair-{scene['id']}.json").read_text(encoding='utf-8')
+        assert 'secret-provider-message' not in records and 'unverified' in records
+    else:
+        result = repair.generate_repair(run, scene['id'], request, generate)
+        assert result.get('stop_reason') == 'unchanged_measurements' if mode == 'unchanged' else result['status'] == 'unsupported'
+    assert len(calls) == 1 and edit.load_editor(run, scene['id']) == before
 
 
 def test_old_version_cannot_smuggle_override(page):
