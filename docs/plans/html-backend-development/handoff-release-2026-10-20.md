@@ -67,3 +67,11 @@ $env:PPT_STUDIO_RUNS_DIR = Join-Path $studioCheckout 'runs'
 设计对应相关63项、Pi原生参数和路由34项此前已通过；这些是不同批次，不冒充本次全量结果。编辑器16项、Remotion TypeScript在本次发布检查通过。canonical full检查正在本机执行，最终结果与发布提交由后续发布回执明确记录。
 
 本地验证日志位于outputs/publish-20261020-*.log，运行证据和媒体只在本机，不随Git上传。仓库不会包含data、runs、outputs、node_modules、凭据或付费生成图片。
+
+## 实际发布回执（首批及传输修正）
+
+源码提交`1578d32c78e099e2d6f782b414aa55e94e87a0a5`已成功推送origin/main（上一个远端5964561），92个文件。暂存路径及凭据模式检查无发现，git diff --cached --check通过。工作区在首批提交后干净。未部署或重启本机服务。
+
+发布全量检查发现已有新增能力与传输分发不一致：MCP未将html_agent/agent_workflow纳入原严格通用分发；CLI缺项目工作流命令及局部任务创建JSON参数。补丁沿原capability Schema校验、路径编码及AgentClient._request修复，不新增业务存储/批准/模型调用。实际CLI解析并执行8种动作的回归覆盖POST/GET、参数文件、URL编码与精确请求体；MCP全能力可达性原断言保留。传输及合同回归97 passed、Ruff通过。API和合同版本保持。
+
+canonical full中的首轮pytest已经加载修正前的MCP模块，会保留该历史失败；不得覆盖日志伪造全绿。最终全量结果及后续修订提交在最终回执记录。GitHub网页CI与本机全量状态分开；无法读取远端状态时不能报告CI已通过。

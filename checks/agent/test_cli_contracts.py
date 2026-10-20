@@ -10,6 +10,10 @@ from __future__ import annotations
 
 
 from agent_contract.capabilities import CAPABILITIES, CapabilityStatus
+import json
+from unittest.mock import MagicMock
+
+import pytest
 
 
 class TestCLIContract:
@@ -24,6 +28,35 @@ class TestCLIContract:
     def test_cli_main_function_exists(self):
         import cli.pptctl as cli_mod
         assert hasattr(cli_mod, "main"), "CLI module must have a main() function"
+
+    @pytest.mark.parametrize("prefix", ["html_agent", "agent_workflow"])
+    @pytest.mark.parametrize("action", ["create", "read", "result", "cancel"])
+    def test_pi_commands_parse_and_dispatch_registered_http(self, prefix, action, tmp_path, monkeypatch):
+        import cli.pptctl as cli_mod
+        cap = next(c for c in CAPABILITIES if c.id == f"{prefix}.{action}")
+        client = MagicMock()
+        client._request.return_value = {"job_id": "j1", "status": "queued"}
+        monkeypatch.setattr(cli_mod, "AgentClient", lambda **kwargs: client)
+        argv = cap.cli_command.split() + ["--project", "p/1"]
+        paths = {"project_id": "p%2F1"}
+        if prefix == "html_agent":
+            argv += ["--slide", "s1"]
+            paths["slide_id"] = "s1"
+        body = {}
+        if action == "create":
+            body = {"idempotency_key": "transport-test-01", "task": (
+                {"task_type": "article.generate", "topic": "Test"} if prefix == "agent_workflow" else
+                {"task_type": "static_repair", "goal": "repair", "scope": ["title"], "expected_revision": 1})}
+            path = tmp_path / "request.json"
+            path.write_text(json.dumps(body), encoding="utf-8")
+            argv += ["--file", str(path)]
+        else:
+            argv += ["--job", "j1"]
+            paths["job_id"] = "j1"
+        args = cli_mod.build_parser().parse_args(argv)
+        args.func(args)
+        client._request.assert_called_once_with(cap.agent_api_method, cap.agent_api_path.format(**paths),
+            body=None if cap.agent_api_method == "GET" else cap.request_model.model_validate(body).model_dump(mode="json"))
 
     def test_all_capabilities_have_cli_commands(self):
         """Every capability command must be implemented by the CLI."""

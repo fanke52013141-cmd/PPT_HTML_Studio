@@ -124,6 +124,8 @@ class TestDispatchRouting:
         handoff_result = {"task_id": "a" * 64, "status": "proposed", "message": "candidate",
                           "operations": [{"targetId": "title", "kind": "set_text_style", "part": "text", "values": {"fontSizePx": 28}}]}
         strict_arguments = {
+            "agent_workflow.create": {"project_id": "p1", "idempotency_key": "workflow-mcp-test", "task": {"task_type": "article.generate", "topic": "Test"}},
+            "html_agent.create": {"project_id": "p1", "slide_id": "s1", "idempotency_key": "repair-mcp-test", "task": {"task_type": "static_repair", "goal": "repair", "scope": ["title"], "expected_revision": 1}},
             "html_handoff.work_read": {"project_id": "p1", "slide_id": "s1", "task_id": "a" * 64, "result_hash": "b" * 64},
             "html_handoff.export": {"project_id": "p1", "slide_id": "s1", "task_type": "static_repair", "goal": "repair", "scope": ["title"], "expected_revision": 1},
             "html_handoff.preview": {"project_id": "p1", "slide_id": "s1", "result": handoff_result},
@@ -145,6 +147,10 @@ class TestDispatchRouting:
             "html_repair.preview": {"project_id": "p1", "slide_id": "s1", "expected_revision": 0, "operations": [{"targetId": "title", "kind": "set_presentation", "values": {"x": 20}}]},
             "html_repair.save": {"project_id": "p1", "slide_id": "s1", "expected_revision": 0, "candidate_key": "a" * 64, "operations": [{"targetId": "title", "kind": "set_presentation", "values": {"x": 20}}]},
         }
+        for prefix in ("html_agent", "agent_workflow"):
+            for action in ("read", "result", "cancel"):
+                strict_arguments[f"{prefix}.{action}"] = {"project_id": "p1", "job_id": "job1",
+                    **({"slide_id": "s1"} if prefix == "html_agent" else {})}
         for cap in CAPABILITIES:
             if cap.status == CapabilityStatus.removed or not cap.mcp_enabled:
                 continue

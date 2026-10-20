@@ -614,6 +614,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
+    workflow_parser = subparsers.add_parser("agent-workflow", help="Pi project candidate jobs")
+    workflow_sub = workflow_parser.add_subparsers(dest="subcommand", required=True)
+    for cap in [c for c in CAPABILITIES if c.id.startswith("agent_workflow.")]:
+        command = workflow_sub.add_parser(cap.cli_command.split()[1], help=cap.description)
+        command.add_argument("--project", required=True)
+        if "{job_id}" in cap.agent_api_path:
+            command.add_argument("--job", required=True)
+        if cap.id == "agent_workflow.create":
+            command.add_argument("--file", required=True, help="Registered WorkflowRequest JSON")
+        command.set_defaults(func=cmd_html, capability_id=cap.id)
     generation_capabilities = [cap for cap in CAPABILITIES if cap.id.startswith('generation.')]
     generation_parser = subparsers.add_parser(generation_capabilities[0].cli_command.split()[0], help='Generation safe-stop controls')
     generation_sub = generation_parser.add_subparsers(dest='subcommand', required=True)
@@ -637,7 +647,7 @@ def build_parser() -> argparse.ArgumentParser:
                 command.add_argument('--' + field.replace('_', '-'), required=True)
         if cap.id == 'html_handoff.bundle':
             command.add_argument('--out', required=True, help='Output ZIP path')
-        elif cap.id.startswith(("html_repair.", "html_handoff.")) or cap.id in ("html_semantic.submit", "html_semantic.decision", "html_review.manual_candidate_decision") or cap.id in ("html_visual.scene_write", "project_model_binding.write", "html_editor.write", "html_editor.preview", 'html_sheet.generate', 'html_sheet.review', 'html_sheet.accept', 'html_sheet.assess', 'html_sheet.retry'):
+        elif cap.id == "html_agent.create" or cap.id.startswith(("html_repair.", "html_handoff.")) or cap.id in ("html_semantic.submit", "html_semantic.decision", "html_review.manual_candidate_decision") or cap.id in ("html_visual.scene_write", "project_model_binding.write", "html_editor.write", "html_editor.preview", 'html_sheet.generate', 'html_sheet.review', 'html_sheet.accept', 'html_sheet.assess', 'html_sheet.retry'):
             command.add_argument("--file", required=True, help="JSON request matching the registered capability schema")
         elif cap.id in ("html_review.review","html_review.approve", "html_review.produce", "html_review.plan_generate"): command.add_argument("--file",help="Optional JSON request matching the capability schema")
         command.set_defaults(func=cmd_html,capability_id=cap.id)
