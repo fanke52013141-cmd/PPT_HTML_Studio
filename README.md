@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-21 已推送：[最新发布与跨机 handoff](docs/plans/html-backend-development/handoff-release-2026-10-21.md)。源码662b725，契约0.9.113/API1.60.0；重叠判定、反馈/流式观测、几何优先候选及显式保存。发布回归158项、编辑器17项和quick通过；远端CI另验，未部署服务。
+
 2026-10-20 几何入口：[几何优先修复、候选对照与显式保存](docs/plans/html-backend-development/handoff-geometry-entry-2026-10-20.md)，包0.9.113/API1.60.0。两张真实原页经新入口通过633/606时刻检查、0模型调用；浏览器保存/恢复及切页保护通过。真实模型回退质量另验，未发布。
 
 2026-10-20 几何避让：[候选与扩样验证](docs/plans/html-backend-development/handoff-geometry-repair-2026-10-20.md)，包0.9.112/API1.59.0；有限布局试算＋原检查器，原页/受控扰动/正常与能力反例分别统计，候选不保存。
