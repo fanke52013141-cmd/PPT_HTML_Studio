@@ -104,3 +104,15 @@ v0.2.0 会校验标签版本、ownership 取值、模糊项理由，并输出 `b
 
 必须保留的边界：这些都是受控夹具，只证明计分器与归属分母可用，**没有任何真实模型或真实跨课程泛化结论**。
 真实未曝光课程页仍需另一台电脑按图片/对象/标签 hash 封存移交，再按 0.2.0 标注；不得修改已测 0.1.0 清单充数。
+
+## 跨机封存迁移（2026-10-22 追加）
+
+真实未曝光课程材料不在本机，新增 `scripts/feature_recognition_bundle.py`
+（`hps.feature_recognition.bundle/0.1.0`）作为唯一推荐迁移路径：`export` 只收集 dataset 引用的
+reference/request/labels/response 与 dataset 本身，逐文件 SHA-256、路径边界、符号链接与体积校验；
+`import` 先验证 manifest/成员集合/dataset hash/逐文件 hash，全部通过才创建新目录，已存在目录拒绝覆盖。
+不执行服务、不调用供应商、不写作者、不签发批准，manifest 记录 `approvals_transferred=false`。
+
+验证：`checks/test_feature_recognition_bundle.py` 4 passed；受控 v0.2.0 夹具往返 8 文件/2 页/69,258 字节，
+导入后 `by_provenance`、`by_ownership` 与 dataset hash 与原数据集完全一致。真实跨课程分母仍需操作者
+在另一台机导出真实材料后按 0.2.0 标注；工具本身不证明泛化。

@@ -75,7 +75,9 @@ L4 验收阶梯：结构 → 静态视觉 → 动态 QA → 语义；候选可�
 ### W5 真实失败语料与离线 CI 门槛
 
 - 冻结真实页的 scene/binding/测量/报告（hash 封存，不公开课程媒体），把四类真实失败做成离线夹具；CI 跑“检出 + 求解 + 无解识别 + 耗时”，缺陷逃逸必须为 0。
-- 现有基础：`scripts/evaluate_overflow_crossing.py`、`scripts/evaluate_geometry_corpus.py`、`scripts/benchmark_plan_endpoint_normalization.py`。
+  - 已交付跨机迁移工具 `scripts/feature_recognition_bundle.py`（0.1.0）：只传 dataset 引用的图片/请求/响应/标签，逐文件 SHA-256/路径/符号链接/体积校验，导入先验证后落盘并拒绝覆盖；受控夹具往返 8 文件/2 页/69,258 字节且计分一致（4 项测试）。
+  - 真实材料仍未在本机：需要另一台机用该工具导出未曝光课程样本，导入后按 0.2.0 标注再评估。
+- 现有基础：`scripts/evaluate_overflow_crossing.py`、`scripts/evaluate_geometry_corpus.py`、`scripts/benchmark_plan_endpoint_normalization.py`、`scripts/feature_recognition_bundle.py`。
 
 ### W6 模型接口瘦身与跨课程泛化
 
