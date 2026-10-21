@@ -4,7 +4,7 @@
 
 用户目标是发现、复现和减少系统性漏检，不是逐页手工修好课程。下一位接手者先读根README、本文件、[系统问题台账](system-issues-2026-10-21.md)、[固定样本评测](feature-recognition-benchmark-2026-10-21.md)，再进入对应契约。
 
-本批从main基线`015139b42e677468ca380228dfbffe23b5592554`续进，统一提交此前本机几何扩样、真实课程试验、生产前置检查、规划与理解诊断、逐对象观察以及相关测试/契约。唯一仓库为[fanke52013141-cmd/PPT_HTML_Studio](https://github.com/fanke52013141-cmd/PPT_HTML_Studio)，只向origin/main正常推送，不向原图片项目发布，不force push。提交与远端回执在本文件末尾补录；各专项文档中“未提交/未发布”是当时状态，以末尾回执为准。
+本批从main基线`015139b42e677468ca380228dfbffe23b5592554`续进，统一提交此前本机几何扩样、真实课程试验、生产前置检查、规划与理解诊断、逐对象观察以及相关测试/契约。唯一仓库为[fanke52013141-cmd/PPT_HTML_Studio](https://github.com/fanke52013141-cmd/PPT_HTML_Studio)，只向origin/main正常推送，不向原图片项目发布，不force push。提交与远端回执见本文件末尾；各专项文档中“未提交/未发布”是当时状态，以末尾回执为准。
 
 契约包0.9.113、Agent API1.60.0保持，无数据库迁移或公开API变更。理解运行片段最终design-understanding/0.7.5、内部输入输出0.3.0；还原程序Prompt0.6.2、运行片段design-reconstruction/0.7.4；规划Prompt0.3.6。默认Legacy保持，未替换图像/TTS/数字人服务，未自动签发任何人工批准。
 
@@ -112,4 +112,10 @@ $env:PPT_STUDIO_RUNS_DIR = Join-Path (Get-Location) 'runs'
 - 提交前按Git暂存字节核验发现0.7.5片段本机CRLF与入库LF不符，已按既有.gitattributes固定0.7.4/0.7.5实际文件为LF并刷新活动registry body hash；规则语义不变。后续用暂存区body/reference实际字节重新核验全部运行片段，不能仅用工作区hash推断跨机可用。真实调用的旧身份/请求保持历史，不重签为新字节或追加模型请求。
 - LF收尾后观察/计分/诊断/运行片段组**69 passed、3 deselected，11.68秒**，仅未重复三项先前已通过的浏览器用例；日志`.tmp/publication-detection-20261021-lf.log`。217项发布回归是在LF收尾前，不能宣称再次全量重跑。
 
-发布回执：提交/远端核验完成后补录。应用未重启/部署，课程人工接受与正式输出仍未验。
+发布回执：
+
+- 源码与首版handoff共同提交：[59da921ff36f851af61e3e759b24335975e9bc3f](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/commit/59da921ff36f851af61e3e759b24335975e9bc3f)，北京时间2026-10-21 17:22:20；56个文件，2552行新增、80行删除。
+- 已正常推送origin/main；`git ls-remote origin refs/heads/main`返回上述完整SHA，与本机提交一致。活动片段及引用共8个实际Git入库文件hash核验通过，暂存清单与56文件清单一致，凭据模式扫描无发现。
+- 本回执、README及发布备注另作后续纯文档提交；另一台机器以origin/main最新提交为准，不只停在59da921。源码提交已包含全部本批代码/测试/契约/标签定义/专项交接。
+- GitHub已实际触发源码提交的[CI #69](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/actions/runs/39576467622)，写作时in_progress、conclusion=null。通过GitHub连接器只读核验；不能把本地专项和quick或推送成功写成远端canonical full通过。后续以运行终态为准。
+- 应用未重启/部署，未上传数据库、样本图片、运行数据或凭据；课程人工接受与正式输出仍未验。

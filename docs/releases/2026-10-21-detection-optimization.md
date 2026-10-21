@@ -2,6 +2,8 @@
 
 仓库[PPT_HTML_Studio](https://github.com/fanke52013141-cmd/PPT_HTML_Studio)，main；基线015139b，契约包0.9.113、Agent API1.60.0不变。完整接续步骤、验证和推送回执见[当前handoff](../plans/html-backend-development/handoff-detection-optimization-2026-10-21.md)。
 
+源码已推送：[59da921](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/commit/59da921ff36f851af61e3e759b24335975e9bc3f)，56文件；本文发布回执随纯文档后续提交。发布前217项相关回归、canonical quick、视觉引擎14组浏览器检查通过；LF收尾后69项通过、3项浏览器未重复。运行片段按Git入库字节核验8文件hash通过。源码[CI #69](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/actions/runs/39576467622)写作时运行中，不能记为全量通过。
+
 ## 行为变化
 
 - 正文在父卡片内裁切、还原候选箭头穿字等工程失败，在原素材/排版/还原链内保留证据并阻断后续通过；不因unchanged跳过动态检查。
