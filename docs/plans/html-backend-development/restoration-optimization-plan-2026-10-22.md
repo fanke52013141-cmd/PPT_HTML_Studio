@@ -45,7 +45,7 @@ L4 验收阶梯：结构 → 静态视觉 → 动态 QA → 语义；候选可�
 
 - **验收**：10 passed；真实页面该类错误可 0 轮重试（依据：第 1 页该错误导致 2 轮失败）。
 
-### W2 关系路由确定性修复（下一步，最高收益）
+### W2 关系路由确定性修复（本次已完成）
 
 - **问题**：第 4 页 540 时点 3 组箭头穿字，单对象数值搜索无解，模型回退 593s、空正文、unknown。
 - **方案**：新增 `geometry-repair/0.2.0` 的**端点附着点求解器**（不改语义、只改几何）：
@@ -54,7 +54,7 @@ L4 验收阶梯：结构 → 静态视觉 → 动态 QA → 语义；候选可�
   3. 仅在原 QA（30fps/registered）通过时产出候选；无解必须给出确定诊断（NO_LEGAL_ROUTE），不返回 unknown；
   4. 不移动作者文字、不改关系对象、不改样式；候选仍需显式保存。
 - **改动**：`html_scene_repair.KINDS` 增加 `set_endpoint_point`；`html_repair_static.apply_static` 按关系节点校验；`html_geometry_repair` 新增求解器并接入 `geometry_repair` 预览循环；`html_repair_orchestration` 路由表前置。
-- **数据**：冻结受控穿字帧（复用 `checks/fixtures/overflow-crossing/` 扩展）上测：求解率、0 模型调用、耗时、无解识别率。
+- **数据**（冻结帧基准 `checks/fixtures/geometry-endpoint-routing/dataset.json`，hash `4e027ec3…`）：可路由穿字 0/2 → **2/2**；非路由用例（无解/anchor/隐式槽位）**3/3** 正确跳过；误生成 0；模型/供应商/作者写入 0/0/0；耗时约 0.03 秒。Agent API 1.61.0、预览/保存 1.8、generate 1.6、契约包 0.9.114。
 
 ### W3 容量溢出确定性修复
 

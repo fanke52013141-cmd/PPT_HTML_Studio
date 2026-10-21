@@ -1,14 +1,15 @@
 {
   "index_format_version": 1,
   "contract_package": "html-presentation",
-  "contract_version": "0.9.113",
-  "effective_date": "2026-10-20",
+  "contract_version": "0.9.114",
+  "effective_date": "2026-10-22",
   "timezone": "Asia/Shanghai",
   "status": "active_design_baseline",
   "entrypoint": "README.md",
   "scope": "html_backend",
   "runtime_enforcement": "partial_application_workflow_and_standalone_prototypes",
   "notes": [
+    "2026-10-22 HPS-007/009/010/013/015--018/023--025: deterministic relation attachment-point routing for declared point endpoints; border candidates validated against all visible text by the original vector predicate, original compile/30fps QA authoritative, no text/object/style change, anchors and implicit slot arrows excluded, explicit empty proposal on no legal route (no model call). New deterministic-only set_endpoint_point operation; preview/save1.8, generate1.6, AGENT_API_VERSION1.61.0; Contract0.9.114. See runtime/visual-v1/geometry-repair-0.2.0.md.",
     "2026-10-22 HPS-010/013/015--017/023--025: unique, kind/anchor-compatible relation slot names normalize to objects[].id with endpoint_resolutions receipts; unknown, asset, ambiguous, kind or anchor mismatches stay rejected. Benchmark 0/32->32/32 plans accepted with identical compiled scenes, invalid references still 32/32 rejected. No author/approval write; Contract0.9.113/API1.60.0 unchanged. See runtime/visual-v1/course-structures-0.1.0.md.",
     "2026-10-21 HPS-010/011/013/015--017/023--025/035--037: design-understanding0.7.5 and internal input/output0.3.0 require complete per-object independent_illustration observations for ready and unsupported. Explicit uncertainty stops with hash-bound evidence, no retry; structural repair stays bounded once. Image/container ownership and current capability facts remain separate. Legacy archives readable; raw model and derived system metrics separately reported. Same three images and immutable labels retested; development-set evidence only. Package0.9.113/API1.60.0 unchanged. See runtime/visual-v1/design-agent-facts-0.1.0.md.",
     "2026-10-21 HPS-010/011/013/015--017/023--025/035--037: fixed feature-recognition evaluation seals reference/request/response/labels, separates declaration recall from capability-stop recall and legacy-contract unresolved results. Ambiguous, unknown and provenance/label authority denominators remain explicit. Read-only provider-free scoring, no production/approval change; Contract0.9.113/API1.60.0 unchanged. See runtime/visual-v1/design-agent-facts-0.1.0.md.",

@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt
 class RepairOperation(BaseModel):
     model_config = ConfigDict(extra="forbid")
     targetId: str = Field(pattern=r"^[a-z][a-z0-9.-]{0,63}$")
-    kind: Literal["set_presentation", "set_text_style", "set_variant", "set_motion", "set_binding"]
+    kind: Literal["set_presentation", "set_text_style", "set_variant", "set_motion", "set_binding", "set_endpoint_point"]
     part: str | None = None
     action: Literal["enter", "exit", "emphasize"] | None = None
     actionId: str | None = Field(default=None, min_length=1, max_length=80)

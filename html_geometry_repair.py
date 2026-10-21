@@ -8,8 +8,143 @@ import time
 import html_scene_editing as editor
 import html_scene_repair as repair
 
-VERSION = 'geometry-repair/0.1.1'
+VERSION = 'geometry-repair/0.2.0'
 DELTAS = (0, -8, 8, -16, 16, -24, 24, -32, 32, -48, 48, -64, 64, -96, 96)
+ENDPOINT_BORDER = (0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0)
+ENDPOINT_PROPOSAL_CAP = 6
+
+
+def _border_points():
+    points, seen = [], set()
+    for value in ENDPOINT_BORDER:
+        for candidate in (
+            {'x': value, 'y': 0.0}, {'x': value, 'y': 1.0},
+            {'x': 0.0, 'y': value}, {'x': 1.0, 'y': value},
+        ):
+            key = (round(candidate['x'], 3), round(candidate['y'], 3))
+            if key not in seen:
+                seen.add(key)
+                points.append(candidate)
+    return points
+
+
+def _endpoint_points(arrow):
+    return {
+        'from': dict(arrow['from']['point']),
+        'to': dict(arrow['to']['point']),
+    }
+
+
+def _endpoint_route_hits(arrow, points, frame, text_ids):
+    """Count text-rect hits for a candidate attachment pair, or None if unknown."""
+    boxes, visible = frame.get('boxes', {}), frame.get('visible', {})
+    absolute = {}
+    for side in ('from', 'to'):
+        endpoint = arrow[side]
+        if visible.get(endpoint['objectId'], 1) <= 0.01:
+            return 0
+        box = boxes.get(endpoint['objectId'])
+        if not box:
+            return None
+        point = points[side]
+        absolute[side] = {
+            'x': box['x'] + box['width'] * point['x'],
+            'y': box['y'] + box['height'] * point['y'],
+        }
+    hits = 0
+    for text_id in text_ids:
+        if visible.get(text_id, 1) <= 0.01:
+            continue
+        for rect in frame.get('textRects', {}).get(text_id, []):
+            if line_hits(absolute['from'], absolute['to'], rect, 8):
+                hits += 1
+    return hits
+
+
+def _endpoint_route_score(arrow, points, frames, text_ids):
+    hits = 0
+    for frame in frames:
+        frame_hits = _endpoint_route_hits(arrow, points, frame, text_ids)
+        if frame_hits is None:
+            continue
+        hits += frame_hits
+        if hits:
+            break
+    original = _endpoint_points(arrow)
+    cost = sum(
+        abs(points[side]['x'] - original[side]['x']) + abs(points[side]['y'] - original[side]['y'])
+        for side in ('from', 'to')
+    )
+    changed = sum(points[side] != original[side] for side in ('from', 'to'))
+    return [hits, round(cost + 0.05 * changed, 6), round(cost, 6)]
+
+
+def propose_endpoint_routes(doc, scope, report, frames):
+    """Derive border attachment points for declared relations; never moves text."""
+    nodes = {n['id']: n for n in doc['scene']['nodes']}
+    issues = report.get('issues', [])
+    conflicts = set()
+    for issue in issues:
+        targets = issue.get('targets', [])
+        if issue.get('measured', {}).get('reason') != 'stroke_crosses_text' or len(targets) != 2:
+            continue
+        arrows = [i for i in targets if i in nodes and nodes[i]['type'] == 'arrow']
+        texts = [i for i in targets if i in nodes and nodes[i]['type'] != 'arrow']
+        if len(arrows) == 1 and len(texts) == 1:
+            conflicts.add((arrows[0], texts[0]))
+    if not conflicts:
+        return []
+    if len(frames) > 24:
+        frames = [frames[round(i * (len(frames) - 1) / 23)] for i in range(24)]
+    if not frames:
+        return []
+    text_ids = {text for _, text in conflicts}
+    for frame in frames:
+        text_ids.update(tid for tid, rects in frame.get('textRects', {}).items() if rects)
+    border = _border_points()
+    proposals = []
+    for arrow_id, text_id in sorted(conflicts):
+        arrow = nodes[arrow_id]
+        if arrow['type'] != 'arrow' or not arrow.get('from') or not arrow.get('to'):
+            continue
+        if arrow['from'].get('anchorId') or arrow['to'].get('anchorId'):
+            continue
+        if set(arrow['from']) != {'objectId', 'point'} or set(arrow['to']) != {'objectId', 'point'}:
+            continue
+        if arrow_id not in scope and text_id not in scope:
+            continue
+        original = _endpoint_points(arrow)
+        candidates = []
+        for side in ('from', 'to'):
+            for point in border:
+                if point == original[side]:
+                    continue
+                proposal_points = {**original, side: dict(point)}
+                score = _endpoint_route_score(arrow, proposal_points, frames, text_ids)
+                if score[0]:
+                    continue
+                candidates.append((score, proposal_points, {side: dict(point)}))
+        if not candidates:
+            for from_point in border:
+                for to_point in border:
+                    if from_point == original['from'] or to_point == original['to']:
+                        continue
+                    if from_point == to_point:
+                        continue
+                    proposal_points = {'from': dict(from_point), 'to': dict(to_point)}
+                    score = _endpoint_route_score(arrow, proposal_points, frames, text_ids)
+                    if score[0]:
+                        continue
+                    candidates.append((score, proposal_points, {
+                        'from': dict(from_point), 'to': dict(to_point)}))
+        for score, _, values in sorted(candidates, key=lambda item: (item[0], json.dumps(item[2], sort_keys=True)))[:ENDPOINT_PROPOSAL_CAP]:
+            proposals.append({
+                'operations': [{'targetId': arrow_id, 'kind': 'set_endpoint_point', 'values': values}],
+                'rank': score,
+                'delta': {'endpoint_point': values},
+            })
+    return proposals
+
 
 
 def line_hits(a, b, rect, padding=8):
@@ -169,6 +304,7 @@ console.log(JSON.stringify(frames.map(frame=>Object.fromEntries(Object.entries(f
                 continue
             proposals.append({'operations': [{'targetId': target, 'kind': 'set_presentation', 'values': values}],
                               'rank': list(score), 'delta': delta})
+    proposals.extend(propose_endpoint_routes(doc, scope, report, frames))
     return sorted(proposals, key=lambda p: (p['rank'], json.dumps(p['operations'], sort_keys=True)))
 
 

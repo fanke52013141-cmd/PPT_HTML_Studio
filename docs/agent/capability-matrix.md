@@ -1,7 +1,7 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.60.0
-- **Contract Hash**: `169f933e1767d4e5`
+- **Agent API Version**: 1.61.0
+- **Contract Hash**: `0729c5b21898f2e7`
 - **Total Capabilities**: 78
 
 This document is auto-generated from `agent_contract/capabilities.py`.
@@ -36,10 +36,10 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_semantic.decision` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/semantic/decision` | `ppt_html_semantic_decision` | Yes | `html semantic-decision` | `html_semantic_review_service.decide` | No | No |
 | `project_model_binding.read` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_read` | Yes | `html model-read` | `project_model_binding_service.get_project_model_binding` | No | No |
 | `project_model_binding.write` | 1.1 | stable | PUT | `/api/agent/v1/projects/{project_id}/model-binding` | `ppt_project_model_binding_write` | Yes | `html model-write` | `project_model_binding_service.save_project_model_binding` | No | No |
-| `html_repair.preview` | 1.7 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
-| `html_repair.save` | 1.7 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
+| `html_repair.preview` | 1.8 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
+| `html_repair.save` | 1.8 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
 | `html_repair.evidence` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
-| `html_repair.generate` | 1.5 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_repair_orchestration.generate_repair` | No | No |
+| `html_repair.generate` | 1.6 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_repair_orchestration.generate_repair` | No | No |
 | `html_editor.read` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
 | `html_editor.write` | 1.1 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_write` | Yes | `html editor-write` | `html_scene_editing.save_editor` | No | No |
 | `html_editor.preview` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor/preview` | `ppt_html_editor_preview` | Yes | `html editor-preview` | `html_scene_editing.preview_editor` | No | No |
@@ -129,10 +129,10 @@ The MCP server exposes **72** stable tools:
 - `ppt_html_semantic_decision` — Record an explicit human semantic approval/rejection of the current report key with revision and note. Engineering failures and semantic omissions/contradictions cannot be approved.
 - `ppt_project_model_binding_read` — Read account-scoped HTML project model references and redacted effective summaries; legacy/inherit/fixed modes, no credentials or endpoints.
 - `ppt_project_model_binding_write` — Save HTML project visual text/image and optional independent planning model references (omitted planning preserves its binding) with expected_revision and explicit rebind. No-op preserves work; changes apply to future generation only. Stale revision returns 409.
-- `ppt_html_repair_preview` — Bounded HTML local repair preview; shared leaf-field manual protection with conflict paths, registered instance styles/actions, frozen revision, sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
-- `ppt_html_repair_save` — Bounded HTML local repair save; shared leaf-field manual protection enforced again at final AI persistence with conflict paths, registered styles/actions, frozen revision and temporal checks. Does not approve aesthetics.
+- `ppt_html_repair_preview` — Bounded HTML local repair preview; shared leaf-field manual protection with conflict paths, registered instance styles/actions, frozen revision, sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Includes the deterministic set_endpoint_point operation for declared relation attachment points. Does not approve aesthetics.
+- `ppt_html_repair_save` — Bounded HTML local repair save; shared leaf-field manual protection enforced again at final AI persistence with conflict paths, registered styles/actions, frozen revision and temporal checks. Includes the deterministic set_endpoint_point operation for declared relation attachment points. Does not approve aesthetics.
 - `ppt_html_repair_evidence` — Bounded HTML local repair evidence; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
-- `ppt_html_repair_generate` — Optional geometry_first fixed arrow/text placement repair with lazy model fallback and before/after evidence; default model remains compatible. Bounded HTML local repair with scope-specific protected leaf and ancestor paths in model context; retain precise capacity triggers, original budgets, frozen revision, shared candidate/save protection and sampled/output-frame checks. Conflicting protected goals stop without overwriting; no automatic aesthetic approval.
+- `ppt_html_repair_generate` — Optional geometry_first fixed arrow/text placement repair with lazy model fallback and before/after evidence; geometry_first also derives deterministic relation attachment points (set_endpoint_point) before any model fallback, and default model remains compatible. Bounded HTML local repair with scope-specific protected leaf and ancestor paths in model context; retain precise capacity triggers, original budgets, frozen revision, shared candidate/save protection and sampled/output-frame checks. Conflicting protected goals stop without overwriting; no automatic aesthetic approval.
 - `ppt_html_editor_read` — Read stored HTML author scene, motion binding, capabilities, validated resources, manual overrides and audio artifact revision under the project lock.
 - `ppt_html_editor_write` — Save validated HTML edits and source-image normalized anchors with manual protection. Reject stale scene revision or optional expected_audio_revision with 409; preserve audio artifacts.
 - `ppt_html_editor_preview` — Validate draft and resolve read-only beat timing, effective durations and clipping reasons or author clock. Return audio artifact revision; reject stale scene or optional audio revision with 409. No save, TTS or approval; output gates remain.

@@ -1,0 +1,97 @@
+{
+  "format": "hps.geometry_endpoint_routing",
+  "version": "0.1.0",
+  "boundary": "Frozen DOM frames replayed through the production line-hit predicate. Candidate generation only; original compile and 30fps QA remain the validator. No browser, provider, author write or approval.",
+  "cases": [
+    {
+      "id": "route-around-label",
+      "expected": "route_found",
+      "scope": ["arrow-1"],
+      "nodes": [
+        {"id": "card-a", "type": "card"},
+        {"id": "card-b", "type": "card"},
+        {"id": "text-1", "type": "text"},
+        {"id": "arrow-1", "type": "arrow", "from": {"objectId": "card-a", "point": {"x": 1, "y": 0.5}}, "to": {"objectId": "card-b", "point": {"x": 0, "y": 0.5}}}
+      ],
+      "frames": [
+        {
+          "visible": {"card-a": 1, "card-b": 1, "text-1": 1, "arrow-1": 1},
+          "boxes": {"card-a": {"x": 0, "y": 0, "width": 200, "height": 200}, "card-b": {"x": 600, "y": 0, "width": 200, "height": 200}, "text-1": {"x": 350, "y": 80, "width": 100, "height": 40}},
+          "textRects": {"card-a": [], "card-b": [], "text-1": [{"x": 350, "y": 80, "width": 100, "height": 40}], "arrow-1": []}
+        }
+      ]
+    },
+    {
+      "id": "route-between-two-labels",
+      "expected": "route_found",
+      "scope": ["arrow-1"],
+      "nodes": [
+        {"id": "card-a", "type": "card"},
+        {"id": "card-b", "type": "card"},
+        {"id": "text-1", "type": "text"},
+        {"id": "text-2", "type": "text"},
+        {"id": "arrow-1", "type": "arrow", "from": {"objectId": "card-a", "point": {"x": 1, "y": 0.5}}, "to": {"objectId": "card-b", "point": {"x": 0, "y": 0.5}}}
+      ],
+      "frames": [
+        {
+          "visible": {"card-a": 1, "card-b": 1, "text-1": 1, "text-2": 1, "arrow-1": 1},
+          "boxes": {"card-a": {"x": 0, "y": 0, "width": 200, "height": 200}, "card-b": {"x": 600, "y": 0, "width": 200, "height": 200}, "text-1": {"x": 300, "y": 60, "width": 80, "height": 40}, "text-2": {"x": 430, "y": 100, "width": 80, "height": 40}},
+          "textRects": {"card-a": [], "card-b": [], "text-1": [{"x": 300, "y": 60, "width": 80, "height": 40}], "text-2": [{"x": 430, "y": 100, "width": 80, "height": 40}], "arrow-1": []}
+        }
+      ]
+    },
+    {
+      "id": "no-legal-route",
+      "expected": "no_legal_route",
+      "scope": ["arrow-1"],
+      "nodes": [
+        {"id": "card-a", "type": "card"},
+        {"id": "card-b", "type": "card"},
+        {"id": "text-1", "type": "text"},
+        {"id": "arrow-1", "type": "arrow", "from": {"objectId": "card-a", "point": {"x": 1, "y": 0.5}}, "to": {"objectId": "card-b", "point": {"x": 0, "y": 0.5}}}
+      ],
+      "frames": [
+        {
+          "visible": {"card-a": 1, "card-b": 1, "text-1": 1, "arrow-1": 1},
+          "boxes": {"card-a": {"x": 0, "y": 0, "width": 200, "height": 200}, "card-b": {"x": 600, "y": 0, "width": 200, "height": 200}, "text-1": {"x": 300, "y": 0, "width": 200, "height": 200}},
+          "textRects": {"card-a": [], "card-b": [], "text-1": [{"x": 300, "y": 0, "width": 200, "height": 200}], "arrow-1": []}
+        }
+      ]
+    },
+    {
+      "id": "anchor-endpoint-is-not-routed",
+      "expected": "anchor_fixed",
+      "scope": ["arrow-2"],
+      "nodes": [
+        {"id": "photo", "type": "image"},
+        {"id": "card-b", "type": "card"},
+        {"id": "text-1", "type": "text"},
+        {"id": "arrow-2", "type": "arrow", "from": {"objectId": "photo", "anchorId": "focus"}, "to": {"objectId": "card-b", "point": {"x": 0, "y": 0.5}}}
+      ],
+      "frames": [
+        {
+          "visible": {"photo": 1, "card-b": 1, "text-1": 1, "arrow-2": 1},
+          "boxes": {"photo": {"x": 0, "y": 0, "width": 200, "height": 200}, "card-b": {"x": 600, "y": 0, "width": 200, "height": 200}, "text-1": {"x": 350, "y": 80, "width": 100, "height": 40}},
+          "textRects": {"photo": [], "card-b": [], "text-1": [{"x": 350, "y": 80, "width": 100, "height": 40}], "arrow-2": []}
+        }
+      ]
+    },
+    {
+      "id": "implicit-slot-arrow-is-not-routed",
+      "expected": "implicit_slot",
+      "scope": ["arrow-3"],
+      "nodes": [
+        {"id": "card-a", "type": "card"},
+        {"id": "text-1", "type": "text"},
+        {"id": "arrow-3", "type": "arrow"}
+      ],
+      "frames": [
+        {
+          "visible": {"card-a": 1, "text-1": 1, "arrow-3": 1},
+          "boxes": {"card-a": {"x": 0, "y": 0, "width": 200, "height": 200}, "text-1": {"x": 350, "y": 80, "width": 100, "height": 40}},
+          "textRects": {"card-a": [], "text-1": [{"x": 350, "y": 80, "width": 100, "height": 40}], "arrow-3": []}
+        }
+      ]
+    }
+  ]
+}

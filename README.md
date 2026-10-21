@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-22 还原优化（W2）：[关系附着点确定性路由](docs/releases/2026-10-22-endpoint-routing-repair.md)、[契约 0.2.0](docs/contracts/html-presentation/runtime/visual-v1/geometry-repair-0.2.0.md)。显式 point 端点箭头在目标边界枚举附着点，要求对所有可见文字无穿越后再交原编译器/30fps QA；不移动文字、不改关系对象，anchor/隐式槽位不参与，无解返回空提案且不调用模型。冻结基准 2/2 路由、3/3 非路由跳过、0 误生成、0 模型调用；预览/保存1.8、generate1.6、Agent API1.61.0，契约包0.9.114。
+
 2026-10-22 还原优化（W1）：[规划端点确定性归一化](docs/releases/2026-10-22-plan-endpoint-normalization.md)、[可执行优化方案](docs/plans/html-backend-development/restoration-optimization-plan-2026-10-22.md)。唯一且类型兼容的槽位名端点按对象表归一化并留痕，未知/歧义/类型不符仍严格拒绝；同一基准 32 例槽位名计划 0/32→32/32 通过、编译 scene 全部一致、非法引用 32/32 仍拒。无供应商调用、无作者写入；契约 0.9.113/API1.60.0 未变。
 
 2026-10-21 评测版本：[跨布局受控标签0.2.0](docs/plans/html-backend-development/feature-recognition-benchmark-2026-10-21.md)、[溢出与穿字冻结评测](docs/plans/html-backend-development/overflow-crossing-benchmark-2026-10-21.md)、[发布备注](docs/releases/2026-10-21-benchmark-versions.md)。计分器新增ownership/模糊理由分类（0.1.0输出不变）；溢出与穿字按真实检测谓词评分，含真实测量重放、贴边/端点接触/密集负例及未决与耗时。均为受控证据，真实跨课程页与真实穿字对仍需另一台机按hash移交。CI红修复见[该批交接](docs/plans/html-backend-development/handoff-ci-red-2026-10-21.md)；契约0.9.113/API1.60.0未变。

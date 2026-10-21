@@ -30,6 +30,14 @@ def _changes(doc, result):
     changes = []
     for op in result.get('request', {}).get('operations', []):
         target = op['targetId']
+        if op.get('kind') == 'set_endpoint_point':
+            for side in op['values']:
+                old = (before.get(target) or {}).get(side, {}).get('point')
+                new = (after.get(target) or {}).get(side, {}).get('point')
+                if old != new:
+                    changes.append({'targetId': target, 'parameter': f'{side}.point',
+                                    'before': old, 'after': new})
+            continue
         for key in op['values']:
             old = before[target].get('presentation', {}).get(key)
             new = after[target].get('presentation', {}).get(key)

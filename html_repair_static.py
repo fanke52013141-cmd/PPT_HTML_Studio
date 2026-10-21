@@ -1,9 +1,13 @@
 """Pure static repair mutation shared by production and the portable checker."""
+import math
+
 PARTS = {
     "text": ["text"], "label": ["text"], "badge": ["text"], "header": ["title"],
     "card": ["title", "body"], "figure": ["tag", "note"],
     "summary": ["heading", "from", "to", "term", "takeaway"],
 }
+
+ENDPOINT_KIND = "set_endpoint_point"
 
 
 class StaticRepairError(ValueError):
@@ -12,8 +16,47 @@ class StaticRepairError(ValueError):
         self.code = code
 
 
+def _point(value):
+    if not isinstance(value, dict) or set(value) != {"x", "y"}:
+        raise StaticRepairError("REPAIR_FIELDS", "端点必须是 {x,y}")
+    for coordinate in value.values():
+        if type(coordinate) not in (int, float) or not math.isfinite(coordinate) or not 0 <= coordinate <= 1:
+            raise StaticRepairError("REPAIR_FIELDS", "端点坐标必须是 0–1 的有限数")
+    return {"x": float(value["x"]), "y": float(value["y"])}
+
+
+def _apply_endpoint_point(node, values):
+    """Move declared relation attachment points only; object identity is fixed."""
+    if node["type"] != "arrow" or not node.get("from") or not node.get("to"):
+        raise StaticRepairError("ENDPOINT_POINT_REQUIRED", "只有带显式端点的关系可调整附着点")
+    if not values or set(values) - {"from", "to"}:
+        raise StaticRepairError("REPAIR_FIELDS", "set_endpoint_point 只接受 from/to")
+    resolved = {}
+    for side in ("from", "to"):
+        if side not in values:
+            continue
+        endpoint = node[side]
+        if endpoint.get("anchorId"):
+            raise StaticRepairError("ENDPOINT_ANCHOR_FIXED", "图片锚点端点不可改为自由附着点")
+        if set(endpoint) != {"objectId", "point"}:
+            raise StaticRepairError("REPAIR_FIELDS", "端点必须已声明 objectId 与 point")
+        resolved[side] = _point(values[side])
+    if not resolved:
+        raise StaticRepairError("REPAIR_FIELDS", "set_endpoint_point 至少修改一端")
+    merged_from = resolved.get("from", node["from"]["point"])
+    merged_to = resolved.get("to", node["to"]["point"])
+    if merged_from == merged_to:
+        raise StaticRepairError("ENDPOINT_ZERO_LENGTH", "端点不能重合为零长度关系")
+    for side, point in resolved.items():
+        node[side]["point"] = point
+    return "endpoint_point"
+
+
 def apply_static(scene, node, operation):
     kind, values = operation["kind"], operation["values"]
+    if kind == ENDPOINT_KIND:
+        _apply_endpoint_point(node, values)
+        return
     if kind not in ("set_presentation", "set_text_style", "set_variant"):
         raise StaticRepairError("STATIC_OPERATION_REQUIRED", "便携预检仅执行注册静态操作")
     if node["type"] == "arrow" and node.get("from"):

@@ -1,4 +1,6 @@
 # HTML 演示契约变更记录
+0.9.114（2026-10-22）：[关系附着点确定性路由](runtime/visual-v1/geometry-repair-0.2.0.md)。显式 point 关系箭头在目标边界枚举附着点，复用原 vector-overlap 谓词并要求对所有可见文字无穿越；不移动文字、不改关系对象/样式/时间，anchor 与隐式槽位箭头不参与，无解返回空提案（不调用模型）。新增操作 set_endpoint_point（仅确定性路径；模型 Prompt 不提供），人工保护与显式保存不变。预览/保存能力1.8、generate1.6，AGENT_API_VERSION1.61.0；基准 2/2 路由、3/3 非路由跳过、0 模型调用。
+
 
 2026-10-22 规划端点归一化（HPS-010/013/015--017/023--025）：关系端点引用唯一且类型/anchor 兼容的槽位名时，normalize 阶段改写为 objects[].id 并在 plan.registered.endpoint_resolutions 留痕；未知、素材 ID、歧义槽位、类型或 anchor 不符一律不改写，仍由原严格校验拒绝。基准 32 例槽位名计划 0/32→32/32 通过、scene/binding 全一致、非法引用 32/32 仍拒；无自动批准/作者写入，包 0.9.113/API1.60.0 保持。
 

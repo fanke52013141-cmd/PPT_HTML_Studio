@@ -24,7 +24,11 @@ KINDS = {
     "set_variant": ["variant", "icon"],
     "set_motion": ["startMs", "durationMs", "offsetX", "offsetY"],
     "set_binding": ["beatId", "edge", "offsetMs"],
+    # Deterministic routing only: code derives border attachment points; the
+    # model is not offered this kind in its repair prompt.
+    "set_endpoint_point": ["from", "to"],
 }
+MODEL_KINDS = {k: v for k, v in KINDS.items() if k != "set_endpoint_point"}
 
 
 def _hash(value):
@@ -78,7 +82,7 @@ def candidate_from_document(run, slide, request, doc):
                 f"未注册字段: {', '.join(unknown_fields) or '(空)'}；"
                 f"允许字段: {', '.join(KINDS[op.kind])}",
             )
-        if op.kind in ("set_presentation", "set_text_style", "set_variant"):
+        if op.kind in ("set_presentation", "set_text_style", "set_variant", "set_endpoint_point"):
             try:
                 apply_static(scene, node, op.model_dump(exclude_none=True))
             except StaticRepairError as exc:
@@ -322,7 +326,7 @@ def build_repair_prompts(doc, instruction, scope, report):
         "binding": ({**doc["binding"], "actions": {k: v for k, v in doc["binding"].get("actions", {}).items()
                                                    if k in action_ids}} if doc["binding"] else None),
         "beats": doc["beats"],
-        "operations": {k:v for k,v in KINDS.items() if k != "set_variant" or doc["scene"].get("version") in ("0.6.0","0.7.0")},
+        "operations": {k:v for k,v in MODEL_KINDS.items() if k != "set_variant" or doc["scene"].get("version") in ("0.6.0","0.7.0")},
         "operation_examples": [
             {
                 "targetId": "<existing text ID>",
