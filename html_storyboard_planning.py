@@ -249,6 +249,7 @@ def normalize_html_scene_plan(
         }
     from html_semantic_plan import SemanticPlanError
     from html_course_structure import validate_course_structure
+    _resolve_relation_endpoints(plan)
     try:
         if 'visual_coverage' in plan_input:
             plan['visual_coverage'] = plan_input['visual_coverage']
@@ -258,6 +259,68 @@ def normalize_html_scene_plan(
     except SemanticPlanError as exc:
         raise HtmlScenePlanError(exc.code, str(exc)) from exc
     return plan
+
+
+def _resolve_relation_endpoints(plan):
+    """Resolve a unique slot-name endpoint reference to its registered object id.
+
+    Models routinely name a relation endpoint with the target slot (``stage-1``)
+    instead of the object id (``obj-stage-1``). A slot name is an author-side
+    identifier, not a semantic choice: when it matches exactly one non-arrow,
+    non-annotation object whose kind/anchor is compatible with the declared
+    endpoint shape, rewrite the reference and keep a receipt. Unknown names,
+    asset ids, ambiguous slots and incompatible anchors are never rewritten and
+    stay rejected by the original strict validator.
+    """
+    objects = {obj["id"]: obj for obj in plan["objects"]}
+    by_slot: Dict[str, List[Dict[str, Any]]] = {}
+    for obj in plan["objects"]:
+        by_slot.setdefault(obj["slot"], []).append(obj)
+    asset_ids = {asset["id"] for asset in plan.get("assets", [])}
+    resolutions: List[Dict[str, Any]] = []
+    for arrow in plan["objects"]:
+        if arrow["kind"] != "arrow":
+            continue
+        content = plan["slots"].get(arrow["slot"])
+        if not isinstance(content, dict):
+            continue
+        for key in ("from", "to"):
+            endpoint = content.get(key)
+            if not isinstance(endpoint, dict):
+                continue
+            requested = endpoint.get("objectId")
+            if (not isinstance(requested, str) or requested in objects
+                    or requested in asset_ids):
+                continue
+            if set(endpoint) == {"objectId", "point"}:
+                candidates = [
+                    obj for obj in by_slot.get(requested, [])
+                    if obj["kind"] not in ("arrow", "annotation")
+                ]
+            elif set(endpoint) == {"objectId", "anchorId"}:
+                candidates = [
+                    obj for obj in by_slot.get(requested, [])
+                    if obj["kind"] == "image"
+                    and (plan["slots"].get(obj["slot"]) or {}).get("anchorId", "focus")
+                    == endpoint["anchorId"]
+                ]
+            else:
+                continue
+            if len(candidates) != 1:
+                continue
+            resolved = candidates[0]["id"]
+            endpoint["objectId"] = resolved
+            resolutions.append({
+                "relation_id": arrow["id"],
+                "slot": arrow["slot"],
+                "endpoint": key,
+                "requested": requested,
+                "resolved": resolved,
+                "basis": "unique slot identity with compatible endpoint kind and anchor",
+            })
+    if resolutions:
+        plan["registered"]["endpoint_resolutions"] = resolutions
+    return resolutions
 
 
 def _normalize_objects(

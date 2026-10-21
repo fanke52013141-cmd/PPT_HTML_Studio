@@ -12,3 +12,5 @@
 - 规划目录、原normalize→A02→compile→render/seek→binding路径、源快照、Agent元信息/Skill/影响同步。工程夹具不保存到真实项目，不产生批准，不调用模型/图片/TTS。组件和数据变化后原设计/视觉/A04/输出需要重验，原声音字节保持。
 
 验收：四页固定夹具包含缺关系/端点/平台/阶段负例；原文、已有动作身份、人工保护和旧arrow兼容；1592/1600宽度及DPR1/2确定性seek；实际共享渲染、容量、端点跟随/未显示端点隐藏连线。能力通过不等于真实模型或课程验收。
+
+2026-10-22 兼容实现修复（HPS-010/013/015--017/023--025）：关系端点若引用**唯一且类型兼容**的槽位名，normalize 改写为对象 ID 并在 `registered.endpoint_resolutions` 记录 requested/resolved/basis；未知、素材 ID、歧义槽位、类型或 anchor 不符不自动改写，原 `PLAN_RELATION_ENDPOINT` 严格拒绝保留。基准 32 例：0/32→32/32 计划通过、编译 scene/binding 全部一致、非法引用仍 32/32 拒绝；无新 API/Schema/迁移，包 0.9.113/API1.60.0 保持，未写作者或签发批准。

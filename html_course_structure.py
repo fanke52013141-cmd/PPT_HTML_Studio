@@ -87,7 +87,7 @@ def validate_course_structure(plan, contract, template):
                             i for i, o in eligible.items()
                             if o["slot"] == endpoint["objectId"]
                         ),
-                        "instruction": "引用objects[].id，不能用槽位名、素材ID或关系对象代替；仅提示，不自动改写端点。",
+                        "instruction": "引用objects[].id；唯一匹配的槽位名会按对象表归一化并留痕（endpoint_resolutions），未知、歧义或类型不符的引用不自动改写。",
                     }, ensure_ascii=False))
                 if set(endpoint) == {"objectId", "anchorId"}:
                     target_content = slots[target["slot"]]
