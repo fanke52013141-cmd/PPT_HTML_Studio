@@ -32,5 +32,5 @@ def test_geometry_contract_all_transports_share_new_optional_strategy():
     schema = capability_input_schema(cap)
     assert schema['properties']['strategy']['enum'] == ['model', 'geometry_first']
     assert schema['properties']['strategy']['default'] == 'model'
-    assert cap.version == '1.5' and cap.mcp_tool_name == 'ppt_html_repair_generate'
+    assert cap.version == '1.6' and cap.mcp_tool_name == 'ppt_html_repair_generate'
     assert cap.cli_command == 'html repair-generate'

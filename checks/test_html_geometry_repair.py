@@ -29,19 +29,31 @@ def test_bounded_deterministic_proposals_preserve_input_and_absolute_values():
     proposals = geometry.propose(doc, ['label'], report, frames)
     assert proposals and proposals == geometry.propose(doc, ['label'], report, frames)
     assert proposals == sorted(proposals, key=lambda p: (p['rank'], json.dumps(p['operations'], sort_keys=True)))
-    for p in proposals:
+    presentation = [p for p in proposals if p['operations'][0]['kind'] == 'set_presentation']
+    endpoints = [p for p in proposals if p['operations'][0]['kind'] == 'set_endpoint_point']
+    assert presentation
+    for p in presentation:
         op = p['operations'][0]
-        assert op['targetId'] == 'label' and op['kind'] == 'set_presentation'
+        assert op['targetId'] == 'label'
         assert set(op['values']) <= {'offsetX', 'offsetY'}
         for key, value in op['values'].items():
             assert abs(value-doc['scene']['nodes'][0]['presentation'].get(key, 0)) <= 96
+    for p in endpoints:
+        op = p['operations'][0]
+        assert op['targetId'] == 'arrow'
+        assert set(op['values']) <= {'from', 'to'}
+        assert all(0 <= coordinate <= 1 for point in op['values'].values()
+                   for coordinate in point.values())
     assert (doc, report, frames) == before
 
 
 def test_unsupported_conflicts_or_scope_do_not_generate_faux_fixes():
     doc, report, frames = fixture_geometry()
-    assert geometry.propose(doc, ['arrow'], report, frames) == []
+    # Declared point endpoints now get deterministic attachment-point candidates.
+    endpoints = geometry.propose(doc, ['arrow'], report, frames)
+    assert endpoints and all(p['operations'][0]['kind'] == 'set_endpoint_point' for p in endpoints)
     report['issues'][0]['measured']['reason'] = 'stroke_crosses_object'
+    assert geometry.propose(doc, ['arrow'], report, frames) == []
     assert geometry.propose(doc, ['label'], report, frames) == []
     with pytest.raises(ValueError):
         geometry.propose(doc, ['missing'], report, frames)
@@ -60,7 +72,7 @@ def test_size_proposals_have_explicit_conservative_bounds():
 def test_existing_figure_containment_is_kept_by_numeric_filter():
     doc, report, frames = fixture_geometry()
     frames[0]['boxes']['destination'] = {'x': 220, 'y': 100, 'width': 120, 'height': 200}
-    proposals = geometry.propose(doc, ['label'], report, frames)
+    proposals = [p for p in geometry.propose(doc, ['label'], report, frames) if 'x' in p['delta']]
     assert proposals
     for proposal in proposals:
         delta = proposal['delta']
