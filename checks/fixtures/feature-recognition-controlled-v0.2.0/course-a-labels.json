@@ -1,0 +1,85 @@
+{
+  "format": "hps.feature_recognition_labels",
+  "version": "0.2.0",
+  "authority": "controlled_fixture",
+  "scope": "Controlled schematic page A; ownership split is the scored dimension, not model recognition.",
+  "targets": [
+    {
+      "targetId": "header",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "headline",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "intro",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "card-1",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "icon",
+      "evidence": "卡片仅含圆底线性符号，属注册图标。"
+    },
+    {
+      "targetId": "card-2",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "icon",
+      "evidence": "卡片仅含圆底线性符号，属注册图标。"
+    },
+    {
+      "targetId": "card-3",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "icon",
+      "evidence": "卡片仅含圆底线性符号，属注册图标。"
+    },
+    {
+      "targetId": "figure",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "container",
+      "evidence": "虚线figure只是代码外框，其中的图片由subject承担，外框不得重复认领。"
+    },
+    {
+      "targetId": "subject",
+      "feature": "independent_illustration",
+      "expected": true,
+      "ownership": "image",
+      "evidence": "页面右侧整幅示意图由image持有，属于独立插图。"
+    },
+    {
+      "targetId": "summary",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "anchor-label",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "annotation",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "annotation",
+      "evidence": "红圈与引线是代码批注，不是插图。"
+    }
+  ]
+}

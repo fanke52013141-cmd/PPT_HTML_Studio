@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-21 评测版本：[跨布局受控标签0.2.0](docs/plans/html-backend-development/feature-recognition-benchmark-2026-10-21.md)、[溢出与穿字冻结评测](docs/plans/html-backend-development/overflow-crossing-benchmark-2026-10-21.md)、[发布备注](docs/releases/2026-10-21-benchmark-versions.md)。计分器新增ownership/模糊理由分类（0.1.0输出不变）；溢出与穿字按真实检测谓词评分，含真实测量重放、贴边/端点接触/密集负例及未决与耗时。均为受控证据，真实跨课程页与真实穿字对仍需另一台机按hash移交。CI红修复见[该批交接](docs/plans/html-backend-development/handoff-ci-red-2026-10-21.md)；契约0.9.113/API1.60.0未变。
+
 2026-10-21 CI 修复：[全量检查红因与修复](docs/plans/html-backend-development/handoff-ci-red-2026-10-21.md)，[发布备注](docs/releases/2026-10-21-ci-red-fix.md)。近8次push连续红；根因为检查脚本硬编码仓库`.venv`解释器（CI无`.venv`），另加59da921后理解替身缺`feature_observations`。修复不改生产校验/断言，目标测试通过、canonical quick通过；`single_page_video`一例`EXPORT_PAGE_FAILED`按flake保留观察。契约0.9.113/API1.60.0未变。
 
 2026-10-21 已推送：[问题发现优化与跨机 handoff](docs/plans/html-backend-development/handoff-detection-optimization-2026-10-21.md)，[发布备注](docs/releases/2026-10-21-detection-optimization.md)。源码59da921；统一交付几何扩样、规划诊断、正文溢出/穿字前置、理解0.7.5及固定标签评测；包0.9.113/API1.60.0保持。发布前217项回归、quick和视觉14组通过，CI终态另验。目标是减少系统漏检，非逐页手修；下方“未提交/未发布”保留历史状态。Git不含课程样本/运行数据，应用未重启，正式输出与跨课程泛化待验。

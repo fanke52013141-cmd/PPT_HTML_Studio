@@ -4,6 +4,11 @@ config/html_runtime_skills.json text eol=lf
 # Capacity fixtures pin scene bytes in their manifest across Windows checkouts.
 checks/fixtures/capacity-baseline/*.json text eol=lf
 
+# Frozen evaluation fixtures publish their dataset hashes; keep bytes stable.
+checks/fixtures/feature-recognition-controlled-v0.2.0/*.json text eol=lf
+checks/fixtures/overflow-crossing/*.json text eol=lf
+checks/fixtures/overflow-crossing/*.cjs text eol=lf
+
 # Editor manifests hash exact source, license and output bytes on every host.
 editor_ui/** text eol=lf
 # Archived upstream license hashes cover original bytes, including CRLF.

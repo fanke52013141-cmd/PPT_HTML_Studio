@@ -1,0 +1,179 @@
+{
+  "status": "ready",
+  "objects": [
+    {
+      "targetId": "header",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "headline",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "intro",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "card-1",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "card-2",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "card-3",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "figure",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "subject",
+      "owner": "image",
+      "assetMode": "reuse",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "summary",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "anchor-label",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    },
+    {
+      "targetId": "annotation",
+      "owner": "code",
+      "assetMode": "none",
+      "variant": null,
+      "icon": null,
+      "appearance": "controlled fixture allocation",
+      "required_features": []
+    }
+  ],
+  "issues": [],
+  "feature_observations": [
+    {
+      "targetId": "header",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "headline",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "intro",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "card-1",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "card-2",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "card-3",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "figure",
+      "feature": "independent_illustration",
+      "presence": "present",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "subject",
+      "feature": "independent_illustration",
+      "presence": "present",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "summary",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "anchor-label",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "annotation",
+      "feature": "independent_illustration",
+      "presence": "absent",
+      "evidence": "Controlled fixture observation."
+    },
+    {
+      "targetId": "cloud-rain",
+      "feature": "independent_illustration",
+      "presence": "present",
+      "evidence": "Controlled fixture observation."
+    }
+  ]
+}

@@ -6,6 +6,7 @@ scorer. No prompt execution, author mutation, approval, or inferred prose labels
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 from pathlib import Path
@@ -15,6 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from html_design_agent import Understanding  # noqa: E402
+
+# v0.2.0 separates the code object that owns an illustration from containers,
+# registered icons, annotations and text, and requires an explicit reason when a
+# target is excluded as ambiguous.
+OWNERSHIP = frozenset({'image', 'container', 'icon', 'annotation', 'text', 'ambiguous'})
 
 
 def digest(path):
@@ -111,8 +117,10 @@ def evaluate(dataset_path, output):
     root = dataset_path.parent
     dataset_hash = digest(dataset_path)
     data = read(dataset_path)
-    if data.get('format') != 'hps.feature_recognition_dataset' or data.get('version') != '0.1.0':
+    dataset_version = data.get('version')
+    if data.get('format') != 'hps.feature_recognition_dataset' or dataset_version not in ('0.1.0', '0.2.0'):
         raise ValueError('INVALID_DATASET_VERSION')
+    ownership_labels = dataset_version == '0.2.0'
     cases = data['cases']
     if not cases or len(cases) > 40 or len({c['id'] for c in cases}) != len(cases):
         raise ValueError('INVALID_CASES')
@@ -141,11 +149,24 @@ def evaluate(dataset_path, output):
             raise ValueError('LABEL_AUTHORITY_REQUIRED')
         seen = set()
         response = read(files['response']) if 'response' in files else None
+        if ownership_labels and labels.get('version') != '0.2.0':
+            raise ValueError('LABEL_VERSION_MISMATCH')
         for label in labels['targets']:
             target = label['targetId']
             if (target in seen or target not in nodes or type(label['expected']) not in (bool, type(None))
                     or not label.get('evidence') or label.get('feature') != 'independent_illustration'):
                 raise ValueError('INVALID_LABEL')
+            if ownership_labels:
+                ownership = label.get('ownership')
+                if ownership not in OWNERSHIP:
+                    raise ValueError('INVALID_LABEL_OWNERSHIP')
+                if ownership == 'ambiguous':
+                    if (label['expected'] is not None
+                            or not isinstance(label.get('ambiguous_reason'), str)
+                            or not label['ambiguous_reason'].strip()):
+                        raise ValueError('AMBIGUOUS_LABEL_REQUIRES_REASON')
+                elif label['expected'] is None or label.get('ambiguous_reason'):
+                    raise ValueError('INVALID_AMBIGUOUS_LABEL')
             seen.add(target)
             predicted, reason = prediction(response, target, label['feature'],
                                            require_observations=observations_requested, expected_targets=nodes)
@@ -153,7 +174,8 @@ def evaluate(dataset_path, output):
                 predicted, reason = None, 'feature_not_in_archived_output_contract'
             rows.append({'case_id': case['id'], 'course_id': case['course_id'], 'page_id': case['page_id'],
                          'provenance': case['provenance'], 'label_authority': labels['authority'],
-                         **label, 'predicted': predicted, 'prediction_reason': reason})
+                         'label_ownership': label.get('ownership'), **label,
+                         'predicted': predicted, 'prediction_reason': reason})
             gap_rows.append({**rows[-1],
                              'expected': None if label['expected'] is None else (label['expected'] and nodes[target]['type'] != 'image'),
                              'predicted': gap_prediction(response, target),
@@ -174,6 +196,15 @@ def evaluate(dataset_path, output):
                           'Ambiguous labels excluded; explicit complete feature observations are scored independently of allocation status; '
                           'legacy unsupported/invalid/missing responses remain unresolved. '
                           'Archived and controlled/new captures have separate denominators; labels are not human approval.'}
+    if ownership_labels:
+        ambiguous = [r for r in rows if r['label_ownership'] == 'ambiguous']
+        result['labels_version'] = '0.2.0'
+        result['by_ownership'] = {o: metrics([r for r in rows if r['label_ownership'] == o])
+                                  for o in sorted(OWNERSHIP)}
+        result['ambiguous_reasons'] = dict(Counter(r['ambiguous_reason'] for r in ambiguous))
+        result['boundary'] += (' Ownership classes are scored separately; container, icon, annotation and text '
+                               'targets must not claim an illustration already owned by an image. '
+                               'Ambiguous targets stay excluded from decisive denominators and keep their reason.')
     if digest(dataset_path) != dataset_hash or any(digest(p) != h for p, h in seals):
         raise ValueError('INPUT_CHANGED_DURING_EVALUATION')
     output.mkdir(parents=True)

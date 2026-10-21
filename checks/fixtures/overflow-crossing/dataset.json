@@ -1,0 +1,165 @@
+{
+  "format": "hps.overflow_crossing_dataset",
+  "version": "0.1.0",
+  "boundary": "Frozen detection-policy cases. Capacity cases replay documented or controlled measurements through the original capacity predicate; crossing cases replay controlled DOM frames through the original vector-overlap core. This measures detection policy on frozen facts, not rendering quality, model accuracy or a real course signoff. Real crossing pairs on the other machine require hash-sealed transfer.",
+  "cases": [
+    {
+      "id": "real-card-bottom-overflow",
+      "kind": "text_overflow",
+      "expected": true,
+      "provenance": "documented_real_observation",
+      "note": "2026-10-21 real candidate: three cards measured about 16.65 CSS px bottom overflow. The value is replayed as a frozen measurement, not re-captured here.",
+      "measured": {
+        "width": 520, "height": 300, "lines": 7,
+        "scrollWidth": 520, "clientWidth": 520,
+        "scrollHeight": 316.65, "clientHeight": 300,
+        "textBottom": 16.65, "textTop": 0, "textLeft": 0, "textRight": 0
+      },
+      "limits": {"width": 520, "height": 300, "maxLines": 6}
+    },
+    {
+      "id": "near-edge-legal",
+      "kind": "text_overflow",
+      "expected": false,
+      "provenance": "controlled_frame",
+      "note": "Within the one-CSS-pixel tolerance on every edge; must stay legal.",
+      "measured": {
+        "width": 400, "height": 260, "lines": 3,
+        "scrollWidth": 400, "clientWidth": 400,
+        "scrollHeight": 260, "clientHeight": 260,
+        "textBottom": 0.8, "textTop": -0.4, "textLeft": -0.6, "textRight": 0.9
+      },
+      "limits": {"width": 520, "height": 300, "maxLines": 6}
+    },
+    {
+      "id": "dense-legal",
+      "kind": "text_overflow",
+      "expected": false,
+      "provenance": "controlled_frame",
+      "note": "Dense text at the line budget without parent-bound overflow.",
+      "measured": {
+        "width": 500, "height": 300, "lines": 6,
+        "scrollWidth": 500, "clientWidth": 500,
+        "scrollHeight": 300, "clientHeight": 300,
+        "textBottom": 0.5, "textTop": 0, "textLeft": 0, "textRight": 0.5
+      },
+      "limits": {"width": 520, "height": 300, "maxLines": 6}
+    },
+    {
+      "id": "arrow-crosses-text",
+      "kind": "arrow_text_crossing",
+      "expected": true,
+      "provenance": "controlled_frame",
+      "note": "A straight arrow centreline passes through the target text rect.",
+      "nodes": [
+        {"id": "card-1", "type": "card"},
+        {"id": "text-1", "type": "text"},
+        {"id": "arrow-1", "type": "arrow", "from": {"objectId": "card-1"}, "to": {"objectId": "text-1"}}
+      ],
+      "pairs": [["arrow-1", "text-1"]],
+      "frame": {
+        "boxes": {
+          "card-1": {"x": 0, "y": 0, "width": 200, "height": 120},
+          "text-1": {"x": 50, "y": 60, "width": 300, "height": 80}
+        },
+        "textRects": {
+          "card-1": [],
+          "text-1": [{"x": 50, "y": 60, "width": 300, "height": 80}]
+        },
+        "vectorPaths": {
+          "arrow-1": [{"d": "M 10 100 L 400 100", "matrix": [1, 0, 0, 1, 0, 0], "radius": 0, "supported": true}]
+        },
+        "geometry": {
+          "arrow-1": {"from": {"x": 10, "y": 100}, "to": {"x": 400, "y": 100}}
+        }
+      }
+    },
+    {
+      "id": "endpoint-contact-legal",
+      "kind": "arrow_text_crossing",
+      "expected": false,
+      "provenance": "controlled_frame",
+      "note": "The arrow endpoint lands exactly on a non-text object boundary; declared endpoint contact is legal.",
+      "nodes": [
+        {"id": "card-1", "type": "card"},
+        {"id": "arrow-2", "type": "arrow", "from": {"objectId": "card-1"}, "to": {"objectId": "card-1"}}
+      ],
+      "pairs": [["arrow-2", "card-1"]],
+      "frame": {
+        "boxes": {
+          "card-1": {"x": 100, "y": 50, "width": 120, "height": 80}
+        },
+        "textRects": {"card-1": []},
+        "vectorPaths": {
+          "arrow-2": [{"d": "M 0 0 L 100 50", "matrix": [1, 0, 0, 1, 0, 0], "radius": 0, "supported": true}]
+        },
+        "geometry": {
+          "arrow-2": {"from": {"x": 0, "y": 0}, "to": {"x": 100, "y": 50}}
+        }
+      }
+    },
+    {
+      "id": "dense-relations-legal",
+      "kind": "arrow_text_crossing",
+      "expected": false,
+      "provenance": "controlled_frame",
+      "note": "Four relations route around two text targets without touching them.",
+      "nodes": [
+        {"id": "text-1", "type": "text"},
+        {"id": "text-2", "type": "text"},
+        {"id": "arrow-1", "type": "arrow", "from": {"objectId": "text-1"}, "to": {"objectId": "text-2"}},
+        {"id": "arrow-2", "type": "arrow", "from": {"objectId": "text-1"}, "to": {"objectId": "text-2"}},
+        {"id": "arrow-3", "type": "arrow", "from": {"objectId": "text-2"}, "to": {"objectId": "text-1"}},
+        {"id": "arrow-4", "type": "arrow", "from": {"objectId": "text-2"}, "to": {"objectId": "text-1"}}
+      ],
+      "pairs": [
+        ["arrow-1", "text-2"],
+        ["arrow-2", "text-2"],
+        ["arrow-3", "text-1"],
+        ["arrow-4", "text-1"]
+      ],
+      "frame": {
+        "boxes": {
+          "text-1": {"x": 100, "y": 100, "width": 200, "height": 60},
+          "text-2": {"x": 700, "y": 400, "width": 200, "height": 60}
+        },
+        "textRects": {
+          "text-1": [{"x": 100, "y": 100, "width": 200, "height": 60}],
+          "text-2": [{"x": 700, "y": 400, "width": 200, "height": 60}]
+        },
+        "vectorPaths": {
+          "arrow-1": [{"d": "M 320 120 L 680 380", "matrix": [1, 0, 0, 1, 0, 0], "radius": 0, "supported": true}],
+          "arrow-2": [{"d": "M 320 140 L 680 420", "matrix": [1, 0, 0, 1, 0, 0], "radius": 0, "supported": true}],
+          "arrow-3": [{"d": "M 680 440 L 320 160", "matrix": [1, 0, 0, 1, 0, 0], "radius": 0, "supported": true}],
+          "arrow-4": [{"d": "M 680 460 L 320 180", "matrix": [1, 0, 0, 1, 0, 0], "radius": 0, "supported": true}]
+        },
+        "geometry": {
+          "arrow-1": {"from": {"x": 320, "y": 120}, "to": {"x": 680, "y": 380}},
+          "arrow-2": {"from": {"x": 320, "y": 140}, "to": {"x": 680, "y": 420}},
+          "arrow-3": {"from": {"x": 680, "y": 440}, "to": {"x": 320, "y": 160}},
+          "arrow-4": {"from": {"x": 680, "y": 460}, "to": {"x": 320, "y": 180}}
+        }
+      }
+    },
+    {
+      "id": "unsupported-vector-undetermined",
+      "kind": "arrow_text_crossing",
+      "expected": null,
+      "provenance": "controlled_frame",
+      "note": "An unsupported SVG primitive cannot be decided by the linear core; the real caller falls back to the conservative box check, recorded here as undetermined rather than a pass.",
+      "nodes": [
+        {"id": "text-1", "type": "text"},
+        {"id": "arrow-9", "type": "arrow", "from": {"objectId": "text-1"}, "to": {"objectId": "text-1"}}
+      ],
+      "pairs": [["arrow-9", "text-1"]],
+      "frame": {
+        "boxes": {"text-1": {"x": 100, "y": 100, "width": 200, "height": 60}},
+        "textRects": {"text-1": [{"x": 100, "y": 100, "width": 200, "height": 60}]},
+        "vectorPaths": {
+          "arrow-9": [{"d": "M 0 0 C 10 10 20 20 30 30", "matrix": [1, 0, 0, 1, 0, 0], "radius": 0, "supported": false}]
+        },
+        "geometry": {"arrow-9": {"from": {"x": 0, "y": 0}, "to": {"x": 30, "y": 30}}}
+      }
+    }
+  ]
+}

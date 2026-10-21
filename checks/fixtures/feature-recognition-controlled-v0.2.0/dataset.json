@@ -1,0 +1,51 @@
+{
+  "format": "hps.feature_recognition_dataset",
+  "version": "0.2.0",
+  "provenance_note": "Two deterministic controlled schematics in different layouts. Not real course pages, not model output, not human approval. Response B intentionally reproduces the 0.7.4 figure-container mis-claim.",
+  "cases": [
+    {
+      "id": "course-a",
+      "course_id": "controlled-layout-a",
+      "page_id": "page-a",
+      "provenance": "controlled_fixture",
+      "reference": {
+        "path": "course-a-reference.png",
+        "sha256": "ab0bb070eac6b05e3bb46915e5bd14df05fffd129a41b79a2fbde174ddca672d"
+      },
+      "request": {
+        "path": "course-a-request.json",
+        "sha256": "3af3c84655aca8141ff5cb777c93ab8567588ce8ab9f17e51fd0274b067471d7"
+      },
+      "labels": {
+        "path": "course-a-labels.json",
+        "sha256": "9fa7c3eb08aa7f06d7e57e49f3948056e71cd74dca33d793dfdb60f9f7e7e336"
+      },
+      "response": {
+        "path": "course-a-response.json",
+        "sha256": "b6c91955ad5151f023e5753f548f845883c914ff42ebd88e2f49b8b600925a34"
+      }
+    },
+    {
+      "id": "course-b",
+      "course_id": "controlled-layout-b",
+      "page_id": "page-b",
+      "provenance": "controlled_fixture",
+      "reference": {
+        "path": "course-b-reference.png",
+        "sha256": "6020b14c974fbecc3bfc70cf24e6a701b5ffd75476950e3b5cf4d1b23e2f3e65"
+      },
+      "request": {
+        "path": "course-b-request.json",
+        "sha256": "97dce9e5e4bc64631d765528bfe6d00dfb0a6dd37e1197c13bf1ba7ec2397012"
+      },
+      "labels": {
+        "path": "course-b-labels.json",
+        "sha256": "d1812a47aac1ed464ad1ce61d2b48430c958055ce3ce1641a6cc2ccce41be249"
+      },
+      "response": {
+        "path": "course-b-response.json",
+        "sha256": "61056ae0a6e805efddacc78a93052f4eadf287b32f4f755d2dcbf919e8ce8c50"
+      }
+    }
+  ]
+}

@@ -78,3 +78,29 @@
 实现验证：新增观察/覆盖/冲突/uncertain及修复后uncertain/历史兼容/严格Schema/计分不缩分母与错误类型派生回归；相关108项运行107通过，1项因执行期间片段升级正确触发RUNTIME_SKILL_CHANGED_DURING_RUN，冻结后单独重跑通过（15.34秒），未放宽来源保护。最后的小范围新增用例结果见下方补录；本机应用未重启，当前CLI加载的是新版源码，未提交/推送。
 
 最终补录：包含错误requirement命名仍由观察派生能力缺口的新增回归，观察/计分/系统诊断相关28 passed（1.55秒）；全仓ruff、Agent契约同步及git diff --check通过。测试数有重叠不累加为独立覆盖数；只修正观察协议、原能力判定与诊断，不变更渲染器或作者数据。
+
+## 跨布局受控标签版本 0.2.0（2026-10-21 追加）
+
+已测 0.1.0 集保持不变。新增受控夹具 `checks/fixtures/feature-recognition-controlled-v0.2.0/`：
+两页不同布局的确定性示意图（卡片+主体；figure 容器包围主体+云雨装饰），请求对象/能力表由真实场景结构生成，
+标签 authority/provenance 均为 `controlled_fixture`，**不是真实课程页、不是模型输出、不是人工签收**。
+计分器支持 dataset/labels `0.2.0`：逐目标 `ownership ∈ image/container/icon/annotation/text/ambiguous`，
+模糊项必须 expected=null 且给出 `ambiguous_reason`；0.1.0 输出字段保持不变。
+
+数据集 hash `d24ec48df0439b74815054f80daa9395c6b0928ad18ad5ad175472c2325606af`，2 个布局/2 页，
+21 个确定目标 + 1 个模糊弃权。B 页响应故意复现 0.7.4 的 figure 容器误认，用于证明归属负例会计入误报：
+
+| 指标 | 结果 |
+|---|---|
+| 总体 | TP2、TN18、FP1、FN0，模糊弃权 1 |
+| image（插图归图片） | TP2、FN0、未决 0 |
+| container（容器不得重复认领） | TN1、**FP1**（受控复现 0.7.4 误认） |
+| icon / text / annotation | TN5 / TN10 / TN2，无误报 |
+| ambiguous | 排除确定分母，原因原文保留 |
+
+工具：`scripts/evaluate_feature_recognition.py --dataset <dataset.json> --output <新目录>`；
+v0.2.0 会校验标签版本、ownership 取值、模糊项理由，并输出 `by_ownership` 与 `ambiguous_reasons`。
+验证：标签/计分相关 13 passed。
+
+必须保留的边界：这些都是受控夹具，只证明计分器与归属分母可用，**没有任何真实模型或真实跨课程泛化结论**。
+真实未曝光课程页仍需另一台电脑按图片/对象/标签 hash 封存移交，再按 0.2.0 标注；不得修改已测 0.1.0 清单充数。

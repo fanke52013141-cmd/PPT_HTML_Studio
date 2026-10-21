@@ -1,0 +1,86 @@
+{
+  "format": "hps.feature_recognition_labels",
+  "version": "0.2.0",
+  "authority": "controlled_fixture",
+  "scope": "Controlled schematic page B; includes an excluded ambiguous decoration.",
+  "targets": [
+    {
+      "targetId": "header",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "headline",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "intro",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "card-1",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "icon",
+      "evidence": "卡片仅含圆底线性符号，属注册图标。"
+    },
+    {
+      "targetId": "card-2",
+      "feature": "independent_illustration",
+      "expected": null,
+      "ownership": "ambiguous",
+      "ambiguous_reason": "云雨装饰介于复杂图标与独立插图之间，弃权并排除确定分母。",
+      "evidence": "卡片的云雨装饰边界不明确。"
+    },
+    {
+      "targetId": "card-3",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "icon",
+      "evidence": "卡片仅含圆底线性符号，属注册图标。"
+    },
+    {
+      "targetId": "figure",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "container",
+      "evidence": "虚线figure是包围插图的代码容器，插图已由subject认领。"
+    },
+    {
+      "targetId": "subject",
+      "feature": "independent_illustration",
+      "expected": true,
+      "ownership": "image",
+      "evidence": "figure内部的大幅山水示意由image承担，属独立插图。"
+    },
+    {
+      "targetId": "summary",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "anchor-label",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "text",
+      "evidence": "文字或版式区块由代码持有，不是插图。"
+    },
+    {
+      "targetId": "annotation",
+      "feature": "independent_illustration",
+      "expected": false,
+      "ownership": "annotation",
+      "evidence": "红圈与引线是代码批注，不是插图。"
+    }
+  ]
+}
