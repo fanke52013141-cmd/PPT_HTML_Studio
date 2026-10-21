@@ -37,14 +37,20 @@ def _run_dir(folder, contract):
     return run
 
 
-def _inject(scene):
+def _inject(scene, profile):
     cards = [node for node in scene["nodes"] if node["type"] == "card"]
     if not cards:
         return None
     card = cards[0]
-    card["body"] = (card.get("body") or "内容") * 3
-    card.setdefault("presentation", {}).setdefault("typography", {})["body"] = {
-        "fontSizePx": 28}
+    if profile == "mild":
+        # A too-large type size on unchanged content: the original 28px fits.
+        card.setdefault("presentation", {}).setdefault("typography", {})["body"] = {
+            "fontSizePx": 30}
+    else:
+        # Documented page-3 class: long body that cannot fit at any readable size.
+        card["body"] = (card.get("body") or "内容") * 3
+        card.setdefault("presentation", {}).setdefault("typography", {})["body"] = {
+            "fontSizePx": 28}
     return card["id"]
 
 
@@ -55,10 +61,12 @@ def build_cases():
     for case in cases:
         plan = normalize_html_scene_plan(case["plan"], catalog, contract_slide=case["contract"])
         scene, binding = compile_plan(plan, case["contract"], catalog)
-        scene = copy.deepcopy(scene)
-        target = _inject(scene)
-        if target:
-            built.append({"case": case, "scene": scene, "binding": binding, "target": target})
+        for profile in ("mild", "severe"):
+            injected = copy.deepcopy(scene)
+            target = _inject(injected, profile)
+            if target:
+                built.append({"case": case, "profile": profile, "scene": injected,
+                              "binding": binding, "target": target})
     return built
 
 
@@ -71,7 +79,7 @@ def run():
             run_dir = _run_dir(Path(folder) / f"case-{index}", contract)
             store.save_scene(run_dir, contract["slide_id"], scene, 0)
             baseline = review_scene(scene, run_dir=run_dir, deps=DEPS)
-            record = {"slide_id": contract["slide_id"], "injected": True,
+            record = {"slide_id": contract["slide_id"], "profile": item["profile"],
                       "target": item["target"], "baseline_passed": bool(baseline.get("passed")),
                       "baseline_message": (baseline.get("message") or "")[:160]}
             if not baseline.get("passed"):
@@ -87,12 +95,18 @@ def run():
                 record.update(status="not_injected", repaired=False, attempts=0,
                               provider_calls=0, author_unchanged=True)
             records.append(record)
+    mild = [record for record in records if record["profile"] == "mild"]
+    severe = [record for record in records if record["profile"] == "severe"]
     return {
         "mode": "injected_capacity_end_to_end",
-        "pages": len(records),
-        "baseline_failed": sum(not record["baseline_passed"] for record in records),
-        "deterministically_repaired": sum(record["repaired"] for record in records),
-        "explicit_no_fit": sum(record["status"] == "needs_revision" for record in records),
+        "pages": len({record["slide_id"] for record in records}),
+        "cases": len(records),
+        "mild_cases": len(mild),
+        "mild_baseline_failed": sum(not record["baseline_passed"] for record in mild),
+        "mild_deterministically_repaired": sum(record["repaired"] for record in mild),
+        "severe_cases": len(severe),
+        "severe_baseline_failed": sum(not record["baseline_passed"] for record in severe),
+        "severe_explicit_no_fit": sum(record["status"] == "needs_revision" for record in severe),
         "model_calls": 0, "provider_calls": 0, "author_writes": 0,
         "elapsed_seconds": round(time.perf_counter() - started, 3),
         "records": records,
