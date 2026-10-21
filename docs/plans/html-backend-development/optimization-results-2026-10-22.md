@@ -1,0 +1,64 @@
+# 还原优化前后数据汇总 · 2026-10-22
+
+本文件汇总 W1–W5 的**可复现前后数据**。所有数字由仓库内基准脚本产生，模型调用、供应商调用、
+作者写入与批准均为 0；真实课程页与浏览器 QA 另以 CI / 另一台机证据为准。
+
+## 一、总表
+
+| 优化 | 指标 | 优化前 | 优化后 |
+|---|---|---|---|
+| W1 规划端点归一化 | 槽位名端点计划通过 | 0/32 | **32/32** |
+| W1 | 编译 scene/binding 与规范计划一致 | — | **32/32** |
+| W1 | 未知/类型不符引用仍被拒 | 64/64 | **64/64** |
+| W2 关系附着点路由 | 可路由穿字用例求解 | 0/2 | **2/2** |
+| W2 | 非路由用例正确跳过（无解/anchor/隐式槽位） | 3/3 | **3/3** |
+| W2 | 误生成候选 | 0 | 0 |
+| W3 容量确定性候选 | 容量候选（行数超限 + 16.65px 越界） | 0 | **18** |
+| W4 外部 Agent 最小输入 | 任务输入字节 | 113,922 | **26,403（-76.8%）** |
+| W5 识别样本迁移 | 受控夹具往返 | — | 8 文件/2 页/69,258 字节，计分完全一致 |
+
+复现：
+
+```powershell
+python scripts/benchmark_optimization_summary.py --output <新目录>/summary.json
+python scripts/benchmark_plan_endpoint_normalization.py --baseline   # 对照
+python scripts/benchmark_geometry_endpoint_routing.py --baseline
+python scripts/benchmark_capacity_repair.py --baseline
+python scripts/benchmark_external_minimal_input.py
+python scripts/feature_recognition_bundle.py export|import ...
+```
+
+## 二、各优化的边界与真实依据
+
+- **W1**：32 个端点变体来自 4 页版本化课程计划；归一化只处理唯一且类型/anchor 兼容的槽位名，
+  并写入 `endpoint_resolutions`。真实依据：第 1 页因该错误连续两轮 `PLAN_RELATION_ENDPOINT` 失败。
+- **W2**：2 个可路由穿字帧 + 3 个非路由帧（无解/anchor/隐式槽位）；候选仍需原编译器与 30fps QA。
+  真实依据：第 4 页 540 时点 3 组穿字，单对象搜索无解，模型回退 593 秒后 unknown。
+- **W3**：15 个候选来自行数超限用例（字号 72→24），5 个来自 16.65px 底部越界（尺寸 + 字号）。
+  真实依据：第 3 页三卡片约 16.65 CSS px 底部越界，原流程无自动修复路径。
+- **W4**：代表性任务包由版本化计划真实编译 + 真实能力/执行约束构建；`task.json` 仍为权威，最小视图为派生。
+- **W5**：工具只保证材料字节与身份跨机传递，不证明真实模型或泛化。
+
+## 三、端到端页级基准（CI 浏览器）
+
+`checks/test_reconstruction_repair_benchmark.py` 对每个版本化页面注入卡片正文过长缺陷：
+
+1. 原浏览器 QA 必须先拦截（证明缺陷真实）；
+2. 确定性容量修复运行（0 模型调用）；
+3. 记录页级 `candidate / needs_revision`、尝试次数与作者是否变化。
+
+该项与 W3 的浏览器用例在 CI 中执行；终态数字以对应 commit 的 CI 日志
+（`RECONSTRUCTION_BENCHMARK:` 行）为准，不在本机沙箱代签。
+
+## 四、未完成 / 待真实材料
+
+- 真实未曝光跨课程页、真实穿字对、真实模型配对实验仍需要另一台机按 hash 导出材料
+  （`scripts/feature_recognition_bundle.py` 已就绪）。
+- 端到端页级数据目前是**注入缺陷**，不是真实课程页；不得据此声称真实还原率。
+- 应用未重启、未部署；契约包 0.9.115 / Agent API 1.62.0，无数据库迁移。
+
+## 五、验收视角
+
+- 首轮可保存率：W1/W2/W3 消除了三类真实失败中的“确定性可修却无路径”问题；真实页数据仍待移交复验。
+- 二次处理次数：几何/容量候选不再默认进入模型修复；最小输入让外部 Agent 只做选择。
+- 确定性占比：W2/W3 的新增路径均为 0 模型调用；无解时显式停止，不产生 unknown。
