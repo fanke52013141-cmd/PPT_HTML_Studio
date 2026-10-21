@@ -4,7 +4,7 @@ const {spawn}=require('child_process');
 const {chromium}=require('../html_engine/node_modules/playwright');
 (async()=>{
  const root=path.resolve(__dirname,'..'),run=fs.mkdtempSync(path.join(os.tmpdir(),'hps-editor-browser-'));
- const child=spawn(path.join(root,'.venv/Scripts/python.exe'),[path.join(__dirname,'test_html_scene_editor_fixture.py'),run],{cwd:root,windowsHide:true});
+ const child=spawn(require('./browser_python.cjs').pythonExecutable(root),[path.join(__dirname,'test_html_scene_editor_fixture.py'),run],{cwd:root,windowsHide:true});
  let stderr='';child.stderr.on('data',d=>stderr+=d);
  let browser;
  try{
@@ -13,7 +13,7 @@ const {chromium}=require('../html_engine/node_modules/playwright');
    child.stdout.on('data',d=>{text+=d;try{const value=JSON.parse(text.trim());clearTimeout(timer);resolve(value.port);}catch{}});
    child.on('exit',code=>{clearTimeout(timer);reject(Error(`fixture exit ${code}: ${stderr}`));});
   });
-  browser=await chromium.launch({headless:true,executablePath:process.env.HPS_CHROME||'C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1228/chrome-win64/chrome.exe'});
+  browser=await chromium.launch(require('../html_engine/tools/browser-runtime.cjs').captureLaunchOptions(chromium));
   const page=await browser.newPage({viewport:{width:1500,height:1100}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   const url=`http://127.0.0.1:${port}`;

@@ -73,7 +73,9 @@ def test_unsupported_allocation_stops_before_paid_subject_and_author_write(case)
     def generator(**kw):
         if kw.get("artifact_prefix", "").startswith("design_understanding-"):
             data = json.loads(kw["user_prompt"])
-            return {"status":"unsupported","objects":[],"issues":[{"targetId":data["objects"][0]["id"],"route":"capabilities","requirement":"unsupported_presentation","evidence":"fixture unsupported shape"}]}
+            # The observation table must still cover every input object even when
+            # the allocation itself is unsupported; only the allocation is empty.
+            return {"status":"unsupported","objects":[],"feature_observations":response_for(kw)["feature_observations"],"issues":[{"targetId":data["objects"][0]["id"],"route":"capabilities","requirement":"unsupported_presentation","evidence":"fixture unsupported shape"}]}
         return response_for(kw)
     case.deps = HtmlReviewDependencies(ROOT,generator)
     with pytest.raises(HtmlReviewError) as caught:

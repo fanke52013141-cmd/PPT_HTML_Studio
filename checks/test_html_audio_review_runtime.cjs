@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),os=require('os'),assert=require('ass
 const {chromium}=require('../html_engine/node_modules/playwright');
 (async()=>{
  const root=path.resolve(__dirname,'..'),run=fs.mkdtempSync(path.join(os.tmpdir(),'hps-editor-browser-audio-'));
- const child=spawn(path.join(root,'.venv/Scripts/python.exe'),[path.join(__dirname,'test_html_scene_editor_fixture.py'),run],{cwd:root,windowsHide:true});
+ const child=spawn(require('./browser_python.cjs').pythonExecutable(root),[path.join(__dirname,'test_html_scene_editor_fixture.py'),run],{cwd:root,windowsHide:true});
  let stderr='',browser;child.stderr.on('data',data=>stderr+=data);
  try{
   const port=await new Promise((resolve,reject)=>{

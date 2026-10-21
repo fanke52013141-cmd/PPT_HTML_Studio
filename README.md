@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-21 CI 修复：[全量检查红因与修复](docs/plans/html-backend-development/handoff-ci-red-2026-10-21.md)，[发布备注](docs/releases/2026-10-21-ci-red-fix.md)。近8次push连续红；根因为检查脚本硬编码仓库`.venv`解释器（CI无`.venv`），另加59da921后理解替身缺`feature_observations`。修复不改生产校验/断言，目标测试通过、canonical quick通过；`single_page_video`一例`EXPORT_PAGE_FAILED`按flake保留观察。契约0.9.113/API1.60.0未变。
+
 2026-10-21 已推送：[问题发现优化与跨机 handoff](docs/plans/html-backend-development/handoff-detection-optimization-2026-10-21.md)，[发布备注](docs/releases/2026-10-21-detection-optimization.md)。源码59da921；统一交付几何扩样、规划诊断、正文溢出/穿字前置、理解0.7.5及固定标签评测；包0.9.113/API1.60.0保持。发布前217项回归、quick和视觉14组通过，CI终态另验。目标是减少系统漏检，非逐页手修；下方“未提交/未发布”保留历史状态。Git不含课程样本/运行数据，应用未重启，正式输出与跨课程泛化待验。
 
 2026-10-21 固定样本：[识别漏检率基线与新版同图对比](docs/plans/html-backend-development/feature-recognition-benchmark-2026-10-21.md)。理解0.7.5将逐对象观察与能力分工分离；同三图同标签插图识别4/4、图标负例6/6，未决2→0；系统能力缺口拦截2/2、负例8/8。0.7.4容器误拦保留，最终例未再误拦；原模型问题类型仍错分，程序派生与原模型分开计。仅一课开发样本，非总体性能。

@@ -9,7 +9,7 @@ const {captureLaunchOptions} = require('../html_engine/tools/browser-runtime.cjs
 const root = path.resolve(__dirname, '..');
 const run = process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'hps-editor-browser-local-repair-'));
 (async () => {
-  const server = spawn(path.join(root,'.venv/Scripts/python.exe'), [path.join(__dirname,'fixtures/html_handoff_bridge.py'),run,'--local-repair'],
+  const server = spawn(require('./browser_python.cjs').pythonExecutable(root), [path.join(__dirname,'fixtures/html_handoff_bridge.py'),run,'--local-repair'],
     {cwd:root,stdio:['pipe','pipe','pipe']});
   let browser, stderr = '', held = null, holdNext = false; const pending = [], errors = [], writes = [];
   server.stderr.on('data', c => {stderr += c;});

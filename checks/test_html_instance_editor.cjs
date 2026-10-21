@@ -10,7 +10,7 @@ const { resolveBrowser } = require("../html_engine/tools/browser-runtime.cjs");
   const root = path.resolve(__dirname, ".."),
     run = fs.mkdtempSync(path.join(os.tmpdir(), "hps-editor-browser-"));
   const child = spawn(
-    path.join(root, ".venv/Scripts/python.exe"),
+    require("./browser_python.cjs").pythonExecutable(root),
     [path.join(__dirname, "test_html_scene_editor_fixture.py"), run],
     { cwd: root, windowsHide: true },
   );

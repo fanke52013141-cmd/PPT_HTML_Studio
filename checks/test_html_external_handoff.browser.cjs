@@ -6,8 +6,9 @@ const {spawn, execFileSync} = require('node:child_process');
 const {createInterface} = require('node:readline');
 const {chromium} = require('../html_engine/node_modules/playwright');
 const {captureLaunchOptions} = require('../html_engine/tools/browser-runtime.cjs');
+const {pythonExecutable} = require('./browser_python.cjs');
 const root = path.resolve(__dirname, '..'), run = process.argv[2];
-const python = path.join(root, '.venv/Scripts/python.exe');
+const python = pythonExecutable(root);
 const piMode=process.argv.includes('--pi');
 
 (async () => {
