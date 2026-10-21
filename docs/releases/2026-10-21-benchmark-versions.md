@@ -29,3 +29,7 @@ container TN1/FP1，image TP2，icon/text/annotation 无误报。溢出/穿字�
 无数据库迁移、公开 API、Agent 参数或契约版本变化（包 0.9.113 / API 1.60.0 保持）。相关测试
 16 passed（标签/计分 13、冻结评测 3），ruff、compileall、`node --check` 与 `git diff --check` 通过。
 本机沙箱不能运行 Playwright，浏览器与真实课程终态仍以远端 CI 和另一台机证据为准。
+
+## 回执
+
+评测提交 `0b15706` 的 run [39604748082](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/actions/runs/39604748082) completed/success，`Run canonical full checks` 33.6 分钟；本批未重发供应商请求、未写作者、未签发批准。

@@ -45,3 +45,15 @@ GitHub Actions 自 2026-10-19 17:46 的 `5964561` 起连续 8 次 push 失败，
 尚未定位（stderr 被生产错误信息截断为 400 字符，真实 Playwright 原因不可得）。5 个近期
 run 中仅出现一次，未改断言、未加重试掩盖；下一次 CI 若复现，再按导出/浏览器资源问题
 单独排查。生产 API、Schema、数据库、契约包 0.9.113 / Agent API 1.60.0 均未变化。
+
+## 发布回执（2026-10-21 补录）
+
+- 源码提交 `6a763c4`（检查夹具解释器/理解替身修复）：GitHub Actions run
+  [39603007717](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/actions/runs/39603007717)
+  `completed / success`；job `Basic static checks` 全量检查 45.6 分钟通过。
+- 评测提交 `0b15706`（标签 0.2.0 与溢出/穿字冻结集）：run
+  [39604748082](https://github.com/fanke52013141-cmd/PPT_HTML_Studio/actions/runs/39604748082)
+  `completed / success`；全量检查 33.6 分钟通过，`single_page_video` 本批未再出现
+  `EXPORT_PAGE_FAILED`，仍保留原断言与失败可见性。
+- 两次 run 均包含 `scripts/run_checks.py --level full`（quick + 独立脚本检查 + 全量 pytest）
+  与编辑器构建；发布回执以远端终态为准，不以本地沙箱结果代签。
