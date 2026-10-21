@@ -8,7 +8,7 @@ import time
 import html_scene_editing as editor
 import html_scene_repair as repair
 
-VERSION = 'geometry-repair/0.1.0'
+VERSION = 'geometry-repair/0.1.1'
 DELTAS = (0, -8, 8, -16, 16, -24, 24, -32, 32, -48, 48, -64, 64, -96, 96)
 
 
@@ -44,24 +44,32 @@ def _score(node, delta, conflicts, frames, nodes):
             if frame.get('visible', {}).get(arrow_id, 1) <= .01 or frame.get('visible', {}).get(text_id, 1) <= .01:
                 continue
             geometry = frame.get('geometry', {}).get(arrow_id)
-            if not geometry or 'from' not in geometry or 'to' not in geometry:
-                return None
             arrow = nodes[arrow_id]
-            endpoints = {}
-            for edge in ('from', 'to'):
-                point = dict(geometry[edge])
-                if arrow.get(edge, {}).get('objectId') == node['id']:
-                    normalized = arrow[edge].get('point')
-                    if not normalized:
-                        return None
-                    point['x'] += delta['x'] + normalized['x']*delta['width']
-                    point['y'] += delta['y'] + normalized['y']*delta['height']
-                endpoints[edge] = point
+            if geometry and 'from' in geometry and 'to' in geometry:
+                endpoints = {}
+                for edge in ('from', 'to'):
+                    point = dict(geometry[edge])
+                    if arrow.get(edge, {}).get('objectId') == node['id']:
+                        normalized = arrow[edge].get('point')
+                        if not normalized:
+                            return None
+                        point['x'] += delta['x'] + normalized['x']*delta['width']
+                        point['y'] += delta['y'] + normalized['y']*delta['height']
+                    endpoints[edge] = point
+                segments = [{'a': endpoints['from'], 'b': endpoints['to'], 'radius': 8}]
+            else:
+                # Slot arrows have no relation endpoints. Only translate their
+                # intersected text; never invent endpoint identities or routing.
+                if text_id != node['id'] or arrow.get('from') or arrow.get('to'):
+                    return None
+                segments = frame.get('_proposal_segments', {}).get(arrow_id)
+                if not segments:
+                    return None
             for rect in frame.get('textRects', {}).get(text_id, []):
                 # Resize proposals only touch endpoint cards; their own text
                 # reflow is left to original browser/static capacity validation.
                 moved = _changed_box(rect, {'x': delta['x'], 'y': delta['y']}) if text_id == node['id'] else rect
-                hits += line_hits(endpoints['from'], endpoints['to'], moved)
+                hits += any(line_hits(s['a'], s['b'], moved, max(8, s['radius'])) for s in segments)
     final = frames[-1]
     original = final.get('boxes', {}).get(node['id'])
     if not original:
@@ -93,7 +101,11 @@ def propose(doc, scope, report, frames):
     if not scope or len(scope) > 4 or any(s not in nodes for s in scope):
         raise ValueError('Select one to four existing objects')
     issues = report.get('issues', [])
-    if not issues or any(i.get('code') != 'TEMPORAL_OVERLAP' or i.get('measured', {}).get('reason') != 'stroke_crosses_text' for i in issues):
+    crossed = {tuple(sorted(i.get('targets', []))) for i in issues
+               if i.get('measured', {}).get('reason') == 'stroke_crosses_text'}
+    if not crossed or any(i.get('code') != 'TEMPORAL_OVERLAP'
+            or i.get('measured', {}).get('reason') not in ('stroke_crosses_text', 'stroke_crosses_object')
+            or tuple(sorted(i.get('targets', []))) not in crossed for i in issues):
         return []
     conflicts = set()
     for issue in issues:
@@ -108,6 +120,27 @@ def propose(doc, scope, report, frames):
         frames = [frames[round(i*(len(frames)-1)/23)] for i in range(24)]
     if not frames:
         return []
+    # Reuse the original SVG parser rather than implementing a second path
+    # grammar. Numeric work stays bounded to 24 frames; browser QA still judges
+    # every candidate, including heads, reflow and intermediate motion.
+    implicit = {arrow for arrow, _ in conflicts if not nodes[arrow].get('from') and not nodes[arrow].get('to')}
+    if implicit:
+        parsed = editor._node("""
+const fs=require('node:fs'),{linearSegments}=require('./html_engine/tools/vector-overlap.cjs');
+const frames=JSON.parse(fs.readFileSync(0,'utf8'));
+console.log(JSON.stringify(frames.map(frame=>Object.fromEntries(Object.entries(frame).map(([id,paths])=>{
+  const segments=[];
+  if(!Array.isArray(paths) || !paths.length) return [id,null];
+  for(const p of paths) {
+    if(!p.supported || !Number.isFinite(p.radius) || p.radius<0) return [id,null];
+    const lines=linearSegments(p.d,p.matrix);
+    if(!lines) return [id,null];
+    segments.push(...lines.map(s=>({...s,radius:p.radius})));
+  }
+  return [id,segments];
+})))));
+""", [{arrow: frame.get('vectorPaths', {}).get(arrow) for arrow in sorted(implicit)} for frame in frames])
+        frames = [{**frame, '_proposal_segments': segments} for frame, segments in zip(frames, parsed, strict=True)]
     proposals = []
     for target in sorted(set(scope)):
         node = nodes[target]

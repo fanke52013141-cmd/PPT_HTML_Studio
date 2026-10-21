@@ -28,7 +28,7 @@ class Allocation(Strict):
     variant: str | None
     icon: str | None
     appearance: str = Field(min_length=1, max_length=1200)
-    required_features: list[Literal["label_value_stacked", "term_overlay_on_arrow", "takeaway_below_flow"]] = Field(default_factory=list, max_length=3)
+    required_features: list[Literal["label_value_stacked", "term_overlay_on_arrow", "takeaway_below_flow", "independent_illustration"]] = Field(default_factory=list, max_length=4)
 
 
 class AllocationIssue(Strict):
@@ -40,10 +40,29 @@ class AllocationIssue(Strict):
     reference_detail: ReferenceDetail | None = None
 
 
+class FeatureObservation(Strict):
+    targetId: str
+    feature: Literal['independent_illustration']
+    presence: Literal['present', 'absent', 'uncertain']
+    evidence: str = Field(min_length=1, max_length=300, pattern=r'\S')
+
+
 class Understanding(Strict):
     status: Literal["ready", "unsupported"]
     objects: list[Allocation] = Field(max_length=40)
     issues: list[AllocationIssue] = Field(max_length=20)
+    # Read-only historical responses retain their original, missing observations.
+    feature_observations: list[FeatureObservation] | None = Field(default=None, max_length=40)
+
+
+class ObservedUnderstanding(Understanding):
+    feature_observations: list[FeatureObservation] = Field(max_length=40)
+
+
+class FeatureObservationsUncertain(ValueError):
+    def __init__(self, observations):
+        super().__init__('Independent illustration observations require evidence review')
+        self.observations = observations
 
 
 class FidelityIssue(Strict):
@@ -162,6 +181,11 @@ def component_context(scene, repo_root, *, asset_modes=None):
     return {
         "production_policy": production_policy(scene),
         "objects": scene["nodes"],
+        "feature_observation_contract": {
+            "feature": "independent_illustration", "coverage": "each_input_object_exactly_once",
+            "presence": ["present", "absent", "uncertain"],
+            "required_when": ["ready", "unsupported"],
+        },
         "capabilities": {n["id"]: {
             "owner": "image" if n["type"] == "image" else "code",
             "assetMode": (asset_modes or {}).get(n["id"], "reuse") if n["type"] == "image" else "none",
@@ -178,9 +202,28 @@ def component_context(scene, repo_root, *, asset_modes=None):
     }
 
 
-def validate_understanding(response, context):
+def validate_understanding(response, context, *, require_observations=False):
     result = Understanding.model_validate(response)
     nodes = {n["id"]: n for n in context["objects"]}
+    feature_observations = result.feature_observations
+    if require_observations and feature_observations is None:
+        raise ValueError('FEATURE_OBSERVATIONS_INCOMPLETE: observation table required')
+    if feature_observations is not None:
+        ids = [o.targetId for o in feature_observations]
+        if len(ids) != len(set(ids)) or set(ids) != set(nodes):
+            raise ValueError('FEATURE_OBSERVATIONS_INCOMPLETE: missing, duplicate or unknown targets')
+        features = {o.targetId: o.presence for o in feature_observations}
+        if any('independent_illustration' in o.required_features and features.get(o.targetId) != 'present'
+               for o in result.objects):
+            raise ValueError('FEATURE_OBSERVATIONS_CONFLICT: allocation contradicts observation')
+        uncertain = [o.model_dump() for o in feature_observations if o.presence == 'uncertain']
+        if uncertain:
+            raise FeatureObservationsUncertain(uncertain)
+    illustration_gaps = [{"targetId": o.targetId, "route": "capabilities",
+                          "requirement": "unsupported_presentation", "variant_id": None,
+                          "evidence": "Observed independent_illustration is not implemented: " + o.evidence}
+                         for o in (feature_observations or []) if o.presence == 'present'
+                         and not presentation_facts(nodes[o.targetId]).get('independent_illustration')]
     if any(i.targetId not in nodes for i in result.issues):
         raise ValueError("Unknown allocation issue target")
     if result.status == "unsupported":
@@ -192,6 +235,10 @@ def validate_understanding(response, context):
             raise ValueError('Only allowed reference decorations differ; return complete ready allocations, do not invent missing capabilities')
         data['issues'] = [i for i in data['issues'] if not reference_observation(i, nodes[i['targetId']])]
         data['reference_observations'] = observations
+        for gap in illustration_gaps:
+            if not any(i['targetId'] == gap['targetId'] and i['requirement'] == 'unsupported_presentation'
+                       for i in data['issues']):
+                data['issues'].append(gap)
         return data
     observations = [i.model_dump() for i in result.issues if reference_observation(i.model_dump(), nodes[i.targetId])]
     if len(observations) != len(result.issues) or len(result.objects) != len(nodes) or {o.targetId for o in result.objects} != set(nodes):
@@ -208,16 +255,18 @@ def validate_understanding(response, context):
             raise ValueError("Icon not applicable")
         if item.owner == "image" and (item.variant is not None or item.icon is not None):
             raise ValueError("Image allocation cannot use code variants")
-    missing = []
+    missing = list(illustration_gaps)
     for item in result.objects:
         facts = presentation_facts(nodes[item.targetId], item.variant)
         for feature in item.required_features:
+            if feature_observations is not None and feature == 'independent_illustration':
+                continue  # The explicit observation already owns this requirement.
             if not facts.get(feature):
                 missing.append({"targetId": item.targetId, "route": "capabilities",
                                 "requirement": "unsupported_presentation", "variant_id": None,
                                 "evidence": "Required reference feature is not implemented: " + feature})
     if missing:
-        return {"status": "unsupported", "objects": [], "issues": missing[:20]}
+        return {**result.model_dump(), "status": "unsupported", "objects": [], "issues": missing[:20]}
     data = result.model_dump()
     data['issues'] = []
     data['reference_observations'] = observations
@@ -332,7 +381,7 @@ def decision(stage, payload, images, *, folder, run_dir, deps, checkpoint=lambda
     hashes = [sha256_file(p) for p in paths]
     from html_review_facts import ReviewFacts
     from html_reference_localization import MappedLocations
-    schema = (MappedLocations if stage == 'design_reference_localization' else Understanding if stage == 'design_understanding' else ReviewFacts
+    schema = (MappedLocations if stage == 'design_reference_localization' else ObservedUnderstanding if stage == 'design_understanding' else ReviewFacts
               if payload.get('review_output_contract') == 'design-review-facts/0.1.0' else Fidelity)
     schema_hint = schema.model_json_schema()
     if stage == 'design_fidelity_review' and schema is Fidelity:
@@ -365,9 +414,23 @@ def understand_design(scene, reference, *, run_dir, deps, asset_modes=None, chec
     identity = sha256_json({"context":context,"image":sha256_file(reference),"version":"0.1.0",
                            "skill":load_runtime_skill(deps.repo_root,stage="design_understanding",mode="runtime_skill").identity})
     folder = Path(run_dir)/"planning/html_visual/candidates"/scene["id"]/"design-understanding"/identity
+    def validate(response, response_folder):
+        try:
+            return validate_understanding(response, context, require_observations=True)
+        except FeatureObservationsUncertain as error:
+            action = {"stage": "design_understanding", "reason": "uncertain_feature_observations",
+                      "routes": ["evidence_review"], "automatic_retry": False}
+            write_json_atomic(response_folder/"diagnostic.json", {
+                "code": "DESIGN_FEATURE_OBSERVATIONS_UNCERTAIN", "observations": error.observations,
+                "response_sha256": sha256_json(response), "scene_sha256": sha256_json(scene),
+                "design_sha256": sha256_file(reference), "next_action": action})
+            progress({"next_action": action})
+            raise HtmlReviewError("设计特征观察不确定，保留证据待核验", code="DESIGN_FEATURE_OBSERVATIONS_UNCERTAIN") from error
     response, skill = decision("design_understanding",context,[reference],folder=folder,run_dir=run_dir,deps=deps,checkpoint=checkpoint)
     try:
-        result = validate_understanding(response,context)
+        result = validate(response, folder)
+    except HtmlReviewError:
+        raise
     except ValueError as exc:
         diagnostic = {"code":"DESIGN_UNDERSTANDING_INVALID","message":str(exc)[:1200]}
         write_json_atomic(folder/"diagnostic.json",diagnostic)
@@ -375,12 +438,14 @@ def understand_design(scene, reference, *, run_dir, deps, asset_modes=None, chec
         # model repair. Transport-unknown outcomes never reach this branch.
         repair_input = {**context, "repair_feedback": {
             "diagnostic": diagnostic, "invalid_response": response,
-            "instruction": "重新返回完整JSON对象；ready的objects须逐一覆盖输入对象且issues=[]，不得输出占位符或省略字段。",
+            "instruction": "重新返回完整JSON；feature_observations须逐一覆盖全部输入对象（包括unsupported）；ready的objects须逐一覆盖输入对象且issues=[]，不得输出占位符或省略字段。",
         }}
         repaired, skill = decision("design_understanding", repair_input, [reference],
                                    folder=folder/"repair", run_dir=run_dir, deps=deps, checkpoint=checkpoint)
         try:
-            result = validate_understanding(repaired, context)
+            result = validate(repaired, folder/"repair")
+        except HtmlReviewError:
+            raise
         except ValueError as repair_error:
             write_json_atomic(folder/"repair-diagnostic.json",{
                 "code":"DESIGN_UNDERSTANDING_INVALID","message":str(repair_error)[:1200]})
@@ -440,7 +505,7 @@ def retain_unchanged_issues(result, previous, current):
     return retained
 
 
-def review_fidelity(scene, reference, screenshot, report, understanding, *, folder, run_dir, deps, manual=None, checkpoint=lambda: None, previous=None, local_comparisons=False):
+def review_fidelity(scene, reference, screenshot, report, understanding, *, folder, run_dir, deps, manual=None, checkpoint=lambda: None, previous=None, local_comparisons=False, progress=lambda value: None):
     from html_scene_editing import manual_protected_paths
     from html_review_evidence import comparison_evidence
     run = Path(run_dir).resolve()
@@ -476,7 +541,15 @@ def review_fidelity(scene, reference, screenshot, report, understanding, *, fold
                                    require_facts=not local_comparisons)
     except ValueError as exc:
         code = 'DESIGN_REVIEW_COVERAGE_INCOMPLETE' if 'REVIEW_COVERAGE_INCOMPLETE' in str(exc) else 'DESIGN_REVIEW_INVALID'
-        write_json_atomic(Path(folder)/"diagnostic.json",{"code":code,"message":str(exc)[:1200]})
+        details = getattr(exc, 'details', None)
+        action = {"stage": "design_fidelity_review", "reason": "review_incomplete",
+                  "routes": [details['route'] if details else 'response_repair'], "automatic_retry": False}
+        write_json_atomic(Path(folder)/"diagnostic.json",{
+            "code":code,"message":str(exc)[:1200], "details": details,
+            "scene_sha256":sha256_json(scene), "design_sha256":sha256_file(reference),
+            "screenshot_sha256":sha256_file(screenshot), "response_sha256":sha256_json(response),
+            "next_action":action,"human_approval":"pending"})
+        progress({"next_action": action})
         raise HtmlReviewError("还原审核不完整或响应无效，未签发通过",code=code) from exc
     retained = retain_unchanged_issues(result, previous, evidence)
     routed = fidelity_routes(result,scene,payload["capabilities"])

@@ -242,7 +242,7 @@ def test_unsupported_allocation_routes_code_back_to_capabilities_without_more_ca
     target = next(n["id"] for n in scene["nodes"] if n["type"] != "image")
     def generator(**kw):
         calls.append(kw)
-        return {"status": "unsupported", "objects": [], "issues": [
+        return {"status": "unsupported", "objects": [], "feature_observations": response_for(kw)['feature_observations'], "issues": [
             {"targetId": target, "route": "assets", "requirement": "unsupported_presentation", "evidence": "fixture code-controlled component unavailable"}]}
     with pytest.raises(HtmlReviewError) as caught:
         understand_design(scene, reference, run_dir=run, deps=HtmlReviewDependencies(ROOT, generator), progress=events.append)

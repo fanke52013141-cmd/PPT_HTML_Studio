@@ -13,6 +13,8 @@ function capacityEvidence(measured, effectiveLimits) {
   check("scroll_height", measured.scrollHeight, measured.clientHeight, 1, "css_px");
   check("text_right_overflow", measured.textRight, 0, 1, "css_px");
   check("text_bottom_overflow", measured.textBottom, 0, 1, "css_px");
+  check("text_left_overflow", measured.textLeft, 0, 1, "css_px");
+  check("text_top_overflow", measured.textTop, 0, 1, "css_px");
   return { triggers, effectiveLimits, tolerancePolicy: "existing-per-predicate/1" };
 }
 module.exports = { capacityEvidence };

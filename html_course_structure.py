@@ -74,7 +74,21 @@ def validate_course_structure(plan, contract, template):
                     fail("PLAN_RELATION_ENDPOINT", obj["id"])
                 target = objects.get(endpoint.get("objectId"))
                 if not target or target["kind"] in ("arrow", "annotation"):
-                    fail("PLAN_RELATION_ENDPOINT", obj["id"])
+                    eligible = {
+                        i: o for i, o in objects.items()
+                        if o["kind"] not in ("arrow", "annotation")
+                    }
+                    fail("PLAN_RELATION_ENDPOINT", json.dumps({
+                        "path": ["slots", obj["slot"], key, "objectId"],
+                        "reason": "endpoint_must_reference_object_id",
+                        "actual": endpoint["objectId"],
+                        "allowed_object_ids": sorted(eligible),
+                        "matching_slot_object_ids": sorted(
+                            i for i, o in eligible.items()
+                            if o["slot"] == endpoint["objectId"]
+                        ),
+                        "instruction": "引用objects[].id，不能用槽位名、素材ID或关系对象代替；仅提示，不自动改写端点。",
+                    }, ensure_ascii=False))
                 if set(endpoint) == {"objectId", "anchorId"}:
                     target_content = slots[target["slot"]]
                     if target["kind"] != "image" or endpoint[
@@ -118,12 +132,22 @@ def validate_course_structure(plan, contract, template):
         )
     ):
         fail("PLAN_VISUAL_REQUIREMENTS", "Explicit manifest required")
-    if len({r.get("id") for r in requirements}) != len(requirements) or set(
-        coverage
-    ) != {r.get("id") for r in requirements}:
+    required_ids = {r["id"] for r in requirements}
+    if len(required_ids) != len(requirements) or set(coverage) != required_ids:
         fail(
             "PLAN_VISUAL_COVERAGE",
-            "Every authored requirement must be mapped exactly once",
+            json.dumps({
+                "path": ["visual_coverage"],
+                "reason": "coverage_keys_must_match_authored_requirements",
+                "required_ids": sorted(required_ids),
+                "missing_ids": sorted(required_ids - set(coverage)),
+                "unexpected_ids": sorted(set(coverage) - required_ids, key=str),
+                "duplicate_requirement_ids": sorted(
+                    i for i in required_ids
+                    if sum(r["id"] == i for r in requirements) > 1
+                ),
+                "instruction": "键只能来自权威visual_requirements[].id，不能取visual_groups/语块/对象/槽位ID；需求缺省或为空时仅允许省略visual_coverage或返回{}。",
+            }, ensure_ascii=False),
         )
     for req in requirements:
         ids = coverage[req["id"]]
@@ -137,7 +161,13 @@ def validate_course_structure(plan, contract, template):
             or len(ids) < req["minCount"]
             or any(i not in objects for i in ids)
         ):
-            fail("PLAN_VISUAL_COVERAGE", str(req))
+            fail("PLAN_VISUAL_COVERAGE", json.dumps({
+                "path": ["visual_coverage", req["id"]],
+                "reason": "coverage_requires_unique_existing_object_ids_and_min_count",
+                "requirement": req,
+                "actual": ids,
+                "allowed_object_ids": sorted(objects),
+            }, ensure_ascii=False))
         allowed = (
             relation_ids
             if req["kind"] == "relation"
@@ -148,7 +178,13 @@ def validate_course_structure(plan, contract, template):
             }
         )
         if not set(ids) <= allowed:
-            fail("PLAN_VISUAL_COVERAGE", req["id"])
+            fail("PLAN_VISUAL_COVERAGE", json.dumps({
+                "path": ["visual_coverage", req["id"]],
+                "reason": "coverage_object_kind_mismatch",
+                "requirement": req,
+                "actual": ids,
+                "allowed_object_ids": sorted(allowed),
+            }, ensure_ascii=False))
     return {
         "requirements": len(requirements),
         "mapped": len(coverage),

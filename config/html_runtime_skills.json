@@ -22,13 +22,13 @@
     },
     {
       "id": "design-understanding",
-      "version": "0.7.2",
+      "version": "0.7.5",
       "stage": "design_understanding",
-      "input_contract": "design-understanding-input/0.2.0",
-      "output_contract": "design-understanding-output/0.2.0",
+      "input_contract": "design-understanding-input/0.3.0",
+      "output_contract": "design-understanding-output/0.3.0",
       "body": {
-        "path": "config/html_runtime_skills/design-understanding-0.7.2.md",
-        "sha256": "a417b23917483c19039b59f79eab66c2ee2a18846aed1ff969c5a2c0c0f2c0a5"
+        "path": "config/html_runtime_skills/design-understanding-0.7.5.md",
+        "sha256": "3e73f5f1dc8d0c1ac5d24ad718eed3c3d68ce058f12764a7ac8238cc5478e82a"
       },
       "references": {
         "reference-policy": {
@@ -39,13 +39,13 @@
     },
     {
       "id": "design-reconstruction",
-      "version": "0.7.2",
+      "version": "0.7.4",
       "stage": "design_reconstruction",
       "input_contract": "design-reconstruction-input/0.2.0",
       "output_contract": "design-reconstruction-output/0.2.0",
       "body": {
-        "path": "config/html_runtime_skills/design-reconstruction-0.7.2.md",
-        "sha256": "558894d5f2261548214ac86ecb05a9796d5fc264785760f52196b3a5b694b4a2"
+        "path": "config/html_runtime_skills/design-reconstruction-0.7.4.md",
+        "sha256": "abb8cb4a4987ecbae572b4f9673ee1d56cf6b563aae4c317ecb38f8da3d21b7b"
       },
       "references": {
         "reference-policy": {

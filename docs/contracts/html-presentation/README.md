@@ -1,5 +1,19 @@
 # HTML 演示体系契约
 
+2026-10-21 逐对象观察：[能力事实](runtime/visual-v1/design-agent-facts-0.1.0.md)定义理解0.7.5/内部协议0.3.0，观察表覆盖ready/unsupported全部对象；缺/重结构错误沿原一次修复，不确定以evidence_review零自动重试停止；图片主体与容器观察归属分开。原归档可读，新生产必需完整表。固定三图真实复测、原模型类型错分与系统派生分别记录，API1.60.0/包0.9.113保持。
+
+2026-10-21 固定识别评测：[能力事实](runtime/visual-v1/design-agent-facts-0.1.0.md)补充特征声明/能力缺口拦截的独立分母，原请求/图像/响应/标签hash与旧Schema公平性；初始3页11对象、1弃权，仅历史基线，无新模型调用。包0.9.113/API1.60.0保持。
+
+2026-10-21 系统诊断：[能力事实](runtime/visual-v1/design-agent-facts-0.1.0.md)明确独立插图不能由card图标代替，理解片段0.7.3/内部Schema新增兼容特征声明；[审核覆盖](runtime/visual-v1/first-review-coverage-0.1.0.md)失败保留具体对象/维度与核验入口，不将uncertain自动定为素材或页面缺陷。包0.9.113/API1.60.0、原阻断/预算/unknown保持；真实需求识别召回待验。
+
+2026-10-21 还原工程前置：[正文父容器边界与动态检查](runtime/visual-v1/design-first-reconstruction-0.1.0.md)补齐卡片正文Range四边检查，还原每轮前后复用原30fps/registered检查，失败不进保真审核/生产保存。程序Prompt0.6.2/运行片段0.7.4；包0.9.113/API1.60.0和原批准边界保持，真实模型修复效果另验。
+
+2026-10-21 规划诊断优化：[课程结构与设计前覆盖](runtime/visual-v1/course-structures-0.1.0.md)补齐错误字段路径、合法对象ID、需求键差集；Prompt0.3.6明确槽位/对象和空需求覆盖边界。原严格校验、两轮及unknown规则保持；包0.9.113/API1.60.0保持，真实纠错效果待验。
+
+2026-10-21 还原输入修正：[整页设计先行与受控还原](runtime/visual-v1/design-first-reconstruction-0.1.0.md)每轮发送原设计＋当前HTML截图，首轮不再省略当前画面；Prompt0.6.1/运行片段0.7.3。包0.9.113/API1.60.0、预算和批准边界保持；真实模型效果待验。
+
+2026-10-21兼容修复（包0.9.113/API1.60.0保持）：[几何预筛](runtime/visual-v1/geometry-repair-0.1.0.md)补齐槽位线性箭头、跨机原人工保护和独立分母评测；[动态QA](runtime/visual-v1/temporal-qa-0.1.0.md)补登记多标签模板的既有两对容器关系。真实原页扩样、受控模型回退与人审分别留证。
+
 0.9.113（2026-10-20）：[几何优先避让入口与候选预览](runtime/visual-v1/geometry-repair-entry-0.1.0.md)接通原generate/preview/save，几何无解后惰性回退模型；前后截图、参数和整页检查待审，显式保存与历史恢复。API1.60.0 / generate1.5；默认model兼容。
 
 0.9.112（2026-10-20）：[有界几何避让候选](runtime/visual-v1/geometry-repair-0.1.0.md)用有限布局试算和原sampled/30fps检查生成待审候选，保留scope/人工保护；不调用模型、不保存作者，API1.59.0保持。

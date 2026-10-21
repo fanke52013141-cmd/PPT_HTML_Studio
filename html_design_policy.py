@@ -32,7 +32,8 @@ def presentation_facts(node, variant=None):
     stacked = node['type'] == 'text' and variant == 'text-card-stacked'
     overlay = node['type'] == 'summary' and variant == 'summary-arrow-overlay'
     facts = {"variant": variant, "label_value_stacked": node["type"] == "card" or stacked,
-             "term_overlay_on_arrow": overlay, "takeaway_below_flow": overlay}
+             "term_overlay_on_arrow": overlay, "takeaway_below_flow": overlay,
+             "independent_illustration": node["type"] == "image"}
     if node["type"] == "text":
         facts["text_layout"] = "stacked_label_body" if stacked else "inline_runs"
         facts["label_split"] = "block_after_first_colon" if stacked else "inline_emphasized_prefix" if variant == "text-card-label" else "none"
@@ -47,7 +48,9 @@ def presentation_facts(node, variant=None):
             "summary-relationship-panel", "summary-relationship-compact", "summary-relationship-columns", "summary-strip-divided",
         } else 0
     if node["type"] == "card":
-        facts.update(container_frame=variant == "card-outline", icon_container="circle", surface="background" if variant == "card-outline" else "theme_default")
+        facts.update(container_frame=variant == "card-outline", icon_container="circle", surface="background" if variant == "card-outline" else "theme_default",
+                     visual_content="registered_icon_only", image_slot=False,
+                     icon_is_illustration=False)
     if node["type"] == "arrow":
         facts.update(explicit_endpoints=bool(node.get("from")), head=node.get("head",True), line_style=node.get("lineStyle","solid"))
     if node["type"] == "chart":

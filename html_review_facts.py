@@ -31,6 +31,13 @@ class ReviewFacts(Strict):
     facts: list[ReviewFact] = Field(max_length=280)
 
 
+class ReviewFactsIncomplete(ValueError):
+    """Inspection evidence only; never a projected issue or a repair decision."""
+    def __init__(self, message, details):
+        super().__init__('REVIEW_COVERAGE_INCOMPLETE: ' + message)
+        self.details = details
+
+
 def project_facts(response, scene, checklist, alignment):
     """No inferred reference facts. Compare reported reference to known current CSS."""
     if not isinstance(response,dict) or 'facts' not in response:
@@ -39,7 +46,34 @@ def project_facts(response, scene, checklist, alignment):
     expected = {(v['targetId'],v['dimension']) for v in checklist}
     actual = [(f.targetId,f.dimension) for f in parsed.facts]
     if len(actual) != len(set(actual)) or set(actual) != expected:
-        raise ValueError('REVIEW_COVERAGE_INCOMPLETE: missing, duplicate or unknown facts')
+        def keys(values):
+            return [{'targetId': t, 'dimension': d} for t, d in sorted(values)]
+        raise ReviewFactsIncomplete('missing, duplicate or unknown facts', {
+            'route': 'response_repair', 'reason': 'checklist_mismatch',
+            'missing': keys(expected - set(actual)), 'unknown': keys(set(actual) - expected),
+            'duplicate': keys({key for key in actual if actual.count(key) > 1}),
+            'instruction': '核对原请求review_checklist与原始响应；不得补造观察或自动重发。',
+        })
+    unresolved = []
+    for fact in parsed.facts:
+        reasons = []
+        if fact.certainty != 'confirmed':
+            reasons.append('uncertain_observation')
+        if not fact.evidence.strip():
+            reasons.append('blank_evidence')
+        if fact.reference_alignment == 'uncertain':
+            reasons.append('uncertain_reference_alignment')
+        if fact.dimension == 'typography' and fact.targetId in (alignment or {}) and fact.reference_alignment is None:
+            reasons.append('missing_reference_alignment')
+        if reasons:
+            unresolved.append({'targetId': fact.targetId, 'dimension': fact.dimension,
+                               'reasons': reasons, 'evidence': fact.evidence})
+    if unresolved:
+        raise ReviewFactsIncomplete('uncertain or blank fact, or missing reference text alignment', {
+            'route': 'evidence_review', 'reason': 'unresolved_observations',
+            'unresolved': unresolved, 'reported_count': len(parsed.facts),
+            'instruction': '核对原设计、当前截图和对应对象证据；asset_identity仅核验主体/素材身份，不自动判为素材错误或重新生图。',
+        })
     nodes = {n['id']:n for n in scene['nodes']}
     issues, coverage, sources = [], [], []
     for index, fact in enumerate(parsed.facts):

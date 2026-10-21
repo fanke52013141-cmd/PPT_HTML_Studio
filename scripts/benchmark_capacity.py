@@ -53,11 +53,12 @@ def run_course_baseline(source_run, output, slides, temporal_mode=None):
         if not slide or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-" for c in slide):
             raise ValueError("Invalid slide identity")
     # Freeze only course inputs and resource bytes. Exclude approvals, caches,
-    # historical jobs, credentials and stored authors from the isolated run.
+    # historical jobs and credentials from the isolated run. Revision and
+    # manual protection are author inputs, not disposable evaluation caches.
     selected = [source_run / "planning/visual_contract.json"]
     visual = source_run / "planning/html_visual"
-    selected += [visual / f"{prefix}-{slide}.json" for slide in slides for prefix in ("scene", "binding")]
-    selected += [visual / "resources.json"]
+    selected += [visual / f"{prefix}-{slide}.json" for slide in slides for prefix in ("scene", "binding", "edits")]
+    selected += [visual / "resources.json", visual / "revision.json"]
     for directory in (visual / "assets", visual / "editor-assets", source_run / "inputs", source_run / "slides"):
         if directory.is_dir():
             selected += [p for p in directory.rglob("*") if p.is_file()]
@@ -118,7 +119,9 @@ def run_course_baseline(source_run, output, slides, temporal_mode=None):
             else:
                 from html_scene_repair import evidence
                 try:
-                    report = evidence(isolated, slide, {"expected_revision": 0,
+                    from html_visual_store import load_scene_with_revision
+                    revision = load_scene_with_revision(isolated, slide)["revision"]
+                    report = evidence(isolated, slide, {"expected_revision": revision,
                         "sampling_mode": temporal_mode, "fps": 30, "step_ms": 250,
                         "overlap_policy": "registered"})
                     write_json_atomic(output / slide / "temporal-review.json", report)

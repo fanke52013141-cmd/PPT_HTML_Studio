@@ -1,0 +1,40 @@
+{
+  "format": "hps.feature_recognition_labels",
+  "version": "0.1.0",
+  "authority": "assistant_visual_review",
+  "scope": "independent_illustration feature declaration; preliminary visual labels, not human approval",
+  "cases": [
+    {
+      "id": "water-atmosphere",
+      "page_id": "slide_002",
+      "reference_sha256": "39650ebcd19329a06d9b95e2f40699cb2a60c41af671b44c9289e22eca39fa7b",
+      "targets": [
+        {"targetId": "obj-card-1", "feature": "independent_illustration", "expected": false, "evidence": "左上卡片为圆底水滴符号，没有独立场景插图。"},
+        {"targetId": "obj-card-2", "feature": "independent_illustration", "expected": false, "evidence": "左中卡片是圆底叶片装饰图标。"},
+        {"targetId": "obj-card-3", "feature": "independent_illustration", "expected": false, "evidence": "左下卡片是圆底气流线符号。"},
+        {"targetId": "obj-subject", "feature": "independent_illustration", "expected": true, "evidence": "右侧大幅湖泊、山地、太阳和云的连续场景图，属于已规划image主体；不把代码标签计入图片。"}
+      ]
+    },
+    {
+      "id": "water-conditions",
+      "page_id": "slide_003",
+      "reference_sha256": "3976686430220e698702fdbe7ad1fdbdf9428e11119b856de49396b4d66a48d4",
+      "targets": [
+        {"targetId": "card-1", "feature": "independent_illustration", "expected": false, "evidence": "第一张卡片仅圆底温度计线性符号。"},
+        {"targetId": "card-2", "feature": "independent_illustration", "expected": false, "evidence": "第二张卡片仅圆底气流线符号。"},
+        {"targetId": "card-3", "feature": "independent_illustration", "expected": false, "evidence": "第三张卡片仅圆底灯泡线性符号。"},
+        {"targetId": "subject", "feature": "independent_illustration", "expected": true, "evidence": "右侧大幅带水波和倒影的灰阶水面图，属于已有image主体；箭头和水面标签由代码持有。"}
+      ]
+    },
+    {
+      "id": "water-return",
+      "page_id": "slide_004",
+      "reference_sha256": "01bb5c966c66aa37ee3c5917845f03415c63126dacb11bfe4ba8d3f7808dd5fa",
+      "targets": [
+        {"targetId": "obj-stage-1", "feature": "independent_illustration", "expected": null, "evidence": "云雨渐变图形可视为复杂图标或独立插图，边界不明确，弃权并排除确定真值分母。"},
+        {"targetId": "obj-stage-2", "feature": "independent_illustration", "expected": true, "evidence": "中间卡片包含山地、弯曲河道和地下剖面的完整小场景；非单枚注册arrow图标。这里只标插图需求，不裁定其中语义关系可交位图。"},
+        {"targetId": "obj-stage-3", "feature": "independent_illustration", "expected": true, "evidence": "右侧卡片包含海岸、海面和飞鸟的场景，非单枚droplet图标；当前card没有独立image槽。"}
+      ]
+    }
+  ]
+}

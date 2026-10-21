@@ -16,4 +16,7 @@ const scroll = capacityEvidence({scrollHeight:80, clientHeight:48}, {width:100})
 assert.equal(scroll.triggers[0].dimension, "scroll_height");
 assert.equal(scroll.triggers[0].unit, "css_px");
 assert.equal(capacityEvidence({textRight:1.01,textBottom:2}, {}).triggers.length, 2);
+assert.equal(capacityEvidence({textLeft:1,textTop:1}, {}).triggers.length, 0);
+assert.deepEqual(capacityEvidence({textLeft:1.01,textTop:2}, {}).triggers.map(t=>t.dimension),
+  ["text_left_overflow","text_top_overflow"]);
 console.log("capacity diagnostics: passed (slot, lines, scroll, range, tolerance, precision)");

@@ -41,6 +41,17 @@ function measure(el, slot, id, stage) {
   }
   const scale = stage.getBoundingClientRect().width / 1600;
   const bounds = el.getBoundingClientRect();
+  // A child's auto-sized box can fit its own text while escaping the fixed
+  // card that clips it. Measure against the actual registered container too.
+  const owner = el.closest(".v-card") ||
+    (el.classList.contains("v-panel-copy") ? el.parentElement : null);
+  let content = bounds;
+  if (owner) {
+    const box = owner.getBoundingClientRect(), css = getComputedStyle(owner);
+    const inset = side => (parseFloat(css[`padding${side}`]) + parseFloat(css[`border${side}Width`])) * scale;
+    content = {left:box.left+inset("Left"),right:box.right-inset("Right"),
+      top:box.top+inset("Top"),bottom:box.bottom-inset("Bottom")};
+  }
 
   const lines = new Set(
     rects.map((r) => Math.round((r.top - bounds.top) / scale)),
@@ -49,8 +60,12 @@ function measure(el, slot, id, stage) {
     width: bounds.width / scale, height: bounds.height / scale,
     lines: lines.size, scrollWidth: el.scrollWidth, scrollHeight: el.scrollHeight,
     clientWidth: el.clientWidth, clientHeight: el.clientHeight,
-    textRight: Math.max(0, ...rects.map(r => r.right - bounds.right)),
-    textBottom: Math.max(0, ...rects.map(r => r.bottom - bounds.bottom)),
+    textRight: Math.max(0, ...rects.map(r => r.right - Math.min(bounds.right, content.right))),
+    textBottom: Math.max(0, ...rects.map(r => r.bottom - Math.min(bounds.bottom, content.bottom))),
+    // Inline glyph bounds can extend above their own span without clipping.
+    // Left/top containment is a parent-card rule, not an inline-box rule.
+    textLeft: owner ? Math.max(0, ...rects.map(r => content.left - r.left)) : undefined,
+    textTop: owner ? Math.max(0, ...rects.map(r => content.top - r.top)) : undefined,
   }, { width: slot.box.width, height: slot.box.height, maxLines: slot.maxLines });
   assertCapacity(id, evidence);
   return { lines: lines.size, width: slot.box.width, height: slot.box.height };

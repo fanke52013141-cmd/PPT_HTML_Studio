@@ -1,5 +1,7 @@
 # 首轮审核覆盖与重复验证 0.1.0
 
+2026-10-21失败可诊断定义（HPS-010/011/013/015—017/023—025）：默认facts严格解析失败保留原错误码与阻断，不补事实、不重试。完整且合法表中的uncertain/空证据/对齐不确定，派生逐对象/维度/原因、原模型证据与人工核验事项；缺/重/未知项派生对应键清单。诊断以response_repair（响应结构）、evidence_review（观察不确定）区分核验工作，不能把不确定自动认定为assets/planning/capabilities缺陷。前者回查原请求清单，后者核对原图/当前截图/素材身份。完整原始响应保持，诊断绑定scene/reference/screenshot/response hash，progress发出automatic_retry=false；不保存作者、不签发通过或人工批准。增强内部审计，不新增响应格式或改变默认审核片段。
+
 关联HPS-010/011/013–017/023–025/037，契约0.9.70。先定义检查清单和验证口径，不以模型填写清单等同视觉正确。
 
 程序按实际对象生成review_checklist：所有节点geometry；文字承载节点content/typography；代码呈现节点structure；summary/arrow/annotation另有semantic_relation；image另有asset_identity/asset_rendering。每个targetId+dimension必须恰好返回一次coverage，status=pass/issue/uncertain，附简短具体evidence。不得以“其它页同上”省略。

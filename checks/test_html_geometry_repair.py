@@ -120,3 +120,24 @@ def test_stale_audio_stops_before_browser_or_candidate(page):
         geometry.geometry_repair(run, scene['id'], {'expected_revision': doc['revision'],
                 'scope': ['headline'], 'expected_audio_revision': 'f'*64})
     assert caught.value.code == 'AUDIO_REVISION_CONFLICT'
+
+
+def test_slot_arrow_uses_shared_svg_segments_and_keeps_input_immutable():
+    doc, report, frames = fixture_geometry()
+    doc['scene']['nodes'][1] = {'id': 'arrow', 'type': 'arrow'}
+    frames[0]['geometry']['arrow'] = {'kind': 'arrow', 'box': {'x': 100, 'y': 190, 'width': 300, 'height': 20}}
+    frames[0]['vectorPaths'] = {'arrow': [{'d': 'M 100 200 H 400 M 390 190 L 400 200 L 390 210',
+        'matrix': [1, 0, 0, 1, 0, 0], 'radius': 2, 'supported': True}]}
+    before = copy.deepcopy((doc, report, frames))
+    proposals = geometry.propose(doc, ['label'], report, frames)
+    assert proposals and all(p['operations'][0]['targetId'] == 'label' for p in proposals)
+    assert (doc, report, frames) == before
+    report['issues'].append({**report['issues'][0], 'measured': {'reason': 'stroke_crosses_object'}})
+    assert geometry.propose(doc, ['label'], report, frames)
+    report['issues'].append({'code': 'TEMPORAL_OVERLAP', 'targets': ['source', 'arrow'],
+                             'measured': {'reason': 'stroke_crosses_object'}})
+    assert geometry.propose(doc, ['label'], report, frames) == []
+    report['issues'] = before[1]['issues']
+    # Curves are not silently approximated by their box or by a fake endpoint.
+    frames[0]['vectorPaths']['arrow'][0]['d'] = 'M100 200 Q200 180 400 200'
+    assert geometry.propose(doc, ['label'], report, frames) == []

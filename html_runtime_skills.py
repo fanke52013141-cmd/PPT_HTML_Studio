@@ -19,7 +19,7 @@ INPUT_CONTRACT = "candidate-layout-input/0.1.0"
 OUTPUT_CONTRACT = "candidate-layout-decision/0.1.0"
 STAGE_CONTRACTS = {
     STAGE: (INPUT_CONTRACT, OUTPUT_CONTRACT),
-    "design_understanding": ("design-understanding-input/0.2.0", "design-understanding-output/0.2.0"),
+    "design_understanding": ("design-understanding-input/0.3.0", "design-understanding-output/0.3.0"),
     "design_reconstruction": ("design-reconstruction-input/0.2.0", "design-reconstruction-output/0.2.0"),
     "design_fidelity_review": ("design-review-input/0.3.0", "design-review-facts/0.1.0"),
     "design_fidelity_review_local": ("design-review-input/0.2.0", "design-review-output/0.2.0"),

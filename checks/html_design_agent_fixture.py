@@ -35,7 +35,10 @@ def response_for(kwargs):
             "targetId":n["id"],"owner":data["capabilities"][n["id"]]["owner"],
             "assetMode":data["capabilities"][n["id"]]["assetMode"],
             "variant":None,"icon":None,"appearance":"fixture observation only",
-        } for n in data["objects"]],"issues":[]}
+        } for n in data["objects"]],"issues":[], "feature_observations": [
+            {'targetId': n['id'], 'feature': 'independent_illustration',
+             'presence': 'present' if n['type'] == 'image' else 'absent',
+             'evidence': 'Controlled observation fixture, not inferred model recognition'} for n in data['objects']]}
     if prefix.startswith("design_fidelity_review-"):
         return with_coverage(json.loads(kwargs['user_prompt']), {"status":"pass","issues":[]})
     return None

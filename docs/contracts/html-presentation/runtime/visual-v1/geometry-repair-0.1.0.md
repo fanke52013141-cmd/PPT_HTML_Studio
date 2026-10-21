@@ -8,3 +8,7 @@ HPS-007/009/010/013/015—018/023—025，包0.9.112，2026-10-20。定义先于
 - 优先预测无穿字、改动较小和邻居间距损失较小的候选；固定最多6个原sampled预览，再对通过者中至多3个作原30fps全输出/动作边界检查。全量失败不得称成功；候选不保存或批准。已通过原页不改；证据或能力不足返回needs_revision。
 - 候选来源固定于revision/音频/原运行代码；调用原candidate/preview/evidence完成保护和检查，不直接写作者。输出原candidate_key/request可走原显式save复验。源码加入生成闭包，行为变更按原快照失效规则处理。
 - 评测区分真实原页、真实内容的受控扰动和无故障对照；分别记录通过率、总耗时、检查次数、改动、文字换行和启发式间距指标。指标不是人工审美批准，不能把衍生样本当独立课程或将旧模型单样本当严格速度因果对照。
+
+2026-10-21兼容实现修复（内部实现geometry-repair/0.1.1，公共合同/API不变）：无显式关系端点的注册槽位线性箭头，数值预筛复用原vector-overlap的SVG解析结果（含箭头头部及描边），只移动scope内被穿过的文字，不推断新端点或路由。同一对象对须有实际stroke_crosses_text证据；该对其他时刻的stroke_crosses_object也保留整页检查。独立的非文字穿越、未知图元、其他碰撞仍停止。单对象候选及6/3浏览器预算保持，不由多对象扰动自动授予联合搜索能力。
+
+跨机/扩样评测须携带原revision及edits人工保护，不能丢弃后宣称保护已验证。scripts/evaluate_geometry_corpus.py按original/archived_candidate/controlled_variation/fixture分母及course/page身份统计；缺讲稿/绑定/资源明确blocked。默认零供应商，显式--live-case只选一个新无解穿字输入、共用两次物理请求与总等待预算；unknown先落盘且不重放。scripts/geometry_case_bundle.py只迁移白名单作者输入、资源与所选页音频，校验路径/数量/字节/hash，不携带配置、凭据或批准。导入到新隔离目录，不自动变更原课程。

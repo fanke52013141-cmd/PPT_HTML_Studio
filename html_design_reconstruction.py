@@ -17,7 +17,7 @@ from html_design_agent import (understand_design, review_fidelity, apply_allocat
 from html_runtime_skills import load_runtime_skill
 from pipeline_lifecycle import write_json_atomic
 
-PROMPT_VERSION = "html-design-reconstruct/0.6.0"
+PROMPT_VERSION = "html-design-reconstruct/0.6.2"
 REQUEST_TIMEOUT_SECONDS = 600
 
 
@@ -87,11 +87,13 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
         skill.verify()
         if sha256_file(design_path) != source_hash:
             raise HtmlReviewError("设计图在还原过程中变化",code="DESIGN_STALE")
-        report = review_scene(current,run_dir=run,deps=deps,diagnostic=True)
+        folder = audit/str(index);folder.mkdir(exist_ok=True)
+        report = review_scene(current,run_dir=run,deps=deps,diagnostic=True,
+                              preflight_dir=folder/"preflight-current")
+        write_json_atomic(folder/"current-review.json", report)
         shot = run/report.get("screenshot","missing")
         if not shot.is_file() or not report.get("geometry"):
             raise HtmlReviewError("缺少实际代码截图，不能还原",code="RECONSTRUCTION_RENDER_FAILED")
-        folder = audit/str(index);folder.mkdir(exist_ok=True)
         current_image = folder/"current.png"
         current_image.write_bytes(shot.read_bytes())
         context = component_context(current, deps.repo_root)
@@ -101,6 +103,8 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
                 "capabilities": context["capabilities"],
                 "manual_protected_paths":manual_protected_paths(manual),
                 "actual_geometry":report["geometry"],"actual_measurements":report.get("measurements"),
+                "capacity_issues":report.get("capacityIssues", []),
+                "geometry_preflight":report.get("geometry_preflight"),
                 "diagnostic":diagnostic,
                 "content_safe_rect":{"x":0,"y":0,"width":1600,"height":800},
                 "motion_extents":{n["id"]:{
@@ -124,15 +128,17 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
         user["registered_icons"] = sorted(load_template_catalog(deps.repo_root)["icons"])
         prompts = {"system_prompt":skill.fragment,"user_prompt":json.dumps(user,ensure_ascii=False),
                    "schema_hint":"{status:candidate,operations:[{targetId,kind,part?,values}]} or {status:unchanged,message} or {status:unsupported,message,issues:[{targetId,route,requirement,variant_id?,evidence}]}"}
-        images = [str(reference.resolve())]
-        if diagnostic is not None:
-            images.append(str(current_image.resolve()))
+        # The current render is evidence for the first decision too, including
+        # an unchanged response. Keep this order identical in every round.
+        images = [str(reference.resolve()), str(current_image.resolve())]
         write_json_atomic(folder/"request.json",{**prompts,"prompt_version":PROMPT_VERSION,
                          "request_timeout_seconds":REQUEST_TIMEOUT_SECONDS,
                          "thinking_policy":"enabled_low_for_glm",
                          "reasoning_effort_override":"low",
                          "runtime_skill":skill.identity,
-                         "source_design_sha256":source_hash,"image_sha256":[sha256_file(Path(p)) for p in images]})
+                         "source_design_sha256":source_hash,
+                         "image_roles":["design_reference", "current_html_render"],
+                         "image_sha256":[sha256_file(Path(p)) for p in images]})
         progress({"design_reconstruction_round":index+1,"design_reconstruction_max_rounds":2})
         # A transport exception is not structural: let persistent stages handle unknown.
         response = deps.json_generator(**prompts,run_dir=str(run),artifact_prefix=f"design-reconstruct-{scene['id']}-{index}",image_paths=images,
@@ -152,9 +158,8 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
                     routed = allocation_routes(checked, current, context["capabilities"])
                     stop("unsupported", sorted({i["route"] for i in routed}), "RECONSTRUCTION_UNSUPPORTED",
                          response["message"], history=history, routed_issues=routed)
-                final = review_scene(current,run_dir=run,deps=deps)
-                if not final.get("passed"):
-                    raise ValueError("Unchanged candidate still fails strict review")
+                final = review_scene(current,run_dir=run,deps=deps,
+                                     preflight_dir=folder/"preflight-final")
                 proposed = current
             elif set(response)!={"status","operations"} or response["status"]!="candidate" or not isinstance(response["operations"],list):
                 raise ValueError("Expected registered operations")
@@ -164,10 +169,13 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
                 doc={"scene":current,"binding":binding,"manual":manual,"resources":resources(run),"beats":beats}
                 candidate=candidate_from_document(run,scene["id"],{"expected_revision":0,"source":"ai","operations":response["operations"]},doc)
                 proposed = candidate["scene"]
-                final=review_scene(proposed,run_dir=run,deps=deps)
+                final=review_scene(proposed,run_dir=run,deps=deps,
+                                   preflight_dir=folder/"preflight-final")
             write_json_atomic(folder/"strict-review.json",final)
             if not final.get("passed"):
-                diagnostic={"code":final.get("code"),"message":final.get("message"),"capacityIssues":final.get("capacityIssues")}
+                diagnostic={"code":final.get("code"),"message":final.get("message"),
+                            "capacityIssues":final.get("capacityIssues"),
+                            "geometry_preflight":final.get("geometry_preflight")}
                 current=proposed
                 continue
             identity = sha256_json(proposed)
@@ -181,7 +189,7 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
             archived_shot.write_bytes(screenshot.read_bytes())
             progress({"design_review_round":index+1,"design_review_max_rounds":2})
             fidelity = review_fidelity(proposed,reference,archived_shot,final,understanding,folder=folder/"fidelity",
-                                       run_dir=run,deps=deps,manual=manual,checkpoint=checkpoint,previous=fidelity)
+                                       run_dir=run,deps=deps,manual=manual,checkpoint=checkpoint,previous=fidelity,progress=progress)
             if fidelity["result"]["status"] == "pass":
                 return _result(proposed,binding,final,audit,run,history,source_hash,proposed!=scene,understanding,fidelity,skill.identity)
             if fidelity["result"]["status"] == "unsupported" or set(fidelity["repair_routes"]) - {"reconstruction"}:

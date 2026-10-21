@@ -1,5 +1,19 @@
 # HTML Studio
 
+2026-10-21 当前交接：[问题发现优化与跨机 handoff](docs/plans/html-backend-development/handoff-detection-optimization-2026-10-21.md)，[发布备注](docs/releases/2026-10-21-detection-optimization.md)。统一交付几何扩样、规划诊断、正文溢出/穿字前置、理解0.7.5及固定标签评测；包0.9.113/API1.60.0保持。目标是减少系统漏检，非逐页手修。提交与远端回执见handoff末尾；下方“未提交/未发布”保留历史状态。Git不含课程样本/运行数据，应用未重启，正式输出与跨课程泛化待验。
+
+2026-10-21 固定样本：[识别漏检率基线与新版同图对比](docs/plans/html-backend-development/feature-recognition-benchmark-2026-10-21.md)。理解0.7.5将逐对象观察与能力分工分离；同三图同标签插图识别4/4、图标负例6/6，未决2→0；系统能力缺口拦截2/2、负例8/8。0.7.4容器误拦保留，最终例未再误拦；原模型问题类型仍错分，程序派生与原模型分开计。仅一课开发样本，非总体性能。
+
+2026-10-21 系统问题：[问题台账与本批优化](docs/plans/html-backend-development/system-issues-2026-10-21.md)。明确区分问题发现、规则实现和真实效果；独立插图/图标边界、完整观察与不确定停止已实现并同图复测；模型类型一致性、跨课程泛化、unknown/默认GPU捕获仍待处理；未逐页手修作者。
+
+2026-10-21 工程前置：[正文父容器边界与动态检查](docs/plans/html-backend-development/handoff-production-preflight-2026-10-21.md)。还原每轮前后复用原30fps/registered检查；正文裁切或箭头/对象碰撞未通过，不进入独立保真审核或生成可保存生产结果。程序Prompt0.6.2/运行片段0.7.4，原预算和批准边界保持；无新供应商调用，原页实际修复另验。
+
+2026-10-21 规划优化：[准确诊断与重试输入](docs/plans/html-backend-development/handoff-planning-diagnostics-2026-10-21.md)。Prompt0.3.6区分对象/槽位/需求ID，保留严格拒绝并反馈字段路径与合法ID；新增11项通过。相关组105通过、默认浏览器像素一致性1项失败，原校验器同输入对照也复现，场景字节一致；无新供应商调用，真实纠错效果待验。
+
+2026-10-21 本机新课程：[水循环四页真实流程试验](docs/plans/html-backend-development/handoff-water-cycle-trial-2026-10-21.md)。第2—4页经用户接受用于还原测试，三页均未通过、作者保存0/3；保留素材及自然故障模型回退两个unknown，不重发。自然候选检出箭头穿字/卡片重叠；本地修正还原首轮缺当前HTML截图，双图出站与真实质量分别验证。声音、保存恢复和输出尚未执行。
+
+2026-10-21 本地续进：[几何扩样、真实回退与跨机验证包](docs/plans/html-backend-development/handoff-geometry-corpus-2026-10-21.md)。槽位箭头兼容修复与人工保护评测补齐；受控双标签真实回退1次请求、473时刻通过，独立原课程扩样等待另一台电脑材料。包0.9.113/API1.60.0保持；尚未提交/推送或切换正式服务。
+
 2026-10-21 已推送：[最新发布与跨机 handoff](docs/plans/html-backend-development/handoff-release-2026-10-21.md)。源码662b725，契约0.9.113/API1.60.0；重叠判定、反馈/流式观测、几何优先候选及显式保存。发布回归158项、编辑器17项和quick通过；远端CI另验，未部署服务。
 
 2026-10-20 几何入口：[几何优先修复、候选对照与显式保存](docs/plans/html-backend-development/handoff-geometry-entry-2026-10-20.md)，包0.9.113/API1.60.0。两张真实原页经新入口通过633/606时刻检查、0模型调用；浏览器保存/恢复及切页保护通过。真实模型回退质量另验，未发布。
