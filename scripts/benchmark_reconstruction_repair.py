@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import html_capacity_repair as capacity  # noqa: E402
+import html_visual_store as store  # noqa: E402
 from html_production_service import compile_plan  # noqa: E402
 from html_storyboard_planning import load_template_catalog, normalize_html_scene_plan  # noqa: E402
 from html_visual_review_service import HtmlReviewDependencies, review_scene  # noqa: E402
@@ -68,6 +69,7 @@ def run():
         for index, item in enumerate(build_cases()):
             contract, scene = item["case"]["contract"], item["scene"]
             run_dir = _run_dir(Path(folder) / f"case-{index}", contract)
+            store.save_scene(run_dir, contract["slide_id"], scene, 0)
             baseline = review_scene(scene, run_dir=run_dir, deps=DEPS)
             record = {"slide_id": contract["slide_id"], "injected": True,
                       "target": item["target"], "baseline_passed": bool(baseline.get("passed")),
@@ -75,8 +77,7 @@ def run():
             if not baseline.get("passed"):
                 trial = capacity.repair_capacity(
                     run_dir, contract["slide_id"],
-                    {"expected_revision": 0, "scope": [item["target"]]},
-                    scene=scene, binding=item["binding"])
+                    {"expected_revision": 1, "scope": [item["target"]]})
                 record.update(status=trial["status"], reason=trial.get("reason"),
                               repaired=trial["status"] == "candidate",
                               attempts=len(trial.get("attempts", [])),

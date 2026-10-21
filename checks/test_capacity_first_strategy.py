@@ -30,12 +30,13 @@ def test_capacity_first_repairs_overflow_without_any_model_call(draft):
 
 def test_capacity_first_stops_with_explicit_no_fit_without_model(draft):
     run, scene = draft
-    headline = next(node for node in scene["nodes"] if node["id"] == "headline")
-    headline["runs"] = [{"text": "字" * 400, "emphasis": False}]
+    card = next(node for node in scene["nodes"] if node["type"] == "card")
+    card["body"] = "字" * 400
+    card.setdefault("presentation", {}).setdefault("typography", {})["body"] = {"fontSizePx": 28}
     store.save_scene(run, scene["id"], scene, 0)
     original = store.load_scene(run, scene["id"])
     result = capacity.repair_capacity(
-        run, scene["id"], {"expected_revision": 1, "scope": ["headline"]},
+        run, scene["id"], {"expected_revision": 1, "scope": [card["id"]]},
     )
     assert result["status"] == "needs_revision"
     assert result["reason"] == "NO_DETERMINISTIC_CAPACITY_FIT"
