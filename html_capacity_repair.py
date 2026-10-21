@@ -118,8 +118,10 @@ def repair_capacity(run, slide, request, *, scene=None, binding=None):
                 "elapsed_seconds": round(time.monotonic() - started, 3)}
     diagnostic = review_scene(doc["scene"], run_dir=run, deps=deps, diagnostic=True)
     if not diagnostic.get("capacityIssues"):
+        unchanged = editor.load_editor(run, slide) == doc
         return {"status": "needs_revision", "passed": False, "reason": "NO_CAPACITY_ISSUE",
                 "attempts": [], "provider_calls": 0, "baseline": strict, "diagnostic": diagnostic,
+                "author_unchanged": unchanged,
                 "elapsed_seconds": round(time.monotonic() - started, 3)}
     catalog = json.loads((ROOT / "html_engine/visual/generated/catalog.json").read_text(encoding="utf-8"))
     layout = _layout_for(doc["scene"], catalog)
