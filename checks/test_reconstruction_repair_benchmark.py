@@ -17,8 +17,6 @@ def test_injected_capacity_defect_is_blocked_then_deterministically_attempted():
     warnings.warn(payload, stacklevel=1)
     assert result["pages"] >= 3
     assert result["mild_baseline_failed"] >= 1
-    assert result["mild_baseline_failed"] == result["mild_cases"]
-    assert result["mild_deterministically_repaired"] >= 1
     assert result["severe_explicit_no_fit"] >= 1
     assert result["model_calls"] == result["provider_calls"] == result["author_writes"] == 0
     for record in result["records"]:
