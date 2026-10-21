@@ -177,6 +177,107 @@ def _evidence(package, run, report, prefix="evidence"):
     return result
 
 
+def _deterministic_candidates(doc, scope, report, run):
+    """Reuse the production endpoint router; candidates still need original QA."""
+    path = (report or {}).get("measurements_path")
+    if not path:
+        return []
+    try:
+        frames = json.loads((Path(run) / path).read_text(encoding="utf-8")).get("frames", [])
+    except (OSError, ValueError):
+        return []
+    from html_geometry_repair import propose_endpoint_routes
+
+    proposals = propose_endpoint_routes({"scene": doc["scene"]}, scope, report, frames)
+    return [
+        {"id": f"candidate-{index + 1}", "operations": proposal["operations"],
+         "basis": "deterministic_geometry/geometry-repair-0.2.0",
+         "requires_original_qa": True, "rank": proposal["rank"]}
+        for index, proposal in enumerate(proposals[:6])
+    ]
+
+
+def _minimal_task(packet, candidates=None):
+    """Compact Agent input: scoped targets, typed defects, candidates, receipts.
+
+    Derived fields and unrelated history are omitted; authoritative files stay
+    referenced by path/hash and the original task.json remains canonical.
+    """
+    context = packet.get("context") or {}
+    scope = set(packet.get("scope") or [])
+    execution = context.get("execution") or {}
+    nodes = {node["id"]: node for node in (context.get("scene") or {}).get("nodes", [])}
+    targets = [
+        {key: nodes[target_id][key] for key in
+         ("id", "type", "slot", "presentation", "title", "body", "term", "takeaway", "tag", "note")
+         if key in nodes[target_id]}
+        for target_id in packet.get("scope", []) if target_id in nodes
+    ]
+    evidence = context.get("evidence") or {}
+    defects = []
+    for issue in evidence.get("issues", []):
+        defects.append({key: issue[key] for key in
+                        ("code", "timeMs", "targets", "measured", "allowed_repairs") if key in issue})
+    for issue in evidence.get("capacityIssues", []):
+        defect = {"code": "CAPACITY_EXCEEDED", "target": issue.get("target")}
+        if "triggers" in issue:
+            defect["triggers"] = issue["triggers"]
+        defects.append(defect)
+    relevant_roles = {"design_reference", "diagnostic_render", "actual_render",
+                      "original_audio", "audio_timing"}
+    files = [{key: entry[key] for key in ("path", "sha256", "role", "size") if key in entry}
+             for entry in packet.get("files", []) if entry.get("role") in relevant_roles]
+    operation_schema = packet.get("operation_schema") or {}
+    kinds = sorted({
+        variant.get("properties", {}).get("kind", {}).get("const")
+        for variant in operation_schema.get("oneOf", [])
+        if variant.get("properties", {}).get("kind", {}).get("const")
+    })
+    idempotency_key = sha256_json({
+        "task_id": packet.get("task_id"),
+        "expected_revision": packet.get("expected_revision"),
+        "audio_revision": packet.get("audio_revision"),
+    })
+    protected = [path for path in context.get("protected_paths", [])
+                 if not path or (scope and path[0] in scope)]
+    rules = packet.get("rules") or {}
+    return {
+        "format": "hps.html.external_minimal_task",
+        "version": "0.1.0",
+        "task_id": packet.get("task_id"),
+        "idempotency_key": idempotency_key,
+        "project_id": packet.get("project_id"),
+        "slide_id": packet.get("slide_id"),
+        "task_type": packet.get("task_type"),
+        "goal": packet.get("goal"),
+        "scope": packet.get("scope"),
+        "expected_revision": packet.get("expected_revision"),
+        "audio_revision": packet.get("audio_revision"),
+        "required_abilities": execution.get("required_abilities"),
+        "missing_inputs": context.get("missing_inputs", []),
+        "files": files,
+        "targets": targets,
+        "protected_paths": protected,
+        "defects": defects,
+        "candidates": candidates or [],
+        "operation_kinds": kinds,
+        "operation_schema": operation_schema,
+        "result_contract": {
+            "required": ["status", "operations"],
+            "operations_only": True,
+            "candidate_selection": "Return the operations of one listed candidate or none; "
+                                   "candidates still require original compile and QA.",
+            "unknown_policy": "no blind resend; verify task/submission state first",
+        },
+        "rules": {key: rules[key] for key in ("authority", "forbidden", "save") if key in rules},
+        "supplier_receipt": {
+            "required_fields": ["submission_id", "task_id", "status"],
+            "idempotency_key": idempotency_key,
+            "unknown_policy": "no blind resend; query before retry",
+        },
+    }
+
+
 def export_bundle(run, project_id, slide, request):
     """Caller holds the existing project artifact lock. No author/provider writes."""
     request = ExportRequest.model_validate(request)
@@ -198,6 +299,7 @@ def export_bundle(run, project_id, slide, request):
         package.add(name, (ROOT / "docs/agent" / source_name).read_bytes(), role, "text/markdown")
     package.json("content.json", content, "authoritative_content")
     context = {"content": "content.json", "design": None, "clock": "not_applicable", "missing_inputs": []}
+    report = None
     catalog = editor.read_json(ROOT / "html_engine/visual/generated/catalog.json")
     if design:
         image = package.image("reference/design.png", design["_image"], "design_reference", design["image_sha256"])
@@ -333,7 +435,11 @@ def export_bundle(run, project_id, slide, request):
               "严格任务交付delivery.zip：result.json、report.md、verification.json；静态候选再附preflight.json（可选真实证据）；不修改 task.json，不返回 HTML/JS 或整页位图。\n"
               "没有所需资料或能力时返回 needs_input/unsupported。design_reference 不接受操作保存。\n"
               "系统导入后重新检查预览，显式保存后仍须原画面/语义/音频验收。\n")
+    candidates = (_deterministic_candidates(doc, request.scope, report, run)
+                  if doc and report else [])
+    minimal = _minimal_task(packet, candidates)
     payloads = {**package.data, "task.json": json.dumps(packet, ensure_ascii=False, indent=2).encode(),
+                "task-minimal.json": json.dumps(minimal, ensure_ascii=False, indent=2).encode(),
                 "verification-template.json": json.dumps(verification, ensure_ascii=False, indent=2).encode(),
                 "README.md": readme.encode(), "result-template.json": json.dumps(result_template, ensure_ascii=False, indent=2).encode()}
     manifest = {"format": "hps.html.external_bundle", "version": "0.2.0", "task_id": packet["task_id"],
