@@ -78,3 +78,37 @@ def test_annotation_and_missing_targets_are_skipped():
                                         [annotation["id"], "missing"]) == []
     assert repair_module.MAX_CANDIDATES >= 1
     assert json.dumps(diagnostics(), sort_keys=True)
+
+
+def test_exhausted_candidates_return_explicit_no_fit_without_model(tmp_path, monkeypatch):
+    import html_visual_store as store
+
+    scene, layout, catalog = scene_and_layout()
+    store.save_scene(tmp_path, scene["id"], scene, 0)
+    calls = []
+
+    def fake_review(scene_doc, *, run_dir, deps, diagnostic=False):
+        calls.append(bool(diagnostic))
+        if diagnostic:
+            return {"passed": False, "diagnosticOnly": True,
+                    "capacityIssues": diagnostics()["box_case"]["capacityIssues"]}
+        return {"passed": False, "message": "CONTENT_CAPACITY_EXCEEDED"}
+
+    monkeypatch.setattr(capacity, "review_scene", fake_review)
+    monkeypatch.setattr(capacity, "capacity_candidates",
+                        lambda *args, **kwargs: [[{"targetId": "card-1",
+                                                   "kind": "set_presentation",
+                                                   "values": {"height": 340}}]])
+
+    def refuse(*args, **kwargs):
+        raise ValueError("candidate rejected by original checks")
+
+    monkeypatch.setattr(capacity.repair, "candidate_from_document", refuse)
+    result = capacity.repair_capacity(
+        tmp_path, scene["id"], {"expected_revision": 1, "scope": ["card-1"]})
+    assert result["status"] == "needs_revision"
+    assert result["reason"] == "NO_DETERMINISTIC_CAPACITY_FIT"
+    assert result["provider_calls"] == 0 and result["author_unchanged"] is True
+    assert len(result["attempts"]) == 1 and result["attempts"][0]["passed"] is False
+    assert calls[-1] is True
+    assert store.load_scene(tmp_path, scene["id"]) == scene
