@@ -38,8 +38,8 @@ def normalize(case):
     return normalize_html_scene_plan(case["plan"], load_template_catalog(ROOT), contract_slide=case["contract"])
 
 
-@pytest.mark.parametrize("actual", ["stage-1", "missing", "relation-2", "annotation"])
-def test_endpoint_diagnostic_identifies_slot_and_legal_objects_without_rewriting(actual):
+@pytest.mark.parametrize("actual", ["missing", "relation-2", "annotation"])
+def test_endpoint_diagnostic_identifies_legal_objects_without_rewriting(actual):
     case = stage_case()
     case["plan"]["slots"]["relation-1"]["from"]["objectId"] = actual
     original = copy.deepcopy(case)
@@ -50,9 +50,22 @@ def test_endpoint_diagnostic_identifies_slot_and_legal_objects_without_rewriting
     facts = json.loads(str(caught.value))
     assert facts["path"] == ["slots", "relation-1", "from", "objectId"]
     assert facts["actual"] == actual
-    assert facts["matching_slot_object_ids"] == (["obj-stage-1"] if actual == "stage-1" else [])
+    assert facts["matching_slot_object_ids"] == []
     assert "obj-stage-1" in facts["allowed_object_ids"]
     assert not set(facts["allowed_object_ids"]) & {"stage-1", "relation-2", "annotation"}
+
+
+def test_unique_slot_name_endpoint_normalizes_without_mutating_input():
+    case = stage_case()
+    case["plan"]["slots"]["relation-1"]["from"]["objectId"] = "stage-1"
+    original = copy.deepcopy(case)
+    normalized = normalize(case)
+    assert case == original
+    assert normalized["slots"]["relation-1"]["from"]["objectId"] == "obj-stage-1"
+    receipts = normalized["registered"]["endpoint_resolutions"]
+    assert receipts[0]["requested"] == "stage-1"
+    assert receipts[0]["resolved"] == "obj-stage-1"
+    assert receipts[0]["basis"].startswith("unique slot identity")
 
 
 @pytest.mark.parametrize("manifest_present", [False, True])
@@ -100,7 +113,7 @@ def test_exact_diagnostic_reaches_bounded_retry_and_audit(tmp_path, damage):
     good = case["plan"]
     bad = copy.deepcopy(good)
     if damage == "endpoint":
-        bad["slots"]["relation-1"]["from"]["objectId"] = "stage-1"
+        bad["slots"]["relation-1"]["from"]["objectId"] = "missing"
     else:
         bad["visual_coverage"] = {"visual-group-1": ["obj-stage-1"]}
     original = copy.deepcopy(bad)
@@ -129,6 +142,25 @@ def test_exact_diagnostic_reaches_bounded_retry_and_audit(tmp_path, damage):
     record = json.loads((tmp_path / f"planning/html_visual/records/plan-{sid}.json").read_text(encoding="utf-8"))
     assert [a["accepted"] for a in record["attempts"]] == [False, True]
     assert record["attempts"][0]["diagnostic"] == retry["diagnostic"]["message"]
+
+
+def test_unique_slot_name_endpoint_is_accepted_without_a_retry(tmp_path):
+    case = stage_case()
+    bad = copy.deepcopy(case["plan"])
+    bad["slots"]["relation-1"]["from"]["objectId"] = "stage-1"
+    requests = []
+
+    def provider(**request):
+        requests.append(request)
+        return bad
+
+    result = generate_scene_plan(case["contract"], run_dir=tmp_path, repo_root=ROOT,
+                                 json_generator=provider, plan_version="0.2.0")
+    assert len(requests) == 1
+    assert result["objects"] == normalize(case)["objects"]
+    receipts = result.get("registered", {}).get("endpoint_resolutions", [])
+    assert receipts and receipts[0]["requested"] == "stage-1"
+    assert receipts[0]["resolved"] == "obj-stage-1"
 
 
 def test_invalid_coverage_twice_still_rejected_without_automatic_cleanup(tmp_path):

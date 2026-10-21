@@ -16,6 +16,8 @@ explicit render owner for every image need.
 
 from __future__ import annotations
 
+import copy
+
 import hashlib
 import json
 from pathlib import Path
@@ -200,7 +202,7 @@ def normalize_html_scene_plan(
                 "PLAN_SLOT_KIND",
                 f"槽位 {slot_name} 不允许 {kind or '(空)'}（允许：{', '.join(rule.get('kinds') or [])}）",
             )
-        normalized_slots[str(slot_name)] = content
+        normalized_slots[str(slot_name)] = copy.deepcopy(content)
     for slot_name, rule in slot_rules.items():
         if rule.get("required") and slot_name not in normalized_slots:
             raise HtmlScenePlanError(
