@@ -1,4 +1,5 @@
 """Geometry-first overlap orchestration; original repair owns candidates and save."""
+import html_capacity_repair as capacity
 import html_geometry_repair as geometry
 import html_scene_editing as editor
 import html_scene_repair as repair
@@ -6,6 +7,7 @@ from html_handoff_diagnostics import pictures
 from html_repair_models import RepairGenerateRequest
 
 OVERLAP_INSTRUCTION = "仅调整所选对象的位置与尺寸，解决箭头穿过文字；保留文字、关系、样式、动画和人工保护字段。"
+CAPACITY_INSTRUCTION = "仅调整所选对象的尺寸或文字排版，解决容量溢出；保留文字语义、关系、样式、动画和人工保护字段。"
 
 
 def _comparison(run, before, after):
@@ -51,6 +53,32 @@ def generate_repair(run, slide, request, generator_factory):
     request = RepairGenerateRequest.model_validate(request).model_dump(mode='json')
     if request['strategy'] == 'model':
         return repair.generate_repair(run, slide, request, generator_factory())
+    if request['strategy'] == 'capacity_first':
+        if request['instruction'] != CAPACITY_INSTRUCTION:
+            raise editor.SceneEditError('REPAIR_CAPACITY_GOAL', 'capacity_first仅支持固定的容量修复任务；其他目标请使用model策略')
+        doc = repair._revision(run, slide, request['expected_revision'])
+        scope = request['scope']
+        if len(scope) > 4 or len(set(scope)) != len(scope):
+            raise editor.SceneEditError('REPAIR_SCOPE', '容量修复请选择1至4个不同对象')
+        if any(target not in {node['id'] for node in doc['scene']['nodes']} for target in scope):
+            raise editor.SceneEditError('TARGET_NODE_GONE', '修复目标不存在')
+        request['expected_audio_revision'] = request.get('expected_audio_revision') or editor.audio_revision(run, slide)
+        trial = capacity.repair_capacity(run, slide, request)
+        path = {'strategy': 'capacity_first', 'origin': 'deterministic_capacity',
+                'fallback_reason': None, 'attempts': len(trial.get('attempts', [])),
+                'elapsed_seconds': trial.get('elapsed_seconds')}
+        if trial['status'] == 'unchanged':
+            return {'status': 'unchanged', 'message': '当前整页注册检查已通过，无需修改。',
+                    'review': trial['baseline'], 'repair_path': path, 'changes': []}
+        if trial['status'] == 'candidate':
+            candidate = trial['candidate']
+            return {**candidate, 'repair_path': path,
+                    'changes': _changes(doc, {'scene': candidate['scene'],
+                                              'request': trial['request']})}
+        return {'status': 'needs_revision',
+                'message': '确定性容量试算未找到通过原检查的候选；未调用模型，也未修改原页面。',
+                'review': trial.get('baseline'), 'repair_path': path, 'changes': [],
+                'attempts': trial.get('attempts', []), 'reason': trial.get('reason')}
     if request['instruction'] != OVERLAP_INSTRUCTION:
         raise editor.SceneEditError('REPAIR_GEOMETRY_GOAL', 'geometry_first仅支持固定的箭头文字避让任务；其他目标请使用model策略')
     doc = repair._revision(run, slide, request['expected_revision'])

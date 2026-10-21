@@ -1,4 +1,6 @@
 # HTML 演示契约变更记录
+0.9.115（2026-10-22）：[容量修复确定性候选](runtime/visual-v1/capacity-repair-0.1.0.md)。新增 capacity_first 策略：尺寸候选按原容量触发计算并限制在画布/注册变体内；排版候选仅对已显式字号部位步进缩小且不低于 24px；不改文字/身份/关系/动作/人工保护，annotation 不参与；首个通过原检查者返回，全部失败显式 NO_DETERMINISTIC_CAPACITY_FIT，不调用模型/不返回 unknown。generate1.7、AGENT_API_VERSION1.62.0；离线基准候选 0→18，模型调用 0。
+
 0.9.114（2026-10-22）：[关系附着点确定性路由](runtime/visual-v1/geometry-repair-0.2.0.md)。显式 point 关系箭头在目标边界枚举附着点，复用原 vector-overlap 谓词并要求对所有可见文字无穿越；不移动文字、不改关系对象/样式/时间，anchor 与隐式槽位箭头不参与，无解返回空提案（不调用模型）。新增操作 set_endpoint_point（仅确定性路径；模型 Prompt 不提供），人工保护与显式保存不变。预览/保存能力1.8、generate1.6，AGENT_API_VERSION1.61.0；基准 2/2 路由、3/3 非路由跳过、0 模型调用。
 
 

@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-22 还原优化（W3）：[容量溢出确定性修复](docs/releases/2026-10-22-capacity-repair.md)、[契约 0.1.0](docs/contracts/html-presentation/runtime/visual-v1/capacity-repair-0.1.0.md)。新增 capacity_first：尺寸候选按原容量触发并限制画布/变体，排版候选仅缩小已显式字号且不低于24px；首个通过原检查者返回，全部失败显式无解、不调用模型。离线候选 0→18、模型调用0；generate1.7、Agent API1.62.0、契约包0.9.115。
+
 2026-10-22 还原优化（W4）：[外部 Agent 最小输入](docs/releases/2026-10-22-external-minimal-input.md)。任务包新增 task-minimal.json：scope 对象、类型化缺陷、确定性候选、相关文件引用、幂等与回执要求；task.json 仍为权威。代表性任务包 113,922→26,403 字节（-76.8%），候选由 geometry-repair/0.2.0 预生成且仍需原 QA。4 项测试通过；契约0.9.114/API1.61.0保持。
 
 2026-10-22 还原优化（W2）：[关系附着点确定性路由](docs/releases/2026-10-22-endpoint-routing-repair.md)、[契约 0.2.0](docs/contracts/html-presentation/runtime/visual-v1/geometry-repair-0.2.0.md)。显式 point 端点箭头在目标边界枚举附着点，要求对所有可见文字无穿越后再交原编译器/30fps QA；不移动文字、不改关系对象，anchor/隐式槽位不参与，无解返回空提案且不调用模型。冻结基准 2/2 路由、3/3 非路由跳过、0 误生成、0 模型调用；预览/保存1.8、generate1.6、Agent API1.61.0，契约包0.9.114。
