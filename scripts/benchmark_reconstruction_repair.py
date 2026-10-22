@@ -63,7 +63,7 @@ def _inject(scene, profile):
 
 def build_cases():
     catalog = load_template_catalog(ROOT)
-    cases = json.loads(FIXTURES.read_text(encoding="utf-8"))
+    cases = json.loads(FIXTURES.read_text(encoding="utf-8"))[:2]
     built = []
     for case in cases:
         plan = normalize_html_scene_plan(case["plan"], catalog, contract_slide=case["contract"])

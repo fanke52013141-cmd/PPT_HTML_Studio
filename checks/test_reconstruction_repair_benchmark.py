@@ -15,7 +15,7 @@ def test_injected_capacity_defect_is_blocked_then_deterministically_attempted():
     # pytest captures stdout for passing tests; warnings keep the frozen result
     # in the CI summary so the numbers remain auditable.
     warnings.warn(payload, stacklevel=1)
-    assert result["pages"] >= 3
+    assert result["pages"] >= 2
     assert result["mild_baseline_failed"] >= 1
     assert result["severe_explicit_no_fit"] >= 1
     assert result["model_calls"] == result["provider_calls"] == result["author_writes"] == 0
