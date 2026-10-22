@@ -341,7 +341,10 @@ def produce_scene(
         )
     prompt_version = SEMANTIC_PROMPT_VERSION if plan.get("version") == "0.2.0" else PROMPT_VERSION
     plan_version = str(plan.get("version") or "0.1.0")
-    if plan_version != selection.plan_version:
+    # Fail closed only when the caller explicitly asks for a version that the
+    # resumed design/plan does not have. Direct service callers that omit the
+    # field keep the historical "use the supplied plan" behavior.
+    if options and "plan_version" in options and plan_version != selection.plan_version:
         raise HtmlReviewError(
             f"计划版本不一致：当前设计/计划基于 {plan_version}，请求为 {selection.plan_version}；"
             "请按原版本继续，或重新生成设计参考。",
