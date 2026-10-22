@@ -1,9 +1,8 @@
 """End-to-end page-level benchmark: injected capacity defect -> deterministic repair.
 
-Each versioned course plan is compiled by the real compiler, then a card body is
-lengthened (the documented page-3 failure class) and the page is reviewed by the
-real browser QA. The deterministic capacity repair runs with no model calls.
-Original QA remains the validator; nothing is saved or approved.
+Uses the versioned capacity-baseline scenes (0.5.0, no semantic binding), injects
+the documented page-3 failure class, and runs the real browser QA plus the
+deterministic capacity repair with zero model calls. Nothing is saved or approved.
 """
 from __future__ import annotations
 
@@ -20,27 +19,19 @@ sys.path.insert(0, str(ROOT))
 
 import html_capacity_repair as capacity  # noqa: E402
 import html_visual_store as store  # noqa: E402
-from html_production_service import compile_plan  # noqa: E402
-from html_storyboard_planning import load_template_catalog, normalize_html_scene_plan  # noqa: E402
 from html_visual_review_service import HtmlReviewDependencies, review_scene  # noqa: E402
 
-FIXTURES = ROOT / "checks/fixtures/course-structure-plans.json"
+FIXTURES = ROOT / "checks/fixtures/capacity-baseline"
+SCENES = ("ordinary", "dense")
 DEPS = HtmlReviewDependencies(ROOT, lambda **kw: {})
 
 
-def _run_dir(folder, contract, binding=None):
+def _run_dir(folder, slide_id):
     run = Path(folder)
     (run / "planning").mkdir(parents=True, exist_ok=True)
     (run / "planning/visual_contract.json").write_text(
-        json.dumps({"slides": [{"slide_id": contract["slide_id"], "narration_beats": []}]}),
+        json.dumps({"slides": [{"slide_id": slide_id, "narration_beats": []}]}),
         encoding="utf-8")
-    if binding is not None:
-        # Semantic scenes require their explicit motion binding; without it the
-        # original preview rejects every candidate before QA.
-        visual = run / "planning/html_visual"
-        visual.mkdir(parents=True, exist_ok=True)
-        (visual / f"binding-{contract['slide_id']}.json").write_text(
-            json.dumps(binding, ensure_ascii=False), encoding="utf-8")
     return run
 
 
@@ -50,11 +41,9 @@ def _inject(scene, profile):
         return None
     card = cards[0]
     if profile == "mild":
-        # A too-large type size on unchanged content: the original 28px fits.
         card.setdefault("presentation", {}).setdefault("typography", {})["body"] = {
             "fontSizePx": 30}
     else:
-        # Documented page-3 class: long body that cannot fit at any readable size.
         card["body"] = (card.get("body") or "内容") * 3
         card.setdefault("presentation", {}).setdefault("typography", {})["body"] = {
             "fontSizePx": 28}
@@ -62,18 +51,15 @@ def _inject(scene, profile):
 
 
 def build_cases():
-    catalog = load_template_catalog(ROOT)
-    cases = json.loads(FIXTURES.read_text(encoding="utf-8"))[:2]
     built = []
-    for case in cases:
-        plan = normalize_html_scene_plan(case["plan"], catalog, contract_slide=case["contract"])
-        scene, binding = compile_plan(plan, case["contract"], catalog)
+    for name in SCENES:
+        scene = json.loads((FIXTURES / f"{name}.json").read_text(encoding="utf-8"))
         for profile in ("mild", "severe"):
             injected = copy.deepcopy(scene)
             target = _inject(injected, profile)
             if target:
-                built.append({"case": case, "profile": profile, "scene": injected,
-                              "binding": binding, "target": target})
+                built.append({"name": name, "profile": profile, "scene": injected,
+                              "slide_id": injected["id"], "target": target})
     return built
 
 
@@ -82,16 +68,16 @@ def run():
     records = []
     with tempfile.TemporaryDirectory() as folder:
         for index, item in enumerate(build_cases()):
-            contract, scene = item["case"]["contract"], item["scene"]
-            run_dir = _run_dir(Path(folder) / f"case-{index}", contract, item["binding"])
-            store.save_scene(run_dir, contract["slide_id"], scene, 0)
+            scene, slide_id = item["scene"], item["slide_id"]
+            run_dir = _run_dir(Path(folder) / f"case-{index}", slide_id)
+            store.save_scene(run_dir, slide_id, scene, 0)
             baseline = review_scene(scene, run_dir=run_dir, deps=DEPS)
-            record = {"slide_id": contract["slide_id"], "profile": item["profile"],
+            record = {"slide_id": slide_id, "profile": item["profile"],
                       "target": item["target"], "baseline_passed": bool(baseline.get("passed")),
                       "baseline_message": (baseline.get("message") or "")[:160]}
             if not baseline.get("passed"):
                 trial = capacity.repair_capacity(
-                    run_dir, contract["slide_id"],
+                    run_dir, slide_id,
                     {"expected_revision": 1, "scope": [item["target"]]})
                 record.update(status=trial["status"], reason=trial.get("reason"),
                               repaired=trial["status"] == "candidate",
