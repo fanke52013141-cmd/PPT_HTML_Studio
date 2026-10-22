@@ -237,7 +237,10 @@ class ProductionStages:
                           "stage": kind + ("_output_limit" if output_limit else "_unknown"),
                           "metrics": {**metrics, "adapter_calls": 1,
                                       "elapsed_ms": round((time.monotonic() - started) * 1000, 3),
-                                      "usage": usage, "finish_reason": failed_stream.get("finish_reason")},
+                                      "usage": usage,
+                                      "usage_source": ("model_stream_failure" if usage
+                                                       else "provider_not_returned"),
+                                      "finish_reason": failed_stream.get("finish_reason")},
                           "error_class": type(error).__name__,
                           "cause_class": type(error.__cause__).__name__ if error.__cause__ else None}
                 if kind == "image":
@@ -265,8 +268,21 @@ class ProductionStages:
                     raise store.HtmlTaskError("MODEL_OUTPUT_LIMIT：模型已用尽输出额度，场景规划未完成；请优化规划输入后创建新实验", 409) from error
                 raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：供应商结果待核实，禁止自动重复请求", 409) from error
             # Persist raw returned bytes/JSON before validation or downstream work.
-            self._save(key, value, kind + "_returned", kind,
-                       metrics={**metrics, "adapter_calls": 1, "elapsed_ms": round((time.monotonic() - started) * 1000, 3)})
+            success_metrics = {**metrics, "adapter_calls": 1,
+                               "elapsed_ms": round((time.monotonic() - started) * 1000, 3)}
+            if streaming:
+                from json_llm_transport import _safe_usage
+                current = store._job(self.db, self.job_id, self.attempt).get_payload()
+                stream_record = (current.get("progress") or {}).get("model_stream") or {}
+                usage = _safe_usage(stream_record.get("usage"))
+                success_metrics["usage"] = usage
+                success_metrics["usage_source"] = "model_stream" if usage else "provider_not_returned"
+                success_metrics["finish_reason"] = stream_record.get("finish_reason")
+            else:
+                success_metrics["usage_source"] = "provider_not_returned"
+            if kind == "image":
+                success_metrics["cost_basis"] = "toapis_async_token_priced_unknown"
+            self._save(key, value, kind + "_returned", kind, metrics=success_metrics)
             if kind == "image":
                 from ai_provider_service import open_validated_image
                 open_validated_image(value)

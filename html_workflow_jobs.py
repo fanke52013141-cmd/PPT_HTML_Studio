@@ -285,6 +285,13 @@ class HtmlWorkflowJobs:
                     extra["definition_hash_override"] = job.get_payload()["input"]["definition_hash_override"]
                 from html_production_recovery import seal_author_commit
                 extra["commit_record"] = partial(seal_author_commit, db, job_id, attempt, run_dir, snapshot_id)
+                from html_visual_review_service import browser_preflight
+                probe = browser_preflight(self.deps.repo_root, self.deps.node_bin)
+                if not probe["ok"]:
+                    raise store.HtmlTaskError(
+                        "BROWSER_UNAVAILABLE：无法启动 Chromium，已在付费生成前停止；"
+                        "请检查 Playwright/Chromium 安装与权限。原始错误："
+                        + (probe["detail"] or "无输出")[-400:], 409)
                 result = produce_scene(
                     contract,
                     run_dir=run_dir,

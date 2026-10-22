@@ -56,6 +56,21 @@ def test_sealed_plan_phase_survives_restart_without_replanning(stage):
         recovered.returned_phase("plan")
 
 
+def test_streaming_usage_is_recorded_in_stage_metrics(stage):
+    def fn(on_stream_progress=None, **kw):
+        on_stream_progress({"state": "completed", "finish_reason": "stop",
+                            "usage": {"prompt_tokens": 10, "completion_tokens": 5,
+                                      "total_tokens": 15}})
+        return {"plan": True}
+    fn.supports_stream_progress = True
+    assert stage.wrap(fn, "json")(user_prompt="usage") == {"plan": True}
+    payload = store._job(stage.db, stage.job_id).get_payload()
+    record = next(item for key, item in payload["production_stages"].items()
+                  if key.startswith("json:") and item.get("state") == "returned")
+    assert record["metrics"]["usage"]["total_tokens"] == 15
+    assert record["metrics"]["usage_source"] == "model_stream"
+
+
 def test_deleted_result_is_not_reused_or_rerequested(stage):
     calls = []
     fn = lambda **kw: calls.append(1) or {"plan": True}

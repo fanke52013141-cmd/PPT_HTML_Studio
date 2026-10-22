@@ -1,6 +1,6 @@
 # HTML Studio
 
-2026-10-22 实测修复：[图片连接测试、计划版本、审阅错误透出](docs/releases/2026-10-22-provider-test-plan-version-errors.md)。ToAPIs 连接测试补传凭据与任务级超时（真实验证 48.9 秒成功）；Web/Agent produce 省略 plan_version 默认 0.2.0，设计/计划版本不一致返回 409 不再静默复用；审阅脚本失败错误带报告原因与路径。Agent API 1.62.1、capability 1.15。
+2026-10-22 实测修复：[图片连接测试、计划版本、审阅错误透出、用量与浏览器预检](docs/releases/2026-10-22-provider-test-plan-version-errors.md)。ToAPIs 连接测试补传凭据与任务级超时（真实验证 48.9 秒成功）；Web/Agent produce 省略 plan_version 默认 0.2.0，设计/计划版本不一致返回 409 不再静默复用；审阅脚本失败错误带报告原因与路径；流式调用记录真实 token usage，HTML 任务在付费出图前预检 Chromium 不可用即停。Agent API 1.62.1、capability 1.15。
 
 2026-10-22 优化数据汇总：[还原优化前后数据](docs/plans/html-backend-development/optimization-results-2026-10-22.md)。W1 端点归一化 0/32→32/32、W2 穿字路由 0/2→2/2、W3 容量候选 0→25、W4 外部输入 113,922→26,403 字节（-76.8%）；全部为冻结/受控基准，0 模型/供应商/作者写入。
 

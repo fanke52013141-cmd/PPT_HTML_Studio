@@ -81,6 +81,37 @@ def _sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+_BROWSER_PREFLIGHT: dict[str, Any] = {"result": None}
+
+
+def browser_preflight(repo_root: Path, node_bin: str = "node", *,
+                      runner: Callable | None = None, force: bool = False) -> dict:
+    """Check that the review browser can launch before any paid generation.
+
+    Memoized per process: a task queue must not pay for images when Chromium is
+    unavailable. The probe itself is provider-free and writes nothing.
+    """
+    if not force and _BROWSER_PREFLIGHT["result"] is not None:
+        return _BROWSER_PREFLIGHT["result"]
+    script = (
+        "const {chromium}=require('playwright');"
+        "chromium.launch({headless:true}).then(b=>b.close())"
+        ".catch(e=>{console.error(String(e&&e.message||e));process.exit(1)})"
+    )
+    run = runner or __import__("runtime_support").run_subprocess_killable
+    try:
+        result = run([node_bin, "-e", script], cwd=str(Path(repo_root) / "html_engine"),
+                     capture_output=True, text=True, encoding="utf-8", errors="replace",
+                     timeout_sec=90)
+        ok = result.returncode == 0
+        detail = "" if ok else (result.stderr or result.stdout or "")[-400:]
+    except Exception as exc:  # noqa: BLE001
+        ok, detail = False, f"{type(exc).__name__}: {str(exc)[:300]}"
+    outcome = {"ok": ok, "detail": detail}
+    _BROWSER_PREFLIGHT["result"] = outcome
+    return outcome
+
+
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -464,6 +495,16 @@ def review_scene(
         elif report_detail and report_detail not in detail:
             detail = f"{detail} | {report_detail}"
         suffix = f" (report={report_path.relative_to(run_dir)})"
+        lowered = detail.lower()
+        if any(token in lowered for token in
+               ("spawn eperm", "browserType.launch", "executable doesn't exist",
+                "playwright", "chrome.exe")):
+            raise HtmlReviewError(
+                ("BROWSER_UNAVAILABLE：浏览器不可用，无法执行动态审阅；"
+                 "请检查 Playwright/Chromium 安装与权限。原始错误：" + detail + suffix)[-900:],
+                status_code=503,
+                code="BROWSER_UNAVAILABLE",
+            )
         raise HtmlReviewError(
             ("静态审阅脚本失败：" + (detail or "无脚本输出") + suffix)[-700:],
             status_code=500,

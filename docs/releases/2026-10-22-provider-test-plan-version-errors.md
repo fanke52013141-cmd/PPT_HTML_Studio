@@ -1,6 +1,6 @@
-# 图片连接测试 / 计划版本 / 错误透出修复 · 2026-10-22
+# 图片连接测试 / 计划版本 / 错误透出 / 用量与浏览器预检 · 2026-10-22
 
-真实“什么是 token”流程实测发现的三个产品问题修复。不改变渲染器、审批或作者写入边界。
+真实“什么是 token”流程实测发现的问题修复。不改变渲染器、审批或作者写入边界。
 
 ## 1. 图片连接测试（P1）
 
@@ -29,11 +29,33 @@
   任务错误现在能看到 `browserType.launch: spawn EPERM (report=planning/.../report-slide_001.json)`。
 - 仍不把环境故障当成场景通过；失败继续 fail-closed。
 
+## 4. 供应商用量与成本依据（P4）
+
+- 流式 JSON 调用成功时，从任务进度中的 `model_stream.usage` 取
+  `prompt/completion/total tokens`，写入 stage `metrics.usage`，并标记 `usage_source=model_stream`。
+- 非流式调用或供应商未返回用量时，保留显式 `usage_source=provider_not_returned`，不再静默 `null`；
+  失败分支标记 `model_stream_failure`。
+- ToAPIs 图片任务在 stage 指标中标记 `cost_basis=toapis_async_token_priced_unknown`，
+  上游任务 ID 仍单独记录，便于按平台账单核对；不伪造金额。
+- 实测某次规划调用记录到 `usage.total_tokens=20221`（prompt 11437 / completion 8784）。
+
+## 5. 浏览器预检（P5）
+
+- 新增 `browser_preflight(repo_root, node_bin)`：用 Playwright 启动一次 headless Chromium 后关闭，
+  进程内缓存结果；不写盘、不调用供应商。
+- HTML 生产任务在**任何付费设计/素材调用之前**执行预检；失败直接以
+  `BROWSER_UNAVAILABLE：无法启动 Chromium，已在付费生成前停止…` 结束任务。
+- 审阅阶段若仍遇到浏览器启动失败，错误码改为 `BROWSER_UNAVAILABLE`（503），
+  原始错误与审阅报告路径一并保留，不再只报“静态审阅脚本失败”。
+- 本机 DSH 沙箱实测预检会拒绝执行，说明该保护能阻止“先付费出图、最后浏览器不可用”的浪费。
+
 ## 验证
 
 - `checks/test_settings_services.py`：普通与 ToAPIs 连接探测参数断言；
 - `checks/test_html_e_production.py`：默认 0.2.0、版本不一致 `409 PLAN_VERSION_MISMATCH`；
-- `checks/test_html_visual_review.py`：审阅脚本失败时错误包含报告原因与路径；
+- `checks/test_html_visual_review.py`：审阅脚本失败错误包含报告原因与路径、浏览器失败码；
+  预检失败输出；
+- `checks/test_html_production_stages.py`：流式 usage 进入 stage 指标；
 - `python scripts/generate_agent_contracts.py --check` 通过。
 
 ## 边界

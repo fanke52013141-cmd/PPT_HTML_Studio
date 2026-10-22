@@ -198,9 +198,24 @@ def test_review_script_failure_surfaces_report_cause(tmp_path, real_scene) -> No
     )
     with pytest.raises(review.HtmlReviewError) as caught:
         review.review_scene(real_scene, run_dir=run_dir, deps=service)
-    assert caught.value.code == "REVIEW_SCRIPT_FAILED"
+    assert caught.value.code == "BROWSER_UNAVAILABLE"
     assert "browserType.launch" in str(caught.value)
     assert "report=" in str(caught.value)
+
+
+def test_browser_preflight_reports_launch_failure() -> None:
+    class Failed:
+        returncode = 1
+        stdout = ""
+        stderr = "browserType.launch: spawn EPERM"
+
+    previous = review._BROWSER_PREFLIGHT["result"]
+    try:
+        result = review.browser_preflight(REPO_ROOT, runner=lambda *_a, **_kw: Failed(), force=True)
+    finally:
+        review._BROWSER_PREFLIGHT["result"] = previous
+    assert result["ok"] is False
+    assert "EPERM" in result["detail"]
 
 
 def test_approval_binds_hashes_and_invalidates_on_change(
