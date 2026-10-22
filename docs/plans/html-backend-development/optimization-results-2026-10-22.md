@@ -41,14 +41,19 @@ python scripts/feature_recognition_bundle.py export|import ...
 
 ## 三、端到端页级基准（CI 浏览器）
 
-`checks/test_reconstruction_repair_benchmark.py` 对每个版本化页面注入卡片正文过长缺陷：
+`checks/test_reconstruction_repair_benchmark.py` 使用两个版本化容量夹具（0.5.0，无语义 binding 依赖），
+各注入一档缺陷，再由原浏览器 QA 与确定性容量修复处理（0 模型调用）：
 
-1. 原浏览器 QA 必须先拦截（证明缺陷真实）；
-2. 确定性容量修复运行（0 模型调用）；
-3. 记录页级 `candidate / needs_revision`、尝试次数与作者是否变化。
+| 档位 | 注入 | 基线拦截 | 确定性修复 | 显式无解 |
+|---|---|---|---|---|
+| 轻度 | 卡片正文 30px（正文不变） | 2/2 | **1/2** | 1/2 |
+| 严重 | 正文×3、28px（第 3 页真实失败类） | 2/2 | 0/2 | **2/2** |
 
-该项与 W3 的浏览器用例在 CI 中执行；终态数字以对应 commit 的 CI 日志
-（`RECONSTRUCTION_BENCHMARK:` 行）为准，不在本机沙箱代签。
+记录来自 CI run `39709014001`（commit `e06f740`）的 `RECONSTRUCTION_BENCHMARK` 日志；该次 CI 只因
+`pages` 口径（两个夹具复用同一 scene id）失败，数据本身有效。`8252943` 修正计数后，断言按夹具名统计。
+
+意义：**轻度容量溢出已经能由代码直接修好并通过原 QA**；严重溢出在可读下限内确实无解时显式停止，
+不调用模型、不产生 unknown、不修改作者。该基准是注入缺陷，不是真实课程页，不能据此声称真实还原率。
 
 ## 四、未完成 / 待真实材料
 

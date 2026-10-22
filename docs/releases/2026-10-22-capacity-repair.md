@@ -32,9 +32,12 @@
 
 ## 验证
 
-- `checks/test_capacity_repair.py` 5 passed（边界、可读下限、身份保持、scope 过滤、策略校验、基准快照）。
+- `checks/test_capacity_repair.py` 6 passed（边界、可读下限、身份保持、scope 过滤、策略校验、显式无解、基准快照）。
 - `checks/test_capacity_first_strategy.py`（CI 真实浏览器）2 项：溢出页确定性修复通过且 0 模型调用；
-  120 字超长文本在可读下限内仍溢出时显式无解、不调用模型。
+  超长文本在可读下限内仍溢出时显式无解、不调用模型。
+- 端到端页级基准（CI，commit `e06f740`）：轻度注入 2 例中 **1 例**由确定性候选修好并通过原 QA；
+  严重注入 2 例全部显式 `NO_DETERMINISTIC_CAPACITY_FIT`；模型/供应商/作者写入均为 0。
+  该数据是注入缺陷，不是真实课程页。
 - Agent API **1.62.0**；`html_repair.generate` **1.7**（策略枚举 additive）；契约包 **0.9.115**；
   capability matrix 已重新生成；无数据库迁移、无新 HTTP 路由。
 
