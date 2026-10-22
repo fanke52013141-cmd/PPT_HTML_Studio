@@ -72,7 +72,7 @@ def run():
             run_dir = _run_dir(Path(folder) / f"case-{index}", slide_id)
             store.save_scene(run_dir, slide_id, scene, 0)
             baseline = review_scene(scene, run_dir=run_dir, deps=DEPS)
-            record = {"slide_id": slide_id, "profile": item["profile"],
+            record = {"fixture": item["name"], "slide_id": slide_id, "profile": item["profile"],
                       "target": item["target"], "baseline_passed": bool(baseline.get("passed")),
                       "baseline_message": (baseline.get("message") or "")[:160]}
             if not baseline.get("passed"):
@@ -95,7 +95,7 @@ def run():
     severe = [record for record in records if record["profile"] == "severe"]
     return {
         "mode": "injected_capacity_end_to_end",
-        "pages": len({record["slide_id"] for record in records}),
+        "pages": len({record["fixture"] for record in records}),
         "cases": len(records),
         "mild_cases": len(mild),
         "mild_baseline_failed": sum(not record["baseline_passed"] for record in mild),
