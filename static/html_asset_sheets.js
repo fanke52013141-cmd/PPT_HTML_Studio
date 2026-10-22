@@ -10,7 +10,7 @@
     const base = `/api/projects/${encodeURIComponent(project.id)}/html-asset-sheets`;
     const panel = el('section', '', 'html-asset-sheets'); container.append(panel);
     panel.append(el('h3', '批量生成配图'));
-    panel.append(el('p', '一张素材图生成多个独立配图。逐个检查内容与边缘，通过后加入可用素材。白色或半透明主体建议使用透明背景。'));
+    panel.append(el('p', '一张素材图生成多个独立配图。最多 4 个，按项目横版/竖版自动排成 16:9 或 9:16 并留出格子间隙；逐个检查内容与边缘，通过后加入可用素材。白色或半透明主体建议使用透明背景。'));
     const form = el('div', '', 'html-sheet-form'); panel.append(form);
     const requirements = el('textarea'); requirements.rows = 4;
     requirements.setAttribute('aria-label', '配图需求'); requirements.placeholder = '每行一个配图，例如：\n完整的透明玻璃冷杯，杯外少量水滴\n独立的放大水滴示意';
@@ -173,14 +173,16 @@
       if (!needs.length || needs.length > 4 || needs.some(n => n.length > 1000)) {status.textContent = '每行填写一个配图需求，共1至4个，每项不超过1000字。'; return;}
       busy(true);
       try {
-        const columns = needs.length === 1 ? 1 : 2, rows = Math.ceil(needs.length / columns);
-        const w = 1536 / columns, h = 1024 / rows;
-        const method = background.value;
-        const slots = needs.map((need, index) => ({id: `slot-${index+1}`, asset_id: `sheet-${Date.now()}-${index+1}`,
-          role: '独立主体配图', need, rect: [index % columns*w, Math.floor(index/columns)*h, w, h], method,
-          ...(method === 'boundary_color' ? {background: {rgb:[255,255,255], tolerance:16}} : {}),
-          ...(method === 'source_alpha' && cleanup.checked ? {alpha_cleanup: {threshold:1, guard_radius:2, max_removed_fraction:0.02}} : {})}));
-        const plan = {format:'hps.html.asset_sheet.plan', version:'0.1.0', id:'illustrations', width:1536, height:1024, direction:'V05', slots};
+        const orientation = (() => {
+          const canvas = project?.canvas || {};
+          if (['landscape', 'portrait', 'square'].includes(canvas.orientation)) return canvas.orientation;
+          return String(project?.canvas_profile || '').includes('portrait') ? 'portrait' : 'landscape';
+        })();
+        const plan = window.AssetSheetLayout.plan(needs, {
+          orientation,
+          method: background.value,
+          cleanup: cleanup.checked,
+        });
         const result = await API.post(`${base}/generate`, {plan});
         if (alive()) await poll(result.data.task);
       } catch (error) {if (alive()) status.textContent = error.message;}
