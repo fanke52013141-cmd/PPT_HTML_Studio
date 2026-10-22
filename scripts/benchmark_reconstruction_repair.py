@@ -28,12 +28,19 @@ FIXTURES = ROOT / "checks/fixtures/course-structure-plans.json"
 DEPS = HtmlReviewDependencies(ROOT, lambda **kw: {})
 
 
-def _run_dir(folder, contract):
+def _run_dir(folder, contract, binding=None):
     run = Path(folder)
     (run / "planning").mkdir(parents=True, exist_ok=True)
     (run / "planning/visual_contract.json").write_text(
         json.dumps({"slides": [{"slide_id": contract["slide_id"], "narration_beats": []}]}),
         encoding="utf-8")
+    if binding is not None:
+        # Semantic scenes require their explicit motion binding; without it the
+        # original preview rejects every candidate before QA.
+        visual = run / "planning/html_visual"
+        visual.mkdir(parents=True, exist_ok=True)
+        (visual / f"binding-{contract['slide_id']}.json").write_text(
+            json.dumps(binding, ensure_ascii=False), encoding="utf-8")
     return run
 
 
@@ -76,7 +83,7 @@ def run():
     with tempfile.TemporaryDirectory() as folder:
         for index, item in enumerate(build_cases()):
             contract, scene = item["case"]["contract"], item["scene"]
-            run_dir = _run_dir(Path(folder) / f"case-{index}", contract)
+            run_dir = _run_dir(Path(folder) / f"case-{index}", contract, item["binding"])
             store.save_scene(run_dir, contract["slide_id"], scene, 0)
             baseline = review_scene(scene, run_dir=run_dir, deps=DEPS)
             record = {"slide_id": contract["slide_id"], "profile": item["profile"],
