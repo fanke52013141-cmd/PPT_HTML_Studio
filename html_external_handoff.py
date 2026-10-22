@@ -178,23 +178,41 @@ def _evidence(package, run, report, prefix="evidence"):
 
 
 def _deterministic_candidates(doc, scope, report, run):
-    """Reuse the production endpoint router; candidates still need original QA."""
+    """Reuse the production routers; every candidate still needs original QA."""
+    candidates = []
     path = (report or {}).get("measurements_path")
-    if not path:
-        return []
-    try:
-        frames = json.loads((Path(run) / path).read_text(encoding="utf-8")).get("frames", [])
-    except (OSError, ValueError):
-        return []
-    from html_geometry_repair import propose_endpoint_routes
+    if path:
+        try:
+            frames = json.loads((Path(run) / path).read_text(encoding="utf-8")).get("frames", [])
+        except (OSError, ValueError):
+            frames = []
+        if frames:
+            from html_geometry_repair import propose_endpoint_routes
 
-    proposals = propose_endpoint_routes({"scene": doc["scene"]}, scope, report, frames)
-    return [
-        {"id": f"candidate-{index + 1}", "operations": proposal["operations"],
-         "basis": "deterministic_geometry/geometry-repair-0.2.0",
-         "requires_original_qa": True, "rank": proposal["rank"]}
-        for index, proposal in enumerate(proposals[:6])
-    ]
+            proposals = propose_endpoint_routes({"scene": doc["scene"]}, scope, report, frames)
+            candidates.extend(
+                {"id": f"candidate-{index + 1}", "operations": proposal["operations"],
+                 "basis": "deterministic_geometry/geometry-repair-0.2.0",
+                 "requires_original_qa": True, "rank": proposal["rank"]}
+                for index, proposal in enumerate(proposals[:6])
+            )
+    if (report or {}).get("capacityIssues"):
+        from html_capacity_repair import _layout_for, capacity_candidates
+
+        catalog = json.loads((ROOT / "html_engine/visual/generated/catalog.json").read_text(encoding="utf-8"))
+        try:
+            layout = _layout_for(doc["scene"], catalog)
+        except ValueError:
+            layout = None
+        if layout is not None:
+            for index, operations in enumerate(
+                    capacity_candidates(doc["scene"], layout, report, catalog, scope)[:6]):
+                candidates.append({
+                    "id": f"capacity-{index + 1}", "operations": operations,
+                    "basis": "deterministic_capacity/capacity-repair-0.1.0",
+                    "requires_original_qa": True,
+                })
+    return candidates
 
 
 def _minimal_task(packet, candidates=None):

@@ -2,7 +2,8 @@
 import copy
 import json
 
-from html_external_handoff import _minimal_task
+from html_external_handoff import _deterministic_candidates, _minimal_task
+from scripts.benchmark_capacity_repair import diagnostics, scene_and_layout
 from scripts.benchmark_external_minimal_input import build_packet, measure
 from artifact_fingerprint import sha256_json
 
@@ -62,3 +63,18 @@ def test_minimal_projection_is_serializable_and_deterministic():
     first = json.dumps(_minimal_task(packet), ensure_ascii=False, sort_keys=True)
     second = json.dumps(_minimal_task(packet), ensure_ascii=False, sort_keys=True)
     assert first == second
+
+
+def test_capacity_candidates_are_forwarded_for_external_agents(tmp_path):
+    scene, layout, catalog = scene_and_layout()
+    report = {"capacityIssues": diagnostics()["box_case"]["capacityIssues"]}
+    candidates = _deterministic_candidates({"scene": scene}, ["card-1"], report, tmp_path)
+    assert candidates
+    assert all(candidate["requires_original_qa"] is True for candidate in candidates)
+    assert any(candidate["id"].startswith("capacity-") for candidate in candidates)
+    for candidate in candidates:
+        for operation in candidate["operations"]:
+            assert operation["kind"] in ("set_presentation", "set_text_style")
+            assert operation["targetId"] == "card-1"
+    minimal = _minimal_task(build_packet(), candidates)
+    assert minimal["candidates"] == candidates
