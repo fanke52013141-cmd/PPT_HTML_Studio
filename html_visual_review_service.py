@@ -452,8 +452,20 @@ def review_scene(
                             if k != "HPS_CANDIDATE_DIAGNOSTIC"},
     )
     if result.returncode != 0:
+        detail = (result.stderr or "").strip()
+        report_detail = ""
+        try:
+            failed_report = json.loads(report_path.read_text(encoding="utf-8"))
+            report_detail = str(failed_report.get("message") or failed_report.get("code") or "").strip()
+        except (OSError, ValueError, AttributeError):
+            failed_report = {}
+        if not detail:
+            detail = report_detail
+        elif report_detail and report_detail not in detail:
+            detail = f"{detail} | {report_detail}"
+        suffix = f" (report={report_path.relative_to(run_dir)})"
         raise HtmlReviewError(
-            "静态审阅脚本失败：" + (result.stderr or "")[-400:],
+            ("静态审阅脚本失败：" + (detail or "无脚本输出") + suffix)[-700:],
             status_code=500,
             code="REVIEW_SCRIPT_FAILED",
         )

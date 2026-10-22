@@ -232,8 +232,44 @@ def test_image_connection_probe_contract_is_unchanged() -> None:
         "prompt": "a single dot",
         "size": "1024x1024",
         "base_url": "https://example.invalid",
+        "api_key": "key",
+        "provider": None,
+        "public_config": None,
         "timeout": 15,
     }
+
+
+def test_toapis_image_connection_probe_passes_credentials() -> None:
+    captured: dict[str, Any] = {}
+
+    def generate(**kwargs: Any) -> Any:
+        captured.update(kwargs)
+        return {"data": [{"b64_json": "image"}]}
+
+    original = settings_service._deps()
+    settings_service.configure_settings_dependencies(
+        replace_settings_dependencies(
+            get_openai_client=lambda **_kwargs: object(),
+            generate_image_response=generate,
+            response_has_image_data=lambda response: bool(response),
+        )
+    )
+    try:
+        result = settings_service.test_image_connection(
+            settings_service.TestImagePayload(
+                api_key="toapis-key",
+                base_url="https://api.toapis.com/v1",
+                model="gpt-image-2.5-flare-vip",
+                size="1024x1024",
+            )
+        )
+    finally:
+        settings_service.configure_settings_dependencies(original)
+    assert result["success"] is True
+    assert captured["api_key"] == "toapis-key"
+    assert captured["provider"] == "toapis"
+    assert captured["public_config"] == {"toapis_resolution": "1k", "toapis_quality": "low"}
+    assert captured["timeout"] >= 120
 
 
 def test_tts_connection_probe_contract_is_unchanged() -> None:

@@ -340,6 +340,12 @@ def produce_scene(
             plan_version=selection.plan_version,
         )
     prompt_version = SEMANTIC_PROMPT_VERSION if plan.get("version") == "0.2.0" else PROMPT_VERSION
+    plan_version = str(plan.get("version") or "0.1.0")
+    if plan_version != selection.plan_version:
+        raise HtmlReviewError(
+            f"计划版本不一致：当前设计/计划基于 {plan_version}，请求为 {selection.plan_version}；"
+            "请按原版本继续，或重新生成设计参考。",
+            code="PLAN_VERSION_MISMATCH", status_code=409)
     brief = copy.deepcopy(resumed["brief"]) if resumed else build_design_brief(
         plan,
         theme="neutral-baseline",

@@ -166,19 +166,26 @@ def test_llm_connection(payload: TestLlmPayload) -> Dict[str, Any]:
 def test_image_connection(payload: TestImagePayload) -> Dict[str, Any]:
     dependencies = _deps()
     try:
+        from ai_provider_service import TOAPIS_DEFAULT_TASK_TIMEOUT_SECONDS, is_toapis_image_provider
+
         client = dependencies.get_openai_client(
             api_key=payload.api_key,
             base_url=payload.base_url,
         )
+        toapis = is_toapis_image_provider(None, payload.base_url)
         response = dependencies.generate_image_response(
             client=client,
             model=payload.model,
             prompt="a single dot",
             size=payload.size or "1024x1024",
             base_url=payload.base_url,
-            # Keep the connection probe responsive. A full image-generation
-            # job may take longer, but the settings UI should fail fast.
-            timeout=15,
+            api_key=payload.api_key,
+            provider="toapis" if toapis else None,
+            public_config=({"toapis_resolution": "1k", "toapis_quality": "low"}
+                           if toapis else None),
+            # ToAPIs uses asynchronous tasks; a 15s probe would always time out
+            # (and orphan a paid task). Keep a bounded but realistic budget.
+            timeout=(TOAPIS_DEFAULT_TASK_TIMEOUT_SECONDS if toapis else 15),
         )
         if dependencies.response_has_image_data(response):
             return {"success": True, "message": "连接成功！生图接口响应正常。"}

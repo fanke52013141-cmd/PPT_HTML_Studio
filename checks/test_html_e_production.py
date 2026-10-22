@@ -67,6 +67,13 @@ def test_allocation_precedes_subject_generation_and_observation_is_consumed(case
     assert result["saved"]["changed"] and not (case.run/"planning/html_visual/approval-e1.json").exists()
 
 
+def test_accepted_legacy_design_cannot_be_resumed_as_semantic_plan(case):
+    first = run(case)
+    with pytest.raises(HtmlReviewError) as caught:
+        run(case, design_candidate_key=first["design"]["key"], plan_version="0.2.0")
+    assert caught.value.code == "PLAN_VERSION_MISMATCH"
+
+
 def test_unsupported_allocation_stops_before_paid_subject_and_author_write(case):
     first = run(case)
     from checks.html_design_agent_fixture import response_for
@@ -429,7 +436,7 @@ def test_web_agent_payload_parity_and_current_design(tmp_path, monkeypatch):
                 base = f"{prefix}/projects/{pid}/html-review/s1"
                 body = {"design_candidate_key": "a" * 64, "asset_instruction": "fixture retry"}
                 assert client.post(base + "/produce", json=body).status_code == 200
-                assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.1.0", "repair_relation_points": "",
+                assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.2.0", "repair_relation_points": "",
                                        "runner": "legacy", "pi_limits": None, "max_image_calls": 0}
                 reused = {"reuse_design_candidate_key": "b" * 64}
                 assert client.post(base + "/produce", json=reused).status_code == 200

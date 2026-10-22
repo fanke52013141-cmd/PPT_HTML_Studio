@@ -445,7 +445,7 @@
           let payload = action === 'produce' ? {plan_version: '0.2.0'} : {};
           if (action === 'accept-design') {
             if (!designCandidate || designCandidate.stale) throw new Error('请先生成并审阅当前设计。');
-            payload = {design_candidate_key: designCandidate.key}; action = 'produce';
+            payload = {design_candidate_key: designCandidate.key, plan_version: '0.2.0'}; action = 'produce';
             if(section.querySelector('[data-production-runner]').value === 'pi') {
               payload.runner='pi'; payload.pi_limits={max_model_calls:12,max_tool_calls:24,timeout_seconds:900,max_candidate_rounds:2};
               payload.max_image_calls=Number(section.querySelector('[data-pi-images]').value);
@@ -459,7 +459,7 @@
           } else if (action === 'retry-asset') {
             const instruction = section.querySelector('[data-asset-instruction]').value.trim();
             if (!acceptedDesignKey || !instruction) throw new Error('请填写主体素材修改方向，并确认当前设计仍有效。');
-            payload = {design_candidate_key: acceptedDesignKey, asset_instruction: instruction}; action = 'produce';
+            payload = {design_candidate_key: acceptedDesignKey, asset_instruction: instruction, plan_version: '0.2.0'}; action = 'produce';
           }
           let result = action === 'resume' ? await API.post(`/api/projects/${encodeURIComponent(current.project.id)}/html-review/tasks/${encodeURIComponent(lastTask.id)}/resume`, {}) : await API.post(`${base}/${action}`, payload);
           if (result.task) {

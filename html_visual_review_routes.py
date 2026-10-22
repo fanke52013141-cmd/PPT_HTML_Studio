@@ -219,6 +219,10 @@ def produce(project_id: str, slide_id: str, db: Any = Depends(_get_db), payload:
         options = (payload.model_dump(exclude={name for name in ("prior_unknown_task_id", "reuse_design_candidate_key")
                                              if getattr(payload, name) is None})
                    if payload else None)
+        if options is not None and "plan_version" not in payload.model_fields_set:
+            # Guided HTML defaults to the semantic plan; legacy 0.1.0 remains
+            # available only when the caller explicitly asks for it.
+            options["plan_version"] = "0.2.0"
         task = _jobs.submit(db, project, _contract_slide(run_dir, slide_id), options=options)
     except HtmlTaskError as exc:
         raise HTTPException(exc.status_code, str(exc))

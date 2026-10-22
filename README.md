@@ -1,10 +1,12 @@
 # HTML Studio
 
-2026-10-22 优化数据汇总：[还原优化前后数据](docs/plans/html-backend-development/optimization-results-2026-10-22.md)。W1 端点归一化 0/32→32/32、W2 穿字路由 0/2→2/2、W3 容量候选 0→18、W4 外部输入 113,922→26,403 字节（-76.8%）；全部为冻结/受控基准，0 模型/供应商/作者写入。
+2026-10-22 实测修复：[图片连接测试、计划版本、审阅错误透出](docs/releases/2026-10-22-provider-test-plan-version-errors.md)。ToAPIs 连接测试补传凭据与任务级超时（真实验证 48.9 秒成功）；Web/Agent produce 省略 plan_version 默认 0.2.0，设计/计划版本不一致返回 409 不再静默复用；审阅脚本失败错误带报告原因与路径。Agent API 1.62.1、capability 1.15。
+
+2026-10-22 优化数据汇总：[还原优化前后数据](docs/plans/html-backend-development/optimization-results-2026-10-22.md)。W1 端点归一化 0/32→32/32、W2 穿字路由 0/2→2/2、W3 容量候选 0→25、W4 外部输入 113,922→26,403 字节（-76.8%）；全部为冻结/受控基准，0 模型/供应商/作者写入。
 
 2026-10-22 识别迁移：[跨机样本封存工具](docs/releases/2026-10-22-recognition-transfer.md)。新增 feature_recognition_bundle：只传输 dataset 引用的图片/请求/响应/标签，逐文件 SHA-256 与路径边界校验，导入先验证后落盘、拒绝覆盖；4 项测试通过，受控夹具往返 8 文件/2 页/69,258 字节且计分完全一致。真实跨课程材料仍需另一台机导出并标注。
 
-2026-10-22 还原优化（W3）：[容量溢出确定性修复](docs/releases/2026-10-22-capacity-repair.md)、[契约 0.1.0](docs/contracts/html-presentation/runtime/visual-v1/capacity-repair-0.1.0.md)。新增 capacity_first：尺寸候选按原容量触发并限制画布/变体，排版候选仅缩小已显式字号且不低于24px；首个通过原检查者返回，全部失败显式无解、不调用模型。离线候选 0→18、模型调用0；generate1.7、Agent API1.62.0、契约包0.9.115。
+2026-10-22 还原优化（W3）：[容量溢出确定性修复](docs/releases/2026-10-22-capacity-repair.md)、[契约 0.1.0](docs/contracts/html-presentation/runtime/visual-v1/capacity-repair-0.1.0.md)。新增 capacity_first：尺寸候选按原容量触发并限制画布/变体，排版候选仅缩小已显式字号且不低于24px；首个通过原检查者返回，全部失败显式无解、不调用模型。离线候选 0→25、模型调用0；generate1.7、Agent API1.62.0、契约包0.9.115。
 
 2026-10-22 还原优化（W4）：[外部 Agent 最小输入](docs/releases/2026-10-22-external-minimal-input.md)。任务包新增 task-minimal.json：scope 对象、类型化缺陷、确定性候选、相关文件引用、幂等与回执要求；task.json 仍为权威。代表性任务包 113,922→26,403 字节（-76.8%），候选由 geometry-repair/0.2.0 预生成且仍需原 QA。4 项测试通过；契约0.9.114/API1.61.0保持。
 

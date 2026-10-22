@@ -176,6 +176,33 @@ def test_real_browser_review_reports_capacity_failure_with_object_id(
     assert "CONTENT_CAPACITY_EXCEEDED" in report["message"]
 
 
+def test_review_script_failure_surfaces_report_cause(tmp_path, real_scene) -> None:
+    import subprocess
+
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+
+    def failed(command, **_kwargs):
+        report = Path(command[3])
+        report.write_text(
+            json.dumps({"passed": False, "code": "BROWSER_LAUNCH_FAILED",
+                        "message": "browserType.launch: spawn EPERM"}),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(command, 1, "", "")
+
+    service = review.HtmlReviewDependencies(
+        repo_root=REPO_ROOT,
+        json_generator=lambda **_kwargs: {},
+        run_subprocess_bounded=failed,
+    )
+    with pytest.raises(review.HtmlReviewError) as caught:
+        review.review_scene(real_scene, run_dir=run_dir, deps=service)
+    assert caught.value.code == "REVIEW_SCRIPT_FAILED"
+    assert "browserType.launch" in str(caught.value)
+    assert "report=" in str(caught.value)
+
+
 def test_approval_binds_hashes_and_invalidates_on_change(
     tmp_path, real_scene
 ) -> None:
