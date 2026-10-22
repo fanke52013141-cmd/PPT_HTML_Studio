@@ -56,12 +56,17 @@ def run(baseline=False):
             candidates = capacity.capacity_candidates(scene, layout, diagnostic, catalog, scope)
         kinds = sorted({operation["kind"] for operations in candidates for operation in operations})
         fonts = [operation["values"]["fontSizePx"] for operations in candidates
-                 for operation in operations if operation["kind"] == "set_text_style"]
+                 for operation in operations
+                 if operation["kind"] == "set_text_style" and "fontSizePx" in operation["values"]]
+        line_heights = [operation["values"]["lineHeight"] for operations in candidates
+                        for operation in operations
+                        if operation["kind"] == "set_text_style" and "lineHeight" in operation["values"]]
         sizes = [operation["values"] for operations in candidates
                  for operation in operations if operation["kind"] == "set_presentation"]
         records.append({"case": name, "candidates": len(candidates), "kinds": kinds,
                         "font_min": min(fonts) if fonts else None,
                         "font_max": max(fonts) if fonts else None,
+                        "line_height_candidates": len(line_heights),
                         "size_candidates": len(sizes)})
     return {
         "mode": "baseline" if baseline else "deterministic_capacity",

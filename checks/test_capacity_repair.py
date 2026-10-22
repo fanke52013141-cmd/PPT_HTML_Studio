@@ -22,7 +22,11 @@ def test_size_and_font_candidates_stay_bounded_and_readable():
                 assert operation["targetId"] in scope
                 assert operation["kind"] in ("set_presentation", "set_text_style")
                 if operation["kind"] == "set_text_style":
-                    assert operation["values"]["fontSizePx"] >= capacity.MIN_READABLE_PX
+                    values = operation["values"]
+                    if "fontSizePx" in values:
+                        assert values["fontSizePx"] >= capacity.MIN_READABLE_PX
+                    if "lineHeight" in values:
+                        assert 1.0 <= values["lineHeight"] <= 1.8
                 else:
                     values = operation["values"]
                     assert set(values) <= {"width", "height", "offsetX", "offsetY"}

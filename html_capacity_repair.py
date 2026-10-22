@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 from pathlib import Path
 import time
 
@@ -33,6 +34,34 @@ def _layout_for(scene, catalog):
     if layout is None:
         raise ValueError("未注册的布局版本")
     return layout
+
+
+def _augment_hint(hint, node, layout, issue):
+    """Derive a size hint from CSS text overflow when no canvas box trigger exists."""
+    box = layout["slots"][node["slot"]]["box"]
+    presentation = node.get("presentation") or {}
+    extra = {"width": 0.0, "height": 0.0}
+    for trigger in issue.get("triggers", []):
+        dimension, actual, limit = trigger.get("dimension"), trigger.get("actual"), trigger.get("limit")
+        if not isinstance(actual, (int, float)) or not isinstance(limit, (int, float)):
+            continue
+        overflow = max(0.0, actual - limit)
+        if dimension in ("text_bottom_overflow", "text_top_overflow"):
+            extra["height"] = max(extra["height"], overflow)
+        elif dimension in ("text_right_overflow", "text_left_overflow"):
+            extra["width"] = max(extra["width"], overflow)
+    enriched = dict(hint or {})
+    for dimension, overflow in extra.items():
+        if overflow <= 0 or dimension in enriched:
+            continue
+        current = presentation.get(dimension, box[dimension])
+        enriched[dimension] = {
+            "currentOuter": current,
+            "currentEffective": current,
+            "insets": 0,
+            "suggestedOuter": math.ceil(current + overflow + 2),
+        }
+    return enriched
 
 
 def _size_values(node, scene, layout, variants, hint, issue):
@@ -76,11 +105,15 @@ def capacity_candidates(scene, layout, diagnostic, catalog, scope):
         if node["type"] == "annotation":
             continue
         hint = _capacity_size_hint(node, layout, [issue])
+        hint = _augment_hint(hint, node, layout, issue)
         values = _size_values(node, scene, layout, variants, hint, issue)
         if values:
             candidates.append([{"targetId": target, "kind": "set_presentation",
                                 "values": values}])
         for part, current in _explicit_fonts(node, issue):
+            for line_height in (1.3, 1.2, 1.1, 1.0):
+                candidates.append([{"targetId": target, "kind": "set_text_style",
+                                    "part": part, "values": {"lineHeight": line_height}}])
             for step in FONT_STEPS:
                 size = round(current * step, 1)
                 if size < MIN_READABLE_PX:
@@ -148,7 +181,8 @@ def repair_capacity(run, slide, request, *, scene=None, binding=None):
                         "author_unchanged": unchanged, "version": VERSION,
                         "elapsed_seconds": round(time.monotonic() - started, 3)}
         except (editor.SceneEditError, ValueError) as exc:
-            attempt.update(passed=False, code=getattr(exc, "code", type(exc).__name__))
+            attempt.update(passed=False, code=getattr(exc, "code", type(exc).__name__),
+                           message=str(exc)[:240])
     unchanged = editor.load_editor(run, slide) == doc
     return {"status": "needs_revision", "passed": False, "reason": "NO_DETERMINISTIC_CAPACITY_FIT",
             "candidate": None, "attempts": attempts, "proposed_count": len(candidates),

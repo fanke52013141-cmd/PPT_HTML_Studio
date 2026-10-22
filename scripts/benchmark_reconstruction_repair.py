@@ -89,6 +89,9 @@ def run():
                 record.update(status=trial["status"], reason=trial.get("reason"),
                               repaired=trial["status"] == "candidate",
                               attempts=len(trial.get("attempts", [])),
+                              attempts_detail=[{key: attempt.get(key) for key in
+                                                ("passed", "code", "message")}
+                                               for attempt in trial.get("attempts", [])],
                               provider_calls=trial["provider_calls"],
                               author_unchanged=trial["author_unchanged"])
             else:
