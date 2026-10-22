@@ -62,3 +62,19 @@
 
 - 完整 HTML 审核仍需要可用的 Chromium；本次本机 DSH 沙箱仍无法启动浏览器，真实页级审核未完成。
 - 未改变审批、作者写入、动态检查口径或任何通过条件。
+
+## 交付证据
+
+| 提交 | 内容 |
+|---|---|
+| `6212ad7` | P1 图片探测、P2 计划版本、P3 错误透出；Agent API 1.62.1 / capability 1.15 |
+| `9cd84d1` | 仅在调用方显式请求版本时校验计划版本，修复兼容性回归 |
+| `0c929d3` | P4 流式 usage 落盘、P5 付费前 Chromium 预检与 `BROWSER_UNAVAILABLE` |
+
+- CI：`39784143662`（`9cd84d1`）success；`39793733217`（`0c929d3`）success；
+  `39776927491`（`6212ad7`）failure 仅含已修复的计划版本兼容用例与已知视频截图 flake。
+- 真实验证：ToAPIs 连接测试成功 48.9s；沙箱中 `browser_preflight` 返回 `ok=False`；
+  一次规划调用记录 `usage.total_tokens=20221`。
+- 复现：`python scripts/generate_agent_contracts.py --check`；
+  `python -m pytest checks/test_settings_services.py checks/test_html_production_stages.py -q`；
+  以及本文件“验证”中的审阅/e2e 用例。
