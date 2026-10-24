@@ -475,7 +475,8 @@ def test_persistent_design_stop_and_revision_identity(case):
         capture.args[0](*capture.args[1:])
         db.expire_all()
         job = db.query(LocalJob).filter_by(id=first["id"]).one()
-        assert job.status == "succeeded" and job.stage == "design_review"
+        assert job.status == "succeeded" and job.stage == "design_review", {
+            "status": job.status, "stage": job.stage, "error": job.error}
         assert job.get_payload()["result"]["stage"] == "design_review"
         from html_creation_workflow import project_status
         status = project_status(project, run_dir=case.run, repo_root=ROOT, slide_ids=["e1"], db=db)

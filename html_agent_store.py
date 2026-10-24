@@ -14,6 +14,11 @@ def digest(value):
     return sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
 
 
+def derive_job_id(project, idempotency_key):
+    """Single derivation of the Pi job identity (duplicates previously drifted)."""
+    return digest([TYPE, project, idempotency_key])
+
+
 class JobConflict(ValueError):
     pass
 
@@ -36,7 +41,7 @@ class AgentJobStore:
 
     def create(self, project, slide, request, model_summary):
         from database import LocalJob
-        job_id = digest([TYPE, project, request.idempotency_key])
+        job_id = derive_job_id(project, request.idempotency_key)
         body = {"slide_id": slide, "request": request.model_dump(mode="json")}
         with LOCK, self.factory() as db:
             row = db.get(LocalJob, job_id)

@@ -435,6 +435,25 @@ def manual_protected_paths(manual):
     return protected_edit_paths(manual["base_scene"], manual["scene"], "scene") + protected_edit_paths(manual.get("base_binding"), manual.get("binding"), "binding")
 
 
+def scoped_protected_paths(paths, scope):
+    """Protected paths that concern objects inside a repair scope.
+
+    Owner of the protected-path grammar: a scene path carries a node id only as
+    ["scene", "nodes", <id>, ...]; binding paths protect action/beat identity
+    the object scope cannot express, and anything outside the grammar is kept
+    conservatively. Derived views must call this instead of re-parsing paths.
+    """
+    ids = set(scope or [])
+    result = []
+    for path in paths or []:
+        if path and path[0] == "scene" and len(path) > 2 and path[1] == "nodes":
+            if path[2] in ids:
+                result.append(list(path) if isinstance(path, tuple) else path)
+        else:
+            result.append(path)
+    return result
+
+
 def assert_manual_fields_unmodified(document, scene, binding):
     """One protection rule for candidate preview and the final AI save boundary."""
     protected = manual_protected_paths(document.get("manual"))

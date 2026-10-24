@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
@@ -81,7 +82,8 @@ def _sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-_BROWSER_PREFLIGHT: dict[str, Any] = {"result": None}
+_BROWSER_PREFLIGHT: dict[str, Any] = {"result": None, "failed_at": 0.0}
+_BROWSER_PREFLIGHT_RETRY_SECONDS = 300.0
 
 
 def browser_preflight(repo_root: Path, node_bin: str = "node", *,
@@ -91,8 +93,12 @@ def browser_preflight(repo_root: Path, node_bin: str = "node", *,
     Memoized per process: a task queue must not pay for images when Chromium is
     unavailable. The probe itself is provider-free and writes nothing.
     """
-    if not force and _BROWSER_PREFLIGHT["result"] is not None:
-        return _BROWSER_PREFLIGHT["result"]
+    cached = _BROWSER_PREFLIGHT["result"]
+    if not force and cached is not None:
+        # A success holds for the process; a transient failure must re-probe
+        # after a bounded interval instead of staying pinned until restart.
+        if cached.get("ok") or time.monotonic() - _BROWSER_PREFLIGHT["failed_at"] < _BROWSER_PREFLIGHT_RETRY_SECONDS:
+            return cached
     script = (
         "const {chromium}=require('playwright');"
         "chromium.launch({headless:true}).then(b=>b.close())"
@@ -109,6 +115,8 @@ def browser_preflight(repo_root: Path, node_bin: str = "node", *,
         ok, detail = False, f"{type(exc).__name__}: {str(exc)[:300]}"
     outcome = {"ok": ok, "detail": detail}
     _BROWSER_PREFLIGHT["result"] = outcome
+    if not ok:
+        _BROWSER_PREFLIGHT["failed_at"] = time.monotonic()
     return outcome
 
 

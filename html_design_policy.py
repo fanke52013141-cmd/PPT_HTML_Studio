@@ -87,7 +87,14 @@ def production_policy(scene):
 def editable_capabilities(node, variants):
     from html_scene_repair import PARTS, STYLE_KEYS
     if node["type"] == "arrow" and node.get("from"):
-        return {}  # Geometry is derived from semantic endpoints; replan to change them.
+        if not node.get("to"):
+            return {}  # Geometry is derived from semantic endpoints; replan to change them.
+        # Endpoint objects stay semantic (replan to change them); the declared
+        # attachment point of an anchor-free endpoint is adjustable through the
+        # registered deterministic router (set_endpoint_point).
+        sides = [side for side in ("from", "to")
+                 if set(node[side]) == {"objectId", "point"} and not node[side].get("anchorId")]
+        return {"set_endpoint_point": sides} if sides else {}
     if node["type"] == "annotation":
         return {"set_variant": [v["id"] for v in variants]} if variants else {}
     result = {"set_presentation": ["offsetX", "offsetY", "width", "height"]}

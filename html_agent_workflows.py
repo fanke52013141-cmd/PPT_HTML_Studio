@@ -6,7 +6,7 @@ import time
 
 from account_context import account_scope, get_current_account_id
 from html_agent_execution import ExecutionError
-from html_agent_store import digest
+from html_agent_store import derive_job_id, digest
 from pipeline_lifecycle import project_artifact_lock
 import html_agent_jobs as jobs
 
@@ -65,7 +65,7 @@ def prepare(project, task):
 
 def submit(project, request, model, *, store=None, launch=True):
     store = store or jobs.configure()
-    job_id = digest(["html_pi_agent", project.id, request.idempotency_key])
+    job_id = derive_job_id(project.id, request.idempotency_key)
     try: store.read(project.id, SCOPE, job_id)
     except KeyError: pass
     else: return store.create(project.id, SCOPE, request, {})[0]
@@ -115,7 +115,13 @@ def work(store, run, project_id, request, model, job_id, metadata):
                 result = {"task_type": request.task.task_type, "items": items,
                           "outcome": "partial_failure" if failed else "all_succeeded", "saved": False}
             else:
-                while not jobs._slot.acquire(timeout=0.2): guard()
+                next_guard = 0.0
+                while not jobs._slot.acquire(timeout=0.2):
+                    # Same backoff rationale as the single-page worker: the
+                    # workflow guard hashes full source identity each call.
+                    if time.monotonic() >= next_guard:
+                        guard()
+                        next_guard = time.monotonic() + 1.0
                 acquired = True
                 from html_pi_json import PiJSON
                 pi = PiJSON(model, run / "planning/html_visual/pi-jobs" / job_id,
@@ -149,11 +155,18 @@ def work(store, run, project_id, request, model, job_id, metadata):
     except Exception as error:
         code = error.code if isinstance(error, ExecutionError) else "invalid_result"
         usage["elapsed_seconds"] = round(time.monotonic() - started, 3)
-        store.update(project_id, SCOPE, job_id, status="cancelled" if code == "cancelled" else "failed",
-            usage=usage, result=None,
-            error={"code": code, "message": str(error)[:1000] if isinstance(error, ExecutionError)
-                else "候选未通过原业务校验，未改变正式内容", "retryable": False})
+        try:
+            store.update(project_id, SCOPE, job_id, status="cancelled" if code == "cancelled" else "failed",
+                usage=usage, result=None,
+                error={"code": code, "message": str(error)[:1000] if isinstance(error, ExecutionError)
+                    else "候选未通过原业务校验，未改变正式内容", "retryable": False})
+        except Exception:
+            # Persist failure inside the failure path must not kill the worker
+            # silently; startup recovery marks abandoned jobs interrupted.
+            import logging
+            logging.getLogger(__name__).exception("Pi workflow %s terminal update failed", job_id)
     finally:
+        jobs.cleanup_job_folder(run, job_id)
         if acquired: jobs._slot.release()
 
 

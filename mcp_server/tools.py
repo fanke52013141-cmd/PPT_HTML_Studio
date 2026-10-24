@@ -99,7 +99,10 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
             canvas_profile=args.get("canvas_profile", "landscape_16_9"),
             automation_mode=args.get("automation_mode", "auto"),
             review_policy=args.get("review_policy", "none"),
-            mask_enabled=args.get("mask_enabled", True),
+            mask_enabled=args.get("mask_enabled", False),
+            production_mode=args.get("production_mode", "guided"),
+            presentation_mode=args.get("presentation_mode", "full_frame"),
+            visual_backend=args.get("visual_backend", "image"),
             config_package_id=args.get("config_package_id"),
             config_package_version=args.get("config_package_version"),
             config_overrides=args.get("config_overrides"),
@@ -118,7 +121,7 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
 
     elif cap_id == "project.list":
         return client.list_projects(
-            status=args.get("status"),
+            status=args.get("status_filter"),
             limit=args.get("limit", 50),
         )
 
@@ -133,6 +136,9 @@ def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[st
             name=args.get("name"),
             description=args.get("description"),
             ai_mode=args.get("ai_mode"),
+            production_mode=args.get("production_mode"),
+            presentation_mode=args.get("presentation_mode"),
+            visual_backend=args.get("visual_backend"),
             expected_revision=args.get("expected_revision"),
             idempotency_key=args.get("idempotency_key"),
         )

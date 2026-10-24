@@ -704,7 +704,12 @@ in lockstep with every feature change:
   API paths, MCP tool names, and CLI commands must only be declared there.
 - `agent_contract/models.py` is the single source of truth for Agent-facing
   request/response schemas; `agent_api/routes.py` maps them onto internal
-  services; never duplicate parameter definitions across layers.
+  services; never duplicate parameter definitions across layers. Models owned
+  by feature modules under their explicit ownership rules (for example
+  `html_agent_models.py` unattended models, `html_handoff_models.py` exchange
+  models) are legitimate contract sources: they are registered in
+  `checks/agent/test_capability_registry.py` `APPROVED_MODEL_MODULES`, and a
+  new module must be added there deliberately, never silently.
 - `agent_contract/versions.py` owns `AGENT_API_VERSION` and the contract hash.
 
 Any change in the categories below MUST trigger the listed synchronization
@@ -716,6 +721,7 @@ steps in the same change set:
 | New pipeline stage / stage skip logic (e.g. `STAGES`, `mask_enabled` skip) | Verify `agent_contract/operations.py` `CHECKPOINT_STAGES` and progress mapping still hold; ensure skipped stages still report `done` so Agent progress math works |
 | New/changed Agent-facing HTTP route | Register an `AgentCapability` in `agent_contract/capabilities.py` with version, models, and mappings; add tests to `checks/agent/test_transport_contract_sync.py` coverage |
 | Any change touching request/response models or the capability registry | Bump the affected capability `version` (minor for additive-compatible fields), bump `AGENT_API_VERSION`, run `python scripts/generate_agent_contracts.py` and commit the regenerated `docs/agent/capability-matrix.md` |
+| New/changed Agent-observable failure codes, defaults, or error shapes (no model/registry change) | Update the affected capability `description` so Agents can observe the new behavior; bump `AGENT_API_VERSION` when the wire shape changes (e.g. status codes, progress scale); no capability version bump required for description-only updates |
 | Database migration adding a project-visible column | Check whether `agent_contract/models.py` and `_project_summary` need the new column, and whether `checks/agent/test_contract_model_parity.py` mapping tables must be extended |
 
 The parity tests in `checks/agent/test_contract_model_parity.py` fail loudly

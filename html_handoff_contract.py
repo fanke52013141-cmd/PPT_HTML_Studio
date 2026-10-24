@@ -51,6 +51,14 @@ def operation_schema(doc, context, scope, task_type):
                     values["icon"] = {"enum": capability["icons"]}
                 add(node, "set_variant", values)
                 variants[-1]["properties"]["values"]["required"] = ["variant"]
+        endpoint_sides = editable.get("set_endpoint_point")
+        if endpoint_sides:
+            # Mirror html_repair_static._apply_endpoint_point: exact {x,y},
+            # normalized 0–1, only anchor-free declared sides, at least one side.
+            point = {"type": "object", "additionalProperties": False, "required": ["x", "y"],
+                     "properties": {"x": {"type": "number", "minimum": 0, "maximum": 1},
+                                    "y": {"type": "number", "minimum": 0, "maximum": 1}}}
+            add(node, "set_endpoint_point", {side: point for side in endpoint_sides})
         if task_type != "animation_repair":
             continue
         for action in doc["scene"]["motion"]:

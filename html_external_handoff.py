@@ -215,6 +215,30 @@ def _deterministic_candidates(doc, scope, report, run):
     return candidates
 
 
+def _submittable_candidates(schema, candidates, scope):
+    """Every advertised candidate must survive the import contract check.
+
+    Candidates whose only failures target objects outside the repair scope are
+    a legitimate router asymmetry (an issue may name an in-scope text whose
+    arrow is outside the scope) and are dropped; any other mismatch is a
+    candidate/schema contract bug and stops the export loudly.
+    """
+    scope_ids = set(scope or [])
+    kept = []
+    for candidate in candidates:
+        operations = candidate.get("operations") or []
+        results = validate_operations(schema, operations) if operations else []
+        if all(results):
+            kept.append(candidate)
+            continue
+        explainable = all(operation.get("targetId") not in scope_ids
+                          for ok, operation in zip(results, operations) if not ok)
+        if not explainable:
+            raise HandoffError("HANDOFF_CANDIDATE_SCHEMA",
+                               f"确定性候选与本任务操作契约不一致: {candidate.get('id')}")
+    return kept
+
+
 def _minimal_task(packet, candidates=None):
     """Compact Agent input: scoped targets, typed defects, candidates, receipts.
 
@@ -256,8 +280,7 @@ def _minimal_task(packet, candidates=None):
         "expected_revision": packet.get("expected_revision"),
         "audio_revision": packet.get("audio_revision"),
     })
-    protected = [path for path in context.get("protected_paths", [])
-                 if not path or (scope and path[0] in scope)]
+    protected = editor.scoped_protected_paths(context.get("protected_paths", []), scope)
     rules = packet.get("rules") or {}
     return {
         "format": "hps.html.external_minimal_task",
@@ -455,6 +478,7 @@ def export_bundle(run, project_id, slide, request):
               "系统导入后重新检查预览，显式保存后仍须原画面/语义/音频验收。\n")
     candidates = (_deterministic_candidates(doc, request.scope, report, run)
                   if doc and report else [])
+    candidates = _submittable_candidates(operations, candidates, request.scope)
     minimal = _minimal_task(packet, candidates)
     payloads = {**package.data, "task.json": json.dumps(packet, ensure_ascii=False, indent=2).encode(),
                 "task-minimal.json": json.dumps(minimal, ensure_ascii=False, indent=2).encode(),

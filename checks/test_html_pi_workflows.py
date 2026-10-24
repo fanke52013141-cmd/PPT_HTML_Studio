@@ -341,7 +341,7 @@ def test_pi_selected_design_runs_original_production_and_records_restorable_ai_v
             fn, *args = calls[0]; fn(*args)
             with SessionLocal() as db:
                 value = html_task_store._job_to_dict(html_task_store._job(db, task["id"]))
-            assert value["status"] == "succeeded", value
+            assert value["status"] == "succeeded", {"status": value["status"], "error": value.get("error")}
             result = value["result"]
         else:
             pi = PiJSON(provider.model(), case.run / "pi-runtime")

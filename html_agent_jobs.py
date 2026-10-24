@@ -10,7 +10,7 @@ import time
 from hashlib import sha256
 
 from html_agent_execution import Execution, ExecutionError, text_result
-from html_agent_store import AgentJobStore, LOCK, digest
+from html_agent_store import AgentJobStore, LOCK, derive_job_id, digest
 from pipeline_lifecycle import project_artifact_lock
 
 ROOT = Path(__file__).resolve().parent
@@ -84,7 +84,7 @@ def ready(model, *, require_images=True):
 def submit(run, project, slide, request, model, *, store=None, launch=True):
     store = store or configure()
     # Duplicate submissions must return the existing job even if credentials later disappear.
-    job_id = digest(["html_pi_agent", project, request.idempotency_key])
+    job_id = derive_job_id(project, request.idempotency_key)
     try:
         existing = store.read(project, slide, job_id, private=True)
     except KeyError:
@@ -105,6 +105,26 @@ def submit(run, project, slide, request, model, *, store=None, launch=True):
     return job
 
 
+def cleanup_job_folder(run, job_id, *, keep=8):
+    """Delete this job's extracted work folder; keep the newest few for triage.
+
+    Extracted packets, candidate images and events.jsonl otherwise accumulate
+    one full material bundle per job. Startup recovery never re-runs a finished
+    job, so finished folders are safe to prune.
+    """
+    root = Path(run) / "planning/html_visual/pi-jobs"
+    try:
+        shutil.rmtree(root / job_id, ignore_errors=True)
+        if not root.is_dir():
+            return
+        stale = sorted((p for p in root.iterdir() if p.is_dir()),
+                       key=lambda p: p.stat().st_mtime, reverse=True)
+        for old in stale[keep:]:
+            shutil.rmtree(old, ignore_errors=True)
+    except OSError:
+        pass
+
+
 def _work(store, run, project, slide, request, model, job_id, parent_guard=lambda: None):
     started = time.monotonic()
     process = None
@@ -120,7 +140,14 @@ def _work(store, run, project, slide, request, model, job_id, parent_guard=lambd
             raise ExecutionError("timeout", "任务超过执行时限")
 
     try:
-        while not _slot.acquire(timeout=0.2): guard()
+        next_guard = 0.0
+        while not _slot.acquire(timeout=0.2):
+            # Cancel/timeout polling every 0.2s used to cost a DB read each
+            # iteration; a one-second backoff keeps latency bounded without
+            # hammering the store while a job waits for the single slot.
+            if time.monotonic() >= next_guard:
+                guard()
+                next_guard = time.monotonic() + 1.0
         acquired = True
         guard()
         expected_runner = store.read(project, slide, job_id, private=True)["payload"]["model"]["runner_identity"]
@@ -169,8 +196,11 @@ def _work(store, run, project, slide, request, model, job_id, parent_guard=lambd
                         "thinking": execution_profile(model)["thinking_level"],
                         "temperature": execution_profile(model)["temperature"]},
               "limits": request.limits.model_dump()})
+        next_guard = 0.0
         while True:
-            guard()
+            if time.monotonic() >= next_guard:
+                guard()
+                next_guard = time.monotonic() + 2.0
             try: event = messages.get(timeout=0.2)
             except queue.Empty: continue
             kind = event.get("type")
@@ -231,8 +261,14 @@ def _work(store, run, project, slide, request, model, job_id, parent_guard=lambd
         usage["candidate_rounds"] = execution.rounds if execution else 0
         usage["elapsed_seconds"] = round(time.monotonic() - started, 3)
         message = str(error)[:2000] if isinstance(error, ExecutionError) else "任务材料、版本或执行环境发生错误，未保存作者"
-        store.update(project, slide, job_id, status="cancelled" if code == "cancelled" else "failed",
-                     usage=usage, result=None, error={"code": code, "message": message, "retryable": False})
+        try:
+            store.update(project, slide, job_id, status="cancelled" if code == "cancelled" else "failed",
+                         usage=usage, result=None, error={"code": code, "message": message, "retryable": False})
+        except Exception:
+            # A persist failure inside the failure path must not kill the worker
+            # thread silently; startup recovery marks abandoned jobs interrupted.
+            import logging
+            logging.getLogger(__name__).exception("Pi job %s terminal update failed", job_id)
     finally:
         if process:
             if process.poll() is None: process.terminate()
@@ -240,5 +276,6 @@ def _work(store, run, project, slide, request, model, job_id, parent_guard=lambd
             except subprocess.TimeoutExpired: process.kill(); process.wait()
             for stream in (process.stdin, process.stdout):
                 if stream: stream.close()
+        cleanup_job_folder(run, job_id)
         if acquired: _slot.release()
         with LOCK: _workers.pop(job_id, None)

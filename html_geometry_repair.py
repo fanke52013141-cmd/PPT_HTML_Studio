@@ -245,6 +245,8 @@ def propose(doc, scope, report, frames):
     conflicts = set()
     for issue in issues:
         ids = issue['targets']
+        if len(ids) < 2:
+            continue  # Malformed single-target overlap must not StopIteration out of propose.
         arrows = [i for i in ids if nodes[i]['type'] == 'arrow']
         if len(arrows) != 1:
             return []
