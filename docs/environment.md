@@ -31,6 +31,14 @@ or shell command arguments.
 | `PPT_STUDIO_RENDER_ACCELERATION` | `auto` | Encoder selection. Use an explicit mode only after validating output on that machine. |
 | `PPT_STUDIO_REVEAL_BUILD_TIMEOUT_SEC` | application default | Bound for Reveal asset construction. |
 
+## Local toolchain notes
+
+| Tool | Use |
+| --- | --- |
+| `langgraph` | Declared in `requirements.txt`. The HTML handoff chain imports it at module level, and `start_server.py` refuses to start without it. |
+| Playwright Chromium | The HTML review pipeline launches a real headless browser before any paid generation (`html_visual_review_service.browser_preflight`). Install with `cd html_engine && npx playwright install chromium`; a missing browser fails produce/export jobs with `BROWSER_UNAVAILABLE` before any provider call. |
+| Editor build manifests | `static/editor_ui/*manifest.json` seal source hashes. After editing `static/index.html` or `editor_ui/` sources run `cd editor_ui && npm run build`; `scripts/check_editor_manifests.py` (CI quick check) fails on stale manifests. |
+
 ## Providers and integrations
 
 | Variable group | Use |

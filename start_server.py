@@ -53,6 +53,17 @@ def main() -> int:
             f"端口 {host}:{port} 已被占用：PPT Studio 只允许单实例运行（并发锁仅在单进程内有效）。\n"
             "请先关闭已在运行的 PPT Studio，再重新启动。"
         )
+    # HTML 交接链路（html_external_handoff -> html_capacity_repair ->
+    # html_candidate_agent）在模块级硬依赖 langgraph；缺失时整个外部 Agent
+    # 层无法导入。在导入组合根之前显式失败，而不是让服务器半启动后崩溃。
+    try:
+        import langgraph  # noqa: F401
+    except ImportError as exc:
+        raise SystemExit(
+            f"缺少核心依赖 langgraph（{exc}）：HTML 后端与外部 Agent 交接需要它。\n"
+            "请先安装声明的依赖：python -m pip install -r requirements.txt"
+        ) from None
+
     from server import app  # 延迟导入：仅在真正启动时触发组合根副作用
 
     uvicorn.run(app, host=host, port=port, reload=False)
