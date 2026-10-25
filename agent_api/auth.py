@@ -105,7 +105,19 @@ class AgentAuthMiddleware(BaseHTTPMiddleware):
                     account_token = authenticate_agent_token(db, token)
                     if account_token is not None:
                         account_id = account_token.account_id
-                        scopes = set(filter(None, account_token.scopes.split(",")))
+                        scopes = {part.strip() for part in account_token.scopes.split(",")} - {""}
+                        if not scopes:
+                            # A stored token without any scope is a broken
+                            # record, not an implicit root grant; fail closed.
+                            return Response(
+                                content=json.dumps(
+                                    {"error": {"code": "INSUFFICIENT_SCOPE",
+                                               "message": "Token has no granted scopes; fix the token record before use."}},
+                                    ensure_ascii=False,
+                                ),
+                                status_code=403,
+                                media_type="application/json",
+                            )
                         authenticated = True
                 finally:
                     db.close()

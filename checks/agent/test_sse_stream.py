@@ -229,3 +229,34 @@ def test_sse_generator_emits_terminal_for_waiting_for_user():
 
     complete = next(frame.decode("utf-8") for frame in frames if "event: complete" in frame.decode("utf-8"))
     assert json.loads(complete.split("data: ", 1)[1])["status"] == "waiting_for_user"
+
+
+def test_sse_progress_uses_status_scale():
+    """SSE progress must use the same 0..100 integer scale as pipeline.status."""
+    import json as _json
+
+    from agent_api.routes import _sse_generator
+
+    mock_project = MagicMock()
+    mock_session = MagicMock()
+    mock_session.query.return_value.filter.return_value.first.return_value = mock_project
+
+    # _make_status seals one done stage of two -> the aggregate must be 50.
+    status_sequence = [_make_status(status="idle", stage="images")]
+
+    with patch("one_click_orchestrator.get_one_click_status", side_effect=status_sequence):
+        gen = _sse_generator("test-proj", MagicMock(return_value=mock_session), poll_interval=0.01, max_duration=5)
+        frames = list(gen)
+
+    progress_values = []
+    for frame in frames:
+        text = frame.decode("utf-8")
+        if text.startswith("event: progress"):
+            data_line = next(line for line in text.splitlines() if line.startswith("data: "))
+            payload = _json.loads(data_line[len("data: "):])
+            if "progress" in payload:
+                progress_values.append(payload["progress"])
+    assert progress_values, "no progress payload found"
+    for value in progress_values:
+        assert isinstance(value, int) and 0 <= value <= 100, f"progress {value!r} not on 0..100 scale"
+    assert 50 in progress_values, f"expected 50 for 1/2 done stages, got {progress_values}"

@@ -31,15 +31,23 @@ def diagnose(run, slide, scene, binding, revision, audio):
                                  cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8", timeout=60)
         report = editor.read_json(directory / "report.json", {})
         if not report or process.returncode:
-            return {"passed": False, "diagnosticOnly": True, "issues": [], "unavailable": "original_diagnostic_failed"}
+            return {"passed": False, "diagnosticOnly": True, "issues": [], "capacityIssues": [],
+                    "unavailable": "original_diagnostic_failed"}
         shots = []
         if (directory / "frame.png").is_file():
             shots.append({"timeMs": scene["durationMs"], "file": (directory / "frame.png").relative_to(run).as_posix()})
-        return {"passed": False, "diagnosticOnly": True, "issues": report.get("capacityIssues", []),
-                "capacity_measurements": report.get("capacityMeasurements", {}), "screenshots": shots,
+        # Same keys as repair.evidence so deterministic candidates and minimal
+        # task defects work unchanged on a diagnostic baseline.
+        return {"passed": False, "diagnosticOnly": True,
+                "issues": report.get("issues", []),
+                "capacityIssues": report.get("capacityIssues", []),
+                "capacity_measurements": report.get("capacityMeasurements", {}),
+                "measurements_path": (directory / "report.json").relative_to(run).as_posix(),
+                "screenshots": shots,
                 "message": report.get("message"), "not_run": ["sampled_overlap", "human_approval", "audio_sync"]}
     except (editor.SceneEditError, OSError, ValueError, subprocess.SubprocessError) as exc:
-        return {"passed": False, "diagnosticOnly": True, "issues": [], "unavailable": str(exc)[:1200]}
+        return {"passed": False, "diagnosticOnly": True, "issues": [], "capacityIssues": [],
+                "unavailable": str(exc)[:1200]}
 
 
 def pictures(run, shots):

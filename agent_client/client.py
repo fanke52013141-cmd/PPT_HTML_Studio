@@ -145,7 +145,10 @@ class AgentClient:
         canvas_profile: str = "landscape_16_9",
         automation_mode: str = "auto",
         review_policy: str = "none",
-        mask_enabled: bool = True,
+        mask_enabled: bool = False,
+        production_mode: str = "guided",
+        presentation_mode: str = "full_frame",
+        visual_backend: str = "image",
         config_package_id: Optional[str] = None,
         config_package_version: Optional[int] = None,
         config_overrides: Optional[dict[str, Any]] = None,
@@ -160,6 +163,9 @@ class AgentClient:
             "automation_mode": automation_mode,
             "review_policy": review_policy,
             "mask_enabled": mask_enabled,
+            "production_mode": production_mode,
+            "presentation_mode": presentation_mode,
+            "visual_backend": visual_backend,
         }
         if config_package_id is not None:
             body["config_package_id"] = config_package_id
@@ -190,6 +196,9 @@ class AgentClient:
         name: Optional[str] = None,
         description: Optional[str] = None,
         ai_mode: Optional[str] = None,
+        production_mode: Optional[str] = None,
+        presentation_mode: Optional[str] = None,
+        visual_backend: Optional[str] = None,
         expected_revision: Optional[int] = None,
         idempotency_key: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -200,6 +209,12 @@ class AgentClient:
             body["description"] = description
         if ai_mode is not None:
             body["ai_mode"] = ai_mode
+        if production_mode is not None:
+            body["production_mode"] = production_mode
+        if presentation_mode is not None:
+            body["presentation_mode"] = presentation_mode
+        if visual_backend is not None:
+            body["visual_backend"] = visual_backend
         if expected_revision is not None:
             body["expected_revision"] = expected_revision
         if idempotency_key:

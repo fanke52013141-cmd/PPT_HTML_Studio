@@ -1,5 +1,7 @@
 # HTML Studio
 
+2026-10-25 仓库更新：[累计优化发布备注](docs/releases/2026-10-25-reconstruction-annotation-experiments.md)，包含远程整合、验证记录、复验命令和剩余验收边界。
+
 2026-10-25 产品工具：[标注工作台与定位配对实验执行器](docs/plans/html-backend-development/handoff-annotation-experiments-2026-10-25.md)。项目内可视化草稿/复核/标签版本；冻结两组定位协议和项目模型，AB/BA配对、真实HTTP预算、进度/取消、unknown阻断及完整回执恢复。Web/Agent/MCP/SDK/CLI同步，API1.64.0、契约0.9.118；不写生产作者或视觉批准。
 
 2026-10-25 五项后续：[逐项验收、内嵌框选、配对评测与布局扩展](docs/plans/html-backend-development/handoff-followup5-2026-10-25.md)。69项独立规则及严格证据校验、诊断0.2、主面板拖框直接提交、固定开发/留出配对评分与人工标注入口、宽正文双卡片/三列对比和底栏联动；契约0.9.117，原API及作者/批准边界保持。

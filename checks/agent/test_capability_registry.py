@@ -157,3 +157,50 @@ class TestVersionAndContractHash:
         assert "capabilities" in meta
         assert isinstance(meta["capabilities"], list)
         assert len(meta["capabilities"]) > 0
+
+
+class TestRegistrySourcePolicy:
+    """Registry-level single-source guards (review 2026-10-24, batch 3)."""
+
+    APPROVED_MODEL_MODULES = {
+        "agent_contract.models",
+        "pydantic.main",  # BaseModel placeholder: response not modelled yet
+        # Feature-owner modules (AGENTS.md ownership rules). A new module must
+        # be added here deliberately — never silently.
+        "html_semantic_qa_models",
+        "html_semantic_plan",
+        "html_production_models",
+        "html_repair_models",
+        "html_handoff_models",
+        "html_agent_models",
+        "html_agent_workflow_models",
+        "html_asset_sheet_models",
+        "html_evaluation_models",  # Versioned annotation and paired experiments
+        "html_reference_models",  # Persisted original-reference resume contract
+        "html_asset_reuse_models",  # Verified same-project asset references
+    }
+
+    def test_capability_models_come_from_registered_owner_modules(self):
+        from agent_contract.capabilities import CAPABILITIES, CapabilityStatus
+        for cap in CAPABILITIES:
+            if cap.status == CapabilityStatus.removed:
+                continue
+            for model in (cap.request_model, cap.response_model):
+                module = getattr(model, "__module__", "")
+                assert module in self.APPROVED_MODEL_MODULES, (
+                    f"{cap.id}: model {model.__name__} comes from unregistered "
+                    f"module {module!r}; register the owner module deliberately."
+                )
+
+    def test_method_and_path_pairs_are_unique(self):
+        from agent_contract.capabilities import CAPABILITIES, CapabilityStatus
+        seen = {}
+        for cap in CAPABILITIES:
+            if cap.status == CapabilityStatus.removed:
+                continue
+            key = (cap.agent_api_method, cap.agent_api_path)
+            assert key not in seen, (
+                f"{cap.id} duplicates {seen[key]} on {key}; openapi_docs would "
+                "silently overwrite one of them."
+            )
+            seen[key] = cap.id

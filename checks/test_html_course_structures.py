@@ -186,7 +186,7 @@ def test_chart_review_requires_text_data_and_semantic_coverage():
         r["dimension"] for r in review_checklist(scene) if r["targetId"] == "chart"
     } == {"geometry", "content", "typography", "structure", "semantic_relation"}
     context = component_context(scene, ROOT)
-    assert context["capabilities"]["relation-1"]["editable"] == {}
+    assert context["capabilities"]["relation-1"]["editable"] == {"set_endpoint_point": ["from", "to"]}
     assert context["capabilities"]["relation-1"]["variants"] == []
 
 

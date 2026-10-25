@@ -317,7 +317,10 @@ def test_pi_selected_design_runs_original_production_and_records_restorable_ai_v
         payload = json.loads(data["input"])
         if "actual_geometry" in payload:
             return {"status": "unchanged", "message": "脚本供应商仅验证工程接线，不代表真实视觉判断"}
-        prefix = "design_fidelity_review-test" if "review_checklist" in payload else "design_understanding-test"
+        if "reference_targets" in payload:
+            prefix = "design_reference_localization-test"
+        else:
+            prefix = "design_fidelity_review-test" if "review_checklist" in payload else "design_understanding-test"
         answer = response_for({"artifact_prefix": prefix, "user_prompt": data["input"]})
         if prefix.startswith("design_fidelity") and not payload.get("review_checklist"):
             return {"status": "unchanged", "message": "脚本供应商仅验证工程接线，不代表真实视觉判断"}
@@ -341,7 +344,7 @@ def test_pi_selected_design_runs_original_production_and_records_restorable_ai_v
             fn, *args = calls[0]; fn(*args)
             with SessionLocal() as db:
                 value = html_task_store._job_to_dict(html_task_store._job(db, task["id"]))
-            assert value["status"] == "succeeded", value
+            assert value["status"] == "succeeded", {"status": value["status"], "error": value.get("error")}
             result = value["result"]
         else:
             pi = PiJSON(provider.model(), case.run / "pi-runtime")

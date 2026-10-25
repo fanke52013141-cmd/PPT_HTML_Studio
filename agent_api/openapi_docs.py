@@ -88,10 +88,14 @@ def _http_method_spec(cap: Any) -> dict[str, Any]:
                 "description": "Successful response",
                 "content": {"application/json": {"schema": output_schema}},
             },
-            "400": {"description": "Validation error"},
+            "400": {"description": "Business validation error"},
             "401": {"description": "Authentication required"},
+            "403": {"description": "Insufficient scope or account access"},
             "404": {"description": "Resource not found"},
+            "409": {"description": "Conflict with current revision or state"},
+            "422": {"description": "Request schema validation error (unified error envelope)"},
             "429": {"description": "Rate limit exceeded"},
+            "500": {"description": "Operation failed"},
         },
     }
     if parameters:

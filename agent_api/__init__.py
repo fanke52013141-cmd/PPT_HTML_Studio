@@ -6,6 +6,8 @@ to the same source-owned services used by the web UI.
 """
 
 from agent_api.routes import router
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 
 from agent_api.errors import AgentAPIError, agent_error_handler, http_exception_handler
@@ -32,3 +34,23 @@ def register_agent_error_handlers(app) -> None:
         raise exc
 
     app.add_exception_handler(HTTPException, scoped_http_exception_handler)
+
+    previous_validation_handler = app.exception_handlers.get(RequestValidationError)
+
+    async def scoped_validation_handler(request, exc):
+        if not request.url.path.startswith("/api/agent/v1/"):
+            if previous_validation_handler is not None:
+                return await previous_validation_handler(request, exc)
+            raise exc
+        # Schema validation failures use the same error envelope as every
+        # other Agent API error instead of FastAPI's bare {"detail": [...]}.
+        details = [{"loc": list(error.get("loc", ())), "msg": error.get("msg", ""),
+                    "type": error.get("type", "")} for error in exc.errors()[:20]]
+        return JSONResponse(
+            {"error": {"code": "VALIDATION_ERROR",
+                       "message": "Request payload does not match the capability schema.",
+                       "details": details}},
+            status_code=422,
+        )
+
+    app.add_exception_handler(RequestValidationError, scoped_validation_handler)

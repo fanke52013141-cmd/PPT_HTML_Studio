@@ -25,8 +25,8 @@ def dispatch(mode, project_id, slide_id, db, payload=None, job_id=None):
     try:
         if mode in {"create", "workflow_create"}:
             from project_model_binding_service import freeze_project_models
-            from html_agent_store import digest
-            existing_id = digest(["html_pi_agent", project_id, payload.idempotency_key])
+            from html_agent_store import derive_job_id
+            existing_id = derive_job_id(project_id, payload.idempotency_key)
             try:
                 store.read(project_id, slide_id, existing_id)
             except KeyError:

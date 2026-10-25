@@ -119,3 +119,40 @@ def test_public_ping_bypasses_auth(with_api_key):
     client = TestClient(app)
     resp = client.get("/api/agent/v1/ping")
     assert resp.status_code == 200
+
+
+# ------------------------------------------------------------------
+# Stored account tokens must fail closed without scopes (P2-5)
+# ------------------------------------------------------------------
+
+def test_stored_token_without_scopes_fails_closed(with_api_key, monkeypatch):
+    """A DB token with empty scopes is a broken record, not an implicit root grant."""
+    from types import SimpleNamespace
+
+    import account_service
+
+    def _fake_authenticate(db, token):
+        return SimpleNamespace(account_id="acc-1", scopes="  ,  ")
+
+    monkeypatch.setattr(account_service, "authenticate_agent_token", _fake_authenticate)
+    app = _make_app()
+    client = TestClient(app)
+    resp = client.get("/api/agent/v1/projects", headers={"Authorization": "Bearer stored-token"})
+    assert resp.status_code == 403
+    body = resp.json()
+    assert body["error"]["code"] == "INSUFFICIENT_SCOPE"
+
+
+def test_stored_token_with_scopes_passes_scope_check(with_api_key, monkeypatch):
+    from types import SimpleNamespace
+
+    import account_service
+
+    def _fake_authenticate(db, token):
+        return SimpleNamespace(account_id="acc-1", scopes="project:read,project:write")
+
+    monkeypatch.setattr(account_service, "authenticate_agent_token", _fake_authenticate)
+    app = _make_app()
+    client = TestClient(app)
+    resp = client.get("/api/agent/v1/projects", headers={"Authorization": "Bearer stored-token"})
+    assert resp.status_code == 200

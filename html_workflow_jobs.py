@@ -400,6 +400,11 @@ class HtmlWorkflowJobs:
                             raise store.HtmlTaskError("EXTERNAL_OUTCOME_UNKNOWN：先核实原请求，禁止用新快照重复生成", 409)
             except Exception:
                 # No blind retry and no startup-wide failure on one broken receipt.
+                # The translation to RECOVERY_RECONCILIATION_BLOCKED must not bury
+                # the underlying defect on the recovery path.
+                import logging
+                logging.getLogger(__name__).exception(
+                    "Recovery reconciliation failed for job %s; blocking as unresolved", job.id)
                 db.rollback()
                 current = store._job(db, job.id)
                 if current.status in {"failed", "interrupted"}:

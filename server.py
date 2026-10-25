@@ -678,7 +678,8 @@ try:
     from html_visual_review_routes import (
         router as html_review_router,
         HtmlReviewDependencies,
-        configure_html_review_service,
+        configure_html_review_service, configure_html_jobs,
+        _service_deps as html_review_service_deps,
     )
 
     configure_html_review_service(
@@ -689,8 +690,6 @@ try:
     )
     from html_workflow_jobs import HtmlWorkflowJobs
     from html_image_provider import configured_image
-    from html_visual_review_routes import configure_html_jobs
-    from html_visual_review_routes import _service_deps as html_review_service_deps
     from database import SessionLocal as HtmlSessionLocal
     html_workflow_jobs = HtmlWorkflowJobs(HtmlSessionLocal, html_review_service_deps(), configured_image)
     configure_html_jobs(html_workflow_jobs)
@@ -1068,13 +1067,15 @@ try:
     from agent_api.rate_limit_store import get_rate_limit_store
     from agent_api.request_tracing import AgentRequestTracingMiddleware
 
+    app.add_middleware(AgentRequestTracingMiddleware)
+    app.add_middleware(AgentAuthMiddleware)
+    # Added last so the limiter is the outermost agent middleware: unauthenticated
+    # 401 traffic must also count against the rate limit instead of bypassing it.
     app.add_middleware(
         AgentRateLimitMiddleware,
         persistent_store=get_rate_limit_store(),
         trust_proxy_headers=os.environ.get("PPT_AGENT_TRUST_PROXY_HEADERS", "") == "1",
     )
-    app.add_middleware(AgentRequestTracingMiddleware)
-    app.add_middleware(AgentAuthMiddleware)
     app.include_router(agent_api_router)
     register_agent_error_handlers(app)
     from database import SessionLocal as IdempotencySessionLocal

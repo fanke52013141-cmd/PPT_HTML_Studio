@@ -64,6 +64,8 @@ from agent_contract.models import (
     DiagnosticsResult,
     IdentityResult,
     GenerationKind, GenerationControlResult, GenerationStopRequest, GenerationStopResult,
+    NarrationUpdateResult, DigitalHumanConfigRead, DigitalHumanHealthRead,
+    DigitalHumanGenerateResult,
 )
 from agent_contract.operations import (
     CHECKPOINT_STAGES, get_checkpoint,
@@ -1032,7 +1034,8 @@ def _sse_generator(
         stage_items = stages if isinstance(stages, list) else []
         done_count = sum(1 for s in stage_items if s.get("status") == "done")
         total_count = max(1, len(stage_items))
-        progress = round(done_count / total_count, 4)
+        # Same 0..100 integer scale as pipeline.status progress (StageGetResult).
+        progress = int(round(done_count * 100 / total_count))
 
         snapshot = {
             "project_id": project_id,
@@ -1284,6 +1287,13 @@ def agent_get_stage(
             import json
             stage_data = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
 
+    else:
+        raise AgentAPIError(
+            "STAGE_NOT_FOUND",
+            f"Unknown stage '{stage}'. Known stages: mask, narration, images, storyboard.",
+            status_code=404,
+        )
+
     return StageGetResult(
         project_id=project_id,
         stage=stage,
@@ -1381,7 +1391,7 @@ def agent_regenerate_image(
 # Narration update
 # ---------------------------------------------------------------------------
 
-@router.patch("/projects/{project_id}/narration/{slide_id}")
+@router.patch("/projects/{project_id}/narration/{slide_id}", response_model=NarrationUpdateResult)
 def agent_update_narration(
     project_id: str,
     slide_id: str,
@@ -1654,7 +1664,8 @@ def agent_download_artifact(
 # Digital Human (Step 9 optional)
 # ---------------------------------------------------------------------------
 
-@router.get("/projects/{project_id}/digital-human/config")
+@router.get("/projects/{project_id}/digital-human/config",
+            response_model=DigitalHumanConfigRead, response_model_exclude_unset=True)
 def agent_get_digital_human_config(
     project_id: str,
     db: Session = Depends(get_db),
@@ -1686,7 +1697,8 @@ def agent_update_digital_human_config(
     return DigitalHumanConfigResult(config=config)
 
 
-@router.get("/projects/{project_id}/digital-human/health")
+@router.get("/projects/{project_id}/digital-human/health",
+            response_model=DigitalHumanHealthRead, response_model_exclude_unset=True)
 def agent_digital_human_health(
     project_id: str,
     db: Session = Depends(get_db),
@@ -1703,7 +1715,8 @@ def agent_digital_human_health(
         return {"available": False, "error": str(e)}
 
 
-@router.post("/projects/{project_id}/digital-human/generate-full")
+@router.post("/projects/{project_id}/digital-human/generate-full",
+             response_model=DigitalHumanGenerateResult, response_model_exclude_unset=True)
 def agent_digital_human_generate_full(
     project_id: str,
     db: Session = Depends(get_db),

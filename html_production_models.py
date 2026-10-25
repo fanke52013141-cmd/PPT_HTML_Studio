@@ -12,6 +12,10 @@ class PiProductionLimits(AgentLimits):
 
 class HtmlProduceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    # Load-bearing legacy default: internal job flows plan and resume 0.1.0
+    # semantic plans through this default (html_workflow_jobs dumps the model).
+    # Routed web/Agent produce injects 0.2.0 when the field is omitted; the
+    # capability description must keep saying so explicitly.
     plan_version: Literal["0.1.0", "0.2.0"] = "0.1.0"
     runner: Literal["legacy", "pi"] = "legacy"
     pi_limits: PiProductionLimits | None = None

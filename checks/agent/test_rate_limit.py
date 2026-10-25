@@ -90,3 +90,31 @@ def test_forwarded_for_is_ignored_without_explicit_proxy_trust():
     client = TestClient(app)
     assert client.get("/api/agent/v1/ping", headers={"X-Forwarded-For": "198.51.100.1"}).status_code == 200
     assert client.get("/api/agent/v1/ping", headers={"X-Forwarded-For": "198.51.100.2"}).status_code == 429
+
+
+def test_unauthenticated_traffic_counts_toward_rate_limit(monkeypatch):
+    """Production middleware order: the limiter wraps auth, so 401 brute force
+    is throttled instead of bypassing the quota (P2-4)."""
+    from agent_api.auth import AGENT_API_KEY_ENV, AgentAuthMiddleware
+
+    monkeypatch.setenv(AGENT_API_KEY_ENV, "secret")
+
+    app = FastAPI()
+    # Mirror server.py order: auth added first, limiter last = outermost.
+    app.add_middleware(AgentAuthMiddleware)
+    app.add_middleware(
+        AgentRateLimitMiddleware,
+        prefix="/api/agent/v1",
+        max_requests=2,
+        window_seconds=60,
+    )
+
+    @app.get("/api/agent/v1/projects")
+    def _projects():
+        return {"projects": []}
+
+    client = TestClient(app)
+    assert client.get("/api/agent/v1/projects").status_code == 401
+    assert client.get("/api/agent/v1/projects").status_code == 401
+    assert client.get("/api/agent/v1/projects").status_code == 429
+    assert client.get("/api/agent/v1/projects").status_code == 429

@@ -135,15 +135,21 @@ def capacity_candidates(scene, layout, diagnostic, catalog, scope):
             candidates.append([{"targetId": target, "kind": "set_presentation",
                                 "values": values}])
         for part, current in _explicit_fonts(node, issue):
-            for line_height in (1.3, 1.2, 1.1, 1.0):
-                candidates.append([{"targetId": target, "kind": "set_text_style",
-                                    "part": part, "values": {"lineHeight": line_height}}])
+            # Font-size candidates first: the 16-candidate cap must not crowd
+            # out concrete sizes when a node exposes several text parts.
             for step in FONT_STEPS:
                 size = round(current * step, 1)
                 if size < MIN_READABLE_PX:
                     break
                 candidates.append([{"targetId": target, "kind": "set_text_style",
                                     "part": part, "values": {"fontSizePx": size}}])
+            current_line_height = ((((node.get("presentation") or {}).get("typography") or {})
+                                    .get(part) or {}).get("lineHeight"))
+            for line_height in (1.3, 1.2, 1.1, 1.0):
+                if current_line_height is not None and line_height >= current_line_height:
+                    continue  # Duplicates or loosens the current state.
+                candidates.append([{"targetId": target, "kind": "set_text_style",
+                                    "part": part, "values": {"lineHeight": line_height}}])
     unique, seen = [], set()
     for operations in candidates:
         signature = json.dumps(operations, sort_keys=True)

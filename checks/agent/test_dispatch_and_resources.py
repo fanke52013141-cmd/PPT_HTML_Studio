@@ -45,6 +45,36 @@ class TestDispatchRouting:
         tools._dispatch("project.create", {"name": "Test", "description": "d"}, mock_client)
         mock_client.create_project.assert_called_once()
 
+    def test_dispatch_create_defaults_match_contract_model(self, mock_client):
+        """MCP dispatch defaults must equal the contract model defaults (mask_enabled P2-1)."""
+        from agent_contract.models import ProjectCreateRequest
+        tools._dispatch("project.create", {"name": "Test"}, mock_client)
+        kwargs = mock_client.create_project.call_args.kwargs
+        expected = ProjectCreateRequest(name="Test").model_dump()
+        assert kwargs["mask_enabled"] == expected["mask_enabled"] is False
+        assert kwargs["production_mode"] == expected["production_mode"]
+        assert kwargs["presentation_mode"] == expected["presentation_mode"]
+        assert kwargs["visual_backend"] == expected["visual_backend"]
+
+    def test_dispatch_create_forwards_declared_mode_fields(self, mock_client):
+        """Fields the input schema advertises must reach the client (P2-7)."""
+        tools._dispatch("project.create", {"name": "T", "production_mode": "one_click",
+                                           "presentation_mode": "reveal", "visual_backend": "image"},
+                        mock_client)
+        kwargs = mock_client.create_project.call_args.kwargs
+        assert kwargs["production_mode"] == "one_click"
+        assert kwargs["presentation_mode"] == "reveal"
+        assert kwargs["visual_backend"] == "image"
+
+    def test_dispatch_update_forwards_declared_mode_fields(self, mock_client):
+        tools._dispatch("project.update", {"project_id": "p1", "production_mode": "guided",
+                                           "presentation_mode": "full_frame", "visual_backend": "image"},
+                        mock_client)
+        kwargs = mock_client.update_project.call_args.kwargs
+        assert kwargs["production_mode"] == "guided"
+        assert kwargs["presentation_mode"] == "full_frame"
+        assert kwargs["visual_backend"] == "image"
+
     def test_dispatch_project_list(self, mock_client):
         tools._dispatch("project.list", {"limit": 10}, mock_client)
         mock_client.list_projects.assert_called_once()
@@ -440,15 +470,20 @@ class TestArtifactsDeep:
         assert mime_for_type("nonexistent") == "application/octet-stream"
 
     def test_artifact_collection_filter(self):
+        from agent_contract import ArtifactInfo as ExportedInfo
         from agent_contract.artifacts import ArtifactInfo, ArtifactCollection
+        from agent_contract.models import ArtifactInfo as ModelsInfo, ArtifactsListResult
+        # Single schema source: legacy import paths must resolve to models.py.
+        assert ArtifactInfo is ModelsInfo is ExportedInfo
+        assert ArtifactCollection is ArtifactsListResult
         artifacts = [
             ArtifactInfo(artifact_id="1", artifact_type="image", filename="a.png", mime_type="image/png"),
             ArtifactInfo(artifact_id="2", artifact_type="video", filename="b.mp4", mime_type="video/mp4"),
             ArtifactInfo(artifact_id="3", artifact_type="image", filename="c.png", mime_type="image/png"),
         ]
         collection = ArtifactCollection(project_id="p1", artifacts=artifacts, total=3)
-        images = collection.filter_by_type("image")
-        assert len(images) == 2
+        images = [a.artifact_id for a in collection.artifacts if a.artifact_type == "image"]
+        assert images == ["1", "3"]
 
 
 class TestPresentersDeep:

@@ -663,7 +663,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_create.add_argument("--canvas", default="landscape_16_9", choices=["landscape_16_9", "portrait_9_16"])
     p_create.add_argument("--mode", default="auto", choices=["auto", "manual", "agent"])
     p_create.add_argument("--review-policy", default="none", choices=["none", "images_and_video", "all_stages"], help="Review policy for checkpoint approval")
-    p_create.add_argument("--mask-enabled", action=argparse.BooleanOptionalAction, default=True, help="Enable or disable AI Mask")
+    p_create.add_argument("--mask-enabled", action=argparse.BooleanOptionalAction, default=False, help="Legacy AI Mask toggle; new projects default to full-frame presentation")
     p_create.add_argument("--config-package-id", default=None, help="Creation configuration package ID")
     p_create.add_argument("--config-package-version", type=int, default=None, help="Pinned creation configuration version")
     p_create.add_argument("--config-overrides", default=None, help="JSON object with project-only configuration overrides")

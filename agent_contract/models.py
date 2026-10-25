@@ -233,6 +233,53 @@ class DigitalHumanConfigResult(BaseModel):
     config: dict[str, Any] = Field(default_factory=dict)
 
 
+class NarrationUpdateResult(BaseModel):
+    """Response of narration.update: the slide's canonical speech text after save."""
+
+    project_id: str
+    slide_id: str
+    updated: bool
+    narration_text: str
+
+
+class DigitalHumanConfigRead(BaseModel):
+    """Response of digital_human.config.get.
+
+    The persisted configuration file is passed through verbatim; only the
+    guaranteed envelope fields are named, everything else is preserved.
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    enabled: bool = False
+    configured: bool = False
+
+
+class DigitalHumanHealthRead(BaseModel):
+    """Response of digital_human.health: availability plus either health facts or an error."""
+
+    available: bool
+    health: Optional[Any] = None
+    error: Optional[str] = None
+
+
+class DigitalHumanSlideJob(BaseModel):
+    """Per-slide digital-human generation outcome."""
+
+    slide_id: str
+    status: str
+    reason: Optional[str] = None
+    job: Optional[Any] = None
+    error: Optional[str] = None
+
+
+class DigitalHumanGenerateResult(BaseModel):
+    """Response of digital_human.generate: one outcome entry per contract slide."""
+
+    success: bool
+    results: list[DigitalHumanSlideJob]
+
+
 # ---------------------------------------------------------------------------
 # Stage models
 # ---------------------------------------------------------------------------
