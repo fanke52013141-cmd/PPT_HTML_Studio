@@ -56,6 +56,26 @@ def run(case, **options):
     return produce_scene(case.contract, run_dir=case.run, deps=case.deps, provider=case.provider, options=options)
 
 
+def test_explicit_cross_page_resource_survives_design_checkpoint_without_subject_call(case):
+    from checks.test_html_asset_reuse import resource
+    from checks.test_html_semantic_plan import semantic_plan
+    from checks.html_design_agent_fixture import response_for
+    asset,binding=resource(case.run)
+    source=(case.run/'planning/html_visual/scene-source.json').read_bytes()
+    plan=semantic_plan(case.contract)
+    case.deps=HtmlReviewDependencies(ROOT,lambda **kw:response_for(kw) or (
+        {'status':'unchanged','message':'fixture only'} if kw.get('artifact_prefix','').startswith('design-reconstruct-')
+        else copy.deepcopy(plan)))
+    first=run(case,plan_version='0.2.0',reuse_assets=[binding])
+    assert first['stage']=='design_review'
+    result=run(case,plan_version='0.2.0',design_candidate_key=first['design']['key'])
+    assert result['saved']['changed']
+    assert next(n for n in result['scene']['nodes'] if n['type']=='image')['assetRef']=={
+        'id':asset['id'],'version':asset['version']}
+    assert len(case.requests)==1  # Only the original full design request, no independent subject image.
+    assert (case.run/'planning/html_visual/scene-source.json').read_bytes()==source
+
+
 def test_allocation_precedes_subject_generation_and_observation_is_consumed(case):
     first = run(case)
     result = run(case, design_candidate_key=first["design"]["key"])
@@ -178,7 +198,8 @@ def test_stop_resume_real_package_and_no_duplicate_planning(case):
     assert record["plan"]["slots"]["card-1"]["tone"] == "pink"
     assert "catalog_sha256" not in case.requests[0]["prompt"]
     second = run(case, design_candidate_key=key)
-    assert len(case.llm_calls) == 4 and len(case.requests) == 2
+    assert len(case.llm_calls) == 5 and len(case.requests) == 2
+    assert sum(k['artifact_prefix'].startswith('design_reference_localization-') for k in case.llm_calls)==1
     assert case.requests[-1]["transparent_background"]
     assert str(folder / "design-reference.png") in case.requests[-1]["reference_paths"]
     assert second["scene"]["themeRef"]["id"] == "neutral-baseline"
@@ -186,7 +207,10 @@ def test_stop_resume_real_package_and_no_duplicate_planning(case):
     assert not (case.run / "planning/html_visual/approval-e1.json").exists()
     assert current_design(run_dir=case.run, contract=case.contract, repo_root=ROOT)["design"]["status"] == "accepted_for_reconstruction"
     repeated = run(case, design_candidate_key=key)
-    assert not repeated["saved"]["changed"] and len(case.requests) == 2
+    # An explicit internal re-review can refresh provenance and its material
+    # revision. The persistent task API deduplicates submissions separately.
+    assert repeated['scene']==second['scene'] and len(case.requests)==2
+    assert sum(k['artifact_prefix'].startswith('html_scene_plan_') for k in case.llm_calls)==1
 
 
 def test_explicit_supplied_asset_still_requires_page_design(case):
@@ -200,7 +224,8 @@ def test_explicit_supplied_asset_still_requires_page_design(case):
     result=run(case,design_candidate_key=first["design"]["key"])
     assert result["review"]["passed"]
     assert result["saved"]["changed"]
-    assert len(case.llm_calls) == 4
+    assert len(case.llm_calls) == 5
+    assert sum(k['artifact_prefix'].startswith('design_reference_localization-') for k in case.llm_calls)==1
     assert len(case.requests) == 1
     assert next(n for n in result["scene"]["nodes"] if n["type"] == "image")["assetRef"]["id"] == "condensation"
 
@@ -265,7 +290,9 @@ def test_single_asset_retry_reuses_design_and_plan(case):
     before = load_scene_with_revision(case.run, "e1")
     assert not current_design(run_dir=case.run, contract=case.contract, repo_root=ROOT)["design"]["stale"]
     retried = run(case, design_candidate_key=key, asset_instruction="更清晰的轮廓")
-    assert len(case.llm_calls) == 7 and len(case.requests) == 3
+    assert len(case.llm_calls) == 9 and len(case.requests) == 3
+    assert sum(k['artifact_prefix'].startswith('html_scene_plan_') for k in case.llm_calls)==1
+    assert sum(k['artifact_prefix'].startswith('design_reference_localization-') for k in case.llm_calls)==2
     assert case.requests[-1]["transparent_background"]
     assert "更清晰的轮廓" in case.requests[-1]["prompt"]
     assert initial["scene"]["nodes"][0] == retried["scene"]["nodes"][0]
@@ -437,7 +464,8 @@ def test_web_agent_payload_parity_and_current_design(tmp_path, monkeypatch):
                 body = {"design_candidate_key": "a" * 64, "asset_instruction": "fixture retry"}
                 assert client.post(base + "/produce", json=body).status_code == 200
                 assert requests[-1] == {**body, "design_instruction": "", "plan_version": "0.2.0", "repair_relation_points": "",
-                                       "runner": "legacy", "pi_limits": None, "max_image_calls": 0}
+                                           "runner": "legacy", "pi_limits": None, "max_image_calls": 0,
+                                           "reference_review_key":None,"reuse_assets":[]}
                 reused = {"reuse_design_candidate_key": "b" * 64}
                 assert client.post(base + "/produce", json=reused).status_code == 200
                 assert requests[-1]["reuse_design_candidate_key"] == reused["reuse_design_candidate_key"]

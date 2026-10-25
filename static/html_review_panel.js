@@ -53,12 +53,14 @@
     }
   }
   function clearManual(section) {
+    window.HtmlReferenceReview?.clear(section);
     manualCandidate = null;
     const box = section.querySelector('[data-html-manual-candidate]');
     if (box) { box.hidden = true; box.querySelectorAll('img').forEach(image => image.removeAttribute('src')); }
   }
   async function showManual(section, current, task, token) {
     clearManual(section);
+    void window.HtmlReferenceReview?.refresh(section,current,task,()=>token===generation&&!section.hidden);
     if (!['failed','interrupted'].includes(task.status) || task.input_state !== 'current' || !task.recovery?.requires_verification) return;
     const base = `/api/projects/${encodeURIComponent(current.project.id)}/html-review/${encodeURIComponent(current.slideId)}/manual-candidate/${encodeURIComponent(task.id)}`;
     try {
@@ -148,7 +150,7 @@
     if(progress.next_action){
       const reasons={unsupported:'当前能力不支持',upstream_revision_required:'需返回上游处理',budget_exhausted:'本阶段修复预算耗尽',external_call_budget_exhausted:'生产外部调用预算耗尽',repeated_candidate:'候选重复无改善',repeated_patch:'修复操作重复',unchanged_measurements:'实测没有改善',model_stop:'模型主动停止',non_capacity_failure:'失败不属于排版容量问题',missing_diagnostic_evidence:'缺少可用诊断证据'};
       Object.assign(reasons,{read_timeout:'读取等待超时，原请求结果未知',total_timeout:'单次流总预算耗尽，原请求结果未知',incomplete_response:'流已结束但结果不完整',transport_error:'传输失败，原请求结果待核实',output_limit:'模型已结束，但输出额度耗尽，场景规划未完成'});
-      const routes={planning:'内容规划',planning_revision:'规划输入与容量调整',assets:'独立素材',capabilities:'公共组件能力',reconstruction:'页面还原',design_review:'设计与生产规则审阅',manual_review:'人工检查',diagnostics:'工程诊断',provider_verification:'原供应商请求核实'};
+      const routes={planning:'内容规划',planning_revision:'规划输入与容量调整',assets:'独立素材',capabilities:'公共组件能力',reconstruction:'页面还原',design_review:'设计与生产规则审阅',manual_review:'人工检查',diagnostics:'工程诊断',evidence_review:'原图定位复核',stop:'停止并核对预算或回执',provider_verification:'原供应商请求核实'};
       line(`处理建议：${reasons[progress.next_action.reason]||'需要检查运行证据'}；交回 ${(progress.next_action.routes||[]).map(route=>routes[route]||'人工检查').join('、')}。系统不会自动重试或批准。`);
     }
     if (progress.model_stream) {
@@ -289,6 +291,7 @@
     const host = pageMode && pageHost ? pageHost : designHost;
     let section = document.getElementById('html-review-panel-section');
     if (project?.visual_backend !== 'html') {
+      if(section)window.HtmlEvaluationPanel?.clear(section);
       if (section && !section.hidden) {generation++; activeTask=null; designCandidate=null; acceptedDesignKey=null;}
       if (section) section.hidden = true;
       if (section) {section.dataset.context=''; taskFacts(section,null);}
@@ -443,6 +446,7 @@
         try {
           let action = button.dataset.action;
           let payload = action === 'produce' ? {plan_version: '0.2.0'} : {};
+          if(action==='produce'){const reuse=window.HtmlAssetReuse?.selection(section)||[];if(reuse.length)payload.reuse_assets=reuse;}
           if (action === 'accept-design') {
             if (!designCandidate || designCandidate.stale) throw new Error('请先生成并审阅当前设计。');
             payload = {design_candidate_key: designCandidate.key, plan_version: '0.2.0'}; action = 'produce';
@@ -505,6 +509,8 @@
     }
     if (section.parentElement !== host) host.prepend(section);
     stageView(section, pageMode);
+    window.HtmlAssetReuse?.mount(section,{project,slideId});
+    window.HtmlEvaluationPanel?.mount(section,{project,slideId});
     section.hidden = false;
     const slides = window.PPTStudio.runtime.state.slides || [];
     const optionsKey = JSON.stringify(slides.map(s=>[s.slide_id || s.id,s.title || s.slide_title || s.main_title || '']));

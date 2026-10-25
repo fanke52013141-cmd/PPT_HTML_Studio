@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-TASK_TYPES = ("html_plan_generate", "html_review", "html_asset_produce", "html_asset_sheet_generate", "html_asset_sheet_assess", "html_asset_sheet_retry", "html_semantic_review", "html_course_produce")
+TASK_TYPES = ("html_plan_generate", "html_review", "html_asset_produce", "html_asset_sheet_generate", "html_asset_sheet_assess", "html_asset_sheet_retry", "html_semantic_review", "html_course_produce", "html_reference_review", "html_paired_experiment")
 MAX_ATTEMPTS = 3
 ACTIVE_STATUSES = ("queued", "running")
 

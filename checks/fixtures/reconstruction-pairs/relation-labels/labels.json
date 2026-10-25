@@ -1,0 +1,67 @@
+{
+  "label_version": "reference-layout/1",
+  "authority": "controlled_fixture",
+  "reference_sha256": "da5bf54f4684c3d05f8f1a396a0406e8f088631ccac47c2d7820da2f20c6ce87",
+  "targets": {
+    "relation": {
+      "status": "located",
+      "container": [
+        40,
+        35,
+        960,
+        435
+      ],
+      "parts": {
+        "from/text": [
+          {
+            "text": "下级机关",
+            "box": [
+              88,
+              95,
+              212,
+              128
+            ]
+          }
+        ],
+        "term": [
+          {
+            "text": "公开遴选",
+            "box": [
+              418,
+              195,
+              542,
+              229
+            ]
+          }
+        ],
+        "to/text": [
+          {
+            "text": "上级机关",
+            "box": [
+              738,
+              95,
+              862,
+              128
+            ]
+          }
+        ],
+        "takeaway": [
+          {
+            "text": "公开择优选人",
+            "box": [
+              388,
+              340,
+              572,
+              373
+            ]
+          }
+        ]
+      }
+    },
+    "missing-control": {
+      "status": "not_found",
+      "parts": {},
+      "container": null
+    }
+  }
+}

@@ -42,7 +42,21 @@ def failure_reason(error):
     return "transport_error"
 
 
-def receive_completion(client, params, *, streaming=False, timeout=1800,
+def receive_completion(client,params,**kwargs):
+    from html_json_observer import notify
+    notify('intent')
+    try:
+        value=_receive_completion(client,params,**kwargs)
+    except BaseException as error:
+        from llm_concurrency import is_llm_format_incompatibility
+        outcome='output_limit' if isinstance(error,ValueError) and str(error)=='JSON_STREAM_OUTPUT_LIMIT' else 'rejected' if is_llm_format_incompatibility(error) else 'unknown'
+        notify(outcome,error_class=type(error).__name__)
+        raise
+    notify('returned',usage=_safe_usage(getattr(value,'usage',None)))
+    return value
+
+
+def _receive_completion(client, params, *, streaming=False, timeout=1800,
                        evidence_path=None, progress=None, read_timeout=None):
     if not streaming:
         return client.chat.completions.create(**params)

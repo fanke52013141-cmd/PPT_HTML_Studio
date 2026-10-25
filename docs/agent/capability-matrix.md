@@ -1,8 +1,8 @@
 # Agent Capability Matrix
 
-- **Agent API Version**: 1.62.1
-- **Contract Hash**: `3ae5cd39a668ad88`
-- **Total Capabilities**: 78
+- **Agent API Version**: 1.64.0
+- **Contract Hash**: `bd3da0f6e323dad3`
+- **Total Capabilities**: 83
 
 This document is auto-generated from `agent_contract/capabilities.py`.
 Do not edit manually — run `python scripts/generate_agent_contracts.py`.
@@ -11,6 +11,11 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 | Capability ID | Version | Status | Method | Agent API Path | MCP Tool | MCP enabled | CLI Command | Service Ref | Long-running | Destructive |
 |---|---|---|---|---|---|---|---|---|---|---|
+| `html_evaluation.read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-evaluation` | `ppt_html_evaluation_read` | Yes | `html evaluation-read` | `html_evaluation_routes.overview` | No | No |
+| `html_evaluation.command` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-evaluation/action` | `ppt_html_evaluation_command` | Yes | `html evaluation-command` | `html_evaluation_routes.command` | Yes | No |
+| `html_review.reusable_assets` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/reusable-assets` | `ppt_html_reusable_assets` | Yes | `html reusable-assets` | `html_asset_reuse.available` | No | No |
+| `html_review.reference_read` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/reference/{job_id}` | `ppt_html_reference_read` | Yes | `html reference-read` | `html_reference_service.inspect_session` | No | No |
+| `html_review.reference_resume` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/reference/{job_id}/resume` | `ppt_html_reference_resume` | Yes | `html reference-resume` | `html_reference_jobs.ReferenceReviewJobs` | Yes | No |
 | `agent_workflow.create` | 0.1 | stable | POST | `/api/agent/v1/projects/{project_id}/agent/jobs` | `ppt_agent_workflow_create` | Yes | `agent-workflow create` | `html_agent_routes.workflow_create` | Yes | No |
 | `agent_workflow.read` | 0.1 | stable | GET | `/api/agent/v1/projects/{project_id}/agent/jobs/{job_id}` | `ppt_agent_workflow_read` | Yes | `agent-workflow read` | `html_agent_routes.workflow_read` | No | No |
 | `agent_workflow.result` | 0.1 | stable | GET | `/api/agent/v1/projects/{project_id}/agent/jobs/{job_id}/result` | `ppt_agent_workflow_result` | Yes | `agent-workflow result` | `html_agent_routes.workflow_result` | No | No |
@@ -39,7 +44,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `html_repair.preview` | 1.8 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/preview` | `ppt_html_repair_preview` | Yes | `html repair-preview` | `html_scene_repair.preview_repair` | No | No |
 | `html_repair.save` | 1.8 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/save` | `ppt_html_repair_save` | Yes | `html repair-save` | `html_scene_repair.save_repair` | No | No |
 | `html_repair.evidence` | 1.2 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/evidence` | `ppt_html_repair_evidence` | Yes | `html repair-evidence` | `html_scene_repair.evidence` | No | No |
-| `html_repair.generate` | 1.7 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_repair_orchestration.generate_repair` | No | No |
+| `html_repair.generate` | 1.8 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate` | `ppt_html_repair_generate` | Yes | `html repair-generate` | `html_repair_orchestration.generate_repair` | No | No |
 | `html_editor.read` | 1.2 | stable | GET | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_read` | Yes | `html editor-read` | `html_scene_editing.load_editor` | No | No |
 | `html_editor.write` | 1.1 | stable | PUT | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor` | `ppt_html_editor_write` | Yes | `html editor-write` | `html_scene_editing.save_editor` | No | No |
 | `html_editor.preview` | 1.3 | stable | POST | `/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/editor/preview` | `ppt_html_editor_preview` | Yes | `html editor-preview` | `html_scene_editing.preview_editor` | No | No |
@@ -47,7 +52,7 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 | `generation.stop` | 1.0 | stable | POST | `/api/agent/v1/projects/{project_id}/generation/{stage}/stop` | `ppt_generation_stop` | Yes | `generation stop` | `generation_control.request_stop` | No | No |
 | `identity.get` | 1.0 | stable | GET | `/api/agent/v1/identity` | `ppt_identity_get` | Yes | `identity` | `agent_api.auth / account_service` | No | No |
 | `project.create` | 1.6 | stable | POST | `/api/agent/v1/projects` | `ppt_project_create` | Yes | `project create` | `project_service.ProjectService.create` | No | No |
-| `html_review.produce` | 1.15 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
+| `html_review.produce` | 1.16 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/produce` | `ppt_html_produce` | Yes | `html produce` | `html_workflow_jobs.HtmlWorkflowJobs` | Yes | No |
 | `html_review.design_current` | 1.0 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/design/current` | `ppt_html_design_current` | Yes | `html design-current` | `html_design_candidates.current_design` | No | No |
 | `html_review.manual_candidate` | 1.1 | stable | GET | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}` | `ppt_html_manual_candidate` | Yes | `html manual-candidate` | `html_manual_candidate_review.inspect_candidate` | No | No |
 | `html_review.manual_candidate_decision` | 1.1 | stable | POST | `/api/agent/v1/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}/decision` | `ppt_html_manual_candidate_decision` | Yes | `html manual-candidate-decision` | `html_manual_candidate_review.decide_candidate` | No | No |
@@ -103,8 +108,13 @@ Do not edit manually — run `python scripts/generate_agent_contracts.py`.
 
 ## MCP Tool Summary
 
-The MCP server exposes **72** stable tools:
+The MCP server exposes **77** stable tools:
 
+- `ppt_html_evaluation_read` — Read project datasets, saved-page sources and paired experiment tasks. Evaluation state never grants production approval.
+- `ppt_html_evaluation_command` — Create project datasets, read/save versioned annotations, independently review labels or explicitly dispatch frozen paired experiments through the original task executor. No author or approval writes; unknown requests are never retried automatically.
+- `ppt_html_reusable_assets` — List verified assets authored in the same project with explicit id/version/sha256 and source pages. Selection never transfers visual approval or mutates resources.
+- `ppt_html_reference_read` — Read the exact original task reference correction session; account/page/source bound, no author save or approval.
+- `ppt_html_reference_resume` — Explicitly submit corrected localization for frozen-model re-review in the original persistent task store. Exact identity deduplication; unknown/cancelled/stale stays blocked. Evidence only, no author save or visual approval.
 - `ppt_agent_workflow_create` — Run Pi article, script/visual storyboard or up to five page repairs with shared bounded budgets. Candidates only; partial batch outcomes remain explicit. No approval or automatic overwrite.
 - `ppt_agent_workflow_read` — Read durable project candidate job and individual batch outcomes.
 - `ppt_agent_workflow_result` — Read validated candidate result and original source identity.
@@ -132,7 +142,7 @@ The MCP server exposes **72** stable tools:
 - `ppt_html_repair_preview` — Bounded HTML local repair preview; shared leaf-field manual protection with conflict paths, registered instance styles/actions, frozen revision, sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Includes the deterministic set_endpoint_point operation for declared relation attachment points. Does not approve aesthetics.
 - `ppt_html_repair_save` — Bounded HTML local repair save; shared leaf-field manual protection enforced again at final AI persistence with conflict paths, registered styles/actions, frozen revision and temporal checks. Includes the deterministic set_endpoint_point operation for declared relation attachment points. Does not approve aesthetics.
 - `ppt_html_repair_evidence` — Bounded HTML local repair evidence; registered instance styles and actions, frozen revision, protected manual fields, actual sampled or output-frame temporal checks with registered overlap policy and stagnation stops. Does not approve aesthetics.
-- `ppt_html_repair_generate` — Optional deterministic strategies with original QA: geometry_first resolves arrow/text placement and relation attachment points; capacity_first proposes bounded size and readable typography candidates for capacity overflow, with lazy model fallback only for the model strategy. Default model remains compatible. Bounded HTML local repair with scope-specific protected leaf and ancestor paths in model context; retain precise capacity triggers, original budgets, frozen revision, shared candidate/save protection and sampled/output-frame checks. Conflicting protected goals stop without overwriting; no automatic aesthetic approval.
+- `ppt_html_repair_generate` — layout_first shares the cumulative production solver with saved-page revision/audio/scope and final preview/save guards. Optional deterministic strategies with original QA: geometry_first resolves arrow/text placement and relation attachment points; capacity_first proposes bounded size and readable typography candidates for capacity overflow, with lazy model fallback only for the model strategy. Default model remains compatible. Bounded HTML local repair with scope-specific protected leaf and ancestor paths in model context; retain precise capacity triggers, original budgets, frozen revision, shared candidate/save protection and sampled/output-frame checks. Conflicting protected goals stop without overwriting; no automatic aesthetic approval.
 - `ppt_html_editor_read` — Read stored HTML author scene, motion binding, capabilities, validated resources, manual overrides and audio artifact revision under the project lock.
 - `ppt_html_editor_write` — Save validated HTML edits and source-image normalized anchors with manual protection. Reject stale scene revision or optional expected_audio_revision with 409; preserve audio artifacts.
 - `ppt_html_editor_preview` — Validate draft and resolve read-only beat timing, effective durations and clipping reasons or author clock. Return audio artifact revision; reject stale scene or optional audio revision with 409. No save, TTS or approval; output gates remain.

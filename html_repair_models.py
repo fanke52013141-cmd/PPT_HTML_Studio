@@ -39,7 +39,8 @@ class RepairSaveRequest(RepairRequest):
 class RepairGenerateRequest(TemporalRequest):
     instruction: str = Field(min_length=1, max_length=4000)
     scope: list[str] = Field(min_length=1, max_length=40)
-    strategy: Literal["model", "geometry_first", "capacity_first"] = Field(default="model", description=(
+    strategy: Literal["model", "geometry_first", "capacity_first", "layout_first"] = Field(default="model", description=(
+        "layout_first shares the production deterministic layout solver with saved-page revision/audio/scope guards; "
         "model preserves arbitrary local repair. geometry_first is the fixed arrow/text position-and-size task, "
         "scope 1..4; instruction must equal: 仅调整所选对象的位置与尺寸，解决箭头穿过文字；保留文字、关系、样式、动画和人工保护字段。 "
         "capacity_first is the deterministic capacity task, scope 1..4; instruction must equal: "

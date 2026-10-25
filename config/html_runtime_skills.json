@@ -99,6 +99,23 @@
         "sha256": "a66997e7115abbce3603236debe85bed01f55e1078b925f521cceb348c4a2918"
       },
       "references": {}
+    },
+    {
+      "id": "design-fidelity-review-grounded",
+      "version": "1.1.0",
+      "stage": "design_fidelity_review_grounded",
+      "input_contract": "design-review-input/0.4.0",
+      "output_contract": "design-review-facts/0.1.0",
+      "body": {
+        "path": "config/html_runtime_skills/design-fidelity-review-1.1.0.md",
+        "sha256": "b2719b3a284ad0f1b7c2d3c6ff930ca2c82dfbc9b3366490a45d006d6d0a1005"
+      },
+      "references": {
+        "reference-policy": {
+          "path": "config/html_runtime_skills/reference-workflow-policy-0.1.0.md",
+          "sha256": "094794ed3212b19c9fdc5fcc4e3ea788c11791e98fc16b9c31f609ca0db83d9f"
+        }
+      }
     }
   ]
 }

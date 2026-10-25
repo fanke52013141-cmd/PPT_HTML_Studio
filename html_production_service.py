@@ -33,11 +33,16 @@ from html_design_brief import (
     required_keyframes,
 )
 from html_asset_service import HtmlAssetDependencies, produce_asset
+from html_page_budget import page_budgeted
 
 
 def supplied_asset_ids(plan, contract, run_dir, repo_root):
     """Only explicitly supplied, matching, validated resources bypass generation."""
     offered = {}
+    if plan.get('reused_asset_refs'):
+        from html_asset_reuse import resolve
+        reused=resolve(run_dir,plan['reused_asset_refs'])
+        offered.update({a['id']:a['version'] for a in reused.values()})
     for group in contract.get("visual_groups", []):
         for item in group.get("available_assets", []):
             ref = item.get("assetRef", {})
@@ -258,6 +263,7 @@ def compile_plan(
     }
 
 
+@page_budgeted
 def produce_scene(
     contract: dict,
     *,
@@ -294,9 +300,14 @@ def produce_scene(
     from html_production_models import HtmlProduceRequest
     from html_design_candidates import definition_identity, load_design, save_design
     from html_reference_package import assemble_reference, design_prompt, verify_package, PROMPT_VERSION, SEMANTIC_PROMPT_VERSION
-    from runtime_support import run_subprocess_killable
 
     selection = HtmlProduceRequest.model_validate(options or {})
+    if selection.reuse_assets:
+        from html_asset_reuse import resolve
+        resolve(run_dir,[a.model_dump() for a in selection.reuse_assets])
+    if selection.reference_review_key:
+        from html_reference_publication import load
+        load(run_dir,selection.reference_review_key,deps.repo_root)
     revising_design = bool(selection.design_candidate_key and selection.design_instruction.strip())
     if provider is None and not selection.reuse_design_candidate_key and (not selection.design_candidate_key or revising_design):
         raise HtmlReviewError("正式页面需要先生成完整设计参考，请配置图片服务", code="DESIGN_PROVIDER_MISSING")
@@ -340,6 +351,14 @@ def produce_scene(
             plan_version=selection.plan_version,
         )
     prompt_version = SEMANTIC_PROMPT_VERSION if plan.get("version") == "0.2.0" else PROMPT_VERSION
+    bindings=[b.model_dump() for b in selection.reuse_assets]
+    if resumed and bindings and bindings!=plan.get('reused_asset_refs',[]):
+        raise HtmlReviewError('已接受设计的素材选择不可变，请重新生成设计',code='ASSET_REUSE_SELECTION_CHANGED',status_code=409)
+    if not resumed and bindings:
+        from html_asset_reuse import bind_plan
+        plan=bind_plan(plan,bindings,run_dir)
+    if selection.asset_instruction and plan.get('reused_asset_refs'):
+        raise HtmlReviewError('共享素材返工需先创建独立设计，不能覆盖跨页共享资源',code='ASSET_REUSE_DETACH_REQUIRED',status_code=409)
     plan_version = str(plan.get("version") or "0.1.0")
     # Fail closed only when the caller explicitly asks for a version that the
     # resumed design/plan does not have. Direct service callers that omit the
@@ -372,6 +391,15 @@ def produce_scene(
         candidate = copy.deepcopy(resumed["candidate"])
         references = package["references"] + [str(accepted_image)]
     elif provider is not None:
+        if not resumed:
+            from html_design_feasibility import check_design_feasibility
+            projected_scene, _ = compile_plan(plan, contract, load_template_catalog(deps.repo_root))
+            feasibility = check_design_feasibility(projected_scene, run_dir=run_dir, deps=deps)
+            stage_record('design_feasibility', feasibility)
+            write_json_atomic(run_dir / 'planning/html_visual/candidates' / slide_id / 'design-feasibility.json', feasibility)
+            if feasibility['status'] == 'changes_required':
+                raise HtmlReviewError('设计前文字容量超限，请调整注册布局或内容分配后再生成设计图',
+                                      code='DESIGN_FEASIBILITY_CHANGES_REQUIRED', status_code=422)
         if revising_design:
             package_path = run_dir / resumed["reference_package"]
             package["directory"] = str(package_path.relative_to(run_dir))
@@ -381,7 +409,7 @@ def produce_scene(
                 {"plan": plan, "brief": brief, "definitions": definitions})
             package = (verify_package(package_path) if package_path.exists() else
                        assemble_reference(plan, brief, repo_root=deps.repo_root,
-                                          directory=package_path, runner=run_subprocess_killable))
+                                          directory=package_path, runner=deps.run_subprocess_bounded))
             package["directory"] = str(package_path.relative_to(run_dir))
             references = package["references"]
         design_path = (
@@ -565,6 +593,8 @@ def produce_scene(
     )
     stage_record("compile", {"scene": scene, "binding": binding,
                              "relation_resolutions": relation_resolutions})
+    from html_asset_geometry import asset_geometry_diagnostics
+    stage_record('asset_geometry', asset_geometry_diagnostics(scene, resources))
     checkpoint()
     directory = run_dir / "planning/html_visual"
     # Candidate resources/definitions stay separate until review succeeds; a
@@ -629,7 +659,8 @@ def produce_scene(
                 from html_candidate_agent import repair_candidate
 
                 repaired = repair_candidate(scene, binding, run_dir=run_dir, deps=deps,
-                                            manual=manual, checkpoint=checkpoint, progress=progress_record)
+                                            manual=manual, checkpoint=checkpoint, progress=progress_record,
+                                            deterministic_first=True, beats=contract.get("narration_beats", []))
                 scene, binding, report = repaired["scene"], repaired["binding"], repaired["report"]
                 layout_agent = repaired["summary"]
             if not report.get("passed"):
@@ -643,6 +674,7 @@ def produce_scene(
             reconstructed = reconstruct_design(
                 scene, binding, accepted_image, run_dir=run_dir, deps=deps, manual=manual,
                 understanding=understanding,
+                reference_review_key=selection.reference_review_key,
                 beats=contract.get("narration_beats",[]), checkpoint=checkpoint, progress=progress_record,
             )
             scene, binding, report = reconstructed["scene"], reconstructed["binding"], reconstructed["report"]

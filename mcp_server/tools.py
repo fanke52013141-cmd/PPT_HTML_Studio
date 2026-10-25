@@ -62,9 +62,10 @@ def _make_tool_handler(cap: AgentCapability) -> Callable:
 def _dispatch(cap_id: str, args: dict[str, Any], client: AgentClient) -> dict[str, Any]:
     """Route a capability ID to the appropriate AgentClient method."""
 
-    if cap_id.startswith(('html_sheet.', 'html_repair.', 'html_handoff.', 'html_agent.', 'agent_workflow.')) or cap_id in {
+    if cap_id.startswith(('html_sheet.', 'html_repair.', 'html_handoff.', 'html_agent.', 'agent_workflow.', 'html_evaluation.')) or cap_id in {
         "project_model_binding.read", "project_model_binding.write",
         "html_editor.read", "html_editor.write", "html_editor.preview",
+        "html_review.reference_read", "html_review.reference_resume", "html_review.reusable_assets",
     }:
         from urllib.parse import quote
         from pydantic import ValidationError

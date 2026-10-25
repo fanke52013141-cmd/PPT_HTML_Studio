@@ -22,6 +22,7 @@ from pipeline_lifecycle import write_json_atomic
 from html_build_snapshot import digest, fresh_hash, json_bytes
 from html_runtime_skills import load_runtime_skill
 from html_repair_progress import RepairProgress, repair_exit_reason
+from html_page_budget import page_budgeted
 
 PROMPT_VERSION = "candidate-layout-agent/0.1.0"
 SYSTEM_PROMPT = """你是受限 HTML 排版修复 Agent。根据实际诊断截图、对象几何和文字测量，
@@ -100,6 +101,7 @@ def _geometry_constraints(node, scene, layout, variants, size_hint=None):
             'feasible':20 <= width <= 1600 and 20 <= height <= 800 and limits['minOffsetX']<=limits['maxOffsetX'] and limits['minOffsetY']<=limits['maxOffsetY']}
 
 
+@page_budgeted
 def repair_candidate(
     scene,
     binding,
@@ -111,9 +113,24 @@ def repair_candidate(
     max_rounds=3,
     prompt_mode=None,
     progress=lambda value: None,
+    deterministic_first=False,
+    beats=None,
 ):
     if type(max_rounds) is not int or not 1 <= max_rounds <= 3:
         raise ValueError("candidate repair budget must be 1..3")
+    deterministic_summary = None
+    if deterministic_first:
+        from html_linked_layout import solve_production_layout
+        deterministic = solve_production_layout(
+            scene, binding, run_dir=run_dir, deps=deps, manual=manual, beats=beats,
+            checkpoint=checkpoint, progress=progress,
+        )
+        if deterministic["summary"]["status"] in ("candidate", "unchanged"):
+            return deterministic
+        deterministic_summary = deterministic["summary"]
+        if deterministic_summary["status"] in ("blocked", "stale"):
+            raise HtmlReviewError("确定性容量检查被阻断：" + str(deterministic_summary["reason"]),
+                                  code=deterministic_summary["reason"], status_code=422)
     selection = load_runtime_skill(deps.repo_root, mode=prompt_mode)
     system_prompt = SYSTEM_PROMPT + (
         "\n\n受控排版修复策略：\n" + selection.fragment if selection.fragment else ""
@@ -379,6 +396,8 @@ def repair_candidate(
             max_rounds=max_rounds, stopped=result["stopped"], reason=stop_reason),
         "audit": str(audit.relative_to(run)),
     }
+    if deterministic_summary:
+        summary["deterministic_capacity"] = deterministic_summary
     if not summary["passed"]:
         routes = ["diagnostics"] if summary["stop_reason"] in {"non_capacity_failure", "missing_diagnostic_evidence"} else ["manual_review"]
         action = {"stage": "layout_repair", "reason": summary["stop_reason"], "routes": routes,

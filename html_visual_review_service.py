@@ -439,6 +439,12 @@ def resource_environment(run_dir):
     return env
 
 
+from html_page_budget import final_review
+from html_review_cache import cached_review
+
+
+@final_review
+@cached_review
 def review_scene(
     scene: Dict[str, Any],
     *,
@@ -530,6 +536,8 @@ def review_scene(
             report["message"] = "当前实际帧存在遮挡、箭头交叉或安全区问题；须修正后再审核/保存"
     elif preflight_dir is not None and report.get("passed"):
         raise HtmlReviewError("缺少实际几何，前置检查不能通过", code="GEOMETRY_PREFLIGHT_FAILED", status_code=422)
+    from html_reconstruction_diagnostics import diagnostics
+    report['diagnostics']=diagnostics(scene,report,stage='static_and_temporal_review')
     _write_json(report_path, report)
     scene_tmp.unlink(missing_ok=True)
     return report

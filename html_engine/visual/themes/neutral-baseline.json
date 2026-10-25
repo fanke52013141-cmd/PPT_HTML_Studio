@@ -169,7 +169,12 @@
     "science-explanation-v1",
     "science-relations-v1",
     "chart-explanation-v1",
-    "process-three-stages-v1"
+    "process-three-stages-v1",
+    "knowledge-grid-v1",
+    "image-text-columns-v1",
+    "chart-notes-v1",
+    "wide-body-pair-v1",
+    "comparison-three-columns-v1"
   ],
   "illustrationPolicy": "只用黑灰白；有限固定视角独立主体，清晰边缘、柔和光照；文字与关系由代码实现。",
   "gradients": {

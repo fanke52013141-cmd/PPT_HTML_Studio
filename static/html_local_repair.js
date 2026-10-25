@@ -12,7 +12,9 @@
     const discard = el('button', '放弃避让候选', {type: 'button', disabled: true});
     const status = el('p', '候选不会自动保存；检查通过也不代表审美批准。'); status.setAttribute('role', 'status');
     const content = el('div');
-    box.append(generate, save, discard, status, content); host.append(box);
+    const strategy=el('select');strategy.setAttribute('aria-label','修复策略');
+    for(const [value,label] of [['geometry_first','箭头文字避让'],['layout_first','容量与关联布局（不调用模型）']])strategy.append(el('option',label,{value}));
+    box.append(strategy, generate, save, discard, status, content); host.append(box);
     let dead = false, busy = false, candidate = null, signature = null;
     const current = () => !dead && box.isConnected && options.isCurrent();
     const stamp = ctx => JSON.stringify([ctx.projectId, ctx.slideId, ctx.doc.revision, ctx.doc.audio_revision, ctx.saved, ctx.doc.scene, ctx.doc.binding]);
@@ -35,14 +37,17 @@
     }
     function show(result, ctx) {
       const path = result.repair_path || {};
-      content.append(el('p', `来源：${path.origin === 'geometry' ? '几何试算（未调用模型）' : '模型修复'}；几何检查${path.geometry_attempts || 0}次，耗时${path.geometry_seconds ?? '—'}秒。`));
+      content.append(el('p', `来源：${['geometry','shared_layout_solver'].includes(path.origin) ? '几何试算（未调用模型）' : '模型修复'}；几何检查${path.geometry_attempts || 0}次，耗时${path.geometry_seconds ?? '—'}秒。`));
       if (path.fallback_reason) content.append(el('p', path.fallback_reason));
       content.append(el('p', `范围：${ctx.scope.join('、')}；基于页面修订 ${ctx.doc.revision}。`));
       const review = result.review;
       if (review) content.append(el('p', `整页检查：${review.passed ? '通过' : '未通过'}；${review.frame_count ?? '—'}个检查时刻；${review.issues?.length ?? 0}项问题。`));
+      for(const issue of review?.diagnostics?.issues || []) content.append(el('p',`${issue.targets.join('、')||'整页'} · ${issue.code}：${issue.action_label}`));
       const names = {offsetX: '水平偏移', offsetY: '垂直偏移', width: '宽度', height: '高度'};
       const list = el('ul');
-      for (const change of result.changes || []) list.append(el('li', `${change.targetId} · ${names[change.parameter] || change.parameter}：${change.before ?? '自动（槽位）'} → ${change.after}px`));
+      for (const change of result.changes || []) list.append(el('li', change.kind
+        ? `${change.targetId} · ${change.kind}：${JSON.stringify(change.values)}`
+        : `${change.targetId} · ${names[change.parameter] || change.parameter}：${change.before ?? '自动（槽位）'} → ${change.after}px`));
       content.append(list); comparison(result.comparison);
       if (result.candidate_key && result.request && review?.passed === true) {
         candidate = result; signature = stamp(ctx); save.disabled = false; discard.disabled = false;
@@ -69,7 +74,7 @@
       status.textContent = '正在试算并检查整页；无可行几何候选时将继续模型修复，可能需要数分钟。原页面尚未保存修改。';
       const result = await API.post(`${url(ctx)}/generate`, {
         expected_revision: ctx.doc.revision, expected_audio_revision: ctx.doc.audio_revision,
-        scope: ctx.scope, instruction: goal, strategy: 'geometry_first',
+        scope: ctx.scope, instruction: strategy.value==='layout_first'?'仅修复所选对象的容量、遮挡和关联布局；保留原文、关系、动作与人工保护。':goal, strategy: strategy.value,
         overlap_policy: 'registered', sampling_mode: 'output_frames', fps: 30,
       }, {timeoutMs: 1200000, silent: true});
       if (!current()) return;

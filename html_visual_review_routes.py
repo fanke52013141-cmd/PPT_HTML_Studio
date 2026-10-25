@@ -445,3 +445,9 @@ def semantic_frame(project_id:str,slide_id:str,key:str,beat:int,edge:int,db:Any=
     if current.get("key")!=key or not 0<=beat<len(current.get("beats",[])) or edge not in (0,1,2):
         raise HTTPException(404,"语义帧不存在或已过期")
     return FileResponse(folder(run,slide_id)/key/"frames"/f"beat-{beat}-{edge}.png",media_type="image/png")
+
+
+from html_reference_routes import router as reference_router
+router.include_router(reference_router)
+from html_evaluation_routes import router as evaluation_router
+router.include_router(evaluation_router)

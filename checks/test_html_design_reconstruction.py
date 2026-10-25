@@ -32,6 +32,25 @@ def test_pure_code_cannot_skip_design(case):
     assert caught.value.code=="DESIGN_PROVIDER_MISSING" and not calls
 
 
+def test_post_operation_capacity_uses_deterministic_third_checkpoint(case):
+    from checks.html_design_agent_fixture import response_for
+    run,scene,binding,reference,contract=case
+    calls=[]
+    def generator(**kwargs):
+        fixture=response_for(kwargs)
+        if fixture is not None:
+            return fixture
+        calls.append(kwargs)
+        return {'status':'candidate','operations':[{'targetId':'header','kind':'set_presentation','values':{'height':20}}]}
+    result=reconstruct_design(scene,binding,reference,run_dir=run,
+        deps=HtmlReviewDependencies(ROOT,generator),beats=contract['narration_beats'])
+    audit=run/result['summary']['audit']
+    repair=json.loads((audit/'0/deterministic-layout.json').read_text(encoding='utf-8'))
+    assert repair['status']=='candidate' and repair['provider_calls']==0
+    assert len(calls)==1 and result['report']['geometry_preflight']['passed']
+    assert result['scene']['motion']==scene['motion'] and result['binding']==binding
+
+
 def test_registered_variants_are_consumed_without_changing_text_or_actions(case):
     run,scene,binding,reference,contract=case;calls=[]
     operations=[{"targetId":"stat-input","kind":"set_variant","values":{"variant":"text-card-outline","icon":"speech"}},

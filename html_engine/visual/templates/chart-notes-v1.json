@@ -1,0 +1,62 @@
+{
+  "format": "hps.visual.template",
+  "version": "0.1.0",
+  "id": "chart-notes-v1",
+  "name": "chart-notes-v1",
+  "structure": "explanation-cards",
+  "layoutRef": {
+    "id": "chart-notes-v1",
+    "version": "0.2.0"
+  },
+  "slots": {
+    "chart": {
+      "kinds": [
+        "chart"
+      ],
+      "required": true
+    },
+    "card-1": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "card-2": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "header": {
+      "kinds": [
+        "header"
+      ],
+      "required": true
+    },
+    "headline": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "summary": {
+      "kinds": [
+        "summary"
+      ],
+      "required": true
+    },
+    "intro": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "relation-1": {
+      "kinds": [
+        "arrow"
+      ],
+      "required": false
+    }
+  },
+  "relationPolicy": "explicit"
+}

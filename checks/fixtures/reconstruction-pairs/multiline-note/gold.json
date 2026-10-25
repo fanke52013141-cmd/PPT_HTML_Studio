@@ -1,0 +1,28 @@
+{
+  "reference_sha256": "ac6fe2ec0c14aa3ed96d031201b30e22ae1c7475a3149beaa0604ab3aa0adaa8",
+  "image_size": [
+    1000,
+    500
+  ],
+  "targetId": "note",
+  "parts": {
+    "text": [
+      [
+        108,
+        103,
+        262,
+        138
+      ],
+      [
+        108,
+        238,
+        262,
+        273
+      ]
+    ]
+  },
+  "container": null,
+  "minimum_iou": 0.6,
+  "minimum_gold_coverage": 0.9,
+  "missing": "missing-control"
+}

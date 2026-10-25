@@ -1,0 +1,33 @@
+{
+  "kind": "controlled_raster_benchmark",
+  "production_artwork": false,
+  "cases": [
+    {
+      "name": "dispersed-title",
+      "reference_sha256": "63fb0c238cc15cbf074d4590a2f411f6414986d2d009bdd657019f82ff011a4d",
+      "scene_sha256": "56da4caf74ea819a13ceee05dcaba1c3b74790fd77045e4102587de8e79b4dc0",
+      "gold_sha256": "ea34c20c6b8225766e5ac81f6416fbad654d1b99e2c4225c4317eccc9ecfc80c"
+    },
+    {
+      "name": "icon-source",
+      "reference_sha256": "c6dbfb5016db500f08bdde4e62c9097c668f6cdda65e26c6e658024a03aeaf3d",
+      "scene_sha256": "5b4bb4b0da7740bf131cdbb9888e342451390ff9e3df3829bb7507d0f7cdb4ac",
+      "gold_sha256": "1548448f674f749a930f2d9ce07198c4bd80208d2029535402efc662e64a0cec"
+    },
+    {
+      "name": "multiline-note",
+      "reference_sha256": "ac6fe2ec0c14aa3ed96d031201b30e22ae1c7475a3149beaa0604ab3aa0adaa8",
+      "scene_sha256": "126454bc25992ac70bae95ff0fa98ca996ef567cc00f4785a6f57544d2bfe387",
+      "gold_sha256": "efea9529ed6f6d71c5593a58435e1afece825f9afeea907f2070be95af7dcd7b"
+    },
+    {
+      "name": "relation-labels",
+      "reference_sha256": "da5bf54f4684c3d05f8f1a396a0406e8f088631ccac47c2d7820da2f20c6ce87",
+      "scene_sha256": "1996351cfdaf7b48c0f7dbfde282468660a7892bc2f4b76c7f30acbe951d8b9a",
+      "gold_sha256": "f7acc88e085426c18329845c37f91d1e05981cebe12cdd96581cfed59f841d80"
+    }
+  ],
+  "gold_sent_to_model": false,
+  "repetitions_per_arm": 1,
+  "limit": "Four controlled layouts do not establish real-slide accuracy or repeated-call stability."
+}

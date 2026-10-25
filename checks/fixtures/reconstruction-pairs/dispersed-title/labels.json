@@ -1,0 +1,40 @@
+{
+  "label_version": "reference-layout/1",
+  "authority": "controlled_fixture",
+  "reference_sha256": "63fb0c238cc15cbf074d4590a2f411f6414986d2d009bdd657019f82ff011a4d",
+  "targets": {
+    "header": {
+      "status": "located",
+      "container": null,
+      "parts": {
+        "number": [
+          {
+            "text": "02",
+            "box": [
+              53,
+              72,
+              93,
+              99
+            ]
+          }
+        ],
+        "title": [
+          {
+            "text": "正式定义",
+            "box": [
+              428,
+              70,
+              552,
+              103
+            ]
+          }
+        ]
+      }
+    },
+    "missing-control": {
+      "status": "not_found",
+      "parts": {},
+      "container": null
+    }
+  }
+}

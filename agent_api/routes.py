@@ -1858,3 +1858,50 @@ router.include_router(handoff_router)
 from agent_api.html_agent_routes import router as pi_agent_router
 
 router.include_router(pi_agent_router)
+
+
+from html_reference_models import ReferenceCorrection, ReferenceResult
+
+
+@router.get('/projects/{project_id}/html-review/{slide_id}/reference/{job_id}', response_model=ReferenceResult)
+def agent_reference_read(project_id: str, slide_id: str, job_id: str, db: Session = Depends(get_db)):
+    from html_reference_routes import reference_read
+    _html_project_or_404(project_id, db)
+    return ReferenceResult(project_id=project_id, slide_id=slide_id,
+                           reference=reference_read(project_id, slide_id, job_id, db)['reference'])
+
+
+@router.post('/projects/{project_id}/html-review/{slide_id}/reference/{job_id}/resume', response_model=HtmlTaskResult)
+def agent_reference_resume(project_id: str, slide_id: str, job_id: str,
+                           payload: ReferenceCorrection, db: Session = Depends(get_db)):
+    from html_reference_routes import reference_resume
+    _html_project_or_404(project_id, db)
+    return HtmlTaskResult(project_id=project_id, task=reference_resume(project_id, slide_id, job_id, payload, db)['task'])
+
+
+from html_asset_reuse_models import ReuseAssetsResult
+
+
+@router.get('/projects/{project_id}/html-review/{slide_id}/reusable-assets', response_model=ReuseAssetsResult)
+def agent_reusable_assets(project_id: str, slide_id: str, db: Session = Depends(get_db)):
+    from html_reference_routes import reusable_assets
+    _html_project_or_404(project_id, db)
+    return ReuseAssetsResult(project_id=project_id, slide_id=slide_id,
+                             assets=reusable_assets(project_id, slide_id, db)['assets'])
+
+
+from html_evaluation_models import EvaluationCommand,EvaluationResult
+
+
+@router.get('/projects/{project_id}/html-evaluation',response_model=EvaluationResult)
+def agent_evaluation_read(project_id:str,db:Session=Depends(get_db)):
+    from html_evaluation_routes import overview
+    _html_project_or_404(project_id,db)
+    return EvaluationResult(project_id=project_id,evaluation=overview(project_id,db))
+
+
+@router.post('/projects/{project_id}/html-evaluation/action',response_model=EvaluationResult)
+def agent_evaluation_command(project_id:str,payload:EvaluationCommand,db:Session=Depends(get_db)):
+    from html_evaluation_routes import command
+    _html_project_or_404(project_id,db)
+    return EvaluationResult(project_id=project_id,evaluation=command(project_id,payload,db))

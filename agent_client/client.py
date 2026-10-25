@@ -426,6 +426,21 @@ class AgentClient:
     def get_html_design_current(self, project_id: str, slide_id: str) -> dict[str, Any]:
         return self._request("GET", f"/projects/{project_id}/html-review/{slide_id}/design/current")
 
+    def html_evaluation_read(self,project_id):
+        return self._request('GET',f'/projects/{project_id}/html-evaluation')
+
+    def html_evaluation_command(self,project_id,command):
+        return self._request('POST',f'/projects/{project_id}/html-evaluation/action',body={'command':command})
+
+    def html_reusable_assets(self, project_id: str, slide_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/projects/{project_id}/html-review/{slide_id}/reusable-assets")
+
+    def html_reference_read(self, project_id: str, slide_id: str, job_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/projects/{project_id}/html-review/{slide_id}/reference/{job_id}")
+
+    def html_reference_resume(self, project_id: str, slide_id: str, job_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._request("POST", f"/projects/{project_id}/html-review/{slide_id}/reference/{job_id}/resume", body=payload)
+
     def html_manual_candidate(self, project_id: str, slide_id: str, job_id: str) -> dict[str, Any]:
         return self._request("GET", f"/projects/{project_id}/html-review/{slide_id}/manual-candidate/{job_id}")
 

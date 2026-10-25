@@ -16,13 +16,16 @@ from html_design_agent import (understand_design, review_fidelity, apply_allocat
                                validate_understanding, allocation_routes)
 from html_runtime_skills import load_runtime_skill
 from pipeline_lifecycle import write_json_atomic
+from html_page_budget import page_budgeted
 
 PROMPT_VERSION = "html-design-reconstruct/0.6.2"
 REQUEST_TIMEOUT_SECONDS = 600
 
 
+@page_budgeted
 def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=None,
-                       beats=None, understanding=None, checkpoint=lambda: None, progress=lambda value: None):
+                       beats=None, understanding=None, checkpoint=lambda: None, progress=lambda value: None,
+                       reference_review_key=None):
     run = Path(run_dir)
     design_path = Path(design_path).resolve()
     if not design_path.is_relative_to(run.resolve()) or not design_path.is_file():
@@ -47,6 +50,16 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
         if image.width*image.height > 4_000_000:
             raise HtmlReviewError("设计参考超过视觉输入预算",code="RECONSTRUCTION_REFERENCE_INVALID")
         image.save(reference,format="PNG")
+    if reference_review_key:
+        from html_reference_publication import restore
+        try:
+            proposed,report,fidelity=restore(scene,binding,reference_review_key,reference,run_dir=run,
+                deps=deps,manual=manual,beats=beats,audit=audit)
+        except ValueError as error:
+            raise HtmlReviewError(str(error),code='REFERENCE_CONTINUATION_REJECTED',status_code=409) from error
+        checkpoint();skill.verify()
+        return _result(proposed,binding,report,audit,run,[{'source':'reference_review','key':reference_review_key}],
+                       source_hash,proposed!=scene,understanding,fidelity,skill.identity)
     understanding = understanding or understand_design(scene,reference,run_dir=run,deps=deps,checkpoint=checkpoint,progress=progress)
     if understanding["design_sha256"] != source_hash:
         # PNG transport may transcode; compare against the actual original design.
@@ -67,7 +80,8 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
                                   code="CANDIDATE_REJECTED", status_code=422)
         from html_candidate_agent import repair_candidate
         repaired = repair_candidate(current, binding, run_dir=run, deps=deps,
-                                    manual=manual, checkpoint=checkpoint, progress=progress)
+                                    manual=manual, checkpoint=checkpoint, progress=progress,
+                                    deterministic_first=True, beats=beats)
         current, binding = repaired["scene"], repaired["binding"]
         shutil.copytree(run / repaired["summary"]["audit"], audit / "allocation-layout-agent",
                         dirs_exist_ok=True)
@@ -171,6 +185,15 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
                 proposed = candidate["scene"]
                 final=review_scene(proposed,run_dir=run,deps=deps,
                                    preflight_dir=folder/"preflight-final")
+            if not final.get("passed") and ((final.get("geometry_preflight", {}).get("issues")
+                    and final.get("geometry_preflight", {}).get("raw_report_sha256"))
+                    or "CONTENT_CAPACITY_EXCEEDED" in str(final.get("message", ""))):
+                from html_linked_layout import solve_production_layout
+                deterministic = solve_production_layout(proposed, binding, run_dir=run, deps=deps,
+                    manual=manual, beats=beats, checkpoint=checkpoint, progress=progress)
+                write_json_atomic(folder/"deterministic-layout.json", deterministic["summary"])
+                if deterministic["summary"]["status"] in ("candidate", "unchanged"):
+                    proposed, final = deterministic["scene"], deterministic["report"]
             write_json_atomic(folder/"strict-review.json",final)
             if not final.get("passed"):
                 diagnostic={"code":final.get("code"),"message":final.get("message"),
@@ -189,7 +212,8 @@ def reconstruct_design(scene, binding, design_path, *, run_dir, deps, manual=Non
             archived_shot.write_bytes(screenshot.read_bytes())
             progress({"design_review_round":index+1,"design_review_max_rounds":2})
             fidelity = review_fidelity(proposed,reference,archived_shot,final,understanding,folder=folder/"fidelity",
-                                       run_dir=run,deps=deps,manual=manual,checkpoint=checkpoint,previous=fidelity,progress=progress)
+                                       run_dir=run,deps=deps,manual=manual,checkpoint=checkpoint,previous=fidelity,
+                                       localized_reference=True, progress=progress)
             if fidelity["result"]["status"] == "pass":
                 return _result(proposed,binding,final,audit,run,history,source_hash,proposed!=scene,understanding,fidelity,skill.identity)
             if fidelity["result"]["status"] == "unsupported" or set(fidelity["repair_routes"]) - {"reconstruction"}:

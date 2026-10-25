@@ -890,7 +890,12 @@
         "science-explanation-v1",
         "science-relations-v1",
         "chart-explanation-v1",
-        "process-three-stages-v1"
+        "process-three-stages-v1",
+        "knowledge-grid-v1",
+        "image-text-columns-v1",
+        "chart-notes-v1",
+        "wide-body-pair-v1",
+        "comparison-three-columns-v1"
       ],
       "illustrationPolicy": "只用黑灰白；有限固定视角独立主体，清晰边缘、柔和光照；文字与关系由代码实现。",
       "gradients": {
@@ -1488,6 +1493,188 @@
     {
       "format": "hps.visual.layout",
       "version": "0.2.0",
+      "id": "chart-notes-v1",
+      "name": "chart-notes-v1",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "headline": {
+          "box": {
+            "x": 58,
+            "y": 145,
+            "width": 1477,
+            "height": 60
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 690,
+            "width": 1477,
+            "height": 90
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "chart": {
+          "box": {
+            "x": 58,
+            "y": 220,
+            "width": 900,
+            "height": 430
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "card-1": {
+          "box": {
+            "x": 1030,
+            "y": 220,
+            "width": 480,
+            "height": 180
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "card-2": {
+          "box": {
+            "x": 1030,
+            "y": 440,
+            "width": 480,
+            "height": 180
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "intro": {
+          "box": {
+            "x": 58,
+            "y": 650,
+            "width": 900,
+            "height": 38
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "relation-1": {
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 800
+          },
+          "maxLines": 1,
+          "align": "left",
+          "z": 1
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "comparison-three-columns-v1",
+      "name": "三列对比",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "intro": {
+          "box": {
+            "x": 58,
+            "y": 145,
+            "width": 1477,
+            "height": 52
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-1": {
+          "box": {
+            "x": 58,
+            "y": 220,
+            "width": 466,
+            "height": 400
+          },
+          "maxLines": 6,
+          "align": "left",
+          "z": 2
+        },
+        "card-2": {
+          "box": {
+            "x": 560,
+            "y": 220,
+            "width": 466,
+            "height": 400
+          },
+          "maxLines": 6,
+          "align": "left",
+          "z": 2
+        },
+        "card-3": {
+          "box": {
+            "x": 1062,
+            "y": 220,
+            "width": 466,
+            "height": 400
+          },
+          "maxLines": 6,
+          "align": "left",
+          "z": 2
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 690,
+            "width": 1477,
+            "height": 90
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
       "id": "data-relation-v1",
       "name": "数据与关系说明 / 三数据位",
       "canvas": {
@@ -1937,6 +2124,188 @@
             "height": 112
           },
           "maxLines": 3,
+          "align": "left",
+          "z": 2
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "image-text-columns-v1",
+      "name": "image-text-columns-v1",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "headline": {
+          "box": {
+            "x": 58,
+            "y": 145,
+            "width": 1477,
+            "height": 60
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 710,
+            "width": 1477,
+            "height": 70
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "subject": {
+          "box": {
+            "x": 58,
+            "y": 230,
+            "width": 650,
+            "height": 420
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "card-1": {
+          "box": {
+            "x": 800,
+            "y": 230,
+            "width": 700,
+            "height": 180
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "card-2": {
+          "box": {
+            "x": 800,
+            "y": 450,
+            "width": 700,
+            "height": 180
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "caption": {
+          "box": {
+            "x": 58,
+            "y": 665,
+            "width": 650,
+            "height": 40
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        }
+      }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "knowledge-grid-v1",
+      "name": "四卡片知识网格",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "intro": {
+          "box": {
+            "x": 58,
+            "y": 145,
+            "width": 1477,
+            "height": 52
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-1": {
+          "box": {
+            "x": 58,
+            "y": 220,
+            "width": 680,
+            "height": 180
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "card-2": {
+          "box": {
+            "x": 825,
+            "y": 220,
+            "width": 680,
+            "height": 180
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "card-3": {
+          "box": {
+            "x": 58,
+            "y": 440,
+            "width": 680,
+            "height": 180
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "card-4": {
+          "box": {
+            "x": 825,
+            "y": 440,
+            "width": 680,
+            "height": 180
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 700,
+            "width": 1477,
+            "height": 70
+          },
+          "maxLines": 2,
           "align": "left",
           "z": 2
         }
@@ -3381,6 +3750,75 @@
           "z": 4
         }
       }
+    },
+    {
+      "format": "hps.visual.layout",
+      "version": "0.2.0",
+      "id": "wide-body-pair-v1",
+      "name": "宽正文双卡片",
+      "canvas": {
+        "width": 1600,
+        "height": 900,
+        "contentBottom": 800,
+        "subtitleHeight": 100
+      },
+      "slots": {
+        "header": {
+          "box": {
+            "x": 58,
+            "y": 48,
+            "width": 1477,
+            "height": 77
+          },
+          "maxLines": 3,
+          "align": "left",
+          "z": 2
+        },
+        "intro": {
+          "box": {
+            "x": 58,
+            "y": 145,
+            "width": 1477,
+            "height": 52
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        },
+        "card-1": {
+          "box": {
+            "x": 58,
+            "y": 220,
+            "width": 1477,
+            "height": 190
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "card-2": {
+          "box": {
+            "x": 58,
+            "y": 435,
+            "width": 1477,
+            "height": 190
+          },
+          "maxLines": 4,
+          "align": "left",
+          "z": 2
+        },
+        "summary": {
+          "box": {
+            "x": 58,
+            "y": 690,
+            "width": 1477,
+            "height": 90
+          },
+          "maxLines": 2,
+          "align": "left",
+          "z": 2
+        }
+      }
     }
   ],
   "templates": [
@@ -3485,6 +3923,117 @@
             "arrow"
           ],
           "required": false
+        }
+      }
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "chart-notes-v1",
+      "name": "chart-notes-v1",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "chart-notes-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "chart": {
+          "kinds": [
+            "chart"
+          ],
+          "required": true
+        },
+        "card-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "headline": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        },
+        "intro": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "relation-1": {
+          "kinds": [
+            "arrow"
+          ],
+          "required": false
+        }
+      },
+      "relationPolicy": "explicit"
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "comparison-three-columns-v1",
+      "name": "三列对比",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "comparison-three-columns-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "intro": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "card-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-3": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
         }
       }
     },
@@ -3963,6 +4512,116 @@
     {
       "format": "hps.visual.template",
       "version": "0.1.0",
+      "id": "image-text-columns-v1",
+      "name": "image-text-columns-v1",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "image-text-columns-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "subject": {
+          "kinds": [
+            "image"
+          ],
+          "required": true
+        },
+        "card-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "caption": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "headline": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        }
+      }
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "knowledge-grid-v1",
+      "name": "四卡片知识网格：固定阅读顺序",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "knowledge-grid-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "intro": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "card-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-3": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-4": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        }
+      }
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
       "id": "process-stage-v1",
       "name": "对象过程舞台：单主体过程",
       "structure": "process-stage",
@@ -4306,6 +4965,49 @@
         }
       },
       "relationPolicy": "explicit"
+    },
+    {
+      "format": "hps.visual.template",
+      "version": "0.1.0",
+      "id": "wide-body-pair-v1",
+      "name": "宽正文双卡片",
+      "structure": "explanation-cards",
+      "layoutRef": {
+        "id": "wide-body-pair-v1",
+        "version": "0.2.0"
+      },
+      "slots": {
+        "header": {
+          "kinds": [
+            "header"
+          ],
+          "required": true
+        },
+        "intro": {
+          "kinds": [
+            "text"
+          ],
+          "required": false
+        },
+        "card-1": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "card-2": {
+          "kinds": [
+            "card"
+          ],
+          "required": true
+        },
+        "summary": {
+          "kinds": [
+            "summary"
+          ],
+          "required": true
+        }
+      }
     }
   ],
   "assets": [

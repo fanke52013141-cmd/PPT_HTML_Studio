@@ -105,8 +105,11 @@ def text_parts(identity):
     result=[]
     def append(path,value):
         if isinstance(value,str) and value.strip():result.append({'partId':path,'text':value})
-    for key in ('number','text','title','description','heading','term','takeaway','label'):
+    for key in ('number','text','title','body','description','heading','term','takeaway','label'):
         append(key,identity.get(key))
+    for key in ('tag', 'note'):
+        value = identity.get(key)
+        append(key + '/text' if isinstance(value, dict) else key, value.get('text') if isinstance(value, dict) else value)
     for index,run in enumerate(identity.get('runs',[])):
         append(f'runs/{index}',run.get('text'))
     for key in ('from','to'):
@@ -117,11 +120,18 @@ def text_parts(identity):
 
 def reference_targets(scene):
     # Intentionally excludes layout, presentation, actions and HTML geometry.
-    fields = ('number','text','runs','title','description','heading','from','to','term','takeaway','label','role')
-    return [{'targetId':n['id'],'type':n['type'],
+    fields = ('number','text','runs','title','body','tag','note','description','heading','from','to','term','takeaway','label','role')
+    targets = [{'targetId':n['id'],'type':n['type'],
              'region_scope':('complete_card' if n['type']=='card' or n.get('presentation',{}).get('variant','').startswith('text-card-')
                              else 'title_and_number' if n['type']=='header' else 'complete_relation_module' if n['type']=='summary' else 'visible_content'),
              'identity':{k:n[k] for k in fields if k in n}} for n in scene['nodes']]
+    for target in targets:
+        if target['type'] == 'arrow':
+            for side in ('from', 'to'):
+                endpoint = target['identity'].get(side)
+                if isinstance(endpoint, dict) and 'objectId' in endpoint:
+                    target['identity'][side] = {'objectId': endpoint['objectId']}
+    return targets
 
 
 def mapped_reference_targets(scene):
@@ -252,13 +262,17 @@ def validate_region_locations(response, targets, image_size, *, require_containe
     return result
 
 
-def localize_reference(scene, reference, *, folder, run_dir, deps, checkpoint=lambda:None):
+def localize_reference(scene, reference, *, folder, run_dir, deps, checkpoint=lambda:None, target_ids=None):
     from html_design_agent import decision
     folder, run = Path(folder).resolve(), Path(run_dir).resolve()
     reference=Path(reference).resolve()
     if not folder.is_relative_to(run) or not reference.is_relative_to(run) or not reference.is_file():
         raise HtmlReviewError('参考定位证据路径无效',code='DESIGN_AGENT_IMAGE_INVALID')
     targets = mapped_reference_targets(scene)
+    if target_ids is not None:
+        if len(target_ids) != len(set(target_ids)) or set(target_ids) - {t['targetId'] for t in targets}:
+            raise HtmlReviewError('参考定位对象范围无效', code='REFERENCE_LOCALIZATION_SCOPE_INVALID')
+        targets = [t for t in targets if t['targetId'] in target_ids]
     reference_hash=sha256_file(reference)
     with Image.open(reference) as image:image_size=list(image.size)
     payload = {'reference_targets':targets,'box_coordinates':'original_image_pixels', 'image_size':image_size,

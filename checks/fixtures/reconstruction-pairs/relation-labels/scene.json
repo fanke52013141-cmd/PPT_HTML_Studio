@@ -1,0 +1,21 @@
+{
+  "nodes": [
+    {
+      "id": "relation",
+      "type": "summary",
+      "from": {
+        "text": "下级机关"
+      },
+      "to": {
+        "text": "上级机关"
+      },
+      "term": "公开遴选",
+      "takeaway": "公开择优选人"
+    },
+    {
+      "id": "missing-control",
+      "type": "text",
+      "text": "不存在的火星基地987654321"
+    }
+  ]
+}

@@ -505,7 +505,7 @@ def retain_unchanged_issues(result, previous, current):
     return retained
 
 
-def review_fidelity(scene, reference, screenshot, report, understanding, *, folder, run_dir, deps, manual=None, checkpoint=lambda: None, previous=None, local_comparisons=False, progress=lambda value: None):
+def review_fidelity(scene, reference, screenshot, report, understanding, *, folder, run_dir, deps, manual=None, checkpoint=lambda: None, previous=None, local_comparisons=False, localized_reference=False, progress=lambda value: None, localization_override=None):
     from html_scene_editing import manual_protected_paths
     from html_review_evidence import comparison_evidence
     run = Path(run_dir).resolve()
@@ -515,7 +515,7 @@ def review_fidelity(scene, reference, screenshot, report, understanding, *, fold
                "geometry":report.get("geometry"),"manual_protected_paths":manual_protected_paths(manual)}
     payload['review_checklist'] = review_checklist(scene)
     payload['text_alignment_contract'] = text_alignment_contract(scene,deps.repo_root)
-    if not local_comparisons:
+    if localized_reference or not local_comparisons:
         payload['review_output_contract'] = 'design-review-facts/0.1.0'
     evidence = review_target_evidence(scene, screenshot, report)
     if previous:
@@ -524,21 +524,64 @@ def review_fidelity(scene, reference, screenshot, report, understanding, *, fold
         payload['prior_open_issues'] = previous['result']['issues']
         payload['current_target_evidence'] = {i['targetId']:evidence.get(i['targetId']) for i in previous['result']['issues']}
         payload['previous_target_evidence'] = {i['targetId']:previous.get('target_evidence', {}).get(i['targetId']) for i in previous['result']['issues']}
-    local_evidence, sheets = None, []
-    if local_comparisons:
+    local_evidence, sheets, localization = None, [], None
+    if localized_reference:
+        from html_reference_localization import localize_reference, mapped_reference_targets
+        from html_review_evidence import localized_comparison_evidence
+        # Text/container localization is the implemented scope. Image identity
+        # and relations remain independently judged from the full images.
+        target_ids = [n['id'] for n in scene['nodes'] if n['type'] in ('text','header','card','summary','label','badge')]
+        targets = [t for t in mapped_reference_targets(scene) if t['targetId'] in target_ids]
+        locator_skill = load_runtime_skill(deps.repo_root, stage='design_reference_localization', mode='runtime_skill')
+        cached = (previous or {}).get('reference_localization')
+        if localization_override is not None:
+            if (localization_override.get('targets_sha256') != sha256_json(targets)
+                or localization_override.get('runtime_skill') != locator_skill.identity
+                or {r['targetId'] for r in localization_override['result']['targets']} != set(target_ids)):
+                raise HtmlReviewError('复核定位范围或定义已变化', code='REFERENCE_LOCALIZATION_SCOPE_INVALID')
+            localization = localization_override
+        elif (cached and cached.get('reference_sha256') == sha256_file(reference)
+            and cached.get('targets_sha256') == sha256_json(targets)
+            and cached.get('runtime_skill') == locator_skill.identity):
+            localization = {**cached, 'source_scene_sha256':cached.get('source_scene_sha256', cached['scene_sha256']),
+                            'scene_sha256':sha256_json(scene), 'reused_for_identical_targets':True}
+        else:
+            localization = localize_reference(scene, reference, folder=Path(folder)/'reference-localization',
+                run_dir=run, deps=deps, checkpoint=checkpoint, target_ids=target_ids)
+        local_evidence, sheets = localized_comparison_evidence(scene, reference, screenshot, report, localization,
+                                                              folder=Path(folder)/'independent-comparison')
+        if local_evidence['unresolved_targets']:
+            workbench = None
+            if scene.get('id') and scene.get('templateRef'):
+                from html_reference_workbench import export_workbench
+                workbench = export_workbench(scene, reference, screenshot, report, localization,
+                    folder=Path(folder)/'workbench', run_dir=run, repo_root=deps.repo_root,
+                    manual=manual, previous=previous)
+            action = {'stage':'design_fidelity_review', 'reason':'reference_localization_unresolved',
+                      'routes':['evidence_review'], 'automatic_retry':False}
+            write_json_atomic(Path(folder)/'diagnostic.json', {'code':'REFERENCE_LOCALIZATION_UNRESOLVED',
+                'targets':local_evidence['unresolved_targets'], 'reference_localization':localization,
+                'next_action':action, 'human_approval':'pending', 'workbench':workbench})
+            progress({'next_action':action, 'reference_workbench':workbench})
+            raise HtmlReviewError('原图对象定位未决，保留证据待核验', code='REFERENCE_LOCALIZATION_UNRESOLVED')
+        payload['independent_reference_evidence'] = local_evidence
+        payload['reference_localization_scope'] = {'target_ids':target_ids, 'other_types':'full_images_only',
+                                                  'quality':'model_proposed_unverified'}
+    elif local_comparisons:
         checkpoint()
         local_evidence, sheets = comparison_evidence(scene, reference, screenshot, report, folder=Path(folder)/'local-evidence')
         payload['local_comparisons'] = local_evidence
     response, skill = decision("design_fidelity_review",payload,[reference,screenshot,*sheets],folder=folder,
                               run_dir=run_dir,deps=deps,checkpoint=checkpoint,
-                              skill_stage='design_fidelity_review_local' if local_comparisons else None)
+                              skill_stage=('design_fidelity_review_grounded' if localized_reference else
+                                           'design_fidelity_review_local' if local_comparisons else None))
     if local_evidence and (local_evidence['reference_sha256'] != sha256_file(reference)
                            or local_evidence['screenshot_sha256'] != sha256_file(screenshot)
                            or local_evidence['scene_sha256'] != sha256_json(scene)):
         raise HtmlReviewError('局部审核证据来源发生变化',code='DESIGN_STALE')
     try:
         result = validate_fidelity(response,scene,require_coverage=True,alignment=payload['text_alignment_contract'],
-                                   require_facts=not local_comparisons)
+                                   require_facts=localized_reference or not local_comparisons)
     except ValueError as exc:
         code = 'DESIGN_REVIEW_COVERAGE_INCOMPLETE' if 'REVIEW_COVERAGE_INCOMPLETE' in str(exc) else 'DESIGN_REVIEW_INVALID'
         details = getattr(exc, 'details', None)
@@ -557,6 +600,7 @@ def review_fidelity(scene, reference, screenshot, report, understanding, *, fold
               "design_sha256":sha256_file(reference),"screenshot_sha256":sha256_file(screenshot),
               "target_evidence":evidence,"continuity":{"retained":retained},
               "local_evidence":local_evidence,
+              "reference_localization":localization,
               "coverage_check":{"status":"complete","expected":len(payload['review_checklist']),"reported":len(result['coverage'])},
               "fact_checks": {"conflicts": sum(i["fact_conflict"] for i in routed),
                               "policy": "preserve_issue_and_block_noop_variant_retry"},

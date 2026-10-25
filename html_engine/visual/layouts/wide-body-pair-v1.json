@@ -1,0 +1,69 @@
+{
+  "format": "hps.visual.layout",
+  "version": "0.2.0",
+  "id": "wide-body-pair-v1",
+  "name": "宽正文双卡片",
+  "canvas": {
+    "width": 1600,
+    "height": 900,
+    "contentBottom": 800,
+    "subtitleHeight": 100
+  },
+  "slots": {
+    "header": {
+      "box": {
+        "x": 58,
+        "y": 48,
+        "width": 1477,
+        "height": 77
+      },
+      "maxLines": 3,
+      "align": "left",
+      "z": 2
+    },
+    "intro": {
+      "box": {
+        "x": 58,
+        "y": 145,
+        "width": 1477,
+        "height": 52
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    },
+    "card-1": {
+      "box": {
+        "x": 58,
+        "y": 220,
+        "width": 1477,
+        "height": 190
+      },
+      "maxLines": 4,
+      "align": "left",
+      "z": 2
+    },
+    "card-2": {
+      "box": {
+        "x": 58,
+        "y": 435,
+        "width": 1477,
+        "height": 190
+      },
+      "maxLines": 4,
+      "align": "left",
+      "z": 2
+    },
+    "summary": {
+      "box": {
+        "x": 58,
+        "y": 690,
+        "width": 1477,
+        "height": 90
+      },
+      "maxLines": 2,
+      "align": "left",
+      "z": 2
+    }
+  }
+}

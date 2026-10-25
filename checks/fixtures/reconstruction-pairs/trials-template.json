@@ -1,0 +1,66 @@
+{
+  "dataset_sha256": "03993b6b10ca504b8bf7c1aa426d187ddcbf005ba7410698676fe240dbccc422",
+  "repetitions": 1,
+  "arms": [
+    "before",
+    "after"
+  ],
+  "trials": [
+    {
+      "case_id": "dispersed-title",
+      "repetition": 0,
+      "arm": "before",
+      "state": "not_run",
+      "seconds": null
+    },
+    {
+      "case_id": "dispersed-title",
+      "repetition": 0,
+      "arm": "after",
+      "state": "not_run",
+      "seconds": null
+    },
+    {
+      "case_id": "icon-source",
+      "repetition": 0,
+      "arm": "before",
+      "state": "not_run",
+      "seconds": null
+    },
+    {
+      "case_id": "icon-source",
+      "repetition": 0,
+      "arm": "after",
+      "state": "not_run",
+      "seconds": null
+    },
+    {
+      "case_id": "multiline-note",
+      "repetition": 0,
+      "arm": "before",
+      "state": "not_run",
+      "seconds": null
+    },
+    {
+      "case_id": "multiline-note",
+      "repetition": 0,
+      "arm": "after",
+      "state": "not_run",
+      "seconds": null
+    },
+    {
+      "case_id": "relation-labels",
+      "repetition": 0,
+      "arm": "before",
+      "state": "not_run",
+      "seconds": null
+    },
+    {
+      "case_id": "relation-labels",
+      "repetition": 0,
+      "arm": "after",
+      "state": "not_run",
+      "seconds": null
+    }
+  ]
+}

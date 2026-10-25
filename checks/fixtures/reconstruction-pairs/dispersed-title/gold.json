@@ -1,0 +1,30 @@
+{
+  "reference_sha256": "63fb0c238cc15cbf074d4590a2f411f6414986d2d009bdd657019f82ff011a4d",
+  "image_size": [
+    1000,
+    500
+  ],
+  "targetId": "header",
+  "parts": {
+    "number": [
+      [
+        53,
+        72,
+        93,
+        99
+      ]
+    ],
+    "title": [
+      [
+        428,
+        70,
+        552,
+        103
+      ]
+    ]
+  },
+  "container": null,
+  "minimum_iou": 0.6,
+  "minimum_gold_coverage": 0.9,
+  "missing": "missing-control"
+}

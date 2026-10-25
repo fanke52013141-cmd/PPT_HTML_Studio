@@ -1,0 +1,34 @@
+{
+  "label_version": "reference-layout/1",
+  "authority": "controlled_fixture",
+  "reference_sha256": "c6dbfb5016db500f08bdde4e62c9097c668f6cdda65e26c6e658024a03aeaf3d",
+  "targets": {
+    "source": {
+      "status": "located",
+      "container": [
+        55,
+        125,
+        945,
+        260
+      ],
+      "parts": {
+        "text": [
+          {
+            "text": "来源：公开办法",
+            "box": [
+              233,
+              180,
+              447,
+              213
+            ]
+          }
+        ]
+      }
+    },
+    "missing-control": {
+      "status": "not_found",
+      "parts": {},
+      "container": null
+    }
+  }
+}

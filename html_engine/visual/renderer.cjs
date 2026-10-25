@@ -349,6 +349,7 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
       const scale = stage.getBoundingClientRect().width / 1600;
       const issue = {
         code: error.code, target: id, message: error.message,
+        part: el.dataset.publicTextPart || null,
         ...error.capacityEvidence,
         available: typeof limit === "number" ? { width: limit } : limit,
         measured: { width: box.width / scale, height: box.height / scale,
@@ -769,6 +770,10 @@ async function prepare(compiled, pack, host, { diagnostic = false } = {}) {
           takeaway: ".v-takeaway",
         },
       };
+      for (const [part, selector] of Object.entries(selectors[node.type] || {})) {
+        const target = selector ? el.querySelector(selector) : el;
+        if (target) target.dataset.publicTextPart = part;
+      }
       for (const [part, style] of Object.entries(
         node.presentation?.typography || {},
       )) {

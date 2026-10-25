@@ -236,6 +236,8 @@ def evidence(run, slide, request, preview=None):
     report["measurements_path"] = report["evidence_dir"] + "/report.json"
     from html_motion_activity import motion_activity
     report["motion_activity"] = motion_activity(preview["scene"])
+    from html_reconstruction_diagnostics import diagnostics
+    report["diagnostics"] = diagnostics(preview["scene"], report, stage="saved_repair")
     editor._check_audio_revision(run, slide, preview["audio_revision"])
     return report
 

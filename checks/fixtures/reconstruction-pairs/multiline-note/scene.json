@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "note",
+      "type": "text",
+      "text": "第一行正文第二行正文"
+    },
+    {
+      "id": "missing-control",
+      "type": "text",
+      "text": "不存在的火星基地987654321"
+    }
+  ]
+}

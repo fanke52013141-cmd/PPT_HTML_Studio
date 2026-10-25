@@ -2,6 +2,16 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+for (const name of ['html_reference_panel.js', 'html_asset_reuse.js', 'html_evaluation_panel.js']) {
+  const source = fs.readFileSync(path.join(root, 'static', name), 'utf8');
+  if (/\bfetch\s*\(|MutationObserver|innerHTML\s*=/.test(source) || !source.includes('API.')) {
+    throw new Error(name + ' must use project API transport and safe DOM ownership');
+  }
+}
+const referencePanel = fs.readFileSync(path.join(root, 'static/html_reference_panel.js'), 'utf8');
+if (!referencePanel.includes('event.source!==frame.contentWindow') || !referencePanel.includes('m.nonce!==state.nonce') || !referencePanel.includes('state.nonce=null')) {
+  throw new Error('Inline correction must bind the sandbox window, session nonce and lifecycle');
+}
 const app = fs.readFileSync(path.join(root, 'static', 'workflow_state.js'), 'utf8');
 const uiFoundation = fs.readFileSync(path.join(root, 'static', 'ui_foundation.js'), 'utf8');
 const apiClient = fs.readFileSync(path.join(root, 'static', 'api_client.js'), 'utf8');

@@ -151,6 +151,14 @@ class TestDispatchRouting:
             for action in ("read", "result", "cancel"):
                 strict_arguments[f"{prefix}.{action}"] = {"project_id": "p1", "job_id": "job1",
                     **({"slide_id": "s1"} if prefix == "html_agent" else {})}
+        strict_arguments.update({
+            'html_evaluation.read':{'project_id':'p1'},
+            'html_evaluation.command':{'project_id':'p1','command':{'action':'read_case','dataset_id':'sample','case_id':'s1'}},
+            'html_review.reusable_assets': {'project_id':'p1','slide_id':'s1'},
+            'html_review.reference_read': {'project_id':'p1','slide_id':'s1','job_id':'job1'},
+            'html_review.reference_resume': {'project_id':'p1','slide_id':'s1','job_id':'job1',
+                'session_sha256':'a'*64,'mapping':{'targets':[]}},
+        })
         for cap in CAPABILITIES:
             if cap.status == CapabilityStatus.removed or not cap.mcp_enabled:
                 continue

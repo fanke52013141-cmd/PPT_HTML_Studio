@@ -1,4 +1,18 @@
 # HTML 演示契约变更记录
+
+0.9.118（2026-10-25）：[标注与执行器](runtime/visual-v1/annotation-experiments-0.1.0.md)。新增html_evaluation.read/command两个Web/Agent/MCP/SDK/CLI同构能力，原JSON传输增加默认空的任务本地HTTP观察钩子，格式回退/修复亦计数；使用原执行器/LocalJob，不自动批准或重发unknown。项目标注草稿/复核/版本独立于生产作者。API1.64.0。
+
+0.9.117（2026-10-25）：[五项后续开发](runtime/visual-v1/acceptance-workbench-evaluation-0.1.0.md)。AC独立规则、源码/证据/测试选择器严格校验；诊断量纲/路由区分未知、预算和无解；原workbench新增拖框、主面板会话绑定消息及显式提交；固定跨课程开发/留出配对评分；宽正文双卡片、三列对比和summary联动。HTTP请求模型与Agent API1.63.0保持，数据/渲染/输出守卫保持，源码变更按原指纹失效。
+
+0.9.116（2026-10-25）：[P0/P2 完整接线](runtime/visual-v1/production-completion-p0-p2-0.1.0.md)。新增定位复核读取/任务恢复/素材列表三个Web与Agent同构能力；produce1.16支持显式同项目素材绑定及已完成复核续接，repair.generate1.8增加layout_first。原作者revision/audio/scope/protection及完整30fps检查保持；API1.63.0。新增两类注册模板和原69项可复现对账。
+
+2026-10-25 兼容定义扩展：[恢复回执与知识网格](runtime/visual-v1/reference-recovery-grid-0.1.0.md)。知识网格复用既有card/header/summary组件与原渲染器，neutral-baseline增加兼容布局，清单上限8→32且唯一性/ID约束保持；恢复分执行模式按精确修正去重，unknown禁止自动重发；本地表单不授予视觉批准。
+
+2026-10-25 兼容内部工程增量：[七项离线优化](runtime/visual-v1/reconstruction-offline-optimization-0.1.0.md)。预算/搜索/布局/设计前投影/复核与缓存进入实际生产所有者和源闭包；无新HTTP/Agent字段、数据库迁移或自动批准。离线范围以O7-01—07为准，原69项AC和真实质量不整体升级。
+
+2026-10-25（兼容实施增量）：[关联布局与独立原图审核](runtime/visual-v1/linked-layout-reference-review-0.1.0.md)补三卡片/底栏联动、显式point端点避让、第三生产检查点；生产保真接独立文字/容器定位及真实对象配对，未决进evidence_review，定位同图/同目标/同版本复用。新增内部审核片段1.1.0（input0.4.0/facts0.1.0），旧直接审核保持；body纳入定位，端点坐标不泄漏；来源与独立计量同步。真实模型/人审效果待验。
+
+2026-10-25（兼容实施增量，包/API版本保持）：[未保存候选累计容量求解](runtime/visual-v1/candidate-capacity-solver-0.1.0.md)接通生产编译与分配变体后的容量修复；输入保留manual/beats，跨对象累计候选，默认32次测量/4层/4最终检查/共享120秒。诊断增加实际公开part以支持继承字号，不猜多部位归属；通过前严格原30fps/registered复验及来源检查。旧编辑策略不变；设计/生成快照纳入容量源码。不自动批准，不将受控工程验证记成真实课程保真通过。
 0.9.115（2026-10-22）：[容量修复确定性候选](runtime/visual-v1/capacity-repair-0.1.0.md)。新增 capacity_first 策略：尺寸候选按原容量触发计算并限制在画布/注册变体内；排版候选仅对已显式字号部位步进缩小且不低于 24px；不改文字/身份/关系/动作/人工保护，annotation 不参与；首个通过原检查者返回，全部失败显式 NO_DETERMINISTIC_CAPACITY_FIT，不调用模型/不返回 unknown。generate1.7、AGENT_API_VERSION1.62.0；离线基准候选 0→18，模型调用 0。
 
 0.9.114（2026-10-22）：[关系附着点确定性路由](runtime/visual-v1/geometry-repair-0.2.0.md)。显式 point 关系箭头在目标边界枚举附着点，复用原 vector-overlap 谓词并要求对所有可见文字无穿越；不移动文字、不改关系对象/样式/时间，anchor 与隐式槽位箭头不参与，无解返回空提案（不调用模型）。新增操作 set_endpoint_point（仅确定性路径；模型 Prompt 不提供），人工保护与显式保存不变。预览/保存能力1.8、generate1.6，AGENT_API_VERSION1.61.0；基准 2/2 路由、3/3 非路由跳过、0 模型调用。

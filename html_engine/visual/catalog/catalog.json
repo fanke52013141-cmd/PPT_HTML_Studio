@@ -16,8 +16,8 @@
       "pendingOrExperimentalSamples": 2,
       "runtimeNodeTypes": 12,
       "runtimeEffects": 8,
-      "runtimeLayouts": 10,
-      "runtimeTemplates": 8,
+      "runtimeLayouts": 15,
+      "runtimeTemplates": 13,
       "runtimeThemes": 5
     },
     "sourceOfCounts": "counted from standard-pages.json, components.json, components-extensions.json, presentation-variants.json, effects.json, static-catalog.json, and live V1 runtime sources"
@@ -255,12 +255,28 @@
       "sha256": "16a78e3eff5ad17d4b4f96982734ed384e02663acc377cc5b35cc654f4d5ff30"
     },
     {
+      "path": "html_engine/visual/layouts/chart-notes-v1.json",
+      "sha256": "d05e4b4e5d8ba5c170fb8189c9a30f471ccc36ecbe26b574d12c9be2fbbcce83"
+    },
+    {
+      "path": "html_engine/visual/layouts/comparison-three-columns-v1.json",
+      "sha256": "dd8681c75aceba114825a4a98e82820a143fe57ed6c0684bff98917d0a5179dd"
+    },
+    {
       "path": "html_engine/visual/layouts/data-relation-v1.json",
       "sha256": "f5ec0ba6ac8579df761e426bf89585c972ee4cdcb6c768632ec5c4cbce5f5c7c"
     },
     {
       "path": "html_engine/visual/layouts/editorial-three-columns-v1.json",
       "sha256": "589bef55041cfce51ac7d4420de3af0a9913089419e42f4b7a68c42cf7ace0c9"
+    },
+    {
+      "path": "html_engine/visual/layouts/image-text-columns-v1.json",
+      "sha256": "ba27f39ecf8b9f248f5c7ef93c640bdc2aca8414eb10a6ede1d181ffec67ea45"
+    },
+    {
+      "path": "html_engine/visual/layouts/knowledge-grid-v1.json",
+      "sha256": "fef45072511d439d8c0418e9caaca915bed06bc2b543a2ce58e8b7b942746210"
     },
     {
       "path": "html_engine/visual/layouts/object-left.json",
@@ -291,12 +307,24 @@
       "sha256": "3a81c7e102edd702f9adc0a19e9566b13b28c4f58107e280b369ef5ae8cfa159"
     },
     {
+      "path": "html_engine/visual/layouts/wide-body-pair-v1.json",
+      "sha256": "1587f8693c7a0816ddecda677c05a81b3dd1dfb88a7d756e9625d63cd3813b8e"
+    },
+    {
       "path": "html_engine/visual/schema.json",
-      "sha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3"
+      "sha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3"
     },
     {
       "path": "html_engine/visual/templates/chart-explanation-v1.json",
       "sha256": "58c999a105969f086300e731802c2a91108540e39ebf7efe3250d064750d41c8"
+    },
+    {
+      "path": "html_engine/visual/templates/chart-notes-v1.json",
+      "sha256": "441c6923aa026416580ea674410a0b5ff8f2a390dd341978e310dc5046f2f3ae"
+    },
+    {
+      "path": "html_engine/visual/templates/comparison-three-columns-v1.json",
+      "sha256": "78ea2387123edd9480f1b599b10b0d9dde640687363e1a24a1a8f333eec093e2"
     },
     {
       "path": "html_engine/visual/templates/data-relation-v1.json",
@@ -315,6 +343,14 @@
       "sha256": "e0933b9939bb1197c3673d34743c14b530d616fd94bef8a2adf028354caf63d7"
     },
     {
+      "path": "html_engine/visual/templates/image-text-columns-v1.json",
+      "sha256": "314066fcb292199a1ce21c6372473710d073b59b5230f068e0b99c34c0923e12"
+    },
+    {
+      "path": "html_engine/visual/templates/knowledge-grid-v1.json",
+      "sha256": "6f6a092f924a82a8e64ca8f627d135be830b709f8b791bd3536c46fa122babc8"
+    },
+    {
       "path": "html_engine/visual/templates/process-stage-v1.json",
       "sha256": "186bd2ffab34901bd9864c667163e00d43e8e865bb4f9db38d98fd9c9234ca5b"
     },
@@ -327,6 +363,10 @@
       "sha256": "7c1f805dd96726a6659ea7943d7029ddf39c00cc782c3329b43499ff50047bad"
     },
     {
+      "path": "html_engine/visual/templates/wide-body-pair-v1.json",
+      "sha256": "d7eedeac30b2a846b731613835ba9b81668cbef854d65c41199437032c734ddf"
+    },
+    {
       "path": "html_engine/visual/themes/amber-editorial.json",
       "sha256": "81b48464ab20bb75a6763220b3e23f9355572431834729374f3213c2139e5a96"
     },
@@ -336,7 +376,7 @@
     },
     {
       "path": "html_engine/visual/themes/neutral-baseline.json",
-      "sha256": "92568b1176e82494f2fe8437a956d192d4226e5816f48493e757cf25e638f11a"
+      "sha256": "e8f5019a4eab446bee3ef2b63136b10dea8613b3fe06704fddfd15b03033dcf7"
     },
     {
       "path": "html_engine/visual/themes/neutral-science.json",
@@ -6802,6 +6842,108 @@
       }
     },
     {
+      "id": "runtime-layout:chart-notes-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "chart-notes-v1",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 8,
+        "slots": [
+          "header",
+          "headline",
+          "summary",
+          "chart",
+          "card-1",
+          "card-2",
+          "intro",
+          "relation-1"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/chart-notes-v1.json",
+        "fileSha256": "d05e4b4e5d8ba5c170fb8189c9a30f471ccc36ecbe26b574d12c9be2fbbcce83",
+        "recordSha256": "a1a147c01906db7a9371306c6807d8220d9d8a91526597e9d88f829b85890412"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:chart-notes-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-layout:comparison-three-columns-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "三列对比",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 6,
+        "slots": [
+          "header",
+          "intro",
+          "card-1",
+          "card-2",
+          "card-3",
+          "summary"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/comparison-three-columns-v1.json",
+        "fileSha256": "dd8681c75aceba114825a4a98e82820a143fe57ed6c0684bff98917d0a5179dd",
+        "recordSha256": "062ea5fd2143a9caa0194b15af5727ae2c1c8ff9463ed075985e4869108ee48b"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:comparison-three-columns-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-layout:data-relation-v1",
       "version": "0.2.0",
       "type": "runtime-layout",
@@ -6924,6 +7066,108 @@
         "directAdapter": true,
         "candidateRuntimeIds": [
           "runtime-layout:editorial-three-columns-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-layout:image-text-columns-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "image-text-columns-v1",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 7,
+        "slots": [
+          "header",
+          "headline",
+          "summary",
+          "subject",
+          "card-1",
+          "card-2",
+          "caption"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/image-text-columns-v1.json",
+        "fileSha256": "ba27f39ecf8b9f248f5c7ef93c640bdc2aca8414eb10a6ede1d181ffec67ea45",
+        "recordSha256": "f0db31c120d9cb6e1d281f33fefb69c70e02d996b2427d26c931bc14372e202a"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:image-text-columns-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-layout:knowledge-grid-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "四卡片知识网格",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 7,
+        "slots": [
+          "header",
+          "intro",
+          "card-1",
+          "card-2",
+          "card-3",
+          "card-4",
+          "summary"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/knowledge-grid-v1.json",
+        "fileSha256": "fef45072511d439d8c0418e9caaca915bed06bc2b543a2ce58e8b7b942746210",
+        "recordSha256": "a9e1675ecbfb47d03831fba4e5d3734a59f3199b271b96c23ad7b2a19933809d"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:knowledge-grid-v1"
         ],
         "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
@@ -7359,6 +7603,55 @@
       }
     },
     {
+      "id": "runtime-layout:wide-body-pair-v1",
+      "version": "0.2.0",
+      "type": "runtime-layout",
+      "category": "production-layout",
+      "name": "宽正文双卡片",
+      "purpose": "production-layout 的实际运行时登记源。",
+      "parameterRange": {
+        "canvas": {
+          "width": 1600,
+          "height": 900,
+          "contentBottom": 800,
+          "subtitleHeight": 100
+        },
+        "slotCount": 5,
+        "slots": [
+          "header",
+          "intro",
+          "card-1",
+          "card-2",
+          "summary"
+        ],
+        "slotFieldConstraints": "coordinates 0..1600; maxLines 1..6; align left|center|right; z 0..20 (schema bounds)"
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/layouts/wide-body-pair-v1.json",
+        "fileSha256": "1587f8693c7a0816ddecda677c05a81b3dd1dfb88a7d756e9625d63cd3813b8e",
+        "recordSha256": "b40ea0d88f2a02ddc1582da7003a5966e82df9fff41742fe22c1028d3e3493c5"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-layout:wide-body-pair-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-node:annotation",
       "version": "0.2.0",
       "type": "runtime-node",
@@ -7404,7 +7697,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "ebadc3bbf0ee94d66fb7304658ab9e1ac0729636fbbbdab96f255b92dd986e79"
       },
       "screenshot": null,
@@ -7459,7 +7752,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "7237fd3ee1b13cba8cd961c5ad84eb49ed194d88bb92815ec370fdd82350f1c5"
       },
       "screenshot": null,
@@ -7514,7 +7807,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "7e1b9f2bafa1348e15f22906303fa47802527d6b5e69a41f772a529203a4f333"
       },
       "screenshot": null,
@@ -7575,7 +7868,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "f377c7d93d2770ed9c6138f13ad9321e23a8a60d8958bd4204221cf39f5208a4"
       },
       "screenshot": null,
@@ -7648,7 +7941,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "0fe385d4dd79e7ef312c865d1c98cb788b37a3386103ab2ff0c0c514aaffc5bc"
       },
       "screenshot": null,
@@ -7694,7 +7987,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "55f087a49ca40a8f6530060286ea720be17193869359ac364e7042fd7d789af6"
       },
       "screenshot": null,
@@ -7747,7 +8040,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "b1057fbd41c4dc4ad70b6ef587db13f8246893f889561eea7f34314979aec704"
       },
       "screenshot": null,
@@ -7796,7 +8089,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "6ef8497635172c224efcd175dafe1cfa0cec22b66e9dc14d5a119a167fa4cd64"
       },
       "screenshot": null,
@@ -7859,7 +8152,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "d438e5306b2dabeb38f34d128eed867482e51ad80584ef285ace738c384587e0"
       },
       "screenshot": null,
@@ -7933,7 +8226,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "0587fb4992b4a6c6f04565e07bb14dce73066e7a8ce6a447a71cbaa205b05593"
       },
       "screenshot": null,
@@ -7997,7 +8290,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "992266d45945f11445294e59094ce43b251b76fa3b71c845d5f069d877af42b8"
       },
       "screenshot": null,
@@ -8046,7 +8339,7 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/schema.json",
-        "fileSha256": "8bc386d0836c9128bd46adfd30f0e68a18c4b23940945ebc9afd8794f36d8df3",
+        "fileSha256": "425683b8381601c1732aea96e2ff5ee318d374882cd041fd0009a40966bf89e3",
         "recordSha256": "87c4f3d65f419df6fc952fea94ab74ff9a8ab5eddb12b4ae685281b8300d86d5"
       },
       "screenshot": null,
@@ -8186,6 +8479,172 @@
         "directAdapter": true,
         "candidateRuntimeIds": [
           "runtime-template:chart-explanation-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-template:chart-notes-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "chart-notes-v1",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "chart-notes-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "chart": {
+            "kinds": [
+              "chart"
+            ],
+            "required": true
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "headline": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "relation-1": {
+            "kinds": [
+              "arrow"
+            ],
+            "required": false
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/chart-notes-v1.json",
+        "fileSha256": "441c6923aa026416580ea674410a0b5ff8f2a390dd341978e310dc5046f2f3ae",
+        "recordSha256": "99a81ef7acf6dac0a9e70b5851895740fbf2a5d5e6f821292c88825b2c710077"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:chart-notes-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-template:comparison-three-columns-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "三列对比",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "comparison-three-columns-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-3": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/comparison-three-columns-v1.json",
+        "fileSha256": "78ea2387123edd9480f1b599b10b0d9dde640687363e1a24a1a8f333eec093e2",
+        "recordSha256": "6b47ce6366f7b70dddecb97503e3cf8474a04faada102d0cb7ede0d87f2e0ff9"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:comparison-three-columns-v1"
         ],
         "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
       }
@@ -8775,6 +9234,172 @@
       }
     },
     {
+      "id": "runtime-template:image-text-columns-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "image-text-columns-v1",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "image-text-columns-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "subject": {
+            "kinds": [
+              "image"
+            ],
+            "required": true
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "caption": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "headline": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/image-text-columns-v1.json",
+        "fileSha256": "314066fcb292199a1ce21c6372473710d073b59b5230f068e0b99c34c0923e12",
+        "recordSha256": "3effe18f3bc091626d4b1a025d030f266a9c2547d4540548677893f66dc19e1e"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:image-text-columns-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
+      "id": "runtime-template:knowledge-grid-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "四卡片知识网格：固定阅读顺序",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "knowledge-grid-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-3": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-4": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/knowledge-grid-v1.json",
+        "fileSha256": "6f6a092f924a82a8e64ca8f627d135be830b709f8b791bd3536c46fa122babc8",
+        "recordSha256": "54a9d113e30fc9cd06356e78d0c960eacbb3df111b0712c6074d4ada75a1f669"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:knowledge-grid-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-template:process-stage-v1",
       "version": "0.1.0",
       "type": "runtime-template",
@@ -9204,6 +9829,77 @@
       }
     },
     {
+      "id": "runtime-template:wide-body-pair-v1",
+      "version": "0.1.0",
+      "type": "runtime-template",
+      "category": "production-template",
+      "name": "宽正文双卡片",
+      "purpose": "production-template 的实际运行时登记源。",
+      "parameterRange": {
+        "structure": "explanation-cards",
+        "layoutRef": {
+          "id": "wide-body-pair-v1",
+          "version": "0.2.0"
+        },
+        "slots": {
+          "header": {
+            "kinds": [
+              "header"
+            ],
+            "required": true
+          },
+          "intro": {
+            "kinds": [
+              "text"
+            ],
+            "required": false
+          },
+          "card-1": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "card-2": {
+            "kinds": [
+              "card"
+            ],
+            "required": true
+          },
+          "summary": {
+            "kinds": [
+              "summary"
+            ],
+            "required": true
+          }
+        }
+      },
+      "status": "available",
+      "implementationStatus": "registered-runtime",
+      "approvalStatus": "not-inferred-from-registration",
+      "themeAllowance": {
+        "source": "defined by this runtime record's compatible theme/layout references",
+        "colors": "no reference-library palette is implicitly converted into this runtime record"
+      },
+      "technicalConclusion": "Definition is present in the current V1 runtime source directory; catalog does not render or execute it.",
+      "visualConclusion": "No user aesthetic approval is inferred from runtime registration.",
+      "referenceAttachmentEligible": false,
+      "source": {
+        "path": "html_engine/visual/templates/wide-body-pair-v1.json",
+        "fileSha256": "d7eedeac30b2a846b731613835ba9b81668cbef854d65c41199437032c734ddf",
+        "recordSha256": "8bb462eafbcad39a478dc965cabd101d1140983a1bc2c0bf8e19b7fc03b54ef9"
+      },
+      "screenshot": null,
+      "productionMapping": {
+        "status": "registered",
+        "directAdapter": true,
+        "candidateRuntimeIds": [
+          "runtime-template:wide-body-pair-v1"
+        ],
+        "gap": "该条目本身是生产运行时定义；注册状态不代表视觉批准或任意输入均被支持。"
+      }
+    },
+    {
       "id": "runtime-theme:amber-editorial",
       "version": "0.2.0",
       "type": "runtime-theme",
@@ -9494,7 +10190,12 @@
           "science-explanation-v1",
           "science-relations-v1",
           "chart-explanation-v1",
-          "process-three-stages-v1"
+          "process-three-stages-v1",
+          "knowledge-grid-v1",
+          "image-text-columns-v1",
+          "chart-notes-v1",
+          "wide-body-pair-v1",
+          "comparison-three-columns-v1"
         ],
         "shapeTokens": {
           "badgeRadius": 22,
@@ -9546,8 +10247,8 @@
       "referenceAttachmentEligible": false,
       "source": {
         "path": "html_engine/visual/themes/neutral-baseline.json",
-        "fileSha256": "92568b1176e82494f2fe8437a956d192d4226e5816f48493e757cf25e638f11a",
-        "recordSha256": "2536ba2b7a59d7d79c4a775bd28fc99e5f6fd5b1e51e659ab45d56961c97a761"
+        "fileSha256": "e8f5019a4eab446bee3ef2b63136b10dea8613b3fe06704fddfd15b03033dcf7",
+        "recordSha256": "41e678b56dc3b54d754e2024a123b98c528ed6955c00f01c65297476ba83645b"
       },
       "screenshot": null,
       "productionMapping": {
@@ -9803,5 +10504,5 @@
     "providerCallMade": false,
     "note": "离线装配参考包；不调用生图供应商，不代表真实生图请求已接入。"
   },
-  "snapshotSha256": "0f2ae053c4d99e7b4c8bfb737fb70e92127a0fdba4b2bc334133a787d728cd5a"
+  "snapshotSha256": "196c36f8faebdc231ca0ca1a9a270c99bd6c6cde2fd1d0bcbeedbd8374e6bb02"
 }

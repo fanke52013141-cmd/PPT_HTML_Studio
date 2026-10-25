@@ -1,0 +1,51 @@
+{
+  "reference_sha256": "da5bf54f4684c3d05f8f1a396a0406e8f088631ccac47c2d7820da2f20c6ce87",
+  "image_size": [
+    1000,
+    500
+  ],
+  "targetId": "relation",
+  "parts": {
+    "from/text": [
+      [
+        88,
+        95,
+        212,
+        128
+      ]
+    ],
+    "term": [
+      [
+        418,
+        195,
+        542,
+        229
+      ]
+    ],
+    "to/text": [
+      [
+        738,
+        95,
+        862,
+        128
+      ]
+    ],
+    "takeaway": [
+      [
+        388,
+        340,
+        572,
+        373
+      ]
+    ]
+  },
+  "container": [
+    40,
+    35,
+    960,
+    435
+  ],
+  "minimum_iou": 0.6,
+  "minimum_gold_coverage": 0.9,
+  "missing": "missing-control"
+}

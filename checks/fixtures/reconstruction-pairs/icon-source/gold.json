@@ -1,0 +1,27 @@
+{
+  "reference_sha256": "c6dbfb5016db500f08bdde4e62c9097c668f6cdda65e26c6e658024a03aeaf3d",
+  "image_size": [
+    1000,
+    500
+  ],
+  "targetId": "source",
+  "parts": {
+    "text": [
+      [
+        233,
+        180,
+        447,
+        213
+      ]
+    ]
+  },
+  "container": [
+    55,
+    125,
+    945,
+    260
+  ],
+  "minimum_iou": 0.6,
+  "minimum_gold_coverage": 0.9,
+  "missing": "missing-control"
+}

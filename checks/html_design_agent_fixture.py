@@ -29,6 +29,18 @@ def with_coverage(payload, response):
 
 def response_for(kwargs):
     prefix = kwargs.get("artifact_prefix", "")
+    if prefix.startswith("design_reference_localization-"):
+        # Explicit response double: coordinates are synthetic, not model quality
+        # or localization ground truth. No candidate geometry is consulted.
+        data = json.loads(kwargs['user_prompt'])
+        return {'targets': [{'targetId':t['targetId'], 'status':'located',
+            'container_presence':'present',
+            'container_box':{'xPx':0,'yPx':0,'widthPx':data['image_size'][0],'heightPx':data['image_size'][1]},
+            'identity_evidence':'Controlled localization fixture, not visual verification',
+            'part_regions':[{'partId':p['partId'], 'status':'located',
+                             'regions':[{'text':p['text'], 'box':{'xPx':10+j*3,'yPx':10+i*4,'widthPx':2,'heightPx':2}}]}
+                            for j,p in enumerate(t['text_parts'])]}
+            for i,t in enumerate(data['reference_targets'])]}
     if prefix.startswith("design_understanding-"):
         data = json.loads(kwargs["user_prompt"])
         return {"status":"ready","objects":[{

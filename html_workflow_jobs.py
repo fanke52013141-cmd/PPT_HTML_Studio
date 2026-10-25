@@ -25,6 +25,10 @@ class HtmlWorkflowJobs:
             max_workers=2, thread_name_prefix="html-production"
         )
         self.submit_lock = threading.Lock()
+        from html_reference_jobs import ReferenceReviewJobs
+        self.reference_reviews = ReferenceReviewJobs(self)
+        from html_evaluation_jobs import EvaluationJobs
+        self.evaluations = EvaluationJobs(self)
         # Existing injected provider/generator fixtures need no real settings.
         # The production composition root passes this exact configured provider.
         from html_image_provider import configured_image
@@ -52,6 +56,13 @@ class HtmlWorkflowJobs:
         from html_production_models import HtmlProduceRequest
         from html_design_candidates import definition_identity
         options = HtmlProduceRequest.model_validate(options or {}).model_dump()
+        if options.get('reference_review_key'):
+            from database import LocalJob
+            records=db.query(LocalJob).filter(LocalJob.project_id==project.id,
+                LocalJob.job_type=='html_reference_review',LocalJob.status=='succeeded').all()
+            if not any(j.get_payload().get('input',{}).get('slide_id')==contract['slide_id']
+                and (j.get_payload().get('result') or {}).get('reference_review_key')==options['reference_review_key'] for j in records):
+                raise store.HtmlTaskError('定位续接必须引用当前项目本页已完成复核的证据',409)
         frozen = self.freeze_models(project) if self.freeze_models is not None else None
         model_summary = frozen.summary() if frozen is not None else {"source": "injected"}
         definition_override = None

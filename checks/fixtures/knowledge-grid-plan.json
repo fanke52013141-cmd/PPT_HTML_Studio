@@ -1,0 +1,190 @@
+{
+  "plan": {
+    "version": "0.1.0",
+    "slide_id": "knowledge-grid",
+    "templateRef": {
+      "id": "knowledge-grid-v1",
+      "version": "0.1.0"
+    },
+    "slots": {
+      "header": {
+        "kind": "header",
+        "number": "01",
+        "title": "水的四种观察"
+      },
+      "intro": {
+        "kind": "text",
+        "role": "intro",
+        "runs": [
+          {
+            "text": "按从左到右、从上到下的顺序观察。",
+            "emphasis": false
+          }
+        ]
+      },
+      "card-1": {
+        "kind": "card",
+        "title": "温度",
+        "body": "记录水温的变化。",
+        "icon": "droplet",
+        "tone": "blue"
+      },
+      "card-2": {
+        "kind": "card",
+        "title": "形态",
+        "body": "观察固态与液态。",
+        "icon": "droplet",
+        "tone": "blue"
+      },
+      "card-3": {
+        "kind": "card",
+        "title": "表面",
+        "body": "比较水面的变化。",
+        "icon": "droplet",
+        "tone": "blue"
+      },
+      "card-4": {
+        "kind": "card",
+        "title": "周围",
+        "body": "留意环境温度。",
+        "icon": "droplet",
+        "tone": "blue"
+      },
+      "summary": {
+        "kind": "summary",
+        "from": {
+          "text": "观察",
+          "tone": "blue"
+        },
+        "to": {
+          "text": "记录",
+          "tone": "green"
+        },
+        "term": "证据",
+        "takeaway": "用记录支持判断"
+      }
+    },
+    "objects": [
+      {
+        "id": "header",
+        "slot": "header",
+        "kind": "header"
+      },
+      {
+        "id": "intro",
+        "slot": "intro",
+        "kind": "text"
+      },
+      {
+        "id": "card-1",
+        "slot": "card-1",
+        "kind": "card"
+      },
+      {
+        "id": "card-2",
+        "slot": "card-2",
+        "kind": "card"
+      },
+      {
+        "id": "card-3",
+        "slot": "card-3",
+        "kind": "card"
+      },
+      {
+        "id": "card-4",
+        "slot": "card-4",
+        "kind": "card"
+      },
+      {
+        "id": "summary",
+        "slot": "summary",
+        "kind": "summary"
+      }
+    ],
+    "beats": [
+      {
+        "id": "beat-1",
+        "target": {
+          "objectId": "header",
+          "action": "enter"
+        }
+      },
+      {
+        "id": "beat-2",
+        "target": {
+          "objectId": "intro",
+          "action": "enter"
+        }
+      },
+      {
+        "id": "beat-3",
+        "target": {
+          "objectId": "card-1",
+          "action": "enter"
+        }
+      },
+      {
+        "id": "beat-4",
+        "target": {
+          "objectId": "card-2",
+          "action": "enter"
+        }
+      },
+      {
+        "id": "beat-5",
+        "target": {
+          "objectId": "card-3",
+          "action": "enter"
+        }
+      },
+      {
+        "id": "beat-6",
+        "target": {
+          "objectId": "card-4",
+          "action": "enter"
+        }
+      },
+      {
+        "id": "beat-7",
+        "target": {
+          "objectId": "summary",
+          "action": "enter"
+        }
+      }
+    ],
+    "assets": []
+  },
+  "contract": {
+    "slide_id": "knowledge-grid",
+    "narration_beats": [
+      {
+        "id": "beat-1",
+        "spoken_text": "header"
+      },
+      {
+        "id": "beat-2",
+        "spoken_text": "intro"
+      },
+      {
+        "id": "beat-3",
+        "spoken_text": "card-1"
+      },
+      {
+        "id": "beat-4",
+        "spoken_text": "card-2"
+      },
+      {
+        "id": "beat-5",
+        "spoken_text": "card-3"
+      },
+      {
+        "id": "beat-6",
+        "spoken_text": "card-4"
+      },
+      {
+        "id": "beat-7",
+        "spoken_text": "summary"
+      }
+    ]
+  }
+}

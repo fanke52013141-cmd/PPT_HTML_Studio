@@ -51,6 +51,11 @@ def _changes(doc, result):
 def generate_repair(run, slide, request, generator_factory):
     """Factory is lazy: a legal geometry candidate never needs a configured provider."""
     request = RepairGenerateRequest.model_validate(request).model_dump(mode='json')
+    if request['strategy']=='layout_first':
+        from html_saved_layout_repair import generate, INSTRUCTION
+        if request['instruction']!=INSTRUCTION or len(request['scope'])>4:
+            raise editor.SceneEditError('REPAIR_LAYOUT_GOAL','layout_first需要固定目标与1至4个对象')
+        return generate(run,slide,request)
     if request['strategy'] == 'model':
         return repair.generate_repair(run, slide, request, generator_factory())
     if request['strategy'] == 'capacity_first':

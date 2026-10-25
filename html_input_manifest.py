@@ -24,7 +24,7 @@ def _hash(path: Path) -> str | None:
 
 
 def resolved_scene_inputs(
-    scene: dict, run_dir: str | Path, repo_root: str | Path
+    scene: dict, run_dir: str | Path, repo_root: str | Path, *, project_resources: dict | None = None
 ) -> dict:
     repo = Path(repo_root)
     run = Path(run_dir)
@@ -54,8 +54,8 @@ def resolved_scene_inputs(
         files[filename] = _hash(visual / filename)
     manifest_path = run / "planning/html_visual/resources.json"
     project_assets = []
-    if manifest_path.is_file():
-        resources = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if project_resources is not None or manifest_path.is_file():
+        resources = project_resources if project_resources is not None else json.loads(manifest_path.read_text(encoding="utf-8"))
         for record in resources.get("assets", []):
             if record.get("id") not in asset_ids:
                 continue

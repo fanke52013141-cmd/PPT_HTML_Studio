@@ -27,6 +27,8 @@ from html_handoff_models import ExportRequest as HandoffExportRequest, ImportReq
 from html_handoff_models import SaveRequest as HandoffSaveRequest, HandoffResult, BundleReadRequest, WorkReadRequest
 from html_agent_models import AgentJobRequest, AgentJobRead, AgentJobResult
 from html_agent_workflow_models import WorkflowRequest
+from html_reference_models import ReferenceRead, ReferenceCorrection, ReferenceResult
+from html_asset_reuse_models import ReuseAssetsResult
 from agent_contract.models import HtmlDesignCandidateResult
 from agent_contract.models import HtmlManualCandidateDecisionRequest, HtmlManualCandidateResult
 from html_asset_sheet_models import (HtmlSheetReadRequest, HtmlSheetGenerateRequest,
@@ -124,7 +126,34 @@ class AgentCapability:
 # The registry
 # ---------------------------------------------------------------------------
 
+from html_evaluation_models import EvaluationRead,EvaluationCommand,EvaluationResult
+
 CAPABILITIES: list[AgentCapability] = [
+    AgentCapability(id='html_evaluation.read',version='1.0',status=CapabilityStatus.stable,
+        description='Read project datasets, saved-page sources and paired experiment tasks. Evaluation state never grants production approval.',
+        request_model=EvaluationRead,response_model=EvaluationResult,agent_api_method='GET',
+        agent_api_path='/api/agent/v1/projects/{project_id}/html-evaluation',mcp_tool_name='ppt_html_evaluation_read',
+        cli_command='html evaluation-read',service_ref='html_evaluation_routes.overview'),
+    AgentCapability(id='html_evaluation.command',version='1.0',status=CapabilityStatus.stable,
+        description='Create project datasets, read/save versioned annotations, independently review labels or explicitly dispatch frozen paired experiments through the original task executor. No author or approval writes; unknown requests are never retried automatically.',
+        request_model=EvaluationCommand,response_model=EvaluationResult,agent_api_method='POST',
+        agent_api_path='/api/agent/v1/projects/{project_id}/html-evaluation/action',mcp_tool_name='ppt_html_evaluation_command',
+        cli_command='html evaluation-command',service_ref='html_evaluation_routes.command',long_running=True),
+    AgentCapability(id='html_review.reusable_assets',version='1.0',status=CapabilityStatus.stable,
+        description='List verified assets authored in the same project with explicit id/version/sha256 and source pages. Selection never transfers visual approval or mutates resources.',
+        request_model=ReferenceRead,response_model=ReuseAssetsResult,agent_api_method='GET',
+        agent_api_path='/api/agent/v1/projects/{project_id}/html-review/{slide_id}/reusable-assets',
+        mcp_tool_name='ppt_html_reusable_assets',cli_command='html reusable-assets',service_ref='html_asset_reuse.available'),
+    AgentCapability(id='html_review.reference_read',version='1.0',status=CapabilityStatus.stable,
+        description='Read the exact original task reference correction session; account/page/source bound, no author save or approval.',
+        request_model=ReferenceRead,response_model=ReferenceResult,agent_api_method='GET',
+        agent_api_path='/api/agent/v1/projects/{project_id}/html-review/{slide_id}/reference/{job_id}',
+        mcp_tool_name='ppt_html_reference_read',cli_command='html reference-read',service_ref='html_reference_service.inspect_session'),
+    AgentCapability(id='html_review.reference_resume',version='1.0',status=CapabilityStatus.stable,
+        description='Explicitly submit corrected localization for frozen-model re-review in the original persistent task store. Exact identity deduplication; unknown/cancelled/stale stays blocked. Evidence only, no author save or visual approval.',
+        request_model=ReferenceCorrection,response_model=HtmlTaskResult,agent_api_method='POST',
+        agent_api_path='/api/agent/v1/projects/{project_id}/html-review/{slide_id}/reference/{job_id}/resume',
+        mcp_tool_name='ppt_html_reference_resume',cli_command='html reference-resume',service_ref='html_reference_jobs.ReferenceReviewJobs',long_running=True),
     *[
         AgentCapability(id=f"agent_workflow.{name}", version="0.1", status=CapabilityStatus.stable,
             description=description, request_model=request, response_model=AgentJobResult,
@@ -241,8 +270,8 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="html_scene_repair.evidence",
     ),
     AgentCapability(
-        id="html_repair.generate", version="1.7", status=CapabilityStatus.stable,
-        description="Optional deterministic strategies with original QA: geometry_first resolves arrow/text placement and relation attachment points; capacity_first proposes bounded size and readable typography candidates for capacity overflow, with lazy model fallback only for the model strategy. Default model remains compatible. Bounded HTML local repair with scope-specific protected leaf and ancestor paths in model context; retain precise capacity triggers, original budgets, frozen revision, shared candidate/save protection and sampled/output-frame checks. Conflicting protected goals stop without overwriting; no automatic aesthetic approval.",
+        id="html_repair.generate", version="1.8", status=CapabilityStatus.stable,
+        description="layout_first shares the cumulative production solver with saved-page revision/audio/scope and final preview/save guards. Optional deterministic strategies with original QA: geometry_first resolves arrow/text placement and relation attachment points; capacity_first proposes bounded size and readable typography candidates for capacity overflow, with lazy model fallback only for the model strategy. Default model remains compatible. Bounded HTML local repair with scope-specific protected leaf and ancestor paths in model context; retain precise capacity triggers, original budgets, frozen revision, shared candidate/save protection and sampled/output-frame checks. Conflicting protected goals stop without overwriting; no automatic aesthetic approval.",
         request_model=RepairGenerateRequest, response_model=RepairResult,
         agent_api_method="POST", agent_api_path="/api/agent/v1/projects/{project_id}/html-visual/{slide_id}/repair/generate",
         mcp_tool_name="ppt_html_repair_generate", cli_command="html repair-generate",
@@ -313,7 +342,7 @@ CAPABILITIES: list[AgentCapability] = [
         service_ref="project_service.ProjectService.create",
     ),
     AgentCapability(
-        id="html_review.produce", version="1.15", status=CapabilityStatus.stable,
+        id="html_review.produce", version="1.16", status=CapabilityStatus.stable,
         description="Point repair requires plan_version=0.2.0 and an explicitly image-capable project text model before any provider call. Omitting plan_version defaults to the semantic 0.2.0 plan; legacy 0.1.0 must be explicit, and reusing an accepted design under a different plan version fails closed instead of silently keeping the old plan. Explicit reference reuse may refresh text/planning bindings only when the image-owner summary is identical, retaining source provenance and requiring new approval. Optional repair_relation_points with reuse_design_candidate_key makes one bounded model correction to existing point coordinates only, preserving original image bytes, content and actions; returns a new unapproved reference without image/TTS or author writes. Default reference reuse stays model-free. Formal captures use a shared software composition policy. Accepted-design assets reuse verified bytes despite observation wording changes; changed design/model/need invalidates reuse, damaged cache stops before a new paid request. Authored visual requirements reach the actual planning context and missing coverage stops before design. Registered course structures support explicit endpoint relations, code charts, three-stage layouts and authored visual requirement coverage before design. Meaning and approval remain independent. Bounded stagnation checks retain precise capacity triggers and effective limits, including saved report details, without increasing repair budgets. Generate a design first. Explicit reuse_design_candidate_key revalidates unchanged original image/plan into a new unapproved review checkpoint without provider calls; never accepts stale keys or carries approvals. Source design_candidate_key plus design_instruction revises that design with its original image and plan, without replanning or acceptance; key alone continues reconstruction. Production authority and registered tools determine intervention routes, including design_review; explicit stage timeouts are preserved and measured. Independent fidelity review and human approval remain separate.",
         request_model=HtmlProduceRequest, response_model=HtmlTaskResult,
         agent_api_method="POST",

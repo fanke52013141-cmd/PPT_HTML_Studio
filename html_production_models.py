@@ -2,6 +2,7 @@
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing import Literal
 from html_agent_models import AgentLimits
+from html_asset_reuse_models import ReuseAssetBinding
 
 
 class PiProductionLimits(AgentLimits):
@@ -21,9 +22,13 @@ class HtmlProduceRequest(BaseModel):
     prior_unknown_task_id: str | None = Field(default=None, pattern=r"^html_[0-9a-f]{20}$")
     design_instruction: str = Field(default="", max_length=2000)
     asset_instruction: str = Field(default="", max_length=2000)
+    reuse_assets: list[ReuseAssetBinding] = Field(default_factory=list,max_length=2)
+    reference_review_key: str | None = Field(default=None,pattern=r'^[0-9a-f]{64}$')
 
     @model_validator(mode="after")
     def exclusive(self):
+        if self.reference_review_key and (not self.design_candidate_key or self.design_instruction or self.asset_instruction or self.reuse_design_candidate_key):
+            raise ValueError('定位复核续接必须复用明确的已确认设计，不可同时修订设计或素材')
         if self.runner == "pi":
             self.pi_limits = self.pi_limits or PiProductionLimits()
             if not self.design_candidate_key or self.design_instruction or self.reuse_design_candidate_key:

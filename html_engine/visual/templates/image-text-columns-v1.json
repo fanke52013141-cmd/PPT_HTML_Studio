@@ -1,0 +1,55 @@
+{
+  "format": "hps.visual.template",
+  "version": "0.1.0",
+  "id": "image-text-columns-v1",
+  "name": "image-text-columns-v1",
+  "structure": "explanation-cards",
+  "layoutRef": {
+    "id": "image-text-columns-v1",
+    "version": "0.2.0"
+  },
+  "slots": {
+    "subject": {
+      "kinds": [
+        "image"
+      ],
+      "required": true
+    },
+    "card-1": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "card-2": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "caption": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "header": {
+      "kinds": [
+        "header"
+      ],
+      "required": true
+    },
+    "headline": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "summary": {
+      "kinds": [
+        "summary"
+      ],
+      "required": true
+    }
+  }
+}

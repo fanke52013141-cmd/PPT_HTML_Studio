@@ -1,0 +1,38 @@
+{
+  "label_version": "reference-layout/1",
+  "authority": "controlled_fixture",
+  "reference_sha256": "ac6fe2ec0c14aa3ed96d031201b30e22ae1c7475a3149beaa0604ab3aa0adaa8",
+  "targets": {
+    "note": {
+      "status": "located",
+      "container": null,
+      "parts": {
+        "text": [
+          {
+            "text": "第一行正文",
+            "box": [
+              108,
+              103,
+              262,
+              138
+            ]
+          },
+          {
+            "text": "第二行正文",
+            "box": [
+              108,
+              238,
+              262,
+              273
+            ]
+          }
+        ]
+      }
+    },
+    "missing-control": {
+      "status": "not_found",
+      "parts": {},
+      "container": null
+    }
+  }
+}

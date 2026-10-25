@@ -1,0 +1,1186 @@
+{
+  "format": "hps.reconstruction.acceptance-plan/0.2.0",
+  "basis_commit": "0a9d27c",
+  "acceptance_policy": {
+    "missing_evidence": "pending_not_passed",
+    "skip_does_not_pass_required_gate": true,
+    "mock_does_not_prove_real_model_quality": true,
+    "static_pass_does_not_prove_full_temporal_pass": true,
+    "budget_exhausted_is_not_no_solution": true,
+    "unknown_provider_outcome_must_not_auto_resubmit": true
+  },
+  "tasks": [
+    {
+      "id": "T00",
+      "title": "冻结基线、环境与真实样本",
+      "depends_on": [],
+      "milestone": "M0",
+      "priority": "P0",
+      "estimate_person_days": {
+        "min": 1,
+        "max": 2
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "本地工程基线完成；24页真实跨课程材料及留出评测待补。"
+    },
+    {
+      "id": "T01",
+      "title": "统一诊断、求解输入和停止原因",
+      "depends_on": [
+        "T00"
+      ],
+      "milestone": "M0",
+      "priority": "P0",
+      "estimate_person_days": {
+        "min": 1,
+        "max": 1
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-006",
+        "AC-007",
+        "AC-008",
+        "AC-009"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "容量路径已区分预算、无候选、阻断、来源变化；完整类型化跨缺陷路由待实施。"
+    },
+    {
+      "id": "T02",
+      "title": "分离未保存候选与已保存页适配",
+      "depends_on": [
+        "T01"
+      ],
+      "milestone": "M0",
+      "priority": "P0",
+      "estimate_person_days": {
+        "min": 1,
+        "max": 2
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-010",
+        "AC-011",
+        "AC-012",
+        "AC-013",
+        "AC-014",
+        "AC-015"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "未保存候选累计入口和原可选适配已保留manual/beats，作者读取依赖解除；统一全部求解适配待完善。"
+    },
+    {
+      "id": "T03",
+      "title": "累计容量修复、候选公平性和实际字体",
+      "depends_on": [
+        "T02"
+      ],
+      "milestone": "M1",
+      "priority": "P0",
+      "estimate_person_days": {
+        "min": 3,
+        "max": 5
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-016",
+        "AC-017",
+        "AC-018",
+        "AC-019",
+        "AC-020",
+        "AC-021",
+        "AC-022",
+        "AC-023"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "累计容量与受支持同列三卡片/底栏联动已实现；净操作归并等完整任务余项仍依验收清单核对。",
+      "implementation_state": "implemented_for_documented_scope_quality_pending"
+    },
+    {
+      "id": "T04",
+      "title": "关系修复与完整动态验收",
+      "depends_on": [
+        "T03"
+      ],
+      "milestone": "M1",
+      "priority": "P0",
+      "estimate_person_days": {
+        "min": 1,
+        "max": 2
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-024",
+        "AC-025",
+        "AC-026",
+        "AC-027",
+        "AC-028",
+        "AC-029"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "显式point关系路由已在未保存候选串接，原完整动态复验通过；不改anchor或语义端点。",
+      "implementation_state": "implemented_for_documented_scope_quality_pending"
+    },
+    {
+      "id": "T05",
+      "title": "接入正式图片转 HTML 生产链",
+      "depends_on": [
+        "T04"
+      ],
+      "milestone": "M1",
+      "priority": "P0",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 2
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-030",
+        "AC-031",
+        "AC-032",
+        "AC-033",
+        "AC-034",
+        "AC-035"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "编译后、分配变体后、还原操作后三处生产检查点已接通并有真实浏览器/受控模型合同验证。",
+      "implementation_state": "implemented_for_documented_scope_quality_pending"
+    },
+    {
+      "id": "T06",
+      "title": "独立参考定位与逐对象证据",
+      "depends_on": [
+        "T00"
+      ],
+      "milestone": "M2",
+      "priority": "P1",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 3
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-036",
+        "AC-037",
+        "AC-038",
+        "AC-039",
+        "AC-040",
+        "AC-041"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "独立文字/容器定位与按真实对象配对已接入，正文必需性和坐标不泄漏已验证；真实模型准确率和更多对象类型待验。",
+      "implementation_state": "implemented_for_documented_scope_quality_pending"
+    },
+    {
+      "id": "T07",
+      "title": "接入差异驱动的保真审核与局部决策",
+      "depends_on": [
+        "T05",
+        "T06"
+      ],
+      "milestone": "M2",
+      "priority": "P1",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 3
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-042",
+        "AC-043",
+        "AC-044",
+        "AC-045",
+        "AC-046",
+        "AC-047"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "生产保真1.1.0、未决停止、同目标定位复用已接通；真实配对质量与人审仍待验。",
+      "implementation_state": "implemented_for_documented_scope_quality_pending"
+    },
+    {
+      "id": "T08",
+      "title": "设计可实现性与素材身份",
+      "depends_on": [
+        "T01"
+      ],
+      "milestone": "M2",
+      "priority": "P1",
+      "estimate_person_days": {
+        "min": 2,
+        "max": 4
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-048",
+        "AC-049",
+        "AC-050",
+        "AC-051",
+        "AC-052",
+        "AC-053"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "已有前置容量、素材复用、整页预算、精确缓存和恢复工程实现；完整原验收及真实模型层仍独立。"
+    },
+    {
+      "id": "T09",
+      "title": "共享预算、证据复用、回执与进度",
+      "depends_on": [
+        "T01"
+      ],
+      "milestone": "M3",
+      "priority": "P1",
+      "estimate_person_days": {
+        "min": 1,
+        "max": 2
+      },
+      "status": "in_progress",
+      "acceptance_ids": [
+        "AC-054",
+        "AC-055",
+        "AC-056",
+        "AC-057",
+        "AC-058",
+        "AC-059"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null,
+      "implementation_note": "已有前置容量、素材复用、整页预算、精确缓存和恢复工程实现；完整原验收及真实模型层仍独立。"
+    },
+    {
+      "id": "T10",
+      "title": "真实配对试验",
+      "depends_on": [
+        "T05",
+        "T07",
+        "T08",
+        "T09"
+      ],
+      "milestone": "M3",
+      "priority": "P0",
+      "estimate_person_days": {
+        "min": 1,
+        "max": 2
+      },
+      "status": "not_started",
+      "acceptance_ids": [
+        "AC-060",
+        "AC-061",
+        "AC-062",
+        "AC-063"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null
+    },
+    {
+      "id": "T11",
+      "title": "发布检查、灰度与回退演练",
+      "depends_on": [
+        "T10"
+      ],
+      "milestone": "M3",
+      "priority": "P0",
+      "estimate_person_days": {
+        "min": 1,
+        "max": 2
+      },
+      "status": "not_started",
+      "acceptance_ids": [
+        "AC-064",
+        "AC-065",
+        "AC-066",
+        "AC-067",
+        "AC-068",
+        "AC-069"
+      ],
+      "evidence_manifest": null,
+      "implementation_commit": null
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-001",
+      "task_id": "T00",
+      "criterion": "原离线基准可重现",
+      "required_level": "evidence",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-002",
+      "task_id": "T00",
+      "criterion": "浏览器基准有实际截图与检查报告",
+      "required_level": "evidence",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-003",
+      "task_id": "T00",
+      "criterion": "dataset 中每个引用 hash 验证通过",
+      "required_level": "evidence",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-004",
+      "task_id": "T00",
+      "criterion": "留出页未用于调提示词/模板",
+      "required_level": "evidence",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-005",
+      "task_id": "T00",
+      "criterion": "缺少真实材料时 M0 可记录受限状态，但 T10 不得签发通过",
+      "required_level": "evidence",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-006",
+      "task_id": "T01",
+      "criterion": "同一原报告重复归一化一致",
+      "required_level": "unit",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-007",
+      "task_id": "T01",
+      "criterion": "未知 code 保留并停止，不能当容量错误",
+      "required_level": "unit",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-008",
+      "task_id": "T01",
+      "criterion": "no_fit 与 budget_exhausted 分开",
+      "required_level": "unit",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-009",
+      "task_id": "T01",
+      "criterion": "单位不混算，像素溢出与行数超限分别排序",
+      "required_level": "unit",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-010",
+      "task_id": "T02",
+      "criterion": "无作者文件时可测量/求解",
+      "required_level": "integration",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-011",
+      "task_id": "T02",
+      "criterion": "传入的 manual 实际参与拒绝",
+      "required_level": "integration",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-012",
+      "task_id": "T02",
+      "criterion": "已保存页 revision/audio 过期仍拒绝",
+      "required_level": "integration",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-013",
+      "task_id": "T02",
+      "criterion": "两种适配得到相同候选语义及检查结果",
+      "required_level": "integration",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-014",
+      "task_id": "T02",
+      "criterion": "输入对象不被原地修改",
+      "required_level": "integration",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-015",
+      "task_id": "T02",
+      "criterion": "所有 INV-05 快照不变",
+      "required_level": "integration",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-016",
+      "task_id": "T03",
+      "criterion": "两对象必须同时调整的夹具最终通过",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-017",
+      "task_id": "T03",
+      "criterion": "三卡片各有缺陷时不丢失前步进展",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-018",
+      "task_id": "T03",
+      "criterion": "默认字体也能修",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-019",
+      "task_id": "T03",
+      "criterion": "输入目标顺序变化不造成对象饥饿",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-020",
+      "task_id": "T03",
+      "criterion": "重复状态不会再次测量",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-021",
+      "task_id": "T03",
+      "criterion": "超预算有独立终态",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-022",
+      "task_id": "T03",
+      "criterion": "单独某字段受保护时合法兄弟字段仍可修改",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-023",
+      "task_id": "T03",
+      "criterion": "不可读字号/行距候选从不进入通过结果",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-024",
+      "task_id": "T04",
+      "criterion": "终态正常但入场穿字的用例被拒",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-025",
+      "task_id": "T04",
+      "criterion": "point 路由通过且关系身份不变",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-026",
+      "task_id": "T04",
+      "criterion": "anchor 不参与附着点搜索",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-027",
+      "task_id": "T04",
+      "criterion": "不把缺陷转移到第三个标签",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-028",
+      "task_id": "T04",
+      "criterion": "动态报告缺帧/超时/缺失均不能通过",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-029",
+      "task_id": "T04",
+      "criterion": "容量阻断动态时保留 blocked_by_capacity，而非误报全动态已通过",
+      "required_level": "real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-030",
+      "task_id": "T05",
+      "criterion": "首次生产轻度溢出经确定性修复继续",
+      "required_level": "integration_real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-031",
+      "task_id": "T05",
+      "criterion": "变体切换造成的溢出也经同一路径修复",
+      "required_level": "integration_real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-032",
+      "task_id": "T05",
+      "criterion": "修复模型调用为 0，其他理解/审核调用分开统计",
+      "required_level": "integration_real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-033",
+      "task_id": "T05",
+      "criterion": "无解不覆盖旧作者",
+      "required_level": "integration_real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-034",
+      "task_id": "T05",
+      "criterion": "旧策略行为回归通过",
+      "required_level": "integration_real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-035",
+      "task_id": "T05",
+      "criterion": "保护、取消、过期各自保持原语义",
+      "required_level": "integration_real_browser",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-036",
+      "task_id": "T06",
+      "criterion": "出站没有 HTML 几何",
+      "required_level": "file_evaluation_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-037",
+      "task_id": "T06",
+      "criterion": "大幅位移仍按身份正确配对",
+      "required_level": "file_evaluation_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-038",
+      "task_id": "T06",
+      "criterion": "模糊定位不进入自动尺寸修复",
+      "required_level": "file_evaluation_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-039",
+      "task_id": "T06",
+      "criterion": "hash 不一致停止",
+      "required_level": "file_evaluation_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-040",
+      "task_id": "T06",
+      "criterion": "容器/正文不互相冒充",
+      "required_level": "file_evaluation_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-041",
+      "task_id": "T06",
+      "criterion": "审计页显示真实局部对照与原始报告引用",
+      "required_level": "file_evaluation_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-042",
+      "task_id": "T07",
+      "criterion": "同一未改变区域不能仅因新模型说 pass 清除问题",
+      "required_level": "integration_and_paired_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-043",
+      "task_id": "T07",
+      "criterion": "注册变体事实与模型建议不符时阻断",
+      "required_level": "integration_and_paired_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-044",
+      "task_id": "T07",
+      "criterion": "文字内容错误不由局部几何工具修",
+      "required_level": "integration_and_paired_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-045",
+      "task_id": "T07",
+      "criterion": "原图错字不覆盖准确文本",
+      "required_level": "integration_and_paired_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-046",
+      "task_id": "T07",
+      "criterion": "重点裁图不会增加未登记的图片预算",
+      "required_level": "integration_and_paired_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-047",
+      "task_id": "T07",
+      "criterion": "前后配对实验单独量测该任务收益",
+      "required_level": "integration_and_paired_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-048",
+      "task_id": "T08",
+      "criterion": "卡片图标不能替代必要插图",
+      "required_level": "integration_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-049",
+      "task_id": "T08",
+      "criterion": "多插图超能力在接受前给出明确诊断",
+      "required_level": "integration_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-050",
+      "task_id": "T08",
+      "criterion": "相同资产复用不发生额外生成",
+      "required_level": "integration_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-051",
+      "task_id": "T08",
+      "criterion": "修改资源 hash 使相关候选失效",
+      "required_level": "integration_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-052",
+      "task_id": "T08",
+      "criterion": "更换图像不能继承未经验证的语义锚点",
+      "required_level": "integration_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-053",
+      "task_id": "T08",
+      "criterion": "UI 展示原因且不自动批准",
+      "required_level": "integration_and_model",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-054",
+      "task_id": "T09",
+      "criterion": "同一状态只检查一次且来源变化不命中旧通过",
+      "required_level": "integration_fault_injection",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-055",
+      "task_id": "T09",
+      "criterion": "unknown 不自动补发",
+      "required_level": "integration_fault_injection",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-056",
+      "task_id": "T09",
+      "criterion": "usage/cost 缺失为 null",
+      "required_level": "integration_fault_injection",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-057",
+      "task_id": "T09",
+      "criterion": "子阶段不能绕过总调用预算",
+      "required_level": "integration_fault_injection",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-058",
+      "task_id": "T09",
+      "criterion": "用户取消后不开始下一阶段",
+      "required_level": "integration_fault_injection",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-059",
+      "task_id": "T09",
+      "criterion": "恢复任务不重复保存或批准",
+      "required_level": "integration_fault_injection",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-060",
+      "task_id": "T10",
+      "criterion": "同输入配对身份一致",
+      "required_level": "real_model_and_human_review",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-061",
+      "task_id": "T10",
+      "criterion": "所有失败进入分母",
+      "required_level": "real_model_and_human_review",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-062",
+      "task_id": "T10",
+      "criterion": "每个达标数字能追到页面、调用和报告",
+      "required_level": "real_model_and_human_review",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-063",
+      "task_id": "T10",
+      "criterion": "上述门槛逐项 passed/failed/pending，不能只给总评分",
+      "required_level": "real_model_and_human_review",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-064",
+      "task_id": "T11",
+      "criterion": "策略可回退且不重写已有作者",
+      "required_level": "release_and_real_end_to_end",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-065",
+      "task_id": "T11",
+      "criterion": "保存重开和历史恢复通过",
+      "required_level": "release_and_real_end_to_end",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-066",
+      "task_id": "T11",
+      "criterion": "Agent/Web 合同一致",
+      "required_level": "release_and_real_end_to_end",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-067",
+      "task_id": "T11",
+      "criterion": "相关快照与失效规则生效",
+      "required_level": "release_and_real_end_to_end",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-068",
+      "task_id": "T11",
+      "criterion": "原音视频链路实际验证",
+      "required_level": "release_and_real_end_to_end",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    },
+    {
+      "id": "AC-069",
+      "task_id": "T11",
+      "criterion": "发布结论有具体 commit、命令、日志、未决项",
+      "required_level": "release_and_real_end_to_end",
+      "status": "not_run",
+      "evidence": [],
+      "input_sha256": null,
+      "candidate_sha256": null,
+      "provider_calls": null,
+      "reason": "本方案尚未实施；按任务说明执行与验证"
+    }
+  ],
+  "milestone_rules": {
+    "M0": [
+      "T00",
+      "T01",
+      "T02"
+    ],
+    "M1": [
+      "T00",
+      "T01",
+      "T02",
+      "T03",
+      "T04",
+      "T05"
+    ],
+    "M2": [
+      "T00",
+      "T01",
+      "T02",
+      "T03",
+      "T04",
+      "T05",
+      "T06",
+      "T07",
+      "T08"
+    ],
+    "M3": [
+      "T00",
+      "T01",
+      "T02",
+      "T03",
+      "T04",
+      "T05",
+      "T06",
+      "T07",
+      "T08",
+      "T09",
+      "T10",
+      "T11"
+    ]
+  }
+}

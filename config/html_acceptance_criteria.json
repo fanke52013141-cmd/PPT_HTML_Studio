@@ -1,0 +1,2537 @@
+{
+  "format": "hps.ac-rules/0.1.0",
+  "criteria": [
+    {
+      "id": "AC-001",
+      "criterion": "原离线基准可重现",
+      "criterion_sha256": "552e4411a04f9faad4cb6a9f622738682bf7bd107096517f9c5f3a2898395122",
+      "required_level": "evidence",
+      "required_facets": [
+        "evidence"
+      ],
+      "checks": [
+        {
+          "facet": "evidence",
+          "selector": "checks/test_html_optimization_acceptance.py::test_verifier_rejects_missing_stale_skipped_or_mock_evidence",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_optimization_acceptance.py::test_verifier_rejects_missing_stale_skipped_or_mock_evidence",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "scripts/verify_reconstruction_v2_acceptance.py"
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-002",
+      "criterion": "浏览器基准有实际截图与检查报告",
+      "criterion_sha256": "bfe22c6d45ee2a02c7a00f00a9051cace3684c309654519beb1e6115b7fc81ac",
+      "required_level": "evidence",
+      "required_facets": [
+        "evidence"
+      ],
+      "checks": [
+        {
+          "facet": "evidence",
+          "selector": "checks/test_html_p0p2_layouts.py::test_new_templates_normalize_semantics_compile_and_full_frames",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_p0p2_layouts.py::test_new_templates_normalize_semantics_compile_and_full_frames",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "scripts/verify_reconstruction_v2_acceptance.py"
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-003",
+      "criterion": "dataset 中每个引用 hash 验证通过",
+      "criterion_sha256": "246e5389855ef351d4323b63e3a40695d599aea1c39903c9c62d23bf22de05e4",
+      "required_level": "evidence",
+      "required_facets": [
+        "evidence"
+      ],
+      "checks": [
+        {
+          "facet": "evidence",
+          "selector": "checks/test_html_paired_evaluation.py::test_tampered_source_or_gold_or_response_rejected",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_tampered_source_or_gold_or_response_rejected",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "scripts/verify_reconstruction_v2_acceptance.py"
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-004",
+      "criterion": "留出页未用于调提示词/模板",
+      "criterion_sha256": "02848b546e7d0896d93ac87659bf8bca1fda2daf094b553e708f63edbd444c11",
+      "required_level": "evidence",
+      "required_facets": [
+        "evidence"
+      ],
+      "checks": [
+        {
+          "facet": "evidence",
+          "selector": "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "scripts/verify_reconstruction_v2_acceptance.py"
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-005",
+      "criterion": "缺少真实材料时 M0 可记录受限状态，但 T10 不得签发通过",
+      "criterion_sha256": "d29cb0cb5325d0b84335f51bca9e7af8e37b4f98b819a6189477f98a6d8d8949",
+      "required_level": "evidence",
+      "required_facets": [
+        "evidence"
+      ],
+      "checks": [
+        {
+          "facet": "evidence",
+          "selector": "checks/test_html_acceptance_criteria.py::test_all_69_rules_preserve_required_layers",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_acceptance_criteria.py::test_all_69_rules_preserve_required_layers",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "scripts/verify_reconstruction_v2_acceptance.py"
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-006",
+      "criterion": "同一原报告重复归一化一致",
+      "criterion_sha256": "9cf6020fff09eb1cfcc39cd06d2e57476c3a3defa4b2ec5dd0e379c41b97eda0",
+      "required_level": "unit",
+      "required_facets": [
+        "unit"
+      ],
+      "checks": [
+        {
+          "facet": "unit",
+          "selector": "checks/test_html_reconstruction_diagnostics.py::test_diagnostics_deterministic_and_units_retained",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reconstruction_diagnostics.py::test_diagnostics_deterministic_and_units_retained",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reconstruction_diagnostics.py"
+      ],
+      "remaining": "逐code/单位合同仍按各AC验收；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-007",
+      "criterion": "未知 code 保留并停止，不能当容量错误",
+      "criterion_sha256": "90ff9170cc94abaee940e85650daa99577d9fcf4394db1558f47f31caf84cc11",
+      "required_level": "unit",
+      "required_facets": [
+        "unit"
+      ],
+      "checks": [
+        {
+          "facet": "unit",
+          "selector": "checks/test_html_reconstruction_diagnostics.py::test_unknown_code_is_incomplete_not_capacity",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reconstruction_diagnostics.py::test_unknown_code_is_incomplete_not_capacity",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reconstruction_diagnostics.py"
+      ],
+      "remaining": "逐code/单位合同仍按各AC验收；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-008",
+      "criterion": "no_fit 与 budget_exhausted 分开",
+      "criterion_sha256": "6f8c9bce46a5962d972e12157227d4c6889201d173029742de31cb261d73170b",
+      "required_level": "unit",
+      "required_facets": [
+        "unit"
+      ],
+      "checks": [
+        {
+          "facet": "unit",
+          "selector": "checks/test_html_reconstruction_diagnostics.py::test_no_fit_budget_and_unknown_remain_distinct",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reconstruction_diagnostics.py::test_no_fit_budget_and_unknown_remain_distinct",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reconstruction_diagnostics.py"
+      ],
+      "remaining": "逐code/单位合同仍按各AC验收；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-009",
+      "criterion": "单位不混算，像素溢出与行数超限分别排序",
+      "criterion_sha256": "9c126acff953c901b0b4a95fca307e899a8ee12964f6c4fcb9c5f457efef3d93",
+      "required_level": "unit",
+      "required_facets": [
+        "unit"
+      ],
+      "checks": [
+        {
+          "facet": "unit",
+          "selector": "checks/test_html_reconstruction_diagnostics.py::test_units_are_not_aggregated_or_rounded",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reconstruction_diagnostics.py::test_units_are_not_aggregated_or_rounded",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reconstruction_diagnostics.py"
+      ],
+      "remaining": "逐code/单位合同仍按各AC验收；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-010",
+      "criterion": "无作者文件时可测量/求解",
+      "criterion_sha256": "8f41942a9a514d2be347f23f5aa17ae871689a4fbefcf2acb9a1ca8e5876d98a",
+      "required_level": "integration",
+      "required_facets": [
+        "integration"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_saved_layout_repair.py",
+        "html_capacity_repair.py"
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-011",
+      "criterion": "传入的 manual 实际参与拒绝",
+      "criterion_sha256": "af101a99ae633f9f3132f7b5794af421ee7754647e815184a50d6e082b407a9d",
+      "required_level": "integration",
+      "required_facets": [
+        "integration"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_actual_manual_protection_rejects_candidate_without_author",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_actual_manual_protection_rejects_candidate_without_author",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_saved_layout_repair.py",
+        "html_capacity_repair.py"
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-012",
+      "criterion": "已保存页 revision/audio 过期仍拒绝",
+      "criterion_sha256": "596edbc364fe042df8c72ff2331f95d5fbef0cab4bb61590adefcfb2613fd564",
+      "required_level": "integration",
+      "required_facets": [
+        "integration"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_saved_layout_repair.py",
+        "html_capacity_repair.py"
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-013",
+      "criterion": "两种适配得到相同候选语义及检查结果",
+      "criterion_sha256": "9e63a723494cea8e3e1d9d15a0d0e43c6bdc0fe83ec491b2397bfdbe99e816db",
+      "required_level": "integration",
+      "required_facets": [
+        "integration"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_saved_layout_repair.py",
+        "html_capacity_repair.py"
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-014",
+      "criterion": "输入对象不被原地修改",
+      "criterion_sha256": "1489dbbe124460428b7ad44c3af3d2b0245acc83a0a7d686b319cb59036345d5",
+      "required_level": "integration",
+      "required_facets": [
+        "integration"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_cumulative_unsaved_repair_preserves_manual_and_requires_dynamic_pass",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_cumulative_unsaved_repair_preserves_manual_and_requires_dynamic_pass",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_saved_layout_repair.py",
+        "html_capacity_repair.py"
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-015",
+      "criterion": "所有 INV-05 快照不变",
+      "criterion_sha256": "f90ca1ab7efebd5ab87cba022b05f38b162efc260ab583d2d3efb6268d7b3c2e",
+      "required_level": "integration",
+      "required_facets": [
+        "integration"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_saved_layout_repair.py::test_shared_solver_cannot_move_unselected_neighbour",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_saved_layout_repair.py::test_shared_solver_cannot_move_unselected_neighbour",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_saved_layout_repair.py",
+        "html_capacity_repair.py"
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-016",
+      "criterion": "两对象必须同时调整的夹具最终通过",
+      "criterion_sha256": "7fbe3f46d830bc570a6fd146f69da1fe2106f2de28767fb4af59cb5ef5f43af2",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_unsaved_two_cards_real_browser",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_unsaved_two_cards_real_browser",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_capacity_repair.py"
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-017",
+      "criterion": "三卡片各有缺陷时不丢失前步进展",
+      "criterion_sha256": "359a5990df68da34da92e9446b5821b216215d3eb571799c1e4b43d82fc3be8c",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_unsaved_two_cards_real_browser",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_unsaved_two_cards_real_browser",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_capacity_repair.py"
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-018",
+      "criterion": "默认字体也能修",
+      "criterion_sha256": "94b6742a00de51d8000fc5ef6787eaf349cb1a2408b447f75a5bb384ed8be18b",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_measured_inherited_font_creates_part_candidates",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_measured_inherited_font_creates_part_candidates",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_capacity_repair.py"
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-019",
+      "criterion": "输入目标顺序变化不造成对象饥饿",
+      "criterion_sha256": "90b7c42f031372841f2140b9d52dcec28f965f672edbd0a5abcfc4e4b4c1c8ab",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_search_scheduling.py::test_duplicate_and_noop_candidates_do_not_consume_search_quota",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_search_scheduling.py::test_duplicate_and_noop_candidates_do_not_consume_search_quota",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_capacity_repair.py"
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-020",
+      "criterion": "重复状态不会再次测量",
+      "criterion_sha256": "fd07b3660513dd3ff4840feabea192896c895b2f2cf51ae335e1895a3df6e624",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_search_scheduling.py::test_duplicate_and_noop_candidates_do_not_consume_search_quota",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_search_scheduling.py::test_duplicate_and_noop_candidates_do_not_consume_search_quota",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_capacity_repair.py"
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-021",
+      "criterion": "超预算有独立终态",
+      "criterion_sha256": "dc2b28332a0a46219c2274ba1517349fc7d5bb47f00b5b3710224e57f112c3a9",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_capacity_repair.py"
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-022",
+      "criterion": "单独某字段受保护时合法兄弟字段仍可修改",
+      "criterion_sha256": "7ffac97a33c0fe0daaa63ff7d52320933b5378d3da23d01a7271b57cb3c57391",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_actual_manual_protection_rejects_candidate_without_author",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_actual_manual_protection_rejects_candidate_without_author",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_capacity_repair.py"
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-023",
+      "criterion": "不可读字号/行距候选从不进入通过结果",
+      "criterion_sha256": "27a2c8064e8e8617641270fa229c5b93a3a2459d7fab3be42395593170c5fe0d",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_capacity_repair.py"
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-024",
+      "criterion": "终态正常但入场穿字的用例被拒",
+      "criterion_sha256": "b402d039159cf70aa2b38c0181c02b5fbe631266f0820c7a5206e34d2618ccc4",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_production_preflight.py::test_arrow_crossing_is_in_original_full_frame_preflight",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_production_preflight.py::test_arrow_crossing_is_in_original_full_frame_preflight",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_linked_layout.py",
+        "html_geometry_repair.py"
+      ],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-025",
+      "criterion": "point 路由通过且关系身份不变",
+      "criterion_sha256": "65ca4af73f7bc6b69cd5c05774959d918f427d3ea9bdb2c7c9c3bbb71b7679a7",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_linked_layout.py::test_declared_point_routing_real_browser",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_linked_layout.py::test_declared_point_routing_real_browser",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_linked_layout.py",
+        "html_geometry_repair.py"
+      ],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-026",
+      "criterion": "anchor 不参与附着点搜索",
+      "criterion_sha256": "27d2821c99902e03a6c235580ea7f9ada3becb4c2e8906c212eece745c492a6b",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_asset_geometry.py::test_visible_subject_and_named_anchor_are_reported_without_mutation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_asset_geometry.py::test_visible_subject_and_named_anchor_are_reported_without_mutation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_linked_layout.py",
+        "html_geometry_repair.py"
+      ],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-027",
+      "criterion": "不把缺陷转移到第三个标签",
+      "criterion_sha256": "30b3c48ed9920e268ed9c831af200b7892025b835a3a778f1560ab6fbe4eb103",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_layout_groups.py::test_staggered_card_image_real_browser",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_layout_groups.py::test_staggered_card_image_real_browser",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_linked_layout.py",
+        "html_geometry_repair.py"
+      ],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-028",
+      "criterion": "动态报告缺帧/超时/缺失均不能通过",
+      "criterion_sha256": "7d44ccc308b02a332e32f3c490541e2b73d17aaddc20c21e71f596093c0ca5ec",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_production_preflight.py::test_incomplete_checker_never_inherits_stale_pass",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_production_preflight.py::test_incomplete_checker_never_inherits_stale_pass",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_linked_layout.py",
+        "html_geometry_repair.py"
+      ],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-029",
+      "criterion": "容量阻断动态时保留 blocked_by_capacity，而非误报全动态已通过",
+      "criterion_sha256": "b1e7617ae5c0f123ddd48e508059de4acbfed2642f636577af4bc62129905312",
+      "required_level": "real_browser",
+      "required_facets": [
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_linked_layout.py",
+        "html_geometry_repair.py"
+      ],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-030",
+      "criterion": "首次生产轻度溢出经确定性修复继续",
+      "criterion_sha256": "8113fe52b09aa1540020d8c0a84ac5ad935ba7b69c7828d81c1694e68bc45149",
+      "required_level": "integration_real_browser",
+      "required_facets": [
+        "integration",
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_production_service.py",
+        "html_design_reconstruction.py"
+      ],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-031",
+      "criterion": "变体切换造成的溢出也经同一路径修复",
+      "criterion_sha256": "307983849637f268536cb7a33e9eafb246807428c6683b3d024466a2fb3cac7a",
+      "required_level": "integration_real_browser",
+      "required_facets": [
+        "integration",
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_production_service.py",
+        "html_design_reconstruction.py"
+      ],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-032",
+      "criterion": "修复模型调用为 0，其他理解/审核调用分开统计",
+      "criterion_sha256": "f1ba593f3190f69cf5a911110bf9895969f897e072c119b1df030e2af2309a26",
+      "required_level": "integration_real_browser",
+      "required_facets": [
+        "integration",
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_execution_metrics.py::test_roles_come_from_registered_boundary_names_not_prompt_content",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_execution_metrics.py::test_roles_come_from_registered_boundary_names_not_prompt_content",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_execution_metrics.py::test_roles_come_from_registered_boundary_names_not_prompt_content",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_execution_metrics.py::test_roles_come_from_registered_boundary_names_not_prompt_content",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_production_service.py",
+        "html_design_reconstruction.py"
+      ],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-033",
+      "criterion": "无解不覆盖旧作者",
+      "criterion_sha256": "0c921b4b102249ae969705c778bad3c73c9688fcc4e804590c3ab06ab9fb1a59",
+      "required_level": "integration_real_browser",
+      "required_facets": [
+        "integration",
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_search_budget_is_not_no_fit",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_search_budget_is_not_no_fit",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_candidate_capacity_solver.py::test_search_budget_is_not_no_fit",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_candidate_capacity_solver.py::test_search_budget_is_not_no_fit",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_production_service.py",
+        "html_design_reconstruction.py"
+      ],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-034",
+      "criterion": "旧策略行为回归通过",
+      "criterion_sha256": "70fb822ed0d6ea714a88488474865f769a10dffd09e35be87522455ad1a4ef3b",
+      "required_level": "integration_real_browser",
+      "required_facets": [
+        "integration",
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_optimization_acceptance.py::test_empty_or_skipped_test_suites_do_not_pass",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_optimization_acceptance.py::test_empty_or_skipped_test_suites_do_not_pass",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_optimization_acceptance.py::test_empty_or_skipped_test_suites_do_not_pass",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_optimization_acceptance.py::test_empty_or_skipped_test_suites_do_not_pass",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_production_service.py",
+        "html_design_reconstruction.py"
+      ],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-035",
+      "criterion": "保护、取消、过期各自保持原语义",
+      "criterion_sha256": "aa1052016f68f06c8a05ea195e08eb3290659478d85abafa76a2f91da8f786c8",
+      "required_level": "integration_real_browser",
+      "required_facets": [
+        "integration",
+        "real_browser"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_production_service.py",
+        "html_design_reconstruction.py"
+      ],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-036",
+      "criterion": "出站没有 HTML 几何",
+      "criterion_sha256": "911963620d7058fa37f6f623bddc7a10ff8db58c28a36b214a5d09c6799a3369",
+      "required_level": "file_evaluation_and_model",
+      "required_facets": [
+        "file_evaluation",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "file_evaluation",
+          "selector": "checks/test_html_independent_review.py::test_relation_identity_does_not_leak_html_endpoint_coordinates",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_relation_identity_does_not_leak_html_endpoint_coordinates",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_independent_review.py::test_relation_identity_does_not_leak_html_endpoint_coordinates",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_relation_identity_does_not_leak_html_endpoint_coordinates",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reference_localization.py",
+        "html_review_evidence.py",
+        "html_reference_routes.py"
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-037",
+      "criterion": "大幅位移仍按身份正确配对",
+      "criterion_sha256": "975e7e6c6918f9b680884c0f8e39958916af3da78ab8684532bcafdb5dc0e265",
+      "required_level": "file_evaluation_and_model",
+      "required_facets": [
+        "file_evaluation",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "file_evaluation",
+          "selector": "checks/test_html_independent_review.py::test_independent_boxes_pair_displaced_target_and_reuse_only_same_identity",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_independent_boxes_pair_displaced_target_and_reuse_only_same_identity",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_independent_review.py::test_independent_boxes_pair_displaced_target_and_reuse_only_same_identity",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_independent_boxes_pair_displaced_target_and_reuse_only_same_identity",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reference_localization.py",
+        "html_review_evidence.py",
+        "html_reference_routes.py"
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-038",
+      "criterion": "模糊定位不进入自动尺寸修复",
+      "criterion_sha256": "f23678600d9d17aba2af33973bd451a5ed96aa21a7098c16a66749f98d920731",
+      "required_level": "file_evaluation_and_model",
+      "required_facets": [
+        "file_evaluation",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "file_evaluation",
+          "selector": "checks/test_html_independent_review.py::test_unresolved_locator_stops_without_fidelity_or_retry",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_unresolved_locator_stops_without_fidelity_or_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_independent_review.py::test_unresolved_locator_stops_without_fidelity_or_retry",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_unresolved_locator_stops_without_fidelity_or_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reference_localization.py",
+        "html_review_evidence.py",
+        "html_reference_routes.py"
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-039",
+      "criterion": "hash 不一致停止",
+      "criterion_sha256": "f9321876b536eb7805c286392cdbf85a7f2bfb8fe26f92e43ad2a5c7bad6cd37",
+      "required_level": "file_evaluation_and_model",
+      "required_facets": [
+        "file_evaluation",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "file_evaluation",
+          "selector": "checks/test_html_independent_review.py::test_reference_source_tamper_rejected",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_reference_source_tamper_rejected",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_independent_review.py::test_reference_source_tamper_rejected",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_reference_source_tamper_rejected",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reference_localization.py",
+        "html_review_evidence.py",
+        "html_reference_routes.py"
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-040",
+      "criterion": "容器/正文不互相冒充",
+      "criterion_sha256": "8229c487955c8b8a244effbc51d24ef28510bd394033eda187d77b9f82d6e425",
+      "required_level": "file_evaluation_and_model",
+      "required_facets": [
+        "file_evaluation",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "file_evaluation",
+          "selector": "checks/test_html_independent_review.py::test_card_body_is_a_required_localization_part",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_card_body_is_a_required_localization_part",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_independent_review.py::test_card_body_is_a_required_localization_part",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_card_body_is_a_required_localization_part",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reference_localization.py",
+        "html_review_evidence.py",
+        "html_reference_routes.py"
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-041",
+      "criterion": "审计页显示真实局部对照与原始报告引用",
+      "criterion_sha256": "3c7046e8560ee091c104afee982d0771bc82d767439d29de477a8c9d2ca1bfcc",
+      "required_level": "file_evaluation_and_model",
+      "required_facets": [
+        "file_evaluation",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "file_evaluation",
+          "selector": "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_reference_localization.py",
+        "html_review_evidence.py",
+        "html_reference_routes.py"
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-042",
+      "criterion": "同一未改变区域不能仅因新模型说 pass 清除问题",
+      "criterion_sha256": "19ed338914d506eb10fd4423f66533c007de68c54e59e1f6af1748b885e03cd5",
+      "required_level": "integration_and_paired_model",
+      "required_facets": [
+        "integration",
+        "paired_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "paired_model",
+          "selector": "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_agent.py"
+      ],
+      "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-043",
+      "criterion": "注册变体事实与模型建议不符时阻断",
+      "criterion_sha256": "00f3a860ec720c4aae7052cddb856d64d7468b7cd947eae5dc24d2fbfd0b0a77",
+      "required_level": "integration_and_paired_model",
+      "required_facets": [
+        "integration",
+        "paired_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_design_agent.py::test_existing_variant_review_suggestion_is_flagged_without_passing_or_retry",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_existing_variant_review_suggestion_is_flagged_without_passing_or_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "paired_model",
+          "selector": "checks/test_html_design_agent.py::test_existing_variant_review_suggestion_is_flagged_without_passing_or_retry",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_existing_variant_review_suggestion_is_flagged_without_passing_or_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_agent.py"
+      ],
+      "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-044",
+      "criterion": "文字内容错误不由局部几何工具修",
+      "criterion_sha256": "c2c0caf39257a3adf0e7b196df8b8312ab775f84bc508d679b8e06f320c29212",
+      "required_level": "integration_and_paired_model",
+      "required_facets": [
+        "integration",
+        "paired_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_design_agent.py::test_svg_issue_cannot_route_code_to_bitmap_generation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_svg_issue_cannot_route_code_to_bitmap_generation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "paired_model",
+          "selector": "checks/test_html_design_agent.py::test_svg_issue_cannot_route_code_to_bitmap_generation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_svg_issue_cannot_route_code_to_bitmap_generation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_agent.py"
+      ],
+      "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-045",
+      "criterion": "原图错字不覆盖准确文本",
+      "criterion_sha256": "dda534a58ec81a3d3ab1a8706fb42739c831cb2d328c60b8a0c90d309b7a5d09",
+      "required_level": "integration_and_paired_model",
+      "required_facets": [
+        "integration",
+        "paired_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_independent_review.py::test_card_body_is_a_required_localization_part",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_card_body_is_a_required_localization_part",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "paired_model",
+          "selector": "checks/test_html_independent_review.py::test_card_body_is_a_required_localization_part",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_independent_review.py::test_card_body_is_a_required_localization_part",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_agent.py"
+      ],
+      "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-046",
+      "criterion": "重点裁图不会增加未登记的图片预算",
+      "criterion_sha256": "ccd9ff9f773bd9dadf8709ba32a13d7a2dc54bed97d026b36cfabd96fc53e89f",
+      "required_level": "integration_and_paired_model",
+      "required_facets": [
+        "integration",
+        "paired_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_design_agent.py::test_generated_and_reused_images_require_exact_authoritative_owner",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_generated_and_reused_images_require_exact_authoritative_owner",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "paired_model",
+          "selector": "checks/test_html_design_agent.py::test_generated_and_reused_images_require_exact_authoritative_owner",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_generated_and_reused_images_require_exact_authoritative_owner",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_agent.py"
+      ],
+      "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-047",
+      "criterion": "前后配对实验单独量测该任务收益",
+      "criterion_sha256": "a0b4809d51f676874b0113a3adaa5dd88f75a7048b98cf6e23707690c006fdf0",
+      "required_level": "integration_and_paired_model",
+      "required_facets": [
+        "integration",
+        "paired_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "paired_model",
+          "selector": "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_agent.py"
+      ],
+      "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-048",
+      "criterion": "卡片图标不能替代必要插图",
+      "criterion_sha256": "72ddeb988a545e24f26dae75f25d43799b3a9f8cd73f1696ce088ece1d677804",
+      "required_level": "integration_and_model",
+      "required_facets": [
+        "integration",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_design_agent.py::test_existing_figure_icons_are_distinct_from_optional_decoration_palette",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_existing_figure_icons_are_distinct_from_optional_decoration_palette",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_design_agent.py::test_existing_figure_icons_are_distinct_from_optional_decoration_palette",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_agent.py::test_existing_figure_icons_are_distinct_from_optional_decoration_palette",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_feasibility.py",
+        "html_asset_reuse.py"
+      ],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-049",
+      "criterion": "多插图超能力在接受前给出明确诊断",
+      "criterion_sha256": "7f71933a2406bf98a7df3a3cb132a1bdd95648395a185feff0161682d0dd1fb6",
+      "required_level": "integration_and_model",
+      "required_facets": [
+        "integration",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_design_feasibility.py::test_real_fonts_text_projection_reports_capacity",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_feasibility.py::test_real_fonts_text_projection_reports_capacity",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_design_feasibility.py::test_real_fonts_text_projection_reports_capacity",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_design_feasibility.py::test_real_fonts_text_projection_reports_capacity",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_feasibility.py",
+        "html_asset_reuse.py"
+      ],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-050",
+      "criterion": "相同资产复用不发生额外生成",
+      "criterion_sha256": "1e79c109e6eacb7d9a6f674535e76a67a80b66cf83f7abd56e1583b4fefa8a6c",
+      "required_level": "integration_and_model",
+      "required_facets": [
+        "integration",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_asset_reuse.py::test_cross_page_exact_binding_reuses_without_generation_and_preserves_source",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_asset_reuse.py::test_cross_page_exact_binding_reuses_without_generation_and_preserves_source",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_asset_reuse.py::test_cross_page_exact_binding_reuses_without_generation_and_preserves_source",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_asset_reuse.py::test_cross_page_exact_binding_reuses_without_generation_and_preserves_source",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_feasibility.py",
+        "html_asset_reuse.py"
+      ],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-051",
+      "criterion": "修改资源 hash 使相关候选失效",
+      "criterion_sha256": "8d5ed529a9df98f7e10416a9c821a4f81a119577d6478577bc10b5f9123a9347",
+      "required_level": "integration_and_model",
+      "required_facets": [
+        "integration",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_feasibility.py",
+        "html_asset_reuse.py"
+      ],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-052",
+      "criterion": "更换图像不能继承未经验证的语义锚点",
+      "criterion_sha256": "4265814f7b000aea4f71cb06f746628e0316d1cbef65962bed8766738d03977d",
+      "required_level": "integration_and_model",
+      "required_facets": [
+        "integration",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_asset_reuse.py::test_reuse_rejects_wrong_identity_or_geometry",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_asset_reuse.py::test_reuse_rejects_wrong_identity_or_geometry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_asset_reuse.py::test_reuse_rejects_wrong_identity_or_geometry",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_asset_reuse.py::test_reuse_rejects_wrong_identity_or_geometry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_feasibility.py",
+        "html_asset_reuse.py"
+      ],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-053",
+      "criterion": "UI 展示原因且不自动批准",
+      "criterion_sha256": "600c1421c00d34ba4b6c3ac7d3c1308bc0251d6b2af970a5906099fcf329e443",
+      "required_level": "integration_and_model",
+      "required_facets": [
+        "integration",
+        "real_model"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_design_feasibility.py",
+        "html_asset_reuse.py"
+      ],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-054",
+      "criterion": "同一状态只检查一次且来源变化不命中旧通过",
+      "criterion_sha256": "4c9fcc64727153b8f002817decc45ec4d61ca5651a1634b4aeb97b6dc04ad9da",
+      "required_level": "integration_fault_injection",
+      "required_facets": [
+        "integration",
+        "fault_injection"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "fault_injection",
+          "selector": "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_page_budget.py",
+        "html_reference_jobs.py",
+        "html_review_cache.py"
+      ],
+      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-055",
+      "criterion": "unknown 不自动补发",
+      "criterion_sha256": "19793e6935992b53e7ea05c30ff23de988226aa57334d3120f98bb231ddc61e5",
+      "required_level": "integration_fault_injection",
+      "required_facets": [
+        "integration",
+        "fault_injection"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_reference_api.py::test_unknown_reference_never_retries_or_changes_model_to_resubmit",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_unknown_reference_never_retries_or_changes_model_to_resubmit",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "fault_injection",
+          "selector": "checks/test_html_reference_api.py::test_unknown_reference_never_retries_or_changes_model_to_resubmit",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_unknown_reference_never_retries_or_changes_model_to_resubmit",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_page_budget.py",
+        "html_reference_jobs.py",
+        "html_review_cache.py"
+      ],
+      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-056",
+      "criterion": "usage/cost 缺失为 null",
+      "criterion_sha256": "9a857e0d402f17aaac80917f52d1993120dd81ba43085321b5246b7bb1b3f08c",
+      "required_level": "integration_fault_injection",
+      "required_facets": [
+        "integration",
+        "fault_injection"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_execution_metrics.py::test_legacy_and_unfinished_requests_do_not_invent_calls_time_or_cost",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_execution_metrics.py::test_legacy_and_unfinished_requests_do_not_invent_calls_time_or_cost",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "fault_injection",
+          "selector": "checks/test_html_execution_metrics.py::test_legacy_and_unfinished_requests_do_not_invent_calls_time_or_cost",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_execution_metrics.py::test_legacy_and_unfinished_requests_do_not_invent_calls_time_or_cost",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_page_budget.py",
+        "html_reference_jobs.py",
+        "html_review_cache.py"
+      ],
+      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-057",
+      "criterion": "子阶段不能绕过总调用预算",
+      "criterion_sha256": "9fc45a8b546714d797d3025478f35940a8b53b79739a11e47c2b2154c4e7cfb5",
+      "required_level": "integration_fault_injection",
+      "required_facets": [
+        "integration",
+        "fault_injection"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_page_budget.py::test_nested_stages_share_budget_and_never_retry",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_page_budget.py::test_nested_stages_share_budget_and_never_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "fault_injection",
+          "selector": "checks/test_html_page_budget.py::test_nested_stages_share_budget_and_never_retry",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_page_budget.py::test_nested_stages_share_budget_and_never_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_page_budget.py",
+        "html_reference_jobs.py",
+        "html_review_cache.py"
+      ],
+      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-058",
+      "criterion": "用户取消后不开始下一阶段",
+      "criterion_sha256": "e4bb9bd870e7bceb1edc3606518aa314d789d0b4b48e143edd299cd2e9f994b4",
+      "required_level": "integration_fault_injection",
+      "required_facets": [
+        "integration",
+        "fault_injection"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "fault_injection",
+          "selector": "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_page_budget.py",
+        "html_reference_jobs.py",
+        "html_review_cache.py"
+      ],
+      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-059",
+      "criterion": "恢复任务不重复保存或批准",
+      "criterion_sha256": "04cb13523826da92927036f42b22cad63fa53f9c544a11e7b6b77963fd0b5ccb",
+      "required_level": "integration_fault_injection",
+      "required_facets": [
+        "integration",
+        "fault_injection"
+      ],
+      "checks": [
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_reference_api.py::test_known_completed_receipt_recovers_database_without_provider_retry",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_known_completed_receipt_recovers_database_without_provider_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "fault_injection",
+          "selector": "checks/test_html_reference_api.py::test_known_completed_receipt_recovers_database_without_provider_retry",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_known_completed_receipt_recovers_database_without_provider_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_page_budget.py",
+        "html_reference_jobs.py",
+        "html_review_cache.py"
+      ],
+      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-060",
+      "criterion": "同输入配对身份一致",
+      "criterion_sha256": "b736b04c55ab77726e1ebcd10fec1e5a86f3e3972c9673dd3fd8ab2801cc78b1",
+      "required_level": "real_model_and_human_review",
+      "required_facets": [
+        "real_model",
+        "human_review"
+      ],
+      "checks": [
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "human_review",
+          "selector": "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_pair_denominators_and_holdout_are_separate",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [],
+      "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-061",
+      "criterion": "所有失败进入分母",
+      "criterion_sha256": "23fd63714e7d513557c0ff286d1849540f6c9b881d23b6eba2353b3789f90111",
+      "required_level": "real_model_and_human_review",
+      "required_facets": [
+        "real_model",
+        "human_review"
+      ],
+      "checks": [
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_paired_evaluation.py::test_failed_and_unknown_are_in_denominator_and_unknown_cost_is_null",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_failed_and_unknown_are_in_denominator_and_unknown_cost_is_null",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "human_review",
+          "selector": "checks/test_html_paired_evaluation.py::test_failed_and_unknown_are_in_denominator_and_unknown_cost_is_null",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_failed_and_unknown_are_in_denominator_and_unknown_cost_is_null",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [],
+      "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-062",
+      "criterion": "每个达标数字能追到页面、调用和报告",
+      "criterion_sha256": "3bbb219eb59f4cc5a491f39c6cfb757ab5cd86b102a946ad2b80fb25ea28181b",
+      "required_level": "real_model_and_human_review",
+      "required_facets": [
+        "real_model",
+        "human_review"
+      ],
+      "checks": [
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_paired_evaluation.py::test_tampered_source_or_gold_or_response_rejected",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_tampered_source_or_gold_or_response_rejected",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "human_review",
+          "selector": "checks/test_html_paired_evaluation.py::test_tampered_source_or_gold_or_response_rejected",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_tampered_source_or_gold_or_response_rejected",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [],
+      "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-063",
+      "criterion": "上述门槛逐项 passed/failed/pending，不能只给总评分",
+      "criterion_sha256": "56b1975a2578b990867e519a335beaa978bc6b0a2622cee9c31c595b36bd7eb2",
+      "required_level": "real_model_and_human_review",
+      "required_facets": [
+        "real_model",
+        "human_review"
+      ],
+      "checks": [
+        {
+          "facet": "real_model",
+          "selector": "checks/test_html_paired_evaluation.py::test_external_pass_claims_cannot_create_human_or_model_acceptance",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_external_pass_claims_cannot_create_human_or_model_acceptance",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "human_review",
+          "selector": "checks/test_html_paired_evaluation.py::test_external_pass_claims_cannot_create_human_or_model_acceptance",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_paired_evaluation.py::test_external_pass_claims_cannot_create_human_or_model_acceptance",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [],
+      "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-064",
+      "criterion": "策略可回退且不重写已有作者",
+      "criterion_sha256": "2e9a29981760fe6778548b6b5aa60f4bf61988d05a61e41d879e3bdd17f1ac99",
+      "required_level": "release_and_real_end_to_end",
+      "required_facets": [
+        "release",
+        "real_end_to_end"
+      ],
+      "checks": [
+        {
+          "facet": "release",
+          "selector": "checks/test_html_build_snapshot.py::test_real_snapshot_render_stays_identical_after_asset_change",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_build_snapshot.py::test_real_snapshot_render_stays_identical_after_asset_change",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_end_to_end",
+          "selector": "checks/test_html_build_snapshot.py::test_real_snapshot_render_stays_identical_after_asset_change",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_build_snapshot.py::test_real_snapshot_render_stays_identical_after_asset_change",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_build_snapshot.py"
+      ],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-065",
+      "criterion": "保存重开和历史恢复通过",
+      "criterion_sha256": "287fb86cebb43100ad680eddb2394b11963fad7fbacddb1971149bc1483960f0",
+      "required_level": "release_and_real_end_to_end",
+      "required_facets": [
+        "release",
+        "real_end_to_end"
+      ],
+      "checks": [
+        {
+          "facet": "release",
+          "selector": "checks/test_html_reference_api.py::test_known_completed_receipt_recovers_database_without_provider_retry",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_known_completed_receipt_recovers_database_without_provider_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_end_to_end",
+          "selector": "checks/test_html_reference_api.py::test_known_completed_receipt_recovers_database_without_provider_retry",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_known_completed_receipt_recovers_database_without_provider_retry",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_build_snapshot.py"
+      ],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-066",
+      "criterion": "Agent/Web 合同一致",
+      "criterion_sha256": "ac15b841255f845b787969e5babf3e4fdf49bc531da7d6910f68e6b12c3ebde3",
+      "required_level": "release_and_real_end_to_end",
+      "required_facets": [
+        "release",
+        "real_end_to_end"
+      ],
+      "checks": [
+        {
+          "facet": "release",
+          "selector": "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_end_to_end",
+          "selector": "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_reference_api.py::test_web_agent_read_submit_and_completed_reuse_do_not_save_author",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_build_snapshot.py"
+      ],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-067",
+      "criterion": "相关快照与失效规则生效",
+      "criterion_sha256": "93a99053f8e35b95d55aee5a359e119a6eceaa1d0e50cb82e33ae4cf53a0bc19",
+      "required_level": "release_and_real_end_to_end",
+      "required_facets": [
+        "release",
+        "real_end_to_end"
+      ],
+      "checks": [
+        {
+          "facet": "release",
+          "selector": "checks/test_html_build_snapshot.py::test_old_qa_cannot_validate_new_scene",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_build_snapshot.py::test_old_qa_cannot_validate_new_scene",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_end_to_end",
+          "selector": "checks/test_html_build_snapshot.py::test_old_qa_cannot_validate_new_scene",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_build_snapshot.py::test_old_qa_cannot_validate_new_scene",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_build_snapshot.py"
+      ],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-068",
+      "criterion": "原音视频链路实际验证",
+      "criterion_sha256": "5c3bebd4ebcb1766b791adb3899fa6904ae96196caf2e5db939e8d64ddf5580a",
+      "required_level": "release_and_real_end_to_end",
+      "required_facets": [
+        "release",
+        "real_end_to_end"
+      ],
+      "checks": [
+        {
+          "facet": "release",
+          "selector": "checks/test_html_build_snapshot.py::test_formal_video_requires_actual_approvals",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_build_snapshot.py::test_formal_video_requires_actual_approvals",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_end_to_end",
+          "selector": "checks/test_html_build_snapshot.py::test_formal_video_requires_actual_approvals",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_build_snapshot.py::test_formal_video_requires_actual_approvals",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_build_snapshot.py"
+      ],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+    },
+    {
+      "id": "AC-069",
+      "criterion": "发布结论有具体 commit、命令、日志、未决项",
+      "criterion_sha256": "c9965a332da5ed8dfbd7ed233bff1d864723cd9ae34ce64f9c69e89d5a71bda6",
+      "required_level": "release_and_real_end_to_end",
+      "required_facets": [
+        "release",
+        "real_end_to_end"
+      ],
+      "checks": [
+        {
+          "facet": "release",
+          "selector": "checks/test_html_acceptance_criteria.py::test_missing_stale_skipped_evidence_never_passes",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_acceptance_criteria.py::test_missing_stale_skipped_evidence_never_passes",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_end_to_end",
+          "selector": "checks/test_html_acceptance_criteria.py::test_missing_stale_skipped_evidence_never_passes",
+          "coverage": "supporting",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_acceptance_criteria.py::test_missing_stale_skipped_evidence_never_passes",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        }
+      ],
+      "source_paths": [
+        "html_build_snapshot.py"
+      ],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+    }
+  ]
+}

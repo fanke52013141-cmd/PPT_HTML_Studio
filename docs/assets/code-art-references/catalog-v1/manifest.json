@@ -2,7 +2,7 @@
   "format": "hps.visual.reference-catalog-assets",
   "version": "1.0.0",
   "catalogVersion": "1.0.0",
-  "catalogSnapshotSha256": "0f2ae053c4d99e7b4c8bfb737fb70e92127a0fdba4b2bc334133a787d728cd5a",
+  "catalogSnapshotSha256": "196c36f8faebdc231ca0ca1a9a270c99bd6c6cde2fd1d0bcbeedbd8374e6bb02",
   "source": "generated from current source files; copied PNGs are unmodified",
   "files": [
     {
@@ -306,16 +306,16 @@
       "sourcePath": "html_engine/visual/catalog/catalog.json",
       "role": "machine-catalog",
       "status": "available",
-      "sha256": "cecc89ebad00b92f1a95222773c77e0bc48594b4ce0e6a82c53dddee73264da6",
-      "size": 396461
+      "sha256": "ce7fdac5272aa50846668826477022c3566b1ff785d392991eaf8fda012320ab",
+      "size": 421150
     },
     {
       "path": "README.md",
       "sourcePath": "html_engine/visual/catalog/catalog.json",
       "role": "human-index",
       "status": "available",
-      "sha256": "9d9d9cf12660c7889dd502d383bd8870ef008353acd4b5e9b69203d4d296090e",
-      "size": 7245
+      "sha256": "fa6962d99b5863cb8add182925ccecfbc568de56011434fccf26f949a1e9da5c",
+      "size": 7246
     }
   ]
 }

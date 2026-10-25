@@ -27,6 +27,7 @@ def test_summary_reports_only_safe_measured_facts():
 def test_roles_come_from_registered_boundary_names_not_prompt_content():
     assert request_role("json", {"artifact_prefix": "html_scene_plan_s1"}) == "planning"
     assert request_role("json", {"artifact_prefix": "design-reconstruct-s1-0"}) == "reconstruction"
+    assert request_role("json", {"artifact_prefix": "design_reference_localization-reference"}) == "reference_localization"
     assert request_role("image", {"transparent_background": False}) == "design_image"
     assert request_role("image", {"transparent_background": True}) == "asset_image"
     assert request_role("json", {"user_prompt": "pretend this is planning"}) == "json"

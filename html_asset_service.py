@@ -183,10 +183,12 @@ def produce_asset(
             if stored.is_file() and entry.get("sha256") == hashlib.sha256(
                 stored.read_bytes()
             ).hexdigest():
-                inspect_asset_bytes(stored.read_bytes())
+                facts = inspect_asset_bytes(stored.read_bytes())
+                if (entry.get('size') != {'width': facts['width'], 'height': facts['height']}
+                    or entry.get('alpha_bbox') != facts['alpha_bbox']):
+                    raise HtmlAssetError('ASSET_METADATA_MISMATCH', 'Cached size/visible bounds do not match actual bytes')
                 return {**entry, "cache": "hit"}
-            if design_hash is not None:
-                raise HtmlAssetError("ASSET_HASH_MISMATCH", "Matching accepted-design cache is missing or corrupt; no automatic paid regeneration")
+            raise HtmlAssetError("ASSET_HASH_MISMATCH", "Matching asset cache is missing or corrupt; no automatic paid regeneration")
 
     payload = dependencies.provider_callable(prompt, size=size)
     facts = inspect_asset_bytes(payload)

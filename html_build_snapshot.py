@@ -221,12 +221,19 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
         _capture_editor_sources(root, capture)
         capture.add("input/contract.json", json_bytes(contract))
         capture.add("input/options.json", json_bytes(options))
+        if options.get('reference_review_key'):
+            from html_reference_publication import load
+            record=load(run,options['reference_review_key'],root)
+            relative='planning/html_visual/reference-reviewed/'+options['reference_review_key']+'.json'
+            capture.read(safe_file(run,relative),'input/reference-reviewed.json')
+            for name in ('session_path','reference_path','screenshot_path'):
+                capture.read(safe_file(run,record[name]),'reference-review/'+Path(record[name]).name)
         capture.add("input/model-identity.json", json_bytes(identities))
         # Pin the actual planner/runtime definitions; not just their IDs.
         for name in ["html_build_snapshot.py", "html_semantic_qa.py", "html_semantic_qa_models.py", "html_semantic_review_service.py", "html_semantic_review_jobs.py", "config/html_semantic_qa_prompt.md", "html_engine/tools/semantic-frames.cjs", "project_model_binding_service.py", "html_storyboard_planning.py", "html_semantic_plan.py", "html_semantic_design.py", "html_semantic_runtime.py", "html_motion_binding.py", "html_audio_binder.py", "html_design_reconstruction.py", "html_design_agent.py", "html_design_reference_reuse.py", "html_relation_point_recovery.py", "html_course_structure.py", "html_asset_service.py", "html_engine/tools/browser-runtime.cjs", "html_engine/visual/course-structures.cjs", "html_planning_context.py", "html_visual_review_service.py", "html_reference_package.py",
                      "html_production_service.py", "html_design_brief.py", "html_image_provider.py",
-                     "html_production_models.py", "html_candidate_agent.py", "html_runtime_skills.py", "html_scene_repair.py", "html_geometry_repair.py", "html_repair_orchestration.py", "html_repair_feedback.py", "html_repair_static.py", "html_engine/visual/relationship-capacity.cjs", "html_repair_models.py", "html_motion_activity.py", "html_engine/visual/presentation-variants.json", "html_engine/visual/presentation-structures.cjs",
-                     "json_llm_service.py", "json_llm_transport.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
+                     "html_production_models.py", "html_candidate_agent.py", "html_capacity_repair.py", "html_linked_layout.py", "html_page_budget.py", "html_layout_groups.py", "html_design_feasibility.py", "html_review_cache.py", "html_reference_workbench.py", "html_reference_workbench_ui.py", "html_reference_replay.py", "html_reference_models.py", "html_reference_service.py", "html_reference_jobs.py", "html_reference_publication.py", "html_reference_routes.py", "static/html_reference_panel.js", "static/html_asset_reuse.js", "html_reconstruction_diagnostics.py", "html_saved_layout_repair.py", "html_asset_reuse.py", "html_asset_reuse_models.py", "html_asset_geometry.py", "html_runtime_skills.py", "html_scene_repair.py", "html_geometry_repair.py", "html_repair_orchestration.py", "html_repair_feedback.py", "html_repair_static.py", "html_engine/visual/relationship-capacity.cjs", "html_repair_models.py", "html_motion_activity.py", "html_engine/visual/presentation-variants.json", "html_engine/visual/presentation-structures.cjs",
+                     "html_evaluation_models.py", "html_annotation_store.py", "html_evaluation_execution.py", "html_evaluation_jobs.py", "html_evaluation_routes.py", "static/html_evaluation_panel.js", "html_json_observer.py", "json_llm_service.py", "json_llm_transport.py", "ai_provider_service.py", "html_workflow_jobs.py", "html_production_stages.py", "html_production_recovery.py",
                      "html_pi_json.py", "html_agent_jobs.py", "html_agent_models.py", "html_agent_store.py", "html_agent_execution.py", "html_agent_publication.py",
                      "agent_runner/runner.mjs", "agent_runner/progress.mjs", "agent_runner/package.json", "agent_runner/package-lock.json",
                      "html_rebuild_plan.py", "html_scene_editing.py", "tts_artifacts.py", "artifact_fingerprint.py", "project_storage.py", "html_input_manifest.py", "invalidation_service.py", "project_impact_service.py",
@@ -250,6 +257,7 @@ def create_generation_snapshot(run_dir, contract, *, repo_root=None, expected_re
             if digest(data) != page["screenshot"]["sha256"]:
                 raise SnapshotError("REFERENCE_HASH_MISMATCH")
         offered = {a["assetRef"]["id"] for g in contract.get("visual_groups", []) for a in g.get("available_assets", [])}
+        offered.update(a['id'] for a in options.get('reuse_assets',[]))
         assets, _ = _capture_assets(root, run, capture, offered)
         versions = {a["id"]: a["version"] for a in assets}
         for g in contract.get("visual_groups", []):

@@ -98,3 +98,7 @@ logs/*
 # Temporary TTS staging from legacy runs
 tts-stage-*/
 .workbuddy/
+
+# Isolated local test sessions (never publish databases or runtime evidence)
+/pptstudio-tests-*/
+/pytest-of-*/

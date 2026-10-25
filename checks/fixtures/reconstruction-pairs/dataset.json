@@ -1,0 +1,76 @@
+{
+  "format": "hps.paired-dataset/0.1.0",
+  "label_version": "reference-layout/1",
+  "provenance": "controlled_fixture",
+  "cases": [
+    {
+      "id": "dispersed-title",
+      "course_id": "science-methods",
+      "split": "development",
+      "reference": {
+        "path": "dispersed-title/reference.png",
+        "sha256": "63fb0c238cc15cbf074d4590a2f411f6414986d2d009bdd657019f82ff011a4d"
+      },
+      "scene": {
+        "path": "dispersed-title/scene.json",
+        "sha256": "a6d43cbaea775272dc786e378d54986d48cb1d5976cadd1cd3bb4067dedf20d7"
+      },
+      "gold": {
+        "path": "dispersed-title/labels.json",
+        "sha256": "938da90a2768b0ab35e13ccf189524545f7635a201f5d6476b6b5166e37889ea"
+      }
+    },
+    {
+      "id": "icon-source",
+      "course_id": "science-methods",
+      "split": "development",
+      "reference": {
+        "path": "icon-source/reference.png",
+        "sha256": "c6dbfb5016db500f08bdde4e62c9097c668f6cdda65e26c6e658024a03aeaf3d"
+      },
+      "scene": {
+        "path": "icon-source/scene.json",
+        "sha256": "8cbaef3151307c8d7802d76f366c2ac0ddc903cdb20fe047e9881228226ef2a0"
+      },
+      "gold": {
+        "path": "icon-source/labels.json",
+        "sha256": "e7a8e95d8306b6b6e63950b2118490eb339097399871cdce3089e0a4dd200744"
+      }
+    },
+    {
+      "id": "multiline-note",
+      "course_id": "public-administration",
+      "split": "holdout",
+      "reference": {
+        "path": "multiline-note/reference.png",
+        "sha256": "ac6fe2ec0c14aa3ed96d031201b30e22ae1c7475a3149beaa0604ab3aa0adaa8"
+      },
+      "scene": {
+        "path": "multiline-note/scene.json",
+        "sha256": "92b84e599fdec71efec81c24d2ec512b44857c4d4c461fb2223f57c55f8e4994"
+      },
+      "gold": {
+        "path": "multiline-note/labels.json",
+        "sha256": "8b424b4073f69ae6a8727875cb25978aee950450258726e6c15e028ab8d3cace"
+      }
+    },
+    {
+      "id": "relation-labels",
+      "course_id": "public-administration",
+      "split": "holdout",
+      "reference": {
+        "path": "relation-labels/reference.png",
+        "sha256": "da5bf54f4684c3d05f8f1a396a0406e8f088631ccac47c2d7820da2f20c6ce87"
+      },
+      "scene": {
+        "path": "relation-labels/scene.json",
+        "sha256": "48913c604c7d487579b1a835cc884b8ba408bfb3662804feabbf4c68cbeddbb1"
+      },
+      "gold": {
+        "path": "relation-labels/labels.json",
+        "sha256": "b92a3d5f897349e79bbf53daa8a4a6bc7cd4342afbd7e000387d32112116111a"
+      }
+    }
+  ],
+  "limitations": "Four authored raster fixtures exercise scoring mechanics; they are not real-course or human-approved localization evidence."
+}

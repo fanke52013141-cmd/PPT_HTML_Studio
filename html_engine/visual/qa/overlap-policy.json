@@ -25,11 +25,17 @@
       "version": "0.1.0",
       "allowed_pairs": [
         {
-          "slots": ["figure", "subject"],
+          "slots": [
+            "figure",
+            "subject"
+          ],
           "reason": "registered_container_or_decoration"
         },
         {
-          "slots": ["figure", "anchor-label"],
+          "slots": [
+            "figure",
+            "anchor-label"
+          ],
           "reason": "registered_container_or_decoration"
         }
       ]
@@ -163,6 +169,26 @@
       "allowed_pairs": []
     },
     "process-three-stages-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": []
+    },
+    "knowledge-grid-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": []
+    },
+    "image-text-columns-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": []
+    },
+    "chart-notes-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": []
+    },
+    "wide-body-pair-v1": {
+      "version": "0.1.0",
+      "allowed_pairs": []
+    },
+    "comparison-three-columns-v1": {
       "version": "0.1.0",
       "allowed_pairs": []
     }

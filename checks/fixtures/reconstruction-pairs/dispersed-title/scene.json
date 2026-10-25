@@ -1,0 +1,15 @@
+{
+  "nodes": [
+    {
+      "id": "header",
+      "type": "header",
+      "number": "02",
+      "title": "正式定义"
+    },
+    {
+      "id": "missing-control",
+      "type": "text",
+      "text": "不存在的火星基地987654321"
+    }
+  ]
+}

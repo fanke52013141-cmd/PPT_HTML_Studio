@@ -1,0 +1,3331 @@
+{
+  "format": "hps.reconstruction.acceptance-ledger/0.1.0",
+  "criteria": [
+    {
+      "id": "AC-001",
+      "task_id": "T00",
+      "criterion": "原离线基准可重现",
+      "required_level": "evidence",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-001",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "evidence",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "scripts/verify_reconstruction_v2_acceptance.py",
+          "sha256": "975b46b21903a5c42757430c23cf204e4078a810ea87b0e6fccebdf7511848ac"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成"
+    },
+    {
+      "id": "AC-002",
+      "task_id": "T00",
+      "criterion": "浏览器基准有实际截图与检查报告",
+      "required_level": "evidence",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-002",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "evidence",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "scripts/verify_reconstruction_v2_acceptance.py",
+          "sha256": "975b46b21903a5c42757430c23cf204e4078a810ea87b0e6fccebdf7511848ac"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成"
+    },
+    {
+      "id": "AC-003",
+      "task_id": "T00",
+      "criterion": "dataset 中每个引用 hash 验证通过",
+      "required_level": "evidence",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-003",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "evidence",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "scripts/verify_reconstruction_v2_acceptance.py",
+          "sha256": "975b46b21903a5c42757430c23cf204e4078a810ea87b0e6fccebdf7511848ac"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成"
+    },
+    {
+      "id": "AC-004",
+      "task_id": "T00",
+      "criterion": "留出页未用于调提示词/模板",
+      "required_level": "evidence",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-004",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "evidence",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "scripts/verify_reconstruction_v2_acceptance.py",
+          "sha256": "975b46b21903a5c42757430c23cf204e4078a810ea87b0e6fccebdf7511848ac"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成"
+    },
+    {
+      "id": "AC-005",
+      "task_id": "T00",
+      "criterion": "缺少真实材料时 M0 可记录受限状态，但 T10 不得签发通过",
+      "required_level": "evidence",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-005",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "evidence",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "真实跨课程dataset/留出页证据尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "scripts/verify_reconstruction_v2_acceptance.py",
+          "sha256": "975b46b21903a5c42757430c23cf204e4078a810ea87b0e6fccebdf7511848ac"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_optimization_acceptance.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "真实跨课程dataset/留出页证据尚未完成"
+    },
+    {
+      "id": "AC-006",
+      "task_id": "T01",
+      "criterion": "同一原报告重复归一化一致",
+      "required_level": "unit",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-006",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "unit",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reconstruction_diagnostics.py",
+          "sha256": "76094047fcf84910d097d382765c72dfdb737293ea366c4290544e0b025b3256"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_reconstruction_diagnostics.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_reconstruction_diagnostics.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-007",
+      "task_id": "T01",
+      "criterion": "未知 code 保留并停止，不能当容量错误",
+      "required_level": "unit",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-007",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "unit",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reconstruction_diagnostics.py",
+          "sha256": "76094047fcf84910d097d382765c72dfdb737293ea366c4290544e0b025b3256"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_reconstruction_diagnostics.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_reconstruction_diagnostics.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-008",
+      "task_id": "T01",
+      "criterion": "no_fit 与 budget_exhausted 分开",
+      "required_level": "unit",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-008",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "unit",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reconstruction_diagnostics.py",
+          "sha256": "76094047fcf84910d097d382765c72dfdb737293ea366c4290544e0b025b3256"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_reconstruction_diagnostics.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_reconstruction_diagnostics.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-009",
+      "task_id": "T01",
+      "criterion": "单位不混算，像素溢出与行数超限分别排序",
+      "required_level": "unit",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-009",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "unit",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reconstruction_diagnostics.py",
+          "sha256": "76094047fcf84910d097d382765c72dfdb737293ea366c4290544e0b025b3256"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_reconstruction_diagnostics.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_reconstruction_diagnostics.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-010",
+      "task_id": "T02",
+      "criterion": "无作者文件时可测量/求解",
+      "required_level": "integration",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-010",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_saved_layout_repair.py",
+          "sha256": "893329a3af8c9f41efc6b4b7c0b723b993548dee4f3a876b04b3d935c3323d85"
+        },
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对"
+    },
+    {
+      "id": "AC-011",
+      "task_id": "T02",
+      "criterion": "传入的 manual 实际参与拒绝",
+      "required_level": "integration",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-011",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_saved_layout_repair.py",
+          "sha256": "893329a3af8c9f41efc6b4b7c0b723b993548dee4f3a876b04b3d935c3323d85"
+        },
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对"
+    },
+    {
+      "id": "AC-012",
+      "task_id": "T02",
+      "criterion": "已保存页 revision/audio 过期仍拒绝",
+      "required_level": "integration",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-012",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_saved_layout_repair.py",
+          "sha256": "893329a3af8c9f41efc6b4b7c0b723b993548dee4f3a876b04b3d935c3323d85"
+        },
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对"
+    },
+    {
+      "id": "AC-013",
+      "task_id": "T02",
+      "criterion": "两种适配得到相同候选语义及检查结果",
+      "required_level": "integration",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-013",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_saved_layout_repair.py",
+          "sha256": "893329a3af8c9f41efc6b4b7c0b723b993548dee4f3a876b04b3d935c3323d85"
+        },
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对"
+    },
+    {
+      "id": "AC-014",
+      "task_id": "T02",
+      "criterion": "输入对象不被原地修改",
+      "required_level": "integration",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-014",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_saved_layout_repair.py",
+          "sha256": "893329a3af8c9f41efc6b4b7c0b723b993548dee4f3a876b04b3d935c3323d85"
+        },
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-015",
+      "task_id": "T02",
+      "criterion": "所有 INV-05 快照不变",
+      "required_level": "integration",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-015",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_saved_layout_repair.py",
+          "sha256": "893329a3af8c9f41efc6b4b7c0b723b993548dee4f3a876b04b3d935c3323d85"
+        },
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_saved_layout_repair.py",
+        "checks/test_html_candidate_capacity_solver.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对"
+    },
+    {
+      "id": "AC-016",
+      "task_id": "T03",
+      "criterion": "两对象必须同时调整的夹具最终通过",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-016",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代"
+    },
+    {
+      "id": "AC-017",
+      "task_id": "T03",
+      "criterion": "三卡片各有缺陷时不丢失前步进展",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-017",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代"
+    },
+    {
+      "id": "AC-018",
+      "task_id": "T03",
+      "criterion": "默认字体也能修",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-018",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代"
+    },
+    {
+      "id": "AC-019",
+      "task_id": "T03",
+      "criterion": "输入目标顺序变化不造成对象饥饿",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-019",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代"
+    },
+    {
+      "id": "AC-020",
+      "task_id": "T03",
+      "criterion": "重复状态不会再次测量",
+      "required_level": "real_browser",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-020",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-021",
+      "task_id": "T03",
+      "criterion": "超预算有独立终态",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-021",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代"
+    },
+    {
+      "id": "AC-022",
+      "task_id": "T03",
+      "criterion": "单独某字段受保护时合法兄弟字段仍可修改",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-022",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代"
+    },
+    {
+      "id": "AC-023",
+      "task_id": "T03",
+      "criterion": "不可读字号/行距候选从不进入通过结果",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-023",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_capacity_repair.py",
+          "sha256": "29b43f901d17abbefb391ff4e16dceccc30b6c8d5c16f87e35172fd81b4f2662"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_candidate_capacity_solver.py",
+        "checks/test_html_search_scheduling.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代"
+    },
+    {
+      "id": "AC-024",
+      "task_id": "T04",
+      "criterion": "终态正常但入场穿字的用例被拒",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-024",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_linked_layout.py",
+          "sha256": "1fadf38b8e51dc80553a5a045859aa40ad604f10132c3177fea495d1493e548a"
+        },
+        {
+          "path": "html_geometry_repair.py",
+          "sha256": "84a80dfa404f77a4e4dab024da1c0ff1e3ba9be5778beb111bbd01f4d8124222"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_linked_layout.py",
+        "checks/test_html_production_preflight.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对"
+    },
+    {
+      "id": "AC-025",
+      "task_id": "T04",
+      "criterion": "point 路由通过且关系身份不变",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-025",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_linked_layout.py",
+          "sha256": "1fadf38b8e51dc80553a5a045859aa40ad604f10132c3177fea495d1493e548a"
+        },
+        {
+          "path": "html_geometry_repair.py",
+          "sha256": "84a80dfa404f77a4e4dab024da1c0ff1e3ba9be5778beb111bbd01f4d8124222"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_linked_layout.py",
+        "checks/test_html_production_preflight.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对"
+    },
+    {
+      "id": "AC-026",
+      "task_id": "T04",
+      "criterion": "anchor 不参与附着点搜索",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-026",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_linked_layout.py",
+          "sha256": "1fadf38b8e51dc80553a5a045859aa40ad604f10132c3177fea495d1493e548a"
+        },
+        {
+          "path": "html_geometry_repair.py",
+          "sha256": "84a80dfa404f77a4e4dab024da1c0ff1e3ba9be5778beb111bbd01f4d8124222"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_linked_layout.py",
+        "checks/test_html_production_preflight.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对"
+    },
+    {
+      "id": "AC-027",
+      "task_id": "T04",
+      "criterion": "不把缺陷转移到第三个标签",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-027",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_linked_layout.py",
+          "sha256": "1fadf38b8e51dc80553a5a045859aa40ad604f10132c3177fea495d1493e548a"
+        },
+        {
+          "path": "html_geometry_repair.py",
+          "sha256": "84a80dfa404f77a4e4dab024da1c0ff1e3ba9be5778beb111bbd01f4d8124222"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_linked_layout.py",
+        "checks/test_html_production_preflight.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对"
+    },
+    {
+      "id": "AC-028",
+      "task_id": "T04",
+      "criterion": "动态报告缺帧/超时/缺失均不能通过",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-028",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_linked_layout.py",
+          "sha256": "1fadf38b8e51dc80553a5a045859aa40ad604f10132c3177fea495d1493e548a"
+        },
+        {
+          "path": "html_geometry_repair.py",
+          "sha256": "84a80dfa404f77a4e4dab024da1c0ff1e3ba9be5778beb111bbd01f4d8124222"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_linked_layout.py",
+        "checks/test_html_production_preflight.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对"
+    },
+    {
+      "id": "AC-029",
+      "task_id": "T04",
+      "criterion": "容量阻断动态时保留 blocked_by_capacity，而非误报全动态已通过",
+      "required_level": "real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-029",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_linked_layout.py",
+          "sha256": "1fadf38b8e51dc80553a5a045859aa40ad604f10132c3177fea495d1493e548a"
+        },
+        {
+          "path": "html_geometry_repair.py",
+          "sha256": "84a80dfa404f77a4e4dab024da1c0ff1e3ba9be5778beb111bbd01f4d8124222"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_linked_layout.py",
+        "checks/test_html_production_preflight.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "原全帧门禁与point路由；完整负例分母另核对"
+    },
+    {
+      "id": "AC-030",
+      "task_id": "T05",
+      "criterion": "首次生产轻度溢出经确定性修复继续",
+      "required_level": "integration_real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-030",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_production_service.py",
+          "sha256": "0cabee8ba85e528802c9a4510db94d5c3092fa1220c1679789a02d191ffd02d9"
+        },
+        {
+          "path": "html_design_reconstruction.py",
+          "sha256": "2a7a00070e01355739655514de030a9a970a360fb435c489467db4fcde6d7a05"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_reconstruction.py",
+        "checks/test_html_production_recovery.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存"
+    },
+    {
+      "id": "AC-031",
+      "task_id": "T05",
+      "criterion": "变体切换造成的溢出也经同一路径修复",
+      "required_level": "integration_real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-031",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_production_service.py",
+          "sha256": "0cabee8ba85e528802c9a4510db94d5c3092fa1220c1679789a02d191ffd02d9"
+        },
+        {
+          "path": "html_design_reconstruction.py",
+          "sha256": "2a7a00070e01355739655514de030a9a970a360fb435c489467db4fcde6d7a05"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_reconstruction.py",
+        "checks/test_html_production_recovery.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存"
+    },
+    {
+      "id": "AC-032",
+      "task_id": "T05",
+      "criterion": "修复模型调用为 0，其他理解/审核调用分开统计",
+      "required_level": "integration_real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-032",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_production_service.py",
+          "sha256": "0cabee8ba85e528802c9a4510db94d5c3092fa1220c1679789a02d191ffd02d9"
+        },
+        {
+          "path": "html_design_reconstruction.py",
+          "sha256": "2a7a00070e01355739655514de030a9a970a360fb435c489467db4fcde6d7a05"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_reconstruction.py",
+        "checks/test_html_production_recovery.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存"
+    },
+    {
+      "id": "AC-033",
+      "task_id": "T05",
+      "criterion": "无解不覆盖旧作者",
+      "required_level": "integration_real_browser",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-033",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          },
+          {
+            "facet": "real_browser",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_production_service.py",
+          "sha256": "0cabee8ba85e528802c9a4510db94d5c3092fa1220c1679789a02d191ffd02d9"
+        },
+        {
+          "path": "html_design_reconstruction.py",
+          "sha256": "2a7a00070e01355739655514de030a9a970a360fb435c489467db4fcde6d7a05"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_reconstruction.py",
+        "checks/test_html_production_recovery.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-034",
+      "task_id": "T05",
+      "criterion": "旧策略行为回归通过",
+      "required_level": "integration_real_browser",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-034",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          },
+          {
+            "facet": "real_browser",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_production_service.py",
+          "sha256": "0cabee8ba85e528802c9a4510db94d5c3092fa1220c1679789a02d191ffd02d9"
+        },
+        {
+          "path": "html_design_reconstruction.py",
+          "sha256": "2a7a00070e01355739655514de030a9a970a360fb435c489467db4fcde6d7a05"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_reconstruction.py",
+        "checks/test_html_production_recovery.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-035",
+      "task_id": "T05",
+      "criterion": "保护、取消、过期各自保持原语义",
+      "required_level": "integration_real_browser",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-035",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "real_browser",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_production_service.py",
+          "sha256": "0cabee8ba85e528802c9a4510db94d5c3092fa1220c1679789a02d191ffd02d9"
+        },
+        {
+          "path": "html_design_reconstruction.py",
+          "sha256": "2a7a00070e01355739655514de030a9a970a360fb435c489467db4fcde6d7a05"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_reconstruction.py",
+        "checks/test_html_production_recovery.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存"
+    },
+    {
+      "id": "AC-036",
+      "task_id": "T06",
+      "criterion": "出站没有 HTML 几何",
+      "required_level": "file_evaluation_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-036",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "file_evaluation",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reference_localization.py",
+          "sha256": "c40692c27ef537eadb78c2858fea0ee148f4172f6a4732c40ecc103692590880"
+        },
+        {
+          "path": "html_review_evidence.py",
+          "sha256": "edbfa5cfdd562ea9df4e1231adbd4b778ea4f61bfa89cab411da92c8322a94d5"
+        },
+        {
+          "path": "html_reference_routes.py",
+          "sha256": "326630b3c817b2e40f513fa8ff936bfb85aa65c2806d28ca334380fe79458890"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率"
+    },
+    {
+      "id": "AC-037",
+      "task_id": "T06",
+      "criterion": "大幅位移仍按身份正确配对",
+      "required_level": "file_evaluation_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-037",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "file_evaluation",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reference_localization.py",
+          "sha256": "c40692c27ef537eadb78c2858fea0ee148f4172f6a4732c40ecc103692590880"
+        },
+        {
+          "path": "html_review_evidence.py",
+          "sha256": "edbfa5cfdd562ea9df4e1231adbd4b778ea4f61bfa89cab411da92c8322a94d5"
+        },
+        {
+          "path": "html_reference_routes.py",
+          "sha256": "326630b3c817b2e40f513fa8ff936bfb85aa65c2806d28ca334380fe79458890"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率"
+    },
+    {
+      "id": "AC-038",
+      "task_id": "T06",
+      "criterion": "模糊定位不进入自动尺寸修复",
+      "required_level": "file_evaluation_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-038",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "file_evaluation",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reference_localization.py",
+          "sha256": "c40692c27ef537eadb78c2858fea0ee148f4172f6a4732c40ecc103692590880"
+        },
+        {
+          "path": "html_review_evidence.py",
+          "sha256": "edbfa5cfdd562ea9df4e1231adbd4b778ea4f61bfa89cab411da92c8322a94d5"
+        },
+        {
+          "path": "html_reference_routes.py",
+          "sha256": "326630b3c817b2e40f513fa8ff936bfb85aa65c2806d28ca334380fe79458890"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率"
+    },
+    {
+      "id": "AC-039",
+      "task_id": "T06",
+      "criterion": "hash 不一致停止",
+      "required_level": "file_evaluation_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-039",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "file_evaluation",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reference_localization.py",
+          "sha256": "c40692c27ef537eadb78c2858fea0ee148f4172f6a4732c40ecc103692590880"
+        },
+        {
+          "path": "html_review_evidence.py",
+          "sha256": "edbfa5cfdd562ea9df4e1231adbd4b778ea4f61bfa89cab411da92c8322a94d5"
+        },
+        {
+          "path": "html_reference_routes.py",
+          "sha256": "326630b3c817b2e40f513fa8ff936bfb85aa65c2806d28ca334380fe79458890"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率"
+    },
+    {
+      "id": "AC-040",
+      "task_id": "T06",
+      "criterion": "容器/正文不互相冒充",
+      "required_level": "file_evaluation_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-040",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "file_evaluation",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reference_localization.py",
+          "sha256": "c40692c27ef537eadb78c2858fea0ee148f4172f6a4732c40ecc103692590880"
+        },
+        {
+          "path": "html_review_evidence.py",
+          "sha256": "edbfa5cfdd562ea9df4e1231adbd4b778ea4f61bfa89cab411da92c8322a94d5"
+        },
+        {
+          "path": "html_reference_routes.py",
+          "sha256": "326630b3c817b2e40f513fa8ff936bfb85aa65c2806d28ca334380fe79458890"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率"
+    },
+    {
+      "id": "AC-041",
+      "task_id": "T06",
+      "criterion": "审计页显示真实局部对照与原始报告引用",
+      "required_level": "file_evaluation_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-041",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "file_evaluation",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "工程/模拟响应不证明真实模型定位准确率；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_reference_localization.py",
+          "sha256": "c40692c27ef537eadb78c2858fea0ee148f4172f6a4732c40ecc103692590880"
+        },
+        {
+          "path": "html_review_evidence.py",
+          "sha256": "edbfa5cfdd562ea9df4e1231adbd4b778ea4f61bfa89cab411da92c8322a94d5"
+        },
+        {
+          "path": "html_reference_routes.py",
+          "sha256": "326630b3c817b2e40f513fa8ff936bfb85aa65c2806d28ca334380fe79458890"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_independent_review.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "工程/模拟响应不证明真实模型定位准确率"
+    },
+    {
+      "id": "AC-042",
+      "task_id": "T07",
+      "criterion": "同一未改变区域不能仅因新模型说 pass 清除问题",
+      "required_level": "integration_and_paired_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-042",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "paired_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_agent.py",
+          "sha256": "467e1f13fc7d3a65936ddd2c3c3e150bac8be7959dd1db0f456fbf6a255fd6c8"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_agent.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "完整配对模型实验尚未完成"
+    },
+    {
+      "id": "AC-043",
+      "task_id": "T07",
+      "criterion": "注册变体事实与模型建议不符时阻断",
+      "required_level": "integration_and_paired_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-043",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "paired_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_agent.py",
+          "sha256": "467e1f13fc7d3a65936ddd2c3c3e150bac8be7959dd1db0f456fbf6a255fd6c8"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_agent.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "完整配对模型实验尚未完成"
+    },
+    {
+      "id": "AC-044",
+      "task_id": "T07",
+      "criterion": "文字内容错误不由局部几何工具修",
+      "required_level": "integration_and_paired_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-044",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "paired_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_agent.py",
+          "sha256": "467e1f13fc7d3a65936ddd2c3c3e150bac8be7959dd1db0f456fbf6a255fd6c8"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_agent.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "完整配对模型实验尚未完成"
+    },
+    {
+      "id": "AC-045",
+      "task_id": "T07",
+      "criterion": "原图错字不覆盖准确文本",
+      "required_level": "integration_and_paired_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-045",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "paired_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_agent.py",
+          "sha256": "467e1f13fc7d3a65936ddd2c3c3e150bac8be7959dd1db0f456fbf6a255fd6c8"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_agent.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "完整配对模型实验尚未完成"
+    },
+    {
+      "id": "AC-046",
+      "task_id": "T07",
+      "criterion": "重点裁图不会增加未登记的图片预算",
+      "required_level": "integration_and_paired_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-046",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "paired_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_agent.py",
+          "sha256": "467e1f13fc7d3a65936ddd2c3c3e150bac8be7959dd1db0f456fbf6a255fd6c8"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_agent.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "完整配对模型实验尚未完成"
+    },
+    {
+      "id": "AC-047",
+      "task_id": "T07",
+      "criterion": "前后配对实验单独量测该任务收益",
+      "required_level": "integration_and_paired_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-047",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "paired_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "完整配对模型实验尚未完成；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_agent.py",
+          "sha256": "467e1f13fc7d3a65936ddd2c3c3e150bac8be7959dd1db0f456fbf6a255fd6c8"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_design_agent.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "完整配对模型实验尚未完成"
+    },
+    {
+      "id": "AC-048",
+      "task_id": "T08",
+      "criterion": "卡片图标不能替代必要插图",
+      "required_level": "integration_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-048",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_feasibility.py",
+          "sha256": "053e52b6414288322cb493b796323c483938ba2ce8a0a4e1f3944996d70f57e9"
+        },
+        {
+          "path": "html_asset_reuse.py",
+          "sha256": "a0a97a465a256d8e59f0ce4606081eb026b5cd69d6e5309e32a2681688afccf3"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_asset_reuse.py",
+        "checks/test_html_design_feasibility.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立"
+    },
+    {
+      "id": "AC-049",
+      "task_id": "T08",
+      "criterion": "多插图超能力在接受前给出明确诊断",
+      "required_level": "integration_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-049",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_feasibility.py",
+          "sha256": "053e52b6414288322cb493b796323c483938ba2ce8a0a4e1f3944996d70f57e9"
+        },
+        {
+          "path": "html_asset_reuse.py",
+          "sha256": "a0a97a465a256d8e59f0ce4606081eb026b5cd69d6e5309e32a2681688afccf3"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_asset_reuse.py",
+        "checks/test_html_design_feasibility.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立"
+    },
+    {
+      "id": "AC-050",
+      "task_id": "T08",
+      "criterion": "相同资产复用不发生额外生成",
+      "required_level": "integration_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-050",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_feasibility.py",
+          "sha256": "053e52b6414288322cb493b796323c483938ba2ce8a0a4e1f3944996d70f57e9"
+        },
+        {
+          "path": "html_asset_reuse.py",
+          "sha256": "a0a97a465a256d8e59f0ce4606081eb026b5cd69d6e5309e32a2681688afccf3"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_asset_reuse.py",
+        "checks/test_html_design_feasibility.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立"
+    },
+    {
+      "id": "AC-051",
+      "task_id": "T08",
+      "criterion": "修改资源 hash 使相关候选失效",
+      "required_level": "integration_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-051",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_feasibility.py",
+          "sha256": "053e52b6414288322cb493b796323c483938ba2ce8a0a4e1f3944996d70f57e9"
+        },
+        {
+          "path": "html_asset_reuse.py",
+          "sha256": "a0a97a465a256d8e59f0ce4606081eb026b5cd69d6e5309e32a2681688afccf3"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_asset_reuse.py",
+        "checks/test_html_design_feasibility.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立"
+    },
+    {
+      "id": "AC-052",
+      "task_id": "T08",
+      "criterion": "更换图像不能继承未经验证的语义锚点",
+      "required_level": "integration_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-052",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_feasibility.py",
+          "sha256": "053e52b6414288322cb493b796323c483938ba2ce8a0a4e1f3944996d70f57e9"
+        },
+        {
+          "path": "html_asset_reuse.py",
+          "sha256": "a0a97a465a256d8e59f0ce4606081eb026b5cd69d6e5309e32a2681688afccf3"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_asset_reuse.py",
+        "checks/test_html_design_feasibility.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立"
+    },
+    {
+      "id": "AC-053",
+      "task_id": "T08",
+      "criterion": "UI 展示原因且不自动批准",
+      "required_level": "integration_and_model",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-053",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "已有工程路径；真实模型和视觉判断仍独立；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_design_feasibility.py",
+          "sha256": "053e52b6414288322cb493b796323c483938ba2ce8a0a4e1f3944996d70f57e9"
+        },
+        {
+          "path": "html_asset_reuse.py",
+          "sha256": "a0a97a465a256d8e59f0ce4606081eb026b5cd69d6e5309e32a2681688afccf3"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_asset_reuse.py",
+        "checks/test_html_design_feasibility.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "已有工程路径；真实模型和视觉判断仍独立"
+    },
+    {
+      "id": "AC-054",
+      "task_id": "T09",
+      "criterion": "同一状态只检查一次且来源变化不命中旧通过",
+      "required_level": "integration_fault_injection",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-054",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          },
+          {
+            "facet": "fault_injection",
+            "status": "pending",
+            "reason": "SUPPORTING_PROOF_ONLY"
+          }
+        ],
+        "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_page_budget.py",
+          "sha256": "e610408cabb64c19a382f74b8d60428187325e66b28fad0e2a5ccf8aaf84353c"
+        },
+        {
+          "path": "html_reference_jobs.py",
+          "sha256": "4a173b045a45e98a92becba5f2520b7d4242f391de0e1945765da89bff14303f"
+        },
+        {
+          "path": "html_review_cache.py",
+          "sha256": "2a18397a2af73461bab8be5186badf9e2de024cb069166de52a5a18bf167db8e"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py",
+        "checks/test_html_review_cache.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求"
+    },
+    {
+      "id": "AC-055",
+      "task_id": "T09",
+      "criterion": "unknown 不自动补发",
+      "required_level": "integration_fault_injection",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-055",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          },
+          {
+            "facet": "fault_injection",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_page_budget.py",
+          "sha256": "e610408cabb64c19a382f74b8d60428187325e66b28fad0e2a5ccf8aaf84353c"
+        },
+        {
+          "path": "html_reference_jobs.py",
+          "sha256": "4a173b045a45e98a92becba5f2520b7d4242f391de0e1945765da89bff14303f"
+        },
+        {
+          "path": "html_review_cache.py",
+          "sha256": "2a18397a2af73461bab8be5186badf9e2de024cb069166de52a5a18bf167db8e"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py",
+        "checks/test_html_review_cache.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-056",
+      "task_id": "T09",
+      "criterion": "usage/cost 缺失为 null",
+      "required_level": "integration_fault_injection",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-056",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "fault_injection",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_page_budget.py",
+          "sha256": "e610408cabb64c19a382f74b8d60428187325e66b28fad0e2a5ccf8aaf84353c"
+        },
+        {
+          "path": "html_reference_jobs.py",
+          "sha256": "4a173b045a45e98a92becba5f2520b7d4242f391de0e1945765da89bff14303f"
+        },
+        {
+          "path": "html_review_cache.py",
+          "sha256": "2a18397a2af73461bab8be5186badf9e2de024cb069166de52a5a18bf167db8e"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py",
+        "checks/test_html_review_cache.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求"
+    },
+    {
+      "id": "AC-057",
+      "task_id": "T09",
+      "criterion": "子阶段不能绕过总调用预算",
+      "required_level": "integration_fault_injection",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-057",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          },
+          {
+            "facet": "fault_injection",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_page_budget.py",
+          "sha256": "e610408cabb64c19a382f74b8d60428187325e66b28fad0e2a5ccf8aaf84353c"
+        },
+        {
+          "path": "html_reference_jobs.py",
+          "sha256": "4a173b045a45e98a92becba5f2520b7d4242f391de0e1945765da89bff14303f"
+        },
+        {
+          "path": "html_review_cache.py",
+          "sha256": "2a18397a2af73461bab8be5186badf9e2de024cb069166de52a5a18bf167db8e"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py",
+        "checks/test_html_review_cache.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-058",
+      "task_id": "T09",
+      "criterion": "用户取消后不开始下一阶段",
+      "required_level": "integration_fault_injection",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-058",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          },
+          {
+            "facet": "fault_injection",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_page_budget.py",
+          "sha256": "e610408cabb64c19a382f74b8d60428187325e66b28fad0e2a5ccf8aaf84353c"
+        },
+        {
+          "path": "html_reference_jobs.py",
+          "sha256": "4a173b045a45e98a92becba5f2520b7d4242f391de0e1945765da89bff14303f"
+        },
+        {
+          "path": "html_review_cache.py",
+          "sha256": "2a18397a2af73461bab8be5186badf9e2de024cb069166de52a5a18bf167db8e"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py",
+        "checks/test_html_review_cache.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-059",
+      "task_id": "T09",
+      "criterion": "恢复任务不重复保存或批准",
+      "required_level": "integration_fault_injection",
+      "status": "passed",
+      "criterion_verification": {
+        "id": "AC-059",
+        "status": "passed",
+        "facets": [
+          {
+            "facet": "integration",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          },
+          {
+            "facet": "fault_injection",
+            "status": "passed",
+            "reason": "EXACT_CHECKS_PASSED"
+          }
+        ],
+        "remaining": null
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_page_budget.py",
+          "sha256": "e610408cabb64c19a382f74b8d60428187325e66b28fad0e2a5ccf8aaf84353c"
+        },
+        {
+          "path": "html_reference_jobs.py",
+          "sha256": "4a173b045a45e98a92becba5f2520b7d4242f391de0e1945765da89bff14303f"
+        },
+        {
+          "path": "html_review_cache.py",
+          "sha256": "2a18397a2af73461bab8be5186badf9e2de024cb069166de52a5a18bf167db8e"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py",
+        "checks/test_html_review_cache.py"
+      ],
+      "executed_test_modules": [
+        "checks/test_html_page_budget.py",
+        "checks/test_html_reference_api.py"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-01.xml",
+          "sha256": "a226e62fcd13f59fd4c4fbb4ccc38b709ac3f88b0c8a5a686e5a3b284426a87d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-02.xml",
+          "sha256": "a60e347b662631f12ae61e1692d8aaa7db398fc169fdcf307e08a0ce07fd40db"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-03.xml",
+          "sha256": "51a88a85ee446a4d115f470f25c93c6ad4165e21857a9b9aa7bd3ed316a3d27d"
+        },
+        {
+          "path": "outputs/evaluation/acceptance-complete/O7-06.xml",
+          "sha256": "89abe4d498bec5572637f9e9b2868cc65337ef1ed61a06b9514b17e22104356d"
+        }
+      ],
+      "remaining": "本条所需层级的独立检查已通过；不代替其他AC或整体验收。"
+    },
+    {
+      "id": "AC-060",
+      "task_id": "T10",
+      "criterion": "同输入配对身份一致",
+      "required_level": "real_model_and_human_review",
+      "status": "not_run",
+      "criterion_verification": {
+        "id": "AC-060",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "human_review",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "not_started_or_validation_only",
+      "sources": [],
+      "candidate_tests": [],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过"
+    },
+    {
+      "id": "AC-061",
+      "task_id": "T10",
+      "criterion": "所有失败进入分母",
+      "required_level": "real_model_and_human_review",
+      "status": "not_run",
+      "criterion_verification": {
+        "id": "AC-061",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "human_review",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "not_started_or_validation_only",
+      "sources": [],
+      "candidate_tests": [],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过"
+    },
+    {
+      "id": "AC-062",
+      "task_id": "T10",
+      "criterion": "每个达标数字能追到页面、调用和报告",
+      "required_level": "real_model_and_human_review",
+      "status": "not_run",
+      "criterion_verification": {
+        "id": "AC-062",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "human_review",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "not_started_or_validation_only",
+      "sources": [],
+      "candidate_tests": [],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过"
+    },
+    {
+      "id": "AC-063",
+      "task_id": "T10",
+      "criterion": "上述门槛逐项 passed/failed/pending，不能只给总评分",
+      "required_level": "real_model_and_human_review",
+      "status": "not_run",
+      "criterion_verification": {
+        "id": "AC-063",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "real_model",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "human_review",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "not_started_or_validation_only",
+      "sources": [],
+      "candidate_tests": [],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "待真实模型及人工配对评测；不得用mock或离线报告签发通过"
+    },
+    {
+      "id": "AC-064",
+      "task_id": "T11",
+      "criterion": "策略可回退且不重写已有作者",
+      "required_level": "release_and_real_end_to_end",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-064",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "release",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_end_to_end",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_build_snapshot.py",
+          "sha256": "b79a0eac1574f02bc1b95ae6ccdb18525e0bfb3792aac9022a215dcdd50e4aff"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_build_snapshot.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验"
+    },
+    {
+      "id": "AC-065",
+      "task_id": "T11",
+      "criterion": "保存重开和历史恢复通过",
+      "required_level": "release_and_real_end_to_end",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-065",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "release",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_end_to_end",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_build_snapshot.py",
+          "sha256": "b79a0eac1574f02bc1b95ae6ccdb18525e0bfb3792aac9022a215dcdd50e4aff"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_build_snapshot.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验"
+    },
+    {
+      "id": "AC-066",
+      "task_id": "T11",
+      "criterion": "Agent/Web 合同一致",
+      "required_level": "release_and_real_end_to_end",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-066",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "release",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_end_to_end",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_build_snapshot.py",
+          "sha256": "b79a0eac1574f02bc1b95ae6ccdb18525e0bfb3792aac9022a215dcdd50e4aff"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_build_snapshot.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验"
+    },
+    {
+      "id": "AC-067",
+      "task_id": "T11",
+      "criterion": "相关快照与失效规则生效",
+      "required_level": "release_and_real_end_to_end",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-067",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "release",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_end_to_end",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_build_snapshot.py",
+          "sha256": "b79a0eac1574f02bc1b95ae6ccdb18525e0bfb3792aac9022a215dcdd50e4aff"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_build_snapshot.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验"
+    },
+    {
+      "id": "AC-068",
+      "task_id": "T11",
+      "criterion": "原音视频链路实际验证",
+      "required_level": "release_and_real_end_to_end",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-068",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "release",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_end_to_end",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_build_snapshot.py",
+          "sha256": "b79a0eac1574f02bc1b95ae6ccdb18525e0bfb3792aac9022a215dcdd50e4aff"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_build_snapshot.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验"
+    },
+    {
+      "id": "AC-069",
+      "task_id": "T11",
+      "criterion": "发布结论有具体 commit、命令、日志、未决项",
+      "required_level": "release_and_real_end_to_end",
+      "status": "partial",
+      "criterion_verification": {
+        "id": "AC-069",
+        "status": "pending",
+        "facets": [
+          {
+            "facet": "release",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          },
+          {
+            "facet": "real_end_to_end",
+            "status": "pending",
+            "reason": "MISSING_REQUIRED_EVIDENCE"
+          }
+        ],
+        "remaining": "尚未发布；正式音视频与具体发布commit待验；按本条完整要求核验，支持性测试不能代替完整证明。"
+      },
+      "implementation": "implemented_scope",
+      "sources": [
+        {
+          "path": "html_build_snapshot.py",
+          "sha256": "b79a0eac1574f02bc1b95ae6ccdb18525e0bfb3792aac9022a215dcdd50e4aff"
+        }
+      ],
+      "candidate_tests": [
+        "checks/test_html_build_snapshot.py"
+      ],
+      "executed_test_modules": [],
+      "evidence": [],
+      "remaining": "尚未发布；正式音视频与具体发布commit待验"
+    }
+  ],
+  "counts": {
+    "passed": 12,
+    "partial": 53,
+    "not_run": 4,
+    "failed": 0
+  },
+  "milestones": {
+    "M0": "pending",
+    "M1": "pending",
+    "M2": "pending",
+    "M3": "pending"
+  },
+  "policy": "Task-level source/test evidence is partial; only separately verified per-AC proof can pass required levels."
+}

@@ -1,5 +1,19 @@
 # HTML Studio
 
+2026-10-25 产品工具：[标注工作台与定位配对实验执行器](docs/plans/html-backend-development/handoff-annotation-experiments-2026-10-25.md)。项目内可视化草稿/复核/标签版本；冻结两组定位协议和项目模型，AB/BA配对、真实HTTP预算、进度/取消、unknown阻断及完整回执恢复。Web/Agent/MCP/SDK/CLI同步，API1.64.0、契约0.9.118；不写生产作者或视觉批准。
+
+2026-10-25 五项后续：[逐项验收、内嵌框选、配对评测与布局扩展](docs/plans/html-backend-development/handoff-followup5-2026-10-25.md)。69项独立规则及严格证据校验、诊断0.2、主面板拖框直接提交、固定开发/留出配对评分与人工标注入口、宽正文双卡片/三列对比和底栏联动；契约0.9.117，原API及作者/批准边界保持。
+
+2026-10-25 P0/P2：[生产接线与能力补齐交接](docs/plans/html-backend-development/handoff-p0-p2-2026-10-25.md)。主面板定位复核/显式续接、共享layout_first修复与诊断、原69项对账、左右图文/图表说明注册模板和同项目精确素材复用；Web/Agent/MCP/SDK/CLI同步。Agent API1.63.0、契约0.9.116；真实模型、人审及发布验收仍独立。
+
+2026-10-25 后续补齐：[定位恢复、图文避让与知识网格交接](docs/plans/html-backend-development/handoff-reference-grid-2026-10-25.md)。本地复核支持表单/导入/缩放，精确修正回执防止重复请求；注册2×2知识卡片并通过原整页动态检查与人工保护负例。真实模型、视觉批准和部署仍独立。
+
+2026-10-25 七项离线工程优化：[实现与验证交接](docs/plans/html-backend-development/handoff-offline-optimization7-2026-10-25.md)、[定义卡与执行命令](docs/contracts/html-presentation/runtime/visual-v1/reconstruction-offline-optimization-0.1.0.md)。候选调度、共享预算、统一验收、注册横排、设计前文字检查、本地定位复核恢复和精确缓存已落在原所有者；公开API及批准边界保持，真实质量另验。
+
+2026-10-25 关联布局与保真审核：[本批交接](docs/plans/html-backend-development/handoff-linked-reference-2026-10-25.md)。同列三卡片/底栏、原point关系避让及第三生产检查点已接通；生产保真增加独立原图文字定位、逐对象配对、未决停止和同目标复用。工程/请求回归与受控浏览器验收通过，真实模型定位质量、人审及发布另验。
+
+2026-10-25 容量优化：[累计候选修复交接](docs/plans/html-backend-development/handoff-candidate-capacity-2026-10-25.md)。新页与组件分配后优先确定性求解，保留人工保护，严格静态及原完整30fps复验；四类受控浏览器验收通过。属于本地工程增量，真实跨课程保真、人审及发布另验，未部署。
+
 2026-10-23 批量配图：[16:9 / 9:16 四宫格布局](docs/releases/2026-10-23-asset-sheet-layout.md)。素材板最多 4 个需求，按项目方向自动排成 1536×864 / 864×1536 / 1024×1024，外边距与格子间隙 24px，透明底，生成一次后按固定槽位拆成独立资产；逐资产人工审阅，不自动批准。4 个横版插图的理论输出像素 4.19M→1.33M（约 -68%），调用 4→1；主 produce 流程仍为每页 1 个插图槽位，跨页自动合板尚未接入。
 
 2026-10-22 实测修复：[图片连接测试、计划版本、审阅错误透出、用量与浏览器预检](docs/releases/2026-10-22-provider-test-plan-version-errors.md)。ToAPIs 连接测试补传凭据与任务级超时（真实验证 48.9 秒成功）；Web/Agent produce 省略 plan_version 默认 0.2.0，设计/计划版本不一致返回 409 不再静默复用；审阅脚本失败错误带报告原因与路径；流式调用记录真实 token usage，HTML 任务在付费出图前预检 Chromium 不可用即停。Agent API 1.62.1、capability 1.15。

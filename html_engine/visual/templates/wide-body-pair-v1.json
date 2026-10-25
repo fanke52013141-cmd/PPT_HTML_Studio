@@ -1,0 +1,43 @@
+{
+  "format": "hps.visual.template",
+  "version": "0.1.0",
+  "id": "wide-body-pair-v1",
+  "name": "宽正文双卡片",
+  "structure": "explanation-cards",
+  "layoutRef": {
+    "id": "wide-body-pair-v1",
+    "version": "0.2.0"
+  },
+  "slots": {
+    "header": {
+      "kinds": [
+        "header"
+      ],
+      "required": true
+    },
+    "intro": {
+      "kinds": [
+        "text"
+      ],
+      "required": false
+    },
+    "card-1": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "card-2": {
+      "kinds": [
+        "card"
+      ],
+      "required": true
+    },
+    "summary": {
+      "kinds": [
+        "summary"
+      ],
+      "required": true
+    }
+  }
+}

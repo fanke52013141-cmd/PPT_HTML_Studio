@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "source",
+      "type": "text",
+      "text": "来源：公开办法"
+    },
+    {
+      "id": "missing-control",
+      "type": "text",
+      "text": "不存在的火星基地987654321"
+    }
+  ]
+}

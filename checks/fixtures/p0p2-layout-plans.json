@@ -1,0 +1,583 @@
+[
+  {
+    "contract": {
+      "slide_id": "image-text",
+      "narration_beats": [
+        {
+          "id": "explain",
+          "spoken_text": "观察图片并对照两条说明。"
+        }
+      ]
+    },
+    "plan": {
+      "version": "0.2.0",
+      "slide_id": "image-text",
+      "templateRef": {
+        "id": "image-text-columns-v1",
+        "version": "0.1.0"
+      },
+      "slots": {
+        "header": {
+          "kind": "header",
+          "number": "01",
+          "title": "冷杯外的水滴，从哪里来？"
+        },
+        "headline": {
+          "kind": "text",
+          "role": "headline",
+          "runs": [
+            {
+              "text": "看见的是水滴，关键在空气中的水蒸气。",
+              "emphasis": false
+            }
+          ]
+        },
+        "subject": {
+          "kind": "image",
+          "assetRef": {
+            "id": "condensation",
+            "version": "0.1.0"
+          },
+          "anchorId": "focus"
+        },
+        "card-1": {
+          "kind": "card",
+          "tone": "pink",
+          "icon": "air",
+          "title": "空气中有水蒸气",
+          "body": "通常看不见，却一直在我们身边。"
+        },
+        "card-2": {
+          "kind": "card",
+          "tone": "green",
+          "icon": "thermometer",
+          "title": "遇到较冷的杯壁",
+          "body": "水蒸气冷却，凝结成小水滴。"
+        },
+        "summary": {
+          "kind": "summary",
+          "heading": {
+            "icon": "lightbulb",
+            "text": "关键结论"
+          },
+          "from": {
+            "text": "气态",
+            "tone": "blue"
+          },
+          "to": {
+            "text": "液态",
+            "tone": "green"
+          },
+          "term": "凝结",
+          "takeaway": "不是杯里的水漏出来"
+        }
+      },
+      "objects": [
+        {
+          "id": "header",
+          "slot": "header",
+          "kind": "header",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "headline",
+          "slot": "headline",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "subject",
+          "slot": "subject",
+          "kind": "image",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-1",
+          "slot": "card-1",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-2",
+          "slot": "card-2",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "summary",
+          "slot": "summary",
+          "kind": "summary",
+          "role": "instructional",
+          "initialVisible": false
+        }
+      ],
+      "beats": [
+        {
+          "id": "explain",
+          "visualIntent": "图文对照讲解",
+          "targets": [
+            {
+              "objectId": "header",
+              "purpose": "准确对象讲解"
+            },
+            {
+              "objectId": "headline",
+              "purpose": "准确对象讲解"
+            },
+            {
+              "objectId": "subject",
+              "purpose": "准确对象讲解"
+            },
+            {
+              "objectId": "card-1",
+              "purpose": "准确对象讲解"
+            },
+            {
+              "objectId": "card-2",
+              "purpose": "准确对象讲解"
+            },
+            {
+              "objectId": "summary",
+              "purpose": "准确对象讲解"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "header",
+              "actionId": "header-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "headline",
+              "actionId": "headline-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "subject",
+              "actionId": "subject-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-1",
+              "actionId": "card-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-2",
+              "actionId": "card-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "summary",
+              "actionId": "summary-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "header",
+              "visible": true,
+              "expression": "准确对象显示"
+            },
+            {
+              "objectId": "headline",
+              "visible": true,
+              "expression": "准确对象显示"
+            },
+            {
+              "objectId": "subject",
+              "visible": true,
+              "expression": "准确对象显示"
+            },
+            {
+              "objectId": "card-1",
+              "visible": true,
+              "expression": "准确对象显示"
+            },
+            {
+              "objectId": "card-2",
+              "visible": true,
+              "expression": "准确对象显示"
+            },
+            {
+              "objectId": "summary",
+              "visible": true,
+              "expression": "准确对象显示"
+            }
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "id": "condensation",
+          "slot": "subject",
+          "role": "subject",
+          "render_owner": "image_asset",
+          "need": "受控已登记主体"
+        }
+      ]
+    }
+  },
+  {
+    "contract": {
+      "slide_id": "slide_003",
+      "narration_beats": [
+        {
+          "id": "slide_003_beat_001",
+          "group_id": "slide_003_el_001",
+          "visible_anchor": "凝固过程中温度保持不变",
+          "spoken_intent": "凝固过程中温度保持不变",
+          "spoken_text": "水从液态变成固态冰的过程，叫做凝固。很多人以为结冰时温度会继续下降，其实不是这样，",
+          "content_unit_id": "slide_003_unit_001"
+        },
+        {
+          "id": "slide_003_beat_002",
+          "group_id": "slide_003_el_002",
+          "visible_anchor": "一个独立的视觉岛，左侧展示水逐渐凝固成冰的过程并伴随放热箭头，右",
+          "spoken_intent": "一个独立的视觉岛，左侧展示水逐渐凝固成冰的过程并伴随放热箭头，右侧是简化的温度-时间示意图，凝固阶段的温度线呈水平状，配有短标签“温度不变”，整体表达凝固过程放热但温度保持不变的特点。",
+          "spoken_text": "凝固过程中水会持续放出热量，逐渐从液态变成固态，但整个过程的温度会保持在冰点不变。",
+          "content_unit_id": "slide_003_unit_002"
+        }
+      ],
+      "visual_requirements": [
+        {
+          "id": "heat",
+          "kind": "relation",
+          "minCount": 1
+        },
+        {
+          "id": "temperature",
+          "kind": "chart",
+          "minCount": 1
+        }
+      ]
+    },
+    "plan": {
+      "version": "0.2.0",
+      "slide_id": "slide_003",
+      "templateRef": {
+        "id": "chart-notes-v1",
+        "version": "0.1.0"
+      },
+      "slots": {
+        "header": {
+          "kind": "header",
+          "number": "03",
+          "title": "凝固过程中温度保持不变"
+        },
+        "headline": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "凝固放热，温度不变",
+              "emphasis": false
+            }
+          ]
+        },
+        "intro": {
+          "kind": "text",
+          "role": "callout",
+          "runs": [
+            {
+              "text": "水从液态变成固态冰的过程，叫做凝固。",
+              "emphasis": false
+            }
+          ]
+        },
+        "card-1": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "thermometer",
+          "title": "持续放热",
+          "body": "水持续向周围环境放出热量",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "card-2": {
+          "kind": "card",
+          "tone": "blue",
+          "icon": "thermometer",
+          "title": "冰点不变",
+          "body": "凝固阶段保持在冰点",
+          "presentation": {
+            "variant": "card-outline"
+          }
+        },
+        "chart": {
+          "kind": "chart",
+          "points": [
+            {
+              "x": 0,
+              "y": 0.85
+            },
+            {
+              "x": 0.25,
+              "y": 0.4
+            },
+            {
+              "x": 0.75,
+              "y": 0.4
+            },
+            {
+              "x": 1,
+              "y": 0.1
+            }
+          ],
+          "xLabel": "时间",
+          "yLabel": "温度",
+          "unit": "℃",
+          "min": -10,
+          "max": 15,
+          "plateau": [
+            1,
+            2
+          ]
+        },
+        "summary": {
+          "kind": "summary",
+          "from": {
+            "text": "液态水",
+            "tone": "blue"
+          },
+          "to": {
+            "text": "固态冰",
+            "tone": "blue"
+          },
+          "term": "凝固",
+          "takeaway": "凝固过程中继续放热，温度保持不变",
+          "presentation": {
+            "variant": "summary-strip-divided"
+          }
+        },
+        "relation-1": {
+          "kind": "arrow",
+          "from": {
+            "objectId": "card-2",
+            "point": {
+              "x": 0.5,
+              "y": 0
+            }
+          },
+          "to": {
+            "objectId": "card-1",
+            "point": {
+              "x": 0.5,
+              "y": 1
+            }
+          },
+          "head": true,
+          "lineStyle": "solid"
+        }
+      },
+      "objects": [
+        {
+          "id": "header",
+          "slot": "header",
+          "kind": "header",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "headline",
+          "slot": "headline",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "intro",
+          "slot": "intro",
+          "kind": "text",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-1",
+          "slot": "card-1",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "card-2",
+          "slot": "card-2",
+          "kind": "card",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "chart",
+          "slot": "chart",
+          "kind": "chart",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "summary",
+          "slot": "summary",
+          "kind": "summary",
+          "role": "instructional",
+          "initialVisible": false
+        },
+        {
+          "id": "relation-1",
+          "slot": "relation-1",
+          "kind": "arrow",
+          "role": "instructional",
+          "initialVisible": false
+        }
+      ],
+      "beats": [
+        {
+          "id": "slide_003_beat_001",
+          "visualIntent": "水从液态变成固态冰的过程，叫做凝固。很多人以为结冰时温度会继续下降，其实不是这样，",
+          "targets": [
+            {
+              "objectId": "header",
+              "purpose": "Offline structure coverage"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "header",
+              "actionId": "header-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "header",
+              "visible": true,
+              "expression": "Registered code object visible"
+            }
+          ]
+        },
+        {
+          "id": "slide_003_beat_002",
+          "visualIntent": "凝固过程中水会持续放出热量，逐渐从液态变成固态，但整个过程的温度会保持在冰点不变。",
+          "targets": [
+            {
+              "objectId": "headline",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "intro",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "card-1",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "card-2",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "chart",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "summary",
+              "purpose": "Offline structure coverage"
+            },
+            {
+              "objectId": "relation-1",
+              "purpose": "Offline structure coverage"
+            }
+          ],
+          "actions": [
+            {
+              "objectId": "headline",
+              "actionId": "headline-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "intro",
+              "actionId": "intro-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-1",
+              "actionId": "card-1-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "card-2",
+              "actionId": "card-2-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "chart",
+              "actionId": "chart-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "summary",
+              "actionId": "summary-enter",
+              "type": "enter"
+            },
+            {
+              "objectId": "relation-1",
+              "actionId": "relation-1-enter",
+              "type": "enter"
+            }
+          ],
+          "expectedState": [
+            {
+              "objectId": "headline",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "intro",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "card-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "card-2",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "chart",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "summary",
+              "visible": true,
+              "expression": "Registered code object visible"
+            },
+            {
+              "objectId": "relation-1",
+              "visible": true,
+              "expression": "Registered code object visible"
+            }
+          ]
+        }
+      ],
+      "assets": [],
+      "visual_coverage": {
+        "heat": [
+          "relation-1"
+        ],
+        "temperature": [
+          "chart"
+        ]
+      }
+    },
+    "scope": "hand-authored offline fixture; not model production or approval"
+  }
+]

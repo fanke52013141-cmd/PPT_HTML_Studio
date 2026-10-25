@@ -284,8 +284,9 @@ def test_visual_feedback_is_consumed_by_next_real_static_decision(case):
         assert kw["request_timeout"]==600 and "thinking" not in kw
         fixture=response_for(kw)
         if kw["artifact_prefix"].startswith("design_fidelity_review-"):
-            assert len(kw["image_paths"])==2 and all(Path(p).is_file() for p in kw["image_paths"])
+            assert 3 <= len(kw["image_paths"]) <= 4 and all(Path(p).is_file() for p in kw["image_paths"])
             assert 'local_comparisons' not in json.loads(kw['user_prompt'])
+            assert 'independent_reference_evidence' in json.loads(kw['user_prompt'])
             reviews.append(kw)
             if len(reviews)==1:
                 return with_coverage(json.loads(kw["user_prompt"]), {"status":"changes_requested","issues":[{"targetId":"header","category":"layout","requirement":"geometry","severity":"minor","evidence":"header sits above reference baseline","suggestion":"move down"}]})
@@ -296,7 +297,8 @@ def test_visual_feedback_is_consumed_by_next_real_static_decision(case):
         assert payload["diagnostic"]["issues"][0]["targetId"]=="header"
         return {"status":"candidate","operations":[{"targetId":"header","kind":"set_presentation","values":{"offsetY":8}}]}
     result=reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"])
-    assert len(calls)==5 and len(reviews)==2
+    assert len(calls)==6 and len(reviews)==2
+    assert sum(c['artifact_prefix'].startswith('design_reference_localization-') for c in calls)==1
     assert result["summary"]["fidelity_review"]["human_approval"]=="pending"
     assert result["scene"]["motion"]==scene["motion"]
 
@@ -310,7 +312,7 @@ def test_asset_problem_stops_static_loop_and_preserves_author(case):
         return response_for(kw) or {"status":"unchanged","message":"fixture"}
     with pytest.raises(HtmlReviewError) as caught:
         reconstruct_design(scene,binding,reference,run_dir=run,deps=HtmlReviewDependencies(ROOT,generator),beats=contract["narration_beats"],progress=events.append)
-    assert caught.value.code=="DESIGN_REVIEW_ROUTED" and len(calls)==3 and scene==before
+    assert caught.value.code=="DESIGN_REVIEW_ROUTED" and len(calls)==4 and scene==before
     assert not (run/"planning/html_visual/scene-token-03.json").exists()
     assert events[-1]["next_action"]["routes"] == ["capabilities"]
     assert events[-1]["next_action"]["reason"] == "upstream_revision_required"

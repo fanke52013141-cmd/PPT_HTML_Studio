@@ -30,7 +30,7 @@ def test_geometry_contract_all_transports_share_new_optional_strategy():
     from agent_contract.schema import capability_input_schema
     cap = get_capability('html_repair.generate')
     schema = capability_input_schema(cap)
-    assert schema['properties']['strategy']['enum'] == ['model', 'geometry_first', 'capacity_first']
+    assert schema['properties']['strategy']['enum'] == ['model', 'geometry_first', 'capacity_first', 'layout_first']
     assert schema['properties']['strategy']['default'] == 'model'
-    assert cap.version == '1.7' and cap.mcp_tool_name == 'ppt_html_repair_generate'
+    assert cap.version == '1.8' and cap.mcp_tool_name == 'ppt_html_repair_generate'
     assert cap.cli_command == 'html repair-generate'
