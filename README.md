@@ -1,5 +1,9 @@
 # HTML Studio
 
+2026-10-26 工程补证：[23项完整验收与发布备注](docs/releases/2026-10-26-engineering-acceptance.md)、[交接](docs/plans/html-backend-development/handoff-engineering23-2026-10-26.md)。最终封存273项工程检查、10个受控浏览器基准通过；原69项36通过/33待验。补强共同截帧拒绝，原模型、人审及正式输出边界保持。
+
+2026-10-26 本机优化：[候选公平性、定位评分与真实样本准备](docs/plans/html-backend-development/handoff-optimization1234-2026-10-26.md)。252项统一工程检查、10个受控浏览器基准及519项Agent检查通过；原69项13通过/56待验。3课程5页历史开发样本已封存为待人审草稿，真实留出集和模型配对未完成。
+
 2026-10-25 仓库更新：[累计优化发布备注](docs/releases/2026-10-25-reconstruction-annotation-experiments.md)，包含远程整合、验证记录、复验命令和剩余验收边界。
 
 2026-10-25 产品工具：[标注工作台与定位配对实验执行器](docs/plans/html-backend-development/handoff-annotation-experiments-2026-10-25.md)。项目内可视化草稿/复核/标签版本；冻结两组定位协议和项目模型，AB/BA配对、真实HTTP预算、进度/取消、unknown阻断及完整回执恢复。Web/Agent/MCP/SDK/CLI同步，API1.64.0、契约0.9.118；不写生产作者或视觉批准。

@@ -58,3 +58,14 @@ Each output directory holds one package. Repeating the same request verifies pac
 The actual request package is readable and hash-verified, but it is not sent to E or another provider. A provider adapter needs an explicit provider/model/version, endpoint and credential source, image-count/format/size constraints, detail/resolution selection, timeout/retry/cost limits, retention behavior, and safe call-ID logging. Verification must capture the redacted outbound request and exact attachment hashes, confirm a real provider response, decode/hash returned imagery, and record provider call/billing IDs without storing secrets. A mock or this offline package cannot prove that E integration is complete.
 
 The corresponding cross-module integration proposal is in `docs/plans/workflow-first-parallel-2026-10-09/deliveries/D.md`; shared runtime registration and application wiring remain with A.
+
+## Cross-machine source bytes
+
+The catalog hashes exact source bytes. `.gitattributes` pins its text sources and
+generated text assets to LF, including Windows checkouts with `core.autocrlf=true`.
+Existing nested `-text` policies continue to preserve sealed catalog assets verbatim.
+Five already sealed sources contain CRLF or mixed line endings in Git; explicit
+`-text` exceptions preserve those original bytes and their existing hashes.
+Keep new catalog source paths covered by that policy; the catalog assembler test
+checks both Git attributes and working-tree bytes. Do not normalize bytes inside
+the hash checker or refresh recorded hashes just to accept a CRLF checkout.

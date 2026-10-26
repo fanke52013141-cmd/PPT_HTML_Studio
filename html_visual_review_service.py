@@ -587,6 +587,24 @@ def _geometry_preflight(scene, run_dir, deps, directory):
                 and isinstance(frames, list) and bool(frames)
                 and len(frames) == len(coverage["times"])
                 and [f.get("timeMs") for f in frames if isinstance(f, dict)] == coverage["times"])
+    if complete:
+        # Derive the expected timestamps from the original policy owner. A
+        # report with a self-consistent but truncated times/frames pair is not
+        # proof that all output frames and motion boundaries were checked.
+        policy = deps.run_subprocess_bounded(
+            [deps.node_bin, "-e",
+             "const fs=require('fs'),p=require('./html_engine/tools/temporal-review.cjs');"
+             "console.log(JSON.stringify(p.timeCoverage(JSON.parse(fs.readFileSync(process.argv[1],'utf8')),"
+             "JSON.parse(fs.readFileSync(process.argv[2],'utf8')))));",
+             str(directory / "scene.json"), str(directory / "spec.json")],
+            cwd=str(deps.repo_root), capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout_sec=deps.stage_timeout_sec,
+        )
+        try:
+            expected = json.loads(policy.stdout)
+            complete = policy.returncode == 0 and coverage == expected
+        except (ValueError, TypeError):
+            complete = False
     if result.returncode or type(raw.get("passed")) is not bool or not complete or not isinstance(raw.get("issues"), list):
         raise HtmlReviewError("共享动态前置检查未完成，候选不可保存：" + str(raw.get("code", "CHECK_INCOMPLETE")),
                               code="GEOMETRY_PREFLIGHT_FAILED", status_code=422)

@@ -157,7 +157,18 @@ def capacity_candidates(scene, layout, diagnostic, catalog, scope):
             continue
         seen.add(signature)
         unique.append(operations)
-    return unique[:MAX_CANDIDATES]
+    # Allocate the bounded list across targets, parts and operation families.
+    # A long title's font ladder must not remove every body/line-height option.
+    queues = {}
+    for operations in unique:
+        operation = operations[0]
+        family = ('size' if operation['kind'] == 'set_presentation' else
+                  'font' if 'fontSizePx' in operation['values'] else 'line_height')
+        key = (operation['targetId'], operation.get('part', ''), family)
+        queues.setdefault(key, []).append(operations)
+    ordered = [queue[index] for index in range(max(map(len, queues.values()), default=0))
+               for _, queue in sorted(queues.items()) if index < len(queue)]
+    return ordered[:MAX_CANDIDATES]
 
 
 from html_page_budget import page_budgeted

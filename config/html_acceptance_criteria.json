@@ -264,13 +264,13 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_multiple_objects_and_inherited_fonts_finish_with_original_full_frames",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+            "checks/test_html_engineering_completion.py::test_multiple_objects_and_inherited_fonts_finish_with_original_full_frames",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -278,9 +278,10 @@
       ],
       "source_paths": [
         "html_saved_layout_repair.py",
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-011",
@@ -293,13 +294,13 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_candidate_capacity_solver.py::test_actual_manual_protection_rejects_candidate_without_author",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_manual_block_and_cancelled_search_preserve_document_and_evidence",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_candidate_capacity_solver.py::test_actual_manual_protection_rejects_candidate_without_author",
+            "checks/test_html_engineering_completion.py::test_manual_block_and_cancelled_search_preserve_document_and_evidence",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -307,9 +308,10 @@
       ],
       "source_paths": [
         "html_saved_layout_repair.py",
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-012",
@@ -322,13 +324,13 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+            "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -336,9 +338,10 @@
       ],
       "source_paths": [
         "html_saved_layout_repair.py",
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-013",
@@ -351,13 +354,13 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_saved_layout_repair.py::test_saved_layout_uses_shared_solver_original_preview_and_scope",
+            "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -365,9 +368,10 @@
       ],
       "source_paths": [
         "html_saved_layout_repair.py",
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-014",
@@ -409,13 +413,26 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_saved_layout_repair.py::test_shared_solver_cannot_move_unselected_neighbour",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_saved_layout_repair.py::test_shared_solver_cannot_move_unselected_neighbour",
+            "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_engineering_completion.py::test_leaf_protection_allows_sibling_height_and_preserves_sources",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_engineering_completion.py::test_leaf_protection_allows_sibling_height_and_preserves_sources",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -423,9 +440,10 @@
       ],
       "source_paths": [
         "html_saved_layout_repair.py",
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "已保存/未保存适配及保护；全量INV-05须独立核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-016",
@@ -438,22 +456,23 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_candidate_capacity_solver.py::test_unsaved_two_cards_real_browser",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_multiple_objects_and_inherited_fonts_finish_with_original_full_frames",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_candidate_capacity_solver.py::test_unsaved_two_cards_real_browser",
+            "checks/test_html_engineering_completion.py::test_multiple_objects_and_inherited_fonts_finish_with_original_full_frames",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         }
       ],
       "source_paths": [
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-017",
@@ -466,22 +485,23 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_candidate_capacity_solver.py::test_unsaved_two_cards_real_browser",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_multiple_objects_and_inherited_fonts_finish_with_original_full_frames",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_candidate_capacity_solver.py::test_unsaved_two_cards_real_browser",
+            "checks/test_html_engineering_completion.py::test_multiple_objects_and_inherited_fonts_finish_with_original_full_frames",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         }
       ],
       "source_paths": [
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-018",
@@ -494,22 +514,23 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_candidate_capacity_solver.py::test_measured_inherited_font_creates_part_candidates",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_multiple_objects_and_inherited_fonts_finish_with_original_full_frames",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_candidate_capacity_solver.py::test_measured_inherited_font_creates_part_candidates",
+            "checks/test_html_engineering_completion.py::test_multiple_objects_and_inherited_fonts_finish_with_original_full_frames",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         }
       ],
       "source_paths": [
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-019",
@@ -522,22 +543,23 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_search_scheduling.py::test_duplicate_and_noop_candidates_do_not_consume_search_quota",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_target_order_cannot_starve_any_of_three_objects",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_search_scheduling.py::test_duplicate_and_noop_candidates_do_not_consume_search_quota",
+            "checks/test_html_engineering_completion.py::test_target_order_cannot_starve_any_of_three_objects",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         }
       ],
       "source_paths": [
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-020",
@@ -578,22 +600,23 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_real_browser_budget_has_distinct_terminal_state",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+            "checks/test_html_engineering_completion.py::test_real_browser_budget_has_distinct_terminal_state",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         }
       ],
       "source_paths": [
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-022",
@@ -606,22 +629,23 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_candidate_capacity_solver.py::test_actual_manual_protection_rejects_candidate_without_author",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_leaf_protection_allows_sibling_height_and_preserves_sources",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_candidate_capacity_solver.py::test_actual_manual_protection_rejects_candidate_without_author",
+            "checks/test_html_engineering_completion.py::test_leaf_protection_allows_sibling_height_and_preserves_sources",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         }
       ],
       "source_paths": [
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-023",
@@ -634,22 +658,36 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_no_unreadable_typography_in_any_original_browser_candidate",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+            "checks/test_html_engineering_completion.py::test_no_unreadable_typography_in_any_original_browser_candidate",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_capacity_repair.py::test_size_and_font_candidates_stay_bounded_and_readable",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_capacity_repair.py::test_size_and_font_candidates_stay_bounded_and_readable",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         }
       ],
       "source_paths": [
-        "html_capacity_repair.py"
+        "html_capacity_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "累计搜索已实现；原全部极端夹具不能由少量成功案例替代；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-024",
@@ -662,13 +700,13 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_production_preflight.py::test_arrow_crossing_is_in_original_full_frame_preflight",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_entry_arrow_crosses_text_even_when_final_frame_is_clear",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_production_preflight.py::test_arrow_crossing_is_in_original_full_frame_preflight",
+            "checks/test_html_engineering_completion.py::test_entry_arrow_crosses_text_even_when_final_frame_is_clear",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -676,9 +714,10 @@
       ],
       "source_paths": [
         "html_linked_layout.py",
-        "html_geometry_repair.py"
+        "html_geometry_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-025",
@@ -692,7 +731,7 @@
         {
           "facet": "real_browser",
           "selector": "checks/test_html_linked_layout.py::test_declared_point_routing_real_browser",
-          "coverage": "supporting",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
@@ -705,9 +744,10 @@
       ],
       "source_paths": [
         "html_linked_layout.py",
-        "html_geometry_repair.py"
+        "html_geometry_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-026",
@@ -720,13 +760,13 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_asset_geometry.py::test_visible_subject_and_named_anchor_are_reported_without_mutation",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_anchor_and_implicit_endpoints_are_excluded_on_actual_browser_evidence",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_asset_geometry.py::test_visible_subject_and_named_anchor_are_reported_without_mutation",
+            "checks/test_html_engineering_completion.py::test_anchor_and_implicit_endpoints_are_excluded_on_actual_browser_evidence",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -734,9 +774,10 @@
       ],
       "source_paths": [
         "html_linked_layout.py",
-        "html_geometry_repair.py"
+        "html_geometry_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-027",
@@ -749,13 +790,13 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_layout_groups.py::test_staggered_card_image_real_browser",
-          "coverage": "supporting",
+          "selector": "checks/test_html_linked_layout.py::test_declared_point_routing_real_browser",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_layout_groups.py::test_staggered_card_image_real_browser",
+            "checks/test_html_linked_layout.py::test_declared_point_routing_real_browser",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -763,9 +804,10 @@
       ],
       "source_paths": [
         "html_linked_layout.py",
-        "html_geometry_repair.py"
+        "html_geometry_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-028",
@@ -778,13 +820,13 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_production_preflight.py::test_incomplete_checker_never_inherits_stale_pass",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_actual_frame_evidence_cannot_be_truncated_or_relabelled",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_production_preflight.py::test_incomplete_checker_never_inherits_stale_pass",
+            "checks/test_html_engineering_completion.py::test_actual_frame_evidence_cannot_be_truncated_or_relabelled",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -792,9 +834,10 @@
       ],
       "source_paths": [
         "html_linked_layout.py",
-        "html_geometry_repair.py"
+        "html_geometry_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-029",
@@ -807,13 +850,13 @@
       "checks": [
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_real_capacity_blocks_dynamic_instead_of_claiming_full_pass",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_candidate_capacity_solver.py::test_static_pass_cannot_bypass_dynamic_or_freshness",
+            "checks/test_html_engineering_completion.py::test_real_capacity_blocks_dynamic_instead_of_claiming_full_pass",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -821,9 +864,10 @@
       ],
       "source_paths": [
         "html_linked_layout.py",
-        "html_geometry_repair.py"
+        "html_geometry_repair.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "原全帧门禁与point路由；完整负例分母另核对；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-030",
@@ -837,26 +881,26 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_initial_production_overflow_uses_zero_model_deterministic_repair",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+            "checks/test_html_engineering_completion.py::test_initial_production_overflow_uses_zero_model_deterministic_repair",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         },
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_initial_production_overflow_uses_zero_model_deterministic_repair",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+            "checks/test_html_engineering_completion.py::test_initial_production_overflow_uses_zero_model_deterministic_repair",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -864,9 +908,10 @@
       ],
       "source_paths": [
         "html_production_service.py",
-        "html_design_reconstruction.py"
+        "html_design_reconstruction.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-031",
@@ -880,26 +925,26 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_variant_overflow_uses_same_zero_model_deterministic_path",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+            "checks/test_html_engineering_completion.py::test_variant_overflow_uses_same_zero_model_deterministic_path",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         },
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_variant_overflow_uses_same_zero_model_deterministic_path",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_design_agent.py::test_allocated_capacity_is_repaired_before_reconstruction_or_stops",
+            "checks/test_html_engineering_completion.py::test_variant_overflow_uses_same_zero_model_deterministic_path",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -907,9 +952,10 @@
       ],
       "source_paths": [
         "html_production_service.py",
-        "html_design_reconstruction.py"
+        "html_design_reconstruction.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-032",
@@ -923,26 +969,52 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_execution_metrics.py::test_roles_come_from_registered_boundary_names_not_prompt_content",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_initial_production_overflow_uses_zero_model_deterministic_repair",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_execution_metrics.py::test_roles_come_from_registered_boundary_names_not_prompt_content",
+            "checks/test_html_engineering_completion.py::test_initial_production_overflow_uses_zero_model_deterministic_repair",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_engineering_completion.py::test_variant_overflow_uses_same_zero_model_deterministic_path",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_engineering_completion.py::test_variant_overflow_uses_same_zero_model_deterministic_path",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         },
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_execution_metrics.py::test_roles_come_from_registered_boundary_names_not_prompt_content",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_initial_production_overflow_uses_zero_model_deterministic_repair",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_execution_metrics.py::test_roles_come_from_registered_boundary_names_not_prompt_content",
+            "checks/test_html_engineering_completion.py::test_initial_production_overflow_uses_zero_model_deterministic_repair",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_engineering_completion.py::test_variant_overflow_uses_same_zero_model_deterministic_path",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_engineering_completion.py::test_variant_overflow_uses_same_zero_model_deterministic_path",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -950,9 +1022,10 @@
       ],
       "source_paths": [
         "html_production_service.py",
-        "html_design_reconstruction.py"
+        "html_design_reconstruction.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-033",
@@ -1052,26 +1125,78 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_manual_block_and_cancelled_search_preserve_document_and_evidence",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+            "checks/test_html_engineering_completion.py::test_manual_block_and_cancelled_search_preserve_document_and_evidence",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_engineering_completion.py::test_source_changes_during_real_search_never_issue_candidate",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_engineering_completion.py::test_source_changes_during_real_search_never_issue_candidate",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "integration",
+          "selector": "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         },
         {
           "facet": "real_browser",
-          "selector": "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_manual_block_and_cancelled_search_preserve_document_and_evidence",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_reference_api.py::test_cancelled_reference_never_starts_provider",
+            "checks/test_html_engineering_completion.py::test_manual_block_and_cancelled_search_preserve_document_and_evidence",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_engineering_completion.py::test_source_changes_during_real_search_never_issue_candidate",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_engineering_completion.py::test_source_changes_during_real_search_never_issue_candidate",
+            "-q",
+            "--junitxml=<evidence.xml>"
+          ]
+        },
+        {
+          "facet": "real_browser",
+          "selector": "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
+          "coverage": "complete",
+          "command": [
+            "python",
+            "-m",
+            "pytest",
+            "checks/test_html_engineering_completion.py::test_saved_unsaved_candidate_semantics_and_all_input_snapshots",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -1079,9 +1204,10 @@
       ],
       "source_paths": [
         "html_production_service.py",
-        "html_design_reconstruction.py"
+        "html_design_reconstruction.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "生产检查点已接入；取消/过期/不覆盖证据分别留存；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-036",
@@ -1869,26 +1995,26 @@
       "checks": [
         {
           "facet": "integration",
-          "selector": "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_actual_browser_cache_reuses_only_exact_inputs_and_intact_evidence",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+            "checks/test_html_engineering_completion.py::test_actual_browser_cache_reuses_only_exact_inputs_and_intact_evidence",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
         },
         {
           "facet": "fault_injection",
-          "selector": "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
-          "coverage": "supporting",
+          "selector": "checks/test_html_engineering_completion.py::test_actual_browser_cache_reuses_only_exact_inputs_and_intact_evidence",
+          "coverage": "complete",
           "command": [
             "python",
             "-m",
             "pytest",
-            "checks/test_html_review_cache.py::test_exact_cache_stable_screenshot_corruption_and_input_invalidation",
+            "checks/test_html_engineering_completion.py::test_actual_browser_cache_reuses_only_exact_inputs_and_intact_evidence",
             "-q",
             "--junitxml=<evidence.xml>"
           ]
@@ -1897,9 +2023,10 @@
       "source_paths": [
         "html_page_budget.py",
         "html_reference_jobs.py",
-        "html_review_cache.py"
+        "html_review_cache.py",
+        "html_visual_review_service.py"
       ],
-      "remaining": "预算/缓存/恢复可离线验证；完整指标须对应原要求；按本条完整要求核验，支持性测试不能代替完整证明。"
+      "remaining": "必须执行当前规则全部精确选择器并封存源码、完整30fps浏览器与故障注入证据；通过不替代真实模型、人审或发布端到端。"
     },
     {
       "id": "AC-055",

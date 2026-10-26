@@ -117,3 +117,66 @@ def test_invalid_model_response_remains_a_failed_pair_member(tmp_path):
     assert result['summary']['development']['before']['expected']==1
     assert result['summary']['development']['before']['failed']==1
     assert result['rows'][0]['failure_reason']=='invalid_localization_response'
+
+
+@pytest.mark.parametrize('status', ['not_found', 'ambiguous'])
+def test_contradictory_part_status_never_scores_correct(tmp_path, status):
+    dataset, trials = pair_fixture(tmp_path)
+    item = trials['trials'][0]['response']
+    path = tmp_path/item['path']; response = json.loads(path.read_text())
+    response['targets'][0]['part_regions'][0]['status'] = status
+    path.write_text(json.dumps(response)); item['sha256'] = sha256_file(path)
+    result = compare(dataset, trials, tmp_path)
+    assert result['rows'][0]['localization']['correct'] == 0
+    assert result['summary']['development']['before']['localization_expected'] == 1
+
+
+def test_multiline_matching_uses_one_to_one_assignment():
+    from html_paired_evaluation import localization_score
+    truth = {'targets': {'text': {'status': 'located', 'container': None,
+        'parts': {'text': [{'text': 'same', 'box': [10, 10, 50, 25]} for _ in range(12)]}}}}
+    response = {'targets': [{'targetId': 'text', 'status': 'located', 'container_presence': 'absent',
+        'container_box': None, 'part_regions': [{'partId': 'text', 'status': 'located', 'regions': [
+            {'text': 'same', 'box': {'xPx': 10, 'yPx': 10, 'widthPx': 40, 'heightPx': 15}} for _ in range(12)]}]}]}
+    response['targets'][0]['part_regions'][0]['regions'][-1]['text'] = 'wrong'
+    assert localization_score(response, truth)['correct'] == 0
+
+
+def test_readiness_keeps_controlled_and_exposed_holdout_out_of_real_acceptance(tmp_path):
+    from html_paired_evaluation import dataset_readiness
+    dataset, _ = pair_fixture(tmp_path)
+    result = dataset_readiness(dataset, tmp_path)
+    assert not result['ready']
+    assert {'INSUFFICIENT_PAGES', 'INSUFFICIENT_COURSES', 'CONTROLLED_FIXTURE_NOT_REAL_COURSE'} <= set(result['blockers'])
+    assert any('EXPOSURE' in b for b in result['blockers'])
+    assert result['human_review'] == 'not_certified'
+
+
+def test_readiness_accepts_declared_disjoint_reviewed_samples_without_certifying_them(tmp_path):
+    from html_paired_evaluation import dataset_readiness
+    dataset, _ = pair_fixture(tmp_path)
+    dataset['provenance'] = 'local_samples_pending_human_labels'
+    for case in dataset['cases']:
+        case['prior_exposure'] = 'declared_unexposed'
+        path = tmp_path/case['gold']['path']; gold = json.loads(path.read_text())
+        gold.update(authority='independent_human_labels', annotated_by='fixture-declared-person')
+        path.write_text(json.dumps(gold)); case['gold']['sha256'] = sha256_file(path)
+    result = dataset_readiness(dataset, tmp_path, minimum_pages=2, minimum_courses=2)
+    assert result['ready'] and result['human_review'] == 'not_certified'
+    dataset['cases'][1]['prior_exposure'] = 'used_for_tuning'
+    assert not dataset_readiness(dataset, tmp_path, minimum_pages=2, minimum_courses=2)['ready']
+
+
+
+def test_pair_outcomes_preserve_incomplete_pairs_and_regressions(tmp_path):
+    dataset, trials = pair_fixture(tmp_path)
+    trials['trials'][0]['state'] = 'unknown'
+    item = trials['trials'][3]['response']; path = tmp_path/item['path']
+    response = json.loads(path.read_text()); response['targets'][0]['status'] = 'not_found'
+    path.write_text(json.dumps(response)); item['sha256'] = sha256_file(path)
+    result = compare(dataset, trials, tmp_path)
+    assert result['paired_outcomes']['development']['unevaluable'] == 1
+    assert result['paired_outcomes']['development']['improved'] == 0
+    assert result['paired_outcomes']['holdout']['unchanged_incorrect'] == 1
+    assert result['summary']['development']['before']['unknown_rate'] == 1
+    assert result['summary']['development']['before']['localization_accuracy'] == 0

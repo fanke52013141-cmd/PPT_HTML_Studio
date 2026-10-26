@@ -85,3 +85,9 @@ def test_declared_point_routing_real_browser(tmp_path):
     updated=next(n for n in result['scene']['nodes'] if n['id']=='relation-1')
     assert all(updated[side]['objectId']==arrow[side]['objectId'] for side in ('from','to'))
     assert result['binding']==binding and result['scene']['motion']==scene['motion'] and scene==before
+    # No defect can be transferred to any third label or unrelated node.
+    for old,new in zip(before['nodes'],result['scene']['nodes']):
+        if old['type']!='arrow': assert new==old
+        else:
+            assert {k:v for k,v in old.items() if k not in ('from','to')}=={k:v for k,v in new.items() if k not in ('from','to')}
+    assert result['report']['geometry_preflight']['issue_group_count']==0

@@ -44,7 +44,9 @@ def prepare(spec,source_root,output):
             'instructions':'Check reference only. Enter actual line transcriptions and [left,top,right,bottom] pixel boxes; mark status explicitly. Set authority independent_human_labels only after real annotation. Preserve exact reference hash; never use current HTML geometry as gold.'})
         def record(name):
             path=folder/name;return {'path':path.relative_to(output).as_posix(),'sha256':sha256_file(path)}
-        entries.append({**{k:case[k] for k in ('id','course_id','split')},'reference':record('reference.png'),
+        entries.append({**{k:case[k] for k in ('id','course_id','split')},
+                        **({'prior_exposure':case['prior_exposure']} if 'prior_exposure' in case else {}),
+                        'reference':record('reference.png'),
                         'scene':record('scene.json'),'gold':record('labels.json')})
     dataset={'format':'hps.paired-dataset/0.1.0','label_version':spec['label_version'],
              'provenance':'local_samples_pending_human_labels','cases':entries}
@@ -54,10 +56,18 @@ def prepare(spec,source_root,output):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--audit',type=Path,help='Read-only readiness audit of a dataset; --output is a report file')
     parser.add_argument('--spec',type=Path);parser.add_argument('--source-root',type=Path)
     parser.add_argument('--output',type=Path)
     parser.add_argument('--seal-labels',type=Path,help='Validate annotated labels and refresh only their hashes')
     args=parser.parse_args()
+    if args.audit:
+        from html_paired_evaluation import dataset_readiness
+        if not args.output:parser.error('--audit requires --output report file')
+        if args.output.exists():raise ValueError('READINESS_REPORT_ALREADY_EXISTS')
+        result=dataset_readiness(json.loads(args.audit.read_text(encoding='utf-8')),args.audit.resolve().parent)
+        write_json_atomic(args.output,result);print(result)
+        return 0 if result['ready'] else 1
     if args.seal_labels:
         from html_paired_evaluation import validate_dataset
         path=args.seal_labels.resolve();result=json.loads(path.read_text(encoding='utf-8'))
@@ -70,4 +80,4 @@ def main():
     print({'cases':len(result['cases']),'labels':'pending_human_labels','provider_calls':0})
 
 
-if __name__=='__main__':main()
+if __name__=='__main__':sys.exit(main())

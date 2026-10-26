@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
+const { execFileSync } = require("node:child_process");
 const {
   CatalogError,
   assembleRequest,
@@ -34,6 +35,33 @@ function withTemp(callback) {
 function assertCode(code, action) {
   assert.throws(action, (error) => error instanceof CatalogError && error.code === code);
 }
+
+test("catalog text source and artifact bytes stay stable with Windows autocrlf", () => {
+  const artifacts = makeArtifacts(ROOT);
+  const paths = [...new Set([
+    ...artifacts.catalog.sourceManifest.map((item) => item.path),
+    artifacts.catalogPath,
+    artifacts.manifestPath,
+    ...artifacts.outputFiles.map((item) => `${artifacts.docsRoot}/${item.path}`),
+  ])].filter((name) => /\.(json|md|html|cjs)$/.test(name));
+  assert.ok(paths.length > 0);
+  const attributes = execFileSync("git", ["-c", "core.autocrlf=true", "check-attr", "-z", "--stdin", "text", "eol"], {
+    cwd: ROOT, input: `${paths.join("\0")}\0`, encoding: "utf8",
+  }).split("\0");
+  const policies = new Map();
+  for (let index = 0; index < attributes.length - 1; index += 3) {
+    const [name, attribute, value] = attributes.slice(index, index + 3);
+    policies.set(name, { ...policies.get(name), [attribute]: value });
+  }
+  for (const name of paths) {
+    const policy = policies.get(name);
+    assert.ok(policy.text === "unset" || (policy.text === "set" && policy.eol === "lf"), `${name}: unstable checkout attributes`);
+    const bytes = fs.readFileSync(path.join(ROOT, name));
+    if (policy.text === "set") {
+      assert.equal(bytes.includes(Buffer.from("\r\n")), false, `${name}: CRLF bytes`);
+    }
+  }
+});
 
 test("catalog is source-backed and keeps reference counts separate from runtime registrations", () => {
   const { catalog } = buildCatalog({ root: ROOT });

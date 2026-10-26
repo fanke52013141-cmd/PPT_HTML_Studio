@@ -21,8 +21,11 @@ from pipeline_lifecycle import write_json_atomic  # noqa: E402
 
 GATES = {
     'O7-01': ['checks/test_html_candidate_capacity_solver.py', 'checks/test_html_search_scheduling.py',
-              'checks/test_html_saved_layout_repair.py','checks/test_html_reconstruction_diagnostics.py'],
-    'O7-02': ['checks/test_html_page_budget.py','checks/test_html_json_observer.py','checks/test_json_llm_transport.py'],
+              'checks/test_html_saved_layout_repair.py','checks/test_html_reconstruction_diagnostics.py',
+              'checks/test_html_production_preflight.py','checks/test_html_engineering_completion.py',
+              'checks/test_capacity_repair.py'],
+    'O7-02': ['checks/test_html_page_budget.py','checks/test_html_json_observer.py','checks/test_json_llm_transport.py',
+              'checks/test_html_execution_metrics.py'],
     'O7-03': ['checks/test_html_optimization_acceptance.py','checks/test_html_acceptance_reconciliation.py',
               'checks/test_html_acceptance_criteria.py','checks/test_html_paired_evaluation.py',
               'checks/test_html_annotation_store.py','checks/test_html_evaluation_execution.py'],
@@ -35,7 +38,8 @@ GATES = {
               'checks/test_html_reference_inline_ui.py','checks/test_html_evaluation_api.py',
               'checks/test_html_evaluation_browser.py','checks/test_html_evaluation_creation.py'],
     'O7-07': ['checks/test_html_review_cache.py', 'checks/test_html_asset_service.py', 'checks/test_html_asset_geometry.py',
-              'checks/test_html_asset_reuse.py',
+              'checks/test_html_asset_reuse.py','checks/test_html_production_recovery.py',
+              'checks/test_html_design_agent.py',
               'checks/test_html_e_production.py::test_explicit_cross_page_resource_survives_design_checkpoint_without_subject_call'],
 }
 EXPECTED_CASES = {
@@ -142,6 +146,9 @@ def source_manifest():
                 ROOT/'checks/test_frontend_quality.js',ROOT/'static/editor_ui/canvas-manifest.json',
                 ROOT/'static/editor_ui/timeline-manifest.json',ROOT/'docs/contracts/html-presentation/contract-index.json']
     sources += list((ROOT/'checks/agent').glob('test_html_*.py'))
+    # Every exact gate selector must be in the sealed source closure, including
+    # legacy checks whose filenames do not begin with test_html_.
+    sources += [ROOT/selector.split('::', 1)[0] for tests in GATES.values() for selector in tests]
     return {p.relative_to(ROOT).as_posix(): sha256_file(p) for p in sources if p.is_file()}
 
 

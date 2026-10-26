@@ -1,6 +1,26 @@
 config/html_runtime_skills/*.md text eol=lf
 config/html_runtime_skills.json text eol=lf
 .gitattributes text eol=lf
+# The reference catalog hashes source bytes and copies text assets verbatim.
+html_engine/reference-library/**/*.json text eol=lf
+html_engine/reference-library/**/*.md text eol=lf
+html_engine/reference-library/**/*.html text eol=lf
+html_engine/visual/catalog/*.json text eol=lf
+html_engine/visual/course-structures.cjs text eol=lf
+html_engine/visual/schema.json text eol=lf
+html_engine/visual/effects/registry.json text eol=lf
+html_engine/visual/layouts/*.json text eol=lf
+html_engine/visual/templates/*.json text eol=lf
+html_engine/visual/themes/*.json text eol=lf
+docs/assets/code-art-references/catalog-v1/**/*.json text eol=lf
+docs/assets/code-art-references/catalog-v1/**/*.md text eol=lf
+# These sealed sources contain CRLF (some mixed with LF) in the Git blob.
+# Preserve their existing hashes byte-for-byte rather than converting on checkout.
+html_engine/reference-library/standard-library.html -text !eol
+html_engine/visual/layouts/comparison-three-columns-v1.json -text !eol
+html_engine/visual/layouts/wide-body-pair-v1.json -text !eol
+html_engine/visual/templates/comparison-three-columns-v1.json -text !eol
+html_engine/visual/templates/wide-body-pair-v1.json -text !eol
 # Capacity fixtures pin scene bytes in their manifest across Windows checkouts.
 checks/fixtures/capacity-baseline/*.json text eol=lf
 

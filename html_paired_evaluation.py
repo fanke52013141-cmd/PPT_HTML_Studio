@@ -76,17 +76,27 @@ def localization_score(response,gold):
             continue
         if row['status']!='located':scores.append(False);continue
         parts={p['partId']:p for p in row['part_regions']}
-        correct=len(parts)==len(row['part_regions']) and set(parts)==set(truth['parts'])
+        correct=(len(parts)==len(row['part_regions']) and set(parts)==set(truth['parts'])
+                 and all(p['status']=='located' for p in parts.values()))
         for part,expected in truth['parts'].items():
             regions=parts.get(part,{}).get('regions',[])
             def matches(region,box):
                 b=region['box'];pred=[b['xPx'],b['yPx'],b['xPx']+b['widthPx'],b['yPx']+b['heightPx']]
                 iou,coverage=overlap(pred,box['box'])
                 return region['text']==box['text'] and iou>=0.6 and coverage>=0.9
-            def assign(i,used):
-                return i==len(expected) or any(matches(region,expected[i]) and assign(i+1,used|{j})
-                    for j,region in enumerate(regions) if j not in used)
-            correct=correct and len(regions)==len(expected) and assign(0,set())
+            # Augmenting paths preserve one-to-one matching without factorial
+            # backtracking on repeated multi-line text (at most 12 regions).
+            owners = {}
+            def assign(index, visited):
+                for j, region in enumerate(regions):
+                    if j in visited or not matches(region, expected[index]):
+                        continue
+                    visited.add(j)
+                    if j not in owners or assign(owners[j], visited):
+                        owners[j] = index
+                        return True
+                return False
+            correct=correct and len(regions)==len(expected) and all(assign(i,set()) for i in range(len(expected)))
         container=truth.get('container')
         if container:
             b=row['container_box']
@@ -167,8 +177,57 @@ def compare(dataset,trials,root):
                 'pixel_comparison_expected':len(selected),'pixel_comparison_measured':len(distances),
                 'total_cost':sum(r['cost'] for r in selected) if selected and all(r['cost'] is not None for r in selected) else None,
                 'fidelity':'pending_independent_review'}
+    paired_outcomes = {}
+    by_trial = {(r['case_id'], r['repetition'], r['arm']): r for r in rows}
+    for split in summaries:
+        counts = dict(improved=0, regressed=0, unchanged_correct=0, unchanged_incorrect=0, unevaluable=0)
+        for case in cases:
+            if case['split'] != split: continue
+            for repetition in range(repeat):
+                before, after = [by_trial[(case['id'], repetition, arm)] for arm in arms]
+                if before['state'] != 'returned' or after['state'] != 'returned':
+                    counts['unevaluable'] += 1
+                    continue
+                b, a = before['localization']['all_correct'], after['localization']['all_correct']
+                counts['improved' if a and not b else 'regressed' if b and not a else
+                       'unchanged_correct' if a else 'unchanged_incorrect'] += 1
+        paired_outcomes[split] = counts
+        for arm in arms:
+            summary = summaries[split][arm]
+            n = summary['expected']
+            summary['returned_rate'] = summary['returned']/n if n else None
+            summary['unknown_rate'] = summary['unknown']/n if n else None
+            summary['latency_observed'] = sum(r['seconds'] is not None for r in rows if r['split']==split and r['arm']==arm)
+            denominator = summary['localization_expected']
+            summary['localization_accuracy'] = summary['localization_correct']/denominator if denominator else None
     deltas={s:{k:summaries[s]['after'][k]-summaries[s]['before'][k] for k in ('returned','localization_correct','engineering_observed_pass')}
             for s in summaries}
     return {'format':'hps.paired-comparison/0.1.0','dataset_sha256':sha256_json(dataset),'summary':summaries,
-            'paired_deltas':deltas,'rows':rows,'real_model_quality':'not_certified','human_visual_approval':'pending',
+            'paired_deltas':deltas,'paired_outcomes':paired_outcomes,'rows':rows,'real_model_quality':'not_certified','human_visual_approval':'pending',
             'provider_calls':0,'holdout_policy':'Never select prompts/templates using holdout results.'}
+
+
+def dataset_readiness(dataset, root, *, minimum_pages=24, minimum_courses=3):
+    """Report experiment prerequisites; declarations never certify human review."""
+    if type(minimum_pages) is not int or minimum_pages < 1 or type(minimum_courses) is not int or minimum_courses < 2:
+        raise ValueError('READINESS_LIMITS_INVALID')
+    blockers = []
+    cases = dataset.get('cases', [])
+    courses = {case.get('course_id') for case in cases if case.get('course_id')}
+    if len(cases) < minimum_pages: blockers.append('INSUFFICIENT_PAGES')
+    if len(courses) < minimum_courses: blockers.append('INSUFFICIENT_COURSES')
+    if {case.get('split') for case in cases} != {'development', 'holdout'}:
+        blockers.append('DEVELOPMENT_AND_HOLDOUT_REQUIRED')
+    if dataset.get('provenance') == 'controlled_fixture': blockers.append('CONTROLLED_FIXTURE_NOT_REAL_COURSE')
+    for case in cases:
+        if case.get('split') == 'holdout' and case.get('prior_exposure') != 'declared_unexposed':
+            blockers.append('HOLDOUT_EXPOSURE_NOT_DECLARED:' + str(case.get('id')))
+    try:
+        validate_dataset(dataset, root)
+    except (ValueError, KeyError, TypeError, OSError) as error:
+        blockers.append(str(error))
+    return {'format': 'hps.dataset-readiness/0.1.0', 'ready': not blockers,
+            'pages': len(cases), 'courses': len(courses),
+            'minimum_pages': minimum_pages, 'minimum_courses': minimum_courses,
+            'blockers': blockers, 'provider_calls': 0, 'human_review': 'not_certified',
+            'holdout_policy': 'Exposure is a human declaration, never inferred from file dates or run IDs.'}

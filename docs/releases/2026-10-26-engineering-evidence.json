@@ -1,0 +1,35 @@
+{
+  "format": "hps.engineering-release-evidence/0.1.0",
+  "base_commit": "8aa5695",
+  "engineering_counts": {
+    "O7-01": 55,
+    "O7-02": 22,
+    "O7-03": 53,
+    "O7-04": 24,
+    "O7-05": 2,
+    "O7-06": 39,
+    "O7-07": 78
+  },
+  "engineering_total": 273,
+  "browser_cases": 10,
+  "bundle_manifest_sha256": "1a4234f06cf85c4645a2fe6392782b4d8d29dfca7c9bec13c702a27c61083891",
+  "criterion_report_sha256": "ff76b886032da28ce3e9f6b7b7d8630000f19fb268d9fd833c9cd649dae2db66",
+  "rule_file_sha256": "930f69c042834241462caa9d597366ae338e5bba05ac5446bde7aae46ecfac7d",
+  "criteria_counts": {
+    "passed": 36,
+    "failed": 0,
+    "pending": 33
+  },
+  "engineering_required_levels_all_passed": true,
+  "real_model_quality": "not_run",
+  "human_visual_acceptance": "pending",
+  "deployment": "not_run",
+  "provider_calls": 0,
+  "local_evidence_not_in_git": "outputs/engineering23-20261026/acceptance-final",
+  "quick": "passed",
+  "agent": {
+    "passed": 519,
+    "seconds": 73.45,
+    "warnings": 1
+  }
+}
